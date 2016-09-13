@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<title>About Spring Tool Suite Distribution</title>
+<meta name="author" content="Pivotal">
+</head>
+<body>
+<h2>About Spring Tool Suite Distribution</h2>
+<p>June 30, 2015</p>
+<h3>License</h3>
+<p>Pivotal Software, Inc. (“Pivotal”) makes available all content
+in this download ("Content"). Unless otherwise indicated below, the
+Content is provided to you under the terms and conditions of the Eclipse
+Public License Version 1.0 ("EPL"). A copy of the EPL is available in
+the file called license.txt. For purposes of the EPL, "Program" will
+mean the Content.</p>
+<h3>Third Party Content</h3>
+<p>The Content includes items that have been sourced
+from third parties, as set out in the file called
+open_source_licenses.txt, located in the feature components of this
+project.</p>
+</body>
+</html>

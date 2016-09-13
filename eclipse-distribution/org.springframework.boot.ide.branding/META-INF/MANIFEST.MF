@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.springframework.boot.ide.branding;singleton:=true
+Bundle-Version: 4.0.0.qualifier
+Bundle-Vendor: %providerName
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.equinox.p2.ui,
+ org.eclipse.equinox.p2.ui.sdk,
+ org.springsource.ide.eclipse.commons.core
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.core.runtime,
+ org.eclipse.osgi.service.datalocation,
+ org.osgi.framework

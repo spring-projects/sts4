@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension id="ide" point="org.eclipse.core.runtime.products"> 
+      <product name="%productName" application="org.eclipse.ui.ide.workbench" description="%productBlurb"> 
+          <property name="windowImages" value="sts16.png,sts32.png,sts48.png,sts64.png,sts128.png"/> 
+          <property name="aboutImage" value="sts_lg.gif"/> 
+          <property name="aboutText" value="%productBlurb"/> 
+          <property name="appName" value="%productName"/> 
+          <property name="preferenceCustomization" value="plugin_customization.ini"/> 
+          <property
+                name="startupForegroundColor"
+                value="33302D"/>
+          <property
+                name="versionForegroundColor"
+                value="33302D"/>
+          <property
+                name="startupMessageRect"
+                value="23,176,550,18"/>
+          <property
+                name="startupProgressRect"
+                value="23,194,550,14"/>
+          <property
+                name="versionRect"
+                value="550,30" />
+		  <property
+				name="applicationXMI"
+				value="org.eclipse.platform/LegacyIDE.e4xmi">
+		  </property>
+		  <property
+				name="cssTheme"
+				value="org.eclipse.e4.ui.css.theme.e4_default">
+		  </property>
+		  <property
+				name="applicationCSSResources"
+	         	value="platform:/plugin/org.eclipse.platform/images/">
+		  </property>
+      </product> 
+   </extension>
+
+</plugin>
