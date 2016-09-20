@@ -1,0 +1,11 @@
+out
+node_modules
+target
+*.log
+*.log.*
+.idea
+*.iml
+dependency-reduced-pom.xml
+classpath.txt
+*.vsix
+repo
