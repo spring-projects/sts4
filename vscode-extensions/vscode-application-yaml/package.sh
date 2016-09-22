@@ -6,7 +6,9 @@
 
 set -e # fail at the first sign of trouble
 
-mvn clean package ## build language server fat jar
+#Ensure commons are built and uptodate in local maven cache
+mvn -f ../commons/pom.xml clean install
+mvn clean package
 npm install
 vsce package
 
