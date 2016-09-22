@@ -30,6 +30,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
+	
 	<distributionManagement>
 		<repository>
 			<id>distribution-repository</id>
@@ -37,6 +38,7 @@
 			<url>file://${basedir}/dist</url>
 		</repository>
 	</distributionManagement>
+	
 	<dependencies>
 		<!-- Language Servers -->
 		<dependency>
