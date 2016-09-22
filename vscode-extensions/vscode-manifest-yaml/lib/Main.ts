@@ -9,6 +9,7 @@ import * as PortFinder from 'portfinder';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
+import {TextDocument} from 'vscode';
 
 PortFinder.basePort = 55282;
 
@@ -56,8 +57,16 @@ export function activate(context: VSCode.ExtensionContext) {
                     
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
-            // Register the server for java documents
-            documentSelector: ['yaml'],
+            
+            // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead
+            // Reasons:
+            // 1. documentSelector is just passed over to functions like #registerHoverProvider(documentSelector, ...) that take documentSelector
+            // parameter in string | DocumentFilter | string[] | DocumentFilter[] format
+            // 2. Combination of non string|string[] documentSelector parameter and synchronize.textDocumentFilter function makes doc synchronization
+            // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
+
+            // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
+            documentSelector: [ <any> {language: 'yaml', pattern: '**/manifest*.yml'}],
             synchronize: {
                 // Synchronize the setting section to the server:
                 configurationSection: 'languageServerExample',
@@ -65,7 +74,13 @@ export function activate(context: VSCode.ExtensionContext) {
                 fileEvents: [
                     //What's this for? Don't think it does anything useful for this example:
                     VSCode.workspace.createFileSystemWatcher('**/.clientrc')
-                ]
+                ],
+
+                // TODO: Remove textDocumentFilter property ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
+                textDocumentFilter: function(textDocument : TextDocument) : boolean {
+                    let result : boolean =  /^(.*\/)?manifest[^\s\\/]*.yml$/i.test(textDocument.fileName);
+                    return result;
+                }
             }
         }
 
