@@ -4,7 +4,7 @@
   "description": "Provides validation and content assist for Cloudfoundry manifest.yml files",
   "icon": "icon.png",
   "version": "0.0.1",
-  "publisher": "Pivotal Inc.",
+  "publisher": "Pivotal",
   "repository": {
     "type": "git",
     "url": "https://github.com/kdvolder/vscode-lsapi-example.git"
