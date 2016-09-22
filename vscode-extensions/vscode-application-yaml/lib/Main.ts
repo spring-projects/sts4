@@ -57,7 +57,7 @@ export function activate(context: VSCode.ExtensionContext) {
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
             // Register the server for java documents
-            documentSelector: [{language: 'yaml', pattern: '**/application*.yml'}],
+            documentSelector: ['yaml'],
             synchronize: {
                 // Synchronize the setting section to the server:
                 configurationSection: 'languageServerExample',
@@ -65,12 +65,7 @@ export function activate(context: VSCode.ExtensionContext) {
                 fileEvents: [
                     //What's this for? Don't think it does anything useful for this example:
                     VSCode.workspace.createFileSystemWatcher('**/.clientrc')
-                ],
-                textDocumentFilter: function(textDocument: TextDocument):boolean {
-                    let idx : number = textDocument.fileName.lastIndexOf('/');
-                    let fileName : string = textDocument.fileName.substr(idx + 1);
-                    return /application.*.yml/.test(fileName);;
-                }
+                ]
             }
         }
 
