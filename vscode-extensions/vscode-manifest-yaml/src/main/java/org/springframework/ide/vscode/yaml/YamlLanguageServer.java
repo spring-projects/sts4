@@ -37,7 +37,6 @@ public class YamlLanguageServer extends SimpleLanguageServer {
 		SimpleTextDocumentService documents = getTextDocumentService();
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
-			System.out.println("Document changed: "+params);
 			TextDocument doc = params.getDocument();
 			validateDocument(documents, doc);
 		});

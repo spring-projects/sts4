@@ -1,9 +1,11 @@
 package org.springframework.ide.vscode.util;
 
+import org.springframework.ide.vscode.commons.reconcile.IDocument;
+
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
 
-public class TextDocument {
+public class TextDocument implements IDocument {
 	
 	private final String uri;
 	private String text = "";

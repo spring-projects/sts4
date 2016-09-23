@@ -7,5 +7,11 @@ public class Assert {
 			throw new IllegalStateException(msg);
 		}
 	}
+
+	public static void isLegal(boolean b) {
+		if (!b) {
+			throw new IllegalStateException();
+		}
+	}
 	
 }

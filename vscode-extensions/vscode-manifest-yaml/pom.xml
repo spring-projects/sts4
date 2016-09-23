@@ -38,15 +38,9 @@
 		</dependency>
 		<!-- Yaml -->
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.17</version>
-		</dependency>
-		<!-- Guava collections -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>yaml-commons</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Test harness -->
 		<dependency>

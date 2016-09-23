@@ -34,8 +34,7 @@ import io.typefox.lsapi.services.LanguageServer;
 
 public class LanguageServerHarness {
 
-	//Warning this 'harness' is not very good yet. It just implements bare minimum to
-	// be able to test the MyLanguageServer example. 
+	//Warning this 'harness' is incomplete. Growing it as needed.
 
 	private Random random = new Random();
 

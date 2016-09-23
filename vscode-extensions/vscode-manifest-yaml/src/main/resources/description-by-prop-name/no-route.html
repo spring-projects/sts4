@@ -1,0 +1,18 @@
+<p>By default, <code>cf push</code> assigns a route to every application. But some applications process data while running in the background, and should not be assigned routes.</p>
+
+<p>You can use the <code>no-route</code> attribute with a value of <code>true</code> to prevent a route from being created for your application.</p>
+
+<pre>
+---
+  ...
+  no-route: true
+</pre>
+
+<p>The command line option that corresponds to this attribute is <code>--no-route</code>.</p>
+
+<p>If you find that an application which should not have a route does have one:</p>
+
+<ol>
+<li>Remove the route using the <code>cf unmap-route</code> command.</li>
+<li>Push the app again with the <code>no-route: true</code> attribute in the manifest or the <code>--no-route</code> command line option.</li>
+</ol>
