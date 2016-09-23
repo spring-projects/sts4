@@ -128,4 +128,16 @@ public class Editor {
 		return Collections.emptyList();
 	}
 
+	public void assertCompletions(String... specs) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
+	public void assertIsHoverRegion(String string) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
+	public void assertHoverContains(String string, String string2) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
 }
