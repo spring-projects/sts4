@@ -14,4 +14,5 @@ package org.springframework.ide.vscode.commons.reconcile;
 public interface ProblemType {
 	ProblemSeverity getDefaultSeverity();
 	String toString();
+	String getCode();
 }

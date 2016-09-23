@@ -1,2 +1,5 @@
-foo: bar
-- asss
+applications:
+- name: foo
+  foo: bar
+  builpack: java
+

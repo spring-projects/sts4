@@ -260,7 +260,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	public void publishDiagnostics(TextDocument doc, List<DiagnosticImpl> diagnostics) {
-		if (diagnostics!=null && !diagnostics.isEmpty()) {
+		if (diagnostics!=null) {
 			PublishDiagnosticsParamsImpl params = new PublishDiagnosticsParamsImpl();
 			params.setUri(doc.getUri());
 			params.setDiagnostics(diagnostics);

@@ -14,6 +14,21 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>util-commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
 			<version>1.17</version>
@@ -26,7 +41,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>19.0</version>
+			<version>${guava-version}</version>
 		</dependency>
 	</dependencies>
 

@@ -42,6 +42,7 @@ function getClasspath(context: VSCode.ExtensionContext):string {
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
+    VSCode.window.showInformationMessage("Activating manifet.yml extension");
     let javaExecutablePath = findJavaExecutable('java');
     
     if (javaExecutablePath == null) {
@@ -103,7 +104,7 @@ export function activate(context: VSCode.ExtensionContext) {
                         let args = [
                             '-Dserver.port=' + port,
                             '-cp', classpath, 
-                            'org.springframework.ide.vscode.yaml.Main'
+                            'org.springframework.ide.vscode.cloudfoundry.manifest.editor.Main'
                         ];
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);

@@ -11,4 +11,5 @@ public interface ReconcileProblem {
 	String getMessage();
 	int getOffset();
 	int getLength();
+	String getCode();
 }
