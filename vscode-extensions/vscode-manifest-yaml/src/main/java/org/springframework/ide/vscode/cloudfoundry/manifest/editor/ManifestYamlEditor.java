@@ -1,3 +1,4 @@
+package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 ///*******************************************************************************
 // * Copyright (c) 2015 Pivotal, Inc.
 // * All rights reserved. This program and the accompanying materials

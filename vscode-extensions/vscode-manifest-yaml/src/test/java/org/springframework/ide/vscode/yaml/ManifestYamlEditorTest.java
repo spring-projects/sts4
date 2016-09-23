@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.yaml;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
 import org.springframework.ide.vscode.testharness.Editor;
 import org.springframework.ide.vscode.testharness.LanguageServerHarness;
 
@@ -21,7 +22,7 @@ public class ManifestYamlEditorTest {
 	LanguageServerHarness harness;
 	
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(YamlLanguageServer::new);
+		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
 		harness.intialize(null);
 	}
 
@@ -37,7 +38,7 @@ public class ManifestYamlEditorTest {
 	}
 	
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(YamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
 		harness.intialize(null);
 
 		Editor editor = harness.newEditor(

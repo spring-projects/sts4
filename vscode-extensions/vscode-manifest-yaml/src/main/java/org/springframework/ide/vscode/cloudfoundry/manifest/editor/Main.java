@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +79,7 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-    	YamlLanguageServer server = new YamlLanguageServer();
+    	ManifestYamlLanguageServer server = new ManifestYamlLanguageServer();
     	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
     	jsonServer.setMessageLog(new PrintWriter(System.out));
 

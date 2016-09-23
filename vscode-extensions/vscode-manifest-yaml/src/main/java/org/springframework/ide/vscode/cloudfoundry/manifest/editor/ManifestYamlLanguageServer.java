@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -10,6 +10,7 @@ import org.springframework.ide.vscode.util.Futures;
 import org.springframework.ide.vscode.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
+import org.springframework.ide.vscode.yaml.ErrorCodes;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -29,11 +30,11 @@ import io.typefox.lsapi.RangeImpl;
 import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.ServerCapabilitiesImpl;
 
-public class YamlLanguageServer extends SimpleLanguageServer {
+public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
 	
-	public YamlLanguageServer() {
+	public ManifestYamlLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
