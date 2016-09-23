@@ -31,6 +31,11 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>util-commons</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Java implementation of VS Code language server protocol -->
 		<dependency>
 			<groupId>io.typefox.lsapi</groupId>
@@ -74,6 +79,4 @@
 			<version>${jackson-2-version}</version>
 		</dependency>
 	</dependencies>
-
-
 </project>

@@ -1,0 +1,34 @@
+<p>Some languages and frameworks require that you provide a custom command to start an application. Refer to the <a href="/buildpacks/">buildpack</a> documentation to determine if you need to provide a custom start command.</p>
+
+<p>You can provide the custom start command in your application manifest or on the command line.</p>
+
+<p>To specify the custom start command in your application manifest, add it in the <code>command: START-COMMAND</code> format as the following example shows:</p>
+
+<pre>
+---
+  ...
+  command: bundle exec rake VERBOSE=true
+</pre>
+
+<p>On the command line, use the <code>-c</code> option to specify the custom start command as the following example shows:</p>
+
+<pre class="terminal">
+$ cf push my-app -c "bundle exec rake VERBOSE=true"
+</pre>
+
+<p class="note"><strong>Note</strong>: The <code>-c</code> option with a value of &lsquo;null&rsquo; forces <code>cf push</code> to use the buildpack start command. See <a href="./app-startup.html">About Starting Applications</a> for more information.</p>
+
+<p>If you override the start command for a Buildpack application, Linux uses 
+<code>bash -c YOUR-COMMAND</code> to invoke your application.
+If you override the start command for a Docker application, Linux uses <code>sh -c YOUR-COMMAND</code> to invoke your application.
+Because of this, if you override a start command, you should prefix <code>exec</code> to the final command in your custom composite start command.</p>
+
+<p><code>exec</code> causes the last command to become the root process of your application. The <a href="./prepare-to-deploy.html#moving-apps">Cloud Foundry Updates and Your Application</a> section of the <em>Considerations for Designing and Running an Application in the Cloud</em> topic explains why your application should handle a <code>termination signal</code> during Cloud Foundry updates. 
+Without an <code>exec</code> statement, the parent process remains as the implied bash process, and does not propagate signals to your application process.</p>
+
+<p>For example, both of the following composite start commands run database migrations when the first instance of the app starts, then start the app to serve requests, but they behave differently on graceful shutdown. </p>
+
+<ul>
+<li><p><code>bin/rake cf:on_first_instance db:migrate &amp;&amp; bin/rails server -p $PORT -e $RAILS_ENV</code>: The process tree is <code>bash -&gt; ruby</code>, so on graceful shutdown only the <code>bash</code> process receives the TERM signal, and not the <code>ruby</code> process.</p></li>
+<li><p><code>bin/rake cf:on_first_instance db:migrate &amp;&amp; exec bin/rails server -p $PORT -e $RAILS_ENV</code>: Because of the <code>exec</code> prefix on the final command, the <code>ruby</code> process invoked by <code>rails</code> takes over the <code>bash</code> process managing the execution of the composite command. The process tree is only <code>ruby</code>, so the ruby web server receives the TERM signal can shutdown gracefully for 10 seconds.</p></li>
+</ul>

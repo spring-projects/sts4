@@ -34,19 +34,20 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>language-server-commons</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Yaml -->
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.17</version>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>yaml-commons</artifactId>
+			<version>${project.version}</version>
 		</dependency>
-		<!-- Guava collections -->
+		<!-- Test harness -->
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>

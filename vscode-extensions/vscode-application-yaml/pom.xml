@@ -58,6 +58,13 @@
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
 		</dependency>
+		<!-- Test harness -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

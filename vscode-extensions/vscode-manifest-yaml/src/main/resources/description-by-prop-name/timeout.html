@@ -1,0 +1,14 @@
+<p>The <code>timeout</code> attribute defines the number of seconds Cloud Foundry allocates for starting your application. </p>
+
+<p>For example:</p>
+
+<pre>
+---
+  ...
+  timeout: 80
+</pre>
+
+<p>You can increase the timeout length for very large apps that require more time to start. The default timeout is 60 seconds with an upper bound of 180 seconds.</p>
+<p class="note"><strong>Note</strong>: Administrators can set the upper bound of the <code>maximum_health_check_timeout</code> property to any value. Any changes to Cloud Controller properties in the deployment manifest require running <code>bosh deploy</code>.</p>
+
+<p>The command line option that overrides the timeout attribute for the shell is <code>-t</code>. Manifest values still apply to applications pushed to the deployment.</p>
