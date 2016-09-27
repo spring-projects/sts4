@@ -1,0 +1,60 @@
+{
+  "name": "application-properties",
+  "displayName": "Spring Boot Application Properties Support",
+  "description": "Provides validation and content assist for Spring Boot application.properties file",
+  "icon": "spring.gif",
+  "version": "0.0.1",
+  "publisher": "pivotal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "license": "EPL-1.0",
+  "engines": {
+    "vscode": "^0.10.10"
+  },
+  "categories": [
+    "Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "java-properties", "spring-boot", "application-properties"
+  ],
+  "activationEvents": [
+    "onLanguage:ini",
+    "onLanguage:java-properties"
+  ],
+  "main": "./out/lib/Main",
+  "files": [
+    "target/fat-jar.jar"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "languageServerExample.maxNumberOfProblems": {
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        }
+      }
+    }
+  },
+  "preview": "true",
+  "scripts": {
+    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "mocha out/test"
+  },
+  "dependencies": {
+    "portfinder": "^0.4.0",
+    "vscode-languageclient": "^2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^1.8.5",
+    "vscode": "^0.11.0",
+    "mocha": "^2.4.5"
+  }
+}
