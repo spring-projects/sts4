@@ -14,6 +14,7 @@
 		<module>language-server-test-harness</module>
 		<module>yaml-commons</module>
 		<module>util-commons</module>
+		<module>java-properties</module>
 	</modules>
 
 	<properties>
