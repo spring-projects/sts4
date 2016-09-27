@@ -132,12 +132,22 @@ public class AntlrParser implements Parser {
 
 			@Override
 			public int getOffset() {
-				return token.getStartIndex();
+				if (token.getStartIndex() >= token.getStopIndex()) {
+					// No range? Make error span the whole line then
+					return token.getStartIndex() - token.getCharPositionInLine();
+				} else {
+					return token.getStartIndex();
+				}
 			}
 
 			@Override
 			public int getLength() {
-				return token.getStopIndex() - token.getStartIndex();
+				if (token.getStartIndex() >= token.getStopIndex()) {
+					// No range? Make error span the whole line then
+					return token.getCharPositionInLine();
+				} else {
+					return token.getStopIndex() - token.getStartIndex();
+				}
 			}
 			
 		};

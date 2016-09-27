@@ -191,7 +191,8 @@ public class PropertiesAntlrParserTest {
 		assertEquals(1, results.ast.getAllNodes().size());
 		
 		Problem syntaxError = results.syntaxErrors.get(0);
-		assertEquals(text.length(), syntaxError.getOffset());
+		assertEquals(0, syntaxError.getOffset());
+		assertEquals(text.length(), syntaxError.getLength());
 	}
 	
 	@Test
@@ -214,9 +215,11 @@ public class PropertiesAntlrParserTest {
 		
 		// Test errors
 		Problem syntaxError1 = results.syntaxErrors.get(0);
-		assertEquals(11, syntaxError1.getOffset());
+		assertEquals(0, syntaxError1.getOffset());
+		assertEquals(11, syntaxError1.getLength());
 		Problem syntaxError2 = results.syntaxErrors.get(1);
-		assertEquals(text.length(), syntaxError2.getOffset());
+		assertEquals(22, syntaxError2.getOffset());
+		assertEquals(6, syntaxError2.getLength());
 	}
 	
 }
