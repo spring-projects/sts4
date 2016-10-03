@@ -1,32 +1,23 @@
 package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.commons.reconcile.IDocument;
 import org.springframework.ide.vscode.commons.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.util.Futures;
 import org.springframework.ide.vscode.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
-import org.springframework.ide.vscode.yaml.ErrorCodes;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.yaml.reconcile.SchemaBasedYamlASTReconciler;
-import org.springframework.ide.vscode.yaml.reconcile.YamlASTReconciler;
 import org.springframework.ide.vscode.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.yaml.schema.YamlSchema;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.error.MarkedYAMLException;
-import org.yaml.snakeyaml.error.YAMLException;
-import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,10 +26,7 @@ import io.typefox.lsapi.CompletionItemImpl;
 import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.CompletionListImpl;
 import io.typefox.lsapi.CompletionOptionsImpl;
-import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DiagnosticImpl;
-import io.typefox.lsapi.PositionImpl;
-import io.typefox.lsapi.RangeImpl;
 import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.ServerCapabilitiesImpl;
 
