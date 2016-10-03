@@ -8,10 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.reconcile;
+package org.springframework.ide.vscode.yaml.path;
 
-import org.springframework.ide.vscode.util.IDocument;
+import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNode;
 
-public interface IReconcileEngine {
-	public void reconcile(IDocument doc, IProblemCollector problemCollector);
+/**
+ * Different types of things (e.g. {@link ApplicationYamlAssistContext}, {@link SNode} ...) can
+ * be traversed interpeting {@link YamlPath} as 'navigation operations'. To facilitate
+ * 'reusable' traversal code, they can implement this interface.
+ */
+public interface YamlNavigable<T> {
+	T traverse(YamlPathSegment s) throws Exception;
 }

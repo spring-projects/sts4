@@ -13,5 +13,11 @@ public class Assert {
 			throw new IllegalStateException();
 		}
 	}
-	
+
+	public static void isLegal(boolean b, String msg) {
+		if (!b) {
+			throw new IllegalStateException(msg);
+		}
+	}
+
 }

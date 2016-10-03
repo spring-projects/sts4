@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.ide.vscode.commons.reconcile.IDocument;
-
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
 import io.typefox.lsapi.impl.PositionImpl;
@@ -118,6 +116,100 @@ public class TextDocument implements IDocument {
 		return array;
 	}
 
+	@Override
+	public IRegion getLineInformationOfOffset(int offset) {
+		if (offset<=getLength()) {
+			int line = lineNumber(offset);
+			return getLineInformation(line);
+		}
+		return null;
+	}
 
+	@Override
+	public int getLength() {
+		return text.length();
+	}
 
+	@Override
+	public String get(int start, int len) throws BadLocationException {
+		try {
+			return text.substring(start, start+len);
+		} catch (Exception e) {
+			throw new BadLocationException(e);
+		}
+	}
+
+	@Override
+	public int getNumberOfLines() {
+		return lineStarts().length;
+	}
+
+	@Override
+	public String getDefaultLineDelimiter() {
+		Matcher newlineFinder = NEWLINE.matcher(text);
+		if (newlineFinder.find()) {
+			return text.substring(newlineFinder.start(), newlineFinder.end());
+		}
+		return System.getProperty(System.getProperty("line.separator"));
+	}
+
+	@Override
+	public char getChar(int offset) throws BadLocationException {
+		try {
+			return text.charAt(offset);
+		} catch (Exception e) {
+			throw new BadLocationException(e);
+		}
+	}
+
+	@Override
+	public int getLineOfOffset(int offset) {
+		return lineNumber(offset);
+	}
+
+	@Override
+	public IRegion getLineInformation(int line) {
+		int[] starts = lineStarts();
+		if (line<starts.length) {
+			int start = starts[line];
+			int nextLine = line+1;
+			int end;
+			if (nextLine>=starts.length) {
+				//no next line. Last line in the document
+				end = getLength();
+			} else {
+				end = starts[line+1];
+				//To behave like Eclipse IDocument we must strip off line delimiter from the end.
+				char c1 = getSafeChar(end-1);
+				if (c1=='\r' || c1=='\n') {
+					end--;
+					char c2 = getSafeChar(end-1);
+					if (c1!=c2 && (c2=='\r' || c2=='\n')) {
+						end--;
+					}
+				}
+			}
+			
+			int len = end - start;
+			if (len<0) {
+				len = 0;
+			}
+			return new Region(start, end-start);
+		}
+		return null;
+	}
+
+	private char getSafeChar(int ofs) {
+		try {
+			return getChar(ofs);
+		} catch (BadLocationException e) {
+			return 0;
+		}
+	}
+
+	@Override
+	public int getLineOffset(int line) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

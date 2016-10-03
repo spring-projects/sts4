@@ -2,7 +2,7 @@ package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 
 import java.io.StringReader;
 
-import org.springframework.ide.vscode.commons.reconcile.IDocument;
+import org.springframework.ide.vscode.util.IDocument;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.yaml.ast.YamlFileAST;
 import org.yaml.snakeyaml.Yaml;

@@ -17,4 +17,12 @@ public class StringUtil {
 		}
 		return b.toString();
 	}
+
+	public static String trimEnd(String s) {
+		if (s!=null) {
+			return s.replaceAll("\\s+\\z", "");
+		}
+		return null;
+	}
+
 }

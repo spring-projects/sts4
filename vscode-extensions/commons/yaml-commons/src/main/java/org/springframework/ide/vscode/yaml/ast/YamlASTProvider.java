@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.yaml.ast;
 
-import org.springframework.ide.vscode.commons.reconcile.IDocument;
+import org.springframework.ide.vscode.util.IDocument;
 
 @FunctionalInterface
 public interface YamlASTProvider {

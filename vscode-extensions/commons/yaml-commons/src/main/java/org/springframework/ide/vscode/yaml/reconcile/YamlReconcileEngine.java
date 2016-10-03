@@ -2,10 +2,10 @@ package org.springframework.ide.vscode.yaml.reconcile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.reconcile.IDocument;
 import org.springframework.ide.vscode.commons.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.util.IDocument;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.yaml.ast.YamlFileAST;
 import org.yaml.snakeyaml.error.Mark;
