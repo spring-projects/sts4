@@ -9,11 +9,12 @@ import java.util.logging.Logger;
 
 import io.typefox.lsapi.InitializeParams;
 import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.InitializeResultImpl;
 import io.typefox.lsapi.MessageParams;
-import io.typefox.lsapi.MessageParamsImpl;
-import io.typefox.lsapi.ServerCapabilitiesImpl;
+import io.typefox.lsapi.MessageType;
 import io.typefox.lsapi.ShowMessageRequestParams;
+import io.typefox.lsapi.impl.InitializeResultImpl;
+import io.typefox.lsapi.impl.MessageParamsImpl;
+import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 import io.typefox.lsapi.services.LanguageServer;
 import io.typefox.lsapi.services.WindowService;
 
@@ -83,7 +84,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
             MessageParamsImpl m = new MessageParamsImpl();
 
             m.setMessage(message);
-            m.setType(MessageParams.TYPE_ERROR);
+            m.setType(MessageType.Error);
 
             showMessage.accept(m);
         }
@@ -127,5 +128,11 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 		}
 		return workspace;
 	}
+	
+	@Override
+	public void onTelemetryEvent(Consumer<Object> callback) {
+		//TODO: not sure what this is for exactly. We just stub it and do nothing for now.
+	}
+
 
 }

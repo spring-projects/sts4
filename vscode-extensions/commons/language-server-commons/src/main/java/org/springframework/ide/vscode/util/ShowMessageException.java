@@ -1,7 +1,8 @@
 package org.springframework.ide.vscode.util;
 
 import io.typefox.lsapi.MessageParams;
-import io.typefox.lsapi.MessageParamsImpl;
+import io.typefox.lsapi.impl.MessageParamsImpl;
+import io.typefox.lsapi.MessageType;
 
 public class ShowMessageException extends RuntimeException {
 
@@ -15,18 +16,18 @@ public class ShowMessageException extends RuntimeException {
     }
 
     public static ShowMessageException error(String message, Exception cause) {
-        return create(MessageParams.TYPE_ERROR, message, cause);
+        return create(MessageType.Error, message, cause);
     }
 
     public static ShowMessageException warning(String message, Exception cause) {
-        return create(MessageParams.TYPE_WARNING, message, cause);
+        return create(MessageType.Warning, message, cause);
     }
     
-    private static ShowMessageException create(int type, String message, Exception cause) {
+    private static ShowMessageException create(MessageType warning, String message, Exception cause) {
         MessageParamsImpl m = new MessageParamsImpl();
 
         m.setMessage(message);
-        m.setType(type);
+        m.setType(warning);
 
         return new ShowMessageException(m, cause);
     }

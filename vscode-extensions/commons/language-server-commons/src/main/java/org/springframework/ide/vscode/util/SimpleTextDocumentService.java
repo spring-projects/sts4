@@ -15,7 +15,6 @@ import io.typefox.lsapi.CodeLensParams;
 import io.typefox.lsapi.Command;
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.DiagnosticImpl;
 import io.typefox.lsapi.DidChangeTextDocumentParams;
 import io.typefox.lsapi.DidCloseTextDocumentParams;
 import io.typefox.lsapi.DidOpenTextDocumentParams;
@@ -28,7 +27,6 @@ import io.typefox.lsapi.DocumentSymbolParams;
 import io.typefox.lsapi.Hover;
 import io.typefox.lsapi.Location;
 import io.typefox.lsapi.PublishDiagnosticsParams;
-import io.typefox.lsapi.PublishDiagnosticsParamsImpl;
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.ReferenceParams;
 import io.typefox.lsapi.RenameParams;
@@ -39,6 +37,8 @@ import io.typefox.lsapi.TextDocumentPositionParams;
 import io.typefox.lsapi.TextEdit;
 import io.typefox.lsapi.VersionedTextDocumentIdentifier;
 import io.typefox.lsapi.WorkspaceEdit;
+import io.typefox.lsapi.impl.DiagnosticImpl;
+import io.typefox.lsapi.impl.PublishDiagnosticsParamsImpl;
 import io.typefox.lsapi.services.TextDocumentService;
 
 public class SimpleTextDocumentService implements TextDocumentService {

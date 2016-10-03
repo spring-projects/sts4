@@ -129,6 +129,7 @@ public class Editor {
 	}
 
 	public void assertCompletions(String... specs) {
+		
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 

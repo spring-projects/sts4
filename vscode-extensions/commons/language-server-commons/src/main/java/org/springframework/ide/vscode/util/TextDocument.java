@@ -7,11 +7,10 @@ import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.reconcile.IDocument;
 
-import io.typefox.lsapi.Position;
-import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.Range;
-import io.typefox.lsapi.RangeImpl;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
+import io.typefox.lsapi.impl.PositionImpl;
+import io.typefox.lsapi.impl.RangeImpl;
 
 public class TextDocument implements IDocument {
 	

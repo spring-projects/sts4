@@ -90,10 +90,10 @@ public class Main {
             server.onError(message, err);
         });
         
-        try {
+//        try {
             jsonServer.join();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+//        } catch (InterruptedException | ExecutionException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }

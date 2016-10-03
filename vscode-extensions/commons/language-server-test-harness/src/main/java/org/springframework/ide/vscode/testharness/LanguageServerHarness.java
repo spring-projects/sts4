@@ -13,23 +13,25 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
 
-import io.typefox.lsapi.ClientCapabilitiesImpl;
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.Diagnostic;
-import io.typefox.lsapi.DidChangeTextDocumentParamsImpl;
-import io.typefox.lsapi.DidOpenTextDocumentParamsImpl;
-import io.typefox.lsapi.InitializeParamsImpl;
+import io.typefox.lsapi.DiagnosticSeverity;
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.Position;
-import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.ServerCapabilities;
-import io.typefox.lsapi.TextDocumentContentChangeEventImpl;
-import io.typefox.lsapi.TextDocumentItemImpl;
-import io.typefox.lsapi.TextDocumentPositionParamsImpl;
-import io.typefox.lsapi.VersionedTextDocumentIdentifierImpl;
+import io.typefox.lsapi.TextDocumentSyncKind;
+import io.typefox.lsapi.impl.ClientCapabilitiesImpl;
+import io.typefox.lsapi.impl.DidChangeTextDocumentParamsImpl;
+import io.typefox.lsapi.impl.DidOpenTextDocumentParamsImpl;
+import io.typefox.lsapi.impl.InitializeParamsImpl;
+import io.typefox.lsapi.impl.PositionImpl;
+import io.typefox.lsapi.impl.TextDocumentContentChangeEventImpl;
+import io.typefox.lsapi.impl.TextDocumentItemImpl;
+import io.typefox.lsapi.impl.TextDocumentPositionParamsImpl;
+import io.typefox.lsapi.impl.VersionedTextDocumentIdentifierImpl;
 import io.typefox.lsapi.services.LanguageServer;
 
 public class LanguageServerHarness {
@@ -133,11 +135,11 @@ public class LanguageServerHarness {
 		version.setVersion(textDocument.getVersion());
 		didChange.setTextDocument(version);
 		switch (getDocumentSyncMode()) {
-		case ServerCapabilities.SYNC_NONE:
+		case None:
 			break; //nothing todo
-		case ServerCapabilities.SYNC_INCREMENTAL:
+		case Incremental:
 			throw new IllegalStateException("Incremental sync not yet supported by this test harness");
-		case ServerCapabilities.SYNC_FULL:
+		case Full:
 			TextDocumentContentChangeEventImpl change = new TextDocumentContentChangeEventImpl();
 			change.setText(newContent);
 			didChange.setContentChanges(Collections.singletonList(change));
@@ -149,16 +151,16 @@ public class LanguageServerHarness {
 		return documents.get(uri);
 	}
 
-	private int getDocumentSyncMode() {
-		Integer mode = initResult.getCapabilities().getTextDocumentSync();
-		return mode==null ? ServerCapabilities.SYNC_NONE : mode;
+	private TextDocumentSyncKind getDocumentSyncMode() {
+		TextDocumentSyncKind mode = initResult.getCapabilities().getTextDocumentSync();
+		return mode==null ? TextDocumentSyncKind.None : mode;
 	}
 
 	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) {
 		return diagnostics.get(doc.getUri());
 	}
 	
-	public static Condition<Diagnostic> isDiagnosticWithSeverity(int severity) {
+	public static Condition<Diagnostic> isDiagnosticWithSeverity(DiagnosticSeverity severity) {
 		return new Condition<>(
 				(d) -> d.getSeverity()==severity,
 				"Diagnostic with severity '"+severity+"'"
@@ -172,7 +174,7 @@ public class LanguageServerHarness {
 		); 
 	}
 
-	public static final Condition<Diagnostic> isWarning = isDiagnosticWithSeverity(Diagnostic.SEVERITY_WARNING);
+	public static final Condition<Diagnostic> isWarning = isDiagnosticWithSeverity(DiagnosticSeverity.Warning);
 
 	public static boolean isDiagnosticCovering(Diagnostic diag, TextDocumentInfo doc, String string) {
 		Range rng = diag.getRange();

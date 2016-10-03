@@ -6,10 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.typefox.lsapi.Position;
-import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.Range;
-import io.typefox.lsapi.TextDocumentIdentifierImpl;
-import io.typefox.lsapi.TextDocumentItemImpl;
+import io.typefox.lsapi.impl.PositionImpl;
+import io.typefox.lsapi.impl.TextDocumentIdentifierImpl;
+import io.typefox.lsapi.impl.TextDocumentItemImpl;
 
 public class TextDocumentInfo {
 

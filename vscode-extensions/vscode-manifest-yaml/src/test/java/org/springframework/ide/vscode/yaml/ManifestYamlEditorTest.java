@@ -202,7 +202,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems(/*none*/);
 	}
 
-	@Test @Ignore
+	@Test
 	public void toplevelCompletions() throws Exception {
 		Editor editor;
 		editor = harness.newEditor("<*>");
@@ -259,7 +259,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test @Ignore
+	@Test
 	public void nestedCompletions() throws Exception {
 		Editor editor;
 		editor = harness.newEditor(
@@ -328,7 +328,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test @Ignore
+	@Test
 	public void valueCompletions() throws Exception {
 		assertCompletions("disk_quota: <*>",
 				"disk_quota: 1024M<*>",
