@@ -10,12 +10,41 @@ import java.util.List;
 
 import javax.swing.text.BadLocationException;
 
+import io.typefox.lsapi.CompletionItem;
+import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.Position;
 import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.Range;
+import io.typefox.lsapi.TextEdit;
 
 public class Editor {
+	
+	static class EditorState {
+		String documentContents;
+		int selectionStart;
+		int selectionEnd;
+		
+		public EditorState(String text) {
+			selectionStart = text.indexOf(CURSOR);
+			if (selectionStart>=0) {
+				text = text.substring(0,selectionStart) + text.substring(selectionStart+CURSOR.length());
+				selectionEnd = text.indexOf(CURSOR, selectionStart);
+				if (selectionEnd>=0) {
+					text = text.substring(0, selectionEnd) + text.substring(selectionEnd+CURSOR.length());
+				} else {
+					selectionEnd = selectionStart;
+				}
+			} else {
+				//No CURSOR markers found
+				selectionStart = text.length();
+				selectionEnd = text.length();
+			}
+			this.documentContents = text;
+		}
+	}
+	
+	private static final String CURSOR = "<*>";
 	
 	private static final Comparator<Diagnostic> PROBLEM_COMPARATOR = new Comparator<Diagnostic>() {
 		@Override
@@ -35,11 +64,18 @@ public class Editor {
 	private LanguageServerHarness harness;
 	private TextDocumentInfo document;
 
+	private int selectionEnd;
+
+	private int selectionStart;
+
 	public Editor(LanguageServerHarness harness, String contents) throws Exception {
 		this.harness = harness;
-		this.document = harness.openDocument(harness.createWorkingCopy(contents));
+		EditorState state = new EditorState(contents);
+		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents));
+		this.selectionStart = state.selectionStart;
+		this.selectionEnd = state.selectionEnd;
 	}
-	
+
 	/**
 	 * Check that a 'expectedProblems' are found by the reconciler. Expected problems are
 	 * specified by string of the form "${badSnippet}|${messageSnippet}". The badSnippet
@@ -84,14 +120,39 @@ public class Editor {
 		}
 		return buf.toString();
 	}
+	
+	/**
+	 * Get the editor text, with cursor markers inserted (for easy textual comparison
+	 * after applying a proposal)
+	 */
+	public String getText() {
+		String text = document.getText();
+		text = text.substring(0, selectionEnd) + CURSOR + text.substring(selectionEnd);
+		if (selectionStart<selectionEnd) {
+			text = text.substring(0,selectionStart) + CURSOR + text.substring(selectionStart);
+		}
+		return deWindowsify(text);
+	}
+	
+	public void setText(String content) throws Exception {
+		EditorState state = new EditorState(content);
+		document = harness.changeDocument(document.getUri(), state.documentContents);
+		this.selectionStart = state.selectionStart;
+		this.selectionEnd = state.selectionEnd;
+	}
+
+	public void setRawText(String newContent) throws Exception {
+		document = harness.changeDocument(document.getUri(), newContent);
+	}
 
 	public String getText(Range range) {
 		return document.getText(range);
 	}
 
-	public void setText(String newContent) throws Exception {
-		document = harness.changeDocument(document.getUri(), newContent);
+	private String deWindowsify(String text) {
+		return text.replaceAll("\\r\\n", "\n");
 	}
+
 
 	private boolean matchProblem(Editor editor, Diagnostic problem, String expect) {
 		String[] parts = expect.split("\\|");
@@ -128,9 +189,61 @@ public class Editor {
 		return Collections.emptyList();
 	}
 
-	public void assertCompletions(String... specs) {
+	public void assertCompletions(String... expectTextAfter) throws Exception {
+		StringBuilder expect = new StringBuilder();
+		StringBuilder actual = new StringBuilder();
+		for (String after : expectTextAfter) {
+			expect.append(after);
+			expect.append("\n-------------------\n");
+		}
+
+		for (CompletionItem completion : getCompletions()) {
+			Editor editor = this.clone();
+			editor.apply(completion);
+			actual.append(editor.getText());
+			actual.append("\n-------------------\n");
+		}
+		assertEquals(expect.toString(), actual.toString());
+	}
+
+	private void apply(CompletionItem completion) throws Exception {
+		TextEdit edit = completion.getTextEdit();
+		if (edit!=null) {
+			fail("Support for completions with TextEdit's not yet implemented in this test harness.");
+		}
+		String insertText = getInsertText(completion);
+		String docText = document.getText();
+		String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
 		
-		throw new UnsupportedOperationException("Not implemented yet!");
+		selectionStart+= insertText.length();
+		selectionEnd += insertText.length();
+		setRawText(newText);
+	}
+
+	private String getInsertText(CompletionItem completion) {
+		String s = completion.getInsertText();
+		if (s==null) {
+			//If no insertText is provided the label is used
+			s = completion.getLabel();
+		}
+		return s;
+	}
+
+	public Editor clone() {
+		try {
+			return new Editor(harness, getText());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private List<? extends CompletionItem> getCompletions() throws Exception {
+		CompletionList cl = harness.getCompletions(this.document, this.getCursor());
+		return cl.getItems();
+	}
+
+	private Position getCursor() {
+		return document.toPosition(selectionStart);
 	}
 
 	public void assertIsHoverRegion(String string) {
