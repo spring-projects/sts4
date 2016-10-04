@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Provider;
 
+import org.springframework.ide.vscode.commons.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.util.Futures;
@@ -14,9 +15,13 @@ import org.springframework.ide.vscode.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.yaml.completion.SchemaBasedYamlAssistContextProvider;
+import org.springframework.ide.vscode.yaml.completion.YamlAssistContextProvider;
+import org.springframework.ide.vscode.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
@@ -37,9 +42,15 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private static final Provider<Collection<YValueHint>> NO_BUILDPACKS = () -> ImmutableList.of();
 	
 	private Yaml yaml = new Yaml();
+	private YamlSchema schema = new ManifestYmlSchema(NO_BUILDPACKS);
 	
 	public ManifestYamlLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
+		
+		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
+		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
+		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
+		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
@@ -58,54 +69,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //			}
 //		});
 		
-		documents.onCompletion(params -> {
-			CompletableFuture<CompletionList> promise = new CompletableFuture<>();
-			CompletionListImpl completions = new CompletionListImpl();
-			completions.setIncomplete(false);
-			List<CompletionItemImpl> items = new ArrayList<>();
-			{
-//		        {
-//		            label: 'TypeScript',
-//		            kind: CompletionItemKind.Text,
-//		            data: 1
-//		        },
-				CompletionItemImpl item = new CompletionItemImpl();
-				item.setLabel("TypeScript");
-				item.setKind(CompletionItemKind.Text);
-				item.setData(1);
-				items.add(item);
-			}
-
-			{
-//				{
-//		            label: 'JavaScript',
-//		            kind: CompletionItemKind.Text,
-//		            data: 2
-//		        }				
-				CompletionItemImpl item = new CompletionItemImpl();
-				item.setLabel("JavaScript");
-				item.setKind(CompletionItemKind.Text);
-				item.setData(2);
-				items.add(item);
-			}
-			completions.setItems(items);
-
-			promise.complete(completions);
-			return promise;
-		});
-		
-		documents.onCompletionResolve((_item) -> {
-			CompletionItemImpl item = (CompletionItemImpl) _item;
-			Object data = item.getData();
-			if (Integer.valueOf(1).equals(data)) {
-				item.setDetail("TypeScript details");
-				item.setDocumentation("TypeScript docs");
-			} else {
-				item.setDetail("JavaScript details");
-				item.setDocumentation("JavaScript docs");
-			}
-			return Futures.of((CompletionItem)item);
-		});
+		documents.onCompletion(completionEngine::getCompletions);
+		documents.onCompletionResolve(completionEngine::resolveCompletion);
 	}
 
 	private void validateDocument(SimpleTextDocumentService documents, TextDocument doc) {
@@ -133,7 +98,6 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 			}
 		};
 		
-		YamlSchema schema = new ManifestYmlSchema(NO_BUILDPACKS);
 		YamlASTProvider parser = new YamlParser(yaml);
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema);
 		engine.reconcile(doc, problems);

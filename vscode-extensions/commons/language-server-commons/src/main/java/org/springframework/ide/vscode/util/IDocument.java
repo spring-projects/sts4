@@ -12,5 +12,6 @@ public interface IDocument {
 	int getLineOfOffset(int offset);
 	IRegion getLineInformation(int line);
 	int getLineOffset(int line);
+	void replace(int start, int len, String text);
 
 }

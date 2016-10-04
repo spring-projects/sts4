@@ -44,7 +44,8 @@ public class Editor {
 		}
 	}
 	
-	private static final String CURSOR = "<*>";
+	private static final String CURSOR = "<*>"; // used by our test harness
+	private static final String VS_CODE_CURSOR_MARKER = "{{}}"; //vscode uses this in edits to mark cursor position
 	
 	private static final Comparator<Diagnostic> PROBLEM_COMPARATOR = new Comparator<Diagnostic>() {
 		@Override
@@ -208,16 +209,29 @@ public class Editor {
 
 	private void apply(CompletionItem completion) throws Exception {
 		TextEdit edit = completion.getTextEdit();
-		if (edit!=null) {
-			fail("Support for completions with TextEdit's not yet implemented in this test harness.");
-		}
-		String insertText = getInsertText(completion);
 		String docText = document.getText();
-		String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
-		
-		selectionStart+= insertText.length();
-		selectionEnd += insertText.length();
-		setRawText(newText);
+		if (edit!=null) {
+			String replaceWith = edit.getNewText();
+			int cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
+			if (cursorReplaceOffset>=0) {
+				replaceWith = replaceWith.substring(0, cursorReplaceOffset) + replaceWith.substring(cursorReplaceOffset+VS_CODE_CURSOR_MARKER.length());
+			} else {
+				cursorReplaceOffset = replaceWith.length();
+			}
+			Range rng = edit.getRange();
+			int start = document.toOffset(rng.getStart());
+			int end = document.toOffset(rng.getEnd());
+			String newText = docText.substring(0, start) + replaceWith + docText.substring(end);
+			setRawText(newText);
+			selectionStart = selectionEnd = start+cursorReplaceOffset;
+		} else {
+			String insertText = getInsertText(completion);
+			String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
+			
+			selectionStart+= insertText.length();
+			selectionEnd += insertText.length();
+			setRawText(newText);
+		}
 	}
 
 	private String getInsertText(CompletionItem completion) {
@@ -239,7 +253,23 @@ public class Editor {
 
 	private List<? extends CompletionItem> getCompletions() throws Exception {
 		CompletionList cl = harness.getCompletions(this.document, this.getCursor());
-		return cl.getItems();
+		ArrayList<CompletionItem> items = new ArrayList<>(cl.getItems());
+		Collections.sort(items, new Comparator<CompletionItem>() {
+
+			@Override
+			public int compare(CompletionItem o1, CompletionItem o2) {
+				return sortKey(o1).compareTo(sortKey(o2));
+			}
+
+			private String sortKey(CompletionItem item) {
+				String k = item.getSortText();
+				if (k==null) {
+					k = item.getLabel();
+				}
+				return k;
+			}
+		});
+		return items;
 	}
 
 	private Position getCursor() {

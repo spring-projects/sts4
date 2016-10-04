@@ -21,18 +21,14 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.util.IDocument;
 import org.springframework.ide.vscode.util.TextDocument;
 import org.springframework.ide.vscode.yaml.path.YamlPath;
 import org.springframework.ide.vscode.yaml.path.YamlPathSegment;
-import org.springframework.ide.vscode.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SDocNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SRootNode;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureProvider;
 
 public class YamlStructureParserTest {
 

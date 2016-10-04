@@ -5,12 +5,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.typefox.lsapi.Position;
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
 import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.RangeImpl;
+import io.typefox.lsapi.impl.TextDocumentItemImpl;
 
 public class TextDocument implements IDocument {
+	
+	//TODO: This representiation of 'document content' is simplistic and inefficient
+	// for large documents. 
+	// Making any change, such as inserting a character a user typed, works by copying the String that represents the
+	// contents. This could really become problematic for largish-documents when there are frequent changes.
 	
 	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
 	private int[] _lineStarts;
@@ -22,6 +29,12 @@ public class TextDocument implements IDocument {
 		this.uri = uri;
 	}
 	
+	private TextDocument(TextDocument other) {
+		this.uri = other.uri;
+		this.text = other.text;
+		this._lineStarts = other._lineStarts; //no need to reparse lines.
+	}
+
 	public String getUri() {
 		return uri;
 	}
@@ -150,16 +163,15 @@ public class TextDocument implements IDocument {
 		if (newlineFinder.find()) {
 			return text.substring(newlineFinder.start(), newlineFinder.end());
 		}
-		return System.getProperty(System.getProperty("line.separator"));
+		return System.getProperty("line.separator");
 	}
 
 	@Override
 	public char getChar(int offset) throws BadLocationException {
-		try {
+		if (offset>=0 && offset<text.length()) {
 			return text.charAt(offset);
-		} catch (Exception e) {
-			throw new BadLocationException(e);
 		}
+		throw new BadLocationException();
 	}
 
 	@Override
@@ -209,7 +221,22 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public int getLineOffset(int line) {
-		// TODO Auto-generated method stub
-		return 0;
+		return lineStarts()[line];
 	}
+	
+	public int toOffset(Position position) {
+		int line = position.getLine();
+		int lineStart = lineStarts()[line];
+		return lineStart + position.getCharacter();
+	}
+
+	@Override
+	public void replace(int start, int len, String ins) {
+		text = text.substring(0, start) + ins + text.substring(start+len);
+	}
+
+	public synchronized TextDocument copy() {
+		return new TextDocument(this);
+	}
+
 }

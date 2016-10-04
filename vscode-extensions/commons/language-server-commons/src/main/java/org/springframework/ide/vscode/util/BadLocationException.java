@@ -9,4 +9,7 @@ public class BadLocationException extends Exception {
 		super(e);
 	}
 
+	public BadLocationException() {
+	}
+
 }

@@ -20,4 +20,10 @@ public class Assert {
 		}
 	}
 
+	public static void isNotNull(Object it) {
+		if (it==null) {
+			throw new NullPointerException();
+		}
+	}
+
 }

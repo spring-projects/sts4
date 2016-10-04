@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import io.typefox.lsapi.TextDocumentPositionParams;
 import io.typefox.lsapi.TextEdit;
 import io.typefox.lsapi.VersionedTextDocumentIdentifier;
 import io.typefox.lsapi.WorkspaceEdit;
+import io.typefox.lsapi.impl.CompletionListImpl;
 import io.typefox.lsapi.impl.DiagnosticImpl;
 import io.typefox.lsapi.impl.PublishDiagnosticsParamsImpl;
 import io.typefox.lsapi.services.TextDocumentService;
@@ -69,7 +71,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized Collection<TextDocument> getAll() {
 		return new ArrayList<>(documents.values());
 	}
-
 
 	@Override
 	public final void didChange(DidChangeTextDocumentParams params) {
@@ -152,13 +153,17 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		return doc;
 	}
 
+	public final static CompletableFuture<CompletionList> NO_COMPLETIONS = Futures.of(
+			new CompletionListImpl(false, Collections.emptyList()));
+
+
 	@Override
 	public CompletableFuture<CompletionList> completion(TextDocumentPositionParams position) {
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
 			return completionHandler.handle(position);
 		}
-		return null; //TODO: does caller handle nulls? Or do we need to provide something that create a empty completion list?
+		return NO_COMPLETIONS;
 	}
 
 	@Override
@@ -266,6 +271,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			params.setDiagnostics(diagnostics);
 			publishDiagnostics.accept(params);
 		}
+	}
+
+	public synchronized TextDocument get(TextDocumentPositionParams params) {
+		return documents.get(params.getTextDocument().getUri());
 	}
 
 }

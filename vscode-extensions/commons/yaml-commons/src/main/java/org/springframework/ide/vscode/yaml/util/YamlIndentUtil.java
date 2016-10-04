@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.util;
 
-import org.springframework.ide.vscode.util.IDocument;
+import org.springframework.ide.vscode.util.Assert;
 import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 
 /**
- * Helper methods to mainpulate indentation levels.
+ * Helper methods to manipulate indentation levels in yaml content.
  *
  * @author Kris De Volder
  */
@@ -34,11 +34,11 @@ public class YamlIndentUtil {
 
 	public YamlIndentUtil(String newline) {
 		this.NEWLINE = newline;
+		Assert.isNotNull(NEWLINE);
 	}
 
 	public YamlIndentUtil(YamlDocument doc) {
-		IDocument d = doc.getDocument();
-		this.NEWLINE = d.getDefaultLineDelimiter();
+		this(doc.getDocument().getDefaultLineDelimiter());
 	}
 
 	/**
