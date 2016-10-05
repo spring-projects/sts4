@@ -5,15 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
 import org.springframework.ide.vscode.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.testharness.TextDocumentInfo;
 
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.TextDocumentSyncKind;
 
@@ -66,7 +62,7 @@ public class ManifestYamlLanguageServerTest {
 //	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
+		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isFalse();
 		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Full);
 	}
 

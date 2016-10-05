@@ -1,7 +1,6 @@
 package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -9,10 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.completion.ICompletionProposal;
 import org.springframework.ide.vscode.util.Futures;
-import org.springframework.ide.vscode.util.IRegion;
 import org.springframework.ide.vscode.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
@@ -79,26 +78,24 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setLabel(completion.getLabel());
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
+		item.setFilterText(completion.getLabel());
 		adaptEdits(item, doc, completion.getTextEdit());
 		return item;
 	}
 
 	private void adaptEdits(CompletionItemImpl item, TextDocument doc, DocumentEdits edits) throws Exception {
-		TextDocument newDoc = doc.copy();
-		edits.apply(newDoc);
-		
-		IRegion newSelection = edits.getSelection(doc);
-		if (newSelection==null) {
-			//Every 'real' edit moves the cursor. So if the newSelection is unknown it can only
-			//mean we are dealing with a 'null' edit.
+		TextReplace replaceEdit = edits.asReplacement(doc);
+		if (replaceEdit==null) {
+			//The original edit does nothing.
 			item.setInsertText("");
 		} else {
-			TextEditImpl fullEdit = new TextEditImpl();
-			fullEdit.setRange(doc.toRange(0, doc.getLength()));
-			int newCursor = newSelection.getOffset();
-			String newText = newDoc.getText();
-			fullEdit.setNewText(newText.substring(0,newCursor)+VS_CODE_CURSOR_MARKER+newText.substring(newCursor));
-			item.setTextEdit(fullEdit);
+			TextDocument newDoc = doc.copy();
+			edits.apply(newDoc);
+			TextEditImpl vscodeEdit = new TextEditImpl();
+			vscodeEdit.setRange(newDoc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
+			vscodeEdit.setNewText(replaceEdit.newText);
+			//TODO: cursor offset within newText? for now we assume its always at the end.
+			item.setTextEdit(vscodeEdit);
 		}
 	}
 

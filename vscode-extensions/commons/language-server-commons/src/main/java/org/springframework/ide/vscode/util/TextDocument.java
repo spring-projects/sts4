@@ -10,7 +10,6 @@ import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
 import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.RangeImpl;
-import io.typefox.lsapi.impl.TextDocumentItemImpl;
 
 public class TextDocument implements IDocument {
 	
@@ -237,6 +236,11 @@ public class TextDocument implements IDocument {
 
 	public synchronized TextDocument copy() {
 		return new TextDocument(this);
+	}
+
+	@Override
+	public String textBetween(int start, int end) throws BadLocationException {
+		return get(start, end-start);
 	}
 
 }

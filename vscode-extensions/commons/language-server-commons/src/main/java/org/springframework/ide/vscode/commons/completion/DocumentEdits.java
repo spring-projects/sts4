@@ -77,7 +77,7 @@ public class DocumentEdits implements ProposalApplier {
 	//           transform function just like the current implementation does.
 	//        => When the cluster of 'conflicting' operations has been dealt with
 	//           the offset transform function no longer matters for the
-	//           remaining edits who's offesets are all strictly 'smaller'.
+	//           remaining edits who's offsets are all strictly 'smaller'.
 	//           Thus the trasnform function can be discarded.
 	//
 	//   Assuming most edits are independent and only a few of them conflict, then
@@ -90,6 +90,40 @@ public class DocumentEdits implements ProposalApplier {
 	//   and executed in decreasing order of their 'start'.
 	//
 	//   The tricky part would be to preserve the order-dependent semantics.
+
+	public static class TextReplace {
+		public final int start;
+		public final int end;
+		public final String newText;
+		
+		public TextReplace(int start, int end, String newText) {
+			super();
+			this.start = start;
+			this.end = end;
+			this.newText = newText;
+		}
+
+		public IRegion getRegion() {
+			return new Region(start, end-start);
+		}
+	}
+
+	/**
+	 * When an insert occurs, a single position in the file transforms ambiguously into two different
+	 * positions after the insertion, depending on whether we 'float' marker for the position after the
+	 * inserted block or leave it at the beginning.
+	 */
+	public enum Direction {
+		/**
+		 * Transform positions around inserts to stick to the front of the inserted block.
+		 */
+		BEFORE,
+		/**
+		 * 
+		 * Transform positions around inserts to stick to the end of the inserted block.
+		 */
+		AFTER
+	}
 
 	private class Insertion extends Edit {
 		private int offset;
@@ -109,9 +143,21 @@ public class DocumentEdits implements ProposalApplier {
 		public String toString() {
 			return "ins("+text+"@"+offset+")";
 		}
+
+		@Override
+		public int getStart() {
+			return offset;
+		}
+
+		@Override
+		public int getEnd() {
+			return offset;
+		}
 	}
 
 	private abstract class Edit {
+		public abstract int getStart();
+		public abstract int getEnd();
 		abstract void apply(DocumentState doc) throws BadLocationException;
 		public abstract String toString();
 	}
@@ -136,14 +182,25 @@ public class DocumentEdits implements ProposalApplier {
 			return "del("+start+"->"+end+")";
 		}
 
+		@Override
+		public int getStart() {
+			return start;
+		}
+
+		@Override
+		public int getEnd() {
+			return end;
+		}
+
 	}
 
 	private interface OffsetTransformer {
-		int trasform(int offset);
+		int transform(int offset, Direction dir);
 	}
 
 	private static final OffsetTransformer NULL_TRANSFORM = new OffsetTransformer() {
-		public int trasform(int offset) {
+		@Override
+		public int transform(int offset, Direction dir) {
 			return offset;
 		}
 	};
@@ -164,19 +221,25 @@ public class DocumentEdits implements ProposalApplier {
 		}
 
 		public void insert(int start, final String text) throws BadLocationException {
-			final int tStart = org2new.trasform(start);
+			final int tStart = org2new.transform(start, Direction.AFTER);
 			if (!text.isEmpty()) {
 				if (doc!=null) {
 					doc.replace(tStart, 0, text);
 				}
 				final OffsetTransformer parent = org2new;
 				org2new = new OffsetTransformer() {
-					public int trasform(int org) {
-						int tOffset = parent.trasform(org);
+					public int transform(int org, Direction dir) {
+						int tOffset = parent.transform(org, dir);
 						if (tOffset<tStart) {
 							return tOffset;
-						} else {
+						} else if (tOffset>tStart) {
 							return tOffset + text.length();
+						} else /* tOffset==tStart*/ { 
+							if (dir==Direction.BEFORE) {
+								return tOffset;
+							} else {
+								return tOffset + text.length();
+							}
 						}
 					}
 				};
@@ -185,9 +248,9 @@ public class DocumentEdits implements ProposalApplier {
 		}
 
 		public void delete(final int start, final int end) throws BadLocationException {
-			final int tStart = org2new.trasform(start);
+			final int tStart = org2new.transform(start, Direction.AFTER);
 			if (end>start) { // skip work for 'delete nothing' op
-				final int tEnd = org2new.trasform(end);
+				final int tEnd = org2new.transform(end, Direction.AFTER);
 				if (tEnd>tStart) { // skip work for 'delete nothing' op
 					if (doc!=null) {
 						doc.replace(tStart, tEnd-tStart, "");
@@ -195,8 +258,8 @@ public class DocumentEdits implements ProposalApplier {
 
 					final OffsetTransformer parent = org2new;
 					org2new = new OffsetTransformer() {
-						public int trasform(int org) {
-							int tOffset = parent.trasform(org);
+						public int transform(int org, Direction dir) {
+							int tOffset = parent.transform(org, dir);
 							if (tOffset<=tStart) {
 								return tOffset;
 							} else if (tOffset>=tEnd) {
@@ -252,6 +315,22 @@ public class DocumentEdits implements ProposalApplier {
 		}
 		if (selectionState.selection>=0) {
 			return new Region(selectionState.selection, 0);
+		}
+		return null;
+	}
+	
+	public TextReplace asReplacement(IDocument doc) throws BadLocationException {
+		if (!edits.isEmpty()) {
+			int start = edits.stream().mapToInt(Edit::getStart).min().getAsInt();
+			int end = edits.stream().mapToInt(Edit::getEnd).max().getAsInt();
+			
+			DocumentState state = new DocumentState(doc);
+			for (Edit edit : edits) {
+				edit.apply(state);
+			}
+			int newStart = state.org2new.transform(start, Direction.BEFORE);
+			int newEnd = state.org2new.transform(end, Direction.AFTER);
+			return new TextReplace(start, end, state.doc.textBetween(newStart, newEnd));
 		}
 		return null;
 	}

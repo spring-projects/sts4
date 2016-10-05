@@ -13,5 +13,6 @@ public interface IDocument {
 	IRegion getLineInformation(int line);
 	int getLineOffset(int line);
 	void replace(int start, int len, String text);
+	String textBetween(int start, int end) throws BadLocationException;
 
 }

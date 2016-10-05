@@ -94,6 +94,17 @@ public class YamlPathEdits extends DocumentEdits {
 		insert(insertionPoint, createPathInsertionText(path, indent, startOnNewLine, appendText));
 	}
 
+	/**
+	 * Yuck! This component behaves a little differently when working in service of vscode. This is because
+	 * when vscode applies completions it already does some magic indentation fixing (which is not really
+	 * documented see: https://github.com/Microsoft/language-server-protocol/issues/83
+	 * <p>
+	 * We have to counteract the magic fixing of indentation by avoiding to do these fixings ourself. Discovering
+	 * which things we have to counteract is trial and error and probably specific to vscode's implementation
+	 * of LSP support only.
+	 */
+	private boolean vsCode = true;
+
 	protected String createPathInsertionText(YamlPath path, int indent, boolean startOnNewLine, String appendText) {
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < path.size(); i++) {
@@ -105,7 +116,11 @@ public class YamlPathEdits extends DocumentEdits {
 			buf.append(":");
 			indent += YamlIndentUtil.INDENT_BY;
 		}
-		buf.append(indentUtil.applyIndentation(appendText, indent));
+		if (vsCode) {
+			buf.append(indentUtil.applyIndentation(appendText, YamlIndentUtil.INDENT_BY));
+		} else {
+			buf.append(indentUtil.applyIndentation(appendText, indent));
+		}
 		return buf.toString();
 	}
 

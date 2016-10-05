@@ -110,7 +110,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		
 		CompletionOptionsImpl completionProvider = new CompletionOptionsImpl();
-		completionProvider.setResolveProvider(true);
+		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
 		
 		return c;

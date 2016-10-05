@@ -31,7 +31,7 @@ public class YamlIndentUtil {
 	 * for the current document).
 	 */
 	public final String NEWLINE;
-
+	
 	public YamlIndentUtil(String newline) {
 		this.NEWLINE = newline;
 		Assert.isNotNull(NEWLINE);

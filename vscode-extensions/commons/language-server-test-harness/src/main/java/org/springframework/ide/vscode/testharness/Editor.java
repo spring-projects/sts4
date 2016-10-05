@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.swing.text.BadLocationException;
 
+import com.google.common.base.Strings;
+
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.Diagnostic;
@@ -212,12 +214,18 @@ public class Editor {
 		String docText = document.getText();
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
+			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to 
+			// mimick that behavior. I'm not sure this fix is really emulating it faithfully as its undocumented :-(
+			int indentFix = edit.getRange().getStart().getCharacter();
+			replaceWith = replaceWith.replaceAll("\\n", "\n"+Strings.repeat(" ", indentFix));
+
 			int cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
 			if (cursorReplaceOffset>=0) {
 				replaceWith = replaceWith.substring(0, cursorReplaceOffset) + replaceWith.substring(cursorReplaceOffset+VS_CODE_CURSOR_MARKER.length());
 			} else {
 				cursorReplaceOffset = replaceWith.length();
 			}
+			
 			Range rng = edit.getRange();
 			int start = document.toOffset(rng.getStart());
 			int end = document.toOffset(rng.getEnd());
