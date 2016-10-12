@@ -11,6 +11,14 @@
 	<description>Builds metadata for boot application properties based on project's classpath contents</description>
 
 	<dependencies>
+		<!-- Local modified JSON lib packaged to support order in maps -->
+		<dependency>
+			<groupId>libs</groupId>
+			<artifactId>json</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/org.springframework.ide.eclipse.org.json-20140107-repackaged.jar</systemPath>
+		</dependency>
 		<!-- Guava collections -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -38,14 +46,34 @@
 			<artifactId>util-commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-		<!-- Eclipse JDT -->
-		<dependency>
-		    <groupId>org.eclipse.jdt</groupId>
-		    <artifactId>core</artifactId>
-		    <version>3.3.0-v_771</version>
-		</dependency>
-		
+				
 	</dependencies>
 
+<!--
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-invoker-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<setupIncludes>
+						<setupInclude>src/test/resources/demo-1/pom.xml</setupInclude>
+					</setupIncludes>
+					<pomIncludes>
+						<pomInclude>*/pom.xml</pomInclude>
+					</pomIncludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+ -->
+ 
 </project>
