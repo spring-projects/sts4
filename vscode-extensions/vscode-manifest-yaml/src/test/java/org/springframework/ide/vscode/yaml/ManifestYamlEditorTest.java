@@ -20,14 +20,14 @@ import org.springframework.ide.vscode.testharness.LanguageServerHarness;
 public class ManifestYamlEditorTest {
 
 	LanguageServerHarness harness;
-	
+
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
 		harness.intialize(null);
 	}
 
 	@Test public void testReconcileCatchesParseError() throws Exception {
-		
+
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
 				"- sequence"
@@ -36,7 +36,7 @@ public class ManifestYamlEditorTest {
 				"-|expected <block end>"
 		);
 	}
-	
+
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
 		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
 		harness.intialize(null);
@@ -49,7 +49,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems(
 				"-|expected <block end>"
 		);
-		
+
 		editor.setText(
 				"- sequence\n" +
 				"zomemap: val"
@@ -203,12 +203,22 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
+	public void noListIndent() throws Exception {
+		Editor editor;
+		editor = harness.newEditor("appl<*>");
+		editor.assertCompletions(
+				"applications:\n"+
+				"- <*>"
+		);
+	}
+
+	@Test
 	public void toplevelCompletions() throws Exception {
 		Editor editor;
 		editor = harness.newEditor("<*>");
 		editor.assertCompletions(
 				"applications:\n"+
-				"  - <*>",
+				"- <*>",
 				// ---------------
 				"buildpack: <*>",
 				// ---------------
@@ -219,7 +229,7 @@ public class ManifestYamlEditorTest {
 				"domain: <*>",
 				// ---------------
 				"domains:\n"+
-				"  - <*>",
+				"- <*>",
 				// ---------------
 				"env:\n"+
 				"  <*>",
@@ -246,7 +256,7 @@ public class ManifestYamlEditorTest {
 				"random-route: <*>",
 				// ---------------
 				"services:\n"+
-				"  - <*>",
+				"- <*>",
 				// ---------------
 				"stack: <*>",
 				// ---------------
@@ -264,67 +274,67 @@ public class ManifestYamlEditorTest {
 		Editor editor;
 		editor = harness.newEditor(
 				"applications:\n" +
-				"  - <*>"
+				"- <*>"
 		);
 		editor.assertCompletions(
 				// ---------------
 				"applications:\n" +
-				"  - buildpack: <*>",
+				"- buildpack: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - command: <*>",
+				"- command: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - disk_quota: <*>",
+				"- disk_quota: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - domain: <*>",
+				"- domain: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - domains:\n"+
-				"      - <*>",
+				"- domains:\n"+
+				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"  - env:\n"+
-				"      <*>",
+				"- env:\n"+
+				"    <*>",
 				// ---------------
 				"applications:\n" +
-				"  - host: <*>",
+				"- host: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - hosts:\n"+
-				"      - <*>",
+				"- hosts:\n"+
+				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"  - instances: <*>",
+				"- instances: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - memory: <*>",
+				"- memory: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - name: <*>",
+				"- name: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - no-hostname: <*>",
+				"- no-hostname: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - no-route: <*>",
+				"- no-route: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - path: <*>",
+				"- path: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - random-route: <*>",
+				"- random-route: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - services:\n"+
-				"      - <*>",
+				"- services:\n"+
+				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"  - stack: <*>",
+				"- stack: <*>",
 				// ---------------
 				"applications:\n" +
-				"  - timeout: <*>"
+				"- timeout: <*>"
 		);
 	}
 
@@ -359,9 +369,9 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"memory: 1G\n" +
 				"applications:\n" +
-				"  - buildpack: zbuildpack\n" +
-				"    domain: zdomain\n" +
-				"    name: foo"
+				"- buildpack: zbuildpack\n" +
+				"  domain: zdomain\n" +
+				"  name: foo"
 		);
 		editor.assertIsHoverRegion("memory");
 		editor.assertIsHoverRegion("applications");
