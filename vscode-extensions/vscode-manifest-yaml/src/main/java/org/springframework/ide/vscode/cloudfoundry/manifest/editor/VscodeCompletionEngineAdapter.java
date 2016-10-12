@@ -16,23 +16,25 @@ import org.springframework.ide.vscode.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
 import org.springframework.ide.vscode.yaml.completion.DefaultCompletionFactory;
+import org.springframework.ide.vscode.yaml.structure.YamlStructureParser;
 
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.TextDocumentPositionParams;
 import io.typefox.lsapi.impl.CompletionItemImpl;
 import io.typefox.lsapi.impl.CompletionListImpl;
+import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.TextEditImpl;
 
 /**
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
-	
+
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
-	
+
 	public static final String VS_CODE_CURSOR_MARKER = "{{}}";
-	
+
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
 
@@ -72,7 +74,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 		return SimpleTextDocumentService.NO_COMPLETIONS;
 	}
-	
+
 	private CompletionItemImpl adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
 		CompletionItemImpl item = new CompletionItemImpl();
 		item.setLabel(completion.getLabel());
@@ -93,10 +95,17 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			edits.apply(newDoc);
 			TextEditImpl vscodeEdit = new TextEditImpl();
 			vscodeEdit.setRange(newDoc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-			vscodeEdit.setNewText(replaceEdit.newText);
+			vscodeEdit.setNewText(vscodeIndentFix(vscodeEdit.getRange().getStart(), replaceEdit.newText));
 			//TODO: cursor offset within newText? for now we assume its always at the end.
 			item.setTextEdit(vscodeEdit);
 		}
+	}
+
+	private String vscodeIndentFix(PositionImpl start, String newText) {
+		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
+		// and do some kind of 'inverse magic' here.
+		int vscodeMagicIndent = start.getCharacter();
+		return YamlStructureParser.stripIndentation(vscodeMagicIndent, newText);
 	}
 
 	@Override

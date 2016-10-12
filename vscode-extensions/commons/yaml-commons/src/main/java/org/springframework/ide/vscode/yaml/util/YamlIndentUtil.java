@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.yaml.util;
 import org.springframework.ide.vscode.util.Assert;
 import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 
+import com.google.common.base.Strings;
+
 /**
  * Helper methods to manipulate indentation levels in yaml content.
  *
@@ -25,6 +27,8 @@ public class YamlIndentUtil {
 	 * TODO: replace this constant by (existing!) yedit preference value
 	 */
 	public static final int INDENT_BY = 2;
+
+	public static final String INDENT_STR = Strings.repeat(" ", INDENT_BY);
 
 	/**
 	 * Some functions introduce line separators and this may depend on the context (i.e. default line separator

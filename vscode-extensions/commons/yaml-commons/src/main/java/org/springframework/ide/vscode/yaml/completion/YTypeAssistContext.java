@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.yaml.util.YamlIndentUtil;
 
 public class YTypeAssistContext extends AbstractYamlAssistContext {
 
@@ -116,13 +117,14 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	 */
 	protected String appendTextFor(YType type) {
 		//Note that proper indentation after each \n" is added automatically
-		//so the strings created here do not need to contain indentation spaces.
+		//to align with the parent. The strings created here only need to contain
+		//indentation spaces to indent *more* than the parent node.
 		if (type==null) {
 			//Assume its some kind of pojo bean
-			return "\n";
+			return "\n"+YamlIndentUtil.INDENT_STR;
 		} else if (typeUtil.isMap(type)) {
 			//ready to enter nested map key on next line
-			return "\n";
+			return "\n"+YamlIndentUtil.INDENT_STR;
 		} if (typeUtil.isSequencable(type)) {
 			//ready to enter sequence element on next line
 			return "\n- ";
@@ -131,7 +133,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			return " ";
 		} else {
 			//Assume its some kind of pojo bean
-			return "\n";
+			return "\n"+YamlIndentUtil.INDENT_STR;
 		}
 	}
 
