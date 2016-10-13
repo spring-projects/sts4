@@ -44,7 +44,7 @@ public class LanguageServerHarness {
 	private LanguageServer server;
 
 	private InitializeResult initResult;
-	
+
 	private Map<String,TextDocumentInfo> documents = new HashMap<>();
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 
@@ -71,7 +71,7 @@ public class LanguageServerHarness {
 		document.setLanguageId(getLanguageId());
 		return new TextDocumentInfo(document);
 	}
-	
+
 	private synchronized TextDocumentItemImpl setDocumentContent(String uri, String newContent) {
 		TextDocumentInfo o = documents.get(uri);
 		TextDocumentItemImpl n = new TextDocumentItemImpl();
@@ -90,11 +90,11 @@ public class LanguageServerHarness {
 	protected String getLanguageId() {
 		return "plaintext";
 	}
-	
+
 	protected String getFileExtension() {
 		return ".txt";
 	}
-	
+
 	private synchronized void receiveDiagnostics(PublishDiagnosticsParams diags) {
 		this.diagnostics.put(diags.getUri(), diags);
 	}
@@ -108,7 +108,7 @@ public class LanguageServerHarness {
 		ClientCapabilitiesImpl clientCap = new ClientCapabilitiesImpl();
 		initParams.setCapabilities(clientCap);
 		initResult = server.initialize(initParams).get();
-		
+
 		server.getTextDocumentService().onPublishDiagnostics(this::receiveDiagnostics);
 		return initResult;
 	}
@@ -118,10 +118,12 @@ public class LanguageServerHarness {
 		didOpen.setTextDocument(documentInfo.getDocument());
 		didOpen.setText(documentInfo.getText());
 		didOpen.setUri(documentInfo.getUri());
-		server.getTextDocumentService().didOpen(didOpen);
+		if (server!=null) {
+			server.getTextDocumentService().didOpen(didOpen);
+		}
 		return documentInfo;
 	}
-	
+
 	public TextDocumentInfo openDocument(File file) throws Exception {
 		return openDocument(getOrReadFile(file));
 	}
@@ -146,31 +148,38 @@ public class LanguageServerHarness {
 		default:
 			throw new IllegalStateException("Unkown SYNC mode: "+getDocumentSyncMode());
 		}
-		server.getTextDocumentService().didChange(didChange);
+		if (server!=null) {
+			server.getTextDocumentService().didChange(didChange);
+		}
 		return documents.get(uri);
 	}
 
 	private TextDocumentSyncKind getDocumentSyncMode() {
-		TextDocumentSyncKind mode = initResult.getCapabilities().getTextDocumentSync();
-		return mode==null ? TextDocumentSyncKind.None : mode;
+		if (initResult!=null) {
+			TextDocumentSyncKind mode = initResult.getCapabilities().getTextDocumentSync();
+			if (mode!=null) {
+				return mode;
+			}
+		}
+		return TextDocumentSyncKind.None;
 	}
 
 	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) {
 		return diagnostics.get(doc.getUri());
 	}
-	
+
 	public static Condition<Diagnostic> isDiagnosticWithSeverity(DiagnosticSeverity severity) {
 		return new Condition<>(
 				(d) -> d.getSeverity()==severity,
 				"Diagnostic with severity '"+severity+"'"
-		); 
+		);
 	}
 
 	public static Condition<Diagnostic> isDiagnosticCovering(TextDocumentInfo doc, String string) {
 		return new Condition<>(
 				(d) -> isDiagnosticCovering(d, doc, string),
 				"Diagnostic covering '"+string+"'"
-		); 
+		);
 	}
 
 	public static final Condition<Diagnostic> isWarning = isDiagnosticWithSeverity(DiagnosticSeverity.Warning);
@@ -185,7 +194,7 @@ public class LanguageServerHarness {
 		return new Condition<>(
 				(d) -> d.getRange().getStart().getLine()==line,
 				"Diagnostic on line "+line
-		); 
+		);
 	}
 
 	public CompletionList getCompletions(TextDocumentInfo doc, Position cursor) throws Exception {
@@ -213,7 +222,7 @@ public class LanguageServerHarness {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public List<CompletionItem> resolveCompletions(CompletionList completions) {
 		return completions.getItems().stream()
 		.map(this::resolveCompletionItem)

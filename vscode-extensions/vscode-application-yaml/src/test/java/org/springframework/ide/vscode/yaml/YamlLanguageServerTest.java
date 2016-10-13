@@ -16,6 +16,7 @@ import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.ServerCapabilities;
+import io.typefox.lsapi.TextDocumentSyncKind;
 
 public class YamlLanguageServerTest {
 
@@ -68,7 +69,7 @@ public class YamlLanguageServerTest {
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(ServerCapabilities.SYNC_FULL);
+		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Full);
 	}
 
 }

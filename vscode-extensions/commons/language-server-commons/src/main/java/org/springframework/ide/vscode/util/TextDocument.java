@@ -12,22 +12,22 @@ import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.RangeImpl;
 
 public class TextDocument implements IDocument {
-	
+
 	//TODO: This representiation of 'document content' is simplistic and inefficient
-	// for large documents. 
+	// for large documents.
 	// Making any change, such as inserting a character a user typed, works by copying the String that represents the
 	// contents. This could really become problematic for largish-documents when there are frequent changes.
-	
+
 	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
 	private int[] _lineStarts;
-	
+
 	private final String uri;
 	private String text = "";
-	
+
 	public TextDocument(String uri) {
 		this.uri = uri;
 	}
-	
+
 	private TextDocument(TextDocument other) {
 		this.uri = other.uri;
 		this.text = other.text;
@@ -37,15 +37,16 @@ public class TextDocument implements IDocument {
 	public String getUri() {
 		return uri;
 	}
-	
+
+	@Override
 	public String get() {
 		return getText();
 	}
-	
+
 	public synchronized String getText() {
 		return text;
 	}
-	
+
 	public synchronized void setText(String text) {
 		this.text = text;
 		this._lineStarts = null;
@@ -62,7 +63,7 @@ public class TextDocument implements IDocument {
 	}
 
 	/**
-	 * Convert a simple offset+length pair into a vscode range. This is a method on 
+	 * Convert a simple offset+length pair into a vscode range. This is a method on
 	 * TextDocument because it requires splitting document into lines to determine
 	 * line numbers from offsets.
 	 */
@@ -73,7 +74,7 @@ public class TextDocument implements IDocument {
 		range.setEnd(toPosition(end));
 		return range;
 	}
-	
+
 	/**
 	 * Determine the line-number a given offset (i.e. what line is the offset inside of?)
 	 */
@@ -200,7 +201,7 @@ public class TextDocument implements IDocument {
 					}
 				}
 			}
-			
+
 			int len = end - start;
 			if (len<0) {
 				len = 0;
@@ -222,7 +223,7 @@ public class TextDocument implements IDocument {
 	public int getLineOffset(int line) {
 		return lineStarts()[line];
 	}
-	
+
 	public int toOffset(Position position) {
 		int line = position.getLine();
 		int lineStart = lineStarts()[line];
@@ -241,6 +242,11 @@ public class TextDocument implements IDocument {
 	@Override
 	public String textBetween(int start, int end) throws BadLocationException {
 		return get(start, end-start);
+	}
+
+	@Override
+	public String toString() {
+		return "TextDocument(uri="+uri+",\n"+this.text+"\n)";
 	}
 
 }

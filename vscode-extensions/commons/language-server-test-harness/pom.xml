@@ -13,10 +13,21 @@
 	</parent>
 	
 	<dependencies>
+		<!-- Java implementation of VS Code language server protocol -->
 		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>language-server-commons</artifactId>
-			<version>${project.version}</version>
+			<groupId>io.typefox.lsapi</groupId>
+			<artifactId>io.typefox.lsapi</artifactId>
+			<version>${lsapi-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.typefox.lsapi</groupId>
+			<artifactId>io.typefox.lsapi.services</artifactId>
+			<version>${lsapi-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.typefox.lsapi</groupId>
+			<artifactId>io.typefox.lsapi.annotations</artifactId>
+			<version>${lsapi-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
