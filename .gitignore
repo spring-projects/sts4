@@ -7,9 +7,15 @@
 *.jar
 *.war
 *.ear
+# Exceptions
+!**/.mvn/wrapper/maven-wrapper.jar
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
 target/
 *.log
+
+# Mac OSX aux files
+.DS_Store
+**/.DS_Store

@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
 import org.springframework.ide.vscode.boot.properties.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.util.FuzzyMatcher;
 
-public class FuzzyMapTests {
+public class FuzzyMapTest {
 
 	@Test
 	public void testMatches() {

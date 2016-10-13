@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.properties.util.StringUtil;
 /**
  * @author Kris De Volder
  */
-public class StringUtilTests {
+public class StringUtilTest {
 
 	@Test
 	public void testUpperCaseToHyphens() throws Exception {
