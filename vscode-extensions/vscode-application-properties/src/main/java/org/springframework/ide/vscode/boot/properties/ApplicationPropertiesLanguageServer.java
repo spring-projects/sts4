@@ -20,9 +20,11 @@ import org.springframework.ide.vscode.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.util.TextDocument;
 
 import io.typefox.lsapi.Diagnostic;
-import io.typefox.lsapi.DiagnosticImpl;
+import io.typefox.lsapi.DiagnosticSeverity;
 import io.typefox.lsapi.ServerCapabilities;
-import io.typefox.lsapi.ServerCapabilitiesImpl;
+import io.typefox.lsapi.TextDocumentSyncKind;
+import io.typefox.lsapi.impl.DiagnosticImpl;
+import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
 /**
  * Language Server for Spring Boot Application Properties files
@@ -57,7 +59,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 			DiagnosticImpl diagnostic = new DiagnosticImpl();
 			diagnostic.setMessage(createSyntaxErrorMessage(problem.getMessage()));
 			diagnostic.setCode(problem.getCode());
-			diagnostic.setSeverity(Diagnostic.SEVERITY_ERROR);
+			diagnostic.setSeverity(DiagnosticSeverity.Error);
 			diagnostic.setSource("java-properties");
 			diagnostic.setRange(doc.toRange(problem.getOffset(), problem.getLength()));
 			return diagnostic;
@@ -78,7 +80,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	protected ServerCapabilitiesImpl getServerCapabilities() {
 		ServerCapabilitiesImpl c = new ServerCapabilitiesImpl();
 		
-		c.setTextDocumentSync(ServerCapabilities.SYNC_FULL);
+		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		
 		return c;
 	}
