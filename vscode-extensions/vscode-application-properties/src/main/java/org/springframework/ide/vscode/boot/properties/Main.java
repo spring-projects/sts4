@@ -135,11 +135,6 @@ public class Main {
 
             server.onError(message, err);
         });
-        
-        try {
-            jsonServer.join();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        jsonServer.join();
     }
 }

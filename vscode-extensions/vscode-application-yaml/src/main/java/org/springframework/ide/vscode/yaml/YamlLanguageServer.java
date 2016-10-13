@@ -18,16 +18,19 @@ import org.yaml.snakeyaml.nodes.Node;
 import com.google.common.collect.ImmutableList;
 
 import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionItemImpl;
+import io.typefox.lsapi.CompletionItemKind;
 import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.CompletionListImpl;
-import io.typefox.lsapi.CompletionOptionsImpl;
 import io.typefox.lsapi.Diagnostic;
-import io.typefox.lsapi.DiagnosticImpl;
-import io.typefox.lsapi.PositionImpl;
-import io.typefox.lsapi.RangeImpl;
+import io.typefox.lsapi.DiagnosticSeverity;
 import io.typefox.lsapi.ServerCapabilities;
-import io.typefox.lsapi.ServerCapabilitiesImpl;
+import io.typefox.lsapi.TextDocumentSyncKind;
+import io.typefox.lsapi.impl.CompletionItemImpl;
+import io.typefox.lsapi.impl.CompletionListImpl;
+import io.typefox.lsapi.impl.CompletionOptionsImpl;
+import io.typefox.lsapi.impl.DiagnosticImpl;
+import io.typefox.lsapi.impl.PositionImpl;
+import io.typefox.lsapi.impl.RangeImpl;
+import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
 public class YamlLanguageServer extends SimpleLanguageServer {
 
@@ -66,7 +69,7 @@ public class YamlLanguageServer extends SimpleLanguageServer {
 //		        },
 				CompletionItemImpl item = new CompletionItemImpl();
 				item.setLabel("TypeScript");
-				item.setKind(CompletionItem.KIND_TEXT);
+				item.setKind(CompletionItemKind.Text);
 				item.setData(1);
 				items.add(item);
 			}
@@ -79,7 +82,7 @@ public class YamlLanguageServer extends SimpleLanguageServer {
 //		        }				
 				CompletionItemImpl item = new CompletionItemImpl();
 				item.setLabel("JavaScript");
-				item.setKind(CompletionItem.KIND_TEXT);
+				item.setKind(CompletionItemKind.Text);
 				item.setData(2);
 				items.add(item);
 			}
@@ -124,7 +127,7 @@ public class YamlLanguageServer extends SimpleLanguageServer {
 		DiagnosticImpl d = new DiagnosticImpl();
 		d.setMessage(getMessage(e));
 		d.setRange(getRange(e));
-		d.setSeverity(Diagnostic.SEVERITY_ERROR);
+		d.setSeverity(DiagnosticSeverity.Error);
 		d.setCode(ErrorCodes.YAML_SYNTAX_ERROR);
 		d.setSource("yaml");
 		return d;
@@ -157,7 +160,7 @@ public class YamlLanguageServer extends SimpleLanguageServer {
 	protected ServerCapabilitiesImpl getServerCapabilities() {
 		ServerCapabilitiesImpl c = new ServerCapabilitiesImpl();
 		
-		c.setTextDocumentSync(ServerCapabilities.SYNC_FULL);
+		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		
 		CompletionOptionsImpl completionProvider = new CompletionOptionsImpl();
 		completionProvider.setResolveProvider(true);

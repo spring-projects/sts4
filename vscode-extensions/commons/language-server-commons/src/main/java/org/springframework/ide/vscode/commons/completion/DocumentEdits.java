@@ -95,7 +95,7 @@ public class DocumentEdits implements ProposalApplier {
 		public final int start;
 		public final int end;
 		public final String newText;
-		
+
 		public TextReplace(int start, int end, String newText) {
 			super();
 			this.start = start;
@@ -119,7 +119,7 @@ public class DocumentEdits implements ProposalApplier {
 		 */
 		BEFORE,
 		/**
-		 * 
+		 *
 		 * Transform positions around inserts to stick to the end of the inserted block.
 		 */
 		AFTER
@@ -159,6 +159,7 @@ public class DocumentEdits implements ProposalApplier {
 		public abstract int getStart();
 		public abstract int getEnd();
 		abstract void apply(DocumentState doc) throws BadLocationException;
+		@Override
 		public abstract String toString();
 	}
 
@@ -228,13 +229,14 @@ public class DocumentEdits implements ProposalApplier {
 				}
 				final OffsetTransformer parent = org2new;
 				org2new = new OffsetTransformer() {
+					@Override
 					public int transform(int org, Direction dir) {
 						int tOffset = parent.transform(org, dir);
 						if (tOffset<tStart) {
 							return tOffset;
 						} else if (tOffset>tStart) {
 							return tOffset + text.length();
-						} else /* tOffset==tStart*/ { 
+						} else /* tOffset==tStart*/ {
 							if (dir==Direction.BEFORE) {
 								return tOffset;
 							} else {
@@ -258,6 +260,7 @@ public class DocumentEdits implements ProposalApplier {
 
 					final OffsetTransformer parent = org2new;
 					org2new = new OffsetTransformer() {
+						@Override
 						public int transform(int org, Direction dir) {
 							int tOffset = parent.transform(org, dir);
 							if (tOffset<=tStart) {
@@ -308,7 +311,7 @@ public class DocumentEdits implements ProposalApplier {
 	}
 
 	@Override
-	public IRegion getSelection(IDocument doc) throws Exception {
+	public IRegion getSelection() throws Exception {
 		DocumentState selectionState = new DocumentState(null);
 		for (Edit edit : edits) {
 			edit.apply(selectionState);
@@ -318,12 +321,12 @@ public class DocumentEdits implements ProposalApplier {
 		}
 		return null;
 	}
-	
+
 	public TextReplace asReplacement(IDocument doc) throws BadLocationException {
 		if (!edits.isEmpty()) {
 			int start = edits.stream().mapToInt(Edit::getStart).min().getAsInt();
 			int end = edits.stream().mapToInt(Edit::getEnd).max().getAsInt();
-			
+
 			DocumentState state = new DocumentState(doc);
 			for (Edit edit : edits) {
 				edit.apply(state);

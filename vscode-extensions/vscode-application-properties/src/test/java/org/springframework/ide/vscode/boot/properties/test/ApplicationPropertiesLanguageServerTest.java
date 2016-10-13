@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.testharness.LanguageServerHarness;
 
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.ServerCapabilities;
+import io.typefox.lsapi.TextDocumentSyncKind;
 
 /**
  * Boot app properties file language server tests
@@ -50,7 +51,7 @@ public class ApplicationPropertiesLanguageServerTest {
 	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(ServerCapabilities.SYNC_FULL);
+		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Full);
 	}
 
 }

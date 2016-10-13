@@ -25,12 +25,12 @@ public interface ProposalApplier {
 	 * {@link ProposalApplier} that does nothing whatsoever.
 	 */
 	static ProposalApplier NULL = new ProposalApplier() {
-		@Override public IRegion getSelection(IDocument document) { return null; }
+		@Override public IRegion getSelection() { return null; }
 		@Override public void apply(IDocument doc) {}
 		@Override public String toString() { return "NULL";};
 	};
 
-	IRegion getSelection(IDocument document) throws Exception;
+	IRegion getSelection() throws Exception;
 	void apply(IDocument doc) throws Exception;
 
 }

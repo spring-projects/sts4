@@ -11,12 +11,16 @@ import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.TextDocumentIdentifierImpl;
 import io.typefox.lsapi.impl.TextDocumentItemImpl;
 
+/**
+ * Deprecated, we should get rid of this class and use {@link TextDocument}.
+ */
+@Deprecated
 public class TextDocumentInfo {
 
 	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
-	
+
 	private final TextDocumentItemImpl document;
-	
+
 	private int[] _lineStarts;
 
 	public TextDocumentInfo(TextDocumentItemImpl document) {
@@ -83,7 +87,7 @@ public class TextDocumentInfo {
 	/**
 	 * Find and return the (first) position of a given text snippet in the
 	 * document.
-	 * 
+	 *
 	 * @return The position, or null if the snippet can't be found.
 	 */
 	public Position positionOf(String snippet) {
@@ -126,5 +130,5 @@ public class TextDocumentInfo {
 		id.setUri(getUri());
 		return id;
 	}
-	
+
 }

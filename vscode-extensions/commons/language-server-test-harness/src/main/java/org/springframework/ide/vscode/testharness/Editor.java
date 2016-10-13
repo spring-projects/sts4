@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.swing.text.BadLocationException;
 
+import org.junit.Assert;
+
 import com.google.common.base.Strings;
 
 import io.typefox.lsapi.CompletionItem;
@@ -21,12 +23,12 @@ import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextEdit;
 
 public class Editor {
-	
+
 	static class EditorState {
 		String documentContents;
 		int selectionStart;
 		int selectionEnd;
-		
+
 		public EditorState(String text) {
 			selectionStart = text.indexOf(CURSOR);
 			if (selectionStart>=0) {
@@ -45,10 +47,10 @@ public class Editor {
 			this.documentContents = text;
 		}
 	}
-	
+
 	private static final String CURSOR = "<*>"; // used by our test harness
 	private static final String VS_CODE_CURSOR_MARKER = "{{}}"; //vscode uses this in edits to mark cursor position
-	
+
 	private static final Comparator<Diagnostic> PROBLEM_COMPARATOR = new Comparator<Diagnostic>() {
 		@Override
 		public int compare(Diagnostic o1, Diagnostic o2) {
@@ -123,7 +125,7 @@ public class Editor {
 		}
 		return buf.toString();
 	}
-	
+
 	/**
 	 * Get the editor text, with cursor markers inserted (for easy textual comparison
 	 * after applying a proposal)
@@ -136,12 +138,19 @@ public class Editor {
 		}
 		return deWindowsify(text);
 	}
-	
+
 	public void setText(String content) throws Exception {
 		EditorState state = new EditorState(content);
 		document = harness.changeDocument(document.getUri(), state.documentContents);
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
+	}
+
+	/**
+	 * @return The 'raw' text in the editor, i.e. without the cursor markers.
+	 */
+	public String getRawText() throws Exception {
+		return document.getText();
 	}
 
 	public void setRawText(String newContent) throws Exception {
@@ -164,7 +173,7 @@ public class Editor {
 		String messageSnippet = parts[1];
 		boolean spaceSensitive = badSnippet.trim().length()<badSnippet.length();
 		boolean emptyRange = problem.getRange().getStart().equals(problem.getRange().getEnd());
-		String actualBadSnippet = emptyRange 
+		String actualBadSnippet = emptyRange
 				? editor.getCharAt(problem.getRange().getStart())
 				: editor.getText(problem.getRange());
 		if (!spaceSensitive) {
@@ -214,7 +223,7 @@ public class Editor {
 		String docText = document.getText();
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
-			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to 
+			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
 			// mimick that behavior. I'm not sure this fix is really emulating it faithfully as its undocumented :-(
 			int indentFix = edit.getRange().getStart().getCharacter();
 			replaceWith = replaceWith.replaceAll("\\n", "\n"+Strings.repeat(" ", indentFix));
@@ -225,7 +234,7 @@ public class Editor {
 			} else {
 				cursorReplaceOffset = replaceWith.length();
 			}
-			
+
 			Range rng = edit.getRange();
 			int start = document.toOffset(rng.getStart());
 			int end = document.toOffset(rng.getEnd());
@@ -235,7 +244,7 @@ public class Editor {
 		} else {
 			String insertText = getInsertText(completion);
 			String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
-			
+
 			selectionStart+= insertText.length();
 			selectionEnd += insertText.length();
 			setRawText(newText);
@@ -251,6 +260,7 @@ public class Editor {
 		return s;
 	}
 
+	@Override
 	public Editor clone() {
 		try {
 			return new Editor(harness, getText());
@@ -290,6 +300,19 @@ public class Editor {
 
 	public void assertHoverContains(String string, String string2) {
 		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
+	public void setSelection(int start, int end) {
+		Assert.assertTrue(start>=0);
+		Assert.assertTrue(end>=start);
+		Assert.assertTrue(end<=document.getText().length());
+		this.selectionStart = start;
+		this.selectionEnd = end;
+	}
+
+	@Override
+	public String toString() {
+		return "Editor(\n"+getText()+"\n)";
 	}
 
 }

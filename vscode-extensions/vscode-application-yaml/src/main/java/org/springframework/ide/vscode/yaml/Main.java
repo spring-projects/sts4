@@ -92,7 +92,7 @@ public class Main {
         
         try {
             jsonServer.join();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
