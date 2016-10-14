@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>util-commons</artifactId>
+			<artifactId>commons-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
