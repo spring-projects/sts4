@@ -21,6 +21,8 @@ import java.nio.file.Paths;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
+import org.springframework.ide.vscode.util.ExternalCommand;
+import org.springframework.ide.vscode.util.ExternalProcess;
 
 /**
  * Sanity test the boot properties index 
@@ -39,8 +41,8 @@ public class PropertiesIndexTest {
 		Path testProjectPath = Paths.get(PropertiesIndexTest.class.getResource("/demo-1").toURI());
 		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
 			testProjectPath.resolve("mvnw").toFile().setExecutable(true);
-			int result = Runtime.getRuntime().exec("./mvnw clean package", null, testProjectPath.toFile()).waitFor();
-			if (result != 0) {
+			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(), new ExternalCommand("./mvnw", "clean", "package"), true);
+			if (process.getExitValue() != 0) {
 				throw new RuntimeException("Failed to build test project");
 			}
 		}
