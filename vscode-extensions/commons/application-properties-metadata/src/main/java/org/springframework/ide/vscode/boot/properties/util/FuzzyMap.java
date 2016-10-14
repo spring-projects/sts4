@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.springframework.ide.vscode.util.FuzzyMatcher;
+import org.springframework.ide.vscode.util.StringUtil;
 
 /**
  * A collection of data that can be searched with a simple 'fuzzy' string

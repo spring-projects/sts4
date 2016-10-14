@@ -8,12 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.properties.util.StringUtil;
+import org.springframework.ide.vscode.util.StringUtil;
 
 /**
  * @author Kris De Volder
