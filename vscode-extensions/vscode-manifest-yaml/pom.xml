@@ -39,7 +39,7 @@
 		<!-- Yaml -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>yaml-commons</artifactId>
+			<artifactId>commons-yaml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<!-- Test harness -->

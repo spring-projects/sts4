@@ -12,7 +12,7 @@
 	<modules>
 		<module>language-server-commons</module>
 		<module>language-server-test-harness</module>
-		<module>yaml-commons</module>
+		<module>commons-yaml</module>
 		<module>commons-util</module>
 		<module>java-properties</module>
 		<module>application-properties-metadata</module>
