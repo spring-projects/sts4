@@ -43,7 +43,7 @@
 		<!-- Language Servers -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>language-server-commons</artifactId>
+			<artifactId>commons-language-server</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<!-- Yaml -->

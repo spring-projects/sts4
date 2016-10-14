@@ -10,7 +10,7 @@
 	<name>commons-parent</name>
 
 	<modules>
-		<module>language-server-commons</module>
+		<module>commons-language-server</module>
 		<module>language-server-test-harness</module>
 		<module>commons-yaml</module>
 		<module>commons-util</module>
