@@ -48,9 +48,10 @@ public class TextDocumentInfo {
 	}
 
 	public String getText(Range rng) {
-		int start = toOffset(rng.getStart());
-		int end = toOffset(rng.getEnd());
-		return getText().substring(start, end);
+		String txt = getText();
+		int start = Math.max(0, toOffset(rng.getStart()));
+		int end = Math.min(txt.length(), toOffset(rng.getEnd()));
+		return txt.substring(start, end);
 	}
 
 	public int toOffset(Position p) {

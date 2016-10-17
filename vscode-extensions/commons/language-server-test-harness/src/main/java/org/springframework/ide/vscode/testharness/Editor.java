@@ -103,7 +103,7 @@ public class Editor {
 			bad = "Wrong number of problems (expecting "+expectedProblems.length+" but found "+actualProblems.size()+")";
 		} else {
 			for (int i = 0; i < expectedProblems.length; i++) {
-				if (!matchProblem(editor, actualProblems.get(i), expectedProblems[i])) {
+				if (!matchProblem(actualProblems.get(i), expectedProblems[i])) {
 					bad = "First mismatch at index "+i+": "+expectedProblems[i]+"\n";
 					break;
 				}
@@ -166,7 +166,7 @@ public class Editor {
 	}
 
 
-	private boolean matchProblem(Editor editor, Diagnostic problem, String expect) {
+	private boolean matchProblem(Diagnostic problem, String expect) {
 		String[] parts = expect.split("\\|");
 		assertEquals(2, parts.length);
 		String badSnippet = parts[0];
@@ -174,8 +174,8 @@ public class Editor {
 		boolean spaceSensitive = badSnippet.trim().length()<badSnippet.length();
 		boolean emptyRange = problem.getRange().getStart().equals(problem.getRange().getEnd());
 		String actualBadSnippet = emptyRange
-				? editor.getCharAt(problem.getRange().getStart())
-				: editor.getText(problem.getRange());
+				? getCharAt(problem.getRange().getStart())
+				: getText(problem.getRange());
 		if (!spaceSensitive) {
 			actualBadSnippet = actualBadSnippet.trim();
 		}
@@ -184,8 +184,11 @@ public class Editor {
 	}
 
 	private String getCharAt(Position start) {
+		String text = document.getText();
 		int offset = document.toOffset(start);
-		return document.getText().substring(offset, offset+1);
+		return offset<text.length()
+			? text.substring(offset, offset+1)
+			: "";
 	}
 
 	@SuppressWarnings("unchecked")
