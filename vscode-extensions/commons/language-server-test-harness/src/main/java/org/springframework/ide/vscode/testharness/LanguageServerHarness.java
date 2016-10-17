@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.testharness;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -250,6 +252,32 @@ public class LanguageServerHarness {
 
 	protected String createTempUri() throws Exception {
 		return File.createTempFile("workingcopy", getFileExtension()).toURI().toString();
+	}
+
+	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {
+		Editor editor = newEditor(textBefore);
+		CompletionItem completion = editor.getFirstCompletion();
+		editor.apply(completion);
+		assertEquals(expectTextAfter, editor.getText());
+	}
+
+	public void assertCompletions(String textBefore, String... expectTextAfter) throws Exception {
+		Editor editor = newEditor(textBefore);
+		StringBuilder expect = new StringBuilder();
+		StringBuilder actual = new StringBuilder();
+		for (String after : expectTextAfter) {
+			expect.append(after);
+			expect.append("\n-------------------\n");
+		}
+
+		List<? extends CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem ci : completions) {
+			editor = newEditor(textBefore);
+			editor.apply(ci);
+			actual.append(editor.getText());
+			actual.append("\n-------------------\n");
+		}
+		assertEquals(expect.toString(), actual.toString());
 	}
 
 }

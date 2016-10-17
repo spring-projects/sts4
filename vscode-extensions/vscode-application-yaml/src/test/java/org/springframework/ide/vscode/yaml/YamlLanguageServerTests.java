@@ -18,10 +18,10 @@ import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.TextDocumentSyncKind;
 
-public class YamlLanguageServerTest {
+public class YamlLanguageServerTests {
 
 	public static File getTestResource(String name) throws URISyntaxException {
-		return Paths.get(YamlLanguageServerTest.class.getResource(name).toURI()).toFile();
+		return Paths.get(YamlLanguageServerTests.class.getResource(name).toURI()).toFile();
 	}
 
 	@Test
@@ -38,34 +38,6 @@ public class YamlLanguageServerTest {
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 	
-	
-	@Test public void completions() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(YamlLanguageServer::new);
-		
-		File workspaceRoot = getTestResource("/workspace/");
-		assertExpectedInitResult(harness.intialize(workspaceRoot));
-
-		TextDocumentInfo doc = harness.openDocument(getTestResource("/workspace/testfile.yml"));
-		
-		CompletionList completions = harness.getCompletions(doc, doc.positionOf("foo"));
-		assertThat(completions.isIncomplete()).isFalse();
-		assertThat(completions.getItems())
-			.extracting(CompletionItem::getLabel)
-			.containsExactly("TypeScript", "JavaScript");
-		
-		List<CompletionItem> resolved = harness.resolveCompletions(completions);
-		assertThat(resolved)
-			.extracting(CompletionItem::getLabel)
-			.containsExactly("TypeScript", "JavaScript");
-		
-		assertThat(resolved)
-			.extracting(CompletionItem::getDetail)
-			.containsExactly("TypeScript details", "JavaScript details");
-		
-		assertThat(resolved)
-			.extracting(CompletionItem::getDocumentation)
-			.containsExactly("TypeScript docs", "JavaScript docs");
-	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();

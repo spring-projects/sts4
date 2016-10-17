@@ -44,7 +44,13 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
+		</dependency>
+		<!-- properties metadata indexer -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>application-properties-metadata</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Yaml -->
 		<dependency>

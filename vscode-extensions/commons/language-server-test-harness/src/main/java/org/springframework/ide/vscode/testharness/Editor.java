@@ -218,7 +218,7 @@ public class Editor {
 		assertEquals(expect.toString(), actual.toString());
 	}
 
-	private void apply(CompletionItem completion) throws Exception {
+	public void apply(CompletionItem completion) throws Exception {
 		TextEdit edit = completion.getTextEdit();
 		String docText = document.getText();
 		if (edit!=null) {
@@ -269,7 +269,7 @@ public class Editor {
 		}
 	}
 
-	private List<? extends CompletionItem> getCompletions() throws Exception {
+	public List<CompletionItem> getCompletions() throws Exception {
 		CompletionList cl = harness.getCompletions(this.document, this.getCursor());
 		ArrayList<CompletionItem> items = new ArrayList<>(cl.getItems());
 		Collections.sort(items, new Comparator<CompletionItem>() {
@@ -290,6 +290,10 @@ public class Editor {
 		return items;
 	}
 
+	public CompletionItem getFirstCompletion() throws Exception {
+		return getCompletions().get(0);
+	}
+
 	private Position getCursor() {
 		return document.toPosition(selectionStart);
 	}
@@ -299,6 +303,10 @@ public class Editor {
 	}
 
 	public void assertHoverContains(String string, String string2) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
+	public void assertNoHover(String string) {
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 
@@ -313,6 +321,46 @@ public class Editor {
 	@Override
 	public String toString() {
 		return "Editor(\n"+getText()+"\n)";
+	}
+
+	public void assertLinkTargets(String hoverOver, String... expecteds) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+//		Editor editor = this;
+//		int pos = editor.middleOf(hoverOver);
+//		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
+//
+//		List<IJavaElement> targets = getLinkTargets(editor, pos);
+//		assertEquals(expecteds.length, targets.size());
+//		for (int i = 0; i < expecteds.length; i++) {
+//			assertEquals(expecteds[i], JavaElementLabels.getElementLabel(targets.get(i), JavaElementLabels.DEFAULT_QUALIFIED | JavaElementLabels.M_PARAMETER_TYPES));
+//		}
+	}
+
+	/**
+	 * Get a problem that covers the given text in the editor. Throws exception
+	 * if no matching problem is found.
+	 */
+	public Diagnostic assertProblem(String coveredText) throws Exception {
+		Editor editor = this;
+		List<Diagnostic> problems = editor.reconcile();
+		for (Diagnostic p : problems) {
+			String c = editor.getText(p.getRange());
+			if (c.equals(coveredText)) {
+				return p;
+			}
+		}
+		fail("No problem found covering the text '"+coveredText+"' in: \n"
+				+ problemSumary(editor, problems)
+		);
+		return null; //unreachable but compiler doesn't know
+	}
+
+	public CompletionItem assertFirstQuickfix(Diagnostic problem, String expectLabel) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
+	public void assertText(String expected) {
+		assertEquals(expected, getText());
 	}
 
 }

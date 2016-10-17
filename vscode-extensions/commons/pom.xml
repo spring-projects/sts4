@@ -26,6 +26,7 @@
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
 		<lsapi-version>0.3.0</lsapi-version>
+		<reactor-version>3.0.2.RELEASE</reactor-version>
 	</properties>
 
 	<build>
