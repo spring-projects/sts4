@@ -252,7 +252,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		System.out.println("<<< testHyperlinkTargets");
 	}
 
-	@Test public void testReconcile() throws Exception {
+	@Test @Ignore public void testReconcile() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
