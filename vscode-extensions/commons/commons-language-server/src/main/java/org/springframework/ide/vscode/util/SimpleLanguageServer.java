@@ -20,14 +20,14 @@ import io.typefox.lsapi.services.WindowService;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
- * the 'JavaLanguageServer' example which seem generally useful / reusable end up in 
- * here so we can try to keep the subclass itself more 'clutter free' and focus on 
+ * the 'JavaLanguageServer' example which seem generally useful / reusable end up in
+ * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
 public abstract class SimpleLanguageServer implements LanguageServer {
-	
+
     private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
-    
+
     private Consumer<MessageParams> showMessage = m -> {};
 
     private Path workspaceRoot;
@@ -35,16 +35,16 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 	private SimpleTextDocumentService tds;
 
 	private SimpleWorkspaceService workspace;
-	
+
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-    	LOG.info("Initializing");
+//    	LOG.info("Initializing");
     	String rootPath = params.getRootPath();
     	if (rootPath==null) {
-	        LOG.warning("workspaceRoot NOT SET");
+//	        LOG.warning("workspaceRoot NOT SET");
     	} else {
 	        this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
-	        LOG.info("workspaceRoot = "+workspaceRoot);
+//	        LOG.info("workspaceRoot = "+workspaceRoot);
     	}
 
         InitializeResultImpl result = new InitializeResultImpl();
@@ -74,13 +74,13 @@ public abstract class SimpleLanguageServer implements LanguageServer {
             }
         };
     }
-    
+
     public void onError(String message, Throwable error) {
         if (error instanceof ShowMessageException)
             showMessage.accept(((ShowMessageException) error).message);
         else {
             LOG.log(Level.SEVERE, message, error);
-            
+
             MessageParamsImpl m = new MessageParamsImpl();
 
             m.setMessage(message);
@@ -91,7 +91,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
     }
 
 	protected abstract ServerCapabilitiesImpl getServerCapabilities();
-	
+
     @Override
     public void shutdown() {
     }
@@ -128,7 +128,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 		}
 		return workspace;
 	}
-	
+
 	@Override
 	public void onTelemetryEvent(Consumer<Object> callback) {
 		//TODO: not sure what this is for exactly. We just stub it and do nothing for now.

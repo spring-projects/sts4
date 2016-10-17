@@ -30,7 +30,7 @@ public class AbstractPropsEditorTest {
 	@Before
 	public void setup() throws Exception {
 		md = new PropertyIndexHarness();
-		harness = new LanguageServerHarness(YamlLanguageServer::new);
+		harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
 		harness.intialize(null);
 	}
 	

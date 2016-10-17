@@ -20,9 +20,7 @@ import com.google.common.collect.ImmutableList;
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionItemKind;
 import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DiagnosticSeverity;
-import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.TextDocumentSyncKind;
 import io.typefox.lsapi.impl.CompletionItemImpl;
 import io.typefox.lsapi.impl.CompletionListImpl;
@@ -32,15 +30,14 @@ import io.typefox.lsapi.impl.PositionImpl;
 import io.typefox.lsapi.impl.RangeImpl;
 import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
-public class YamlLanguageServer extends SimpleLanguageServer {
+public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
 	
-	public YamlLanguageServer() {
+	public ApplicationYamlLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
-			System.out.println("Document changed: "+params);
 			TextDocument doc = params.getDocument();
 			validateDocument(documents, doc);
 		});

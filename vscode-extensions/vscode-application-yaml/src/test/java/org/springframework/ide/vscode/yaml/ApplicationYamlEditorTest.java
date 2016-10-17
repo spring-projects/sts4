@@ -40,7 +40,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	////////////////////////////////////////////////////////////////////////////////////////
 		
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(YamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
 		harness.intialize(null);
 
 		Editor editor = newEditor(
@@ -252,7 +252,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		System.out.println("<<< testHyperlinkTargets");
 	}
 
-	@Ignore @Test public void testReconcile() throws Exception {
+	@Test public void testReconcile() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
