@@ -9,7 +9,8 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.util.LoggingFormat;
+import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 import io.typefox.lsapi.services.json.LoggingJsonAdapter;
 
@@ -78,7 +79,7 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-    	ManifestYamlLanguageServer server = new ManifestYamlLanguageServer();
+    	SimpleLanguageServer server = new ManifestYamlLanguageServer();
     	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
     	jsonServer.setMessageLog(new PrintWriter(System.out));
 

@@ -14,11 +14,13 @@
 		<module>language-server-test-harness</module>
 		<module>commons-yaml</module>
 		<module>commons-util</module>
+		<module>commons-java</module>
 		<module>java-properties</module>
 		<module>application-properties-metadata</module>
 	</modules>
 
 	<properties>
+		<yaml-version>1.17</yaml-version>
 		<junit-version>4.11</junit-version>
 		<assertj-version>3.5.2</assertj-version>
 		<slf4j-version>1.7.21</slf4j-version>

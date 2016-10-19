@@ -1,8 +1,8 @@
 package org.springframework.ide.vscode.yaml.reconcile;
 
-import org.springframework.ide.vscode.commons.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.yaml.schema.YamlSchema;
 

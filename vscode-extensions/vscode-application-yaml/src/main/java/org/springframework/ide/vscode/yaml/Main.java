@@ -6,11 +6,14 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.util.LoggingFormat;
+import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 
 import io.typefox.lsapi.services.json.LoggingJsonAdapter;
 
@@ -79,7 +82,14 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-    	ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer();
+    	//TODO: proper TypeUtilProvider and IndexProvider that somehow determine classpath that should be
+    	// in effect for given IDocument and provide TypeUtil or SpringPropertyIndex parsed from that classpath.
+    	// Note that the provider is responsible for doing some kind of sensible caching so that indexes are not
+    	// rebuilt every time the index is being used.
+    	SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider();
+		TypeUtil typeUtil = new TypeUtil(null);
+		TypeUtilProvider typeUtilProvider = (IDocument doc) -> typeUtil;
+		ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer(indexProvider, typeUtilProvider);
     	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
     	jsonServer.setMessageLog(new PrintWriter(System.out));
 

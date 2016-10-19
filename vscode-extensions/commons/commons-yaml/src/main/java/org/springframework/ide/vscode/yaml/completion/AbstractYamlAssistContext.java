@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.completion;
 
-import org.springframework.ide.vscode.util.PrefixFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.yaml.path.YamlPath;
 import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SDocNode;

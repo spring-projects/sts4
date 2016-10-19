@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
 import java.util.Set;
 
 import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.yaml.util.ValueParser;
+import org.springframework.ide.vscode.util.ValueParser;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;

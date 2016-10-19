@@ -11,9 +11,13 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.java.IJavaProject;
 import org.springframework.ide.vscode.testharness.Editor;
 import org.springframework.ide.vscode.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.testharness.TestProject;
 import org.springframework.ide.vscode.yaml.PropertyIndexHarness.ItemConfigurer;
 
 import io.typefox.lsapi.CompletionItem;
@@ -22,7 +26,16 @@ public class AbstractPropsEditorTest {
 	
 	private PropertyIndexHarness md;
 	private LanguageServerHarness harness;
-	
+	private IJavaProject testProject;
+	private TypeUtil typeUtil;	
+
+	private TypeUtilProvider typeUtilProvider = (IDocument doc) -> {
+		if (typeUtil==null) {
+			typeUtil = new TypeUtil(testProject);
+		}
+		return typeUtil;
+	};
+
 	public Editor newEditor(String contents) throws Exception {
 		return harness.newEditor(contents);
 	}
@@ -30,8 +43,12 @@ public class AbstractPropsEditorTest {
 	@Before
 	public void setup() throws Exception {
 		md = new PropertyIndexHarness();
-		harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
+		harness = new LanguageServerHarness(this::newLanguageServer);
 		harness.intialize(null);
+	}
+	
+	private SimpleLanguageServer newLanguageServer() {
+		return new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider);
 	}
 	
 	public ItemConfigurer data(String id, String type, Object deflt, String description, String... sources) {
@@ -42,13 +59,15 @@ public class AbstractPropsEditorTest {
 		md.defaultTestData();
 	}
 	
-	public TestProject createPredefinedMavenProject(String string) {
+	public IJavaProject createPredefinedMavenProject(String string) {
 		notImplemented();
 		return null;
 	}
 	
-	public void useProject(TestProject p) {
-		notImplemented(); //only tests that don't require project context / classpath work for now
+	public void useProject(IJavaProject p) throws Exception {
+		md.useProject(p);
+		this.testProject = p;
+		this.typeUtil = null;
 	}
 	
 	/**

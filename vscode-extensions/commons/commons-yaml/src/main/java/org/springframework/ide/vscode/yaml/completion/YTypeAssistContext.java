@@ -20,8 +20,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.util.CollectionUtil;
 import org.springframework.ide.vscode.util.FuzzyMatcher;
 import org.springframework.ide.vscode.yaml.path.YamlPath;

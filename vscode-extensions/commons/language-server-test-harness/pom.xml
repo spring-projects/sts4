@@ -30,6 +30,11 @@
 			<version>${lsapi-version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit-version}</version>

@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.properties.metadata;
 
-import org.springframework.ide.vscode.util.IDocument;
 import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
 
-public abstract class SpringPropertyIndexProvider {
-
-	public abstract FuzzyMap<PropertyInfo> getIndex(IDocument doc);
-
+@FunctionalInterface
+public interface SpringPropertyIndexProvider {
+	FuzzyMap<PropertyInfo> getIndex(IDocument doc);
 }

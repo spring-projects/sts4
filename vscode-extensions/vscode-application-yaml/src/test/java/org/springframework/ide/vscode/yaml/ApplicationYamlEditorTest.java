@@ -20,9 +20,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.properties.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.java.IJavaProject;
 import org.springframework.ide.vscode.testharness.Editor;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.testharness.TestProject;
 import org.springframework.ide.vscode.util.StringUtil;
 
 import io.typefox.lsapi.CompletionItem;
@@ -40,9 +39,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	////////////////////////////////////////////////////////////////////////////////////////
 		
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
-		harness.intialize(null);
-
 		Editor editor = newEditor(
 				"somemap: val\n"+
 				"- sequence"
@@ -110,7 +106,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHoverInfoForEnumValueInMapKey() throws Exception {
 		Editor editor;
-		TestProject project = createPredefinedMavenProject("boot13");
+		IJavaProject project = createPredefinedMavenProject("boot13");
 		useProject(project);
 
 		//This test will fail if source jars haven't been downloaded.
@@ -142,7 +138,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testHoverInfoForEnumValueInMapKeyCompletion() throws Exception {
-		TestProject project = createPredefinedMavenProject("boot13");
+		IJavaProject project = createPredefinedMavenProject("boot13");
 		useProject(project);
 
 		//This test will fail if source jars haven't been downloaded.
@@ -226,7 +222,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHyperlinkTargets() throws Exception {
 		System.out.println(">>> testHyperlinkTargets");
-		TestProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("demo");
 		useProject(p);
 
 		Editor editor = newEditor(
@@ -252,7 +248,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		System.out.println("<<< testHyperlinkTargets");
 	}
 
-	@Test @Ignore public void testReconcile() throws Exception {
+	@Test public void testReconcile() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
@@ -266,6 +262,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  no: \n" +
 				"    good: true\n"
 		);
+		System.out.println(editor);
 		editor.assertProblems(
 				"extracrap: 8080|Expecting a 'int' but got a 'Mapping' node",
 				"snuggem|Unknown property",
@@ -438,7 +435,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testReconcileCamelCaseBeanProp() throws Exception {
 		Editor editor;
 
-		TestProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("demo");
 		useProject(p);
 
 		data("demo.bean", "demo.CamelCaser", "For testing tolerance of camelCase", null);
@@ -492,7 +489,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testContentAssistCamelCaseBeanProp() throws Exception {
-		TestProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("demo");
 		useProject(p);
 
 		data("demo.bean", "demo.CamelCaser", "For testing tolerance of camelCase", null);
@@ -543,7 +540,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 
 	@Ignore @Test public void testReconcileBeanPropName() throws Exception {
-		TestProject p = createPredefinedMavenProject("demo-list-of-pojo");
+		IJavaProject p = createPredefinedMavenProject("demo-list-of-pojo");
 		useProject(p);
 		assertNotNull(p.findType("demo.Foo"));
 		data("some-foo", "demo.Foo", null, "some Foo pojo property");
@@ -575,7 +572,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testReconcilePojoArray() throws Exception {
-		TestProject p = createPredefinedMavenProject("demo-list-of-pojo");
+		IJavaProject p = createPredefinedMavenProject("demo-list-of-pojo");
 		useProject(p);
 		assertNotNull(p.findType("demo.Foo"));
 
@@ -652,7 +649,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumPropertyReconciling() throws Exception {
-		TestProject p = createPredefinedMavenProject("demo-enum");
+		IJavaProject p = createPredefinedMavenProject("demo-enum");
 		useProject(p);
 		assertNotNull(p.findType("demo.Color"));
 
@@ -1834,7 +1831,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumsInLowerCaseContentAssist() throws Exception {
-		TestProject p = createPredefinedMavenProject("demo-enum");
+		IJavaProject p = createPredefinedMavenProject("demo-enum");
 		useProject(p);
 		assertNotNull(p.findType("demo.ClothingSize"));
 
@@ -2161,13 +2158,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void test_STS4231() throws Exception {
 		//Should the 'predefined' project need to be recreated... use the commented code below:
 //		BootProjectTestHarness projectHarness = new BootProjectTestHarness(ResourcesPlugin.getWorkspace());
-//		TestProject project = projectHarness.createBootProject("sts-4231",
+//		IJavaProject project = projectHarness.createBootProject("sts-4231",
 //				bootVersionAtLeast("1.3.0"),
 //				withStarters("web", "cloud-config-server")
 //		);
 
 		//For more robust test use predefined project which is not so much a moving target:
-		TestProject project = createPredefinedMavenProject("sts-4231");
+		IJavaProject project = createPredefinedMavenProject("sts-4231");
 		useProject(project);
 
 		assertCompletionsDisplayString(
@@ -2418,7 +2415,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testDeprecatedBeanPropertyHoverInfo() throws Exception {
-		TestProject jp = createPredefinedMavenProject("demo");
+		IJavaProject jp = createPredefinedMavenProject("demo");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A bean with deprecated property.");
 		Editor editor = newEditor(
@@ -2431,7 +2428,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testDeprecatedBeanPropertyReconcile() throws Exception {
-		TestProject jp = createPredefinedMavenProject("demo");
+		IJavaProject jp = createPredefinedMavenProject("demo");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
@@ -2464,7 +2461,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
-		TestProject jp = createPredefinedMavenProject("demo");
+		IJavaProject jp = createPredefinedMavenProject("demo");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 

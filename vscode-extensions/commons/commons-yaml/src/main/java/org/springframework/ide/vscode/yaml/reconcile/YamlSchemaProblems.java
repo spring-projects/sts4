@@ -1,9 +1,9 @@
 package org.springframework.ide.vscode.yaml.reconcile;
 
-import org.springframework.ide.vscode.commons.reconcile.ProblemSeverity;
-import org.springframework.ide.vscode.commons.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.yaml.snakeyaml.nodes.Node;
 
 /**

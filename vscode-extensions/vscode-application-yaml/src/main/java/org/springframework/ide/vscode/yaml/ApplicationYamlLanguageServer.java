@@ -1,45 +1,46 @@
 package org.springframework.ide.vscode.yaml;
 
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.util.Futures;
-import org.springframework.ide.vscode.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.util.TextDocument;
+import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.error.MarkedYAMLException;
-import org.yaml.snakeyaml.error.YAMLException;
-import org.yaml.snakeyaml.nodes.Node;
-
-import com.google.common.collect.ImmutableList;
 
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionItemKind;
 import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.DiagnosticSeverity;
 import io.typefox.lsapi.TextDocumentSyncKind;
 import io.typefox.lsapi.impl.CompletionItemImpl;
 import io.typefox.lsapi.impl.CompletionListImpl;
 import io.typefox.lsapi.impl.CompletionOptionsImpl;
-import io.typefox.lsapi.impl.DiagnosticImpl;
-import io.typefox.lsapi.impl.PositionImpl;
-import io.typefox.lsapi.impl.RangeImpl;
 import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
 public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
+	private YamlASTProvider parser = new YamlParser(yaml);
+	private SpringPropertyIndexProvider indexProvider;
+	private TypeUtilProvider typeUtilProvider;
 	
-	public ApplicationYamlLanguageServer() {
+	public ApplicationYamlLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
+		this.indexProvider = indexProvider;
+		this.typeUtilProvider = typeUtilProvider;
 		SimpleTextDocumentService documents = getTextDocumentService();
 //		SimpleWorkspaceService workspace = getWorkspaceService();
+		IReconcileEngine reconcileEngine = getReconcileEngine();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateDocument(documents, doc);
+			validateWith(doc, reconcileEngine);
 		});
 		
 //		workspace.onDidChangeConfiguraton(settings -> {
@@ -103,54 +104,8 @@ public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 		});
 	}
 
-	private void validateDocument(SimpleTextDocumentService documents, TextDocument doc) {
-		List<DiagnosticImpl> diagnostics = reconcile(documents, doc);
-		documents.publishDiagnostics(doc, diagnostics);
-	}
-	
-	protected List<DiagnosticImpl> reconcile(SimpleTextDocumentService documents, TextDocument doc) {
-		try {
-			Iterator<Node> asts = yaml.composeAll(new StringReader(doc.getText())).iterator();
-			while (asts.hasNext()) {
-				asts.next();
-			}
-			return ImmutableList.of();
-		} catch (YAMLException e) {
-			return ImmutableList.of(parseError(e));
-		}
-	}
-
-	private DiagnosticImpl parseError(YAMLException e) {
-		DiagnosticImpl d = new DiagnosticImpl();
-		d.setMessage(getMessage(e));
-		d.setRange(getRange(e));
-		d.setSeverity(DiagnosticSeverity.Error);
-		d.setCode(ErrorCodes.YAML_SYNTAX_ERROR);
-		d.setSource("yaml");
-		return d;
-	}
-
-	private String getMessage(YAMLException e) {
-		if (e instanceof MarkedYAMLException) {
-			return ((MarkedYAMLException) e).getProblem();
-		}
-		return e.getMessage();
-	}
-
-	private RangeImpl getRange(YAMLException _e) {
-		if (_e instanceof MarkedYAMLException) {
-			MarkedYAMLException e = (MarkedYAMLException) _e;
-
-			PositionImpl start = new PositionImpl();
-			start.setLine(e.getProblemMark().getLine());
-			start.setCharacter(e.getProblemMark().getColumn());
-			
-			RangeImpl rng = new RangeImpl();
-			rng.setStart(start);
-			rng.setEnd(start);
-			return rng;
-		}
-		return null;
+	protected IReconcileEngine getReconcileEngine() {
+		return new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider);
 	}
 
 	@Override

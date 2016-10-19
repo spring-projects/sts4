@@ -14,8 +14,8 @@ import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyInd
 import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
-import org.springframework.ide.vscode.testharness.TestProject;
-import org.springframework.ide.vscode.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.java.IJavaProject;
 
 /**
  * Provides some convenience apis for test code to create / use test data for a SpringPropertyIndex.
@@ -25,7 +25,7 @@ public class PropertyIndexHarness {
 	private Map<String, ConfigurationMetadataProperty> datas = new LinkedHashMap<>();
 	private ValueProviderRegistry valueProviders = ValueProviderRegistry.getDefault();
 	private SpringPropertyIndex index = null;
-	private TestProject testProject = null;
+	private IJavaProject testProject = null;
 
 	protected SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
 		public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
@@ -39,6 +39,11 @@ public class PropertyIndexHarness {
 			return index;
 		}
 	};
+
+	public void useProject(IJavaProject p) throws Exception {
+		index = null;
+		this.testProject = p;
+	}
 
 	public class ItemConfigurer {
 

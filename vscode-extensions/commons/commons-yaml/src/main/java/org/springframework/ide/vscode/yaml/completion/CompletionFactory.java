@@ -1,8 +1,8 @@
 package org.springframework.ide.vscode.yaml.completion;
 
-import org.springframework.ide.vscode.commons.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.completion.ICompletionProposal;
-import org.springframework.ide.vscode.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.yaml.schema.YType;
 import org.springframework.ide.vscode.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.yaml.schema.YTypedProperty;

@@ -16,8 +16,9 @@ import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.util.HtmlSnippet;
 
-import static org.springframework.ide.vscode.yaml.util.Description.*;
+import static org.springframework.ide.vscode.util.HtmlSnippet.*;
 
 /**
  * Static methods and convenience constants for creating some 'description providers'.
@@ -28,33 +29,33 @@ public class DescriptionProviders {
 	
 	final static Logger logger = LoggerFactory.getLogger(DescriptionProviders.class);
 
-	public static final Provider<Description> NO_DESCRIPTION = () -> italic(text("no description"));
+	public static final Provider<HtmlSnippet> NO_DESCRIPTION = () -> italic(text("no description"));
 
-	public static Provider<Description> snippet(final Description snippet) {
-		return new Provider<Description>() {
+	public static Provider<HtmlSnippet> snippet(final HtmlSnippet snippet) {
+		return new Provider<HtmlSnippet>() {
 			@Override
 			public String toString() {
 				return snippet.toString();
 			}
 			@Override
-			public Description get() {
+			public HtmlSnippet get() {
 				return snippet;
 			}
 		};
 	}
 
-	public static Provider<Description> fromClasspath(final Class<?> klass, final String resourcePath) {
-		return new Provider<Description>() {
+	public static Provider<HtmlSnippet> fromClasspath(final Class<?> klass, final String resourcePath) {
+		return new Provider<HtmlSnippet>() {
 			@Override
 			public String toString() {
 				return "DescriptionFromClassPth(class="+klass.getSimpleName()+", "+resourcePath+")";
 			}
 			@Override
-			public Description get() {
+			public HtmlSnippet get() {
 				try {
 					InputStream stream = klass.getResourceAsStream(resourcePath);
 					if (stream!=null) {
-						return Description.text(IOUtil.toString(stream));
+						return HtmlSnippet.text(IOUtil.toString(stream));
 					}
 				} catch (Exception e) {
 					logger.error("Error", e);;

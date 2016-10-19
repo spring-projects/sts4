@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.ide.vscode.commons.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.util.ExceptionUtil;
 import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.util.ValueParser;
 import org.springframework.ide.vscode.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.yaml.schema.YType;
 import org.springframework.ide.vscode.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.yaml.schema.YamlSchema;
-import org.springframework.ide.vscode.yaml.util.ValueParser;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;

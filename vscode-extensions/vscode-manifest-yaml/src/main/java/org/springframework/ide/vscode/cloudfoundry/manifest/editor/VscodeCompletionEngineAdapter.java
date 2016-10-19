@@ -7,14 +7,14 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.completion.DocumentEdits.TextReplace;
-import org.springframework.ide.vscode.commons.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.util.Futures;
-import org.springframework.ide.vscode.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.util.TextDocument;
 import org.springframework.ide.vscode.yaml.completion.DefaultCompletionFactory;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser;
 

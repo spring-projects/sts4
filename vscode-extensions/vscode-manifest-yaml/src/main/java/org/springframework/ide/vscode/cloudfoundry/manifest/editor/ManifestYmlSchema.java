@@ -15,6 +15,7 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
+import org.springframework.ide.vscode.util.HtmlSnippet;
 import org.springframework.ide.vscode.yaml.schema.YType;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YAtomicType;
@@ -23,7 +24,6 @@ import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YTypedPropertyImp
 import org.springframework.ide.vscode.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.yaml.schema.YamlSchema;
-import org.springframework.ide.vscode.yaml.util.Description;
 import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
 
 import com.google.common.collect.ImmutableSet;
@@ -106,11 +106,11 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 	}
 
-	private Provider<Description> descriptionFor(String propName) {
+	private Provider<HtmlSnippet> descriptionFor(String propName) {
 		return DescriptionProviders.fromClasspath(this.getClass(), "/description-by-prop-name/"+propName+".html");
 	}
 
-	private Provider<Description> descriptionFor(YTypedPropertyImpl prop) {
+	private Provider<HtmlSnippet> descriptionFor(YTypedPropertyImpl prop) {
 		return descriptionFor(prop.getName());
 	}
 

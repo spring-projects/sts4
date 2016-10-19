@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.schema;
 
-import org.springframework.ide.vscode.yaml.util.Description;
+import org.springframework.ide.vscode.util.HtmlSnippet;
 
 /**
  * @author Kris De Volder
@@ -18,5 +18,5 @@ import org.springframework.ide.vscode.yaml.util.Description;
 public interface YTypedProperty {
 	String getName();
 	YType getType();
-	Description getDescription();
+	HtmlSnippet getDescription();
 }

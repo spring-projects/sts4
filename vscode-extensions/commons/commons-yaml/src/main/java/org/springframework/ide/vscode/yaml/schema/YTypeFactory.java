@@ -21,10 +21,10 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.yaml.util.Description;
+import org.springframework.ide.vscode.util.EnumValueParser;
+import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.util.ValueParser;
 import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
-import org.springframework.ide.vscode.yaml.util.EnumValueParser;
-import org.springframework.ide.vscode.yaml.util.ValueParser;
 
 /**
  * Static utility method for creating YType objects representing either
@@ -193,7 +193,7 @@ public class YTypeFactory {
 			propertyList.add(p);
 		}
 
-		public void addProperty(String name, YType type, Provider<Description> description) {
+		public void addProperty(String name, YType type, Provider<HtmlSnippet> description) {
 			YTypedPropertyImpl prop;
 			addProperty(prop = new YTypedPropertyImpl(name, type));
 			prop.setDescriptionProvider(description);
@@ -314,7 +314,7 @@ public class YTypeFactory {
 
 		final private String name;
 		final private YType type;
-		private Provider<Description> descriptionProvider = DescriptionProviders.NO_DESCRIPTION;
+		private Provider<HtmlSnippet> descriptionProvider = DescriptionProviders.NO_DESCRIPTION;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -337,11 +337,11 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public Description getDescription() {
+		public HtmlSnippet getDescription() {
 			return descriptionProvider.get();
 		}
 
-		public void setDescriptionProvider(Provider<Description> descriptionProvider) {
+		public void setDescriptionProvider(Provider<HtmlSnippet> descriptionProvider) {
 			this.descriptionProvider = descriptionProvider;
 		}
 

@@ -5,18 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.testharness.TextDocumentInfo;
-import org.springframework.ide.vscode.yaml.ApplicationYamlLanguageServer;
 
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.TextDocumentSyncKind;
+import io.typefox.lsapi.services.LanguageServer;
 
 public class ApplicationYamlLanguageServerTests {
 
@@ -24,17 +20,23 @@ public class ApplicationYamlLanguageServerTests {
 		return Paths.get(ApplicationYamlLanguageServerTests.class.getResource(name).toURI()).toFile();
 	}
 
+	private LanguageServerHarness newHarness() throws Exception {
+		Callable<? extends LanguageServer> f = () -> new ApplicationYamlLanguageServer((d) -> null, (d) -> null);
+		return new LanguageServerHarness(f);
+	}
+
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
+		LanguageServerHarness harness = newHarness();
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 
+	
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationYamlLanguageServer::new);
+		LanguageServerHarness harness = newHarness();
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 	

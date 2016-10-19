@@ -10,14 +10,19 @@
 	<artifactId>application-properties-metadata</artifactId>
 	<description>Builds metadata for boot application properties based on project's classpath contents</description>
 
+	<repositories>
+		<repository>
+			<id>project-repo</id>
+			<url>file://${project.basedir}/repo</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		<!-- Local modified JSON lib packaged to support order in maps -->
 		<dependency>
-			<groupId>libs</groupId>
-			<artifactId>json</artifactId>
+			<groupId>org.springframework.ide.eclipse</groupId>
+			<artifactId>org.json</artifactId>
 			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/org.springframework.ide.eclipse.org.json-20140107-repackaged.jar</systemPath>
 		</dependency>
 		<!-- Guava collections -->
 		<dependency>
@@ -42,6 +47,16 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-yaml</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

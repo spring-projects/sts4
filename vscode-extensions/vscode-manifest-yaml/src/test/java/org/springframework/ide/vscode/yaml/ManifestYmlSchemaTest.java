@@ -112,8 +112,8 @@ public class ManifestYmlSchemaTest {
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertHasRealDescription(YTypedProperty p) {
-		String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.get().toText();
-		String actual = p.getDescription().toText();
+		String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.get().toHtml();
+		String actual = p.getDescription().toHtml();
 		String msg = "Description missing for '"+p.getName()+"'";
 		assertTrue(msg, StringUtil.hasText(actual));
 		assertFalse(msg, noDescriptionText.equals(actual));

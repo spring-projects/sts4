@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.yaml.completion;
 
 import java.util.Collection;
 
-import org.springframework.ide.vscode.commons.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNode;

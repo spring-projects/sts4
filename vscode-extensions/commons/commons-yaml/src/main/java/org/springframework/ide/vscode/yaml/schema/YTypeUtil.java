@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.yaml.schema;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.ide.vscode.yaml.util.ValueParser;
+import org.springframework.ide.vscode.util.ValueParser;
 
 /**
  * An implementation of YTypeUtil provides implementations of various

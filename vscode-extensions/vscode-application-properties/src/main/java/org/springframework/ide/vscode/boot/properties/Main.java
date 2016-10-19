@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.util.LoggingFormat;
+import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 
 import io.typefox.lsapi.services.json.LoggingJsonAdapter;
 

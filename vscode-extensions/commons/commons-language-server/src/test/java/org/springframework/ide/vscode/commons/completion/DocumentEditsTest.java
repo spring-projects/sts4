@@ -15,11 +15,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.testharness.Editor;
 import org.springframework.ide.vscode.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.util.IDocument;
-import org.springframework.ide.vscode.util.IRegion;
-import org.springframework.ide.vscode.util.TextDocument;
 /**
  * @author Kris De Volder
  */

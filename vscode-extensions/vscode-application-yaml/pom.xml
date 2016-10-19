@@ -46,6 +46,12 @@
 			<artifactId>commons-language-server</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- java knowledge engine -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- properties metadata indexer -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -53,6 +59,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<!-- Yaml -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-yaml</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>

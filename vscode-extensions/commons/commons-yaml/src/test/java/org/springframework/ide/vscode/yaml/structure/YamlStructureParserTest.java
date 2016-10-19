@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.util.TextDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.yaml.path.YamlPath;
 import org.springframework.ide.vscode.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SChildBearingNode;

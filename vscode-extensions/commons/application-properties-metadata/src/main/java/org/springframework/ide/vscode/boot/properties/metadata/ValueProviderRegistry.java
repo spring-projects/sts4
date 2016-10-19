@@ -10,13 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.properties.metadata;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.properties.util.CollectionUtil;
+import org.springframework.ide.vscode.boot.properties.metadata.types.StsValueHint;
+import org.springframework.ide.vscode.java.IJavaProject;
+import org.springframework.ide.vscode.util.CollectionUtil;
+
+import reactor.core.publisher.Flux;
 
 /**
  * An instance of this class serves as a 'registry' that associates known
@@ -50,14 +55,14 @@ public class ValueProviderRegistry {
 	private Map<String, Function<Map<String, Object>, ValueProviderStrategy>> registry = new HashMap<>();
 
 	public interface ValueProviderStrategy {
-//		Flux<StsValueHint> getValues(IJavaProject javaProject, String query);
-//
-//		default Collection<StsValueHint> getValuesNow(IJavaProject javaProject, String query) {
-//			return this.getValues(javaProject, query)
-//			.take(CachingValueProvider.TIMEOUT)
-//			.collectList()
-//			.block();
-//		}
+		Flux<StsValueHint> getValues(IJavaProject javaProject, String query);
+
+		default Collection<StsValueHint> getValuesNow(IJavaProject javaProject, String query) {
+			return this.getValues(javaProject, query)
+			.take(CachingValueProvider.TIMEOUT)
+			.collectList()
+			.block();
+		}
 	}
 
 	/**
