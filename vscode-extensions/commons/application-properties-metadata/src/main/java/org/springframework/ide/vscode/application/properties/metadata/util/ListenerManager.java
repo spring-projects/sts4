@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.util;
+package org.springframework.ide.vscode.application.properties.metadata.util;
 
 import java.util.Arrays;
 

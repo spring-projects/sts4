@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.types;
 
 import static org.springframework.ide.vscode.util.ArrayUtils.firstElement;
 import static org.springframework.ide.vscode.util.ArrayUtils.lastElement;
@@ -24,8 +24,9 @@ import java.util.stream.Collectors;
 import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.boot.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
-import org.springframework.ide.vscode.boot.properties.util.DeprecationUtil;
+import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil;
+import org.springframework.ide.vscode.boot.properties.metadata.types.Signature;
 import org.springframework.ide.vscode.java.Flags;
 import org.springframework.ide.vscode.java.IField;
 import org.springframework.ide.vscode.java.IJavaElement;

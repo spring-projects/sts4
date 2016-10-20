@@ -8,12 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.types;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.ide.vscode.boot.properties.metadata.types.Signature;
 import org.springframework.ide.vscode.java.IType;
 import org.springframework.ide.vscode.util.ArrayUtils;
 import org.springframework.ide.vscode.util.Assert;

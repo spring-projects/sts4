@@ -1,12 +1,12 @@
-package org.springframework.ide.vscode.boot.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.types;
 
-import static org.springframework.ide.vscode.boot.properties.util.DeprecationUtil.*;
+import static org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil.*;
 
 import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
-import org.springframework.ide.vscode.boot.properties.util.DeprecationUtil;
+import org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil;
 import org.springframework.ide.vscode.java.IJavaElement;
 import org.springframework.ide.vscode.java.IJavaProject;
 import org.springframework.ide.vscode.java.IType;

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;

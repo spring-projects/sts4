@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.application.properties.metadata;
 
 import static org.springframework.ide.vscode.util.StringUtil.*;
 
@@ -16,8 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.util.StringUtil;
 
 /**

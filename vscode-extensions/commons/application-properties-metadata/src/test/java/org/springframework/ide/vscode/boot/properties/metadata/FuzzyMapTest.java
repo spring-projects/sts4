@@ -17,8 +17,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.util.FuzzyMatcher;
 
 public class FuzzyMapTest {

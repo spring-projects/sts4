@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.application.properties.metadata;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.types.StsValueHint;
+import org.springframework.ide.vscode.application.properties.metadata.types.StsValueHint;
 import org.springframework.ide.vscode.java.IJavaProject;
 import org.springframework.ide.vscode.util.CollectionUtil;
 

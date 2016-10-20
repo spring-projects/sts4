@@ -9,11 +9,11 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataPrope
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndex;
-import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.ValueProviderRegistry;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
+import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndex;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.java.IJavaProject;
 

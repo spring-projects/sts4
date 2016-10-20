@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.application.properties.metadata;
 
 import java.io.BufferedReader;
 import java.io.File;

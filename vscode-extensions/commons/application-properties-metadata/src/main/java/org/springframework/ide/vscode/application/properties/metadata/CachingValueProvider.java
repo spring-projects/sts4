@@ -8,11 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.application.properties.metadata;
 
 import java.time.Duration;
 
-import org.springframework.ide.vscode.boot.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
 
 /**
  * A abstract {@link ValueProviderStrategy} that is mean to help speedup successive invocations of

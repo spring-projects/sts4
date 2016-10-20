@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.metadata;
+package org.springframework.ide.vscode.application.properties.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataSourc
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;

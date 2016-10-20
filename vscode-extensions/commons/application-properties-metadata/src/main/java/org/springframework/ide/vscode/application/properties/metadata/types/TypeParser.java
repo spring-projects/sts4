@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.types;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;

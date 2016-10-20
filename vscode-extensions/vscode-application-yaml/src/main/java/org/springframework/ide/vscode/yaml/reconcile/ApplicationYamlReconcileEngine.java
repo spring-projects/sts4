@@ -12,11 +12,11 @@ package org.springframework.ide.vscode.yaml.reconcile;
 
 import static org.springframework.ide.vscode.yaml.ApplicationYamlProblems.Type.YAML_SYNTAX_ERROR;
 
-import org.springframework.ide.vscode.boot.properties.metadata.IndexNavigator;
-import org.springframework.ide.vscode.boot.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
+import org.springframework.ide.vscode.application.properties.metadata.IndexNavigator;
+import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;

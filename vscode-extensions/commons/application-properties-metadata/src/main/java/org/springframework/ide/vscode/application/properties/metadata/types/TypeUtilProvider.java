@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.types;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 

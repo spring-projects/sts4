@@ -9,9 +9,9 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.boot.properties.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 

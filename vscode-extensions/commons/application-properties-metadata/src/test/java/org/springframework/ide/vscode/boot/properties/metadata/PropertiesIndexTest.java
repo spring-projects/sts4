@@ -20,7 +20,10 @@ import java.nio.file.Paths;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.properties.util.FuzzyMap;
+import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertiesIndexManager;
+import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.util.ExternalCommand;
 import org.springframework.ide.vscode.util.ExternalProcess;
 
