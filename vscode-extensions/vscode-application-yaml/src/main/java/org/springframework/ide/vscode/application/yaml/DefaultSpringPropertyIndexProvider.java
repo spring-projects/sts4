@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.application.yaml;
 
 import java.nio.file.Path;
 

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.yaml.reconcile;
+package org.springframework.ide.vscode.application.yaml.reconcile;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.*;
 

@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.application.yaml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.application.yaml.ApplicationYamlLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 import io.typefox.lsapi.InitializeResult;

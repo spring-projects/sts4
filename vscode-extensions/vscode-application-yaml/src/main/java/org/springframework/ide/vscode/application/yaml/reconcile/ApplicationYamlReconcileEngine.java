@@ -8,22 +8,22 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.yaml.reconcile;
+package org.springframework.ide.vscode.application.yaml.reconcile;
 
-import static org.springframework.ide.vscode.yaml.ApplicationYamlProblems.Type.YAML_SYNTAX_ERROR;
+import static org.springframework.ide.vscode.application.yaml.ApplicationYamlProblems.Type.YAML_SYNTAX_ERROR;
 
 import org.springframework.ide.vscode.application.properties.metadata.IndexNavigator;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
+import org.springframework.ide.vscode.application.yaml.ApplicationYamlProblems;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlReconcileEngine;
-import org.springframework.ide.vscode.yaml.ApplicationYamlProblems;
 
 public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 

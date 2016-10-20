@@ -8,11 +8,12 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.yaml.quickfix;
+package org.springframework.ide.vscode.application.yaml.quickfix;
 
 import java.awt.Image;
 import java.awt.Point;
 
+import org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertyProblem;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
@@ -29,7 +30,6 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
-import org.springframework.ide.vscode.yaml.reconcile.SpringPropertyProblem;
 
 import io.typefox.lsapi.CompletionItemKind;
 

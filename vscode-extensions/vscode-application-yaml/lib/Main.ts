@@ -103,7 +103,7 @@ export function activate(context: VSCode.ExtensionContext) {
                         let args = [
                             '-Dserver.port=' + port,
                             '-cp', classpath, 
-                            'org.springframework.ide.vscode.yaml.Main'
+                            'org.springframework.ide.vscode.application.yaml.Main'
                         ];
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);

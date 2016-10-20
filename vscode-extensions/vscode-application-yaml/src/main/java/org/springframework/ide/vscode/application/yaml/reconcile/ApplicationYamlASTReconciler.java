@@ -1,9 +1,9 @@
-package org.springframework.ide.vscode.yaml.reconcile;
+package org.springframework.ide.vscode.application.yaml.reconcile;
 
+import static org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertiesProblemType.YAML_DEPRECATED;
+import static org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertiesProblemType.YAML_DUPLICATE_KEY;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
-import static org.springframework.ide.vscode.yaml.reconcile.SpringPropertiesProblemType.YAML_DEPRECATED;
-import static org.springframework.ide.vscode.yaml.reconcile.SpringPropertiesProblemType.YAML_DUPLICATE_KEY;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
+import org.springframework.ide.vscode.application.yaml.quickfix.ReplaceDeprecatedYamlQuickfix;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -27,7 +28,6 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.Kind;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
-import org.springframework.ide.vscode.yaml.quickfix.ReplaceDeprecatedYamlQuickfix;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
