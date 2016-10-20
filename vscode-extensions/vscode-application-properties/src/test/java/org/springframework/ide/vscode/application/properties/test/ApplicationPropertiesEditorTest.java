@@ -8,10 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.test;
+package org.springframework.ide.vscode.application.properties.test;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.properties.ApplicationPropertiesLanguageServer;
+import org.springframework.ide.vscode.application.properties.ApplicationPropertiesLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 

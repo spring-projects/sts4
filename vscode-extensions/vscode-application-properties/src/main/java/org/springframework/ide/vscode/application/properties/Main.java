@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties;
+package org.springframework.ide.vscode.application.properties;
 
 import java.io.IOException;
 import java.io.InputStream;

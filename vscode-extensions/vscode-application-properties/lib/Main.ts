@@ -13,7 +13,7 @@ import {TextDocument} from 'vscode';
 
 PortFinder.basePort = 55282;
 
-var DEBUG = true;
+var DEBUG = false;
 const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n';
     //If DEBUG is falsy then
     //   we launch from the 'fat jar' (which has to be built by running mvn package)
@@ -105,7 +105,7 @@ export function activate(context: VSCode.ExtensionContext) {
                         let args = [
                             '-Dserver.port=' + port,
                             '-cp', classpath, 
-                            'org.springframework.ide.vscode.boot.properties.Main'
+                            'org.springframework.ide.vscode.application.properties.Main'
                         ];
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);

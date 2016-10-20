@@ -13,13 +13,6 @@
 	</parent>
 	
 	<repositories>
-		<!-- Local repository with tools.jar -->
-		<repository>
-			<id>jars-repository</id>
-			<name>Local repository for JAR files</name>
-			<url>file://${basedir}/repo</url>
-		</repository>
-
 		<!-- Sonatype snapshots repository -->
 		<repository>
 			<id>oss-sonatype</id>

@@ -7,8 +7,6 @@ classpath.txt
 *.vsix
 repo
 .idea
-.project
-.classpath
 *.iml
 .DS_Store
 **/.DS_Store
