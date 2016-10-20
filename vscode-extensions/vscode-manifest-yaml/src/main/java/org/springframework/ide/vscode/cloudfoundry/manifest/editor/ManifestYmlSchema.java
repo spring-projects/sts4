@@ -15,7 +15,7 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.yaml.schema.YType;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YAtomicType;

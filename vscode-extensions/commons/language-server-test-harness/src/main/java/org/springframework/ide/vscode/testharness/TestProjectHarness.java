@@ -8,9 +8,9 @@ import java.nio.file.Paths;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.util.ExternalCommand;
-import org.springframework.ide.vscode.util.ExternalProcess;
-import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
+import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

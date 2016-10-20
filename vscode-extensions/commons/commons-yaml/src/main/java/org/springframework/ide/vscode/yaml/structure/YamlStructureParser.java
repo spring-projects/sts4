@@ -11,9 +11,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
-import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.util.CollectionUtil;
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.yaml.path.KeyAliases;
 import org.springframework.ide.vscode.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.yaml.path.YamlPath;

@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.java;
 
-import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 public interface IJavaElement {
 	String getElementName();

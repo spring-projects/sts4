@@ -16,7 +16,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.BadLocationExc
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.Region;
-import org.springframework.ide.vscode.util.Assert;
+import org.springframework.ide.vscode.commons.util.Assert;
 
 import io.typefox.lsapi.TextEdit;
 

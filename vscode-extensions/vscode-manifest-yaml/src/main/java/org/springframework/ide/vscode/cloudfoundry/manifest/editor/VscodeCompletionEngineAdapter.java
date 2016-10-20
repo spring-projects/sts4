@@ -14,7 +14,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.util.Futures;
+import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.yaml.completion.DefaultCompletionFactory;
 import org.springframework.ide.vscode.yaml.structure.YamlStructureParser;
 

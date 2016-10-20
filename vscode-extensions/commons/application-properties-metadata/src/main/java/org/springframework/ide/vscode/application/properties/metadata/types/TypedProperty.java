@@ -3,7 +3,7 @@ package org.springframework.ide.vscode.application.properties.metadata.types;
 import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
 

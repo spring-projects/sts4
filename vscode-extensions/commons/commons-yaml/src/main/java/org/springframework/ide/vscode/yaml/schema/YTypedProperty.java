@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.schema;
 
-import org.springframework.ide.vscode.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 /**
  * @author Kris De Volder

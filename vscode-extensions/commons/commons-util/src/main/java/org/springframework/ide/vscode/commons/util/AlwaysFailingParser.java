@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.util;
+package org.springframework.ide.vscode.commons.util;
 
 /**
  * Parser that always fails, regardless of the input. Used for types who's value cannot be

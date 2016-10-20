@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.util;
+package org.springframework.ide.vscode.commons.util;
 
 /**
  * Requestor that remembers only the last item received.

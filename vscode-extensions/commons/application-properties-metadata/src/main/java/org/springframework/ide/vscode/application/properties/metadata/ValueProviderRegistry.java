@@ -19,7 +19,7 @@ import java.util.function.Function;
 import org.springframework.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.StsValueHint;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 
 import reactor.core.publisher.Flux;
 

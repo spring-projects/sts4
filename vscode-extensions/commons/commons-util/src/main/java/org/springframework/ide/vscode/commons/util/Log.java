@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.util;
+package org.springframework.ide.vscode.commons.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

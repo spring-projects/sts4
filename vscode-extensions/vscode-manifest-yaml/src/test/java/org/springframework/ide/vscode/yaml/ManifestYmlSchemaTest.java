@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYmlSchema;
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.yaml.schema.YTypedProperty;

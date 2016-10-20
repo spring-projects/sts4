@@ -16,10 +16,10 @@ import java.util.Map;
 
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.Signature;
-import org.springframework.ide.vscode.util.ArrayUtils;
-import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.util.Log;
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ArrayUtils;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.yaml.schema.YType;
 
 /**

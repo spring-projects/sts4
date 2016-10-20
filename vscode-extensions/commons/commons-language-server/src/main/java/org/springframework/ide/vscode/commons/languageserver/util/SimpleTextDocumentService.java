@@ -10,8 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.util.Futures;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Futures;
 
 import io.typefox.lsapi.CodeActionParams;
 import io.typefox.lsapi.CodeLens;

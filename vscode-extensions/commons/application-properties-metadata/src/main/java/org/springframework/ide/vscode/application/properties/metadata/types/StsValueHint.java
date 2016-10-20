@@ -10,10 +10,10 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Depre
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.util.HtmlSnippet;
-import org.springframework.ide.vscode.util.Log;
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
  * Sts version of {@link ValueHint} contains similar data, but accomoates

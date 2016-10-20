@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.application.properties.metadata.util;
 
 import java.util.Arrays;
 
-import org.springframework.ide.vscode.util.ListenerList;
+import org.springframework.ide.vscode.commons.util.ListenerList;
 
 public class ListenerManager<T> {
 

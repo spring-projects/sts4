@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.util;
+package org.springframework.ide.vscode.commons.util;
 
 import java.util.Collection;
 import java.util.Set;

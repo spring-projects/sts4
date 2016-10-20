@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.util.HtmlSnippet;
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
 

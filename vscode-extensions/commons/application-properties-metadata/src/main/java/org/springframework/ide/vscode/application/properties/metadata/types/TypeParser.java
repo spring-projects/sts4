@@ -3,7 +3,7 @@ package org.springframework.ide.vscode.application.properties.metadata.types;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.springframework.ide.vscode.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
  * Converts types in notation used by spring properties metadata into a 'Structured' form

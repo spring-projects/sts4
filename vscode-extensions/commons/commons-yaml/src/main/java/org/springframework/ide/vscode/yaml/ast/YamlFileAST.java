@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.ide.vscode.util.Collector;
-import org.springframework.ide.vscode.util.IRequestor;
-import org.springframework.ide.vscode.util.RememberLast;
+import org.springframework.ide.vscode.commons.util.Collector;
+import org.springframework.ide.vscode.commons.util.IRequestor;
+import org.springframework.ide.vscode.commons.util.RememberLast;
 import org.springframework.ide.vscode.yaml.ast.NodeRef.RootRef;
 import org.springframework.ide.vscode.yaml.ast.NodeRef.SeqRef;
 import org.springframework.ide.vscode.yaml.ast.NodeRef.TupleKeyRef;

@@ -10,15 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.util;
 
+import static org.springframework.ide.vscode.commons.util.HtmlSnippet.*;
+
 import java.io.InputStream;
 
 import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.util.HtmlSnippet;
-
-import static org.springframework.ide.vscode.util.HtmlSnippet.*;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 /**
  * Static methods and convenience constants for creating some 'description providers'.

@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.yaml.completion;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
-import org.springframework.ide.vscode.util.Assert;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.yaml.path.YamlPath;
 import org.springframework.ide.vscode.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.yaml.path.YamlPathSegment.YamlPathSegmentType;

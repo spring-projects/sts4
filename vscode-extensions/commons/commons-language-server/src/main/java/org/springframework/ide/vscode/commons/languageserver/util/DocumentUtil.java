@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import org.springframework.ide.vscode.util.Assert;
+import org.springframework.ide.vscode.commons.util.Assert;
 
 public class DocumentUtil {
 

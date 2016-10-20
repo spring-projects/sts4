@@ -21,9 +21,9 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.util.EnumValueParser;
-import org.springframework.ide.vscode.util.HtmlSnippet;
-import org.springframework.ide.vscode.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
 
 /**

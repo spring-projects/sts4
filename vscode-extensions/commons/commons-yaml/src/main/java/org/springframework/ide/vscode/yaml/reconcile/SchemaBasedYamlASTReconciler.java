@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.util.ExceptionUtil;
-import org.springframework.ide.vscode.util.StringUtil;
-import org.springframework.ide.vscode.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.yaml.schema.YType;

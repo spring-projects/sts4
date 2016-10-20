@@ -10,7 +10,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.util.Futures;
+import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.yaml.reconcile.ApplicationYamlReconcileEngine;

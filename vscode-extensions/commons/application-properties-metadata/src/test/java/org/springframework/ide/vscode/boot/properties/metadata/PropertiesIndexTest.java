@@ -24,8 +24,8 @@ import org.springframework.ide.vscode.application.properties.metadata.PropertyIn
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertiesIndexManager;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.util.ExternalCommand;
-import org.springframework.ide.vscode.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
+import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
 /**
  * Sanity test the boot properties index 

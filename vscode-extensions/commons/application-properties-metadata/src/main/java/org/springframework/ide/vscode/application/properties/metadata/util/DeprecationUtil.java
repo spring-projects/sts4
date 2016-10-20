@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.commons.java.IAnnotatable;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IMemberValuePair;
-import org.springframework.ide.vscode.util.Log;
+import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 

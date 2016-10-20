@@ -19,8 +19,8 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.util.StringUtil;
-import org.springframework.ide.vscode.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.yaml.ast.NodeRef.Kind;
 import org.springframework.ide.vscode.yaml.ast.NodeRef.TupleValueRef;

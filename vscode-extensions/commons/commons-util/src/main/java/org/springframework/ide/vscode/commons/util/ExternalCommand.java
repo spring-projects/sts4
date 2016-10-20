@@ -8,7 +8,7 @@
  * Contributors:
  * Pivotal Software, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.util;
+package org.springframework.ide.vscode.commons.util;
 
 import java.io.File;
 import java.io.IOException;

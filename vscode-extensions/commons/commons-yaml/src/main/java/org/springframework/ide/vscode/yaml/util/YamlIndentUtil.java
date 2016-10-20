@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.util;
 
-import org.springframework.ide.vscode.util.Assert;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.yaml.structure.YamlDocument;
 
 import com.google.common.base.Strings;

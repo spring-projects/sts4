@@ -19,7 +19,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Proposal
 import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixContext;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.util.Log;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.yaml.completion.YamlPathEdits;
 import org.springframework.ide.vscode.yaml.path.YamlPath;
 import org.springframework.ide.vscode.yaml.reconcile.SpringPropertyProblem;

@@ -1,7 +1,7 @@
 package org.springframework.ide.vscode.application.properties.metadata.types;
 
-import static org.springframework.ide.vscode.util.ArrayUtils.firstElement;
-import static org.springframework.ide.vscode.util.ArrayUtils.lastElement;
+import static org.springframework.ide.vscode.commons.util.ArrayUtils.firstElement;
+import static org.springframework.ide.vscode.commons.util.ArrayUtils.lastElement;
 
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -33,16 +33,16 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.Signature;
-import org.springframework.ide.vscode.util.AlwaysFailingParser;
-import org.springframework.ide.vscode.util.ArrayUtils;
-import org.springframework.ide.vscode.util.Assert;
-import org.springframework.ide.vscode.util.CollectionUtil;
-import org.springframework.ide.vscode.util.EnumValueParser;
-import org.springframework.ide.vscode.util.HtmlSnippet;
-import org.springframework.ide.vscode.util.LazyProvider;
-import org.springframework.ide.vscode.util.Log;
-import org.springframework.ide.vscode.util.StringUtil;
-import org.springframework.ide.vscode.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.AlwaysFailingParser;
+import org.springframework.ide.vscode.commons.util.ArrayUtils;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.LazyProvider;
+import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
