@@ -17,6 +17,7 @@
 		<module>commons-java</module>
 		<module>java-properties</module>
 		<module>application-properties-metadata</module>
+		<module>commons-maven</module>
 	</modules>
 
 	<properties>
