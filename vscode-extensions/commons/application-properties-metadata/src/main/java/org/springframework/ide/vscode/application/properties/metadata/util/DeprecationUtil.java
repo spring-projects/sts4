@@ -11,10 +11,10 @@
 package org.springframework.ide.vscode.application.properties.metadata.util;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.java.IAnnotatable;
-import org.springframework.ide.vscode.java.IAnnotation;
-import org.springframework.ide.vscode.java.IJavaElement;
-import org.springframework.ide.vscode.java.IMemberValuePair;
+import org.springframework.ide.vscode.commons.java.IAnnotatable;
+import org.springframework.ide.vscode.commons.java.IAnnotation;
+import org.springframework.ide.vscode.commons.java.IJavaElement;
+import org.springframework.ide.vscode.commons.java.IMemberValuePair;
 import org.springframework.ide.vscode.util.Log;
 
 import com.google.common.collect.ImmutableSet;

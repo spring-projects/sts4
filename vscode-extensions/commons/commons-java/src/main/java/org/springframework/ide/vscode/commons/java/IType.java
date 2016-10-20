@@ -11,7 +11,7 @@
  *     Stephan Herrmann - Contribution for
  *								Bug 463533 - Signature.getSignatureSimpleName() returns different results for resolved and unresolved extends
  *******************************************************************************/
-package org.springframework.ide.vscode.java;
+package org.springframework.ide.vscode.commons.java;
 
 /**
  * Replaces eclipse JDT IType.

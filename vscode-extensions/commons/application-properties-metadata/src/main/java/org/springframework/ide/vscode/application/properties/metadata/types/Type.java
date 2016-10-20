@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.ide.vscode.boot.properties.metadata.types.Signature;
-import org.springframework.ide.vscode.java.IType;
+import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.java.Signature;
 import org.springframework.ide.vscode.util.ArrayUtils;
 import org.springframework.ide.vscode.util.Assert;
 import org.springframework.ide.vscode.util.Log;

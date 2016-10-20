@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.java;
+package org.springframework.ide.vscode.commons.java;
 
 import org.springframework.ide.vscode.util.HtmlSnippet;
 

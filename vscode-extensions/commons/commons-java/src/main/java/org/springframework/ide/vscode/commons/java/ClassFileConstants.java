@@ -13,7 +13,7 @@
  *     Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 405104 - [1.8][compiler][codegen] Implement support for serializeable lambdas
  *******************************************************************************/
-package org.springframework.ide.vscode.java;
+package org.springframework.ide.vscode.commons.java;
 
 public interface ClassFileConstants {
 

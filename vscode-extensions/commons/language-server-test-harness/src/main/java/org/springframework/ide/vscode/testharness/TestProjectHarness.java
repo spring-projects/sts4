@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.ide.vscode.java.IJavaProject;
-import org.springframework.ide.vscode.java.IType;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.util.ExternalCommand;
 import org.springframework.ide.vscode.util.ExternalProcess;
 import org.springframework.ide.vscode.util.HtmlSnippet;

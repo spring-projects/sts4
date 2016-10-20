@@ -5,9 +5,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.java.IJavaProject;
-import org.springframework.ide.vscode.java.IType;
 import org.springframework.ide.vscode.util.HtmlSnippet;
 import org.springframework.ide.vscode.util.StringUtil;
 

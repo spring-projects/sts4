@@ -10,7 +10,7 @@
  *     IBM Corporation - added constant AccDefault
  *     IBM Corporation - added constants AccBridge and AccVarargs for J2SE 1.5
  *******************************************************************************/
-package org.springframework.ide.vscode.java;
+package org.springframework.ide.vscode.commons.java;
 
 /**
  * Utility class for decoding modifier flags in Java elements.

@@ -1,6 +1,4 @@
-package org.springframework.ide.vscode.java;
-
-import org.springframework.ide.vscode.boot.properties.metadata.types.Signature;
+package org.springframework.ide.vscode.commons.java;
 
 public interface IMethod extends IMember {
 
