@@ -20,7 +20,7 @@ import org.springframework.ide.vscode.commons.util.ArrayUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.yaml.schema.YType;
+import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
 /**
  * @author Kris De Volder

@@ -4,8 +4,8 @@ import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.commons.util.HtmlSnippet;
-import org.springframework.ide.vscode.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 /**
  * Represents a property on a Type that can be accessed by name.

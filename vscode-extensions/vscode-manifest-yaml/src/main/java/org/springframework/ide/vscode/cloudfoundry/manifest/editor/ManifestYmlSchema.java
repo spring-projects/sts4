@@ -16,15 +16,15 @@ import java.util.Set;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.util.HtmlSnippet;
-import org.springframework.ide.vscode.yaml.schema.YType;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YAtomicType;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YBeanType;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YTypedPropertyImpl;
-import org.springframework.ide.vscode.yaml.schema.YTypeUtil;
-import org.springframework.ide.vscode.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.yaml.schema.YamlSchema;
-import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
+import org.springframework.ide.vscode.commons.yaml.schema.YType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
+import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 import com.google.common.collect.ImmutableSet;
 

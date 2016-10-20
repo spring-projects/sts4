@@ -20,16 +20,16 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFix
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixContext;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.yaml.completion.YamlPathEdits;
-import org.springframework.ide.vscode.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlPathEdits;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SDocNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
 import org.springframework.ide.vscode.yaml.reconcile.SpringPropertyProblem;
-import org.springframework.ide.vscode.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SChildBearingNode;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SDocNode;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SKeyNode;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNode;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureParser.SNodeType;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureProvider;
 
 import io.typefox.lsapi.CompletionItemKind;
 

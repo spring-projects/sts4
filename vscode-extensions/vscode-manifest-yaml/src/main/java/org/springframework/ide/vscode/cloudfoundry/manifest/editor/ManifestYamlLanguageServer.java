@@ -8,15 +8,15 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.yaml.ast.YamlParser;
-import org.springframework.ide.vscode.yaml.completion.SchemaBasedYamlAssistContextProvider;
-import org.springframework.ide.vscode.yaml.completion.YamlAssistContextProvider;
-import org.springframework.ide.vscode.yaml.completion.YamlCompletionEngine;
-import org.springframework.ide.vscode.yaml.reconcile.YamlSchemaBasedReconcileEngine;
-import org.springframework.ide.vscode.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.yaml.schema.YamlSchema;
-import org.springframework.ide.vscode.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;

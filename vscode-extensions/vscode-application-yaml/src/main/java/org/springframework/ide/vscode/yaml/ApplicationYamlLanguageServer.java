@@ -11,8 +11,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
-import org.springframework.ide.vscode.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.yaml.snakeyaml.Yaml;
 

@@ -1,7 +1,7 @@
 package org.springframework.ide.vscode.yaml.reconcile;
 
-import static org.springframework.ide.vscode.yaml.ast.NodeUtil.asScalar;
-import static org.springframework.ide.vscode.yaml.ast.YamlFileAST.getChildren;
+import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
+import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
 import static org.springframework.ide.vscode.yaml.reconcile.SpringPropertiesProblemType.YAML_DEPRECATED;
 import static org.springframework.ide.vscode.yaml.reconcile.SpringPropertiesProblemType.YAML_DUPLICATE_KEY;
 
@@ -21,11 +21,12 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.yaml.ast.NodeRef;
-import org.springframework.ide.vscode.yaml.ast.NodeRef.Kind;
-import org.springframework.ide.vscode.yaml.ast.NodeRef.TupleValueRef;
-import org.springframework.ide.vscode.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.Kind;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
 import org.springframework.ide.vscode.yaml.quickfix.ReplaceDeprecatedYamlQuickfix;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;

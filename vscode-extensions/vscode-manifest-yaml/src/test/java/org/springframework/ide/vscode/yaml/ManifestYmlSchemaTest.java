@@ -21,10 +21,10 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYmlSchema;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YBeanType;
-import org.springframework.ide.vscode.yaml.schema.YTypeFactory.YSeqType;
-import org.springframework.ide.vscode.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.yaml.util.DescriptionProviders;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
+import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
