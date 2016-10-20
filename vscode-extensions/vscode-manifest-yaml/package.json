@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "portfinder": "^0.4.0",
-    "vscode-languageclient": "^2.2.1"
+    "vscode-languageclient": "2.5.x"
   },
   "devDependencies": {
     "typescript": "^1.8.5",
