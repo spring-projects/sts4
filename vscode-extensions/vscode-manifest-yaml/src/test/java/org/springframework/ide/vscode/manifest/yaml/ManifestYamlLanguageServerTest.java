@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,8 +7,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServer;
 
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.TextDocumentSyncKind;

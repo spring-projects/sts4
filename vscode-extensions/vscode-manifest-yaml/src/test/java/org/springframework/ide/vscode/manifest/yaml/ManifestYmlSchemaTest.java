@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.manifest.yaml;
 /*******************************************************************************
  * Copyright (c) 2015, 2016 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYmlSchema;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
+import org.springframework.ide.vscode.manifest.yaml.ManifestYmlSchema;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;

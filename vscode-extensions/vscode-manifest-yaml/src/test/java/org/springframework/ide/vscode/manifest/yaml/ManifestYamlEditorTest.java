@@ -8,14 +8,14 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.yaml;
+package org.springframework.ide.vscode.manifest.yaml;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServer;
 
 public class ManifestYamlEditorTest {
 

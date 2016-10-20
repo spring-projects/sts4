@@ -104,7 +104,7 @@ export function activate(context: VSCode.ExtensionContext) {
                         let args = [
                             '-Dserver.port=' + port,
                             '-cp', classpath, 
-                            'org.springframework.ide.vscode.cloudfoundry.manifest.editor.Main'
+                            'org.springframework.ide.vscode.manifest.yaml.Main'
                         ];
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);

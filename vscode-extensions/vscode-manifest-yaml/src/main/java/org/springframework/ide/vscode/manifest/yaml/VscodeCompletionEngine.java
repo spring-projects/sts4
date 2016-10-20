@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.cloudfoundry.manifest.editor;
+package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.concurrent.CompletableFuture;
 

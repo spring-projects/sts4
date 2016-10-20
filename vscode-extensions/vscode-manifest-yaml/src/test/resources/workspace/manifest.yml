@@ -1,3 +1,5 @@
-#There's a syntax error in this file
-abc: foo
-- foo
+#Comment
+applications:
+- name: foo
+  buildpack: something
+  
