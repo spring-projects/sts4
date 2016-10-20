@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.completion;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
