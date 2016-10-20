@@ -19,8 +19,8 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.testharness.Editor;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 /**
  * @author Kris De Volder
  */

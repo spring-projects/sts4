@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.testharness;
+package org.springframework.ide.vscode.languageserver.testharness;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -22,7 +22,7 @@ import org.springframework.ide.vscode.application.properties.metadata.CachingVal
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
 
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.Diagnostic;

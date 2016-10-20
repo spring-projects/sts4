@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.testharness;
+package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
 

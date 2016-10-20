@@ -16,8 +16,8 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.testharness.Editor;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.yaml.PropertyIndexHarness.ItemConfigurer;
 
 import io.typefox.lsapi.CompletionItem;

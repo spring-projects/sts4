@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.TextDocumentSyncKind;

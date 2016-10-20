@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.boot.properties.test;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.properties.ApplicationPropertiesLanguageServer;
-import org.springframework.ide.vscode.testharness.Editor;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 /**
  * Boot App Properties Editor tests

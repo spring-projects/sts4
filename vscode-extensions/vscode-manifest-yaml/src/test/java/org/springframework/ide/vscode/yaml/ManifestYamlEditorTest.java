@@ -14,8 +14,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.cloudfoundry.manifest.editor.ManifestYamlLanguageServer;
-import org.springframework.ide.vscode.testharness.Editor;
-import org.springframework.ide.vscode.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 public class ManifestYamlEditorTest {
 
