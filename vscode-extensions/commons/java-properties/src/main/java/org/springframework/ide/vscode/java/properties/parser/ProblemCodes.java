@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.properties.parser;
+package org.springframework.ide.vscode.java.properties.parser;
 
 /**
  * Parsing error codes

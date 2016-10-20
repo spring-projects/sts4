@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.properties.parser.test;
+package org.springframework.ide.vscode.java.properties.parser.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,12 +17,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.properties.antlr.parser.AntlrParser;
-import org.springframework.ide.vscode.properties.parser.ParseResults;
-import org.springframework.ide.vscode.properties.parser.Parser;
-import org.springframework.ide.vscode.properties.parser.Problem;
-import org.springframework.ide.vscode.properties.parser.PropertiesAst.Comment;
-import org.springframework.ide.vscode.properties.parser.PropertiesAst.KeyValuePair;
+import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
+import org.springframework.ide.vscode.java.properties.parser.ParseResults;
+import org.springframework.ide.vscode.java.properties.parser.Parser;
+import org.springframework.ide.vscode.java.properties.parser.Problem;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Comment;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
 
 public class PropertiesAntlrParserTest {
 	

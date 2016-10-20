@@ -8,22 +8,38 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.properties.parser;
+package org.springframework.ide.vscode.java.properties.parser;
 
 /**
- * Basic Parser interface
+ * Parsing problem interface
  * 
  * @author Alex Boyko
  *
  */
-public interface Parser {
+public interface Problem {
 	
 	/**
-	 * Parses passed in text based on Java Properties format
-	 * 
-	 * @param text Text to parse
-	 * @return Results of the parsing. See {@link ParseResults}
+	 * The parsing problem message
+	 * @return The message string
 	 */
-	ParseResults parse(String text);
-
+	String getMessage();
+	
+	/**
+	 * Problem's code
+	 * @return The code
+	 */
+	String getCode();
+	
+	/**
+	 * Problem's start index in the document
+	 * @return Start index relative to the document
+	 */
+	int getOffset();
+	
+	/**
+	 * Problem's range in symbols 
+	 * @return Number of characters
+	 */
+	int getLength();
+	
 }

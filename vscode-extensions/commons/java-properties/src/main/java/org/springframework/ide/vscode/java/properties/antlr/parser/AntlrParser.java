@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.properties.antlr.parser;
+package org.springframework.ide.vscode.java.properties.antlr.parser;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -22,15 +22,15 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.springframework.ide.vscode.properties.antlr.parser.JavaPropertiesParser.CommentLineContext;
-import org.springframework.ide.vscode.properties.antlr.parser.JavaPropertiesParser.KeyContext;
-import org.springframework.ide.vscode.properties.antlr.parser.JavaPropertiesParser.PropertyLineContext;
-import org.springframework.ide.vscode.properties.antlr.parser.JavaPropertiesParser.SeparatorAndValueContext;
-import org.springframework.ide.vscode.properties.parser.ParseResults;
-import org.springframework.ide.vscode.properties.parser.Parser;
-import org.springframework.ide.vscode.properties.parser.Problem;
-import org.springframework.ide.vscode.properties.parser.ProblemCodes;
-import org.springframework.ide.vscode.properties.parser.PropertiesAst;
+import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.CommentLineContext;
+import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.KeyContext;
+import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.PropertyLineContext;
+import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.SeparatorAndValueContext;
+import org.springframework.ide.vscode.java.properties.parser.ParseResults;
+import org.springframework.ide.vscode.java.properties.parser.Parser;
+import org.springframework.ide.vscode.java.properties.parser.Problem;
+import org.springframework.ide.vscode.java.properties.parser.ProblemCodes;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst;
 
 import com.google.common.collect.ImmutableList;
 

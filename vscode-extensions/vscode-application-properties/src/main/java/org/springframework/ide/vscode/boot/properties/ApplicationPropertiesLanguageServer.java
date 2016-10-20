@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.properties.antlr.parser.AntlrParser;
-import org.springframework.ide.vscode.properties.parser.ParseResults;
-import org.springframework.ide.vscode.properties.parser.Parser;
+import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
+import org.springframework.ide.vscode.java.properties.parser.ParseResults;
+import org.springframework.ide.vscode.java.properties.parser.Parser;
 
 import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DiagnosticSeverity;
