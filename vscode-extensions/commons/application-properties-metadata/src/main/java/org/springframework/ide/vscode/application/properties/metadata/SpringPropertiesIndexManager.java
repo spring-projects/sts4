@@ -17,6 +17,8 @@ import java.util.Map;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.application.properties.metadata.util.Listener;
 import org.springframework.ide.vscode.application.properties.metadata.util.ListenerManager;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties
@@ -28,21 +30,21 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Liste
  */
 public class SpringPropertiesIndexManager extends ListenerManager<Listener<SpringPropertiesIndexManager>> {
 
-	private Map<Path, SpringPropertyIndex> indexes = null;
+	private Map<IJavaProject, SpringPropertyIndex> indexes = null;
 	final private ValueProviderRegistry valueProviders;
 
 	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders) {
 		this.valueProviders = valueProviders;
 	}
 
-	public synchronized FuzzyMap<PropertyInfo> get(Path projectFolder) {
+	public synchronized FuzzyMap<PropertyInfo> get(IJavaProject project) {
 		if (indexes==null) {
 			indexes = new HashMap<>();
 		}
-		SpringPropertyIndex index = indexes.get(projectFolder);
+		SpringPropertyIndex index = indexes.get(project);
 		if (index==null) {
-			index = new SpringPropertyIndex(valueProviders, projectFolder);
-			indexes.put(projectFolder, index);
+			index = new SpringPropertyIndex(valueProviders, project.getClasspath());
+			indexes.put(project, index);
 		}
 		return index;
 	}

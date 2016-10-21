@@ -14,6 +14,7 @@ import org.springframework.ide.vscode.application.properties.metadata.SpringProp
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
@@ -30,8 +31,8 @@ public class PropertyIndexHarness {
 	protected SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
 		public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
 			if (index==null) {
-				Path path = testProject == null ? null : testProject.getPath();
-				index =	new SpringPropertyIndex(valueProviders, path);
+				IClasspath classpath = testProject == null ? null : testProject.getClasspath();
+				index =	new SpringPropertyIndex(valueProviders, classpath);
 				for (ConfigurationMetadataProperty propertyInfo : datas.values()) {
 					index.add(propertyInfo);
 				}

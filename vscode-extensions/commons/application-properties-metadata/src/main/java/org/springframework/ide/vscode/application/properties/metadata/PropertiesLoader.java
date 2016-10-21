@@ -21,6 +21,7 @@ import java.util.zip.ZipEntry;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
+import org.springframework.ide.vscode.commons.java.IClasspath;
 
 public class PropertiesLoader {
 	
@@ -48,8 +49,9 @@ public class PropertiesLoader {
     
 	private ConfigurationMetadataRepositoryJsonBuilder builder = ConfigurationMetadataRepositoryJsonBuilder.create();
 	
-	public ConfigurationMetadataRepository load(Path projectPath) {
-		return load(projectPath.resolve("classpath.txt"), projectPath.resolve("target/classes"));
+	public ConfigurationMetadataRepository load(IClasspath classPath) {
+		Path path = classPath.getPath();
+		return load(path.resolve("classpath.txt"), path.resolve("target/classes"));
 	}
 	
 	private ConfigurationMetadataRepository load(Path classPathFilePath, Path outputFolderPath) {
@@ -154,8 +156,8 @@ public class PropertiesLoader {
 	
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			Path projectPath = Paths.get(args[0]);			
-			ConfigurationMetadataRepository repo = new PropertiesLoader().load(projectPath);
+			Path projectPath = Paths.get(args[0]);
+			ConfigurationMetadataRepository repo = new PropertiesLoader().load(() -> projectPath);
 			Map<String, ConfigurationMetadataProperty> allProperties = repo.getAllProperties();
 			allProperties.keySet().forEach(System.out::println);
 		}

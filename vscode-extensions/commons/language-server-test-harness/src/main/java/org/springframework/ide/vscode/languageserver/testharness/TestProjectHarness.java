@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
@@ -21,10 +22,45 @@ import com.google.common.cache.CacheBuilder;
  */
 public class TestProjectHarness {
 
+	private static final class TestProject implements IJavaProject {
+		private Path location;
+
+		public TestProject(Path location) {
+			this.location = location;
+		}
+
+		@Override
+		public HtmlSnippet getJavaDoc() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getElementName() {
+			return location.toFile().getName();
+		}
+
+		@Override
+		public boolean exists() {
+			return true;
+		}
+
+		@Override
+		public IClasspath getClasspath() {
+			return () -> location;
+		}
+
+		@Override
+		public IType findType(String fqName) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+
 	public Cache<String, IJavaProject> cache = CacheBuilder.newBuilder().build();
 
-	public IJavaProject get(String name) throws Exception {
-		Path testProjectPath = Paths.get(TestProjectHarness.class.getResource("/demo-1").toURI());
+	public IJavaProject mavenProject(String name) throws Exception {
+		Path testProjectPath = Paths.get(TestProjectHarness.class.getResource("/"+name).toURI());
 		assertTrue(Files.exists(testProjectPath));
 		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
 			testProjectPath.resolve("mvnw").toFile().setExecutable(true);
@@ -33,34 +69,7 @@ public class TestProjectHarness {
 				throw new RuntimeException("Failed to build test project");
 			}
 		}
-		return new IJavaProject() {
-
-			@Override
-			public HtmlSnippet getJavaDoc() {
-				return null;
-			}
-
-			@Override
-			public String getElementName() {
-				return name;
-			}
-
-			@Override
-			public boolean exists() {
-				return true;
-			}
-
-			@Override
-			public Path getPath() {
-				return testProjectPath;
-			}
-
-			@Override
-			public IType findType(String string) {
-				//throw new UnsupportedOperationException("Not yet implemented");
-				return null;
-			}
-		};
+		return new TestProject(testProjectPath);
 	}
 
 }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties.metadata;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,12 +18,13 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataPrope
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataSource;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.java.IClasspath;
 
 public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 	
 	private ValueProviderRegistry valueProviders;
 
-	public SpringPropertyIndex(ValueProviderRegistry valueProviders, Path projectPath) {
+	public SpringPropertyIndex(ValueProviderRegistry valueProviders, IClasspath projectPath) {
 		this.valueProviders = valueProviders;
 		if (projectPath!=null) {
 //			try {

@@ -1,7 +1,5 @@
 package org.springframework.ide.vscode.application.yaml;
 
-import java.nio.file.Path;
-
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertiesIndexManager;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
@@ -20,10 +18,7 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
 		IJavaProject jp = javaProjectFinder.find(doc);
 		if (jp!=null) {
-			Path projectFolder = jp.getPath();
-			if (projectFolder!=null) {
-				return indexManager.get(projectFolder);
-			}
+			return indexManager.get(jp);
 		}
 		return null;
 	}

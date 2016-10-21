@@ -3,12 +3,9 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
@@ -48,45 +45,5 @@ public class DefaultJavaProjectFinder implements JavaProjectFinder {
 			}
 		}
 		return null;
-	};
-
-	private static class JavaProjectWithClasspathFile implements IJavaProject {
-
-		private File cpFile;
-
-		public JavaProjectWithClasspathFile(File cpFile) {
-			this.cpFile = cpFile;
-		}
-
-		@Override
-		public String getElementName() {
-			return cpFile.getParentFile().getName();
-		}
-
-		@Override
-		public HtmlSnippet getJavaDoc() {
-			return null;
-		}
-
-		@Override
-		public boolean exists() {
-			return cpFile.exists();
-		}
-
-		@Override
-		public IType findType(String fqName) {
-			//TODO: implement
-			return null;
-		}
-
-		@Override
-		public Path getPath() {
-			return cpFile.getParentFile().toPath();
-		}
-
-		@Override
-		public String toString() {
-			return "JavaProjectWithClasspathFile("+cpFile+")";
-		}
 	}
 }
