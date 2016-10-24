@@ -10,7 +10,7 @@ package org.springframework.ide.vscode.commons.maven;
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,15 +36,18 @@ import org.springframework.ide.vscode.commons.util.ExternalProcess;
  *
  */
 public class DependencyTreeTest {
-
+	
 	/**
 	 * Build test project if it's not built already
 	 * @throws Exception
 	 */
 	private static void buildProject(Path testProjectPath) throws Exception {
 		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
-			testProjectPath.resolve("mvnw").toFile().setExecutable(true);
-			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(), new ExternalCommand("./mvnw", "clean", "package"), true);
+			Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
+					? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
+			mvnwPath.toFile().setExecutable(true);
+			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
+					new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
 			if (process.getExitValue() != 0) {
 				throw new RuntimeException("Failed to build test project");
 			}

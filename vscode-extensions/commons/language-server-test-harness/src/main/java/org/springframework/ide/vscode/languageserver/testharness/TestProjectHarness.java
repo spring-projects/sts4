@@ -60,11 +60,14 @@ public class TestProjectHarness {
 	public Cache<String, IJavaProject> cache = CacheBuilder.newBuilder().build();
 
 	public IJavaProject mavenProject(String name) throws Exception {
-		Path testProjectPath = Paths.get(TestProjectHarness.class.getResource("/"+name).toURI());
+		Path testProjectPath = Paths.get(TestProjectHarness.class.getResource("/" + name).toURI());
 		assertTrue(Files.exists(testProjectPath));
 		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
-			testProjectPath.resolve("mvnw").toFile().setExecutable(true);
-			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(), new ExternalCommand("./mvnw", "clean", "package"), true);
+			Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
+					? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
+			mvnwPath.toFile().setExecutable(true);
+			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
+					new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
 			if (process.getExitValue() != 0) {
 				throw new RuntimeException("Failed to build test project");
 			}
