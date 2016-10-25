@@ -10,12 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.maven;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -47,6 +55,9 @@ import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
  */
 public class MavenCore {
 	
+	public static final String CLASSPATH_TXT = "classpath.txt";
+	public static final String POM_XML = "pom.xml";
+	
 	private static MavenCore instance = null;
 	
 	private MavenBridge maven = new MavenBridge();
@@ -58,6 +69,20 @@ public class MavenCore {
 		return instance;
 	}
 	
+	/**
+	 * Reads maven classpath text file
+	 * 
+	 * @param classPathFilePath
+	 * @return set of classpath entries
+	 * @throws IOException
+	 */
+	public static Set<Path> readClassPathFile(Path classPathFilePath) throws IOException {
+		InputStream in = Files.newInputStream(classPathFilePath);
+		String text = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
+		Path dir = classPathFilePath.getParent();
+		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve).collect(Collectors.toSet());
+	}
+
 	/**
 	 * Creates Maven Project descriptor based on the pom file.
 	 * 

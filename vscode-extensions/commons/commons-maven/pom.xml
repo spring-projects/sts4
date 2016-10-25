@@ -2,7 +2,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>commons</groupId>
 	<artifactId>commons-maven</artifactId>
 	<packaging>jar</packaging>
 	<name>commons-maven</name>
@@ -21,38 +20,35 @@
 	</properties>
 
 	<dependencies>	
-		<!-- Common Utilities -->	
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-util</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 	
 		<!--  Maven Runtime -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
-			<optional>true</optional>
+			<version>${maven-core.version}</version>
 		</dependency>
 		
  		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-embedder</artifactId>
-			<optional>true</optional>
+			<version>${maven-core.version}</version>
+		</dependency>
+		
+		<!-- Java Model -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<!-- testing -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>project-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven</artifactId>
-				<version>${maven-core.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	
 </project>

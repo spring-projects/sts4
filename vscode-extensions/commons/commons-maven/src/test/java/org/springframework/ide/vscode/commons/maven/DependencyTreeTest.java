@@ -12,22 +12,14 @@ package org.springframework.ide.vscode.commons.maven;
  *******************************************************************************/
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
-import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.project.harness.Projects;
 
 /**
  * Tests for comparing maven calculated dependencies with ours
@@ -37,41 +29,16 @@ import org.springframework.ide.vscode.commons.util.ExternalProcess;
  */
 public class DependencyTreeTest {
 	
-	/**
-	 * Build test project if it's not built already
-	 * @throws Exception
-	 */
-	private static void buildProject(Path testProjectPath) throws Exception {
-		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
-			Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
-					? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
-			mvnwPath.toFile().setExecutable(true);
-			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
-					new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
-			if (process.getExitValue() != 0) {
-				throw new RuntimeException("Failed to build test project");
-			}
-		}
-	}
-	
-	private static Set<Path> readClassPathFile(Path classPathFilePath) throws IOException {
-		InputStream in = Files.newInputStream(classPathFilePath);
-		String text = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
-		Path dir = classPathFilePath.getParent();
-		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve).collect(Collectors.toSet());
-	}
-	
 	@Test
 	public void mavenTest() throws Exception {
-		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/demo-1").toURI());
-		buildProject(testProjectPath);
+		Path testProjectPath = Projects.buildMavenProject("empty-boot-project-with-classpath-file");
 		
-		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve("pom.xml").toFile());
+		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		Set<Path> calculatedClassPath = MavenCore.getInstance().resolveDependencies(project, null).stream().map(artifact -> {
 			return Paths.get(artifact.getFile().toURI());
 		}).collect(Collectors.toSet());;
 		
-		Set<Path> expectedClasspath = readClassPathFile(testProjectPath.resolve("classpath.txt"));
+		Set<Path> expectedClasspath = MavenCore.readClassPathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT));
 		assertEquals(expectedClasspath, calculatedClassPath);		
 	}
 

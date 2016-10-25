@@ -8,26 +8,20 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.java;
+package org.springframework.ide.vscode.commons.languageserver.java;
 
-import java.nio.file.Path;
-import java.util.Collection;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
 /**
- * Classpath for a Java artifact
- * 
- * @author Kris De Volder
+ * Strategy foe finding Java project for a document
+ *
  * @author Alex Boyko
  *
  */
-public interface IClasspath {
+@FunctionalInterface
+public interface IJavaProjectFinderStrategy {
 
-	/**
-	 * Classpath entries paths
-	 * 
-	 * @return collection of classpath entries in a form file/folder paths
-	 * @throws Exception
-	 */
-	Collection<Path> getClasspathEntries() throws Exception;
+	IJavaProject find(IDocument document);
 
 }

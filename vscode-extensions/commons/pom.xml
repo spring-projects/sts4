@@ -18,6 +18,7 @@
 		<module>java-properties</module>
 		<module>application-properties-metadata</module>
 		<module>commons-maven</module>
+		<module>project-test-harness</module>
 	</modules>
 
 	<properties>

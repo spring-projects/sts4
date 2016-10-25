@@ -5,6 +5,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
 @FunctionalInterface
 public interface JavaProjectFinder {
-	JavaProjectFinder DEFAULT = new DefaultJavaProjectFinder("classpath.txt");
+	JavaProjectFinder DEFAULT = new DefaultJavaProjectFinder();
 	IJavaProject find(IDocument doc);
 }

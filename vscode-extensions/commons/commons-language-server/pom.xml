@@ -23,6 +23,11 @@
 			<artifactId>commons-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-maven</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Java implementation of VS Code language server protocol -->
 		<dependency>
 			<groupId>io.typefox.lsapi</groupId>
