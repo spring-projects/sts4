@@ -14,7 +14,10 @@ public class DefaultJavaProjectFinder implements JavaProjectFinder {
 	public IJavaProject find(IDocument d) {
 		for (IJavaProjectFinderStrategy strategy : STRATEGIES) {
 			try {
-				return strategy.find(d);
+				IJavaProject project = strategy.find(d);
+				if (project != null) {
+					return project;
+				}
 			} catch (Throwable t) {
 				// Log perhaps?
 			}
