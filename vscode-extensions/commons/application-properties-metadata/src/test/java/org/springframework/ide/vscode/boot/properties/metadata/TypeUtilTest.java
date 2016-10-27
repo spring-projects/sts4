@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
@@ -37,6 +38,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  * @author Alex Boyko 
  *
  */
+@Ignore
 public class TypeUtilTest {
 	
 	private IJavaProject project;
@@ -56,7 +58,7 @@ public class TypeUtilTest {
 		return typeUtil.getProperties(type, enumMode, beanMode);
 	}
 
-//	@Test
+	@Test
 	public void testGetTrickyProperties() throws Exception {
 		useProject("tricky-getters-boot-1.3.1-app");
 		List<TypedProperty> props = getProperties(TypeParser.parse("demo.TrickyGetters"), EnumCaseMode.LOWER_CASE, BeanPropertyNameMode.HYPHENATED);
@@ -65,7 +67,7 @@ public class TypeUtilTest {
 		assertEquals("public-property", names.get(0));
 	}
 
-//	@Test
+	@Test
 	public void testGetProperties() throws Exception {
 		useProject("enums-boot-1.3.2-app");
 		assertNotNull(project.findType("demo.Color"));
@@ -107,7 +109,7 @@ public class TypeUtilTest {
 
 	}
 
-//	@Test
+	@Test
 	public void testGetEnumKeyedProperties() throws Exception {
 		useProject("enums-boot-1.3.2-app");
 		Type data = TypeParser.parse("java.util.Map<demo.Color,Something>");
@@ -128,7 +130,7 @@ public class TypeUtilTest {
 		assertEquals(TypeParser.parse(expectedType), actualType);
 	}
 
-//	@Test
+	@Test
 	public void testTypeFromSignature() throws Exception {
 		useProject("enums-boot-1.3.2-app");
 		assertType("java.lang.String", Type.fromSignature("QString;", project.findType("demo.ColorData")));
