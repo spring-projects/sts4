@@ -19,6 +19,7 @@
 		<module>application-properties-metadata</module>
 		<module>commons-maven</module>
 		<module>project-test-harness</module>
+		<module>properties-editor-test-harness</module>
 	</modules>
 
 	<properties>

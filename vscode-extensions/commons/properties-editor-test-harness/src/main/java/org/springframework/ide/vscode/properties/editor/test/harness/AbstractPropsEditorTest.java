@@ -1,4 +1,5 @@
-package org.springframework.ide.vscode.application.yaml;
+package org.springframework.ide.vscode.properties.editor.test.harness;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -13,24 +14,23 @@ import org.junit.Before;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.application.yaml.ApplicationYamlLanguageServer;
-import org.springframework.ide.vscode.application.yaml.PropertyIndexHarness.ItemConfigurer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.properties.editor.test.harness.PropertyIndexHarness.ItemConfigurer;
 
 import io.typefox.lsapi.CompletionItem;
 
-public class AbstractPropsEditorTest {
+public abstract class AbstractPropsEditorTest {
 	
-	private PropertyIndexHarness md;
+	protected PropertyIndexHarness md;
 	private LanguageServerHarness harness;
 	private IJavaProject testProject;
 	private TypeUtil typeUtil;	
 
-	private TypeUtilProvider typeUtilProvider = (IDocument doc) -> {
+	protected TypeUtilProvider typeUtilProvider = (IDocument doc) -> {
 		if (typeUtil==null) {
 			typeUtil = new TypeUtil(testProject);
 		}
@@ -48,9 +48,7 @@ public class AbstractPropsEditorTest {
 		harness.intialize(null);
 	}
 	
-	private SimpleLanguageServer newLanguageServer() {
-		return new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider);
-	}
+	protected abstract SimpleLanguageServer newLanguageServer();
 	
 	public ItemConfigurer data(String id, String type, Object deflt, String description, String... sources) {
 		return md.data(id, type, deflt, description, sources);

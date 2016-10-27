@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.application.yaml;
+package org.springframework.ide.vscode.properties.editor.test.harness;
 
 //import org.eclipse.jface.viewers.StyledString;
 //import org.eclipse.swt.custom.StyleRange;

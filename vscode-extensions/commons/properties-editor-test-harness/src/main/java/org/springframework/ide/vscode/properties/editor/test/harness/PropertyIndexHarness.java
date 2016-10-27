@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.application.yaml;
+package org.springframework.ide.vscode.properties.editor.test.harness;
 
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
