@@ -46,6 +46,7 @@ public class TypeUtilTest {
 	
 	private Type getPropertyType(Type type, String propName, EnumCaseMode enumMode, BeanPropertyNameMode beanMode) {
 		List<TypedProperty> props = getProperties(type, enumMode, beanMode);
+		assertNotNull(props);
 		for (TypedProperty prop : props) {
 			if (prop.getName().equals(propName)) {
 				return prop.getType();
@@ -62,6 +63,7 @@ public class TypeUtilTest {
 	public void testGetTrickyProperties() throws Exception {
 		useProject("tricky-getters-boot-1.3.1-app");
 		List<TypedProperty> props = getProperties(TypeParser.parse("demo.TrickyGetters"), EnumCaseMode.LOWER_CASE, BeanPropertyNameMode.HYPHENATED);
+		assertNotNull(props);
 		List<String> names = props.stream().map(p -> p.getName()).collect(Collectors.toList());
 		assertEquals(1, names.size());
 		assertEquals("public-property", names.get(0));
