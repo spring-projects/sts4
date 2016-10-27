@@ -19,10 +19,10 @@ import org.springframework.ide.vscode.application.properties.metadata.PropertyIn
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertiesIndexManager;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.maven.java.Projects;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
-import org.springframework.ide.vscode.project.harness.Projects;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
  * Sanity test the boot properties index
@@ -38,8 +38,8 @@ public class PropertiesIndexTest {
 	public void springStandardPropertyPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		MavenJavaProject mavenProject = new MavenJavaProject(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.POM_XML).toFile());
+		MavenJavaProject mavenProject = Projects
+				.createMavenJavaProject(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject);
 		PropertyInfo propertyInfo = index.get("server.port");
 		assertNotNull(propertyInfo);
@@ -51,8 +51,8 @@ public class PropertiesIndexTest {
 	public void customPropertyPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		MavenJavaProject mavenProject = new MavenJavaProject(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.POM_XML).toFile());
+		MavenJavaProject mavenProject = Projects
+				.createMavenJavaProject(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject);
 		PropertyInfo propertyInfo = index.get("demo.settings.user");
 		assertNotNull(propertyInfo);
@@ -64,8 +64,8 @@ public class PropertiesIndexTest {
 	public void propertyNotPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		MavenJavaProject mavenProject = new MavenJavaProject(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.POM_XML).toFile());
+		MavenJavaProject mavenProject = Projects
+				.createMavenJavaProject(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject);
 		PropertyInfo propertyInfo = index.get("my.server.port");
 		assertNull(propertyInfo);
@@ -75,8 +75,8 @@ public class PropertiesIndexTest {
 	public void springStandardPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		JavaProjectWithClasspathFile classpathFileProject = new JavaProjectWithClasspathFile(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.CLASSPATH_TXT).toFile());
+		JavaProjectWithClasspathFile classpathFileProject = Projects
+				.createJavaProjectWithClasspathFile(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject);
 		PropertyInfo propertyInfo = index.get("server.port");
 		assertNotNull(propertyInfo);
@@ -88,8 +88,8 @@ public class PropertiesIndexTest {
 	public void customPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		JavaProjectWithClasspathFile classpathFileProject = new JavaProjectWithClasspathFile(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.CLASSPATH_TXT).toFile());
+		JavaProjectWithClasspathFile classpathFileProject = Projects
+				.createJavaProjectWithClasspathFile(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject);
 		PropertyInfo propertyInfo = index.get("demo.settings.user");
 		assertNotNull(propertyInfo);
@@ -101,8 +101,8 @@ public class PropertiesIndexTest {
 	public void propertyNotPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault());
-		JavaProjectWithClasspathFile classpathFileProject = new JavaProjectWithClasspathFile(
-				Projects.buildMavenProject(CUSTOM_PROPERTIES_PROJECT).resolve(MavenCore.CLASSPATH_TXT).toFile());
+		JavaProjectWithClasspathFile classpathFileProject = Projects
+				.createJavaProjectWithClasspathFile(ProjectsHarness.buildMavenProject(CUSTOM_PROPERTIES_PROJECT));
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject);
 		PropertyInfo propertyInfo = index.get("my.server.port");
 		assertNull(propertyInfo);

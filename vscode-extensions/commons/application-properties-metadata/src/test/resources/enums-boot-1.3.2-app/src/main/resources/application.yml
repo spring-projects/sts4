@@ -1,0 +1,42 @@
+# Demonstrating the new STS Support for
+# Spring Boot Configuration files in .yml format
+# What you see here will be available in STS 3.7.0 
+
+# Features:
+#  1) content assist completions
+#  2) problem markers
+#  3) information hovers
+#  4) hyperlink to Java code
+#  AND
+#    alwo works for user-defined Configurations, including those where properties
+#    are bound to
+#      - enums, 
+#      - Pojo (Beans) 
+#      - lists, 
+#      - Maps 
+
+spring:
+  cloud:
+    config:
+  application: 
+    name: foo
+    index: 777
+  activemq:
+    broker-url: amqp://sdfksdfkjdsf
+    
+flyway:
+  enabled: false
+server:
+  port: 666
+  address: localhost
+
+foo:
+  list:
+    - aaa
+    - the be
+    - and c
+  data:
+  color-names:
+    red: Rood  
+  name-colors:
+    "Rood kleurtje": red

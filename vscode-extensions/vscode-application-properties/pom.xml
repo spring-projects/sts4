@@ -51,6 +51,12 @@
 			<artifactId>commons-language-server</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- Spring Boot Properties Metadata -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>application-properties-metadata</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>

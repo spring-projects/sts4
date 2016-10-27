@@ -55,9 +55,6 @@ import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
  */
 public class MavenCore {
 	
-	public static final String CLASSPATH_TXT = "classpath.txt";
-	public static final String POM_XML = "pom.xml";
-	
 	private static MavenCore instance = null;
 	
 	private MavenBridge maven = new MavenBridge();

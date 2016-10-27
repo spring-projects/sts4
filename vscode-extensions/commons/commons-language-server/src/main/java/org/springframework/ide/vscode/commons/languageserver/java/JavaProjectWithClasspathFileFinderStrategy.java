@@ -15,7 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.Projects;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
 import org.springframework.ide.vscode.commons.util.FileUtils;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -30,7 +30,7 @@ public class JavaProjectWithClasspathFileFinderStrategy implements IJavaProjectF
 				URI uri = new URI(uriStr);
 				//TODO: This only work with File uri. Should it work with others too?
 				File file = new File(uri).getAbsoluteFile();
-				File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
+				File cpFile = FileUtils.findFile(file, Projects.CLASSPATH_TXT);
 				if (cpFile!=null) {
 					return new JavaProjectWithClasspathFile(cpFile);
 				}

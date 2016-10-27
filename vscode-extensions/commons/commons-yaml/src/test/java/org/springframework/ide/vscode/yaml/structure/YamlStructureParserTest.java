@@ -21,12 +21,9 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SDocNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
@@ -35,56 +32,8 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 
 public class YamlStructureParserTest {
 
-	static class YamlEditor {
-
-		private String text;
-
-		public YamlEditor(String string) throws Exception {
-			this.text = string;
-		}
-		
-		@Override
-		public String toString() {
-			return "YamlEditor("+text+")";
-		}
-
-		public SRootNode parseStructure() throws Exception {
-			YamlStructureProvider sp = YamlStructureProvider.DEFAULT;
-			TextDocument _doc = new TextDocument(null);
-			_doc.setText(text);
-			YamlDocument doc = new YamlDocument(_doc, sp);
-			return sp.getStructure(doc);
-		}
-
-		public String getRawText() {
-			return text;
-		}
-
-		public String getText() {
-			//No cursor support, not needed for these tests.
-			return getRawText();
-		}
-
-		public int startOf(String snippet) {
-			int start = text.indexOf(snippet);
-			assertTrue("Snippet not found in editor '"+snippet+"'", start>=0);
-			return start;
-		}
-
-		public String textBetween(int start, int end) {
-			return text.substring(start, end);
-		}
-
-		public String textUnder(SNode node) throws Exception {
-			int start = node.getStart();
-			int end = node.getTreeEnd();
-			return textBetween(start, end);
-		}
-
-	}
-
 	@Test public void testSimple() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"hello:\n"+
 				"  world:\n" +
 				"    message\n"
@@ -99,7 +48,7 @@ public class YamlStructureParserTest {
 		);
 	}
 
-	public void assertParse(YamlEditor editor, String... expectDumpLines) throws Exception {
+	public void assertParse(MockYamlEditor editor, String... expectDumpLines) throws Exception {
 		StringBuilder expected = new StringBuilder();
 		for (String line : expectDumpLines) {
 			expected.append(line);
@@ -108,7 +57,7 @@ public class YamlStructureParserTest {
 		assertEquals(expected.toString().trim(),  editor.parseStructure().toString().trim());
 	}
 
-	public void assertParseOneDoc(YamlEditor editor, String... expectDumpLines) throws Exception {
+	public void assertParseOneDoc(MockYamlEditor editor, String... expectDumpLines) throws Exception {
 		StringBuilder expected = new StringBuilder();
 		for (String line : expectDumpLines) {
 			expected.append(line);
@@ -118,7 +67,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testComments() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"#A comment\n" +
 				"hello:\n"+
 				"  #Another comment\n" +
@@ -137,7 +86,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testSiblings() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -172,7 +121,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testMultiDocs() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -215,10 +164,10 @@ public class YamlStructureParserTest {
 
 
 	@Test public void testSequenceBasic() throws Exception {
-		YamlEditor editor;
+		MockYamlEditor editor;
 
 		//Sequence at root level
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"- foo\n" +
 				"- bar\n" +
 				"- zor"
@@ -231,7 +180,7 @@ public class YamlStructureParserTest {
 		);
 
 		//Sequences nested in map without indent
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"something:\n" +
 				"- foo\n" +
 				"- bar\n" +
@@ -252,7 +201,7 @@ public class YamlStructureParserTest {
 		);
 
 		//Sequences nested in map without indent
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"higher:\n" +
 				"  something:\n" +
 				"  - foo\n" +
@@ -275,7 +224,7 @@ public class YamlStructureParserTest {
 		);
 
 		//Sequences nested in map with indent
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"something:\n" +
 				"  - foo\n" +
 				"  - bar\n" +
@@ -298,10 +247,10 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testKeyWithADot() throws Exception {
-		YamlEditor editor;
+		MockYamlEditor editor;
 
 		//First try without a '.'
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"logging:\n" +
 				"  level:\n" +
 				"    somepackage: "
@@ -313,7 +262,7 @@ public class YamlStructureParserTest {
 				"      KEY(4): somepackage:"
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"logging:\n" +
 				"  level:\n" +
 				"    some.package: "
@@ -328,9 +277,9 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testSequenceWithNestedSequence() throws Exception {
-		YamlEditor editor;
+		MockYamlEditor editor;
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"- - a\n" +
 				"  - b\n" +
 				"- - c\n" +
@@ -347,7 +296,7 @@ public class YamlStructureParserTest {
 				"      RAW(-1): "
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"- - a\n" +
 				"  - b\n" +
@@ -365,7 +314,7 @@ public class YamlStructureParserTest {
 				"      SEQ(2): - d"
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"- - a\n" +
 				"  - b\n" +
@@ -386,7 +335,7 @@ public class YamlStructureParserTest {
 				"        RAW(-1): "
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"- \n" +
 				"  - a\n" +
@@ -406,7 +355,7 @@ public class YamlStructureParserTest {
 				"      SEQ(2): - d"
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"- - - - a\n" +
 				"      - b\n" +
@@ -428,7 +377,7 @@ public class YamlStructureParserTest {
 				"      RAW(-1): "
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"- - - - a\n" +
 				"    - c\n" +
@@ -449,10 +398,10 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testSequenceWithNestedMap() throws Exception {
-		YamlEditor editor;
+		MockYamlEditor editor;
 
 		// A map nested in a sequence may start on the same line
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"- foo: is foo\n" +
 				"  bar: is bar\n" +
 				"    junk\n" +
@@ -472,7 +421,7 @@ public class YamlStructureParserTest {
 		);
 
 		//A map nested in a sequence may start on a new line
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"-\n"+  //without space
 				"  foo: is foo\n" +
 				"  bar: is bar\n" +
@@ -492,7 +441,7 @@ public class YamlStructureParserTest {
 				"    KEY(2): b: bbb"
 		);
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n" +
 				"-\n"+  //without space
 				"  foo: is foo\n" +
@@ -516,7 +465,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testTraverseSeq() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"foo:\n" +
 				"- - - - a\n" +
 				"    - c\n" +
@@ -543,9 +492,9 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testFindAndTraverseSeqNode() throws Exception {
-		YamlEditor editor;
+		MockYamlEditor editor;
 
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n"+
 				"- abc\n" +
 				"- def\n" +
@@ -558,7 +507,7 @@ public class YamlStructureParserTest {
 		// nodes are position sensitive make sure that generated positions agree
 		// with traverse interpretation, even in case where it is not so well-defined
 		// how the indices should be interpreted:
-		editor = new YamlEditor(
+		editor = new MockYamlEditor(
 				"foo:\n"+
 				"  garbage\n" +
 				"  - abc\n" +
@@ -573,7 +522,7 @@ public class YamlStructureParserTest {
 
 	}
 
-	private void findAndTraversPathPath(YamlEditor editor, String snippet) throws Exception {
+	private void findAndTraversPathPath(MockYamlEditor editor, String snippet) throws Exception {
 		SRootNode root = editor.parseStructure();
 		SNode node = root.find(editor.startOf(snippet));
 		assertNotNull(node);
@@ -584,7 +533,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testTraverseSeqKey() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"foo:\n" +
 				"- bar:\n" +
 				"  - a\n" +
@@ -601,7 +550,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testTreeEnd() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -632,7 +581,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testTreeEndKeyNodeNoChildren() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"  canada:\n" +
@@ -651,7 +600,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testFind() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -685,7 +634,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testFindInMultiDoc() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -723,7 +672,7 @@ public class YamlStructureParserTest {
 
 
 	@Test public void testFindInSequence() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"foo:\n" +
 				"- alchemy\n" +
 				"- bistro\n" +
@@ -759,7 +708,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testGetKey() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -781,7 +730,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testIsInValue() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -807,7 +756,7 @@ public class YamlStructureParserTest {
 		assertValueRange(editor, root, "foo:", null);
 	}
 
-	private void assertValueRange(YamlEditor editor, SRootNode root, String nodeText, String expectedValue) throws Exception {
+	private void assertValueRange(MockYamlEditor editor, SRootNode root, String nodeText, String expectedValue) throws Exception {
 		int start = editor.getText().indexOf(nodeText);
 		SKeyNode node = (SKeyNode) root.find(start);
 		int valueRangeStart;
@@ -827,7 +776,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testTraverse() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"world:\n" +
 				"  europe:\n" +
 				"    france:\n" +
@@ -857,7 +806,7 @@ public class YamlStructureParserTest {
 	}
 
 	@Test public void testGetFirstRealChild() throws Exception {
-		YamlEditor editor = new YamlEditor(
+		MockYamlEditor editor = new MockYamlEditor(
 				"no-children:\n" +
 				"unreal-children:\n" +
 				"  #Unreal\n" +
@@ -894,7 +843,7 @@ public class YamlStructureParserTest {
 		assertTrue("Doesn't match: '"+string+"'", pat.matcher(string).matches());
 	}
 
-	private void assertFirstRealChild(YamlEditor editor, String testNodeName, String expectedNodeSnippet) throws Exception {
+	private void assertFirstRealChild(MockYamlEditor editor, String testNodeName, String expectedNodeSnippet) throws Exception {
 		SDocNode doc = getOnlyDocument(editor.parseStructure());
 		SKeyNode testNode = doc.getChildWithKey(testNodeName);
 		assertNotNull(testNode);
@@ -927,7 +876,7 @@ public class YamlStructureParserTest {
 		return new YamlPath(segments);
 	}
 
-	private void assertKey(YamlEditor editor, SRootNode root, String nodeText, String expectedKey) throws Exception {
+	private void assertKey(MockYamlEditor editor, SRootNode root, String nodeText, String expectedKey) throws Exception {
 		int start = editor.getText().indexOf(nodeText);
 		SKeyNode node = (SKeyNode) root.find(start);
 		String key = node.getKey();
@@ -943,7 +892,7 @@ public class YamlStructureParserTest {
 		assertFalse(node.isInKey(endOfKeyRange+1));
 	}
 
-	private void assertFind(YamlEditor editor, SRootNode root, String snippet, int... expectPath) {
+	private void assertFind(MockYamlEditor editor, SRootNode root, String snippet, int... expectPath) {
 		int start = editor.getRawText().indexOf(snippet);
 		int end = start+snippet.length();
 		int middle = (start+end) / 2;
@@ -955,13 +904,13 @@ public class YamlStructureParserTest {
 		assertEquals(expectNode, root.find(end));
 	}
 
-	private void assertFindStart(YamlEditor editor, SRootNode root, String snippet, int... expectPath) {
+	private void assertFindStart(MockYamlEditor editor, SRootNode root, String snippet, int... expectPath) {
 		int start = editor.getRawText().indexOf(snippet);
 		SNode expectNode = getNodeAtPath(root, expectPath);
 		assertEquals(expectNode, root.find(start));
 	}
 
-	private void assertTreeText(YamlEditor editor, SNode node, String expected) throws Exception {
+	private void assertTreeText(MockYamlEditor editor, SNode node, String expected) throws Exception {
 		String actual = editor.textBetween(node.getStart(), node.getTreeEnd());
 		assertEquals(expected.trim(), actual.trim());
 	}
