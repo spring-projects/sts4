@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.java.properties.parser.Parser;
 import org.springframework.ide.vscode.java.properties.parser.Problem;
 import org.springframework.ide.vscode.java.properties.parser.ProblemCodes;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscapes;
 
 import com.google.common.collect.ImmutableList;
 
@@ -230,7 +231,12 @@ public class AntlrParser implements Parser {
 		
 		@Override
 		public String decode() {
-			return context.getText().replace("\\:", ":").replace("\\=", "=");
+//			return context.getText().replace("\\:", ":").replace("\\=", "=");
+			try {
+				return PropertiesFileEscapes.unescape(context.getText());
+			} catch (Exception e) {
+				return context.getText().replace("\\:", ":").replace("\\=", "=");
+			}
 		}
 		
 	}
@@ -249,8 +255,13 @@ public class AntlrParser implements Parser {
 		private void init() {
 			// Remove the separator, if it exists
 			value = context.getText().replaceAll("^\\s*[:=]?\\s*", "");
-			// Remove all escaped line breaks with trailing spaces
+			// Remove all escaped line breaks with trailing spaces			
 			decoded = value.replaceAll("\\\\(\r?\n|\r)[ \t\f]*", "");
+			try {
+				decoded = PropertiesFileEscapes.unescape(decoded);
+			} catch (Exception e) {
+				// ignore
+			}
 		}
 
 		@Override

@@ -1,9 +1,5 @@
-package org.springframework.ide.vscode.application.yaml;
+package org.springframework.ide.vscode.application.properties.metadata;
 
-import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.application.properties.metadata.SpringPropertiesIndexManager;
-import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;

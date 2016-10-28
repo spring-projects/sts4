@@ -19,6 +19,7 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepos
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataSource;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 	
@@ -125,4 +126,31 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 	protected String getKey(PropertyInfo entry) {
 		return entry.getId();
 	}
+	
+	/**
+	 * Find the longest known property that is a prefix of the given name. Here prefix does not mean
+	 * 'string prefix' but a prefix in the sense of treating '.' as a kind of separators. So
+	 * 'prefix' is not allowed to end in the middle of a 'segment'.
+	 */
+	public static PropertyInfo findLongestValidProperty(FuzzyMap<PropertyInfo> index, String name) {
+		int bracketPos = name.indexOf('[');
+		int endPos = bracketPos>=0?bracketPos:name.length();
+		PropertyInfo prop = null;
+		String prefix = null;
+		while (endPos>0 && prop==null) {
+			prefix = name.substring(0, endPos);
+			String canonicalPrefix = StringUtil.camelCaseToHyphens(prefix);
+			prop = index.get(canonicalPrefix);
+			if (prop==null) {
+				endPos = name.lastIndexOf('.', endPos-1);
+			}
+		}
+		if (prop!=null) {
+			//We should meet caller's expectation that matched properties returned by this method
+			// match the names exactly even if we found them using relaxed name matching.
+			return prop.withId(prefix);
+		}
+		return null;
+	}
+
 }

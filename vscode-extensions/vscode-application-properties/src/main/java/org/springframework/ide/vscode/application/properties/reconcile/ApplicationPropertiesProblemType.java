@@ -30,7 +30,8 @@ public enum ApplicationPropertiesProblemType implements ProblemType {
 	PROP_INVALID_BEAN_PROPERTY("Accessing a named property in a type that doesn't provide a property accessor with that name"),
 	PROP_UNKNOWN_PROPERTY(WARNING, "Property-key not found in any configuration metadata on the project's classpath"),
 	PROP_DEPRECATED(WARNING, "Property is marked as Deprecated"),
-	PROP_DUPLICATE_KEY("Multiple assignments to the same property value");
+	PROP_DUPLICATE_KEY("Multiple assignments to the same property value"),
+	PROP_SYNTAX_ERROR("Syntax Error");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;

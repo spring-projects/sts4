@@ -20,6 +20,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.springframework.ide.vscode.application.properties.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 
 import io.typefox.lsapi.services.json.LoggingJsonAdapter;
@@ -125,7 +130,12 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-    	ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer();
+    	SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider();
+		TypeUtil typeUtil = new TypeUtil(null);
+		TypeUtilProvider typeUtilProvider = (IDocument doc) -> typeUtil;
+
+    	ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(indexProvider, typeUtilProvider);
+    	
     	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
     	jsonServer.setMessageLog(new PrintWriter(System.out));
 

@@ -15,14 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.ApplicationPropertiesLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.TextDocumentSyncKind;
+import io.typefox.lsapi.services.LanguageServer;
 
 /**
  * Boot app properties file language server tests
@@ -36,9 +37,14 @@ public class ApplicationPropertiesLanguageServerTest {
 		return Paths.get(ApplicationPropertiesLanguageServer.class.getResource(name).toURI()).toFile();
 	}
 
+	private LanguageServerHarness newHarness() throws Exception {
+		Callable<? extends LanguageServer> f = () -> new ApplicationPropertiesLanguageServer((d) -> null, (d) -> null);
+		return new LanguageServerHarness(f);
+	}
+	
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationPropertiesLanguageServer::new);
+		LanguageServerHarness harness = newHarness();
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -46,7 +52,7 @@ public class ApplicationPropertiesLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationPropertiesLanguageServer::new);
+		LanguageServerHarness harness = newHarness();
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 	

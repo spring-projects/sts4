@@ -48,24 +48,15 @@ import io.typefox.lsapi.Diagnostic;
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	
-	private static final String SYNTAX_ERROR__UNEXPECTED_END_OF_INPUT = "Unexpected end of input, value identifier is expected";
-	private static final String SYNTAX_ERROR__UNEXPECTED_END_OF_LINE = "Unexpected end of line, value identifier is expected";
-
 	@Test public void testReconcileCatchesParseError() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationPropertiesLanguageServer::new);
-		harness.intialize(null);
-		
-		Editor editor = harness.newEditor("key\n");
-		editor.assertProblems("key|" + SYNTAX_ERROR__UNEXPECTED_END_OF_LINE);
+		Editor editor = newEditor("key\n");
+		editor.assertProblems("key|extraneous input");
 	}
 	
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ApplicationPropertiesLanguageServer::new);
-		harness.intialize(null);
+		Editor editor = newEditor("key");
 
-		Editor editor = harness.newEditor("key");
-
-		editor.assertProblems("key|" + SYNTAX_ERROR__UNEXPECTED_END_OF_INPUT);
+		editor.assertProblems("key|mismatched input");
 		
 		editor.setText(
 				"problem\n" +
@@ -73,7 +64,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"another"		
 		);
 
-		editor.assertProblems("problem|" + SYNTAX_ERROR__UNEXPECTED_END_OF_LINE, "another|" + SYNTAX_ERROR__UNEXPECTED_END_OF_INPUT);
+		editor.assertProblems("problem|extraneous input", "another|mismatched input");
 	}
 
 
@@ -1563,7 +1554,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		return new ApplicationPropertiesLanguageServer();
+		return new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider);
 	}
 
 	/**
