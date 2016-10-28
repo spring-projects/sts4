@@ -1,5 +1,6 @@
 package org.springframework.ide.vscode.application.properties.metadata;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -43,10 +44,13 @@ public class PropertiesLoader {
 	public ConfigurationMetadataRepository load(IClasspath classPath) {
 		try {
 			classPath.getClasspathEntries().forEach(entry -> {
-				if (entry.toFile().isDirectory()) {
-					loadFromOutputFolder(entry);
-				} else {
-					loadFromJar(entry);
+				File fileEntry = entry.toFile();
+				if (fileEntry.exists()) {
+					if (fileEntry.isDirectory()) {
+						loadFromOutputFolder(entry);
+					} else {
+						loadFromJar(entry);
+					}
 				}
 			});
 		} catch (Exception e) {

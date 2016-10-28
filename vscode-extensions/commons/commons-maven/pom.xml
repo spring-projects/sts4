@@ -41,14 +41,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		
-		<!-- testing -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>project-test-harness</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
 	</dependencies>
 
 </project>

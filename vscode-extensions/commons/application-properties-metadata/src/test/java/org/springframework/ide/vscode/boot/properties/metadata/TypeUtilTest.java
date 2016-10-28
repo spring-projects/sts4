@@ -26,7 +26,6 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.Projects;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -41,6 +40,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 @Ignore
 public class TypeUtilTest {
 	
+	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private IJavaProject project;
 	private TypeUtil typeUtil;
 	
@@ -142,7 +142,7 @@ public class TypeUtilTest {
 	}
 
 	private void useProject(String name) throws Exception {
-		project = Projects.createMavenJavaProject(ProjectsHarness.buildMavenProject(name));;
+		project = projects.mavenProject(name);;
 		typeUtil = new TypeUtil(project);
 	}
 

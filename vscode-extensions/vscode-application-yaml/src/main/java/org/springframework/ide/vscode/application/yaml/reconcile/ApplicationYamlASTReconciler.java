@@ -1,7 +1,7 @@
 package org.springframework.ide.vscode.application.yaml.reconcile;
 
-import static org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertiesProblemType.YAML_DEPRECATED;
-import static org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertiesProblemType.YAML_DUPLICATE_KEY;
+import static org.springframework.ide.vscode.application.yaml.reconcile.ApplicationYamlProblemType.YAML_DEPRECATED;
+import static org.springframework.ide.vscode.application.yaml.reconcile.ApplicationYamlProblemType.YAML_DUPLICATE_KEY;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
 
@@ -273,19 +273,19 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void expectTypeFoundMapping(Type type, MappingNode node) {
-		expectType(SpringPropertiesProblemType.YAML_EXPECT_TYPE_FOUND_MAPPING, type, node);
+		expectType(ApplicationYamlProblemType.YAML_EXPECT_TYPE_FOUND_MAPPING, type, node);
 	}
 
 	private void expectTypeFoundSequence(Type type, SequenceNode seq) {
-		expectType(SpringPropertiesProblemType.YAML_EXPECT_TYPE_FOUND_SEQUENCE, type, seq);
+		expectType(ApplicationYamlProblemType.YAML_EXPECT_TYPE_FOUND_SEQUENCE, type, seq);
 	}
 
 	private void valueTypeMismatch(Type type, ScalarNode scalar) {
-		expectType(SpringPropertiesProblemType.YAML_VALUE_TYPE_MISMATCH, type, scalar);
+		expectType(ApplicationYamlProblemType.YAML_VALUE_TYPE_MISMATCH, type, scalar);
 	}
 
 	private void unkownProperty(Node node, String name, NodeTuple entry) {
-		SpringPropertyProblem p = problem(SpringPropertiesProblemType.YAML_UNKNOWN_PROPERTY, node, "Unknown property '"+name+"'");
+		SpringPropertyProblem p = problem(ApplicationYamlProblemType.YAML_UNKNOWN_PROPERTY, node, "Unknown property '"+name+"'");
 		p.setPropertyName(extendForQuickfix(StringUtil.camelCaseToHyphens(name), entry.getValueNode()));
 		problems.accept(p);
 	}
@@ -315,23 +315,23 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void expectScalar(Node node) {
-		problems.accept(problem(SpringPropertiesProblemType.YAML_EXPECT_SCALAR, node, "Expecting a 'Scalar' node but got "+describe(node)));
+		problems.accept(problem(ApplicationYamlProblemType.YAML_EXPECT_SCALAR, node, "Expecting a 'Scalar' node but got "+describe(node)));
 	}
 
 	protected void expectMapping(Node node) {
-		problems.accept(problem(SpringPropertiesProblemType.YAML_EXPECT_MAPPING, node, "Expecting a 'Mapping' node but got "+describe(node)));
+		problems.accept(problem(ApplicationYamlProblemType.YAML_EXPECT_MAPPING, node, "Expecting a 'Mapping' node but got "+describe(node)));
 	}
 
 	private void expectBeanPropertyName(Node keyNode, Type type) {
-		problems.accept(problem(SpringPropertiesProblemType.YAML_EXPECT_BEAN_PROPERTY_NAME, keyNode, "Expecting a bean-property name for object of type '"+typeUtil.niceTypeName(type)+"' "
+		problems.accept(problem(ApplicationYamlProblemType.YAML_EXPECT_BEAN_PROPERTY_NAME, keyNode, "Expecting a bean-property name for object of type '"+typeUtil.niceTypeName(type)+"' "
 				+ "but got "+describe(keyNode)));
 	}
 
 	private void unknownBeanProperty(Node keyNode, Type type, String name) {
-		problems.accept(problem(SpringPropertiesProblemType.YAML_INVALID_BEAN_PROPERTY, keyNode, "Unknown property '"+name+"' for type '"+typeUtil.niceTypeName(type)+"'"));
+		problems.accept(problem(ApplicationYamlProblemType.YAML_INVALID_BEAN_PROPERTY, keyNode, "Unknown property '"+name+"' for type '"+typeUtil.niceTypeName(type)+"'"));
 	}
 
-	private void expectType(SpringPropertiesProblemType problemType, Type type, Node node) {
+	private void expectType(ApplicationYamlProblemType problemType, Type type, Node node) {
 		problems.accept(problem(problemType, node, "Expecting a '"+typeUtil.niceTypeName(type)+"' but got "+describe(node)));
 	}
 
@@ -356,7 +356,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		return problem;
 	}
 
-	protected SpringPropertyProblem problem(SpringPropertiesProblemType type, Node node, String msg) {
+	protected SpringPropertyProblem problem(ApplicationYamlProblemType type, Node node, String msg) {
 		int start = node.getStartMark().getIndex();
 		int end = node.getEndMark().getIndex();
 		return SpringPropertyProblem.problem(type, msg, start, end-start);

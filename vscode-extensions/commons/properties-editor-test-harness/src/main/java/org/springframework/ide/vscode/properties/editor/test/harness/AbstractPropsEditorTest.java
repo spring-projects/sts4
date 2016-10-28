@@ -1,6 +1,5 @@
 package org.springframework.ide.vscode.properties.editor.test.harness;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -17,14 +16,21 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.properties.editor.test.harness.PropertyIndexHarness.ItemConfigurer;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 import io.typefox.lsapi.CompletionItem;
 
 public abstract class AbstractPropsEditorTest {
 	
+	public static final String INTEGER = Integer.class.getName();
+	public static final String BOOLEAN = Boolean.class.getName();
+	public static final String STRING = String.class.getName();
+	
+	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	protected PropertyIndexHarness md;
 	private LanguageServerHarness harness;
 	private IJavaProject testProject;
@@ -58,9 +64,8 @@ public abstract class AbstractPropsEditorTest {
 		md.defaultTestData();
 	}
 	
-	public IJavaProject createPredefinedMavenProject(String string) {
-		notImplemented();
-		return null;
+	public MavenJavaProject createPredefinedMavenProject(String name) throws Exception {
+		return projects.mavenProject(name);
 	}
 	
 	public void useProject(IJavaProject p) throws Exception {
@@ -74,6 +79,10 @@ public abstract class AbstractPropsEditorTest {
 	 */
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {
 		harness.assertCompletion(textBefore, expectTextAfter);
+	}
+
+	public void assertCompletionDisplayString(String editorContents, String expected) throws Exception {
+		harness.assertCompletionDisplayString(editorContents, expected);
 	}
 
 	private void notImplemented() {

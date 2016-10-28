@@ -280,4 +280,10 @@ public class LanguageServerHarness {
 		assertEquals(expect.toString(), actual.toString());
 	}
 
+	public void assertCompletionDisplayString(String editorContents, String expected) throws Exception {
+		Editor editor = newEditor(editorContents);
+		CompletionItem completion = editor.getFirstCompletion();
+		assertEquals(expected, completion.getLabel());
+	}
+
 }

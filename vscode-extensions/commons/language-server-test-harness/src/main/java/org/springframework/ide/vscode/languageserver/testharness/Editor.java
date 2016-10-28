@@ -6,7 +6,10 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
 
@@ -72,6 +75,7 @@ public class Editor {
 	private int selectionEnd;
 
 	private int selectionStart;
+	private Set<String> ignoredTypes;
 
 	public Editor(LanguageServerHarness harness, String contents) throws Exception {
 		this.harness = harness;
@@ -79,6 +83,7 @@ public class Editor {
 		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents));
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
+		this.ignoredTypes = new HashSet<>();
 	}
 
 	/**
@@ -96,7 +101,9 @@ public class Editor {
 	 */
 	public void assertProblems(String... expectedProblems) throws Exception {
 		Editor editor = this;
-		List<Diagnostic> actualProblems = new ArrayList<>(editor.reconcile());
+		List<Diagnostic> actualProblems = new ArrayList<>(editor.reconcile().stream().filter(d -> {
+			return !ignoredTypes.contains(d.getCode());
+		}).collect(Collectors.toList()));
 		Collections.sort(actualProblems, PROBLEM_COMPARATOR);
 		String bad = null;
 		if (actualProblems.size()!=expectedProblems.length) {
@@ -313,6 +320,15 @@ public class Editor {
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 
+	/**
+	 * Verifies an expected textSnippet is contained in the hover text that is
+	 * computed when hovering mouse at position at the end of first occurrence of
+	 * a given string in the editor.
+	 */
+	public void assertHoverText(String afterString, String expectSnippet) {
+		throw new UnsupportedOperationException("Not implemented yet!");
+	}
+
 	public void setSelection(int start, int end) {
 		Assert.assertTrue(start>=0);
 		Assert.assertTrue(end>=start);
@@ -364,6 +380,10 @@ public class Editor {
 
 	public void assertText(String expected) {
 		assertEquals(expected, getText());
+	}
+
+	public void ignoreProblem(Object type) {
+		ignoredTypes.add(type.toString());
 	}
 
 }

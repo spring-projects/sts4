@@ -10,41 +10,58 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
-import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
- * Test project harness utilities
+ * Test projects harness
  * 
  * @author Alex Boyko
  *
  */
 public class ProjectsHarness {
 	
-	/**
-	 * Builds maven project
-	 * 
-	 * @param name
-	 * @return
-	 * @throws Exception
-	 */
-	public static Path buildMavenProject(String name) throws Exception {
-		Path testProjectPath = Paths.get(ProjectsHarness.class.getResource("/" + name).toURI());
-		if (!Files.exists(testProjectPath.resolve("classpath.txt"))) {
-			Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
-					? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
-			mvnwPath.toFile().setExecutable(true);
-			ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
-					new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
-			if (process.getExitValue() != 0) {
-				throw new RuntimeException("Failed to build test project");
+	public static final ProjectsHarness INSTANCE = new ProjectsHarness();; 
+	
+	public Cache<String, IJavaProject> cache = CacheBuilder.newBuilder().build();
+	
+	private enum ProjectType {
+		MAVEN,
+		CLASSPATH_TXT
+	}
+	
+	private ProjectsHarness() {
+	}
+	
+	public IJavaProject project(ProjectType type, String name) throws Exception {
+		return cache.get(type + "/" + name, () -> {
+			Path testProjectPath = Paths.get(ProjectsHarness.class.getResource("/" + name).toURI());
+			switch (type) {
+			case MAVEN:
+				return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			case CLASSPATH_TXT:
+				MavenCore.buildMavenProject(testProjectPath);
+				return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
+			default:
+				throw new IllegalStateException("Bug!!! Missing case");
 			}
-		}
-		return testProjectPath;
+		});
+	}
+	
+	public MavenJavaProject mavenProject(String name) throws Exception {
+		return (MavenJavaProject) project(ProjectType.MAVEN, name);
+	}
+
+	public IJavaProject javaProjectWithClasspathFile(String name) throws Exception {
+		return project(ProjectType.CLASSPATH_TXT, name);
 	}
 
 }

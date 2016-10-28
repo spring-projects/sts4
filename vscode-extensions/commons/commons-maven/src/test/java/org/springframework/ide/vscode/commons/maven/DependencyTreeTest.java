@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.maven.java.Projects;
-import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
  * Tests for comparing maven calculated dependencies with ours
@@ -32,14 +30,15 @@ public class DependencyTreeTest {
 	
 	@Test
 	public void mavenTest() throws Exception {
-		Path testProjectPath = ProjectsHarness.buildMavenProject("empty-boot-project-with-classpath-file");
-		
-		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve(Projects.POM_XML).toFile());
+		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/empty-boot-project-with-classpath-file").toURI());
+		MavenCore.buildMavenProject(testProjectPath);
+
+		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		Set<Path> calculatedClassPath = MavenCore.getInstance().resolveDependencies(project, null).stream().map(artifact -> {
 			return Paths.get(artifact.getFile().toURI());
 		}).collect(Collectors.toSet());;
 		
-		Set<Path> expectedClasspath = MavenCore.readClassPathFile(testProjectPath.resolve(Projects.CLASSPATH_TXT));
+		Set<Path> expectedClasspath = MavenCore.readClassPathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT));
 		assertEquals(expectedClasspath, calculatedClassPath);		
 	}
 

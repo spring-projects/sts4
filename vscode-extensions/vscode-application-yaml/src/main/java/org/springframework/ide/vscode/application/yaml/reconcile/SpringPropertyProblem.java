@@ -15,7 +15,7 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 		super(type, msg, offset, len);
 	}
 
-	public static SpringPropertyProblem problem(SpringPropertiesProblemType type, String msg, int offset, int len) {
+	public static SpringPropertyProblem problem(ApplicationYamlProblemType type, String msg, int offset, int len) {
 		return new SpringPropertyProblem(type, msg, offset, len);
 	}
 

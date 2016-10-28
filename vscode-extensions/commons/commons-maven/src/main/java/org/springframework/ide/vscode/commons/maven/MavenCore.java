@@ -46,6 +46,8 @@ import org.eclipse.aether.util.graph.transformer.NearestVersionSelector;
 import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector;
 import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
+import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
 /**
  * Maven Core functionality
@@ -54,6 +56,9 @@ import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
  *
  */
 public class MavenCore {
+	
+	public static final String CLASSPATH_TXT = "classpath.txt";
+	public static final String POM_XML = "pom.xml";
 	
 	private static MavenCore instance = null;
 	
@@ -78,6 +83,23 @@ public class MavenCore {
 		String text = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
 		Path dir = classPathFilePath.getParent();
 		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve).collect(Collectors.toSet());
+	}
+	
+	/**
+	 * Builds maven project
+	 * 
+	 * @param Path of the project
+	 * @throws Exception
+	 */
+	public static void buildMavenProject(Path testProjectPath) throws Exception {
+		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
+				? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
+		mvnwPath.toFile().setExecutable(true);
+		ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
+				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
+		if (process.getExitValue() != 0) {
+			throw new RuntimeException("Failed to build test project");
+		}
 	}
 
 	/**

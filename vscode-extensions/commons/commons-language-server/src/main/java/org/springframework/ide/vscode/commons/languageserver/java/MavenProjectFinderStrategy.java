@@ -15,8 +15,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.Projects;
 import org.springframework.ide.vscode.commons.util.FileUtils;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
@@ -36,7 +36,7 @@ public class MavenProjectFinderStrategy implements IJavaProjectFinderStrategy {
 				URI uri = new URI(uriStr);
 				//TODO: This only work with File uri. Should it work with others too?
 				File file = new File(uri).getAbsoluteFile();
-				File pomFile = FileUtils.findFile(file, Projects.POM_XML);
+				File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
 				if (pomFile!=null) {
 					return new MavenJavaProject(pomFile);
 				}
