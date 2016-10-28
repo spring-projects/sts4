@@ -1,12 +1,16 @@
 # VS Code Language Server for Spring Boot Application Properties
 
-Initial implementation of the Language Server for Spring Boot application properties. 
+VSCode extension and Language Server providing support for editing `application.properties` 
+files containing Spring Boot configuration properties.
 
-# Running
+# Developer notes
+
+## Bulding and Running
 
 The extension implemented in this example consists out of two pieces:
  
-  - client: a typescript js app that launches and connects to the language server.
+  - client: a vscode extension implemented in typescript. It launches and connects 
+    to the language server.
   - server: server app, implemented in Java.
   
 First build the server:
@@ -25,7 +29,7 @@ Now you can open the client-app in vscode. From the root of this project.
 
 To launch the language server in a vscode runtime, press F5.
 
-# Debugging
+## Debugging
 
 To debug the language server, open `lib/Main.ts` and edit to set the
 `DEBUG` constant to `true`. When you laucnh the app next by pressing
@@ -37,3 +41,8 @@ Note that in debug mode we launch not from the 'fatjar' produced by the
 maven build, but instead use the classes from 'target/classes' directory.
 This allows you to edit the server code in Eclipse and relaunch the
 client from vscode without rebuilding the fatjar.
+
+## Packaging as a vscode extension
+
+Run the `package.sh` script. This will produce a `.vsix` file that can
+be directly installed into vscode.

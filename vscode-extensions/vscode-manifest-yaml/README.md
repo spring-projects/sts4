@@ -1,26 +1,19 @@
-# VS Code Language Server Example in Java
+# VS Code Language Server for Cloudfoundry Manifest Files
 
-The repo contains the end-result of an 'exercise' to implement
-a simple VS Code Language Server in Java. 
+A VSCode extension and Language Server providing support for
+editing `manifest.yml` files, aka 'Cloudfoundry Deployment Manifest'.
 
-The starting point is a clone of this repo:
+The manifest editor provides content assist and basic validation of
+the manifest's structure as you type. 
 
-https://github.com/georgewfraser/vscode-javac
+# Developer notes
 
-It provides Java support using the javac API.
-
-As such that repo contains all the pieces necessary
-to create a working Language Server. In this
-exercise we stripped it down to the bare minimum
-to make a very basic language server similar to
-the one built in the 
-[VScode tutorial on building a language server](https://code.visualstudio.com/docs/extensions/example-language-server).
-
-# Running
+## Bulding and Running
 
 The extension implemented in this example consists out of two pieces:
  
-  - client: a typescript js app that launches and connects to the language server.
+  - client: a vscode extension implemented in typescript. It launches and connects 
+    to the language server.
   - server: server app, implemented in Java.
   
 First build the server:
@@ -39,7 +32,7 @@ Now you can open the client-app in vscode. From the root of this project.
 
 To launch the language server in a vscode runtime, press F5.
 
-# Debugging
+## Debugging
 
 To debug the language server, open `lib/Main.ts` and edit to set the
 `DEBUG` constant to `true`. When you laucnh the app next by pressing
@@ -51,3 +44,8 @@ Note that in debug mode we launch not from the 'fatjar' produced by the
 maven build, but instead use the classes from 'target/classes' directory.
 This allows you to edit the server code in Eclipse and relaunch the
 client from vscode without rebuilding the fatjar.
+
+## Packaging as a vscode extension
+
+Run the `package.sh` script. This will produce a `.vsix` file that can
+be directly installed into vscode.
