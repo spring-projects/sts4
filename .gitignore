@@ -1,5 +1,6 @@
 *.class
 **/.classpath
+**/classpath.txt
 **/.idea
 **/*.iml
 
