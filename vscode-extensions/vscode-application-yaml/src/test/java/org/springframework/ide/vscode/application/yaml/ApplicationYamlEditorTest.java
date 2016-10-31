@@ -716,7 +716,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistSimple() throws Exception {
+	@Test public void testContentAssistSimple() throws Exception {
 		defaultTestData();
 		assertCompletion("port<*>",
 				"server:\n"+

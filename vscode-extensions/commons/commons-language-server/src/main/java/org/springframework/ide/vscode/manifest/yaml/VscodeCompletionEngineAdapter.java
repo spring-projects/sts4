@@ -8,15 +8,15 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
-import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.yaml.completion.ScoreableProposal;
 
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
@@ -54,7 +54,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			if (doc!=null) {
 				int offset = doc.toOffset(params.getPosition());
 				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
-				Collections.sort(completions, DefaultCompletionFactory.COMPARATOR);
+				Collections.sort(completions, ScoreableProposal.COMPARATOR);
 				CompletionListImpl list = new CompletionListImpl();
 				list.setIncomplete(false);
 				List<CompletionItemImpl> items = new ArrayList<>(completions.size());
@@ -105,7 +105,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
 		int vscodeMagicIndent = start.getCharacter();
-		return YamlStructureParser.stripIndentation(vscodeMagicIndent, newText);
+		return StringUtil.stripIndentation(vscodeMagicIndent, newText);
 	}
 
 	@Override
