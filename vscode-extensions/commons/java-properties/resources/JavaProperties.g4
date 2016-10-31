@@ -31,7 +31,7 @@ propertyLine
   ;
 
 commentLine
-  : Space* Comment (LineBreak | EOF)
+  : Space* (Exclamation | Number) ~(LineBreak)* (LineBreak | EOF)
   ;
   
 emptyLine
@@ -57,7 +57,9 @@ separatorAndValue
 
 valueChar
   :  IdentifierChar
-  |  Space 
+  |  Exclamation
+  |  Number
+  |  Space
   |  Backslash LineBreak
   |  Equals
   |  Colon
@@ -66,10 +68,8 @@ valueChar
 Backslash : '\\';
 Colon     : ':';
 Equals    : '=';
-
-Comment
-  :  ('!' | '#') ~('\r' | '\n')*
-  ;
+Exclamation: '!';
+Number    : '#';
 
 LineBreak
   :  '\r'? '\n'
@@ -83,6 +83,5 @@ Space
   ;
 
 IdentifierChar
-  :  ~([ :=\\\r('\r'? '\n')])
+  : ~(' ' | ':' | '=' | '\r' | '\n' )
   ;
-  

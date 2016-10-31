@@ -182,6 +182,13 @@ public class PropertiesAntlrParserTest {
 	}
 	
 	@Test
+	public void testVariousCharsInValue() throws Exception {
+		for (char c = '!'; c < '@'; c++) {
+			testPropertyLine("key=va" + c + "lue", "key", "key", "va" + c + "lue", "va" + c + "lue");
+		}
+	}
+	
+	@Test
 	public void testSyntaxError() throws Exception {
 		String text = "abrakadabra";
 		ParseResults results = parser.parse(text);

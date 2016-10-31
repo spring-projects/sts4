@@ -1,10 +1,13 @@
 Backslash=1
 Colon=2
 Equals=3
-Comment=4
-LineBreak=5
-Space=6
-IdentifierChar=7
+Exclamation=4
+Number=5
+LineBreak=6
+Space=7
+IdentifierChar=8
 '\\'=1
 ':'=2
 '='=3
+'!'=4
+'#'=5

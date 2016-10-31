@@ -177,15 +177,18 @@ public class AntlrParser implements Parser {
 		public Comment(CommentLineContext context) {
 			this.context = context;
 		}
-
+		
 		@Override
 		public int getOffset() {
-			return context.Comment().getSymbol().getStartIndex();
+			int i = 0;
+			String text = context.getText();
+			for (; i < context.getText().length() && Character.isWhitespace(text.charAt(i)); i++);
+			return context.getStart().getStartIndex() + i;
 		}
 
 		@Override
 		public int getLength() {
-			return context.Comment().getSymbol().getStopIndex() - getOffset() + 1;
+			return context.getStop().getStartIndex() - getOffset() + 1;
 		}
 		
 	}
