@@ -5,7 +5,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFix
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 
 // TODO: Move to a common project shared between YAML and Properties
 
@@ -23,10 +22,6 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 		return new SpringPropertyProblem(type, msg, offset, len);
 	}
 
-	public static SpringPropertyProblem problem(ApplicationPropertiesProblemType type, String msg, Node region) {
-		return new SpringPropertyProblem(type, msg, region.getOffset(), region.getLength());
-	}
-	
 	public static SpringPropertyProblem problem(ApplicationPropertiesProblemType type, String msg, DocumentRegion region) {
 		return new SpringPropertyProblem(type, msg, region.getStart(), region.getLength());
 	}

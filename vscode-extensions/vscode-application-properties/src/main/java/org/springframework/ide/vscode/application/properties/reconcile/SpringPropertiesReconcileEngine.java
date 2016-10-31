@@ -19,8 +19,6 @@ import static org.springframework.ide.vscode.commons.util.StringUtil.commonPrefi
 
 import java.util.regex.Pattern;
 
-import javax.inject.Provider;
-
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
@@ -32,6 +30,7 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Fuzzy
 import org.springframework.ide.vscode.application.properties.quickfix.ReplaceDeprecatedPropertyQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -39,7 +38,6 @@ import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.Parser;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscapes;
@@ -53,7 +51,6 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscap
  *
  * @author Kris De Volder
  */
-@SuppressWarnings("restriction")
 public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 
 	/**
@@ -102,29 +99,31 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			}
 			
 			results.ast.getNodes(KeyValuePair.class).forEach(pair -> {
-				Key fullName = pair.getKey();
-				String keyName = fullName.decode();
-				duplicateNameChecker.check(fullName);
-				PropertyInfo validProperty = SpringPropertyIndex.findLongestValidProperty(index, keyName);
+//				Key fullName = pair.getKey();
+//				String keyName = fullName.decode();
 				try {
+					DocumentRegion propertyNameRegion = createRegion(doc, pair.getKey());
+					String keyName = PropertiesFileEscapes.unescape(propertyNameRegion.toString());
+					duplicateNameChecker.check(propertyNameRegion);
+					PropertyInfo validProperty = SpringPropertyIndex.findLongestValidProperty(index, keyName);
 					if (validProperty!=null) {
 						//TODO: Remove last remnants of 'IRegion trimmedRegion' here and replace
 						// it all with just passing around 'fullName' DocumentRegion. This may require changes
 						// in PropertyNavigator (probably these changes are also for the better making it simpler as well)
 						if (validProperty.isDeprecated()) {
-							problemCollector.accept(problemDeprecated(fullName, validProperty));
+							problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty));
 						}
-						int offset = validProperty.getId().length() + fullName.getOffset();
-						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(doc), fullName);
+						int offset = validProperty.getId().length() + propertyNameRegion.getStart();
+						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(doc), propertyNameRegion);
 						Type valueType = navigator.navigate(offset, TypeParser.parse(validProperty.getType()));
 						if (valueType!=null) {
 							reconcileType(doc, valueType, pair.getValue(), problemCollector);
 						}
 					} else { //validProperty==null
 						//The name is invalid, with no 'prefix' of the name being a valid property name.
-						PropertyInfo similarEntry = index.findLongestCommonPrefixEntry(fullName.toString());
+						PropertyInfo similarEntry = index.findLongestCommonPrefixEntry(propertyNameRegion.toString());
 						CharSequence validPrefix = commonPrefix(similarEntry.getId(), keyName);
-						problemCollector.accept(problemUnkownProperty(createRegion(doc, fullName), similarEntry, validPrefix));
+						problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix));
 					} //end: validProperty==null
 				} catch (Exception e) {
 					Log.log(e);
@@ -137,14 +136,14 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		}
 	}
 	
-	protected SpringPropertyProblem problemDeprecated(Key key, PropertyInfo property) {
+	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property) {
 		SpringPropertyProblem p = problem(PROP_DEPRECATED,
 				TypeUtil.deprecatedPropertyMessage(
 						property.getId(), null,
 						property.getDeprecationReplacement(),
 						property.getDeprecationReason()
 				),
-				key
+				region
 		);
 		p.setPropertyName(property.getId());
 		p.setMetadata(property);
@@ -180,7 +179,14 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	}
 
 	private DocumentRegion createRegion(IDocument doc, Node value) {
-		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + value.getLength());
+		// Trim trailing spaces (there is no leading white space already)
+		int length = value.getLength();
+		try {
+			length = doc.get(value.getOffset(), value.getLength()).trim().length();
+		} catch (BadLocationException e) {
+			// ignore
+		} 
+		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + length);
 	}
 
 	private void reconcileType(DocumentRegion region, Type expectType, IProblemCollector problems) {

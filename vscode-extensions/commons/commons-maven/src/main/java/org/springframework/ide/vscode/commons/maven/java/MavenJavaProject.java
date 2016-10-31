@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -67,7 +66,7 @@ public class MavenJavaProject implements IJavaProject {
 	}
 
 	public Path getOutputFolder() {
-		return Paths.get(URI.create(mavenProject.getBuild().getOutputDirectory()));
+		return Paths.get(new File(mavenProject.getBuild().getOutputDirectory()).toURI());
 	}
 		
 }

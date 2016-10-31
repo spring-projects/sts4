@@ -1,7 +1,7 @@
 package org.springframework.ide.vscode.application.properties.reconcile;
 
-import static org.springframework.ide.vscode.application.properties.reconcile.SpringPropertyProblem.problem;
 import static org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.isBracketable;
+import static org.springframework.ide.vscode.application.properties.reconcile.SpringPropertyProblem.problem;
 
 import java.util.List;
 
@@ -13,10 +13,10 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 
 /**
  * Helper class for {@link SpringPropertiesReconcileEngine} and {@link SpringPropertiesCompletionEngine}.
@@ -43,16 +43,16 @@ public class PropertyNavigator {
 
 	private TypeUtil typeUtil;
 
-	private Node region;
+	private DocumentRegion region;
 
 	private String regionText;
 
-	public PropertyNavigator(IDocument doc, IProblemCollector problemCollector, TypeUtil typeUtil, Node region) throws BadLocationException {
+	public PropertyNavigator(IDocument doc, IProblemCollector problemCollector, TypeUtil typeUtil, DocumentRegion region) throws BadLocationException {
 		this.doc = doc;
 		this.problemCollector = problemCollector==null?IProblemCollector.NULL:problemCollector;
 		this.typeUtil = typeUtil;
 		this.region = region;
-		this.regionText = doc.get(region.getOffset(), region.getLength());
+		this.regionText = doc.get(region.getStart(), region.getLength());
 	}
 
 	/**
@@ -65,26 +65,26 @@ public class PropertyNavigator {
 	 */
 	public Type navigate(int offset, Type type) {
 		if (type!=null) {
-			if (offset<getEnd(region)) {
+			if (offset<region.getEnd()) {
 				char navOp = getChar(offset);
 				if (navOp=='.') {
 					if (typeUtil.isDotable(type)) {
 						return dotNavigate(offset, type);
 					} else {
 						problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_INVALID_BEAN_NAVIGATION,
-								"Can't use '.' navigation for property '"+textBetween(region.getOffset(), offset)+"' of type "+type,
-								offset, getEnd(region)-offset));
+								"Can't use '.' navigation for property '"+textBetween(region.getStart(), offset)+"' of type "+type,
+								offset, region.getEnd()-offset));
 					}
 				} else if (navOp=='[') {
 					if (isBracketable(type)) {
 						return bracketNavigate(offset, type);
 					} else {
 						problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_INVALID_INDEXED_NAVIGATION,
-								"Can't use '[..]' navigation for property '"+textBetween(region.getOffset(), offset)+"' of type "+type,
-								offset, getEnd(region)-offset));
+								"Can't use '[..]' navigation for property '"+textBetween(region.getStart(), offset)+"' of type "+type,
+								offset, region.getEnd()-offset));
 					}
 				} else {
-					problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_EXPECTED_DOT_OR_LBRACK, "Expecting either a '.' or '['", offset, getEnd(region)-offset));
+					problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_EXPECTED_DOT_OR_LBRACK, "Expecting either a '.' or '['", offset, region.getEnd()-offset));
 				}
 			} else {
 				//end of nav chain
@@ -107,7 +107,7 @@ public class PropertyNavigator {
 	}
 
 	private int indexOf(char c, int from) {
-		int offset = region.getOffset();
+		int offset = region.getStart();
 		int found = regionText.indexOf(c, from-offset);
 		if (found>=0) {
 			return found+offset;
@@ -134,7 +134,7 @@ public class PropertyNavigator {
 					Integer.parseInt(indexStr);
 				} catch (Exception e) {
 					problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_NON_INTEGER_IN_BRACKETS,
-						"Expecting 'Integer' for '[...]' notation '"+textBetween(region.getOffset(), lbrack)+"'",
+						"Expecting 'Integer' for '[...]' notation '"+textBetween(region.getStart(), lbrack)+"'",
 						lbrack+1, rbrack-lbrack-1
 					));
 				}
@@ -183,7 +183,7 @@ public class PropertyNavigator {
 			int keyStart = offset+1;
 			int	keyEnd = nextNavOp(".[", offset+1);
 			if (keyEnd<0) {
-				keyEnd = getEnd(region);
+				keyEnd = region.getEnd();
 			}
 			String key = StringUtil.camelCaseToHyphens(textBetween(keyStart, keyEnd));
 
@@ -232,7 +232,7 @@ public class PropertyNavigator {
 	 * @return position of next navop if found, or the position at the end of the region if not found.
 	 */
 	private int nextNavOp(String navops, int pos) {
-		int end = getEnd(region);
+		int end = region.getEnd();
 		while (pos < end && navops.indexOf(getChar(pos))<0) {
 			pos++;
 		}
@@ -248,7 +248,4 @@ public class PropertyNavigator {
 		}
 	}
 
-	private int getEnd(Node region) {
-		return region.getOffset()+region.getLength();
-	}
 }

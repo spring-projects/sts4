@@ -1,0 +1,9 @@
+logging:
+  level:
+    
+spring:
+  data:
+    mongodb:
+      field-naming-strategy: 
+        
+        

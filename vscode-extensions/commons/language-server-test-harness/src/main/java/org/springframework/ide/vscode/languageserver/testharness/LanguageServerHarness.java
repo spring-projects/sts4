@@ -1,6 +1,8 @@
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -256,6 +258,8 @@ public class LanguageServerHarness {
 
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {
 		Editor editor = newEditor(textBefore);
+		assertNotNull(editor.getCompletions());
+		assertFalse(editor.getCompletions().isEmpty());
 		CompletionItem completion = editor.getFirstCompletion();
 		editor.apply(completion);
 		assertEquals(expectTextAfter, editor.getText());
