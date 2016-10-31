@@ -2,7 +2,7 @@
   "name": "vscode-application-yml",
   "displayName": "Spring Boot Application YML Support",
   "description": "Provides validation and content assist for spring-boot application.yml file",
-  "icon": "icon.png",
+  "icon": "spring_yml.png",
   "version": "0.0.1",
   "publisher": "kdvolder",
   "repository": {
