@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.application.properties.metadata.types;
+package org.springframework.ide.vscode.application.properties.metadata.hints;
 
 import static org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil.*;
 
@@ -6,6 +6,7 @@ import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;

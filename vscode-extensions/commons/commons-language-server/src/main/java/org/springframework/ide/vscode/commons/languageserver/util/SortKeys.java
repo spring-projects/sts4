@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.util.Iterator;
 

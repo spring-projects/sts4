@@ -1,8 +1,6 @@
-package org.springframework.ide.vscode.commons.yaml.completion;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.Comparator;
-
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 
 public abstract class ScoreableProposal implements ICompletionProposal {
 		private static final double DEEMP_VALUE = 100000; // should be large enough to move deemphasized stuff to bottom of list.

@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.application.yaml;
+package org.springframework.ide.vscode.application.yaml.reconcile;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 
