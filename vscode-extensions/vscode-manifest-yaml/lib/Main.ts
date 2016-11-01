@@ -21,25 +21,6 @@ const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,susp
     //   - we launch the Java project directly from the classes folder produced by Eclipse JDT compiler
     //   - we add DEBUG_ARG to the launch so that remote debugger can attach on port 8000
 
-function getClasspath(context: VSCode.ExtensionContext):string {
-    if (DEBUG) {
-        try {
-            let projectDir = context.extensionPath;
-            let classpathFile = Path.resolve(projectDir, "classpath.txt");
-            //TODO: async read?
-            let classpath = FS.readFileSync(classpathFile, 'utf8');
-            classpath =  Path.resolve(projectDir, 'target/classes') + ':' + classpath;
-            return classpath;
-        } catch (e) {
-            //Expected if you classpath.txt file isn't packaged. So this means we are running in packaged mode.    
-            VSCode.window.showInformationMessage('classpath file not found, so disabling DEBUG mode '+e);
-            //Nasty! Be careful, this assumes 'getClasspath' is called before computing debug args.
-            DEBUG = false;
-        }
-    }
-    return Path.resolve(context.extensionPath, "out", "fat-jar.jar");
-}
-
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
     VSCode.window.showInformationMessage("Activating manifet.yml extension");
@@ -100,11 +81,11 @@ export function activate(context: VSCode.ExtensionContext) {
                             cwd: VSCode.workspace.rootPath 
                         };
                         let child: ChildProcess.ChildProcess;
-                        let classpath = getClasspath(context);
+                        let fatJarFile = Path.resolve(context.extensionPath, 'target/vscode-manifest-yaml-0.0.1-SNAPSHOT.jar');
                         let args = [
                             '-Dserver.port=' + port,
-                            '-cp', classpath, 
-                            'org.springframework.ide.vscode.manifest.yaml.Main'
+                            '-jar',
+                            fatJarFile,
                         ];
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);
