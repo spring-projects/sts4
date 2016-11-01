@@ -28,6 +28,8 @@ import io.typefox.lsapi.impl.TextEditImpl;
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
+	final private int MAX_COMPLETIONS = 10;
+
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
 	public static final String VS_CODE_CURSOR_MARKER = "{{}}";
@@ -56,7 +58,13 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				list.setIncomplete(false);
 				List<CompletionItemImpl> items = new ArrayList<>(completions.size());
 				SortKeys sortkeys = new SortKeys();
+				int count = 0;
 				for (ICompletionProposal c : completions) {
+					count++;
+					if (count>MAX_COMPLETIONS) {
+						list.setIncomplete(true);
+						break;
+					}
 					try {
 						items.add(adaptItem(doc, c, sortkeys));
 					} catch (Exception e) {

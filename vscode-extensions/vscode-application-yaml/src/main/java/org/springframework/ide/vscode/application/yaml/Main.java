@@ -13,6 +13,7 @@ import org.springframework.ide.vscode.application.properties.metadata.DefaultSpr
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 
@@ -83,14 +84,14 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-    	//TODO: proper TypeUtilProvider and IndexProvider that somehow determine classpath that should be
+    	JavaProjectFinder javaProjectFinder = JavaProjectFinder.DEFAULT;
+		//TODO: proper TypeUtilProvider and IndexProvider that somehow determine classpath that should be
     	// in effect for given IDocument and provide TypeUtil or SpringPropertyIndex parsed from that classpath.
     	// Note that the provider is responsible for doing some kind of sensible caching so that indexes are not
     	// rebuilt every time the index is being used.
-    	SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider();
-		TypeUtil typeUtil = new TypeUtil(null);
-		TypeUtilProvider typeUtilProvider = (IDocument doc) -> typeUtil;
-		ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer(indexProvider, typeUtilProvider);
+    	SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
+		TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
+		ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer(indexProvider, typeUtilProvider, javaProjectFinder);
     	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
     	jsonServer.setMessageLog(new PrintWriter(System.out));
 

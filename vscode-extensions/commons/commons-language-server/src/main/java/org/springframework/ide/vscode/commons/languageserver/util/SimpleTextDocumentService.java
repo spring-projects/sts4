@@ -133,6 +133,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
+		System.out.println("closing: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
 		if (url!=null) {
 			documents.remove(url);

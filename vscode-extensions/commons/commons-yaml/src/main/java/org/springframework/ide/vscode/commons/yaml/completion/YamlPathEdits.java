@@ -105,8 +105,9 @@ public class YamlPathEdits extends DocumentEdits {
 			buf.append(":");
 			if (i<path.size()-1) {
 				indent += YamlIndentUtil.INDENT_BY;
+			} else {
+				buf.append(indentUtil.applyIndentation(appendText, indent));
 			}
-			buf.append(indentUtil.applyIndentation(appendText, indent));
 		}
 		return buf.toString();
 	}
