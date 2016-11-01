@@ -22,6 +22,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 @FunctionalInterface
 public interface IJavaProjectFinderStrategy {
 
-	IJavaProject find(IDocument document);
+	IJavaProject find(IDocument document) throws Exception;
 
 }

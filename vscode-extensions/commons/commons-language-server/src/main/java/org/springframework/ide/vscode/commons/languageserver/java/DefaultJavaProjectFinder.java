@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.Log;
 
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
 
@@ -18,8 +19,8 @@ public class DefaultJavaProjectFinder implements JavaProjectFinder {
 				if (project != null) {
 					return project;
 				}
-			} catch (Throwable t) {
-				// Log perhaps?
+			} catch (Exception e) {
+				Log.log(e);
 			}
 		}
 		return null;
