@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.jdt.core.javaProperties"
+            default-charset="ISO-8859-1"
+            id="org.springframework.boot.ide.properties.applicationProperties"
+            name="Spring Properties File"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.properties.applicationProperties"
+            file-names="application.properties,application-dev.properties">
+      </file-association>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.applicationProperties"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+</plugin>

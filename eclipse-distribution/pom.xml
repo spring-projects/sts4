@@ -28,6 +28,9 @@
 
 	<modules>
 		<module>org.springframework.boot.ide.branding</module>
+
+		<module>../eclipse-extensions/org.springframework.boot.ide.properties.editors</module>
+		<module>../eclipse-extensions/org.springframework.boot.ide.properties.feature</module>
 	</modules>
 
 	<properties>
@@ -56,26 +59,26 @@
 
 	<profiles>
 		<profile>
-			<id>e46</id>
+			<id>e47</id>
 			<properties>
-				<dist.target>e4.6</dist.target>
-				<dist.target.major>e4.6</dist.target.major>
-				<dist.platform.name>Neon</dist.platform.name>
-				<dist.platform.name.long>Neon (4.6)</dist.platform.name.long>
-				<dist.platform.id>neon</dist.platform.id>
-				<dist.platform.version>4.6</dist.platform.version>
-				<package.qualifierPrefix>e46</package.qualifierPrefix>
+				<dist.target>e4.7</dist.target>
+				<dist.target.major>e4.7</dist.target.major>
+				<dist.platform.name>Oxygen</dist.platform.name>
+				<dist.platform.name.long>Oxygen (4.7)</dist.platform.name.long>
+				<dist.platform.id>oxygen</dist.platform.id>
+				<dist.platform.version>4.7</dist.platform.version>
+				<package.qualifierPrefix>e47</package.qualifierPrefix>
 			</properties>
 			<repositories>
 				<repository>
-					<id>neon</id>
+					<id>oxygen</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/neon/</url>
+					<url>http://download.eclipse.org/releases/oxygen/</url>
 				</repository>
 				<repository>
 					<id>staging</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/staging/neon/</url>
+					<url>http://download.eclipse.org/staging/oxygen/</url>
 				</repository>
 				<repository>
 					<id>orbit</id>
@@ -114,7 +117,7 @@
 				</repository>
 			</repositories>
 			<modules>
-				<module>org.springframework.boot.ide.product.e46</module>
+				<module>org.springframework.boot.ide.product.e47</module>
 			</modules>
 		</profile>
 
