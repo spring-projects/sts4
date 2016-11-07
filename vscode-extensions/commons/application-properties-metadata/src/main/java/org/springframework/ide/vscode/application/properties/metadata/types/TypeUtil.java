@@ -25,6 +25,7 @@ import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IField;

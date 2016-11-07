@@ -14,6 +14,7 @@ import org.springframework.ide.vscode.application.properties.metadata.SpringProp
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -32,6 +33,8 @@ public abstract class AbstractPropsEditorTest {
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	protected PropertyIndexHarness md;
+	protected final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
+			
 	private LanguageServerHarness harness;
 	private IJavaProject testProject;
 	private TypeUtil typeUtil;	
@@ -47,6 +50,10 @@ public abstract class AbstractPropsEditorTest {
 		return harness.newEditor(contents);
 	}
 	
+	private IJavaProject getTestProject() {
+		return testProject;
+	}
+
 	@Before
 	public void setup() throws Exception {
 		md = new PropertyIndexHarness();
