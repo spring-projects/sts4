@@ -131,4 +131,48 @@ public class StringUtil {
 		return f.format(d);
 	}
 
+	private static final Pattern NEWLINE = Pattern.compile("(\\n|\\r)+");
+
+	/**
+	 * Removes a given number of spaces from all lines of text in a String,
+	 * except for the first line.
+	 * <p>
+	 * Note: this method only deals with spaces its not suitable for strings
+	 * which use tabs for indentation.
+	 */
+	public static String stripIndentation(int indent, String indentedText) {
+		StringBuilder out = new StringBuilder();
+		boolean first = true;
+		Matcher matcher = NEWLINE.matcher(indentedText);
+		int pos = 0;
+		while (matcher.find()) {
+			int newline = matcher.start();
+			int newline_end = matcher.end();
+			String line = indentedText.substring(pos, newline);
+			if (first) {
+				first = false;
+			} else {
+				line = stripIndentationFromLine(indent, line);
+			}
+			out.append(line);
+			out.append(indentedText.substring(newline, newline_end));
+			pos = newline_end;
+		}
+		String line = indentedText.substring(pos);
+		if (!first) {
+			line = stripIndentationFromLine(indent, line);
+		}
+		out.append(line);
+		return out.toString();
+	}
+
+	public static String stripIndentationFromLine(int indent, String line) {
+		int start = 0;
+		while (start<line.length() && start < indent && line.charAt(start)==' ') {
+			start++;
+		}
+		return line.substring(start);
+	}
+
+
 }

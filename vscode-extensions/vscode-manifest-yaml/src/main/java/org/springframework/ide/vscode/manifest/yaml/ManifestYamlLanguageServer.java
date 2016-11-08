@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import javax.inject.Provider;
 
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;

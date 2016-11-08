@@ -20,6 +20,11 @@ import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
 import org.springframework.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.hints.HintProvider;
+import org.springframework.ide.vscode.application.properties.metadata.hints.HintProviders;
+import org.springframework.ide.vscode.application.properties.metadata.types.Type;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
+import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -134,32 +139,32 @@ public class PropertyInfo {
 		return description;
 	}
 
-//	public HintProvider getHints(TypeUtil typeUtil, boolean dimensionAware) {
-//		Type type = TypeParser.parse(this.type);
-//		if (TypeUtil.isMap(type)) {
-//			return HintProviders.forMap(keyHints(typeUtil), valueHints(typeUtil), TypeUtil.getDomainType(type), dimensionAware);
-//		} else if (TypeUtil.isSequencable(type)) {
-//			if (dimensionAware) {
-//				if (TypeUtil.isSequencable(type)) {
-//					return HintProviders.forDomainAt(valueHints(typeUtil), TypeUtil.getDimensionality(type));
-//				} else {
-//					return HintProviders.forHere(valueHints(typeUtil));
-//				}
-//			} else {
-//				return HintProviders.forAllValueContexts(valueHints(typeUtil));
-//			}
-//		} else {
-//			return HintProviders.forHere(valueHints(typeUtil));
-//		}
-//	}
-//
-//	private HintProvider keyHints(TypeUtil typeUtil) {
-//		return HintProviders.basic(typeUtil.getJavaProject(), keyHints, keyProvider);
-//	}
-//
-//	private HintProvider valueHints(TypeUtil typeUtil) {
-//		return HintProviders.basic(typeUtil.getJavaProject(), valueHints, valueProvider);
-//	}
+	public HintProvider getHints(TypeUtil typeUtil, boolean dimensionAware) {
+		Type type = TypeParser.parse(this.type);
+		if (TypeUtil.isMap(type)) {
+			return HintProviders.forMap(keyHints(typeUtil), valueHints(typeUtil), TypeUtil.getDomainType(type), dimensionAware);
+		} else if (TypeUtil.isSequencable(type)) {
+			if (dimensionAware) {
+				if (TypeUtil.isSequencable(type)) {
+					return HintProviders.forDomainAt(valueHints(typeUtil), TypeUtil.getDimensionality(type));
+				} else {
+					return HintProviders.forHere(valueHints(typeUtil));
+				}
+			} else {
+				return HintProviders.forAllValueContexts(valueHints(typeUtil));
+			}
+		} else {
+			return HintProviders.forHere(valueHints(typeUtil));
+		}
+	}
+
+	private HintProvider keyHints(TypeUtil typeUtil) {
+		return HintProviders.basic(typeUtil.getJavaProject(), keyHints, keyProvider);
+	}
+
+	private HintProvider valueHints(TypeUtil typeUtil) {
+		return HintProviders.basic(typeUtil.getJavaProject(), valueHints, valueProvider);
+	}
 	
 	public List<PropertySource> getSources() {
 		if (sources!=null) {

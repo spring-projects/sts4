@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -41,6 +42,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 		
+	private JavaProjectFinder javaProjectFinder;
+
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
 		Editor editor = newEditor(
 				"somemap: val\n"+
@@ -716,7 +719,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistSimple() throws Exception {
+	@Test public void testContentAssistSimple() throws Exception {
 		defaultTestData();
 		assertCompletion("port<*>",
 				"server:\n"+
@@ -3529,7 +3532,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		return new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider);
+		return new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
 	}
 	
 }

@@ -258,8 +258,9 @@ public class LanguageServerHarness {
 
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {
 		Editor editor = newEditor(textBefore);
-		assertNotNull(editor.getCompletions());
-		assertFalse(editor.getCompletions().isEmpty());
+		List<CompletionItem> completions = editor.getCompletions();
+		assertNotNull(completions);
+		assertFalse(completions.isEmpty());
 		CompletionItem completion = editor.getFirstCompletion();
 		editor.apply(completion);
 		assertEquals(expectTextAfter, editor.getText());

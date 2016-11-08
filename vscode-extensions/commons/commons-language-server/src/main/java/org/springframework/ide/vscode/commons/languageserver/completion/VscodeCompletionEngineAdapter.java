@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,16 +7,13 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
-import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
@@ -30,6 +27,8 @@ import io.typefox.lsapi.impl.TextEditImpl;
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
+
+	private final static int MAX_COMPLETIONS = 20;
 
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
@@ -54,12 +53,18 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			if (doc!=null) {
 				int offset = doc.toOffset(params.getPosition());
 				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
-				Collections.sort(completions, DefaultCompletionFactory.COMPARATOR);
+				Collections.sort(completions, ScoreableProposal.COMPARATOR);
 				CompletionListImpl list = new CompletionListImpl();
 				list.setIncomplete(false);
 				List<CompletionItemImpl> items = new ArrayList<>(completions.size());
 				SortKeys sortkeys = new SortKeys();
+				int count = 0;
 				for (ICompletionProposal c : completions) {
+					count++;
+					if (count>MAX_COMPLETIONS) {
+						list.setIncomplete(true);
+						break;
+					}
 					try {
 						items.add(adaptItem(doc, c, sortkeys));
 					} catch (Exception e) {
@@ -105,7 +110,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
 		int vscodeMagicIndent = start.getCharacter();
-		return YamlStructureParser.stripIndentation(vscodeMagicIndent, newText);
+		return StringUtil.stripIndentation(vscodeMagicIndent, newText);
 	}
 
 	@Override
@@ -115,5 +120,4 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//The tricky part is that we have to probably remember infos about the unresolved elements somehow so we can resolve later.
 		return Futures.of(unresolved);
 	}
-
 }

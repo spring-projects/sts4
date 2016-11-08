@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.application.properties.metadata.types.StsValueHint;
+import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 

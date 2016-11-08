@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
@@ -691,7 +690,7 @@ public class YamlStructureParser {
 			String indentedText = StringUtil.trimEnd(doc.textBetween(start, end));
 			int indent = getIndent();
 			if (indent>0) {
-				return stripIndentation(indent, indentedText);
+				return StringUtil.stripIndentation(indent, indentedText);
 			}
 			return indentedText;
 		}
@@ -700,41 +699,6 @@ public class YamlStructureParser {
 
 	private Iterable<String> getKeyAliases(String key) {
 		return keyAliases.getKeyAliases(key);
-	}
-
-	public static String stripIndentation(int indent, String indentedText) {
-		StringBuilder out = new StringBuilder();
-		Pattern NEWLINE = Pattern.compile("(\\n|\\r)+");
-		boolean first = true;
-		Matcher matcher = NEWLINE.matcher(indentedText);
-		int pos = 0;
-		while (matcher.find()) {
-			int newline = matcher.start();
-			int newline_end = matcher.end();
-			String line = indentedText.substring(pos, newline);
-			if (first) {
-				first = false;
-			} else {
-				line = stripIndentationFromLine(indent, line);
-			}
-			out.append(line);
-			out.append(indentedText.substring(newline, newline_end));
-			pos = newline_end;
-		}
-		String line = indentedText.substring(pos);
-		if (!first) {
-			line = stripIndentationFromLine(indent, line);
-		}
-		out.append(line);
-		return out.toString();
-	}
-
-	private static String stripIndentationFromLine(int indent, String line) {
-		int start = 0;
-		while (start<line.length() && start < indent && line.charAt(start)==' ') {
-			start++;
-		}
-		return line.substring(start);
 	}
 
 }

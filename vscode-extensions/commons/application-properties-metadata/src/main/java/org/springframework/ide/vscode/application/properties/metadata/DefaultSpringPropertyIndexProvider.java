@@ -7,8 +7,12 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
 
-	private JavaProjectFinder javaProjectFinder = JavaProjectFinder.DEFAULT;
+	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault());
+	
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder) {
+		this.javaProjectFinder = javaProjectFinder;
+	}
 	
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {

@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.concurrent.CompletableFuture;
 

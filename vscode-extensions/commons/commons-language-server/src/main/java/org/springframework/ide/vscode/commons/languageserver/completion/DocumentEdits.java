@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.BadLocationExc
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.Region;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import io.typefox.lsapi.TextEdit;
@@ -322,12 +323,12 @@ public class DocumentEdits implements ProposalApplier {
 		return null;
 	}
 
-	public TextReplace asReplacement(IDocument doc) throws BadLocationException {
+	public TextReplace asReplacement(TextDocument doc) throws BadLocationException {
 		if (!edits.isEmpty()) {
 			int start = edits.stream().mapToInt(Edit::getStart).min().getAsInt();
 			int end = edits.stream().mapToInt(Edit::getEnd).max().getAsInt();
 
-			DocumentState state = new DocumentState(doc);
+			DocumentState state = new DocumentState(doc.copy());
 			for (Edit edit : edits) {
 				edit.apply(state);
 			}
