@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -25,13 +29,13 @@ import com.google.inject.Provider;
  * Then call this class's start method with a Provider<LanguageServer> as
  * a argument.
  * <p>
- * Alternatively, you can also subclass it and implement the abstract 
+ * Alternatively, you can also subclass it and implement the abstract
  * `createServer` method.
- * 
+ *
  * @author Kris De Volder
  */
 public abstract class LaunguageServerApp {
-	
+
 	public static void start(Provider<LanguageServer> languageServerFactory) throws IOException {
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override
@@ -134,18 +138,36 @@ public abstract class LaunguageServerApp {
 	 * Listen for requests from the parent node process.
 	 * Send replies asynchronously.
 	 * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
+	 * @throws ExecutionException
+	 * @throws InterruptedException
 	 */
-	protected void run(Connection connection) {
+	protected void run(Connection connection) throws InterruptedException, ExecutionException {
 		LanguageServer server = createServer();
-		boolean validate = false; // not totally sure what it does, disabling it for now.
-		Launcher<LanguageClient> launcher = Launcher.createLauncher(server, LanguageClient.class, connection.in, connection.out, validate, new PrintWriter(System.out));
+		ExecutorService executor = Executors.newCachedThreadPool();
+		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
+			return (msg) -> {
+				try {
+					consumer.consume(msg);
+				} catch (UnsupportedOperationException e) {
+					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
+					LOG.log(Level.WARNING, "Unsupported message was ignored!", e);
+				}
+			};
+		};
+		Launcher<LanguageClient> launcher = Launcher.createLauncher(server,
+				LanguageClient.class,
+				connection.in,
+				connection.out,
+				executor,
+				wrapper
+		);
 
 		if (server instanceof LanguageClientAware) {
 			LanguageClient client = launcher.getRemoteProxy();
 			((LanguageClientAware) server).connect(client);
 		}
 
-		launcher.startListening();
+		launcher.startListening().get();
 	}
 
 	protected abstract LanguageServer createServer();
