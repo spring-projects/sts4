@@ -319,7 +319,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void test_STS_4140_StringArrayCompletion() throws Exception {
+	@Test public void test_STS_4140_StringArrayCompletion() throws Exception {
 		defaultTestData();
 
 		assertCompletion(
@@ -423,7 +423,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistCamelCaseBasic() throws Exception {
+	@Test public void testContentAssistCamelCaseBasic() throws Exception {
 		data("something.with-many-parts", "java.lang.Integer", "For testing tolerance of camelCase", null);
 		data("something.with-parts.and-more", "java.lang.Integer", "For testing tolerance of camelCase", null);
 
@@ -494,7 +494,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistCamelCaseBeanProp() throws Exception {
+	@Test public void testContentAssistCamelCaseBeanProp() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
@@ -737,7 +737,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistNullContext() throws Exception {
+	@Test public void testContentAssistNullContext() throws Exception {
 		defaultTestData();
 		assertCompletions(
 				"#A comment\n" +
@@ -749,7 +749,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testContentAssistNested() throws Exception {
+	@Test public void testContentAssistNested() throws Exception {
 		data("server.port", "java.lang.Integer", null, "Server http port");
 		data("server.address", "java.lang.String", "localhost", "Server host address");
 
@@ -1175,7 +1175,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testNoCompletionsInsideComments() throws Exception {
+	@Test public void testNoCompletionsInsideComments() throws Exception {
 		defaultTestData();
 
 		//Ensure this test is not trivially passing because of missing test data
@@ -1428,7 +1428,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testBooleanValueCompletion() throws Exception {
+	@Test public void testBooleanValueCompletion() throws Exception {
 		defaultTestData();
 		assertCompletions(
 				"liquibase:\n" +
@@ -1531,7 +1531,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testEnumValueCompletion() throws Exception {
+	@Test public void testEnumValueCompletion() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.color", "demo.Color", null, "A foonky colour");
 
@@ -1553,7 +1553,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumMapValueCompletion() throws Exception {
+	@Test public void testEnumMapValueCompletion() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		assertCompletions(
@@ -1759,7 +1759,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void testListOfAtomicCompletions() throws Exception {
+	@Test public void testListOfAtomicCompletions() throws Exception {
 		data("foo.slist", "java.util.List<java.lang.String>", null, "list of strings");
 		data("foo.ulist", "java.util.List<Unknown>", null, "list of strings");
 		data("foo.dlist", "java.util.List<java.lang.Double>", null, "list of doubles");
@@ -2075,7 +2075,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testDocumentSeparator() throws Exception {
+	@Test public void testDocumentSeparator() throws Exception {
 		defaultTestData();
 
 		assertCompletion(
@@ -2847,7 +2847,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testCharSetCompletions() throws Exception {
+	@Test public void testCharSetCompletions() throws Exception {
 		data("foobar.encoding", "java.nio.charset.Charset", null, "The charset-encoding to use for foobars");
 
 		assertCompletions(
@@ -2869,7 +2869,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testLocaleCompletions() throws Exception {
+	@Test public void testLocaleCompletions() throws Exception {
 		data("foobar.locale", "java.util.Locale", null, "The locale for foobars");
 
 		assertCompletions(
@@ -2891,7 +2891,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testMimeTypeCompletions() throws Exception {
+	@Test public void testMimeTypeCompletions() throws Exception {
 		data("foobar.mime", "org.springframework.util.MimeType", null, "The mimetype for foobars");
 
 		assertCompletions(
@@ -2913,7 +2913,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyValueHintCompletions() throws Exception {
+	@Test public void testPropertyValueHintCompletions() throws Exception {
 		//Test that 'value hints' work when property name is associated with 'value' hints.
 		// via boot metadata.
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -2929,7 +2929,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyListHintCompletions() throws Exception {
+	@Test public void testPropertyListHintCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletion(
@@ -2959,7 +2959,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyMapValueCompletions() throws Exception {
+	@Test public void testPropertyMapValueCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletionsDisplayString(
@@ -2992,7 +2992,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEscapeStringValueStartingWithStar() throws Exception {
+	@Test public void testEscapeStringValueStartingWithStar() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletions(
 				"endpoints:\n"+
@@ -3007,7 +3007,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEscapeStringValueWithAQuote() throws Exception {
+	@Test public void testEscapeStringValueWithAQuote() throws Exception {
 		data("foo.quote", "java.lang.String", null, "Character to used to surround quotes");
 		valueHints("foo.quote", "\"", "'", "`");
 
@@ -3354,7 +3354,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void test_STS_3335_completions_list_nested_in_Map_of_String() throws Exception {
+	@Test public void test_STS_3335_completions_list_nested_in_Map_of_String() throws Exception {
 		useProject(createPredefinedMavenProject("boot-1.3.3-sts-4335"));
 
 		assertCompletions(
