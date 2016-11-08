@@ -15,6 +15,7 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
+import org.jboss.jandex.Type.Kind;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaType;
@@ -319,7 +320,25 @@ public class Wrappers {
 	
 	@SuppressWarnings("unchecked")
 	private static Type from(IJavaType type) {
-		if (type instanceof TypeWrapper) {
+		if (type == IPrimitiveType.BOOLEAN) {
+			return PrimitiveType.BOOLEAN;
+		} else if (type == IPrimitiveType.BYTE) {
+			return PrimitiveType.BYTE;
+		} else if (type == IPrimitiveType.CHAR) {
+			return PrimitiveType.CHAR;
+		} else if (type == IPrimitiveType.DOUBLE) {
+			return PrimitiveType.DOUBLE;
+		} else if (type == IPrimitiveType.FLOAT) {
+			return PrimitiveType.FLOAT;
+		} else if (type == IPrimitiveType.INT) {
+			return PrimitiveType.INT;
+		} else if (type == IPrimitiveType.LONG) {
+			return PrimitiveType.LONG;
+		} else if (type == IPrimitiveType.SHORT) {
+			return PrimitiveType.SHORT;
+		} else if (type == IVoidType.DEFAULT) {
+			return Type.create(null, Kind.VOID);
+		} else if (type instanceof TypeWrapper) {
 			return ((TypeWrapper<Type>)type).getType();
 		}
 		throw new IllegalArgumentException("Not a Jandex wrapped typed!");

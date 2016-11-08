@@ -6,10 +6,13 @@ import static org.junit.Assert.assertNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IMethod;
+import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -62,4 +65,27 @@ public class JavaIndexTest {
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(0, m.parameters().count());
 	}
+	
+	@Test
+	public void voidConstructor() throws Exception {
+		MavenJavaProject project = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		IType type = project.findType("java.util.ArrayList");
+		assertNotNull(type);		
+		IMethod m = type.getMethod("<init>", Stream.empty());
+		assertEquals("<init>", m.getElementName());
+		assertEquals(IVoidType.DEFAULT, m.getReturnType());
+		assertEquals(0, m.parameters().count());
+	}
+	
+	@Test
+	public void constructorMethodWithParams() throws Exception {
+		MavenJavaProject project = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		IType type = project.findType("java.util.ArrayList");
+		assertNotNull(type);		
+		IMethod m = type.getMethod("<init>", Stream.of(IPrimitiveType.INT));
+		assertEquals("<init>", m.getElementName());
+		assertEquals(IVoidType.DEFAULT, m.getReturnType());
+		assertEquals(Collections.singletonList(IPrimitiveType.INT), m.parameters().collect(Collectors.toList()));
+	}
+
 }

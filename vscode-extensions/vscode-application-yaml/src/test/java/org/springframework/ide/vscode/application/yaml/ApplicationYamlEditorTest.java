@@ -682,6 +682,16 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"bad: BLUE|Expecting a 'demo.Color",
 				"Bogus|Expecting a 'demo.Color"
 		);
+		
+		/*
+		 * TODO: if enums are not sorted by the 3rd party java indexing lib then
+		 * perform the commented out test rather than the above
+		 */
+		//		editor.assertProblems(
+//				"bad: BLUE|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got a 'Mapping' node",
+//				"Bogus|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got 'Bogus'"
+//		);
+
 	}
 
 	@Test public void testReconcileSkipIfNoMetadata() throws Exception {
