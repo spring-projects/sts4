@@ -60,25 +60,27 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			"(\\s|\\\\\\s)*,(\\s|\\\\\\s)*"
 	);
 
-//	private static final Pattern SPACES = Pattern.compile(
-//			"(\\s|\\\\\\s)*"
-//	);
-
-	/**
-	 * Regexp that matches a whitespace, including escaped whitespace
-	 */
-//	private static final Pattern ASSIGN = SpringPropertiesCompletionEngine.ASSIGN;
+	private static final Pattern SPACES = Pattern.compile(
+			"(\\s|\\\\\\s)*"
+	);
 
 	private SpringPropertyIndexProvider fIndexProvider;
 	private TypeUtilProvider typeUtilProvider;
 	private final DelimitedListReconciler commaListReconciler = new DelimitedListReconciler(COMMA, this::reconcileType);
 	private Parser parser = new AntlrParser();
 
+	private boolean recordSyntaxErrors = false;
+
 	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider) {
-		this.fIndexProvider = provider;
-		this.typeUtilProvider = typeUtilProvider;
+		this(provider, typeUtilProvider, true);
 	}
 
+	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider, boolean recordSyntaxErrors) {
+		this.fIndexProvider = provider;
+		this.typeUtilProvider = typeUtilProvider;
+		this.recordSyntaxErrors = recordSyntaxErrors;
+	}
+	
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
 		FuzzyMap<PropertyInfo> index = fIndexProvider.getIndex(doc);
 		problemCollector.beginCollecting();
@@ -86,10 +88,12 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			ParseResults results = parser.parse(doc.get());
 			DuplicateNameChecker duplicateNameChecker = new DuplicateNameChecker(problemCollector);
 			
-			results.syntaxErrors.forEach(syntaxError -> {
-				problemCollector.accept(problem(PROP_SYNTAX_ERROR, syntaxError.getMessage(), syntaxError.getOffset(),
-						syntaxError.getLength()));
-			});
+			if (recordSyntaxErrors) {
+				results.syntaxErrors.forEach(syntaxError -> {
+					problemCollector.accept(problem(PROP_SYNTAX_ERROR, syntaxError.getMessage(), syntaxError.getOffset(),
+							syntaxError.getLength()));
+				});
+			}
 			
 			if (index==null || index.isEmpty()) {
 				//don't report errors when index is empty, simply don't check (otherwise we will just reprot
@@ -136,6 +140,14 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		}
 	}
 	
+	public void setRecordSyntaxErrors(boolean recordSyntaxErrors) {
+		this.recordSyntaxErrors = recordSyntaxErrors;
+	}
+	
+	public boolean isRecordSyntaxErrors() {
+		return recordSyntaxErrors ;
+	}
+	
 	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property) {
 		SpringPropertyProblem p = problem(PROP_DEPRECATED,
 				TypeUtil.deprecatedPropertyMessage(
@@ -163,18 +175,8 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	}
 
 	private void reconcileType(IDocument doc, Type expectType, Node value, IProblemCollector problems) {
-//		DocumentRegion escapedValue = getAssignedValue(doc, regions, i);
-//		if (escapedValue==null) {
-//			int charPos = DocumentUtil.lastNonWhitespaceCharOfRegion(doc, regions[i]);
-//			if (charPos>=0) {
-//				problems.accept(problem(SpringPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
-//						"Expecting '"+typeUtil.niceTypeName(expectType)+"'",
-//						charPos, 1));
-//			}
-//		} else {
-//			reconcileType(escapedValue, expectType, problems);
-//		}
-		reconcileType(createRegion(doc, value), expectType,
+		// Trim start and end spaces from the value node
+		reconcileType(createRegion(doc, value).trimStart(SPACES).trimEnd(SPACES), expectType,
 				problems);
 	}
 
@@ -188,7 +190,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		} 
 		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + length);
 	}
-
+	
 	private void reconcileType(DocumentRegion region, Type expectType, IProblemCollector problems) {
 		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(region.getDocument());
 		ValueParser parser = typeUtil.getValueParser(expectType);
@@ -209,23 +211,6 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		}
 	}
 
-//	private DocumentRegion getAssignedValue(IDocument doc, ITypedRegion[] regions, int i) {
-//		int valueRegionIndex = i+1;
-//		if (valueRegionIndex<regions.length) {
-//			String valueRegionType = regions[valueRegionIndex].getType();
-//			DocumentRegion valueRegion = new DocumentRegion(doc, regions[valueRegionIndex]);
-//			if (IPropertiesFilePartitions.PROPERTY_VALUE.equals(valueRegionType)) {
-//				//Need to remove the 'ASSIGN' bit from the start
-//				valueRegion = valueRegion.trimStart(ASSIGN).trimEnd(SPACES);
-//				//region text includes
-//				//  potential padding with whitespace.
-//				//  the ':' or '=' (if its there).
-//				return valueRegion;
-//			}
-//		}
-//		return null;
-//	}
-
 	private String suggestSimilar(PropertyInfo similarEntry, CharSequence validPrefix, CharSequence fullName) {
 		int matchedChars = validPrefix.length();
 		int wrongChars = fullName.length()-matchedChars;
@@ -235,19 +220,5 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			return "";
 		}
 	}
-
-	/**
-	 * Check that there is an assignment char directly following the given region.
-	 */
-//	private boolean isAssigned(IDocument doc, IRegion r) {
-//		try {
-//			char c = doc.getChar(r.getOffset()+r.getLength());
-//			//Note either a '=' or a ':' can be used to assign properties.
-//			return isAssign(c);
-//		} catch (BadLocationException e) {
-//			//happens if looking for assignment char outside the document
-//			return false;
-//		}
-//	}
 
 }

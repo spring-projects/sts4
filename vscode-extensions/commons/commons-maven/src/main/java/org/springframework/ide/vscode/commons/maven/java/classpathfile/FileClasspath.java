@@ -11,8 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -32,11 +31,10 @@ public class FileClasspath implements IClasspath {
 	}
 
 	@Override
-	public Collection<Path> getClasspathEntries() throws Exception {
-		Set<Path> entries = MavenCore.readClassPathFile(classpathFilePath);
-		entries.add(classpathFilePath.getParent().resolve("target/classes"));
-		entries.add(classpathFilePath.getParent().resolve("target/test-classes"));
-		return entries;
+	public Stream<Path> getClasspathEntries() throws Exception {
+		return Stream.concat(MavenCore.readClassPathFile(classpathFilePath),
+				Stream.of(classpathFilePath.getParent().resolve("target/classes"),
+						classpathFilePath.getParent().resolve("target/test-classes")));
 	}
 
 }

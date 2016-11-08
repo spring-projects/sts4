@@ -17,13 +17,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
@@ -46,8 +49,13 @@ import org.eclipse.aether.util.graph.transformer.NearestVersionSelector;
 import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector;
 import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
+import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.util.Log;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Maven Core functionality
@@ -57,12 +65,24 @@ import org.springframework.ide.vscode.commons.util.ExternalProcess;
  */
 public class MavenCore {
 	
+	public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+	private static final String JAVA_HOME = "java.home";
+	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
+	private static final String JAVA_BOOT_CLASS_PATH = "sun.boot.class.path";
 	public static final String CLASSPATH_TXT = "classpath.txt";
 	public static final String POM_XML = "pom.xml";
 	
 	private static MavenCore instance = null;
 	
 	private MavenBridge maven = new MavenBridge();
+	
+	private Supplier<Optional<JandexIndex>> javaCoreIndex = Suppliers.memoize(() -> {
+		try {
+			return Optional.of(new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile)));
+		} catch (MavenException e) {
+			return Optional.empty();
+		}
+	});
 	
 	public static MavenCore getInstance() {
 		if (instance == null) {
@@ -78,11 +98,11 @@ public class MavenCore {
 	 * @return set of classpath entries
 	 * @throws IOException
 	 */
-	public static Set<Path> readClassPathFile(Path classPathFilePath) throws IOException {
+	public static Stream<Path> readClassPathFile(Path classPathFilePath) throws IOException {
 		InputStream in = Files.newInputStream(classPathFilePath);
 		String text = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
 		Path dir = classPathFilePath.getParent();
-		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve).collect(Collectors.toSet());
+		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve);
 	}
 	
 	/**
@@ -96,7 +116,7 @@ public class MavenCore {
 				? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
 		mvnwPath.toFile().setExecutable(true);
 		ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
-				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package"), true);
+				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package", "-DskipTests"), true);
 		if (process.getExitValue() != 0) {
 			throw new RuntimeException("Failed to build test project");
 		}
@@ -213,5 +233,34 @@ public class MavenCore {
 		}
 		
 		return artifacts;
+	}
+	
+	public Stream<Path> getJreLibs() throws MavenException {
+		String s = (String) maven.createExecutionRequest().getSystemProperties().get(JAVA_BOOT_CLASS_PATH);
+		return Arrays.stream(s.split(File.pathSeparator)).map(File::new).filter(f -> f.canRead()).map(f -> Paths.get(f.toURI()));
+	}
+	
+	private String getJavaRuntimeVersion() throws MavenException {
+		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_RUNTIME_VERSION);
+	}
+	
+	private String getJavaHome() throws MavenException {
+		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_HOME);
+	}
+	
+	private File findIndexFile(File jarFile) {
+		String suffix = null;
+		try {
+			if (jarFile.toString().startsWith(getJavaHome())) {
+				suffix = getJavaRuntimeVersion();
+			}
+		} catch (MavenException e) {
+			Log.log(e);
+		}
+		return new File(System.getProperty(JAVA_IO_TMPDIR), jarFile.getName() + suffix);
+	}
+	
+	public Optional<JandexIndex> getJavaIndexForJreLibs() {
+		return javaCoreIndex.get();
 	}
 }

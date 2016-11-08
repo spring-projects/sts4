@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
@@ -31,13 +30,10 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 /**
  * Tests for TypeUtil
  * 
- * TODO: {@link IJavaProject#findType(String)} (or IClasspath#findType(String)) needs to be implemented then uncomment the tests! 
- * 
  * @author Kris De Volder
  * @author Alex Boyko 
  *
  */
-@Ignore
 public class TypeUtilTest {
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
@@ -132,14 +128,14 @@ public class TypeUtilTest {
 		assertEquals(TypeParser.parse(expectedType), actualType);
 	}
 
-	@Test
-	public void testTypeFromSignature() throws Exception {
-		useProject("enums-boot-1.3.2-app");
-		assertType("java.lang.String", Type.fromSignature("QString;", project.findType("demo.ColorData")));
-		assertType("java.lang.String", Type.fromSignature("Ljava.lang.String;", project.findType("demo.ColorData")));
-		assertType("java.lang.String[]", Type.fromSignature("[Ljava.lang.String;", project.findType("demo.ColorData")));
-		assertType("java.lang.String[]", Type.fromSignature("[QString;", project.findType("demo.ColorData")));
-	}
+//	@Test
+//	public void testTypeFromSignature() throws Exception {
+//		useProject("enums-boot-1.3.2-app");
+//		assertType("java.lang.String", Type.fromSignature("QString;", project.findType("demo.ColorData")));
+//		assertType("java.lang.String", Type.fromSignature("Ljava.lang.String;", project.findType("demo.ColorData")));
+//		assertType("java.lang.String[]", Type.fromSignature("[Ljava.lang.String;", project.findType("demo.ColorData")));
+//		assertType("java.lang.String[]", Type.fromSignature("[QString;", project.findType("demo.ColorData")));
+//	}
 
 	private void useProject(String name) throws Exception {
 		project = projects.mavenProject(name);;
