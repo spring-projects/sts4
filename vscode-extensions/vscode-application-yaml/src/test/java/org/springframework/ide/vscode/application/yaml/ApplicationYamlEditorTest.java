@@ -679,8 +679,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.assertProblems(
-				"bad: BLUE| but got a 'Mapping' node",
-				"Bogus| but got 'Bogus'"
+				"bad: BLUE|Expecting a 'demo.Color",
+				"Bogus|Expecting a 'demo.Color"
 		);
 	}
 
