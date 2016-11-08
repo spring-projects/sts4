@@ -9,33 +9,51 @@ import * as PortFinder from 'portfinder';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
-import {TextDocument} from 'vscode';
+import {TextDocument, OutputChannel} from 'vscode';
 
 PortFinder.basePort = 55282;
 
 var DEBUG = false;
-const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n';
+const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
     //If DEBUG is falsy then
     //   we launch from the 'fat jar' (which has to be built by running mvn package)
     //if DEBUG is truthy then
     //   - we launch the Java project directly from the classes folder produced by Eclipse JDT compiler
     //   - we add DEBUG_ARG to the launch so that remote debugger can attach on port 8000
 
+var log_output : OutputChannel = null;
+
+function log(msg : string) {
+    if (log_output) {
+        log_output.append(msg +"\n");
+    }
+}
+
+function error(msg : string) {
+    if (log_output) {
+        log_output.append("ERR: "+msg+"\n");
+    }
+}
+
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
-    VSCode.window.showInformationMessage("Activating manifet.yml extension");
+    VSCode.window.showInformationMessage("Activating manifest.yml extension");
+    log_output = VSCode.window.createOutputChannel("manifest-yml-debug-log");
+    log("Activating manifest.yml extension");
     let javaExecutablePath = findJavaExecutable('java');
     
     if (javaExecutablePath == null) {
         VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
         return;
     }
+    log("Found java exe: "+javaExecutablePath);
         
     isJava8(javaExecutablePath).then(eight => {
         if (!eight) {
             VSCode.window.showErrorMessage('Java language support requires Java 8 (using ' + javaExecutablePath + ')');
             return;
         }
+        log("isJavaEight => true");
                     
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
@@ -70,7 +88,7 @@ export function activate(context: VSCode.ExtensionContext) {
             return new Promise((resolve, reject) => {
                 PortFinder.getPort((err, port) => {
                     Net.createServer(socket => {
-                        console.log('Child process connected on port ' + port);
+                        log('Child process connected on port ' + port);
 
                         resolve({
                             reader: socket,
@@ -90,15 +108,15 @@ export function activate(context: VSCode.ExtensionContext) {
                         if (DEBUG) {
                             args.unshift(DEBUG_ARG);
                         }
-                        console.log(javaExecutablePath + ' ' + args.join(' '));
+                        log("CMD = "+javaExecutablePath + ' ' + args.join(' '));
                         
                         // Start the child java process
                         child = ChildProcess.execFile(javaExecutablePath, args, options);
                         child.stdout.on('data', (data) => {
-                            console.log(data);
+                            log(""+data);
                         });
                         child.stderr.on('data', (data) => {
-                            console.error(data);
+                            error(""+data);
                         })
                     });
                 });
@@ -106,7 +124,7 @@ export function activate(context: VSCode.ExtensionContext) {
         }
 
         // Create the language client and start the client.
-        let client = new LanguageClient('lsapi-example', 'Language Server Example', 
+        let client = new LanguageClient('manifest-yaml-extension', 'manifest-yaml-extension', 
             createServer, clientOptions);
         let disposable = client.start();
 
