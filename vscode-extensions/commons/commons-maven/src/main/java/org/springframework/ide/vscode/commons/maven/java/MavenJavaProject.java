@@ -56,8 +56,7 @@ public class MavenJavaProject implements IJavaProject {
 
 	@Override
 	public IType findType(String fqName) {
-		// TODO Auto-generated method stub
-		return null;
+		return classpath.findType(fqName);
 	}
 
 	@Override

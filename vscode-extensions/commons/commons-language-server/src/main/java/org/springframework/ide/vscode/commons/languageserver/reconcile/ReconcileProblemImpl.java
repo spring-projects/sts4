@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+
 /**
  * An implementation of {@link ReconcileProblem} that is just a simple data object.
  *
@@ -43,6 +45,26 @@ public class ReconcileProblemImpl implements ReconcileProblem {
 	@Override
 	public String getCode() {
 		return getType().getCode();
+	}
+
+	/**
+	 * Attempt to enlarge a empty document region to include a
+	 * character that can be visibly underlined.
+	 */
+	protected static DocumentRegion makeVisible(DocumentRegion region) {
+		DocumentRegion altRegion = region.textAfter(1);
+		if (!altRegion.isEmpty() && canUnderline(altRegion.charAt(0))) {
+			return altRegion;
+		}
+		altRegion = region.textBefore(1);
+		if (!altRegion.isEmpty() && canUnderline(altRegion.charAt(0))) {
+			return altRegion;
+		}
+		return region;
+	}
+
+	private static boolean canUnderline(char c) {
+		return c!='\n'&&c!='\r';
 	}
 
 }

@@ -1,3 +1,5 @@
 /.classpath
 /.project
 **/classpath.txt
+**/.project
+**/.settings/*.*

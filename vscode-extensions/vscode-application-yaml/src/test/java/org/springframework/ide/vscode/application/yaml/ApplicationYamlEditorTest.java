@@ -109,7 +109,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHoverInfoForEnumValueInMapKey() throws Exception {
 		Editor editor;
-		IJavaProject project = createPredefinedMavenProject("boot13");
+		IJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-app");
 		useProject(project);
 
 		//This test will fail if source jars haven't been downloaded.
@@ -141,7 +141,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testHoverInfoForEnumValueInMapKeyCompletion() throws Exception {
-		IJavaProject project = createPredefinedMavenProject("boot13");
+		IJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-app");
 		useProject(project);
 
 		//This test will fail if source jars haven't been downloaded.
@@ -198,7 +198,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 
 	@Ignore @Test public void testUserDefinedHoversandLinkTargets() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.link-tester", "demo.LinkTestSubject", null, "for testing different Pojo link cases");
 		Editor editor = newEditor(
 				"#A comment at the start\n" +
@@ -225,7 +225,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHyperlinkTargets() throws Exception {
 		System.out.println(">>> testHyperlinkTargets");
-		IJavaProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
 		Editor editor = newEditor(
@@ -273,7 +273,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void test_STS_4140_StringArrayReconciling() throws Exception {
+	@Test public void test_STS_4140_StringArrayReconciling() throws Exception {
 		defaultTestData();
 
 		Editor editor;
@@ -331,7 +331,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileIntegerScalar() throws Exception {
+	@Test public void testReconcileIntegerScalar() throws Exception {
 		data("server.port", "java.lang.Integer", null, "Port of server");
 		data("server.threads", "java.lang.Integer", null, "Number of threads for server threadpool");
 		Editor editor = newEditor(
@@ -346,7 +346,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileExpectMapping() throws Exception {
+	@Test public void testReconcileExpectMapping() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
@@ -358,7 +358,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileExpectScalar() throws Exception {
+	@Test public void testReconcileExpectScalar() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
@@ -371,7 +371,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileCamelCaseBasic() throws Exception {
+	@Test public void testReconcileCamelCaseBasic() throws Exception {
 		Editor editor;
 		data("something.with-many-parts", "java.lang.Integer", "For testing tolerance of camelCase", null);
 		data("something.with-parts.and-more", "java.lang.Integer", "For testing tolerance of camelCase", null);
@@ -435,10 +435,10 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileCamelCaseBeanProp() throws Exception {
+	@Test public void testReconcileCamelCaseBeanProp() throws Exception {
 		Editor editor;
 
-		IJavaProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
 		data("demo.bean", "demo.CamelCaser", "For testing tolerance of camelCase", null);
@@ -492,7 +492,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testContentAssistCamelCaseBeanProp() throws Exception {
-		IJavaProject p = createPredefinedMavenProject("demo");
+		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
 		data("demo.bean", "demo.CamelCaser", "For testing tolerance of camelCase", null);
@@ -542,8 +542,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void testReconcileBeanPropName() throws Exception {
-		IJavaProject p = createPredefinedMavenProject("demo-list-of-pojo");
+	@Test public void testReconcileBeanPropName() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 		useProject(p);
 		assertNotNull(p.findType("demo.Foo"));
 		data("some-foo", "demo.Foo", null, "some Foo pojo property");
@@ -562,7 +562,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testIgnoreSpringExpression() throws Exception {
+	@Test public void testIgnoreSpringExpression() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"server:\n" +
@@ -574,8 +574,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcilePojoArray() throws Exception {
-		IJavaProject p = createPredefinedMavenProject("demo-list-of-pojo");
+	@Test public void testReconcilePojoArray() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 		useProject(p);
 		assertNotNull(p.findType("demo.Foo"));
 
@@ -627,7 +627,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testReconcileSequenceGotAtomicType() throws Exception {
+	@Test public void testReconcileSequenceGotAtomicType() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"liquibase:\n" +
@@ -639,7 +639,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileSequenceGotMapType() throws Exception {
+	@Test public void testReconcileSequenceGotMapType() throws Exception {
 		data("the-map", "java.util.Map<java.lang.String,java.lang.String>", null, "Nice mappy");
 		Editor editor = newEditor(
 				"the-map:\n" +
@@ -651,8 +651,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumPropertyReconciling() throws Exception {
-		IJavaProject p = createPredefinedMavenProject("demo-enum");
+	@Test public void testEnumPropertyReconciling() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		useProject(p);
 		assertNotNull(p.findType("demo.Color"));
 
@@ -676,8 +676,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.assertProblems(
-				"bad: BLUE|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got a 'Mapping' node",
-				"Bogus|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got 'Bogus'"
+				"bad: BLUE| but got a 'Mapping' node",
+				"Bogus| but got 'Bogus'"
 		);
 	}
 
@@ -1007,7 +1007,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testContentAssistPropertyWithPojoType() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		//Try in-place completion
 		assertCompletion(
@@ -1034,7 +1034,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testContentAssistPropertyWithEnumType() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		//Try in-place completion
 		assertCompletion(
@@ -1094,7 +1094,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testCompletionForExistingBeanPropertiesAreDemoted() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		assertCompletions(
 				"foo:\n" +
 				"  data:\n" +
@@ -1529,7 +1529,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumValueCompletion() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.color", "demo.Color", null, "A foonky colour");
 
 		assertCompletion("foo.c<*>",
@@ -1551,7 +1551,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumMapValueCompletion() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		assertCompletions(
 				"foo:\n" +
@@ -1583,8 +1583,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumMapValueReconciling() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+	@Test public void testEnumMapValueReconciling() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.name-colors", "java.util.Map<java.lang.String,demo.Color>", null, "Map with colors in its values");
 
 		Editor editor;
@@ -1616,7 +1616,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumMapKeyCompletion() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		data("foo.color-names", "java.util.Map<demo.Color,java.lang.String>", null, "Map with colors in its keys");
 		data("foo.color-data", "java.util.Map<demo.Color,demo.ColorData>", null, "Map with colors in its keys, and pojo in values");
@@ -1729,8 +1729,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testPojoReconciling() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+	@Test public void testPojoReconciling() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		Editor editor = newEditor(
 			"foo:\n" +
@@ -1774,8 +1774,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  - <*>");
 	}
 
-	@Ignore @Test public void testEnumsInLowerCaseReconciling() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+	@Test public void testEnumsInLowerCaseReconciling() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		data("simple.pants.size", "demo.ClothingSize", null, "The simple pant's size");
 
@@ -1834,7 +1834,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumsInLowerCaseContentAssist() throws Exception {
-		IJavaProject p = createPredefinedMavenProject("demo-enum");
+		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		useProject(p);
 		assertNotNull(p.findType("demo.ClothingSize"));
 
@@ -1914,7 +1914,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testPojoInListCompletion() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		assertCompletion(
 				"foo:\n" +
@@ -2089,7 +2089,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testMultiProfileYamlReconcile() throws Exception {
+	@Test public void testMultiProfileYamlReconcile() throws Exception {
 		Editor editor;
 		//See https://issuetracker.springsource.com/browse/STS-4144
 		defaultTestData();
@@ -2119,7 +2119,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileArrayOfPrimitiveType() throws Exception {
+	@Test public void testReconcileArrayOfPrimitiveType() throws Exception {
 		data("my.array", "int[]", null, "A primitive array");
 		data("my.boxarray", "int[]", null, "An array of boxed primitives");
 		data("my.list", "java.util.List<java.lang.Integer>", null, "A list of boxed types");
@@ -2161,13 +2161,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void test_STS4231() throws Exception {
 		//Should the 'predefined' project need to be recreated... use the commented code below:
 //		BootProjectTestHarness projectHarness = new BootProjectTestHarness(ResourcesPlugin.getWorkspace());
-//		IJavaProject project = projectHarness.createBootProject("sts-4231",
+//		IJavaProject project = projectHarness.createBootProject("boot-1.3.0-app-sts-4231",
 //				bootVersionAtLeast("1.3.0"),
 //				withStarters("web", "cloud-config-server")
 //		);
 
 		//For more robust test use predefined project which is not so much a moving target:
-		IJavaProject project = createPredefinedMavenProject("sts-4231");
+		IJavaProject project = createPredefinedMavenProject("boot-1.3.0-app-sts-4231");
 		useProject(project);
 
 		assertCompletionsDisplayString(
@@ -2228,7 +2228,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void test_STS_4254_MapStringObjectReconciling() throws Exception {
+	@Test public void test_STS_4254_MapStringObjectReconciling() throws Exception {
 		Editor editor;
 		data("info", "java.util.Map<java.lang.String,java.lang.Object>", null, "Info for the actuator's info endpoint.");
 
@@ -2264,7 +2264,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void test_STS_4254_MapStringStringReconciling() throws Exception {
+	@Test public void test_STS_4254_MapStringStringReconciling() throws Exception {
 		Editor editor;
 		data("info", "java.util.Map<java.lang.String,java.lang.String>", null, "Info for the actuator's info endpoint.");
 
@@ -2294,7 +2294,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void test_STS_4254_MapStringIntegerReconciling() throws Exception {
+	@Test public void test_STS_4254_MapStringIntegerReconciling() throws Exception {
 		Editor editor;
 		data("info", "java.util.Map<java.lang.String,java.lang.Integer>", null, "Info for the actuator's info endpoint.");
 
@@ -2345,33 +2345,43 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testDeprecatedReconcileProperty() throws Exception {
+	/*
+	 * TODO: Remove editor.setText(contents) after the call to deprecate(...) once property index listener mechanism is in place
+	 */
+	@Test public void testDeprecatedReconcileProperty() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
-		Editor editor = newEditor(
-				"# a comment\n"+
+		
+		String contents = "# a comment\n"+
 				"error:\n"+
-				"  path: foo\n"
+				"  path: foo\n";
+		
+		Editor editor = newEditor(
+				contents
 		);
 
 		deprecate("error.path", "server.error.path", null);
+		editor.setText(contents);
 		editor.assertProblems(
 				"path|'error.path' is Deprecated: Use 'server.error.path'"
 				//no other problems
 		);
 
 		deprecate("error.path", "server.error.path", "This is old.");
+		editor.setText(contents);
 		editor.assertProblems(
 				"path|'error.path' is Deprecated: Use 'server.error.path' instead. Reason: This is old."
 				//no other problems
 		);
 
 		deprecate("error.path", null, "This is old.");
+		editor.setText(contents);
 		editor.assertProblems(
 				"path|'error.path' is Deprecated: This is old."
 				//no other problems
 		);
 
 		deprecate("error.path", null, null);
+		editor.setText(contents);
 		editor.assertProblems(
 				"path|'error.path' is Deprecated!"
 				//no other problems
@@ -2418,7 +2428,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testDeprecatedBeanPropertyHoverInfo() throws Exception {
-		IJavaProject jp = createPredefinedMavenProject("demo");
+		IJavaProject jp = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A bean with deprecated property.");
 		Editor editor = newEditor(
@@ -2430,8 +2440,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverContains("name", "<b>Deprecated!</b>");
 	}
 
-	@Ignore @Test public void testDeprecatedBeanPropertyReconcile() throws Exception {
-		IJavaProject jp = createPredefinedMavenProject("demo");
+	@Test public void testDeprecatedBeanPropertyReconcile() throws Exception {
+		IJavaProject jp = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
@@ -2464,7 +2474,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
-		IJavaProject jp = createPredefinedMavenProject("demo");
+		IJavaProject jp = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
@@ -2788,7 +2798,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		}
 	}
 
-	@Ignore @Test public void testReconcileDuplicateProperties() throws Exception {
+	@Test public void testReconcileDuplicateProperties() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"spring:\n" +
@@ -2803,7 +2813,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileDuplicatePropertiesNested() throws Exception {
+	@Test public void testReconcileDuplicatePropertiesNested() throws Exception {
 		data("foo.person.name", "String", null, "Name of person");
 		data("foo.person.family", "String", null, "Family name of person");
 		Editor editor = newEditor(
@@ -2819,8 +2829,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testReconcileDuplicatePropertiesInBean() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+	@Test public void testReconcileDuplicatePropertiesInBean() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("some.color", "demo.ColorData", null, "Some info about a color.");
 		Editor editor = newEditor(
 				"some:\n" +
@@ -2903,7 +2913,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testPropertyValueHintCompletions() throws Exception {
 		//Test that 'value hints' work when property name is associated with 'value' hints.
 		// via boot metadata.
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletionsDisplayString(
 				"spring:\n" +
@@ -2917,7 +2927,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testPropertyListHintCompletions() throws Exception {
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletion(
 				"management:\n" +
@@ -2947,7 +2957,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testPropertyMapValueCompletions() throws Exception {
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletionsDisplayString(
 				"logging:\n" +
@@ -2965,7 +2975,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testPropertyMapKeyCompletions() throws Exception {
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletionWithLabel(
 				"logging:\n" +
 				"  level:\n" +
@@ -2980,7 +2990,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEscapeStringValueStartingWithStar() throws Exception {
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletions(
 				"endpoints:\n"+
 				"  cors:\n"+
@@ -3039,7 +3049,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20); // the provider can't be reliably tested if its not allowed to
 											// fetch all its values (even though in 'production' you
 											// wouldn't want it to block the UI thread for this long.
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		//Finds a package:
 		assertCompletionWithLabel(
 				"logging:\n" +
@@ -3070,7 +3080,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testSimpleResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		data("my.nice.resource", "org.springframework.core.io.Resource", null, "A very nice resource.");
 
@@ -3114,7 +3124,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testClasspathResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		data("my.nice.resource", "org.springframework.core.io.Resource", null, "A very nice resource.");
 		data("my.nice.list", "java.util.List<org.springframework.core.io.Resource>", null, "A nice list of resources.");
@@ -3229,7 +3239,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testClassReferenceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
-		useProject(createPredefinedMavenProject("boot13_with_mongo"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));
 
 		assertCompletion(
 				"spring:\n" +
@@ -3270,7 +3280,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		//Test what happens when 'target' type isn't on the classpath:
-		useProject(createPredefinedMavenProject("boot13"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletionsDisplayString(
 			"spring:\n" +
 			"  data:\n" +
@@ -3283,7 +3293,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testClassReferenceInValueLink() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("boot13_with_mongo"));
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));
 
 		editor = newEditor(
 			"spring:\n" +
@@ -3313,9 +3323,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertLinkTargets("java.lang.String", "java.lang.String");
 	}
 
-	@Ignore @Test public void test_STS_3335_reconcile_list_nested_in_Map_of_String() throws Exception {
+	@Test public void test_STS_3335_reconcile_list_nested_in_Map_of_String() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("demo-sts-4335"));
+		useProject(createPredefinedMavenProject("boot-1.3.3-sts-4335"));
 
 		editor = newEditor(
 				"test-map:\n" +
@@ -3342,7 +3352,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 
 	@Ignore @Test public void test_STS_3335_completions_list_nested_in_Map_of_String() throws Exception {
-		useProject(createPredefinedMavenProject("demo-sts-4335"));
+		useProject(createPredefinedMavenProject("boot-1.3.3-sts-4335"));
 
 		assertCompletions(
 				"test-map:\n" +
@@ -3391,7 +3401,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testBootBug5905() throws Exception {
-		useProject(createPredefinedMavenProject("demo-with-resource-prop"));
+		useProject(createPredefinedMavenProject("boot-1.3.3-app-with-resource-prop"));
 
 		//Check the metadata reflects the 'handle-as':
 		PropertyInfo metadata = getIndexProvider().getIndex(null).get("my.welcome.path");
@@ -3412,7 +3422,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumJavaDocShownInValueContentAssist() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
 		assertCompletionWithInfoHover(
@@ -3426,7 +3436,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testEnumJavaDocShownInValueHover() throws Exception {
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
 		Editor editor;
@@ -3446,7 +3456,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHyperLinkEnumValue() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
 		editor = newEditor(
@@ -3464,7 +3474,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Ignore @Test public void testHyperLinkEnumValueInMapKey() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("demo-enum"));
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.color.map", "java.util.Map<demo.Color,java.lang.String>", null, "Pretty names for the colors.");
 
 		editor = newEditor(

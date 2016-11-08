@@ -1,0 +1,11 @@
+---
+applications:
+- name: rest-service-guides
+  memory: 256M
+  instances: 1
+  random-route: true
+  domain: cfapps.io
+  timeout: 180
+  buildpack: java_buildpack
+# For Maven target/gs-rest-service-cors-0.1.0.jar
+  path: build/libs/gs-rest-service-cors-0.1.0.jar

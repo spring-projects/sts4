@@ -23,6 +23,9 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 	}
 
 	public static SpringPropertyProblem problem(ApplicationPropertiesProblemType type, String msg, DocumentRegion region) {
+		if (region.isEmpty()) {
+			region = makeVisible(region);
+		}
 		return new SpringPropertyProblem(type, msg, region.getStart(), region.getLength());
 	}
 	

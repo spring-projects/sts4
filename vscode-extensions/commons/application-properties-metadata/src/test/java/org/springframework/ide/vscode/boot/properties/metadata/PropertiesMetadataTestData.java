@@ -11,10 +11,9 @@
 package org.springframework.ide.vscode.boot.properties.metadata;
 
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.boot.configurationmetadata.ValueHint;
@@ -88,8 +87,8 @@ public class PropertiesMetadataTestData {
 	public SpringPropertyIndex createIndex() {
 		SpringPropertyIndex index =	new SpringPropertyIndex(ValueProviderRegistry.getDefault(), new IClasspath() {
 			@Override
-			public Collection<Path> getClasspathEntries() throws Exception {
-				return Collections.emptyList();
+			public Stream<Path> getClasspathEntries() throws Exception {
+				return Stream.empty();
 			}
 		});
 		for (ConfigurationMetadataProperty propertyInfo : datas.values()) {

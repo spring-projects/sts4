@@ -13,6 +13,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.util.stream.Stream;
+
 /**
  * Replaces eclipse JDT IType.
  */
@@ -56,7 +58,7 @@ public interface IType extends IMember {
 	 *
 	 * @return the fields declared by this type
 	 */
-	IField[] getFields();
+	Stream<IField> getFields();
 
 	/**
 	 * Returns the method with the specified name and parameter types
@@ -76,7 +78,7 @@ public interface IType extends IMember {
 	 * @param parameterTypeSignatures the given parameter types
 	 * @return the method with the specified name and parameter types in this type
 	 */
-	IMethod getMethod(String name, String[] parameterTypeSignatures);
+	IMethod getMethod(String name, Stream<IJavaType> parameters);
 
 	/**
 	 * Returns the methods and constructors declared by this type.
@@ -88,33 +90,33 @@ public interface IType extends IMember {
 	 *
 	 * @return the methods and constructors declared by this type
 	 */
-	IMethod[] getMethods();
+	Stream<IMethod> getMethods();
 
-	/**
-	 * Resolves the given type name within the context of this type (depending on the type hierarchy
-	 * and its imports).
-	 * <p>
-	 * Multiple answers might be found in case there are ambiguous matches.
-	 * </p>
-	 * <p>
-	 * Each matching type name is decomposed as an array of two strings, the first denoting the package
-	 * name (dot-separated) and the second being the type name. The package name is empty if it is the
-	 * default package. The type name is the type qualified name using a '.' enclosing type separator.
-	 * </p>
-	 * <p>
-	 * Returns <code>null</code> if unable to find any matching type.
-	 * </p>
-	 *<p>
-	 * For example, resolution of <code>"Object"</code> would typically return
-	 * <code>{{"java.lang", "Object"}}</code>. Another resolution that returns
-	 * <code>{{"", "X.Inner"}}</code> represents the inner type Inner defined in type X in the
-	 * default package.
-	 * </p>
-	 *
-	 * @param typeName the given type name
-	 * @return the resolved type names or <code>null</code> if unable to find any matching type
-	 * @see #getTypeQualifiedName(char)
-	 */
-	String[][] resolveType(String typeName);
+//	/**
+//	 * Resolves the given type name within the context of this type (depending on the type hierarchy
+//	 * and its imports).
+//	 * <p>
+//	 * Multiple answers might be found in case there are ambiguous matches.
+//	 * </p>
+//	 * <p>
+//	 * Each matching type name is decomposed as an array of two strings, the first denoting the package
+//	 * name (dot-separated) and the second being the type name. The package name is empty if it is the
+//	 * default package. The type name is the type qualified name using a '.' enclosing type separator.
+//	 * </p>
+//	 * <p>
+//	 * Returns <code>null</code> if unable to find any matching type.
+//	 * </p>
+//	 *<p>
+//	 * For example, resolution of <code>"Object"</code> would typically return
+//	 * <code>{{"java.lang", "Object"}}</code>. Another resolution that returns
+//	 * <code>{{"", "X.Inner"}}</code> represents the inner type Inner defined in type X in the
+//	 * default package.
+//	 * </p>
+//	 *
+//	 * @param typeName the given type name
+//	 * @return the resolved type names or <code>null</code> if unable to find any matching type
+//	 * @see #getTypeQualifiedName(char)
+//	 */
+//	String[][] resolveType(String typeName);
 
 }

@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
@@ -32,7 +34,6 @@ import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.java.Signature;
 import org.springframework.ide.vscode.commons.util.AlwaysFailingParser;
 import org.springframework.ide.vscode.commons.util.ArrayUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -273,27 +274,20 @@ public class TypeUtil {
 				}
 				IType type = findType(enumType.getErasure());
 				if (type!=null && type.isEnum()) {
-					IField[] fields = type.getFields();
+					ImmutableList.Builder<StsValueHint> enums = ImmutableList.builder();
+					boolean addOriginal = caseMode == EnumCaseMode.ORIGNAL || caseMode == EnumCaseMode.ALIASED;
+					boolean addLowerCased = caseMode == EnumCaseMode.LOWER_CASE || caseMode == EnumCaseMode.ALIASED;
 
-					if (fields!=null) {
-						ImmutableList.Builder<StsValueHint> enums = ImmutableList.builder();
-						boolean addOriginal = caseMode==EnumCaseMode.ORIGNAL||caseMode==EnumCaseMode.ALIASED;
-						boolean addLowerCased = caseMode==EnumCaseMode.LOWER_CASE||caseMode==EnumCaseMode.ALIASED;
-						for (int i = 0; i < fields.length; i++) {
-							IField f = fields[i];
-							Provider<HtmlSnippet> jdoc = StsValueHint.javaDocSnippet(f);
-							if (f.isEnumConstant()) {
-								String rawName = f.getElementName();
-								if (addOriginal) {
-									enums.add(StsValueHint.create(rawName, f));
-								}
-								if (addLowerCased) {
-									enums.add(StsValueHint.create(StringUtil.upperCaseToHyphens(rawName), f));
-								}
-							}
+					type.getFields().filter(f -> f.isEnumConstant()).forEach(f -> {
+						String rawName = f.getElementName();
+						if (addOriginal) {
+							enums.add(StsValueHint.create(rawName, f));
 						}
-						return enums.build();
-					}
+						if (addLowerCased) {
+							enums.add(StsValueHint.create(StringUtil.upperCaseToHyphens(rawName), f));
+						}
+					});
+					return enums.build();
 				}
 			} catch (Exception e) {
 				Log.log(e);
@@ -543,7 +537,6 @@ public class TypeUtil {
 		return findType(beanType.getErasure());
 	}
 
-	private static final String[] NO_PARAMS = new String[0];
 	private static final Map<String, ValueProviderStrategy> VALUE_HINTERS = new HashMap<>();
 	static {
 		valueHints("java.nio.charset.Charset", new LazyProvider<String[]>() {
@@ -622,31 +615,29 @@ public class TypeUtil {
 			}
 		} else {
 			String typename = type.getErasure();
-			IType eclipseType = findType(typename);
+			IType typeFromIndex = findType(typename);
 
 			//TODO: handle type parameters.
-			if (eclipseType!=null) {
-				List<IMethod> getters = getGetterMethods(eclipseType);
-				//TODO: getters inherited from super classes?
-				if (getters!=null && !getters.isEmpty()) {
-					ArrayList<TypedProperty> properties = new ArrayList<>(getters.size());
-					for (IMethod m : getters) {
-						Deprecation deprecation = DeprecationUtil.extract(m);
-						Type propType = null;
-						try {
-							propType = Type.fromSignature(m.getReturnType(), eclipseType);
-						} catch (Exception e) {
-							Log.log(e);
-						}
-						if (beanMode.includesHyphenated()) {
-							properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType, deprecation));
-						}
-						if (beanMode.includesCamelCase()) {
-							properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType, deprecation));
-						}
+			if (typeFromIndex != null) {
+				ArrayList<TypedProperty> properties = new ArrayList<>();
+				getGetterMethods(typeFromIndex).forEach(m -> {
+					Deprecation deprecation = DeprecationUtil.extract(m);
+					Type propType = null;
+					try {
+						propType = Type.fromJavaType(m.getReturnType());
+					} catch (Exception e) {
+						Log.log(e);
 					}
-					return properties;
-				}
+					if (beanMode.includesHyphenated()) {
+						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
+								deprecation));
+					}
+					if (beanMode.includesCamelCase()) {
+						properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
+								deprecation));
+					}
+				});
+				return properties;
 			}
 		}
 		return null;
@@ -691,35 +682,24 @@ public class TypeUtil {
 		return camelName;
 	}
 
-	private List<IMethod> getGetterMethods(IType eclipseType) {
-		try {
-			if (eclipseType!=null && eclipseType.isClass()) {
-				IMethod[] allMethods = eclipseType.getMethods();
-				if (ArrayUtils.hasElements(allMethods)) {
-					ArrayList<IMethod> getters = new ArrayList<>();
-					for (IMethod m : allMethods) {
-						if (!isStatic(m) && isPublic(m)) {
-							String mname = m.getElementName();
-							if (
-									(mname.startsWith("get") && mname.length()>=4) ||
-									(mname.startsWith("is") && mname.length()>=3)
-							) {
-								//Need at least x chars or the property name will be empty.
-								String sig = m.getSignature();
-								int numParams = Signature.getParameterCount(sig);
-								if (numParams==0) {
-									getters.add(m);
-								}
-							}
+	private Stream<IMethod> getGetterMethods(IType eclipseType) {
+		if (eclipseType != null && eclipseType.isClass()) {
+			return eclipseType.getMethods().filter(m -> {
+				if (!isStatic(m) && isPublic(m)) {
+					String mname = m.getElementName();
+					if ((mname.startsWith("get") && mname.length() >= 4)
+							|| (mname.startsWith("is") && mname.length() >= 3)) {
+						// Need at least x chars or the property name will be
+						// empty.
+						if (m.parameters().count() == 0) {
+							return true;
 						}
 					}
-					return getters;
 				}
-			}
-		} catch (Exception e) {
-			Log.log(e);
+				return false;
+			});
 		}
-		return null;
+		return Stream.empty();
 	}
 
 //	private List<IMethod> getSetterMethods(IType eclipseType) {
@@ -818,26 +798,22 @@ public class TypeUtil {
 	}
 
 
-	public IMethod getSetter(Type beanType, String propName) {
+	public Optional<IMethod> getSetter(Type beanType, String propName) {
 		try {
 			String setterName = "set" + StringUtil.hyphensToCamelCase(propName, true);
 			IType type = findType(beanType);
-			for (IMethod m : type.getMethods()) {
-				if (setterName.equals(m.getElementName())) {
-					return m;
-				}
-			}
+			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst();
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	public IJavaElement getGetter(Type beanType, String propName) {
 		String getterName = "get" + StringUtil.hyphensToCamelCase(propName, true);
 		IType type = findType(beanType);
 
-		IMethod m = type.getMethod(getterName, NO_PARAMS);
+		IMethod m = type.getMethod(getterName, Stream.empty());
 		if (m.exists()) {
 			return m;
 		}
