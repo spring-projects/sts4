@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.commons.java;
 
+import java.util.stream.Stream;
+
 public interface IAnnotation extends IJavaElement {
 
 	/**
@@ -10,6 +12,6 @@ public interface IAnnotation extends IJavaElement {
 	 *
 	 * @return the member-value pairs of this annotation
 	 */
-	IMemberValuePair[] getMemberValuePairs();
+	Stream<IMemberValuePair> getMemberValuePairs();
 
 }

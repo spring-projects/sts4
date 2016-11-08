@@ -1,0 +1,9 @@
+Welcome to the Resource Demo App
+--------------------------------
+
+This app demonstrates how to use a configuration property of type 
+'Resource' to point to a resource loaded from your classpath.
+
+If you are seeing the contents of this file then it is working. 
+
+This file is a resource on your classpath :-)

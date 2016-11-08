@@ -28,9 +28,8 @@ import org.junit.Test;
  */
 public class DependencyTreeTest {
 	
-	@Test
-	public void mavenTest() throws Exception {
-		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/empty-boot-project-with-classpath-file").toURI());
+	private void testMavenClasspath(String projectName) throws Exception {
+		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
 		MavenCore.buildMavenProject(testProjectPath);
 
 		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
@@ -38,8 +37,18 @@ public class DependencyTreeTest {
 			return Paths.get(artifact.getFile().toURI());
 		}).collect(Collectors.toSet());;
 		
-		Set<Path> expectedClasspath = MavenCore.readClassPathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT));
+		Set<Path> expectedClasspath = MavenCore.readClassPathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT)).collect(Collectors.toSet());
 		assertEquals(expectedClasspath, calculatedClassPath);		
 	}
+	
+	@Test
+	public void mavenClasspathTest_1() throws Exception {
+		testMavenClasspath("empty-boot-project-with-classpath-file");
+	}
 
+	@Test
+	public void mavenClasspathTest_2() throws Exception {
+		testMavenClasspath("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+	}
+	
 }

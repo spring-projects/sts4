@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties.metadata.util;
 
+import java.util.Optional;
+
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.commons.java.IAnnotatable;
-import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
-import org.springframework.ide.vscode.commons.java.IMemberValuePair;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -32,36 +31,29 @@ public class DeprecationUtil {
 	 * Extract {@link Deprecation} info from annotations on a {@link IJavaElement}
 	 */
 	public static Deprecation extract(IJavaElement je) {
+		Optional<Deprecation> deprecation = Optional.empty();
 		if (je instanceof IAnnotatable) {
-			return extract((IAnnotatable)je);
+			deprecation = extract((IAnnotatable)je);
 		}
-		return null;
+		return deprecation.isPresent() ? deprecation.get() : null;
 	}
 
 	/**
 	 * Extract {@link Deprecation} info from annotations on a {@link IJavaElement}
 	 */
-	private static Deprecation extract(IAnnotatable m) {
-		try {
-			for (IAnnotation a : m.getAnnotations()) {
-				if (DEPRECATED_ANOT_NAMES.contains(a.getElementName())) {
-					Deprecation d = new Deprecation();
-					for (IMemberValuePair pair : a.getMemberValuePairs()) {
-						String name = pair.getMemberName();
-						if (name.equals("reason")) {
-							d.setReason((String) pair.getValue());
-						} else if (name.equals("replacement")) {
-							d.setReplacement((String) pair.getValue());
-						}
-					}
-					return d;
+	private static Optional<Deprecation> extract(IAnnotatable m) {
+		return m.getAnnotations().filter(a -> DEPRECATED_ANOT_NAMES.contains(a.getElementName())).map(a -> {
+			Deprecation d = new Deprecation();
+			a.getMemberValuePairs().forEach(pair -> {
+				String name = pair.getMemberName();
+				if (name.equals("reason")) {
+					d.setReason((String) pair.getValue());
+				} else if (name.equals("replacement")) {
+					d.setReplacement((String) pair.getValue());
 				}
-			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return null;
+			});
+			return d;
+		}).findFirst();
 	}
-
 
 }

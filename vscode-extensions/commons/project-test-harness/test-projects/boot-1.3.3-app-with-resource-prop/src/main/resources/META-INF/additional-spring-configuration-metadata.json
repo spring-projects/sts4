@@ -1,0 +1,15 @@
+{
+	"hints": [
+		{ 
+			"name": "my.welcome.path",
+	        "providers": [
+	            { 
+	                "name": "handle-as",
+	                "parameters": {
+	                    "target": "org.springframework.core.io.Resource"
+	                }
+	            }
+	        ]
+		}
+	]
+}

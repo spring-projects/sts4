@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Classpath for a Java artifact
@@ -28,6 +28,6 @@ public interface IClasspath {
 	 * @return collection of classpath entries in a form file/folder paths
 	 * @throws Exception
 	 */
-	Collection<Path> getClasspathEntries() throws Exception;
+	Stream<Path> getClasspathEntries() throws Exception;
 
 }
