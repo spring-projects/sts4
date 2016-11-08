@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.typefox.lsapi.Position;
-import io.typefox.lsapi.Range;
-import io.typefox.lsapi.impl.PositionImpl;
-import io.typefox.lsapi.impl.TextDocumentIdentifierImpl;
-import io.typefox.lsapi.impl.TextDocumentItemImpl;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentItem;
 
 /**
  * Deprecated, we should get rid of this class and use {@link TextDocument}.
@@ -19,11 +18,11 @@ public class TextDocumentInfo {
 
 	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
 
-	private final TextDocumentItemImpl document;
+	private final TextDocumentItem document;
 
 	private int[] _lineStarts;
 
-	public TextDocumentInfo(TextDocumentItemImpl document) {
+	public TextDocumentInfo(TextDocumentItem document) {
 		this.document = document;
 	}
 
@@ -43,7 +42,7 @@ public class TextDocumentInfo {
 		return getDocument().getUri();
 	}
 
-	public TextDocumentItemImpl getDocument() {
+	public TextDocumentItem getDocument() {
 		return document;
 	}
 
@@ -103,7 +102,7 @@ public class TextDocumentInfo {
 		int line = lineNumber(offset);
 		int startOfLine = startOfLine(line);
 		int column = offset - startOfLine;
-		PositionImpl pos = new PositionImpl();
+		Position pos = new Position();
 		pos.setCharacter(column);
 		pos.setLine(line);
 		return pos;
@@ -126,8 +125,8 @@ public class TextDocumentInfo {
 		return lineNumber;
 	}
 
-	public TextDocumentIdentifierImpl getId() {
-		TextDocumentIdentifierImpl id = new TextDocumentIdentifierImpl();
+	public TextDocumentIdentifier getId() {
+		TextDocumentIdentifier id = new TextDocumentIdentifier();
 		id.setUri(getUri());
 		return id;
 	}

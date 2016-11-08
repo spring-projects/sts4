@@ -6,146 +6,39 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ * Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.application.properties.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
-
-import io.typefox.lsapi.services.json.LoggingJsonAdapter;
 
 /**
  * Starts up Language Server process
  * 
  * @author Alex Boyko
+ * @author Kris De Volder
  *
  */
 public class Main {
-    private static final Logger LOG = Logger.getLogger("main");
+	
+	public static void main(String[] args) throws IOException {
+		LaunguageServerApp.start(() -> {
+			JavaProjectFinder javaProjectFinder = JavaProjectFinder.DEFAULT;
+			SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
+			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
+			LanguageServer server = new ApplicationPropertiesLanguageServer(indexProvider, typeUtilProvider);
+			return server;
+		});
+	}
 
-    public static void main(String[] args) throws IOException {
-    	LOG.info("Starting LS");
-    	Connection connection = null;
-        try {
-            LoggingFormat.startLogging();
-
-            connection = connectToNode();
-
-            run(connection);
-        } catch (Throwable t) {
-            LOG.log(Level.SEVERE, t.getMessage(), t);
-            System.exit(1);
-        } finally {
-        	if (connection != null) {
-        		connection.dispose();
-        	}
-        }
-    }
-
-    private static Connection connectToNode() throws IOException {
-        String port = System.getProperty("server.port");
-
-        if (port != null) {
-            Socket socket = new Socket("localhost", Integer.parseInt(port));
-
-            InputStream in = socket.getInputStream();
-            OutputStream out = socket.getOutputStream();
-
-            OutputStream intercept = new OutputStream() {
-
-                @Override
-                public void write(int b) throws IOException {
-                    out.write(b);
-                }
-            };
-
-            LOG.info("Connected to parent using socket on port " + port);
-
-            return new Connection(in, intercept, socket);
-        }
-        else {
-            InputStream in = System.in;
-            PrintStream out = System.out;
-
-            LOG.info("Connected to parent using stdio");
-
-            return new Connection(in, out, null);
-        }
-    }
-
-    private static class Connection {
-        final InputStream in;
-        final OutputStream out;
-        final Socket socket;
-
-        private Connection(InputStream in, OutputStream out, Socket socket) {
-            this.in = in;
-            this.out = out;
-            this.socket = socket;
-        }
-        
-        void dispose() {
-        	if (in != null) {
-            	try {
-    				in.close();
-    			} catch (IOException e) {
-    	            LOG.log(Level.SEVERE, e.getMessage(), e);
-    			}
-        	}
-        	if (out != null) {
-    			try {
-    				out.close();
-    			} catch (IOException e) {
-    	            LOG.log(Level.SEVERE, e.getMessage(), e);
-    			}
-        	}
-        	if (socket != null) {
-    			try {
-    				socket.close();
-    			} catch (IOException e) {
-    	            LOG.log(Level.SEVERE, e.getMessage(), e);
-    			}
-        	}
-        }
-    }
-
-    /**
-     * Listen for requests from the parent node process.
-     * Send replies asynchronously.
-     * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
-     */
-    public static void run(Connection connection) {
-    	JavaProjectFinder javaProjectFinder = JavaProjectFinder.DEFAULT;
-		SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-		TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
-
-    	ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(indexProvider, typeUtilProvider);
-    	
-    	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
-    	jsonServer.setMessageLog(new PrintWriter(System.out));
-
-        jsonServer.connect(connection.in, connection.out);
-        jsonServer.getProtocol().addErrorListener((message, err) -> {
-            LOG.log(Level.SEVERE, message, err);
-
-            server.onError(message, err);
-        });
-        jsonServer.join();
-    }
 }

@@ -9,23 +9,21 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-
-import io.typefox.lsapi.DiagnosticSeverity;
-import io.typefox.lsapi.InitializeParams;
-import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.MessageParams;
-import io.typefox.lsapi.MessageType;
-import io.typefox.lsapi.ShowMessageRequestParams;
-import io.typefox.lsapi.impl.DiagnosticImpl;
-import io.typefox.lsapi.impl.InitializeResultImpl;
-import io.typefox.lsapi.impl.MessageParamsImpl;
-import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
-import io.typefox.lsapi.services.LanguageServer;
-import io.typefox.lsapi.services.WindowService;
+import org.springframework.ide.vscode.commons.util.Futures;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
@@ -33,7 +31,7 @@ import io.typefox.lsapi.services.WindowService;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public abstract class SimpleLanguageServer implements LanguageServer {
+public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware {
 
     private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
 
@@ -44,6 +42,13 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 	private SimpleTextDocumentService tds;
 
 	private SimpleWorkspaceService workspace;
+
+	private LanguageClient client;
+
+	@Override
+	public void connect(LanguageClient client) {
+		this.client = client;
+	}
 
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
@@ -56,33 +61,35 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 //	        LOG.info("workspaceRoot = "+workspaceRoot);
     	}
 
-        InitializeResultImpl result = new InitializeResultImpl();
+        InitializeResult result = new InitializeResult();
 
-        ServerCapabilitiesImpl cap = getServerCapabilities();
+        ServerCapabilities cap = getServerCapabilities();
         result.setCapabilities(cap);
 
         return CompletableFuture.completedFuture(result);
     }
 
-    @Override
-    public WindowService getWindowService() {
-        return new WindowService() {
-            @Override
-            public void onShowMessage(Consumer<MessageParams> callback) {
-                showMessage = callback;
-            }
+    //TODO: What happened to WindowService? Seems to be removed in lsp4j. So how can we show messages?
 
-            @Override
-            public void onShowMessageRequest(Consumer<ShowMessageRequestParams> callback) {
-
-            }
-
-            @Override
-            public void onLogMessage(Consumer<MessageParams> callback) {
-
-            }
-        };
-    }
+//    @Override
+//    public WindowService getWindowService() {
+//        return new WindowService() {
+//            @Override
+//            public void onShowMessage(Consumer<MessageParams> callback) {
+//                showMessage = callback;
+//            }
+//
+//            @Override
+//            public void onShowMessageRequest(Consumer<ShowMessageRequestParams> callback) {
+//
+//            }
+//
+//            @Override
+//            public void onLogMessage(Consumer<MessageParams> callback) {
+//
+//            }
+//        };
+//    }
 
     public void onError(String message, Throwable error) {
         if (error instanceof ShowMessageException)
@@ -90,7 +97,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
         else {
             LOG.log(Level.SEVERE, message, error);
 
-            MessageParamsImpl m = new MessageParamsImpl();
+            MessageParams m = new MessageParams();
 
             m.setMessage(message);
             m.setType(MessageType.Error);
@@ -99,10 +106,11 @@ public abstract class SimpleLanguageServer implements LanguageServer {
         }
     }
 
-	protected abstract ServerCapabilitiesImpl getServerCapabilities();
+	protected abstract ServerCapabilities getServerCapabilities();
 
     @Override
-    public void shutdown() {
+    public CompletableFuture<Void> shutdown() {
+    	return Futures.of(null);
     }
 
     @Override
@@ -123,7 +131,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 	}
 
 	protected SimpleTextDocumentService createTextDocumentService() {
-		return new SimpleTextDocumentService();
+		return new SimpleTextDocumentService(this);
 	}
 
 	public SimpleWorkspaceService createWorkspaceService() {
@@ -138,11 +146,6 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 		return workspace;
 	}
 
-	@Override
-	public void onTelemetryEvent(Consumer<Object> callback) {
-		//TODO: not sure what this is for exactly. We just stub it and do nothing for now.
-	}
-
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
@@ -152,7 +155,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 		SimpleTextDocumentService documents = getTextDocumentService();
 		IProblemCollector problems = new IProblemCollector() {
 
-			private List<DiagnosticImpl> diagnostics = new ArrayList<>();
+			private List<Diagnostic> diagnostics = new ArrayList<>();
 
 			@Override
 			public void endCollecting() {
@@ -168,7 +171,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 			public void accept(ReconcileProblem problem) {
 				DiagnosticSeverity severity = getDiagnosticSeverity(problem);
 				if (severity!=null) {
-					DiagnosticImpl d = new DiagnosticImpl();
+					Diagnostic d = new Diagnostic();
 					d.setCode(problem.getCode());
 					d.setMessage(problem.getMessage());
 					d.setRange(doc.toRange(problem.getOffset(), problem.getLength()));
@@ -192,5 +195,9 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 			}
 		};
 		engine.reconcile(doc, problems);
+	}
+
+	public LanguageClient getClient() {
+		return client;
 	}
 }

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -20,10 +21,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.properties.editor.test.harness.PropertyIndexHarness.ItemConfigurer;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-
-import io.typefox.lsapi.CompletionItem;
+import org.springframework.ide.vscode.properties.editor.test.harness.PropertyIndexHarness.ItemConfigurer;
 
 public abstract class AbstractPropsEditorTest {
 	

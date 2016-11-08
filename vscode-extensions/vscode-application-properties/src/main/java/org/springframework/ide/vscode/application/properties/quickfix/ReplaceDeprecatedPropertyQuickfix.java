@@ -10,11 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties.quickfix;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
-
-import io.typefox.lsapi.CompletionItemKind;
 
 public class ReplaceDeprecatedPropertyQuickfix implements ICompletionProposal {
 

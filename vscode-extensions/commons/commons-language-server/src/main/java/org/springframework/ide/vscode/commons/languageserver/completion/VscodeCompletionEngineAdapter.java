@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
@@ -14,14 +19,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.TextDocumentPositionParams;
-import io.typefox.lsapi.impl.CompletionItemImpl;
-import io.typefox.lsapi.impl.CompletionListImpl;
-import io.typefox.lsapi.impl.PositionImpl;
-import io.typefox.lsapi.impl.TextEditImpl;
 
 /**
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
@@ -54,15 +51,15 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				int offset = doc.toOffset(params.getPosition());
 				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
-				CompletionListImpl list = new CompletionListImpl();
-				list.setIncomplete(false);
-				List<CompletionItemImpl> items = new ArrayList<>(completions.size());
+				CompletionList list = new CompletionList();
+				list.setIsIncomplete(false);
+				List<CompletionItem> items = new ArrayList<>(completions.size());
 				SortKeys sortkeys = new SortKeys();
 				int count = 0;
 				for (ICompletionProposal c : completions) {
 					count++;
 					if (count>MAX_COMPLETIONS) {
-						list.setIncomplete(true);
+						list.setIsIncomplete(true);
 						break;
 					}
 					try {
@@ -80,8 +77,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return SimpleTextDocumentService.NO_COMPLETIONS;
 	}
 
-	private CompletionItemImpl adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
-		CompletionItemImpl item = new CompletionItemImpl();
+	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
+		CompletionItem item = new CompletionItem();
 		item.setLabel(completion.getLabel());
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
@@ -90,7 +87,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return item;
 	}
 
-	private void adaptEdits(CompletionItemImpl item, TextDocument doc, DocumentEdits edits) throws Exception {
+	private void adaptEdits(CompletionItem item, TextDocument doc, DocumentEdits edits) throws Exception {
 		TextReplace replaceEdit = edits.asReplacement(doc);
 		if (replaceEdit==null) {
 			//The original edit does nothing.
@@ -98,7 +95,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		} else {
 			TextDocument newDoc = doc.copy();
 			edits.apply(newDoc);
-			TextEditImpl vscodeEdit = new TextEditImpl();
+			TextEdit vscodeEdit = new TextEdit();
 			vscodeEdit.setRange(newDoc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
 			vscodeEdit.setNewText(vscodeIndentFix(vscodeEdit.getRange().getStart(), replaceEdit.newText));
 			//TODO: cursor offset within newText? for now we assume its always at the end.
@@ -106,7 +103,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 	}
 
-	private String vscodeIndentFix(PositionImpl start, String newText) {
+	private String vscodeIndentFix(Position start, String newText) {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
 		int vscodeMagicIndent = start.getCharacter();

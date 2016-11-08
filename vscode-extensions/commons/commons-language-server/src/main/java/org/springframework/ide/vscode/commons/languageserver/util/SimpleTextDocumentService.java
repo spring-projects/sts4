@@ -10,52 +10,53 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidCloseTextDocumentParams;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentFormattingParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
+import org.eclipse.lsp4j.DocumentRangeFormattingParams;
+import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ReferenceParams;
+import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SignatureHelp;
+import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Futures;
 
-import io.typefox.lsapi.CodeActionParams;
-import io.typefox.lsapi.CodeLens;
-import io.typefox.lsapi.CodeLensParams;
-import io.typefox.lsapi.Command;
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.DidChangeTextDocumentParams;
-import io.typefox.lsapi.DidCloseTextDocumentParams;
-import io.typefox.lsapi.DidOpenTextDocumentParams;
-import io.typefox.lsapi.DidSaveTextDocumentParams;
-import io.typefox.lsapi.DocumentFormattingParams;
-import io.typefox.lsapi.DocumentHighlight;
-import io.typefox.lsapi.DocumentOnTypeFormattingParams;
-import io.typefox.lsapi.DocumentRangeFormattingParams;
-import io.typefox.lsapi.DocumentSymbolParams;
-import io.typefox.lsapi.Hover;
-import io.typefox.lsapi.Location;
-import io.typefox.lsapi.PublishDiagnosticsParams;
-import io.typefox.lsapi.Range;
-import io.typefox.lsapi.ReferenceParams;
-import io.typefox.lsapi.RenameParams;
-import io.typefox.lsapi.SignatureHelp;
-import io.typefox.lsapi.SymbolInformation;
-import io.typefox.lsapi.TextDocumentContentChangeEvent;
-import io.typefox.lsapi.TextDocumentPositionParams;
-import io.typefox.lsapi.TextEdit;
-import io.typefox.lsapi.VersionedTextDocumentIdentifier;
-import io.typefox.lsapi.WorkspaceEdit;
-import io.typefox.lsapi.impl.CompletionListImpl;
-import io.typefox.lsapi.impl.DiagnosticImpl;
-import io.typefox.lsapi.impl.PublishDiagnosticsParamsImpl;
-import io.typefox.lsapi.services.TextDocumentService;
-
 public class SimpleTextDocumentService implements TextDocumentService {
 
-    private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
+	private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
 
-    private Consumer<PublishDiagnosticsParams> publishDiagnostics = (p) -> {};
-
+	final private SimpleLanguageServer server;
 	private Map<String, TextDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
+
+	public SimpleTextDocumentService(SimpleLanguageServer server) {
+		this.server = server;
+	}
 
 	public synchronized void onCompletion(CompletionHandler h) {
 		Assert.isNull("A completion handler is already set, multiple handlers not supported yet", completionHandler);
@@ -158,7 +159,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	public final static CompletableFuture<CompletionList> NO_COMPLETIONS = Futures.of(
-			new CompletionListImpl(false, Collections.emptyList()));
+			new CompletionList(false, Collections.emptyList()));
 
 
 	@Override
@@ -199,12 +200,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CompletableFuture<DocumentHighlight> documentHighlight(TextDocumentPositionParams position) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -263,22 +258,24 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	}
 
-	@Override
-	public synchronized void onPublishDiagnostics(Consumer<PublishDiagnosticsParams> callback) {
-		publishDiagnostics = publishDiagnostics.andThen(callback);
-	}
-
-	public void publishDiagnostics(TextDocument doc, List<DiagnosticImpl> diagnostics) {
-		if (diagnostics!=null) {
-			PublishDiagnosticsParamsImpl params = new PublishDiagnosticsParamsImpl();
+	public void publishDiagnostics(TextDocument doc, List<Diagnostic> diagnostics) {
+		LanguageClient client = server.getClient();
+		if (client!=null && diagnostics!=null) {
+			PublishDiagnosticsParams params = new PublishDiagnosticsParams();
 			params.setUri(doc.getUri());
 			params.setDiagnostics(diagnostics);
-			publishDiagnostics.accept(params);
+			client.publishDiagnostics(params);
 		}
 	}
 
 	public synchronized TextDocument get(TextDocumentPositionParams params) {
 		return documents.get(params.getTextDocument().getUri());
+	}
+
+	@Override
+	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -17,13 +17,12 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.services.LanguageServer;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.ApplicationPropertiesLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-
-import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.TextDocumentSyncKind;
-import io.typefox.lsapi.services.LanguageServer;
 
 /**
  * Boot app properties file language server tests

@@ -13,29 +13,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
-
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.Diagnostic;
-import io.typefox.lsapi.DiagnosticSeverity;
-import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.Position;
-import io.typefox.lsapi.PublishDiagnosticsParams;
-import io.typefox.lsapi.Range;
-import io.typefox.lsapi.TextDocumentSyncKind;
-import io.typefox.lsapi.impl.ClientCapabilitiesImpl;
-import io.typefox.lsapi.impl.DidChangeTextDocumentParamsImpl;
-import io.typefox.lsapi.impl.DidOpenTextDocumentParamsImpl;
-import io.typefox.lsapi.impl.InitializeParamsImpl;
-import io.typefox.lsapi.impl.PositionImpl;
-import io.typefox.lsapi.impl.TextDocumentContentChangeEventImpl;
-import io.typefox.lsapi.impl.TextDocumentItemImpl;
-import io.typefox.lsapi.impl.TextDocumentPositionParamsImpl;
-import io.typefox.lsapi.impl.VersionedTextDocumentIdentifierImpl;
-import io.typefox.lsapi.services.LanguageServer;
+import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentItem;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 public class LanguageServerHarness {
 
@@ -68,7 +71,7 @@ public class LanguageServerHarness {
 	public TextDocumentInfo readFile(File file) throws Exception {
 		byte[] encoded = Files.readAllBytes(file.toPath());
 		String content = new String(encoded, getEncoding());
-		TextDocumentItemImpl document = new TextDocumentItemImpl();
+		TextDocumentItem document = new TextDocumentItem();
 		document.setText(content);
 		document.setUri(file.toURI().toString());
 		document.setVersion(getFirstVersion());
@@ -76,9 +79,9 @@ public class LanguageServerHarness {
 		return new TextDocumentInfo(document);
 	}
 
-	private synchronized TextDocumentItemImpl setDocumentContent(String uri, String newContent) {
+	private synchronized TextDocumentItem setDocumentContent(String uri, String newContent) {
 		TextDocumentInfo o = documents.get(uri);
-		TextDocumentItemImpl n = new TextDocumentItemImpl();
+		TextDocumentItem n = new TextDocumentItem();
 		n.setLanguageId(o.getLanguageId());
 		n.setText(newContent);
 		n.setVersion(o.getVersion()+1);
@@ -106,19 +109,50 @@ public class LanguageServerHarness {
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
 		server = factory.call();
 		int parentPid = random.nextInt(40000)+1000;
-		InitializeParamsImpl initParams = new InitializeParamsImpl();
+		InitializeParams initParams = new InitializeParams();
 		initParams.setRootPath(workspaceRoot== null?null:workspaceRoot.toString());
 		initParams.setProcessId(parentPid);
-		ClientCapabilitiesImpl clientCap = new ClientCapabilitiesImpl();
+		ClientCapabilities clientCap = new ClientCapabilities();
 		initParams.setCapabilities(clientCap);
 		initResult = server.initialize(initParams).get();
+		if (server instanceof LanguageClientAware) {
+			((LanguageClientAware) server).connect(new LanguageClient() {
+				@Override
+				public void telemetryEvent(Object object) {
+					// TODO Auto-generated method stub
 
-		server.getTextDocumentService().onPublishDiagnostics(this::receiveDiagnostics);
+				}
+
+				@Override
+				public CompletableFuture<Void> showMessageRequest(ShowMessageRequestParams requestParams) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public void showMessage(MessageParams messageParams) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void publishDiagnostics(PublishDiagnosticsParams diagnostics) {
+					receiveDiagnostics(diagnostics);
+				}
+
+				@Override
+				public void logMessage(MessageParams message) {
+					// TODO Auto-generated method stub
+
+				}
+			});
+
+		}
 		return initResult;
 	}
 
 	public TextDocumentInfo openDocument(TextDocumentInfo documentInfo) throws Exception {
-		DidOpenTextDocumentParamsImpl didOpen = new DidOpenTextDocumentParamsImpl();
+		DidOpenTextDocumentParams didOpen = new DidOpenTextDocumentParams();
 		didOpen.setTextDocument(documentInfo.getDocument());
 		didOpen.setText(documentInfo.getText());
 		didOpen.setUri(documentInfo.getUri());
@@ -133,9 +167,9 @@ public class LanguageServerHarness {
 	}
 
 	public TextDocumentInfo changeDocument(String uri, String newContent) throws Exception {
-		TextDocumentItemImpl textDocument = setDocumentContent(uri, newContent);
-		DidChangeTextDocumentParamsImpl didChange = new DidChangeTextDocumentParamsImpl();
-		VersionedTextDocumentIdentifierImpl version = new VersionedTextDocumentIdentifierImpl();
+		TextDocumentItem textDocument = setDocumentContent(uri, newContent);
+		DidChangeTextDocumentParams didChange = new DidChangeTextDocumentParams();
+		VersionedTextDocumentIdentifier version = new VersionedTextDocumentIdentifier();
 		version.setUri(uri);
 		version.setVersion(textDocument.getVersion());
 		didChange.setTextDocument(version);
@@ -145,7 +179,7 @@ public class LanguageServerHarness {
 		case Incremental:
 			throw new IllegalStateException("Incremental sync not yet supported by this test harness");
 		case Full:
-			TextDocumentContentChangeEventImpl change = new TextDocumentContentChangeEventImpl();
+			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
 			change.setText(newContent);
 			didChange.setContentChanges(Collections.singletonList(change));
 			break;
@@ -202,21 +236,10 @@ public class LanguageServerHarness {
 	}
 
 	public CompletionList getCompletions(TextDocumentInfo doc, Position cursor) throws Exception {
-		TextDocumentPositionParamsImpl params = new TextDocumentPositionParamsImpl();
-		params.setPosition(toImpl(cursor));
+		TextDocumentPositionParams params = new TextDocumentPositionParams();
+		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
 		return server.getTextDocumentService().completion(params).get();
-	}
-
-	private PositionImpl toImpl(Position pos) {
-		if (pos instanceof PositionImpl) {
-			return (PositionImpl) pos;
-		} else {
-			PositionImpl imp = new PositionImpl();
-			imp.setCharacter(pos.getCharacter());
-			imp.setLine(pos.getLine());
-			return imp;
-		}
 	}
 
 	private CompletionItem resolveCompletionItem(CompletionItem unresolved) {
@@ -238,7 +261,7 @@ public class LanguageServerHarness {
 	}
 
 	public synchronized TextDocumentInfo createWorkingCopy(String contents) throws Exception {
-		TextDocumentItemImpl doc = new TextDocumentItemImpl();
+		TextDocumentItem doc = new TextDocumentItem();
 		doc.setLanguageId(getLanguageId());
 		doc.setText(contents);
 		doc.setUri(createTempUri());

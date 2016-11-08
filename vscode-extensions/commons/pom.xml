@@ -22,6 +22,31 @@
 		<module>properties-editor-test-harness</module>
 	</modules>
 
+	<repositories>
+		<repository>
+			<id>lsp4j-snapshots-repo</id>
+			<name>lsp4j-snapshots-repo</name>
+			<url>http://services.typefox.io/open-source/jenkins/job/lsp4j/lastSuccessfulBuild/artifact/build/maven-repository/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<properties>
 		<yaml-version>1.17</yaml-version>
 		<junit-version>4.11</junit-version>
@@ -30,7 +55,7 @@
 		<guava-version>19.0</guava-version>
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
-		<lsapi-version>0.3.0</lsapi-version>
+		<lsp4j-version>0.1.0-SNAPSHOT</lsp4j-version>
 		<reactor-version>3.0.2.RELEASE</reactor-version>
 	</properties>
 

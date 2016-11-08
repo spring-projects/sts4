@@ -6,12 +6,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServer;
-
-import io.typefox.lsapi.InitializeResult;
-import io.typefox.lsapi.TextDocumentSyncKind;
 
 public class ManifestYamlLanguageServerTest {
 

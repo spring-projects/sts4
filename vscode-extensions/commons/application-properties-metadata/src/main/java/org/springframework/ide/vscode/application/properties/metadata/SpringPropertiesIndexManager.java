@@ -10,14 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties.metadata;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.application.properties.metadata.util.Listener;
 import org.springframework.ide.vscode.application.properties.metadata.util.ListenerManager;
-import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**

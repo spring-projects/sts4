@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.typefox.lsapi.Position;
-import io.typefox.lsapi.Range;
-import io.typefox.lsapi.TextDocumentContentChangeEvent;
-import io.typefox.lsapi.impl.PositionImpl;
-import io.typefox.lsapi.impl.RangeImpl;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 
 public class TextDocument implements IDocument {
 
@@ -34,6 +32,7 @@ public class TextDocument implements IDocument {
 		this._lineStarts = other._lineStarts; //no need to reparse lines.
 	}
 
+	@Override
 	public String getUri() {
 		return uri;
 	}
@@ -67,9 +66,9 @@ public class TextDocument implements IDocument {
 	 * TextDocument because it requires splitting document into lines to determine
 	 * line numbers from offsets.
 	 */
-	public RangeImpl toRange(int offset, int length) {
+	public Range toRange(int offset, int length) {
 		int end = offset + length;
-		RangeImpl range = new RangeImpl();
+		Range range = new Range();
 		range.setStart(toPosition(offset));
 		range.setEnd(toPosition(end));
 		return range;
@@ -93,11 +92,11 @@ public class TextDocument implements IDocument {
 	}
 
 
-	public PositionImpl toPosition(int offset) {
+	public Position toPosition(int offset) {
 		int line = lineNumber(offset);
 		int startOfLine = startOfLine(line);
 		int column = offset - startOfLine;
-		PositionImpl pos = new PositionImpl();
+		Position pos = new Position();
 		pos.setCharacter(column);
 		pos.setLine(line);
 		return pos;
