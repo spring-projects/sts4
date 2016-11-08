@@ -28,7 +28,7 @@ import io.typefox.lsapi.impl.TextEditImpl;
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
-	final private int MAX_COMPLETIONS = 10;
+	private final static int MAX_COMPLETIONS = 20;
 
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
@@ -120,5 +120,4 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//The tricky part is that we have to probably remember infos about the unresolved elements somehow so we can resolve later.
 		return Futures.of(unresolved);
 	}
-
 }
