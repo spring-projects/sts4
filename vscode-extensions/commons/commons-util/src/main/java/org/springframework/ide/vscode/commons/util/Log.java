@@ -16,5 +16,13 @@ public class Log {
 	public static void log(Throwable e) {
 		logger.error("Error", e);
 	}
+	
+	public static void log(String message, Throwable t) {
+		logger.error(message, t);
+	}
+	
+	public static void log(String message) {
+		logger.error(message);
+	}
 
 }

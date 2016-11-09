@@ -257,10 +257,18 @@ public class MavenCore {
 		} catch (MavenException e) {
 			Log.log(e);
 		}
-		return new File(System.getProperty(JAVA_IO_TMPDIR), jarFile.getName() + suffix);
+		return new File(getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
 	}
 	
 	public Optional<JandexIndex> getJavaIndexForJreLibs() {
 		return javaCoreIndex.get();
+	}
+	
+	public File getIndexFolder() {
+		File folder = new File(System.getProperty(JAVA_IO_TMPDIR), "jandex");
+		if (!folder.isDirectory()) {
+			folder.mkdirs();
+		}
+		return folder;
 	}
 }

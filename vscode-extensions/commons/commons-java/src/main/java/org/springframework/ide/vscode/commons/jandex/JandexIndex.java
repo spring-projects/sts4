@@ -94,25 +94,42 @@ public class JandexIndex {
 	}
 	
 	private static Optional<IndexView> indexJar(File file, IndexFileFinder indexFileFinder) {
-		try {
 			File indexFile = indexFileFinder.findIndexFile(file);
 			if (indexFile != null) {
-				if (indexFile.createNewFile()) {
-					return Optional.of(JarIndexer
-							.createJarIndex(file, new Indexer(), indexFile,
-									false, false, true, System.out, System.err)
-							.getIndex());
-				} else {
-					return Optional.of(new IndexReader(new FileInputStream(indexFile)).read());
+				try {
+					if (indexFile.createNewFile()) {
+						try {
+							return Optional.of(JarIndexer
+									.createJarIndex(file, new Indexer(), indexFile,
+											false, false, false, System.out, System.err)
+									.getIndex());
+						} catch (IOException e) {
+							Log.log("Failed to index '" + file + "'", e);
+						}
+					} else {
+						try {
+							return Optional.of(new IndexReader(new FileInputStream(indexFile)).read());
+						} catch (IOException e) {
+							Log.log("Failed to read index file '" + indexFile + "'. Creating new index file.", e);
+							if (indexFile.delete()) {
+								return indexJar(file, indexFileFinder);
+							} else {
+								Log.log("Failed to read index file '" + indexFile);
+							}
+						}
+					}
+				} catch (IOException e) {
+					Log.log("Unable to create index file '" + indexFile +"'");
 				}
 			} else {
-				return Optional.of(JarIndexer
-						.createJarIndex(file, new Indexer(), file.canWrite(), file.getParentFile().canWrite(), true)
-						.getIndex());
+				try {
+					return Optional.of(JarIndexer
+							.createJarIndex(file, new Indexer(), file.canWrite(), file.getParentFile().canWrite(), false)
+							.getIndex());
+				} catch (IOException e) {
+					Log.log("Failed to index '" + file + "'", e);
+				}
 			}
-		} catch (IOException e) {
-			Log.log(e);
-		}
 		return Optional.empty();
 	}
 

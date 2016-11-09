@@ -68,7 +68,7 @@ public class MavenProjectClasspath implements IClasspath {
 	}
 	
 	private File findIndexFile(File jarFile) {
-		return new File(System.getProperty(MavenCore.JAVA_IO_TMPDIR), jarFile.getName() + jarFile.lastModified());
+		return new File(maven.getIndexFolder().toString(), jarFile.getName() + "-" + jarFile.lastModified() + ".jdx");
 	}
 	
 }
