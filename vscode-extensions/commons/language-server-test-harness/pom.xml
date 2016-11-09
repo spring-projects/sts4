@@ -15,19 +15,9 @@
 	<dependencies>
 		<!-- Java implementation of VS Code language server protocol -->
 		<dependency>
-			<groupId>io.typefox.lsapi</groupId>
-			<artifactId>io.typefox.lsapi</artifactId>
-			<version>${lsapi-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.typefox.lsapi</groupId>
-			<artifactId>io.typefox.lsapi.services</artifactId>
-			<version>${lsapi-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.typefox.lsapi</groupId>
-			<artifactId>io.typefox.lsapi.annotations</artifactId>
-			<version>${lsapi-version}</version>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>${lsp4j-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>

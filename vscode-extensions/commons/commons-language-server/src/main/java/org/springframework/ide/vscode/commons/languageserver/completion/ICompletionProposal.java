@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
-import io.typefox.lsapi.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionItemKind;
 
 /**
  * Replaces STS/Eclipse's ICompletionProposal

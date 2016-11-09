@@ -4,6 +4,9 @@ import java.util.Collection;
 
 import javax.inject.Provider;
 
+import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -22,10 +25,6 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
-
-import io.typefox.lsapi.TextDocumentSyncKind;
-import io.typefox.lsapi.impl.CompletionOptionsImpl;
-import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
@@ -70,12 +69,12 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	}
 	
 	@Override
-	protected ServerCapabilitiesImpl getServerCapabilities() {
-		ServerCapabilitiesImpl c = new ServerCapabilitiesImpl();
+	protected ServerCapabilities getServerCapabilities() {
+		ServerCapabilities c = new ServerCapabilities();
 		
 		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		
-		CompletionOptionsImpl completionProvider = new CompletionOptionsImpl();
+		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
 		

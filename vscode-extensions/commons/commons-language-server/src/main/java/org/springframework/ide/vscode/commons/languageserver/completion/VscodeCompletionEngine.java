@@ -2,9 +2,9 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.TextDocumentPositionParams;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 /**
  * Interface that needs to be implemented by a 'completion engine' which can be easily

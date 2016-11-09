@@ -36,8 +36,8 @@ import org.springframework.ide.vscode.properties.editor.test.harness.StyledStrin
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.Diagnostic;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.Diagnostic;
 
 /**
  * Boot App Properties Editor tests

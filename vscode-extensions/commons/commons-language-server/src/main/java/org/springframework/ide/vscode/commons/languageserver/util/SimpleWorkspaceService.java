@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import io.typefox.lsapi.DidChangeConfigurationParams;
-import io.typefox.lsapi.DidChangeWatchedFilesParams;
-import io.typefox.lsapi.SymbolInformation;
-import io.typefox.lsapi.WorkspaceSymbolParams;
-import io.typefox.lsapi.services.WorkspaceService;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.services.WorkspaceService;
 
 public class SimpleWorkspaceService implements WorkspaceService {
 
@@ -21,7 +21,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	}
 
 	@Override
-	public void didChangeConfiguraton(DidChangeConfigurationParams params) {
+	public void didChangeConfiguration(DidChangeConfigurationParams params) {
 		configurationListeners.fire(new Settings(params.getSettings()));
 	}
 
@@ -34,5 +34,6 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	public void onDidChangeConfiguraton(Consumer<Settings> l) {
 		configurationListeners.add(l);
 	}
+
 
 }

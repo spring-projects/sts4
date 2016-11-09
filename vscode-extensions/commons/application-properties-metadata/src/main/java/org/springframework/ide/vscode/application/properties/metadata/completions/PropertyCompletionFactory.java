@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties.metadata.completions;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.hints.ValueHintHoverInfo;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
@@ -23,8 +24,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Scoreabl
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
-
-import io.typefox.lsapi.CompletionItemKind;
 
 public class PropertyCompletionFactory {
 

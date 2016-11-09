@@ -10,30 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.yaml.quickfix;
 
-import java.awt.Image;
-import java.awt.Point;
-
-import org.springframework.ide.vscode.application.yaml.reconcile.SpringPropertyProblem;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixContext;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlPathEdits;
-import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SDocNode;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
 
-import io.typefox.lsapi.CompletionItemKind;
-
-@SuppressWarnings("restriction")
 public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 
 	public static ProblemFixer FIXER = (context, problem, proposals) -> {

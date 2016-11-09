@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import io.typefox.lsapi.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 
 public class TextDocumentContentChange {
 

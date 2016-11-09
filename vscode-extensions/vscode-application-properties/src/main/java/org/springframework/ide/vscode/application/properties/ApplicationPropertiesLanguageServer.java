@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties;
 
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.reconcile.SpringPropertiesReconcileEngine;
@@ -17,9 +19,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-
-import io.typefox.lsapi.TextDocumentSyncKind;
-import io.typefox.lsapi.impl.ServerCapabilitiesImpl;
 
 /**
  * Language Server for Spring Boot Application Properties files
@@ -46,8 +45,8 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	}
 	
 	@Override
-	protected ServerCapabilitiesImpl getServerCapabilities() {
-		ServerCapabilitiesImpl c = new ServerCapabilitiesImpl();
+	protected ServerCapabilities getServerCapabilities() {
+		ServerCapabilities c = new ServerCapabilities();
 		
 		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		

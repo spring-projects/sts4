@@ -13,17 +13,16 @@ import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
 
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextEdit;
 import org.junit.Assert;
 
 import com.google.common.base.Strings;
-
-import io.typefox.lsapi.CompletionItem;
-import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.Diagnostic;
-import io.typefox.lsapi.Position;
-import io.typefox.lsapi.PublishDiagnosticsParams;
-import io.typefox.lsapi.Range;
-import io.typefox.lsapi.TextEdit;
 
 public class Editor {
 
@@ -206,7 +205,7 @@ public class Editor {
 		// test harness.
 		PublishDiagnosticsParams diagnostics = harness.getDiagnostics(document);
 		if (diagnostics!=null) {
-			return (List<Diagnostic>) diagnostics.getDiagnostics();
+			return diagnostics.getDiagnostics();
 		}
 		return Collections.emptyList();
 	}
