@@ -6,10 +6,6 @@
 
 set -e # fail at the first sign of trouble
 
-#Ensure commons are built and uptodate in local maven cache
-mvn -f ../commons/pom.xml clean install
-mvn clean package
+mvn -f ../pom.xml -pl vscode-manifest-yaml -am clean package
 npm install
 vsce package
-
-

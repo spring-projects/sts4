@@ -3,15 +3,16 @@
 // Import the module and reference it with the alias vscode in your code below
 
 import * as VSCode from 'vscode';
+import {testUtil} from 'commons-vscode';
 import * as Path from 'path';
 import * as FS from 'fs';
-import * as PortFinder from 'portfinder';
+import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
 
-PortFinder.basePort = 55282;
+PortFinder.basePort = 45556;
 
 var DEBUG = false;
 const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
@@ -37,6 +38,7 @@ function error(msg : string) {
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
+    VSCode.window.showInformationMessage(testUtil());
     VSCode.window.showInformationMessage("Activating manifest.yml extension");
     log_output = VSCode.window.createOutputChannel("manifest-yml-debug-log");
     log("Activating manifest.yml extension");

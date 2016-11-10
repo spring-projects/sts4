@@ -9,9 +9,10 @@
     "type": "git",
     "url": "https://github.com/kdvolder/vscode-lsapi-example.git"
   },
-  "license": "EPL",
+  "license": "EPL-1.0",
   "engines": {
-    "vscode": "^0.10.10"
+    "npm": "^3.0.0",
+    "vscode": "^1.5.0"
   },
   "categories": [
     "Languages",
@@ -39,18 +40,19 @@
   },
   "preview": true,
   "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "mocha out/test"
+    "vscode:prepublish": "tsc -p .",
+    "clean": "rm -fr node_modules",
+    "compile": "tsc -watch -p ./",
+    "preinstall": "npm install ../commons-vscode && ../mvnw -f ../pom.xml -pl vscode-manifest-yaml -am clean package",
+    "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
     "portfinder": "^0.4.0",
     "vscode-languageclient": "2.5.x"
   },
   "devDependencies": {
-    "typescript": "^1.8.5",
-    "vscode": "^0.11.0",
-    "mocha": "^2.4.5"
+    "typescript": "^2.0.x",
+    "@types/node": "^6.0.40",
+    "vscode": "^1.0.0"
   }
 }
