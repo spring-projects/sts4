@@ -40,10 +40,10 @@
   },
   "preview": true,
   "scripts": {
-    "vscode:prepublish": "tsc -p .",
+    "prepublish": "tsc -p .",
     "clean": "rm -fr node_modules",
     "compile": "tsc -watch -p ./",
-    "preinstall": "npm install ../commons-vscode && ../mvnw -f ../pom.xml -pl vscode-manifest-yaml -am clean package",
+    "preinstall": "(cd ../commons-vscode ; npm install) && npm install ../commons-vscode && ../mvnw -f ../pom.xml -pl vscode-manifest-yaml -am clean package",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
