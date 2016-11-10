@@ -17,10 +17,10 @@
 	"isShellCommand": true,
 
 	// show the output window only if unrecognized errors occur.
-	"showOutput": "silent",
+	"showOutput": "always",
 
 	// we run the custom script "compile" as defined in package.json
-	"args": ["compile"],
+	"args": ["run", "compile"],
 
 	// The tsc compiler is started in watching mode
 	"isWatching": true,

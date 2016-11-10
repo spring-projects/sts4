@@ -47,5 +47,12 @@ client from vscode without rebuilding the fatjar.
 
 ## Packaging as a vscode extension
 
-Run the `package.sh` script. This will produce a `.vsix` file that can
-be directly installed into vscode.
+First make sure the stuff is all built locally:
+
+     npm install
+
+Then package it:
+
+     npm run vsce-package
+
+This produces a `.vsix` file which you can install directly into vscode.
