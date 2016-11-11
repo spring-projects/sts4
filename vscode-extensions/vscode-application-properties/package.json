@@ -22,7 +22,8 @@
   ],
   "activationEvents": [
     "onLanguage:ini",
-    "onLanguage:java-properties"
+    "onLanguage:java-properties",
+    "onLanguage:properties"
   ],
   "main": "./out/lib/Main",
   "files": [

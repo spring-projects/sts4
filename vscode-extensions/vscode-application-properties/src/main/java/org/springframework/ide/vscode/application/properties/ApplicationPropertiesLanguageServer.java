@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties;
 
+import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.application.properties.completions.SpringPropertiesCompletionEngine;
@@ -53,6 +54,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 				javaProjectFinder
 		);
 		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
+		completionEngine.setMaxCompletionsNumber(-1);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
@@ -71,6 +73,10 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 		ServerCapabilities c = new ServerCapabilities();
 		
 		c.setTextDocumentSync(TextDocumentSyncKind.Full);
+		
+		CompletionOptions completionProvider = new CompletionOptions();
+		completionProvider.setResolveProvider(false);
+		c.setCompletionProvider(completionProvider);
 		
 		return c;
 	}

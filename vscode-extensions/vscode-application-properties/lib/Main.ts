@@ -49,7 +49,8 @@ export function activate(context: VSCode.ExtensionContext) {
             // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
             documentSelector: [
                  <any> {language: 'ini', pattern: '**/application*.properties'},
-                 <any> {language: 'java-properties', pattern: '**/application*.properties'}
+                 <any> {language: 'java-properties', pattern: '**/application*.properties'},
+                 <any> {language: 'properties', pattern: '**/application*.properties'}
             ],
             synchronize: {
                 // Synchronize the setting section to the server:
