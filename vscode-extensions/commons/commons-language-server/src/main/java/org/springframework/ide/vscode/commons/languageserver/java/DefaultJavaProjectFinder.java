@@ -7,8 +7,8 @@ import org.springframework.ide.vscode.commons.util.Log;
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
 
 	private final IJavaProjectFinderStrategy[] STRATEGIES = new IJavaProjectFinderStrategy[] {
-		new JavaProjectWithClasspathFileFinderStrategy(),
-		new MavenProjectFinderStrategy()
+		new MavenProjectFinderStrategy(),
+		new JavaProjectWithClasspathFileFinderStrategy()
 	};
 
 	@Override

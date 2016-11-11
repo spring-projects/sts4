@@ -35,12 +35,14 @@ public class JavaProjectWithClasspathFileFinderStrategy implements IJavaProjectF
 			URI uri = new URI(uriStr);
 			// TODO: This only work with File uri. Should it work with others
 			// too?
-			File file = toFile(uri);
-			File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
-			if (cpFile != null) {
-				return cache.get(cpFile, () -> {
-					return new JavaProjectWithClasspathFile(cpFile);
-				});
+			if (uri.getScheme().equalsIgnoreCase("file")) {
+				File file = toFile(uri);
+				File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
+				if (cpFile != null) {
+					return cache.get(cpFile, () -> {
+						return new JavaProjectWithClasspathFile(cpFile);
+					});
+				}
 			}
 		}
 		return null;
