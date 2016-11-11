@@ -16,6 +16,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.jandex.Type.Kind;
+import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaType;
@@ -27,8 +28,6 @@ import org.springframework.ide.vscode.commons.java.IVoidType;
 import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 public class Wrappers {
-	
-	private static final int AccEnum = 0x4000;
 	
 	public static IType wrap(IndexView index, ClassInfo info) {
 		if (info == null) {
@@ -75,7 +74,7 @@ public class Wrappers {
 
 			@Override
 			public boolean isEnum() {
-				return (info.flags() & AccEnum) != 0;
+				return Flags.isEnum(info.flags());
 			}
 
 			@Override
@@ -161,7 +160,7 @@ public class Wrappers {
 
 			@Override
 			public boolean isEnumConstant() {
-				return (field.flags() & AccEnum) != 0;
+				return Flags.isEnum(field.flags());
 			}
 			
 			@Override

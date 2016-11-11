@@ -52,7 +52,7 @@ keyChar
   ;
   
 separatorAndValue
-  :  (Space | Colon | Equals) valueChar+
+  :  (Space | Colon | Equals) valueChar*
   ;
 
 valueChar

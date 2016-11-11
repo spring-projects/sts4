@@ -84,41 +84,13 @@ public class PropertiesAntlrParserTest {
 	}
 
 	@Test
-	public void testLines1() throws Exception {
-		ParseResults results = parser.parse("# Comment\n\n \t   \t \n\t\t\n");
-		assertTrue(results.syntaxErrors.isEmpty());
-		assertTrue(results.problems.isEmpty());
-		assertEquals(1, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-	}
-	
-	@Test
-	public void testLines2() throws Exception {
-		ParseResults results = parser.parse("\n\n \t   \t \n# Comment\n\t\t\n");
-		assertTrue(results.syntaxErrors.isEmpty());
-		assertTrue(results.problems.isEmpty());
-		assertEquals(1, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-	}
-	
-	@Test
-	public void testLines3() throws Exception {
-		ParseResults results = parser.parse("# Comment\n\nkey = value  1  \n \t   \t \n\t\t\n");
-		assertTrue(results.syntaxErrors.isEmpty());
-		assertTrue(results.problems.isEmpty());
-		assertEquals(2, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-		assertEquals(1, results.ast.getNodes(KeyValuePair.class).size());		
-	}
-		
-	@Test
 	public void testPropertyWithEqualsSeparator() throws Exception {
 		testPropertyLine("key=value", "key", "key", "value", "value");
 	}
 	
 	@Test
 	public void testPropertyWithEqualsSeparatorAndSpaces() throws Exception {
-		testPropertyLine("key \t = \t \tvalue", "key", "key", "value", "value");
+		testPropertyLine("key \t = \t \tvalue", "key", "key", "value", " \t \tvalue");
 	}
 
 	@Test
@@ -128,7 +100,7 @@ public class PropertiesAntlrParserTest {
 
 	@Test
 	public void testPropertyWithColonSeparatorAndSpaces() throws Exception {
-		testPropertyLine("key \t : \t \tvalue", "key", "key", "value", "value");
+		testPropertyLine("key \t : \t \tvalue", "key", "key", "value", " \t \tvalue");
 	}
 
 	@Test
@@ -168,17 +140,17 @@ public class PropertiesAntlrParserTest {
 
 	@Test
 	public void testEqualsValueSeparatedWithEqualsAndSpace() throws Exception {
-        testPropertyLine("key7 = =", "key7", "key7", "=", "=");
+        testPropertyLine("key7 = =", "key7", "key7", "=", " =");
 	}
 	
 	@Test
 	public void testValueWithTrailingSpaces() throws Exception {
-		testPropertyLine("key = value  1  ", "key", "key", "value  1  ", "value  1  ");
+		testPropertyLine("key = value  1  ", "key", "key", "value  1  ", " value  1  ");
 	}
 	
 	@Test
 	public void testUnodeCharKeyAndValue() throws Exception {
-		testPropertyLine("k\u2b22ey\u2b28 = val\u2b24ue  1\u2b24  ", "k\u2b22ey\u2b28", "k\u2b22ey\u2b28", "val\u2b24ue  1\u2b24  ", "val\u2b24ue  1\u2b24  ");
+		testPropertyLine("k\u2b22ey\u2b28 = val\u2b24ue  1\u2b24  ", "k\u2b22ey\u2b28", "k\u2b22ey\u2b28", "val\u2b24ue  1\u2b24  ", " val\u2b24ue  1\u2b24  ");
 	}
 	
 	@Test

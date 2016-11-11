@@ -12,10 +12,12 @@ package org.springframework.ide.vscode.java.properties.antlr.parser;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -23,6 +25,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.CommentLineContext;
+import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.EmptyLineContext;
 import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.KeyContext;
 import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.PropertyLineContext;
 import org.springframework.ide.vscode.java.properties.antlr.parser.JavaPropertiesParser.SeparatorAndValueContext;
@@ -52,6 +55,9 @@ public class AntlrParser implements Parser {
 		JavaPropertiesLexer lexer = new JavaPropertiesLexer(new ANTLRInputStream(text.toCharArray(), text.length()));
 	    CommonTokenStream tokens = new CommonTokenStream(lexer);
 	    JavaPropertiesParser parser = new JavaPropertiesParser(tokens);
+	    
+	    // To avoid printing parse errors in the console
+		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 	    
 	    // Add listener to collect various parser errors
 	    parser.addErrorListener(new ANTLRErrorListener() {
@@ -90,7 +96,9 @@ public class AntlrParser implements Parser {
 	    				
 			@Override
 			public void exitPropertyLine(PropertyLineContext ctx) {
-				astNodes.add(new KeyValuePair(ctx, key, value));
+				KeyValuePair pair = new KeyValuePair(ctx, key, value);
+				key.parent = value.parent = pair; 
+				astNodes.add(pair);
 				key = null;
 				value = null;
 			}
@@ -110,8 +118,13 @@ public class AntlrParser implements Parser {
 				value = new Value(ctx);
 			}
 
+			@Override
+			public void exitEmptyLine(EmptyLineContext ctx) {
+				astNodes.add(new EmptyLine(ctx));
+			}	
+
 		});
-	    
+
 	    parser.parse();
 	    
 	    // Collect and return parse results
@@ -156,6 +169,9 @@ public class AntlrParser implements Parser {
 	
 	private static abstract class Node implements PropertiesAst.Node {
 		
+		Node parent;
+		List<Node> children;
+		
 		abstract protected ParserRuleContext getContext();
 
 		@Override
@@ -167,14 +183,40 @@ public class AntlrParser implements Parser {
 		public int getLength() {
 			return getContext().getStop().getStartIndex() - getOffset() + 1;
 		}
+
+		@Override
+		public Node getParent() {
+			return parent;
+		}
+
+		@Override
+		public List<Node> getChildren() {
+			return children;
+		}
 		
 	}
 	
-	private static class Comment implements PropertiesAst.Comment {
+	private static class EmptyLine extends Node implements PropertiesAst.EmptyLine {
+		
+		private EmptyLineContext context;
+		
+		public EmptyLine(EmptyLineContext context) {
+			super();
+			this.context = context;
+		}
+
+		@Override
+		protected EmptyLineContext getContext() {
+			return context;
+		}
+	}
+	
+	private static class Comment extends Node implements PropertiesAst.Comment {
 		
 		private CommentLineContext context;
 		
 		public Comment(CommentLineContext context) {
+			super();
 			this.context = context;
 		}
 		
@@ -190,6 +232,11 @@ public class AntlrParser implements Parser {
 		public int getLength() {
 			return context.getStop().getStartIndex() - getOffset() + 1;
 		}
+
+		@Override
+		protected CommentLineContext getContext() {
+			return context;
+		}
 		
 	}
 
@@ -200,9 +247,11 @@ public class AntlrParser implements Parser {
 		private Value value;
 		
 		public KeyValuePair(PropertyLineContext context, Key key, Value value) {
+			super();
 			this.context = context;
 			this.key = key;
 			this.value = value;
+			this.children = ImmutableList.of(key, value);
 		}
 		
 		protected PropertyLineContext getContext() {
@@ -218,6 +267,18 @@ public class AntlrParser implements Parser {
 		public Value getValue() {
 			return value;
 		}
+		
+		@Override
+		public int getLength() {
+			// Exclude the line break at the end
+			int length = super.getLength();
+			String text = getContext().getText();
+			if (text.charAt(getContext().getStop().getStartIndex() - getOffset()) == '\n') {
+				length--;
+			}
+			return length;
+		}
+
 	}
 	
 	private static class Key extends Node implements PropertiesAst.Key {
@@ -241,6 +302,11 @@ public class AntlrParser implements Parser {
 				return context.getText().replace("\\:", ":").replace("\\=", "=");
 			}
 		}
+
+		@Override
+		public KeyValuePair getParent() {
+			return (KeyValuePair) super.getParent();
+		}
 		
 	}
 	
@@ -257,9 +323,9 @@ public class AntlrParser implements Parser {
 		
 		private void init() {
 			// Remove the separator, if it exists
-			value = context.getText().replaceAll("^\\s*[:=]?\\s*", "");
+			value = context.getText().replaceAll("^\\s*[:=]?", "");
 			// Remove all escaped line breaks with trailing spaces			
-			decoded = value.replaceAll("\\\\(\r?\n|\r)[ \t\f]*", "");
+			decoded = value.replaceAll("^\\s*", "").replaceAll("\\\\(\r?\n|\r)[ \t\f]*", "");
 			try {
 				decoded = PropertiesFileEscapes.unescape(decoded);
 			} catch (Exception e) {
@@ -283,6 +349,10 @@ public class AntlrParser implements Parser {
 			return context.getStart().getStartIndex() + (context.getText().length() - value.length());
 		}
 
+		@Override
+		public KeyValuePair getParent() {
+			return (KeyValuePair) super.getParent();
+		}
 	}
 	
 }

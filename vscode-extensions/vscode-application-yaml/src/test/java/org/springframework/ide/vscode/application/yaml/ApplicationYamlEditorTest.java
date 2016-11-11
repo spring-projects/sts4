@@ -2987,7 +2987,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyMapKeyCompletions() throws Exception {
+	@Test public void testPropertyMapKeyCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletionWithLabel(
 				"logging:\n" +
@@ -3090,7 +3090,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testSimpleResourceCompletion() throws Exception {
+	@Test public void testSimpleResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -3134,7 +3134,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testClasspathResourceCompletion() throws Exception {
+	@Test public void testClasspathResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -3388,7 +3388,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testHandleAsResourceContentAssist() throws Exception {
+	@Test public void testHandleAsResourceContentAssist() throws Exception {
 		//"name": "my.terms-and-conditions",
 		//        "providers": [
 		//                      {
@@ -3413,7 +3413,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testBootBug5905() throws Exception {
+	@Test public void testBootBug5905() throws Exception {
 		useProject(createPredefinedMavenProject("boot-1.3.3-app-with-resource-prop"));
 
 		//Check the metadata reflects the 'handle-as':
@@ -3542,7 +3542,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		return new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		server.setMaxCompletionsNumber(-1);
+		return server;
 	}
 	
 }

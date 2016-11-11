@@ -37,4 +37,9 @@ public class FileClasspath implements IClasspath {
 						classpathFilePath.getParent().resolve("target/test-classes")));
 	}
 
+	@Override
+	public Stream<String> getClasspathResources() {
+		return Stream.empty();
+	}
+
 }

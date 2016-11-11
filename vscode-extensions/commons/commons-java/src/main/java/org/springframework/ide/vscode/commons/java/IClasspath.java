@@ -30,4 +30,10 @@ public interface IClasspath {
 	 */
 	Stream<Path> getClasspathEntries() throws Exception;
 
+	/**
+	 * Classpath resources paths relative to the source folder path
+	 * @return classpath resource relative paths
+	 */
+	Stream<String> getClasspathResources();
+	
 }

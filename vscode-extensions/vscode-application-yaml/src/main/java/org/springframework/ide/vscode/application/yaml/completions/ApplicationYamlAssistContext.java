@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Fuzzy
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;

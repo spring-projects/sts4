@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.application.properties.metadata.CachingVal
 import org.springframework.ide.vscode.application.properties.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -47,6 +48,8 @@ import org.eclipse.lsp4j.Diagnostic;
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	
+	private JavaProjectFinder javaProjectFinder;
+	
 	@Test public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
 		editor.assertProblems("key|extraneous input");
@@ -66,28 +69,28 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems("problem|extraneous input", "another|mismatched input");
 	}
 
-	@Ignore @Test public void testServerPortCompletion() throws Exception {
+	@Test public void testServerPortCompletion() throws Exception {
 		data("server.port", INTEGER, 8080, "Port where server listens for http.");
 		assertCompletion("ser<*>", "server.port=<*>");
 		assertCompletionDisplayString("ser<*>", "server.port : int");
 	}
 
-	@Ignore @Test public void testLoggingLevelCompletion() throws Exception {
+	@Test public void testLoggingLevelCompletion() throws Exception {
 		data("logging.level", "java.util.Map<java.lang.String,java.lang.Object>", null, "Logging level per package.");
 		assertCompletion("lolev<*>","logging.level.<*>");
 	}
 
-	@Ignore @Test public void testListCompletion() throws Exception {
+	@Test public void testListCompletion() throws Exception {
 		data("foo.bars", "java.util.List<java.lang.String>", null, "List of bars in foo.");
 		assertCompletion("foba<*>","foo.bars=<*>");
 	}
 
-	@Ignore @Test public void testInetAddresCompletion() throws Exception {
+	@Test public void testInetAddresCompletion() throws Exception {
 		defaultTestData();
 		assertCompletion("server.add<*>", "server.address=<*>");
 	}
 
-	@Ignore @Test public void testStringArrayCompletion() throws Exception {
+	@Test public void testStringArrayCompletion() throws Exception {
 		data("spring.freemarker.view-names", "java.lang.String[]", null, "White list of view names that can be resolved.");
 		data("some.defaulted.array", "java.lang.String[]", new String[] {"a", "b", "c"} , "Stuff.");
 
@@ -95,7 +98,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletion("some.d.a<*>", "some.defaulted.array=<*>");
 	}
 
-	@Ignore @Test public void testEmptyPrefixProposalsSortedAlpabetically() throws Exception {
+	@Test public void testEmptyPrefixProposalsSortedAlpabetically() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor("");
 		List<CompletionItem> completions = editor.getCompletions();
@@ -110,7 +113,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		}
 	}
 
-	@Ignore @Test public void testValueCompletion() throws Exception {
+	@Test public void testValueCompletion() throws Exception {
 		defaultTestData();
 		assertCompletionsVariations("liquibase.enabled=<*>",
 				"liquibase.enabled=false<*>",
@@ -310,7 +313,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPojoArrayCompletions() throws Exception {
+	@Test public void testPojoArrayCompletions() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 		
 		useProject(p);
@@ -395,7 +398,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testRelaxedNameContentAssist() throws Exception {
+	@Test public void testRelaxedNameContentAssist() throws Exception {
 		data("foo-bar-zor.enabled", "java.lang.Boolean", null, null);
 		assertCompletion("fooBar<*>", "foo-bar-zor.enabled=<*>");
 	}
@@ -458,7 +461,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumPropertyCompletionInsideCommaSeparateList() throws Exception {
+	@Test public void testEnumPropertyCompletionInsideCommaSeparateList() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -481,7 +484,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletion("foo.colors=RED,B<*>", "foo.colors=RED,BLUE<*>");
 	}
 
-	@Ignore @Test public void testEnumPropertyCompletion() throws Exception {
+	@Test public void testEnumPropertyCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -523,7 +526,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumMapValueCompletion() throws Exception {
+	@Test public void testEnumMapValueCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -559,7 +562,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumMapKeyCompletion() throws Exception {
+	@Test public void testEnumMapKeyCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -617,7 +620,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPojoCompletions() throws Exception {
+	@Test public void testPojoCompletions() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -629,11 +632,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsDisplayString("foo.data.",
 				"wavelen : double",
 				"name : String",
-				"next : demo.Color[RED, GREEN, BLUE]",
+				"next : demo.Color[BLUE, GREEN, RED]",
 				"nested : demo.ColorData",
 				"children : List<demo.ColorData>",
 				"mapped-children : Map<String, demo.ColorData>",
-				"color-children : Map<demo.Color[RED, GREEN, BLUE], demo.ColorData>",
+				"color-children : Map<demo.Color[BLUE, GREEN, RED], demo.ColorData>",
 				"tags : List<String>",
 				"funky : boolean"
 		);
@@ -675,7 +678,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testListOfAtomicCompletions() throws Exception {
+	@Test public void testListOfAtomicCompletions() throws Exception {
 		data("foo.slist", "java.util.List<java.lang.String>", null, "list of strings");
 		data("foo.ulist", "java.util.List<Unknown>", null, "list of strings");
 		data("foo.dlist", "java.util.List<java.lang.Double>", null, "list of doubles");
@@ -684,7 +687,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsVariations("foo.sl<*>", "foo.slist=<*>");
 	}
 
-	@Ignore @Test public void testMapKeyDotInterpretation() throws Exception {
+	@Test public void testMapKeyDotInterpretation() throws Exception {
 		//Interpretation of '.' changes depending on the domain type (i.e. when domain type is
 		//is a simple type got which '.' navigation is invalid then the '.' is 'eaten' by the key.
 
@@ -724,7 +727,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testMapKeyDotInterpretationInPojo() throws Exception {
+	@Test public void testMapKeyDotInterpretationInPojo() throws Exception {
 		//Similar to testMapKeyDotInterpretation but this time maps are not attached to property
 		// directly but via a pojo property
 
@@ -797,7 +800,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumsInLowerCaseContentAssist() throws Exception {
+	@Test public void testEnumsInLowerCaseContentAssist() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -840,7 +843,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsVariations("foo.color-data.red.na<*>", "foo.color-data.red.name=<*>");
 	}
 
-	@Ignore @Test public void testNavigationProposalAfterRelaxedPropertyName() throws Exception {
+	@Test public void testNavigationProposalAfterRelaxedPropertyName() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -849,7 +852,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsVariations("foo.colorData.red.na<*>", "foo.colorData.red.name=<*>");
 	}
 
-	@Ignore @Test public void testValueProposalAssignedToRelaxedPropertyName() throws Exception {
+	@Test public void testValueProposalAssignedToRelaxedPropertyName() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		
 		useProject(p);
@@ -983,7 +986,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testCharsetCompletions() throws Exception {
+	@Test public void testCharsetCompletions() throws Exception {
 		data("foobar.encoding", "java.nio.charset.Charset", null, "The charset-encoding to use for foobars");
 
 		assertCompletions(
@@ -1001,7 +1004,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testLocaleCompletions() throws Exception {
+	@Test public void testLocaleCompletions() throws Exception {
 		data("foobar.locale", "java.util.Locale", null, "Yada yada");
 
 		assertCompletions(
@@ -1019,7 +1022,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyValueHintCompletions() throws Exception {
+	@Test public void testPropertyValueHintCompletions() throws Exception {
 		//Test that 'value hints' work when property name is associated with 'value' hints.
 		// via boot metadata.
 
@@ -1037,7 +1040,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyListHintCompletions() throws Exception {
+	@Test public void testPropertyListHintCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletion(
@@ -1065,7 +1068,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyMapValueCompletions() throws Exception {
+	@Test public void testPropertyMapValueCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 
 		assertCompletionsDisplayString(
@@ -1093,7 +1096,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testPropertyMapKeyCompletions() throws Exception {
+	@Test public void testPropertyMapKeyCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletionWithLabel(
 				"logging.level.<*>"
@@ -1120,7 +1123,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testHandleAsResourceContentAssist() throws Exception {
+	@Test public void testHandleAsResourceContentAssist() throws Exception {
 		//"name": "my.terms-and-conditions",
 		//        "providers": [
 		//                      {
@@ -1144,7 +1147,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testHandleAsListContentAssist() throws Exception {
+	@Test public void testHandleAsListContentAssist() throws Exception {
 		data("my.tosses", "String[]", null, "A sequence of coin tosses")
 			.provider("handle-as", "target", "java.lang.Boolean[]");
 
@@ -1179,7 +1182,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void test_STS_3335_completions_list_nested_in_Map_of_String() throws Exception {
+	@Test public void test_STS_3335_completions_list_nested_in_Map_of_String() throws Exception {
 		useProject(createPredefinedMavenProject("boot-1.3.3-sts-4335"));
 
 		assertCompletions(
@@ -1201,7 +1204,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testSimpleResourceCompletion() throws Exception {
+	@Test public void testSimpleResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -1225,7 +1228,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testClasspathResourceCompletion() throws Exception {
+	@Test public void testClasspathResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -1295,7 +1298,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testClasspathResourceCompletionInCommaList() throws Exception {
+	@Test public void testClasspathResourceCompletionInCommaList() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
@@ -1490,7 +1493,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void test_PT_119352965() throws Exception {
+	@Test public void test_PT_119352965() throws Exception {
 		data("some.property", "java.lang.String", null, "Some property to test stuff")
 		.valueHint("SOMETHING", "A value for something")
 		.valueHint("ALTERNATE", "An alternative value");
@@ -1558,17 +1561,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		return new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider);
-//		return new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider) {
-//
-//			@Override
-//			protected IReconcileEngine getReconcileEngine() {
-//				SpringPropertiesReconcileEngine reconcileEngine = (SpringPropertiesReconcileEngine) super.getReconcileEngine();
-//				reconcileEngine.setRecordSyntaxErrors(false);
-//				return reconcileEngine;
-//			}
-//			
-//		};
+		ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		server.setMaxCompletionsNumber(-1);
+		return server;
 	}
 
 	/**

@@ -97,6 +97,11 @@ public class PropertyCompletionFactory {
 				return typeUtil.niceTypeName((Type) type);
 			}
 
+			@Override
+			public String getLabel() {
+				return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
+			}
+			
 		};
 		if (property.isDeprecated()) {
 			proposal.deprecate();
@@ -157,6 +162,12 @@ public class PropertyCompletionFactory {
 		protected String niceTypeName(YType type) {
 			return typeUtil.niceTypeName(((Type)type));
 		}
+
+		@Override
+		public String getLabel() {
+			return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
+		}
+		
 	}
 
 }

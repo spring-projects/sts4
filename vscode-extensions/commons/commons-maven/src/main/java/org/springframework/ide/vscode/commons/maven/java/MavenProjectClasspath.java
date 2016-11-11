@@ -13,9 +13,11 @@ package org.springframework.ide.vscode.commons.maven.java;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IType;
@@ -70,5 +72,22 @@ public class MavenProjectClasspath implements IClasspath {
 	private File findIndexFile(File jarFile) {
 		return new File(maven.getIndexFolder().toString(), jarFile.getName() + "-" + jarFile.lastModified() + ".jdx");
 	}
-	
+
+	@Override
+	public Stream<String> getClasspathResources() {
+		return project.getBuild().getResources().stream().flatMap(resource -> {			
+			DirectoryScanner scanner = new DirectoryScanner();
+			scanner.setBasedir(resource.getDirectory());
+			if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
+				scanner.setIncludes(resource.getIncludes().toArray(new String[resource.getIncludes().size()]));
+			}
+			if (resource.getExcludes() != null && !resource.getExcludes().isEmpty()) {
+				scanner.setExcludes(resource.getExcludes().toArray(new String[resource.getExcludes().size()]));
+			}
+			scanner.setCaseSensitive(false);
+			scanner.scan();
+			return Arrays.stream(scanner.getIncludedFiles());
+		});
+	}
+
 }
