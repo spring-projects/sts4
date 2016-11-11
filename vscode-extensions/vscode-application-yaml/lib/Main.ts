@@ -14,7 +14,7 @@ import {TextDocument} from 'vscode';
 PortFinder.basePort = 55282;
 
 var DEBUG = false;
-const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n';
+const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
     //If DEBUG is falsy then
     //   we launch from the 'fat jar' (which has to be built by running mvn package)
     //if DEBUG is truthy then
@@ -159,8 +159,4 @@ function correctBinname(binname: string) {
 		return binname + '.exe';
 	else
 		return binname;
-}
-
-// this method is called when your extension is deactivated
-export function deactivate() {
 }

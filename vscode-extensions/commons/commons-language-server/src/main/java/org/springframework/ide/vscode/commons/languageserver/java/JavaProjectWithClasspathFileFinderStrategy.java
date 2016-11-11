@@ -35,7 +35,7 @@ public class JavaProjectWithClasspathFileFinderStrategy implements IJavaProjectF
 			URI uri = new URI(uriStr);
 			// TODO: This only work with File uri. Should it work with others
 			// too?
-			File file = new File(uri).getAbsoluteFile();
+			File file = toFile(uri);
 			File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
 			if (cpFile != null) {
 				return cache.get(cpFile, () -> {
@@ -44,6 +44,15 @@ public class JavaProjectWithClasspathFileFinderStrategy implements IJavaProjectF
 			}
 		}
 		return null;
+	}
+
+	protected File toFile(URI uri) {
+//		try {
+			return new File(uri).getAbsoluteFile();
+//		} catch (Exception e) {
+//			Log.log("Ignored Uri '"+uri+"'. Not a file?", e);
+//			return null;
+//		}
 	}
 
 }

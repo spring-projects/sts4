@@ -1,7 +1,8 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+	"editor.wordWrap": false,
 	"files.exclude": {
-		"out": true, // set this to true to hide the "out" folder with the compiled JS files
+		"out": false, // set this to true to hide the "out" folder with the compiled JS files
 		"node_modules": false,
 		"target": true
 	},
