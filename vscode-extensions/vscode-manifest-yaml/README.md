@@ -10,21 +10,24 @@ the manifest's structure as you type.
 
 ## Bulding and Running
 
-The extension implemented in this example consists out of two pieces:
- 
-  - client: a vscode extension implemented in typescript. It launches and connects 
-    to the language server.
-  - server: server app, implemented in Java.
-  
-First build the server:
+This project consists of three pieces:
 
-    mvn clean package
+ - a vscode-extension which is a language-server client implemented in TypeScript.
+ - commons-vscode: a local npm module with some utilities implemented in TypeScript.
+ - a language server implemented in Java.
 
-The server will be produced in `out/fat-jar.jar`.
+To build all these pieces you normally only need to run:
 
-Then build the client:
+   npm install
 
-    npm clean install
+**However, the first time you build** it might fail trying to
+find the `commons-vscode` module on npm central. Once we publish a stable 
+version of that module on npm central that will no longer be a problem. 
+Until that time, you can work around this by doing a one time manual 
+run of the `preinstall` script prior to running `npm install`:
+
+    ./scripts/preinstall.sh
+    npm install
 
 Now you can open the client-app in vscode. From the root of this project.
 
@@ -35,20 +38,16 @@ To launch the language server in a vscode runtime, press F5.
 ## Debugging
 
 To debug the language server, open `lib/Main.ts` and edit to set the
-`DEBUG` constant to `true`. When you laucnh the app next by pressing
+`DEBUG` option to `true`. When you laucnh the app next by pressing
 `F5` it will launch with debug options being passed to the JVM.
 
 You can then connect a 'Remote Java' Eclipse debugger on port 8000.
-
-Note that in debug mode we launch not from the 'fatjar' produced by the
-maven build, but instead use the classes from 'target/classes' directory.
-This allows you to edit the server code in Eclipse and relaunch the
-client from vscode without rebuilding the fatjar.
 
 ## Packaging as a vscode extension
 
 First make sure the stuff is all built locally:
 
+     ./scripts/preinstall.sh  # only needed if this is the first build.
      npm install
 
 Then package it:
