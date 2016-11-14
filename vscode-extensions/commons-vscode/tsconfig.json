@@ -1,15 +1,19 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
-        "noImplicitAny": true,
+        "target": "es6",
+        "lib": [
+            "es6"
+        ],
+        "noImplicitAny": false,
         "sourceMap": true,
         "moduleResolution": "node",
         "declaration": true,
         "outDir": "lib"
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "typings/**.d.ts"
     ],
     "exclude": [
         "node_modules",

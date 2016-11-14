@@ -1,3 +1,3 @@
-import {testUtil} from './launch-util';
+import {activate, ActivatorOptions} from './launch-util';
 
-export {testUtil};
+export {activate, ActivatorOptions};
