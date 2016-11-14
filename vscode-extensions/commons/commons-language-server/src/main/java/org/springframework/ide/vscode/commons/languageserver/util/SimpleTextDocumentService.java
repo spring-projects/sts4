@@ -182,80 +182,66 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(null);
 	}
 
 	@Override
 	public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(null);
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(null);
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> rangeFormatting(DocumentRangeFormattingParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> onTypeFormatting(DocumentOnTypeFormattingParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(null);
 	}
 
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void publishDiagnostics(TextDocument doc, List<Diagnostic> diagnostics) {
@@ -274,8 +260,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.of(Collections.emptyList());
 	}
 
 }
