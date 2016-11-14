@@ -53,12 +53,19 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
+	private HoverHandler hoverHandler = null;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
 	}
 
-	public synchronized void onCompletion(CompletionHandler h) {
+
+	public synchronized void onHover(HoverHandler h) {
+		Assert.isNull("A hover handler is already set, multiple handlers not supported yet", hoverHandler);
+		this.hoverHandler = h;
+	}
+
+	 public synchronized void onCompletion(CompletionHandler h) {
 		Assert.isNull("A completion handler is already set, multiple handlers not supported yet", completionHandler);
 		this.completionHandler = h;
 	}
@@ -181,6 +188,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
+		HoverHandler h = hoverHandler;
+		if (h!=null) {
+			return hoverHandler.handle(position);
+		}
 		return Futures.of(null);
 	}
 
