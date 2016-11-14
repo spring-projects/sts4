@@ -23,7 +23,7 @@ scripts/**
 # Compiler output
 out/test/**
 target/**
-!target/fat-jar.jar
+!target/vscode-application-yaml-*.jar
 
 # Extensions
 .gitignore

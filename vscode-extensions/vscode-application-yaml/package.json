@@ -25,9 +25,6 @@
     "onLanguage:yaml"
   ],
   "main": "./out/lib/Main",
-  "files": [
-    "target/fat-jar.jar"
-  ],
   "contributes": {
     "configuration": {
       "type": "object",
