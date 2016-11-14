@@ -7,20 +7,66 @@
       <content-type
             base-type="org.eclipse.jdt.core.javaProperties"
             default-charset="ISO-8859-1"
-            id="org.springframework.boot.ide.properties.applicationProperties"
+            id="org.springframework.boot.ide.properties.application.properties"
             name="Spring Properties File"
             priority="high">
       </content-type>
       <file-association
-            content-type="org.springframework.boot.ide.properties.applicationProperties"
+            content-type="org.springframework.boot.ide.properties.application.properties"
             file-names="application.properties,application-dev.properties">
+      </file-association>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            id="org.springframework.boot.ide.properties.application.yml"
+            name="Spring Yaml Properties File"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.properties.application.yml"
+            file-names="application.yml,bootstrap.yml,application-dev.yml">
+      </file-association>
+   </extension>
+
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            id="org.springframework.boot.ide.manifest.yml"
+            name="Cloudfoundry Manifest"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.manifest.yml"
+            file-names="manifest.yml">
       </file-association>
    </extension>
    
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
-            contentTypeId="org.springframework.boot.ide.properties.applicationProperties"
+            contentTypeId="org.springframework.boot.ide.properties.application.properties"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.manifest.yml"
             editorId="org.eclipse.ui.genericeditor.GenericEditor">
       </editorContentTypeBinding>
    </extension>
