@@ -69,7 +69,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	private final DelimitedListReconciler commaListReconciler = new DelimitedListReconciler(COMMA, this::reconcileType);
 	private Parser parser = new AntlrParser();
 
-	private boolean recordSyntaxErrors = false;
+	private boolean recordSyntaxErrors;
 
 	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider) {
 		this(provider, typeUtilProvider, true);
@@ -103,8 +103,6 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			}
 			
 			results.ast.getNodes(KeyValuePair.class).forEach(pair -> {
-//				Key fullName = pair.getKey();
-//				String keyName = fullName.decode();
 				try {
 					DocumentRegion propertyNameRegion = createRegion(doc, pair.getKey());
 					String keyName = PropertiesFileEscapes.unescape(propertyNameRegion.toString());
@@ -184,7 +182,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		// Trim trailing spaces (there is no leading white space already)
 		int length = value.getLength();
 		try {
-			length = doc.get(value.getOffset(), value.getLength()).trim().length();
+			length = doc.get(value.getOffset(), value.getLength()).length();
 		} catch (BadLocationException e) {
 			// ignore
 		} 

@@ -27,6 +27,7 @@ public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 	private YamlASTProvider parser = new YamlParser(yaml);
 	private SpringPropertyIndexProvider indexProvider;
 	private TypeUtilProvider typeUtilProvider;
+	private VscodeCompletionEngineAdapter completionEngine;
 	
 	public ApplicationYamlLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
 		this.indexProvider = indexProvider;
@@ -57,9 +58,13 @@ public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 				typeUtilProvider, 
 				RelaxedNameConfig.COMPLETION_DEFAULTS
 		);
-		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
+		completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
+	}
+	
+	public void setMaxCompletionsNumber(int number) {
+		completionEngine.setMaxCompletionsNumber(number);
 	}
 
 	protected IReconcileEngine getReconcileEngine() {

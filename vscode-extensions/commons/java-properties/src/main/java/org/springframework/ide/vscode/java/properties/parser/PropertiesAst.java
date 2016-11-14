@@ -31,7 +31,7 @@ public final class PropertiesAst {
 	 * Retrieves all AST nodes
 	 * @return List of AST nodes sorted by line number
 	 */
-	public List<? extends Node> getAllNodes() {
+	public List<Node> getAllNodes() {
 		return nodes;
 	}
 	
@@ -47,6 +47,52 @@ public final class PropertiesAst {
 		}).collect(Collectors.toList());
 		return (List<T>) l;
 	}
+	
+	/**
+	 * Find node in AST corresponding to offset position
+	 * @param offset Position in the text 
+	 * @return AST node corresponding to the offset position
+	 */
+	public Node findNode(int offset) {
+		return findNode(nodes, offset, 0, nodes.size() - 1);
+	}
+	
+	private Node findNode(List<? extends Node> nodes, int offset, int start, int end) {
+		if (nodes == null) {
+			return null;
+		}
+		if (start == end) {
+			Node node = nodes.get(start);
+			if (node.getOffset() <= offset && offset <= node.getOffset() + node.getLength()) {
+				Node found = findChildNode(node, offset);
+				return found == null ? node : found;
+			} else {
+				return null;
+			}
+		} else if (start < end ) {
+			int pivotIndex = (start + end) / 2;
+			Node node = nodes.get(pivotIndex);
+			if (node.getOffset() > offset) {
+				return findNode(nodes, offset, start, pivotIndex - 1);
+			} else if (offset > node.getOffset() + node.getLength()) {
+				return findNode(nodes, offset, pivotIndex + 1, end);
+			} else {
+				Node found = findChildNode(node, offset);
+				return found == null ? node : found;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	private Node findChildNode(Node node, int offset) {
+		if (node.getChildren() == null) {
+			return null;
+		} else {
+			return findNode(node.getChildren(), offset, 0, node.getChildren().size() - 1);
+		}
+	}
+
 	
 	/**
 	 * Java Properties AST node
@@ -65,12 +111,31 @@ public final class PropertiesAst {
 		 */
 		int getLength();
 		
+		/**
+		 * Node's parent
+		 * @return parent node
+		 */
+		Node getParent();
+		
+		/**
+		 * Node's children
+		 * @return children nodes
+		 */
+		List<? extends Node> getChildren();
+		
 	}
 	
 	/**
 	 * AST node for comment 
 	 */
 	public interface Comment extends Node {
+		
+	}
+	
+	/**
+	 * AST node for empty line 
+	 */
+	public interface EmptyLine extends Node {
 		
 	}
 
@@ -103,6 +168,8 @@ public final class PropertiesAst {
 		 * @return Decoded property name
 		 */
 		String decode();
+		
+		KeyValuePair getParent();
 
 	}
 
@@ -117,6 +184,7 @@ public final class PropertiesAst {
 		 */
 		String decode();
 
+		KeyValuePair getParent();
 	}
 	
 }

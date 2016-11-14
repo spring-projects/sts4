@@ -1,9 +1,6 @@
-package org.springframework.ide.vscode.application.yaml.completions;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.concurrent.Callable;
-
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Temprary placeholder which sort of replaces the LazyProposalApplier from old STS.
@@ -13,7 +10,7 @@ import org.springframework.ide.vscode.commons.util.Log;
  * Right now this is not lazy at all and the completion edits are just computed immediatly.
  */
 public class LazyProposalApplier {
-	
+
 	public static DocumentEdits from(Callable<DocumentEdits> createEdits) throws Exception {
 		return createEdits.call();
 	}

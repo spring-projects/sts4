@@ -90,6 +90,12 @@ public class PropertiesMetadataTestData {
 			public Stream<Path> getClasspathEntries() throws Exception {
 				return Stream.empty();
 			}
+
+			@Override
+			public Stream<String> getClasspathResources() {
+				return Stream.empty();
+			}
+
 		});
 		for (ConfigurationMetadataProperty propertyInfo : datas.values()) {
 			index.add(propertyInfo);

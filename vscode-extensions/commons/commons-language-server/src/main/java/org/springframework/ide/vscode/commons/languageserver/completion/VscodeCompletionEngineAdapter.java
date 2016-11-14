@@ -27,6 +27,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private final static int MAX_COMPLETIONS = 20;
 
+	private int maxCompletions = MAX_COMPLETIONS;
+
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
 	public static final String VS_CODE_CURSOR_MARKER = "{{}}";
@@ -37,6 +39,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
 		this.server = server;
 		this.engine = engine;
+	}
+
+	public void setMaxCompletionsNumber(int maxCompletions) {
+		this.maxCompletions = maxCompletions;
 	}
 
 	@Override
@@ -58,7 +64,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				int count = 0;
 				for (ICompletionProposal c : completions) {
 					count++;
-					if (count>MAX_COMPLETIONS) {
+					if (maxCompletions > 0 && count>maxCompletions) {
 						list.setIsIncomplete(true);
 						break;
 					}

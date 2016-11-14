@@ -37,7 +37,7 @@ public class ApplicationPropertiesLanguageServerTest {
 	}
 
 	private LanguageServerHarness newHarness() throws Exception {
-		Callable<? extends LanguageServer> f = () -> new ApplicationPropertiesLanguageServer((d) -> null, (d) -> null);
+		Callable<? extends LanguageServer> f = () -> new ApplicationPropertiesLanguageServer((d) -> null, (d) -> null, (d) -> null);
 		return new LanguageServerHarness(f);
 	}
 	

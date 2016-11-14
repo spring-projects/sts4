@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.application.properties;
 
+import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.springframework.ide.vscode.application.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.reconcile.SpringPropertiesReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
@@ -30,18 +33,39 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	
 	private SpringPropertyIndexProvider indexProvider;
 	private TypeUtilProvider typeUtilProvider;
+	private VscodeCompletionEngineAdapter completionEngine;
+	private SpringPropertiesReconcileEngine reconcileEngine;
 
 
-	public ApplicationPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
+	public ApplicationPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
 		SimpleTextDocumentService documents = getTextDocumentService();
 
-		IReconcileEngine reconcileEngine = getReconcileEngine();
+		reconcileEngine = getReconcileEngine();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			validateWith(doc, reconcileEngine);
 		});
+		
+		SpringPropertiesCompletionEngine propertiesCompletionEngine = new SpringPropertiesCompletionEngine(
+				indexProvider, 
+				typeUtilProvider, 
+				javaProjectFinder
+		);
+		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
+		completionEngine.setMaxCompletionsNumber(-1);
+		documents.onCompletion(completionEngine::getCompletions);
+		documents.onCompletionResolve(completionEngine::resolveCompletion);
+
+	}
+	
+	public void setMaxCompletionsNumber(int number) {
+		completionEngine.setMaxCompletionsNumber(number);
+	}
+	
+	public void setRecordSyntaxErrors(boolean record) {
+		reconcileEngine.setRecordSyntaxErrors(record);
 	}
 	
 	@Override
@@ -50,10 +74,14 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 		
 		c.setTextDocumentSync(TextDocumentSyncKind.Full);
 		
+		CompletionOptions completionProvider = new CompletionOptions();
+		completionProvider.setResolveProvider(false);
+		c.setCompletionProvider(completionProvider);
+		
 		return c;
 	}
 	
-	protected IReconcileEngine getReconcileEngine() {
+	protected SpringPropertiesReconcileEngine getReconcileEngine() {
 		return new SpringPropertiesReconcileEngine(indexProvider, typeUtilProvider);
 	}
 

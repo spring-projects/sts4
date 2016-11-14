@@ -11,8 +11,22 @@
 package org.springframework.ide.vscode.application.properties.metadata;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
+import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.util.Log;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
+
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 /**
  * A abstract {@link ValueProviderStrategy} that is mean to help speedup successive invocations of
@@ -53,74 +67,79 @@ public abstract class CachingValueProvider implements ValueProviderStrategy {
 	 */
 	private int MAX_RESULTS = 500;
 
-//	private Cache<Tuple2<String,String>, CacheEntry> cache = createCache();
-//
-//	private class CacheEntry {
-//		boolean isComplete = false;
-//		int count = 0;
-//		Flux<StsValueHint> values;
-//
-//		public CacheEntry(String query, Flux<StsValueHint> producer) {
-//			values = producer
-//			.take(MAX_RESULTS)
-//			.cache(MAX_RESULTS);
-//			values.subscribe(); // create infinite demand so that we actually force cache entries to be fetched upto the max.
-//		}
-//
-//		@Override
-//		public String toString() {
-//			return "CacheEntry [isComplete=" + isComplete + ", count=" + count + "]";
-//		}
-//
-//	}
-//
-//	@Override
-//	public final Flux<StsValueHint> getValues(IJavaProject javaProject, String query) {
-////		debug("CA query: "+query);
-//		Tuple2<String, String> key = key(javaProject, query);
-//		CacheEntry cached = cache.get(key);
-//		if (cached==null) {
-//			cache.put(key, cached = new CacheEntry(query, getValuesIncremental(javaProject, query)));
-//		}
-//		return cached.values;
-//	}
-//
-//	/**
-//	 * Tries to use an already cached, complete result for a query that is a prefix of the current query to speed things up.
-//	 * <p>
-//	 * Falls back on doing a full-blown search if there's no usable 'prefix-query' in the cache.
-//	 */
-//	private Flux<StsValueHint> getValuesIncremental(IJavaProject javaProject, String query) {
-////		debug("trying to solve "+query+" incrementally");
-//		String subquery = query;
-//		while (subquery.length()>=1) {
-//			subquery = subquery.substring(0, subquery.length()-1);
-//			CacheEntry cached = cache.get(key(javaProject, subquery));
-//			if (cached!=null) {
-//				System.out.println("cached "+subquery+": "+cached);
-//				if (cached.isComplete) {
-////					debug("filtering "+subquery+" -> "+query);
-//					return cached.values
-////							.doOnNext((hint) -> debug("filter["+query+"]: "+hint.getValue()))
-//							.filter((hint) -> 0!=FuzzyMatcher.matchScore(query, hint.getValue().toString()));
-//				} else {
-////					debug("subquery "+subquery+" cached but is incomplete");
-//				}
-//			}
-//		}
-////		debug("full search for: "+query);
-//		return getValuesAsycn(javaProject, query);
-//	}
-//
-//	protected abstract Flux<StsValueHint> getValuesAsycn(IJavaProject javaProject, String query);
-//
-//	private Tuple2<String,String> key(IJavaProject javaProject, String query) {
-//		return Tuples.of(javaProject==null?null:javaProject.getElementName(), query);
-//	}
-//
-//	protected <K,V> Cache<K,V> createCache() {
-//		return new LimitedTimeCache<>(Duration.ofMinutes(1));
-//	}
+	private Cache<Tuple2<String,String>, CacheEntry> cache = createCache();
+
+	private class CacheEntry {
+		boolean isComplete = false;
+		int count = 0;
+		Flux<StsValueHint> values;
+
+		public CacheEntry(String query, Flux<StsValueHint> producer) {
+			values = producer
+			.take(MAX_RESULTS)
+			.cache(MAX_RESULTS);
+			values.subscribe(); // create infinite demand so that we actually force cache entries to be fetched upto the max.
+		}
+
+		@Override
+		public String toString() {
+			return "CacheEntry [isComplete=" + isComplete + ", count=" + count + "]";
+		}
+
+	}
+
+	@Override
+	public final Flux<StsValueHint> getValues(IJavaProject javaProject, String query) {
+		Tuple2<String, String> key = key(javaProject, query);
+		CacheEntry cached = null;
+		try {
+			cached = cache.get(key, () -> new CacheEntry(query, getValuesIncremental(javaProject, query)));
+		} catch (ExecutionException e) {
+			Log.log(e);
+		}
+		return cached.values;
+	}
+
+	/**
+	 * Tries to use an already cached, complete result for a query that is a prefix of the current query to speed things up.
+	 * <p>
+	 * Falls back on doing a full-blown search if there's no usable 'prefix-query' in the cache.
+	 */
+	private Flux<StsValueHint> getValuesIncremental(IJavaProject javaProject, String query) {
+//		debug("trying to solve "+query+" incrementally");
+		String subquery = query;
+		while (subquery.length()>=1) {
+			subquery = subquery.substring(0, subquery.length()-1);
+			CacheEntry cached = null;
+			try {
+				cached = cache.get(key(javaProject, subquery), () -> null);
+			} catch (ExecutionException | InvalidCacheLoadException e) {
+//				Log.log(e);
+			}
+			if (cached!=null) {
+				System.out.println("cached "+subquery+": "+cached);
+				if (cached.isComplete) {
+					return cached.values
+//							.doOnNext((hint) -> debug("filter["+query+"]: "+hint.getValue()))
+							.filter((hint) -> 0!=FuzzyMatcher.matchScore(query, hint.getValue().toString()));
+				} else {
+//					debug("subquery "+subquery+" cached but is incomplete");
+				}
+			}
+		}
+//		debug("full search for: "+query);
+		return getValuesAsycn(javaProject, query);
+	}
+
+	protected abstract Flux<StsValueHint> getValuesAsycn(IJavaProject javaProject, String query);
+
+	private Tuple2<String,String> key(IJavaProject javaProject, String query) {
+		return Tuples.of(javaProject==null?null:javaProject.getElementName(), query);
+	}
+
+	protected <K,V> Cache<K,V> createCache() {
+		return CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).build();
+	}
 
 	public static void restoreDefaults() {
 		TIMEOUT = DEFAULT_TIMEOUT;

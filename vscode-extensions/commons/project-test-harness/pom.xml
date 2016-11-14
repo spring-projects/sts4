@@ -37,4 +37,11 @@
 			<version>${junit-version}</version>
 		</dependency>
 	</dependencies>
+	<build>
+		<resources>
+			<resource>
+				<directory>test-projects</directory>
+			</resource>
+		</resources>
+	</build>
 </project>

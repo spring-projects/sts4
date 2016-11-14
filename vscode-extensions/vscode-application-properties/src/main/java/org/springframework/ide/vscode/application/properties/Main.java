@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.application.properties;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.application.properties.metadata.DefaultSpringPropertyIndexProvider;
@@ -36,7 +35,7 @@ public class Main {
 			JavaProjectFinder javaProjectFinder = JavaProjectFinder.DEFAULT;
 			SpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
 			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
-			LanguageServer server = new ApplicationPropertiesLanguageServer(indexProvider, typeUtilProvider);
+			LanguageServer server = new ApplicationPropertiesLanguageServer(indexProvider, typeUtilProvider, javaProjectFinder);
 			return server;
 		});
 	}

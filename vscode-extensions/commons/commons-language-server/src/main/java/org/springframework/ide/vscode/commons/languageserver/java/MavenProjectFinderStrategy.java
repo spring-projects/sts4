@@ -41,12 +41,14 @@ public class MavenProjectFinderStrategy implements IJavaProjectFinderStrategy {
 			URI uri = new URI(uriStr);
 			// TODO: This only work with File uri. Should it work with others
 			// too?
-			File file = new File(uri).getAbsoluteFile();
-			File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
-			if (pomFile != null) {
-				return cache.get(pomFile, () -> {
-					return new MavenJavaProject(pomFile);
-				});
+			if (uri.getScheme().equalsIgnoreCase("file")) {
+				File file = new File(uri).getAbsoluteFile();
+				File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
+				if (pomFile != null) {
+					return cache.get(pomFile, () -> {
+						return new MavenJavaProject(pomFile);
+					});
+				}
 			}
 		}
 		return null;

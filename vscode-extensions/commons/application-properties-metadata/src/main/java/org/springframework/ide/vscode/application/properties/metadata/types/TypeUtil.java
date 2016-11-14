@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.application.properties.metadata.ResourceHintProvider;
 import org.springframework.ide.vscode.application.properties.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil;
@@ -577,7 +578,7 @@ public class TypeUtil {
 				return null;
 			}
 		});
-//		valueHints("org.springframework.core.io.Resource", new ResourceHintProvider());
+		valueHints("org.springframework.core.io.Resource", new ResourceHintProvider());
 	}
 
 	/**
