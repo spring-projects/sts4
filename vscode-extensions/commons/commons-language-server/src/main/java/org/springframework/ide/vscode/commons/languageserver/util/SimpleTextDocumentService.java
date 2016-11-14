@@ -81,7 +81,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		VersionedTextDocumentIdentifier docId = params.getTextDocument();
 		String url = docId.getUri();
 		if (url!=null) {
-			LOG.info("Document changed: "+url);
 			TextDocument doc = getOrCreateDocument(url);
 			for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
 				doc.apply(change);
