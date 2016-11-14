@@ -50,7 +50,8 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "vscode-languageclient": "2.5.x"
+    "vscode-languageclient": "2.5.x",
+    "commons-vscode": "^0.0.1"
   },
   "devDependencies": {
     "vsce": "^1.17.0",
