@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import static org.springframework.ide.vscode.commons.util.Assert.isNotNull;
 
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,7 +30,7 @@ import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 public class Wrappers {
 	
-	public static IType wrap(IndexView index, ClassInfo info) {
+	public static IType wrap(JandexIndex index, ClassInfo info, File container) {
 		if (info == null) {
 			return null;
 		}
@@ -43,7 +44,7 @@ public class Wrappers {
 			@Override
 			public IType getDeclaringType() {
 				DotName enclosingClass = info.enclosingClass();
-				return enclosingClass == null ? null : wrap(index, index.getClassByName(enclosingClass));
+				return enclosingClass == null ? null : index.getClassByName(enclosingClass);
 			}
 
 			@Override
@@ -89,26 +90,26 @@ public class Wrappers {
 
 			@Override
 			public IField getField(String name) {
-				return wrap(index, info.field(name));
+				return wrap(index, info.field(name), container);
 			}
 
 			@Override
 			public Stream<IField> getFields() {
 				return info.fields().stream().map(f -> {
-					return wrap(index, f);
+					return wrap(index, f, container);
 				});
 			}
 
 			@Override
 			public IMethod getMethod(String name, Stream<IJavaType> parameters) {
 				List<Type> typeParameters = parameters.map(Wrappers::from).collect(Collectors.toList());
-				return wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])));
+				return wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), container);
 			}
 
 			@Override
 			public Stream<IMethod> getMethods() {
 				return info.methods().stream().map(m -> {
-					return wrap(index, m);
+					return wrap(index, m, container);
 				});
 			}
 
@@ -120,7 +121,7 @@ public class Wrappers {
 		};
 	}
 	
-	public static IField wrap(IndexView index, FieldInfo field) {
+	public static IField wrap(JandexIndex index, FieldInfo field, File container) {
 		if (field == null) {
 			return null;
 		}
@@ -133,7 +134,7 @@ public class Wrappers {
 
 			@Override
 			public IType getDeclaringType() {
-				return wrap(index, field.declaringClass());
+				return wrap(index, field.declaringClass(), container);
 			}
 
 			@Override
@@ -170,7 +171,7 @@ public class Wrappers {
 		};
 	}
 
-	public static IMethod wrap(IndexView index, MethodInfo method) {
+	public static IMethod wrap(JandexIndex index, MethodInfo method, File container) {
 		isNotNull(index);
 		isNotNull(method);
 		return new IMethod() {
@@ -182,7 +183,7 @@ public class Wrappers {
 
 			@Override
 			public IType getDeclaringType() {
-				return wrap(index, method.declaringClass());
+				return wrap(index, method.declaringClass(), container);
 			}
 
 			@Override

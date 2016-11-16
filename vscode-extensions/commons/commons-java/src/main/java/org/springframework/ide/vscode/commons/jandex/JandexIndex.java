@@ -6,11 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jboss.jandex.CompositeIndex;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexView;
@@ -24,12 +25,28 @@ import com.google.common.base.Suppliers;
 
 public class JandexIndex {
 	
+	private static class Entry<K, V> {
+		K key;
+		V value;
+		Entry(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+	}
+	
 	@FunctionalInterface
 	public static interface IndexFileFinder {
 		File findIndexFile(File jarFile);
 	}
 	
-	private Supplier<IndexView> index;
+	@FunctionalInterface
+	public static interface SourceContainerProvider {
+		File getSourceContainer(File container);
+	}
+	
+	private Supplier<List<Entry<File, IndexView>>> index;
+	
+	private SourceContainerProvider sourceContainerProvider;
 	
 	public JandexIndex(Stream<Path> classpathEntries) {
 		this(classpathEntries, jarFile -> null, Optional.empty());
@@ -43,31 +60,38 @@ public class JandexIndex {
 		this(classpathEntries, jarFile -> null, baseIndex);
 	}
 	
+	public void setSourceContainerProvider(SourceContainerProvider sourceContainerProvider) {
+		this.sourceContainerProvider = sourceContainerProvider;
+	}
+	
+	public SourceContainerProvider getSourceContainerProvider() {
+		return sourceContainerProvider;
+	}
+	
 	public JandexIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder, Optional<JandexIndex> baseIndex) {
 		index = Suppliers.memoize(() -> {
+			List<Entry<File, IndexView>> indices = buildIndex(classpathEntries, indexFileFinder).collect(Collectors.toList());
 			if (baseIndex.isPresent()) {
-				return CompositeIndex.create(baseIndex.get().index.get(), buildIndex(classpathEntries, indexFileFinder));
-			} else {
-				return buildIndex(classpathEntries, indexFileFinder);
+				indices.addAll(baseIndex.get().index.get());
 			}
+			return indices;
 		});
 	}
 	
-	private static CompositeIndex buildIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder) {
-		return CompositeIndex.create(classpathEntries
+	private Stream<Entry<File, IndexView>> buildIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder) {
+		return classpathEntries
 			.map(entry -> entry.toFile())
 			.map(file -> {
+					Optional<IndexView> index = Optional.empty();
 					if (file.isFile() && file.getName().endsWith(".jar")) {
-						return indexJar(file, indexFileFinder);
+						index = indexJar(file, indexFileFinder);
 					} else if (file.isDirectory()) {
-						return indexFolder(file);
-					} else {
-						return Optional.<IndexView>empty();
+						index = indexFolder(file);
 					}
+					return new Entry<>(file, index);
 				})
-			.filter(o -> o.isPresent())
-			.map(o -> o.get())
-			.collect(Collectors.toList()));
+			.filter(e -> e.value.isPresent())
+			.map(e -> new Entry<>(e.key, e.value.get()));
 	}
 	
 	private static Optional<IndexView> indexFolder(File folder) {
@@ -134,8 +158,16 @@ public class JandexIndex {
 	}
 
 	public IType findType(String fqName) {
-		IndexView compositeIndex = index.get();
-		return Wrappers.wrap(compositeIndex, compositeIndex.getClassByName(DotName.createSimple(fqName)));
+		return getClassByName(DotName.createSimple(fqName));
+	}
+
+	IType getClassByName(DotName className) {
+		Optional<Entry<File, ClassInfo>> pair = index.get().stream().map(e -> new Entry<>(e.key, e.value.getClassByName(className))).filter(e -> e.value != null).findFirst();
+		if (pair.isPresent()) {
+			return Wrappers.wrap(this, pair.get().value, pair.get().key); 
+		} else {
+			return null;
+		}
 	}
 	
 }
