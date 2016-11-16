@@ -10,15 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
-/**
- * Placeholder. Still need to figure out what exactly we should do with this in vscode.
- */
-public interface HoverInfo {
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 
-	String renderAsText();
+public interface IHoverEngine {
 
-	String renderAsHtml();
-
-	String renderAsMarkdown();
+	HoverInfo getHover(IDocument document, int offset) throws Exception;
 
 }

@@ -9,6 +9,9 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.hover.IHoverEngine;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -40,7 +43,9 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
 		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
-
+		IHoverEngine yamlHoverEngine = new ManifestYmlHoverEngine();
+		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, yamlHoverEngine );
+		
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
@@ -60,6 +65,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
+		documents.onHover(hoverEngine ::getHover);
 	}
 
 	protected IReconcileEngine getReconcileEngine() {
