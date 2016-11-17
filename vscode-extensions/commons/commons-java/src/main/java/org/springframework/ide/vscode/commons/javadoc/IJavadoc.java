@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.commons.java;
+package org.springframework.ide.vscode.commons.javadoc;
 
 public interface IJavadoc {
 	

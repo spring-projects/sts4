@@ -15,8 +15,8 @@ import java.nio.file.Paths;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 /**
  * Java project that contains classpath text file 

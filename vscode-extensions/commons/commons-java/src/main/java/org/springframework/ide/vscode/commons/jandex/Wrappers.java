@@ -20,13 +20,13 @@ import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaType;
-import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMemberValuePair;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class Wrappers {
 	

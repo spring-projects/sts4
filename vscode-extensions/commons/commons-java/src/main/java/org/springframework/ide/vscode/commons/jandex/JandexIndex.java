@@ -21,10 +21,10 @@ import org.jboss.jandex.Indexer;
 import org.jboss.jandex.JarIndexer;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
-import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;

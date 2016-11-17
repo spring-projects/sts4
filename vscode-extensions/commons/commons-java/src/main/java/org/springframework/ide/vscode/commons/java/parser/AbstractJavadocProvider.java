@@ -6,10 +6,11 @@ import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
-import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
+import org.springframework.ide.vscode.commons.javadoc.RawJavadoc;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -25,10 +26,10 @@ public abstract class AbstractJavadocProvider implements IJavadocProvider {
 	public IJavadoc getJavadoc(IType type) {
 		if (type.isEnum()) {
 			EnumDeclaration declaration = getEnumDeclaration(type);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		} else {
 			ClassOrInterfaceDeclaration declaration = getClassOrInterfaceDeclaration(type);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		}
 	}
 	
@@ -36,10 +37,10 @@ public abstract class AbstractJavadocProvider implements IJavadocProvider {
 		IType declaringType = field.getDeclaringType();
 		if (declaringType.isEnum()) {
 			FieldDeclaration declaration = createVisitorToFindField(field).visit(getEnumDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		} else {
 			FieldDeclaration declaration = createVisitorToFindField(field).visit(getClassOrInterfaceDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		}
 	}
 	
@@ -50,10 +51,10 @@ public abstract class AbstractJavadocProvider implements IJavadocProvider {
 		IType declaringType = method.getDeclaringType();
 		if (declaringType.isEnum()) {
 			MethodDeclaration declaration = createVisitorToFindMethod(method).visit(getEnumDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		} else {
 			MethodDeclaration declaration = createVisitorToFindMethod(method).visit(getClassOrInterfaceDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new Javadoc(declaration.getJavaDoc());
+			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		}
 	}
 	

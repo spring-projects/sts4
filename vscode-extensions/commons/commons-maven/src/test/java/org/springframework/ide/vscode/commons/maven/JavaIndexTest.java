@@ -94,16 +94,31 @@ public class JavaIndexTest {
 		MavenJavaProject project = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("hello.Greeting");
 		
-		assertNotNull(type);	
-		assertEquals("* Comment for Greeting class", type.getJavaDoc().raw().trim());
+		assertNotNull(type);
+		String expected = String.join("\n", 
+				"/**",
+				" * Comment for Greeting class ",
+				" */"
+			);
+		assertEquals(expected, type.getJavaDoc().raw().trim());
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
-		assertEquals("* Comment for id field", field.getJavaDoc().raw().trim());
+		expected = String.join("\n",
+				"/**",
+				"     * Comment for id field",
+				"     */"
+			);
+		assertEquals(expected, field.getJavaDoc().raw().trim());
 		
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
-		assertEquals("* Comment for getId()", method.getJavaDoc().raw().trim());
+		expected = String.join("\n",
+				"/**",
+				"     * Comment for getId()",
+				"     */"
+			);
+		assertEquals(expected, method.getJavaDoc().raw().trim());
 	}
 
 	@Test
@@ -111,15 +126,15 @@ public class JavaIndexTest {
 		MavenJavaProject project = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("* Comment for inner class", type.getJavaDoc().raw().trim());
+		assertEquals("/**\n     * Comment for inner class\n     */", type.getJavaDoc().raw().trim());
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
-		assertEquals("* Comment for inner field", field.getJavaDoc().raw().trim());
+		assertEquals("/**\n    \t * Comment for inner field\n    \t */", field.getJavaDoc().raw().trim());
 
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
-		assertEquals("* Comment for method inside nested class", method.getJavaDoc().raw().trim());
+		assertEquals("/**\n    \t * Comment for method inside nested class\n    \t */", method.getJavaDoc().raw().trim());
 	}
 
 	@Test
@@ -127,13 +142,21 @@ public class JavaIndexTest {
 		MavenJavaProject project = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		
 		IType type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
-		assertNotNull(type);	
-		String expectedPrefix = "* {@link ApplicationListener} that replaces the liquibase {@link ServiceLocator} with a";
-		assertEquals(expectedPrefix, type.getJavaDoc().raw().trim().substring(0, expectedPrefix.length()));
+		assertNotNull(type);
+		String expected = String.join("\n",
+				"/**",
+				" * {@link ApplicationListener} that replaces the liquibase {@link ServiceLocator} with a"
+			);
+		assertEquals(expected, type.getJavaDoc().raw().trim().substring(0, expected.length()));
 		
 		type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener$LiquibasePresent");
-		assertNotNull(type);	
-		assertEquals("* Inner class to prevent class not found issues.", type.getJavaDoc().raw().trim());
+		assertNotNull(type);
+		expected = String.join("\n",
+				"/**",
+				"	 * Inner class to prevent class not found issues.",
+				"	 */"
+			);
+		assertEquals(expected, type.getJavaDoc().raw().trim());
 	}
 	
 	@Test
@@ -145,12 +168,20 @@ public class JavaIndexTest {
 		
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
 		assertNotNull(field);
-		assertEquals("* Default banner location.", field.getJavaDoc().raw().trim());
+		String expected = String.join("\n",
+				"/**",
+				 "	 * Default banner location.",
+				 "	 */"
+			);
+		assertEquals(expected, field.getJavaDoc().raw().trim());
 		
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
-		String expectedPrefix = "* Returns read-only ordered Set of the {@link ApplicationListener}s that will be";
-		assertEquals(expectedPrefix, method.getJavaDoc().raw().trim().substring(0, expectedPrefix.length()));
+		expected = String.join("\n",
+				"/**",
+				"	 * Returns read-only ordered Set of the {@link ApplicationListener}s that will be"
+			);
+		assertEquals(expected, method.getJavaDoc().raw().trim().substring(0, expected.length()));
 	}
 	
 }
