@@ -8,17 +8,25 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.hover;
+package org.springframework.ide.vscode.manifest.yaml;
 
-/**
- * Placeholder. Still need to figure out what exactly we should do with this in vscode.
- */
-public interface HoverInfo {
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 
-	String renderAsText();
+public class YamlHoverInfo implements HoverInfo {
 
-	String renderAsHtml();
+	@Override
+	public String renderAsText() {
+		return null;
+	}
 
-	String renderAsMarkdown();
+	@Override
+	public String renderAsHtml() {
+		return null;
+	}
+
+	@Override
+	public String renderAsMarkdown() {
+		return null;
+	}
 
 }

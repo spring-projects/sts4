@@ -167,6 +167,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletableFuture<CompletionList> NO_COMPLETIONS = Futures.of(
 			new CompletionList(false, Collections.emptyList()));
 
+	public final static CompletableFuture<Hover> NO_HOVER = Futures.of(null);
+
 
 	@Override
 	public CompletableFuture<CompletionList> completion(TextDocumentPositionParams position) {

@@ -10,15 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
-/**
- * Placeholder. Still need to figure out what exactly we should do with this in vscode.
- */
-public interface HoverInfo {
+import java.util.concurrent.CompletableFuture;
 
-	String renderAsText();
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-	String renderAsHtml();
-
-	String renderAsMarkdown();
+public interface VscodeHoverEngine {
+	
+	CompletableFuture<Hover> getHover(TextDocumentPositionParams params);
 
 }

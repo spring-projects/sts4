@@ -65,6 +65,11 @@ import com.google.common.base.Suppliers;
  */
 public class MavenCore {
 	
+	private static final String CLASSIFIER_SOURCES = "sources";
+	private static final String CLASSIFIER_JAVADOC = "javadoc";
+	private static final String CLASSIFIER_TESTS = "tests";
+	private static final String CLASSIFIER_TESTSOURCES = "test-sources";
+	  
 	public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 	private static final String JAVA_HOME = "java.home";
 	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
@@ -235,6 +240,22 @@ public class MavenCore {
 		return artifacts;
 	}
 	
+	public Artifact getSources(Artifact artifact) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_SOURCES, null, maven.createExecutionRequest());
+	}
+	
+	public Artifact getJavadoc(Artifact artifact) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_JAVADOC, null, maven.createExecutionRequest());
+	}
+	
+	public Artifact getTests(Artifact artifact) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTS, null, maven.createExecutionRequest());
+	}
+	
+	public Artifact getTestSources(Artifact artifact) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTSOURCES, null, maven.createExecutionRequest());
+	}
+ 	
 	public Stream<Path> getJreLibs() throws MavenException {
 		String s = (String) maven.createExecutionRequest().getSystemProperties().get(JAVA_BOOT_CLASS_PATH);
 		return Arrays.stream(s.split(File.pathSeparator)).map(File::new).filter(f -> f.canRead()).map(f -> Paths.get(f.toURI()));

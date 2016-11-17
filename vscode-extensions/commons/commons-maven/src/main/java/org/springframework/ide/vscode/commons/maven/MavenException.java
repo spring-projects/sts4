@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.maven;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Wrapper for Maven exceptions
  * 
@@ -20,13 +23,13 @@ public class MavenException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Throwable t;
+	private Throwable[] t;
 	
 	public MavenException() {
 		super();
 	}
 	
-	public MavenException(Throwable t) {
+	public MavenException(Throwable... t) {
 		super();
 		this.t = t;
 	}
@@ -34,7 +37,7 @@ public class MavenException extends Exception {
 	@Override
 	public String getMessage() {
 		if (t != null) {
-			return t.getMessage();
+			return String.join("\n", Arrays.stream(t).map(t -> t.getMessage()).collect(Collectors.toList()));
 		}
 		return super.getMessage();
 	}	

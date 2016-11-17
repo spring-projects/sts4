@@ -12,9 +12,11 @@
 package org.springframework.ide.vscode.commons.maven;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +30,7 @@ import java.util.Properties;
 
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -95,6 +98,9 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.dag.CycleDetectedException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -798,6 +804,77 @@ class MavenBridge {
 			if (value != null) {
 				to.put(key, value);
 			}
+		}
+	}
+	
+	public Artifact resolve(String groupId, String artifactId, String version, String type, String classifier,
+			List<ArtifactRepository> remoteRepositories, MavenExecutionRequest request) throws MavenException {
+		Artifact artifact = lookup(RepositorySystem.class).createArtifactWithClassifier(groupId, artifactId, version,
+				type, classifier);
+
+		return resolve(artifact, remoteRepositories, request);
+	}
+
+	public Artifact resolve(final Artifact artifact, List<ArtifactRepository> remoteRepositories,
+			MavenExecutionRequest executionRequest) throws MavenException {
+		if (remoteRepositories == null) {
+			try {
+				remoteRepositories = getArtifactRepositories();
+			} catch (MavenException e) {
+				// we've tried
+				remoteRepositories = Collections.emptyList();
+			}
+		}
+		final List<ArtifactRepository> _remoteRepositories = remoteRepositories;
+
+		org.eclipse.aether.RepositorySystem repoSystem = lookup(org.eclipse.aether.RepositorySystem.class);
+
+		ArtifactRequest request = new ArtifactRequest();
+		request.setArtifact(RepositoryUtils.toArtifact(artifact));
+		request.setRepositories(RepositoryUtils.toRepos(_remoteRepositories));
+
+		ArtifactResult result;
+		try {
+			result = repoSystem.resolveArtifact(createRepositorySession(executionRequest), request);
+		} catch (ArtifactResolutionException ex) {
+			result = ex.getResults().get(0);
+		}
+
+		setLastUpdated(executionRequest.getLocalRepository(), _remoteRepositories, artifact);
+
+		if (result.isResolved()) {
+			artifact.selectVersion(result.getArtifact().getVersion());
+			artifact.setFile(result.getArtifact().getFile());
+			artifact.setResolved(true);
+		} else {
+			throw new MavenException(result.getExceptions().toArray(new Exception[result.getExceptions().size()]));
+		}
+
+		return artifact;
+	}
+
+	/* package */void setLastUpdated(ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories,
+			Artifact artifact) throws MavenException {
+
+		Properties lastUpdated = loadLastUpdated(localRepository, artifact);
+
+		String timestamp = Long.toString(System.currentTimeMillis());
+
+		for (ArtifactRepository repository : remoteRepositories) {
+			lastUpdated.setProperty(getLastUpdatedKey(repository, artifact), timestamp);
+		}
+
+		File lastUpdatedFile = getLastUpdatedFile(localRepository, artifact);
+		try {
+			lastUpdatedFile.getParentFile().mkdirs();
+			BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(lastUpdatedFile));
+			try {
+				lastUpdated.store(os, null);
+			} finally {
+				IOUtil.close(os);
+			}
+		} catch (IOException ex) {
+			throw new MavenException(ex);
 		}
 	}
 
