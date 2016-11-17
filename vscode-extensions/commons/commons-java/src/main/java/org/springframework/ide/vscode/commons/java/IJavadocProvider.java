@@ -10,5 +10,5 @@ public interface IJavadocProvider {
 	
 	IJavadoc getJavadoc(IMethod method);
 
-	IJavadoc getJavadoc(IAnnotation method);
+	IJavadoc getJavadoc(IAnnotation annotation);
 }

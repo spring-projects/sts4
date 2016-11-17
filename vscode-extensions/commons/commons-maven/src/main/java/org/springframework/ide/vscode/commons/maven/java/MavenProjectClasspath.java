@@ -25,7 +25,8 @@ import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.java.parser.JavadocProvider;
+import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
+import org.springframework.ide.vscode.commons.java.roaster.RoasterJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
@@ -41,6 +42,8 @@ import com.google.common.base.Suppliers;
  *
  */
 public class MavenProjectClasspath implements IClasspath {
+	
+	public static boolean USE_JAVA_PARSER = false;
 
 	private MavenCore maven;
 	private MavenProject project;
@@ -60,7 +63,9 @@ public class MavenProjectClasspath implements IClasspath {
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> createJavadocProvider(classpathResource), maven.getJavaIndexForJreLibs());
+			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> {
+				return USE_JAVA_PARSER ? createParserJavadocProvider(classpathResource) : createRoasterJavadocProvider(classpathResource);
+			}, maven.getJavaIndexForJreLibs());
 		});
 	}
 
@@ -84,40 +89,6 @@ public class MavenProjectClasspath implements IClasspath {
 		return maven.resolveDependencies(project, null).stream().filter(a -> file.equals(a.getFile())).findFirst();
 	}
 	
-	private IJavadocProvider createJavadocProvider(File classpathResource) {
-		if (classpathResource.isDirectory()) {
-			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
-				return new JavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
-				});
-			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
-				return new JavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
-				});
-			} else {
-				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
-			}
-		} else {
-			// Assume it's a JAR file
-			return new JavadocProvider(type -> {
-				try {
-					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
-					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
-					System.out.println("----> SOURCE " + sourceContainer);
-					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
-							type);
-				} catch (MavenException e) {
-					Log.log("Failed to find sources JAR for " + classpathResource, e);
-				} catch (MalformedURLException e) {
-					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
-				}
-				return null;
-			});
-		}
-	}
-
 	@Override
 	public Stream<String> getClasspathResources() {
 		return project.getBuild().getResources().stream().flatMap(resource -> {			
@@ -135,4 +106,72 @@ public class MavenProjectClasspath implements IClasspath {
 		});
 	}
 
+	private IJavadocProvider createRoasterJavadocProvider(File classpathResource) {
+		if (classpathResource.isDirectory()) {
+			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
+				return new RoasterJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
+				});
+			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
+				return new RoasterJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
+				});
+			} else {
+				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
+			}
+		} else {
+			// Assume it's a JAR file
+			return new RoasterJavadocProvider(type -> {
+				try {
+					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
+					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
+					System.out.println("----> SOURCE " + sourceContainer);
+					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
+							type);
+				} catch (MavenException e) {
+					Log.log("Failed to find sources JAR for " + classpathResource, e);
+				} catch (MalformedURLException e) {
+					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+				}
+				return null;
+			});
+		}
+	}
+
+	private IJavadocProvider createParserJavadocProvider(File classpathResource) {
+		if (classpathResource.isDirectory()) {
+			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
+				return new ParserJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
+				});
+			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
+				return new ParserJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
+				});
+			} else {
+				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
+			}
+		} else {
+			// Assume it's a JAR file
+			return new ParserJavadocProvider(type -> {
+				try {
+					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
+					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
+					System.out.println("----> SOURCE " + sourceContainer);
+					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
+							type);
+				} catch (MavenException e) {
+					Log.log("Failed to find sources JAR for " + classpathResource, e);
+				} catch (MalformedURLException e) {
+					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+				}
+				return null;
+			});
+		}
+	}
+	
 }
