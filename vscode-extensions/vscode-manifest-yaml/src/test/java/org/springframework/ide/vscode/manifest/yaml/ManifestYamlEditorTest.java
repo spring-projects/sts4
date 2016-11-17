@@ -365,7 +365,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test @Ignore
+	@Test
 	public void hoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
 				"memory: 1G\n" +
@@ -380,9 +380,9 @@ public class ManifestYamlEditorTest {
 		editor.assertIsHoverRegion("domain");
 		editor.assertIsHoverRegion("name");
 
-		editor.assertHoverContains("memory", "Use the <code>memory</code> attribute to specify the memory limit");
-		editor.assertHoverContains("1G", "Use the <code>memory</code> attribute to specify the memory limit");
-		editor.assertHoverContains("buildpack", "use the <code>buildpack</code> attribute to specify its URL or name");
+		editor.assertHoverContains("memory", "Use the `memory` attribute to specify the memory limit");
+		editor.assertHoverContains("1G", "Use the `memory` attribute to specify the memory limit");
+		editor.assertHoverContains("buildpack", "use the `buildpack` attribute to specify its URL or name");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

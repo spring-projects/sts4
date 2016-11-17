@@ -112,11 +112,20 @@ public class ManifestYmlSchemaTest {
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertHasRealDescription(YTypedProperty p) {
-		String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.get().toHtml();
-		String actual = p.getDescription().toHtml();
-		String msg = "Description missing for '"+p.getName()+"'";
-		assertTrue(msg, StringUtil.hasText(actual));
-		assertFalse(msg, noDescriptionText.equals(actual));
+		{
+			String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.toHtml();
+			String actual = p.getDescription().toHtml();
+			String msg = "Description missing for '"+p.getName()+"'";
+			assertTrue(msg, StringUtil.hasText(actual));
+			assertFalse(msg, noDescriptionText.equals(actual));
+		}
+		{
+			String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.toMarkdown();
+			String actual = p.getDescription().toMarkdown();
+			String msg = "Description missing for '"+p.getName()+"'";
+			assertTrue(msg, StringUtil.hasText(actual));
+			assertFalse(msg, noDescriptionText.equals(actual));
+		}
 	}
 
 	private List<YTypedProperty> getNestedProps() {
