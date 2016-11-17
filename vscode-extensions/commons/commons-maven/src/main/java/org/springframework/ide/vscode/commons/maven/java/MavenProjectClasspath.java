@@ -11,17 +11,24 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.java.parser.JarSourcesJavadocProvider;
+import org.springframework.ide.vscode.commons.java.parser.SourceFolderJavadocProvider;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
@@ -53,7 +60,7 @@ public class MavenProjectClasspath implements IClasspath {
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), maven.getJavaIndexForJreLibs());
+			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), maven.getJavaIndexForJreLibs(), classpathResource -> createJavadocProvider(classpathResource));
 		});
 	}
 
@@ -71,6 +78,36 @@ public class MavenProjectClasspath implements IClasspath {
 	
 	private File findIndexFile(File jarFile) {
 		return new File(maven.getIndexFolder().toString(), jarFile.getName() + "-" + jarFile.lastModified() + ".jdx");
+	}
+	
+	private Optional<Artifact> getArtifactFromJarFile(File file) throws MavenException {
+		return maven.resolveDependencies(project, null).stream().filter(a -> file.equals(a.getFile())).findFirst();
+	}
+	
+	private IJavadocProvider createJavadocProvider(File classpathResource) {
+		System.out.println("--------> creating javadoc provider for " + classpathResource);
+		if (classpathResource.isDirectory()) {
+			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
+				return new SourceFolderJavadocProvider(new File(project.getBuild().getSourceDirectory()));
+			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
+				return new SourceFolderJavadocProvider(new File(project.getBuild().getTestSourceDirectory()));
+			} else {
+				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
+			}
+		} else {
+			// Assume it's a JAR file
+			return new JarSourcesJavadocProvider(Suppliers.memoize(() -> {
+				try {
+					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
+					return maven.getSources(artifact).getFile().toURI().toURL();
+				} catch (MavenException e) {
+					Log.log("Failed to find sources JAR for " + classpathResource, e);
+				} catch (MalformedURLException e) {
+					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+				}
+				return null;
+			}));
+		}
 	}
 
 	@Override

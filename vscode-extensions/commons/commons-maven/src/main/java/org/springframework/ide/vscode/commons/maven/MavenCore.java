@@ -83,7 +83,7 @@ public class MavenCore {
 	
 	private Supplier<Optional<JandexIndex>> javaCoreIndex = Suppliers.memoize(() -> {
 		try {
-			return Optional.of(new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile)));
+			return Optional.of(new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), null));
 		} catch (MavenException e) {
 			return Optional.empty();
 		}

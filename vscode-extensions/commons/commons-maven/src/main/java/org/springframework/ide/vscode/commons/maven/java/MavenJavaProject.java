@@ -17,9 +17,9 @@ import java.nio.file.Paths;
 import org.apache.maven.project.MavenProject;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 
 /**
  * Wrapper for Maven Core project
@@ -45,7 +45,7 @@ public class MavenJavaProject implements IJavaProject {
 	}
 
 	@Override
-	public HtmlSnippet getJavaDoc() {
+	public IJavadoc getJavaDoc() {
 		return null;
 	}
 

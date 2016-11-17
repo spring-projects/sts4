@@ -117,7 +117,7 @@ public class StsValueHint {
 	public static Provider<HtmlSnippet> javaDocSnippet(IJavaElement je) {
 		return () -> {
 			try {
-				HtmlSnippet jdoc = je.getJavaDoc();
+				HtmlSnippet jdoc = HtmlSnippet.raw(je.getJavaDoc().html());
 				if (jdoc!=null) {
 					return jdoc;
 				}
