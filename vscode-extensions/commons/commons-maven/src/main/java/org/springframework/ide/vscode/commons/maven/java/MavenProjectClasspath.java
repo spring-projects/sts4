@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -25,8 +25,8 @@ import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.java.parser.JarSourcesJavadocProvider;
-import org.springframework.ide.vscode.commons.java.parser.SourceFolderJavadocProvider;
+import org.springframework.ide.vscode.commons.java.parser.JavadocProvider;
+import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -45,7 +45,7 @@ public class MavenProjectClasspath implements IClasspath {
 	private MavenCore maven;
 	private MavenProject project;
 	private Supplier<JandexIndex> javaIndex;
-
+	
 	public MavenProjectClasspath(MavenProject project) {
 		this(project, MavenCore.getInstance());
 	}
@@ -67,9 +67,9 @@ public class MavenProjectClasspath implements IClasspath {
 	@Override
 	public Stream<Path> getClasspathEntries() throws Exception {
 		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
-			return Paths.get(artifact.getFile().toURI());
-		}), Stream.of(Paths.get(new File(project.getBuild().getOutputDirectory()).toURI()),
-				Paths.get(new File(project.getBuild().getTestOutputDirectory()).toURI())));
+			return artifact.getFile().toPath();
+		}), Stream.of(new File(project.getBuild().getOutputDirectory()).toPath(),
+				new File(project.getBuild().getTestOutputDirectory()).toPath()));
 	}
 	
 	public IType findType(String fqName) {
@@ -87,25 +87,34 @@ public class MavenProjectClasspath implements IClasspath {
 	private IJavadocProvider createJavadocProvider(File classpathResource) {
 		if (classpathResource.isDirectory()) {
 			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
-				return new SourceFolderJavadocProvider(new File(project.getBuild().getSourceDirectory()));
+				return new JavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
+				});
 			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
-				return new SourceFolderJavadocProvider(new File(project.getBuild().getTestSourceDirectory()));
+				return new JavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
+				});
 			} else {
 				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
 			}
 		} else {
 			// Assume it's a JAR file
-			return new JarSourcesJavadocProvider(Suppliers.memoize(() -> {
+			return new JavadocProvider(type -> {
 				try {
 					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
-					return maven.getSources(artifact).getFile().toURI().toURL();
+					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
+					System.out.println("----> SOURCE " + sourceContainer);
+					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
+							type);
 				} catch (MavenException e) {
 					Log.log("Failed to find sources JAR for " + classpathResource, e);
 				} catch (MalformedURLException e) {
 					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
 				}
 				return null;
-			}));
+			});
 		}
 	}
 

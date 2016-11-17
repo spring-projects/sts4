@@ -1,6 +1,5 @@
 package org.springframework.ide.vscode.commons.java.parser;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
@@ -11,6 +10,7 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.javadoc.RawJavadoc;
+import org.springframework.ide.vscode.commons.javadoc.SourceUrlProvider;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -21,7 +21,13 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
-public abstract class AbstractJavadocProvider implements IJavadocProvider {
+public class JavadocProvider implements IJavadocProvider {
+	
+	private SourceUrlProvider sourceUrlProvider;
+	
+	public JavadocProvider(SourceUrlProvider sourceUrlProvider) {
+		this.sourceUrlProvider = sourceUrlProvider;
+	}
 	
 	public IJavadoc getJavadoc(IType type) {
 		if (type.isEnum()) {
@@ -64,9 +70,9 @@ public abstract class AbstractJavadocProvider implements IJavadocProvider {
 	
 	private CompilationUnit getCompilationUnit(IType type) {
 		try {
-			URL sourceUrl = createSourceUrl(type);
+			URL sourceUrl = sourceUrlProvider.sourceUrl(type);
 			return CompilationUnitIndex.DEFAULT.getCompilationUnit(sourceUrl);
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			Log.log("Invalid source URL for type " + type, e);
 			return null;
 		}
@@ -156,6 +162,4 @@ public abstract class AbstractJavadocProvider implements IJavadocProvider {
 		};
 	}
 	
-	abstract protected URL createSourceUrl(IType type) throws MalformedURLException;
-
 }
