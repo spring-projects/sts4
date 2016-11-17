@@ -60,7 +60,7 @@ public class MavenProjectClasspath implements IClasspath {
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), maven.getJavaIndexForJreLibs(), classpathResource -> createJavadocProvider(classpathResource));
+			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> createJavadocProvider(classpathResource), maven.getJavaIndexForJreLibs());
 		});
 	}
 
@@ -85,7 +85,6 @@ public class MavenProjectClasspath implements IClasspath {
 	}
 	
 	private IJavadocProvider createJavadocProvider(File classpathResource) {
-		System.out.println("--------> creating javadoc provider for " + classpathResource);
 		if (classpathResource.isDirectory()) {
 			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
 				return new SourceFolderJavadocProvider(new File(project.getBuild().getSourceDirectory()));

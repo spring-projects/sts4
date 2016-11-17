@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,11 @@ import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.jandex.JarIndexer;
+import org.springframework.ide.vscode.commons.java.IAnnotation;
+import org.springframework.ide.vscode.commons.java.IField;
+import org.springframework.ide.vscode.commons.java.IJavadoc;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -48,15 +53,37 @@ public class JandexIndex {
 		IJavadocProvider createJavadocProvider(File jarContainer);
 	}
 	
+	private static final IJavadocProvider ABSENT_JAVADOC_PROVIDER = new IJavadocProvider() {
+		
+		@Override
+		public IJavadoc getJavadoc(IType type) {
+			return null;
+		}
+
+		@Override
+		public IJavadoc getJavadoc(IField field) {
+			return null;
+		}
+
+		@Override
+		public IJavadoc getJavadoc(IMethod method) {
+			return null;
+		}
+
+		@Override
+		public IJavadoc getJavadoc(IAnnotation method) {
+			return null;
+		}
+		
+	};
+	
 	private Supplier<List<Entry<File, IndexView>>> index;
 	
 	private JavadocProviderFactory javadocProviderFactory;
 	
 	private Cache<File, IJavadocProvider> javadocProvidersCache = CacheBuilder.newBuilder().build();
-	
-	public JandexIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder, JavadocProviderFactory javadocProviderFactory) {
-		this(classpathEntries, indexFileFinder, Optional.empty(), javadocProviderFactory);
-	}
+
+	private JandexIndex[] baseIndex;
 	
 	public void setJvadocProviderFactory(JavadocProviderFactory sourceContainerProvider) {
 		this.javadocProviderFactory = sourceContainerProvider;
@@ -66,14 +93,9 @@ public class JandexIndex {
 		return javadocProviderFactory;
 	}
 	
-	public JandexIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder, Optional<JandexIndex> baseIndex, JavadocProviderFactory javadocProviderFactory) {
-		index = Suppliers.memoize(() -> {
-			List<Entry<File, IndexView>> indices = buildIndex(classpathEntries, indexFileFinder).collect(Collectors.toList());
-			if (baseIndex.isPresent()) {
-				indices.addAll(baseIndex.get().index.get());
-			}
-			return indices;
-		});
+	public JandexIndex(Stream<Path> classpathEntries, IndexFileFinder indexFileFinder, JavadocProviderFactory javadocProviderFactory, JandexIndex... baseIndex) {
+		this.baseIndex = baseIndex;
+		index = Suppliers.memoize(() -> buildIndex(classpathEntries, indexFileFinder).collect(Collectors.toList()));
 		this.javadocProviderFactory = javadocProviderFactory;
 	}
 	
@@ -159,21 +181,34 @@ public class JandexIndex {
 	public IType findType(String fqName) {
 		return getClassByName(DotName.createSimple(fqName));
 	}
-
-	IType getClassByName(DotName className) {
-		Optional<Entry<File, ClassInfo>> pair = index.get().stream().map(e -> new Entry<>(e.key, e.value.getClassByName(className))).filter(e -> e.value != null).findFirst();
-		if (pair.isPresent()) {
-			File classpathResource = pair.get().key;
-			IJavadocProvider javadocProvider = null;
-			try {
-				javadocProvider = javadocProvidersCache.get(pair.get().key, () -> javadocProviderFactory == null ? null : javadocProviderFactory.createJavadocProvider(classpathResource));
-			} catch (ExecutionException e) {
-				Log.log(e);
-			}
-			return Wrappers.wrap(this, pair.get().value, javadocProvider); 
-		} else {
-			return null;
-		}
+		
+	IType getClassByName(DotName fqName) {
+		// First look for type in the base index array
+		return (baseIndex == null ? Stream.<IType>empty()
+				: Arrays.stream(baseIndex)
+				.filter(jandexIndex -> jandexIndex != null)
+				.map(jandexIndex -> jandexIndex.getClassByName(fqName)))
+				.filter(type -> type != null)
+				.findFirst()
+				// If not found look at indices owned by this JandexIndex instance
+				.orElseGet(() -> index.get().stream()
+									.map(e -> new Entry<>(e.key, e.value.getClassByName(fqName)))
+									.filter(e -> e.value != null)
+									.map(e -> createType(e))
+									.findFirst()
+									.orElse(null));
+		
 	}
 	
+	private IType createType(Entry<File, ClassInfo> match) {
+		File classpathResource = match.key;
+		IJavadocProvider javadocProvider = null;
+		try {
+			javadocProvider = javadocProvidersCache.get(match.key, () -> javadocProviderFactory == null ? ABSENT_JAVADOC_PROVIDER : javadocProviderFactory.createJavadocProvider(classpathResource));
+		} catch (ExecutionException e) {
+			Log.log(e);
+		}
+		return Wrappers.wrap(this, match.value, javadocProvider); 
+	}
+
 }

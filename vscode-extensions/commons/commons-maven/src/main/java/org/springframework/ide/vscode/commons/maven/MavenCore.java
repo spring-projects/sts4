@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -81,11 +80,11 @@ public class MavenCore {
 	
 	private MavenBridge maven = new MavenBridge();
 	
-	private Supplier<Optional<JandexIndex>> javaCoreIndex = Suppliers.memoize(() -> {
+	private Supplier<JandexIndex> javaCoreIndex = Suppliers.memoize(() -> {
 		try {
-			return Optional.of(new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), null));
+			return new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), null);
 		} catch (MavenException e) {
-			return Optional.empty();
+			return null;
 		}
 	});
 	
@@ -281,7 +280,7 @@ public class MavenCore {
 		return new File(getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
 	}
 	
-	public Optional<JandexIndex> getJavaIndexForJreLibs() {
+	public JandexIndex getJavaIndexForJreLibs() {
 		return javaCoreIndex.get();
 	}
 	
