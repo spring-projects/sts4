@@ -147,6 +147,7 @@ public abstract class LaunguageServerApp {
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
 				try {
+					LOG.info(""+msg);
 					consumer.consume(msg);
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about

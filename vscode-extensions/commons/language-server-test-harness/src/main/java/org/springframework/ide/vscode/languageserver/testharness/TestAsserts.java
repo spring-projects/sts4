@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.project.harness;
+package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.fail;
 

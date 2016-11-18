@@ -15,15 +15,15 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 import com.google.common.collect.ImmutableSet;
@@ -106,11 +106,11 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 	}
 
-	private Provider<HtmlSnippet> descriptionFor(String propName) {
-		return DescriptionProviders.fromClasspath(this.getClass(), "/description-by-prop-name/"+propName+".html");
+	private HoverInfo descriptionFor(String propName) {
+		return DescriptionProviders.fromClasspath(this.getClass(), "/description-by-prop-name/"+propName);
 	}
 
-	private Provider<HtmlSnippet> descriptionFor(YTypedPropertyImpl prop) {
+	private HoverInfo descriptionFor(YTypedPropertyImpl prop) {
 		return descriptionFor(prop.getName());
 	}
 

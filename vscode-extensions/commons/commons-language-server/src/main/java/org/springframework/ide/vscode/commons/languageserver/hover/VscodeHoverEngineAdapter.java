@@ -14,23 +14,27 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
 
+import reactor.util.function.Tuple2;
+
 public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 
-	private IHoverEngine engine;
+	private HoverInfoProvider hoverInfoProvider;
 	private SimpleLanguageServer server;
 	final static Logger logger = LoggerFactory.getLogger(VscodeHoverEngineAdapter.class);
 
 
-	public VscodeHoverEngineAdapter(SimpleLanguageServer server, IHoverEngine engine) {
-		this.engine = engine;
+	public VscodeHoverEngineAdapter(SimpleLanguageServer server, HoverInfoProvider hoverInfoProvider) {
+		this.hoverInfoProvider = hoverInfoProvider;
 		this.server = server;
 	}
 
@@ -44,16 +48,17 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 			TextDocument doc = documents.get(params);
 			if (doc!=null) {
 				int offset = doc.toOffset(params.getPosition());
-				HoverInfo hoverInfo = engine.getHover(doc, offset);
-				if (hoverInfo != null) {
-					Hover hover = new Hover();
-					hover.setContents(Collections.singletonList(hoverInfo.renderAsMarkdown()));
+
+				Tuple2<HoverInfo, IRegion> hoverTuple = hoverInfoProvider.getHoverInfo(doc, offset);
+				if (hoverTuple != null) {
+					HoverInfo hoverInfo = hoverTuple.getT1();
+					IRegion region = hoverTuple.getT2();
+					Range range = doc.toRange(region.getOffset(), region.getLength());
+
+					Hover hover = new Hover(Collections.singletonList(hoverInfo.toMarkdown()), range);
+
 					return Futures.of(hover);
 				}
-				else{
-					return Futures.of(null);
-				}
-
 			}
 		} catch (Exception e) {
 			logger.error("error computing hover", e);

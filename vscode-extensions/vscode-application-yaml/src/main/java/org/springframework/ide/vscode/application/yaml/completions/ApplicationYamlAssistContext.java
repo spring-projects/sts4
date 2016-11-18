@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
@@ -373,6 +374,25 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			return type;
 		}
 
+
+		@Override
+		public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public HoverInfo getHoverInfo() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
 	}
 
 	private static class IndexContext extends ApplicationYamlAssistContext {
@@ -480,6 +500,24 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (match!=null) {
 				return TypeParser.parse(match.getType());
 			}
+			return null;
+		}
+
+		@Override
+		public HoverInfo getHoverInfo() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+			// TODO Auto-generated method stub
 			return null;
 		}
 

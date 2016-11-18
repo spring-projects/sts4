@@ -3,7 +3,7 @@ package org.springframework.ide.vscode.application.properties.metadata.types;
 import javax.inject.Provider;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
@@ -27,7 +27,7 @@ public class TypedProperty implements YTypedProperty {
 	/**
 	 * Provides a description for this property.
 	 */
-	private final Provider<HtmlSnippet> descriptionProvider;
+	private final HoverInfo descriptionProvider;
 
 	private final Deprecation deprecation;
 
@@ -35,7 +35,7 @@ public class TypedProperty implements YTypedProperty {
 		this(name, type, DescriptionProviders.NO_DESCRIPTION, deprecation);
 	}
 
-	public TypedProperty(String name, Type type, Provider<HtmlSnippet> descriptionProvider, Deprecation deprecation) {
+	public TypedProperty(String name, Type type, HoverInfo descriptionProvider, Deprecation deprecation) {
 		this.name = name;
 		this.type = type;
 		this.descriptionProvider = descriptionProvider;
@@ -56,14 +56,14 @@ public class TypedProperty implements YTypedProperty {
 	}
 
 	@Override
-	public HtmlSnippet getDescription() {
+	public HoverInfo getDescription() {
 		//TODO: real implementation that somehow gets this from somewhere (i.e. the JavaDoc)
 		// Note that presently the application.yml and application.properties editor do not actually
 		// use this description provider but produce hover infos in a different way (so this is only
 		// used in Schema-based content assist, reconciling and hovering.
 		//So in that sense putting a good implementation here is kind of pointless right now.
 		//More refactoring needs to be done to also make use of this.
-		return descriptionProvider.get();
+		return descriptionProvider;
 	}
 
 	public static Type typeOf(TypedProperty typedProperty) {

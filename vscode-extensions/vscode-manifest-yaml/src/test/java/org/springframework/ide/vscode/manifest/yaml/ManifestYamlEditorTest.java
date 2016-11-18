@@ -11,12 +11,9 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServer;
 
 public class ManifestYamlEditorTest {
 
@@ -365,24 +362,79 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test @Ignore
+	@Test
 	public void hoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
 				"memory: 1G\n" +
+		        "inherit: base-manifest.yml\n"+
 				"applications:\n" +
 				"- buildpack: zbuildpack\n" +
 				"  domain: zdomain\n" +
-				"  name: foo"
+				"  name: foo\n" + 
+				"  command: java main.java\n" +
+				"  disk_quota: 1024M\n" +
+				"  domains:\n" +
+				"  - pivotal.io\n" +
+				"  - otherdomain.org\n" +
+				"  env:\n" +
+                "    RAILS_ENV: production\n" +
+                "    RACK_ENV: production\n" +
+                "  host: apppage\n" +
+                "  hosts:\n" +
+                "  - apppage2\n" +
+                "  - appage3\n" + 
+                "  instances: 2\n" +
+                "  no-hostname: true\n" + 
+                "  no-route: true\n" + 
+                "  path: somepath/app.jar\n" +
+                "  random-route: true\n" +
+                "  services:\n" +
+                "  - instance_ABC\n" +
+                "  - instance_XYZ\n" +
+                "  stack: cflinuxfs2\n" +
+                "  timeout: 80\n"
 		);
 		editor.assertIsHoverRegion("memory");
+		editor.assertIsHoverRegion("inherit");
 		editor.assertIsHoverRegion("applications");
 		editor.assertIsHoverRegion("buildpack");
 		editor.assertIsHoverRegion("domain");
 		editor.assertIsHoverRegion("name");
+		editor.assertIsHoverRegion("command");
+		editor.assertIsHoverRegion("disk_quota");
+		editor.assertIsHoverRegion("domains");
+		editor.assertIsHoverRegion("env");
+		editor.assertIsHoverRegion("host");
+		editor.assertIsHoverRegion("hosts");
+		editor.assertIsHoverRegion("instances");
+		editor.assertIsHoverRegion("no-hostname");
+		editor.assertIsHoverRegion("no-route");
+		editor.assertIsHoverRegion("path");
+		editor.assertIsHoverRegion("random-route");
+		editor.assertIsHoverRegion("services");
+		editor.assertIsHoverRegion("stack");
+		editor.assertIsHoverRegion("timeout");
 
-		editor.assertHoverContains("memory", "Use the <code>memory</code> attribute to specify the memory limit");
-		editor.assertHoverContains("1G", "Use the <code>memory</code> attribute to specify the memory limit");
-		editor.assertHoverContains("buildpack", "use the <code>buildpack</code> attribute to specify its URL or name");
+		editor.assertHoverContains("memory", "Use the `memory` attribute to specify the memory limit");
+		editor.assertHoverContains("1G", "Use the `memory` attribute to specify the memory limit");
+		editor.assertHoverContains("inherit", "For example, every child of a parent manifest called `base-manifest.yml` begins like this");
+		editor.assertHoverContains("buildpack", "use the `buildpack` attribute to specify its URL or name");
+	    editor.assertHoverContains("name", "The `name` attribute is the only required attribute for an application in a manifest file");
+	    editor.assertHoverContains("command", "On the command line, use the `-c` option to specify the custom start command as the following example shows");
+	    editor.assertHoverContains("disk_quota", "Use the `disk_quota` attribute to allocate the disk space for your app instance");
+	    editor.assertHoverContains("domain", "You can use the `domain` attribute when you want your application to be served");
+	    editor.assertHoverContains("domains", "Use the `domains` attribute to provide multiple domains");
+	    editor.assertHoverContains("env", "The `env` block consists of a heading, then one or more environment variable/value pairs");
+	    editor.assertHoverContains("host", "Use the `host` attribute to provide a hostname, or subdomain, in the form of a string");
+	    editor.assertHoverContains("hosts", "Use the `hosts` attribute to provide multiple hostnames, or subdomains");
+	    editor.assertHoverContains("instances", "Use the `instances` attribute to specify the number of app instances that you want to start upon push");
+	    editor.assertHoverContains("no-hostname", "By default, if you do not provide a hostname, the URL for the app takes the form of `APP-NAME.DOMAIN`");
+	    editor.assertHoverContains("no-route", "You can use the `no-route` attribute with a value of `true` to prevent a route from being created for your application");
+	    editor.assertHoverContains("path", "You can use the `path` attribute to tell Cloud Foundry where to find your application");
+	    editor.assertHoverContains("random-route", "Use the `random-route` attribute to create a URL that includes the app name and random words");
+	    editor.assertHoverContains("services", "The `services` block consists of a heading, then one or more service instance names");
+	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
+	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

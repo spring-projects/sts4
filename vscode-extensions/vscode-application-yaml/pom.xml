@@ -101,24 +101,6 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<!-- Generate classpath.txt for VS Code -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.9</version>
-				<executions>
-					<execution>
-						<id>build-classpath</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>build-classpath</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<outputFile>classpath.txt</outputFile>
-				</configuration>
-			</plugin>
 			<!-- Configure fat jar -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

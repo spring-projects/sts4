@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.application.properties.test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.application.properties.reconcile.ApplicationPropertiesProblemType.PROP_DUPLICATE_KEY;
-import static org.springframework.ide.vscode.project.harness.TestAsserts.assertContains;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
