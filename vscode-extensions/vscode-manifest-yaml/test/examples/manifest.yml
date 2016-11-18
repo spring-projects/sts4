@@ -1,3 +1,4 @@
+inherit: base-manifest.yml
 applications:
 - name: foo
   foo: bar
@@ -13,4 +14,18 @@ applications:
   env:
     RAILS_ENV: production
     RACK_ENV: production
+  no-hostname: true
+  no-route: false
+  random-route: true
+  services:
+  - dbserv1
+  - redisserv2
+  path: app.jar
+  instances: 3
+  stack: cflinuxfs2
+  timeout: 80
+  host: apppage
+  hosts:
+  - apppagealt
+  - anotherhost
 
