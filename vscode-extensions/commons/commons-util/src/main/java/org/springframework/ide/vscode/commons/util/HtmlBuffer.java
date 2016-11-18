@@ -20,12 +20,8 @@ import java.net.URLEncoder;
  */
 public class HtmlBuffer {
 
-	private StringBuffer buffer = new StringBuffer();
-	private boolean epilogAdded = false; //to ensure only added once.
+	private StringBuilder buffer = new StringBuilder();
 
-	public HtmlBuffer() {
-		this.buffer = new StringBuffer();
-	}
 
 	/**
 	 * Append text, applies escaping to the text as needed.
@@ -38,9 +34,6 @@ public class HtmlBuffer {
 	 * Append 'raw' text. Doesn't apply any escaping.
 	 */
 	public void raw(String rawText) {
-		if (epilogAdded) {
-			throw new IllegalStateException("Can not append more text after epilog was added");
-		}
 		buffer.append(rawText);
 	}
 
@@ -57,10 +50,7 @@ public class HtmlBuffer {
 
 
 	public String toString() {
-		if (!epilogAdded && buffer.length()>0) {
-			epilogAdded = true;
-			addPrologAndEpilog();
-		}
+
 		return buffer.toString();
 	}
 

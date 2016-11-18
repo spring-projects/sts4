@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
@@ -242,6 +243,15 @@ public class LanguageServerHarness {
 		return server.getTextDocumentService().completion(params).get();
 	}
 
+	public Hover getHover(TextDocumentInfo document, Position cursor) throws Exception {
+
+		TextDocumentPositionParams params = new TextDocumentPositionParams();
+		params.setPosition(cursor);
+		params.setTextDocument(document.getId());
+		return server.getTextDocumentService().hover(params ).get();
+	}
+
+
 	private CompletionItem resolveCompletionItem(CompletionItem unresolved) {
 		try {
 			return server.getTextDocumentService().resolveCompletionItem(unresolved).get();
@@ -313,5 +323,4 @@ public class LanguageServerHarness {
 		CompletionItem completion = editor.getFirstCompletion();
 		assertEquals(expected, completion.getLabel());
 	}
-
 }

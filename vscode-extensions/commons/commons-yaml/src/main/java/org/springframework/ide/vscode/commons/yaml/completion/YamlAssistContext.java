@@ -13,7 +13,10 @@ package org.springframework.ide.vscode.commons.yaml.completion;
 import java.util.Collection;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 
@@ -25,8 +28,8 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 
 	//TODO: conceptually... the right thing would be to only implement the second of these
 	// two methods and get rid of the first one.
-//	HoverInfo getHoverInfo();
-//	HoverInfo getHoverInfo(YamlPathSegment lastSegment);
-//
-//	HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
+	HoverInfo getHoverInfo();
+	HoverInfo getHoverInfo(YamlPathSegment lastSegment);
+
+	HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
 }

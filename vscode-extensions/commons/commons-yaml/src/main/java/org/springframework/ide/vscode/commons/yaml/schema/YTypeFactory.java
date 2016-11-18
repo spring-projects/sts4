@@ -21,8 +21,8 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
@@ -193,7 +193,7 @@ public class YTypeFactory {
 			propertyList.add(p);
 		}
 
-		public void addProperty(String name, YType type, Provider<HtmlSnippet> description) {
+		public void addProperty(String name, YType type, HoverInfo description) {
 			YTypedPropertyImpl prop;
 			addProperty(prop = new YTypedPropertyImpl(name, type));
 			prop.setDescriptionProvider(description);
@@ -314,7 +314,7 @@ public class YTypeFactory {
 
 		final private String name;
 		final private YType type;
-		private Provider<HtmlSnippet> descriptionProvider = DescriptionProviders.NO_DESCRIPTION;
+		private HoverInfo description = DescriptionProviders.NO_DESCRIPTION;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -337,14 +337,13 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public HtmlSnippet getDescription() {
-			return descriptionProvider.get();
+		public HoverInfo getDescription() {
+			return description;
 		}
 
-		public void setDescriptionProvider(Provider<HtmlSnippet> descriptionProvider) {
-			this.descriptionProvider = descriptionProvider;
+		public void setDescriptionProvider(HoverInfo description) {
+			this.description = description;
 		}
-
 	}
 
 	public YAtomicType yatomic(String name) {

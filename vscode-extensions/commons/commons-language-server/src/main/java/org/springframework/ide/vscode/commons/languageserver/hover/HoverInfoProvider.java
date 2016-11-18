@@ -8,25 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.commons.languageserver.hover;
 
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 
-public class YamlHoverInfo implements HoverInfo {
+import reactor.util.function.Tuple2;
 
-	@Override
-	public String renderAsText() {
-		return null;
-	}
+public interface HoverInfoProvider {
 
-	@Override
-	public String renderAsHtml() {
-		return null;
-	}
-
-	@Override
-	public String renderAsMarkdown() {
-		return null;
-	}
+	Tuple2<HoverInfo, IRegion> getHoverInfo(IDocument document, int offset) throws Exception;
 
 }

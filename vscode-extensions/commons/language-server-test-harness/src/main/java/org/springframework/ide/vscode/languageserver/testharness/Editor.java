@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +17,7 @@ import javax.swing.text.BadLocationException;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
@@ -307,13 +309,16 @@ public class Editor {
 		return document.toPosition(selectionStart);
 	}
 
-	public void assertIsHoverRegion(String string) {
-		throw new UnsupportedOperationException("Not implemented yet!");
+	public void assertIsHoverRegion(String string) throws Exception {
+		int hoverPosition = getRawText().indexOf(string) + string.length() / 2;
+		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		assertEquals(string, getText(hover.getRange()));
 	}
 
-	public void assertHoverContains(String string, String string2) {
-		throw new UnsupportedOperationException("Not implemented yet!");
-	}
+	public void assertHoverContains(String hoverOver, String snippet) throws Exception {
+		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
+		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		assertContains(snippet, hover.getContents().toString());	}
 
 	public void assertNoHover(String string) {
 		throw new UnsupportedOperationException("Not implemented yet!");

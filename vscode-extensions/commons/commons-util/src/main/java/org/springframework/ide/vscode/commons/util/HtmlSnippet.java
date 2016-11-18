@@ -12,9 +12,13 @@ package org.springframework.ide.vscode.commons.util;
 
 /**
  * A snippet that can be rendered into html.
+ * <p/>
+ * Deprecated. Use DescriptionProviders instead.
  *
  * @author Kris De Volder
+ * 
  */
+@Deprecated 
 public abstract class HtmlSnippet {
 	public abstract void render(HtmlBuffer html);
 
