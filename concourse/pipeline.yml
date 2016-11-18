@@ -7,7 +7,7 @@ resources:
     username: kdvolder
     private_key: {{rsa_id}}
     paths:
-    - concourse/docker/**/*
+    - concourse/docker
 - name: sts4-git
   type: git
   source:
@@ -28,21 +28,21 @@ jobs:
   - get: docker-git
     trigger: true
   - put: docker-image
-    build: docker-git/concourse/docker
-    
+    params:
+      build: docker-git/concourse/docker
 - name: build-vsix
   plan:
   - get: sts4-git
-    trigger: true
-  - get: docker-image
     trigger: true
   - task: build-vscode-extensions
     config:
       inputs:
       - name: sts4-git
-      - name: docker-image
       platform: linux
-      image: docker-image
+      image_resource:
+        type: docker-image
+        source:
+          repository: kdvolder/sts4-build-env
       run:
         path: "./build-all.sh"
         dir: "sts4-git/vscode-extensions"
