@@ -1,0 +1,48 @@
+resources:
+- name: docker-git
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: concourse
+    username: kdvolder
+    private_key: {{rsa_id}}
+    paths:
+    - concourse/docker/**/*
+- name: sts4-git
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: concourse
+    private_key: {{rsa_id}}
+- name: docker-image
+  type: docker-image
+  source:
+    username: {{docker_hub_username}}
+    email: {{docker_hub_email}}
+    password: {{docker_hub_password}}
+    repository: kdvolder/sts4-build-env
+jobs:
+- name: build-docker-image
+  serial: true
+  plan:
+  - get: docker-git
+    trigger: true
+  - put: docker-image
+    build: docker-git/concourse/docker
+    
+- name: build-vsix
+  plan:
+  - get: sts4-git
+    trigger: true
+  - get: docker-image
+    trigger: true
+  - task: build-vscode-extensions
+    config:
+      inputs:
+      - name: sts4-git
+      - name: docker-image
+      platform: linux
+      image: docker-image
+      run:
+        path: "./build-all.sh"
+        dir: "sts4-git/vscode-extensions"
