@@ -3,7 +3,7 @@ resources:
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: concourse
+    branch: master
     username: kdvolder
     private_key: {{rsa_id}}
     paths:
@@ -12,7 +12,7 @@ resources:
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: concourse
+    branch: master
     private_key: {{rsa_id}}
 - name: docker-image
   type: docker-image
