@@ -1,5 +1,31 @@
+inherit: base-manifest.yml
 applications:
 - name: foo
   foo: bar
   builpack: java
+  buildpack: java_buildpack
+  memory: 1G
+  command: java main.java
+  disk_quota: 1024M
+  domain: pivotal.io
+  domains:
+  - pivotal.io
+  - other.org
+  env:
+    RAILS_ENV: production
+    RACK_ENV: production
+  no-hostname: true
+  no-route: false
+  random-route: true
+  services:
+  - dbserv1
+  - redisserv2
+  path: app.jar
+  instances: 3
+  stack: cflinuxfs2
+  timeout: 80
+  host: apppage
+  hosts:
+  - apppagealt
+  - anotherhost
 

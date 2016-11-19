@@ -1,9 +1,5 @@
 package org.springframework.ide.vscode.application.properties.metadata.hints;
 
-import static org.springframework.ide.vscode.application.properties.metadata.util.DeprecationUtil.*;
-
-import javax.inject.Provider;
-
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -11,10 +7,13 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Depre
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.util.HtmlBuffer;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 /**
  * Sts version of {@link ValueHint} contains similar data, but accomoates
@@ -28,12 +27,9 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
  */
 public class StsValueHint {
 
-	private static final HtmlSnippet EMPTY_DESCRIPTION = HtmlSnippet.italic("No description");
-
-	private static final Provider<HtmlSnippet> EMPTY_DESCRIPTION_PROVIDER = () -> EMPTY_DESCRIPTION;
 
 	private final String value;
-	private final Provider<HtmlSnippet> description;
+	private final HoverInfo description;
 	private final Deprecation deprecation;
 
 	/**
@@ -42,7 +38,7 @@ public class StsValueHint {
 	 * This constructor is private. Use one of the provided
 	 * static 'create' methods instead.
 	 */
-	private StsValueHint(String value, Provider<HtmlSnippet> description, Deprecation deprecation) {
+	private StsValueHint(String value, HoverInfo description, Deprecation deprecation) {
 		this.value = value==null?"null":value.toString();
 		Assert.isLegal(!this.value.startsWith("StsValueHint"));
 		this.description = description;
@@ -62,7 +58,7 @@ public class StsValueHint {
 	}
 
 	public static StsValueHint create(String value) {
-		return new StsValueHint(value, EMPTY_DESCRIPTION_PROVIDER, null);
+		return new StsValueHint(value, DescriptionProviders.NO_DESCRIPTION, null);
 	}
 
 	public static StsValueHint create(ValueHint hint) {
@@ -96,36 +92,46 @@ public class StsValueHint {
 	/**
 	 * Create a html snippet from a text snippet.
 	 */
-	private static Provider<HtmlSnippet> textSnippet(String description) {
+	private static HoverInfo textSnippet(String description) {
 		if (StringUtil.hasText(description)) {
-			return () -> HtmlSnippet.text(description);
+			return DescriptionProviders.text(description);
 		}
-		return EMPTY_DESCRIPTION_PROVIDER;
+		return DescriptionProviders.NO_DESCRIPTION;
 	}
 
 	public String getValue() {
 		return value;
 	}
 
-	public HtmlSnippet getDescription() {
-		return description.get();
+	public HoverInfo getDescription() {
+		return description;
 	}
-	public Provider<HtmlSnippet> getDescriptionProvider() {
+	public HoverInfo getDescriptionProvider() {
 		return description;
 	}
 
-	public static Provider<HtmlSnippet> javaDocSnippet(IJavaElement je) {
-		return () -> {
-			try {
-				HtmlSnippet jdoc = HtmlSnippet.raw(je.getJavaDoc().html());
-				if (jdoc!=null) {
-					return jdoc;
-				}
-			} catch (Exception e) {
-				Log.log(e);
+	public static HoverInfo javaDocSnippet(IJavaElement je) {
+		try {
+			IJavadoc jdoc = je.getJavaDoc();
+			if (jdoc != null) {
+				return new HoverInfo() {
+
+					@Override
+					public void renderAsMarkdown(StringBuilder buffer) {
+						// TODO not correct md
+						buffer.append(jdoc.markdown());
+					}
+
+					@Override
+					public void renderAsHtml(HtmlBuffer buffer) {
+						buffer.raw(jdoc.html());
+					}
+				};
 			}
-			return EMPTY_DESCRIPTION;
-		};
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return DescriptionProviders.NO_DESCRIPTION;
 	}
 
 	@Override

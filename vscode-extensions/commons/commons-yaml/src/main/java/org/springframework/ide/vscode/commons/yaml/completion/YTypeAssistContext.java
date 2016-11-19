@@ -22,8 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
@@ -215,35 +218,42 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 
-//	@Override
-//	public HoverInfo getHoverInfo() {
-//		if (parent!=null) {
-//			return parent.getHoverInfo(contextPath.getLastSegment());
-//		}
-//		return null;
-//	}
-//
+	@Override
+	public HoverInfo getHoverInfo() {
+		if (parent!=null) {
+			return parent.getHoverInfo(contextPath.getLastSegment());
+		}
+		return null;
+	}
+
 	public YType getType() {
 		return type;
 	}
-//
-//	@Override
-//	public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
-//		//Hoverinfo is only attached to YTypedProperties so...
-//		switch (lastSegment.getType()) {
-//		case VAL_AT_KEY:
-//		case KEY_AT_KEY:
-//			YTypedProperty prop = getProperty(lastSegment.toPropString());
-//			if (prop!=null) {
-//				return new YPropertyHoverInfo(contextPath.toPropString(), getType(), prop);
-//			}
-//			break;
-//		default:
-//		}
-//		return null;
-//	}
 
-//	private YTypedProperty getProperty(String name) {
-//		return typeUtil.getPropertiesMap(getType()).get(name);
-//	}
+	@Override
+	public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+		//Hoverinfo is only attached to YTypedProperties so...
+		switch (lastSegment.getType()) {
+		case VAL_AT_KEY:
+		case KEY_AT_KEY:
+			YTypedProperty prop = getProperty(lastSegment.toPropString());
+			if (prop!=null) {
+				return YPropertyHoverInfo.create(contextPath.toPropString(), getType(), prop);
+			}
+			break;
+		default:
+		}
+		return null;
+	}
+	
+	@Override
+	public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+		//By default we don't provide value-specific hover, so just show the same hover
+		// as the assistContext the value is in. This is likely more interesting than showing nothing at all.
+		return getHoverInfo();
+	}
+
+	private YTypedProperty getProperty(String name) {
+		return typeUtil.getPropertiesMap(getType()).get(name);
+	}
 }

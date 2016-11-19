@@ -10,15 +10,27 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
+import org.springframework.ide.vscode.commons.util.HtmlBuffer;
+
 /**
- * Placeholder. Still need to figure out what exactly we should do with this in vscode.
+ * Placeholder. Still need to figure out what exactly we should do with this in
+ * vscode. TODO: rename to Renderable
  */
 public interface HoverInfo {
 
-	String renderAsText();
+	void renderAsHtml(HtmlBuffer buffer);
 
-	String renderAsHtml();
+	void renderAsMarkdown(StringBuilder buffer);
 
-	String renderAsMarkdown();
+	default String toMarkdown() {
+		StringBuilder buffer = new StringBuilder();
+		renderAsMarkdown(buffer);
+		return buffer.toString();
+	}
 
+	default String toHtml() {
+		HtmlBuffer buffer = new HtmlBuffer();
+		renderAsHtml(buffer);
+		return buffer.toString();
+	}
 }
