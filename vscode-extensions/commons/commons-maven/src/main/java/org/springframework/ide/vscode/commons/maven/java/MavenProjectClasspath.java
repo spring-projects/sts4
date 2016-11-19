@@ -141,7 +141,6 @@ public class MavenProjectClasspath implements IClasspath {
 				try {
 					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
 					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
-					System.out.println("----> SOURCE " + sourceContainer);
 					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
 							type);
 				} catch (MavenException e) {
@@ -175,7 +174,6 @@ public class MavenProjectClasspath implements IClasspath {
 				try {
 					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
 					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
-					System.out.println("----> SOURCE " + sourceContainer);
 					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
 							type);
 				} catch (MavenException e) {
