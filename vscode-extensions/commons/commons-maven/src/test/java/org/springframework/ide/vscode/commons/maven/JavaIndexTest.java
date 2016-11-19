@@ -3,6 +3,7 @@ package org.springframework.ide.vscode.commons.maven;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +19,7 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath.JavadocProviderTypes;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -89,7 +91,7 @@ public class JavaIndexTest {
 		IType type = project.findType("java.util.ArrayList");
 		assertNotNull(type);		
 		IMethod m = type.getMethod("<init>", Stream.empty());
-		assertEquals("<init>", m.getElementName());
+		assertEquals(type.getElementName(), m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(0, m.parameters().count());
 	}
@@ -100,14 +102,14 @@ public class JavaIndexTest {
 		IType type = project.findType("java.util.ArrayList");
 		assertNotNull(type);		
 		IMethod m = type.getMethod("<init>", Stream.of(IPrimitiveType.INT));
-		assertEquals("<init>", m.getElementName());
+		assertEquals(m.getDeclaringType().getElementName(), m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(Collections.singletonList(IPrimitiveType.INT), m.parameters().collect(Collectors.toList()));		
 	}
 	
 	@Test
 	public void parser_testClassJavadocForOutputFolder() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = true;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		IType type = project.findType("hello.Greeting");
 		
@@ -140,7 +142,7 @@ public class JavaIndexTest {
 
 	@Test
 	public void parser_testInnerClassJavadocForOutputFolder() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = true;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
@@ -157,7 +159,7 @@ public class JavaIndexTest {
 
 	@Test
 	public void parser_testClassJavadocForJar() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = true;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		
 		IType type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
@@ -180,7 +182,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void parser_testFieldAndMethodJavadocForJar() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = true;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		
 		IType type = project.findType("org.springframework.boot.SpringApplication");
@@ -206,7 +208,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void roaster_testClassJavadocForOutputFolder() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = false;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.ROASTER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		IType type = project.findType("hello.Greeting");
 		
@@ -224,7 +226,7 @@ public class JavaIndexTest {
 
 	@Test
 	public void roaster_testInnerClassJavadocForOutputFolder() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = false;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.ROASTER;
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
@@ -241,7 +243,8 @@ public class JavaIndexTest {
 
 	@Test
 	public void roaster_testClassJavadocForJar() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = false;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.ROASTER;
+
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		
 		IType type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
@@ -256,7 +259,8 @@ public class JavaIndexTest {
 	
 	@Test
 	public void roaster_testFieldAndMethodJavadocForJar() throws Exception {
-		MavenProjectClasspath.USE_JAVA_PARSER = false;
+		MavenProjectClasspath.providerType = JavadocProviderTypes.ROASTER;
+
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		
 		IType type = project.findType("org.springframework.boot.SpringApplication");
@@ -272,5 +276,135 @@ public class JavaIndexTest {
 		assertEquals(expected, method.getJavaDoc().plainText().substring(0, expected.length()));
 	}
 
+	
+	@Test
+	public void html_testClassJavadoc() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+
+		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
+		
+		IType type = project.findType("java.util.Map");
+		assertNotNull(type);
+		String expected = String.join("\n",
+				"<div class=\"block\">An object that maps keys to values.  A map cannot contain duplicate keys;",
+				" each key can map to at most one value."
+				);
+		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+	}
+
+	@Test
+	public void html_testNestedClassJavadoc() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+
+		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
+		
+		IType type = project.findType("java.util.Map$Entry");
+		assertNotNull(type);
+		String expected = String.join("\n",
+				"<div class=\"block\">A map entry (key-value pair).  The <tt>Map.entrySet</tt> method returns",
+				" a collection-view of the map, whose elements are of this class.  The");
+		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+	}
+	
+	@Test
+	public void html_testMethodJavadoc() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+
+		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
+		
+		IType type = project.findType("java.util.ArrayList");
+		assertNotNull(type);
+		IMethod method = type.getMethod("size", Stream.empty());
+		assertNotNull(method);
+		
+		String expected = String.join("\n",
+				"",
+				"<ul class=\"blockList\">",
+				"<li class=\"blockList\">",
+				"<h4>size</h4>",
+				"<pre>public&nbsp;int&nbsp;size()</pre>",
+				"<div class=\"block\">Returns the number of elements in this list.</div>"
+			);
+		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+	}
+	
+	@Test
+	public void html_testConstructorJavadoc() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+
+		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
+		
+		IType type = project.findType("java.util.ArrayList");
+		assertNotNull(type);
+		IMethod method = type.getMethod("<init>", Stream.empty());
+		assertNotNull(method);
+		
+		String expected = String.join("\n",
+				"",
+				"<ul class=\"blockList\">",
+				"<li class=\"blockList\">",
+				"<h4>ArrayList</h4>"
+				);
+		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+		
+	}
+	
+	@Test
+	public void html_testFieldAndMethodJavadocForJar() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+
+		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
+		
+		IType type = project.findType("org.springframework.boot.SpringApplication");
+		assertNotNull(type);
+		
+		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
+		assertNotNull(field);
+		assertTrue(field.getJavaDoc().html().contains("<h4>BANNER_LOCATION_PROPERTY_VALUE</h4>"));
+		
+		IMethod method = type.getMethod("getListeners", Stream.empty());
+		assertNotNull(method);
+		String expected = String.join("\n", 
+				"",
+				"<ul class=\"blockList\">",
+				"<li class=\"blockList\">",
+				"<h4>getListeners</h4>"
+		);
+		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+		
+	}
+
+	@Test
+	public void html_testJavadocOutputFolder() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		IType type = project.findType("hello.Greeting");
+		
+		assertNotNull(type);
+		String expected = "<div class=\"block\">Comment for Greeting class</div>";
+		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+		
+		IField field = type.getField("id");
+		assertNotNull(field);
+		expected = String.join("\n",
+				"",
+				"<ul class=\"blockListLast\">",
+				"<li class=\"blockList\">",
+				"<h4>id</h4>"
+			);
+		assertEquals(expected, field.getJavaDoc().html().substring(0, expected.length()));
+		
+		IMethod method = type.getMethod("getId", Stream.empty());
+		assertNotNull(method);
+		expected = String.join("\n",
+				"",
+				"<ul class=\"blockList\">",
+				"<li class=\"blockList\">",
+				"<h4>getId</h4>"
+			);
+		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+	}
 	
 }

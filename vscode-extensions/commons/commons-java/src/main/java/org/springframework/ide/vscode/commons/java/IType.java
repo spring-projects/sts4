@@ -23,6 +23,7 @@ public interface IType extends IMember {
 	boolean isClass();
 	boolean isEnum();
 	boolean isInterface();
+	boolean isAnnotation();
 
 	/**
 	 * Returns the fully qualified name of this type,

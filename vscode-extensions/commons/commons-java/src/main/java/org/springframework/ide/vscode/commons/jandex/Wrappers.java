@@ -11,7 +11,6 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
@@ -30,6 +29,8 @@ import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class Wrappers {
 	
+	private static final String JANDEX_CONTRUCTOR_NAME = "<init>";
+
 	public static IType wrap(JandexIndex index, ClassInfo info, IJavadocProvider javadocProvider) {
 		if (info == null) {
 			return null;
@@ -80,9 +81,14 @@ public class Wrappers {
 
 			@Override
 			public boolean isInterface() {
-				return false;
+				return Flags.isInterface(info.flags());
 			}
 
+			@Override
+			public boolean isAnnotation() {
+				return Flags.isAnnotation(info.flags());
+			}
+						
 			@Override
 			public String getFullyQualifiedName() {
 				return info.name().toString();
@@ -117,7 +123,7 @@ public class Wrappers {
 			public String toString() {
 				return info.toString();
 			}
-						
+
 		};
 	}
 	
@@ -180,6 +186,11 @@ public class Wrappers {
 			public int getFlags() {
 				return method.flags();
 			}
+			
+			@Override
+			public boolean isConstructor() {
+				return method.name().equals(JANDEX_CONTRUCTOR_NAME);
+			}
 
 			@Override
 			public IType getDeclaringType() {
@@ -188,7 +199,7 @@ public class Wrappers {
 
 			@Override
 			public String getElementName() {
-				return method.name();
+				return isConstructor() ? getDeclaringType().getElementName() : method.name();
 			}
 
 			@Override
@@ -230,6 +241,7 @@ public class Wrappers {
 			public Stream<IJavaType> parameters() {
 				return method.parameters().stream().map(Wrappers::wrap);
 			}
+
 		};
 	}
 	
@@ -289,13 +301,6 @@ public class Wrappers {
 		};
 	}
 	
-	public static Type createParameterTypeFromSignature(IndexView index, String signature) {
-		if (signature == null) {
-			return null;
-		}
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
 	public static IPrimitiveType wrap(PrimitiveType type) {
 		switch (type.primitive()) {
 		case SHORT:

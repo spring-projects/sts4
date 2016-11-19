@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.java.roaster.RoasterJavadocProvider;
+import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
@@ -43,8 +44,14 @@ import com.google.common.base.Suppliers;
  */
 public class MavenProjectClasspath implements IClasspath {
 	
-	public static boolean USE_JAVA_PARSER = false;
-
+	public static JavadocProviderTypes providerType = JavadocProviderTypes.JAVA_PARSER;
+	
+	public enum JavadocProviderTypes {
+		JAVA_PARSER,
+		ROASTER,
+		HTML
+	}
+	
 	private MavenCore maven;
 	private MavenProject project;
 	private Supplier<JandexIndex> javaIndex;
@@ -64,7 +71,14 @@ public class MavenProjectClasspath implements IClasspath {
 				Log.log(e);
 			}
 			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> {
-				return USE_JAVA_PARSER ? createParserJavadocProvider(classpathResource) : createRoasterJavadocProvider(classpathResource);
+				switch (providerType) {
+				case JAVA_PARSER:
+					return createParserJavadocProvider(classpathResource);
+				case ROASTER:
+					return createRoasterJavadocProvider(classpathResource);
+				default:
+					return createHtmlJavdocProvider(classpathResource);
+				}
 			}, maven.getJavaIndexForJreLibs());
 		});
 	}
@@ -105,7 +119,7 @@ public class MavenProjectClasspath implements IClasspath {
 			return Arrays.stream(scanner.getIncludedFiles());
 		});
 	}
-
+	
 	private IJavadocProvider createRoasterJavadocProvider(File classpathResource) {
 		if (classpathResource.isDirectory()) {
 			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
@@ -173,5 +187,39 @@ public class MavenProjectClasspath implements IClasspath {
 			});
 		}
 	}
+	
+	private IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
+		if (classpathResource.isDirectory()) {
+			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
+				return new HtmlJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getModel().getReporting().getOutputDirectory(), "apidocs").toURI().toURL(), type);
+				});
+			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
+				return new ParserJavadocProvider(type -> {
+					return SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
+							.sourceUrl(new File(project.getModel().getReporting().getOutputDirectory(), "apidocs").toURI().toURL(), type);
+				});
+			} else {
+				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
+			}
+		} else {
+			// Assume it's a JAR file
+			return new HtmlJavadocProvider(type -> {
+				try {
+					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
+					URL sourceContainer = maven.getJavadoc(artifact).getFile().toURI().toURL();
+					return SourceUrlProviderFromSourceContainer.JAR_JAVADOC_URL_PROVIDER.sourceUrl(sourceContainer,
+							type);
+				} catch (MavenException e) {
+					Log.log("Failed to find sources JAR for " + classpathResource, e);
+				} catch (MalformedURLException e) {
+					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+				}
+				return null;
+			});
+		}
+	}
+
 	
 }

@@ -24,6 +24,30 @@ public interface SourceUrlProviderFromSourceContainer {
 		return Paths.get(sourceContainerUrl.toURI()).resolve(type.getFullyQualifiedName().replaceAll("\\.", "/") + ".java").toUri().toURL();
 	};
 	
+	public static final SourceUrlProviderFromSourceContainer JAR_JAVADOC_URL_PROVIDER = (javadocContainerUrl, type) -> {
+		StringBuilder sourceUrlStr = new StringBuilder();
+		sourceUrlStr.append("jar:");
+		sourceUrlStr.append(javadocContainerUrl);
+		sourceUrlStr.append("!");
+		sourceUrlStr.append('/');
+		// Inner classes are in separate Top.Nesting1.Nesting2.Nesting3.MyType.html files
+		sourceUrlStr.append(type.getFullyQualifiedName().replaceAll("\\.", "/").replaceAll("\\$", "."));
+		sourceUrlStr.append(".html");
+		return new URL(sourceUrlStr.toString());
+
+	};
+	
+	public static final SourceUrlProviderFromSourceContainer JAVADOC_FOLDER_URL_SUPPLIER = (sourceContainerUrl, type) -> {
+		String urlStr = sourceContainerUrl.toString();
+		StringBuilder sb = new StringBuilder(urlStr);
+		if (!urlStr.endsWith("/")) {
+			sb.append('/');
+		}
+		// Inner classes are in separate Top.Nesting1.Nesting2.Nesting3.MyType.html files
+		sb.append(type.getFullyQualifiedName().replaceAll("\\.", "/").replaceAll("\\$", ".") + ".html");
+		return new URL(sb.toString());
+	};
+	
 	URL sourceUrl(URL sourceContainerUrl, IType type) throws Exception;
 
 }

@@ -8,7 +8,7 @@ public class Greeting {
     /**
      * Comment for id field
      */
-    private final long id;
+    protected final long id;
     private final String content;
 
     public Greeting() {
@@ -35,7 +35,7 @@ public class Greeting {
     /**
      * Comment for inner class
      */
-    private static class TestInnerClass {
+    public class TestInnerClass {
     	
     	/**
     	 * Comment for inner field
