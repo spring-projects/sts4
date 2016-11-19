@@ -30,9 +30,13 @@ jobs:
   - put: docker-image
     params:
       build: docker-git/concourse/docker
+    get_params: 
+      skip_download: true
 - name: build-vsix
   plan:
   - get: sts4-git
+    trigger: true
+  - get: docker-image
     trigger: true
   - task: build-vscode-extensions
     config:
