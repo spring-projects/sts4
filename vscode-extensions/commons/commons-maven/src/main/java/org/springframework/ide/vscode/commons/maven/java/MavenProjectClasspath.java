@@ -44,7 +44,7 @@ import com.google.common.base.Suppliers;
  */
 public class MavenProjectClasspath implements IClasspath {
 	
-	public static JavadocProviderTypes providerType = JavadocProviderTypes.JAVA_PARSER;
+	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
 	
 	public enum JavadocProviderTypes {
 		JAVA_PARSER,
