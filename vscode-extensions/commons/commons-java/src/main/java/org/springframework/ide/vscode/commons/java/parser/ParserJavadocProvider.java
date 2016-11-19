@@ -15,6 +15,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -42,7 +43,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 	public IJavadoc getJavadoc(IField field) {
 		IType declaringType = field.getDeclaringType();
 		if (declaringType.isEnum()) {
-			FieldDeclaration declaration = createVisitorToFindField(field).visit(getEnumDeclaration(declaringType), null);
+			EnumConstantDeclaration declaration = createVisitorToFindEnumConstant(field).visit(getEnumDeclaration(declaringType), null);
 			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
 		} else {
 			FieldDeclaration declaration = createVisitorToFindField(field).visit(getClassOrInterfaceDeclaration(declaringType), null);
@@ -158,6 +159,19 @@ public class ParserJavadocProvider implements IJavadocProvider {
 			public FieldDeclaration visit(FieldDeclaration n, Object arg) {
 				Optional<VariableDeclarator> variable = n.getVariables().stream().filter(v -> v.getId().getName().equals(field.getElementName())).findFirst();
 				return variable.isPresent() ? n : null;
+			}
+		};
+	}
+	
+	private GenericVisitorAdapter<EnumConstantDeclaration, Object> createVisitorToFindEnumConstant(IField field) {
+		return new GenericVisitorAdapter<EnumConstantDeclaration, Object>() {
+			@Override
+			public EnumConstantDeclaration visit(EnumConstantDeclaration n, Object arg) {
+				if (n.getName().equals(field.getElementName())) {
+					return n;
+				} else {
+					return null;
+				}
 			}
 		};
 	}
