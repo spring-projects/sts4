@@ -3,7 +3,6 @@ package org.springframework.ide.vscode.commons.maven;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -318,9 +317,6 @@ public class JavaIndexTest {
 		assertNotNull(method);
 		
 		String expected = String.join("\n",
-				"",
-				"<ul class=\"blockList\">",
-				"<li class=\"blockList\">",
 				"<h4>size</h4>",
 				"<pre>public&nbsp;int&nbsp;size()</pre>",
 				"<div class=\"block\">Returns the number of elements in this list.</div>"
@@ -340,9 +336,6 @@ public class JavaIndexTest {
 		assertNotNull(method);
 		
 		String expected = String.join("\n",
-				"",
-				"<ul class=\"blockList\">",
-				"<li class=\"blockList\">",
 				"<h4>ArrayList</h4>"
 				);
 		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
@@ -360,18 +353,31 @@ public class JavaIndexTest {
 		
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
 		assertNotNull(field);
-		assertTrue(field.getJavaDoc().html().contains("<h4>BANNER_LOCATION_PROPERTY_VALUE</h4>"));
+		String expected = String.join("\n",
+				"<h4>BANNER_LOCATION_PROPERTY_VALUE</h4>",
+				"<pre>public static final&nbsp;<a href=\"http://docs.oracle.com/javase/6/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> BANNER_LOCATION_PROPERTY_VALUE</pre>",
+				"<div class=\"block\">Default banner location.</div>",
+				"<dl>",
+				"<dt><span class=\"seeLabel\">See Also:</span></dt>",
+				"<dd><a href=\"../../../constant-values.html#org.springframework.boot.SpringApplication.BANNER_LOCATION_PROPERTY_VALUE\">Constant Field Values</a></dd>",
+				"</dl>"
+			);
+		assertEquals(expected, field.getJavaDoc().html());
 		
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
-		String expected = String.join("\n", 
-				"",
-				"<ul class=\"blockList\">",
-				"<li class=\"blockList\">",
-				"<h4>getListeners</h4>"
-		);
-		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
-		
+		expected = String.join("\n", 
+				"<h4>getListeners</h4>",
+				"<pre>public&nbsp;<a href=\"http://docs.oracle.com/javase/6/docs/api/java/util/Set.html?is-external=true\" title=\"class or interface in java.util\">Set</a>&lt;org.springframework.context.ApplicationListener&lt;?&gt;&gt;&nbsp;getListeners()</pre>",
+				"<div class=\"block\">Returns read-only ordered Set of the <code>ApplicationListener</code>s that will be",
+				" applied to the SpringApplication and registered with the <code>ApplicationContext</code>",
+				" .</div>",
+				"<dl>",
+				"<dt><span class=\"returnLabel\">Returns:</span></dt>",
+				"<dd>the listeners</dd>",
+				"</dl>"
+			);
+		assertEquals(expected, method.getJavaDoc().html());
 	}
 
 	@Test
@@ -383,28 +389,85 @@ public class JavaIndexTest {
 		IType type = project.findType("hello.Greeting");
 		
 		assertNotNull(type);
-		String expected = "<div class=\"block\">Comment for Greeting class</div>";
+		String expected = "Comment for Greeting class";
 		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
 		expected = String.join("\n",
-				"",
-				"<ul class=\"blockListLast\">",
-				"<li class=\"blockList\">",
-				"<h4>id</h4>"
+				"<h4>id</h4>",
+				"<pre>protected final&nbsp;long id</pre>",
+				"<div class=\"block\">Comment for id field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, field.getJavaDoc().html());
 		
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
 		expected = String.join("\n",
-				"",
-				"<ul class=\"blockList\">",
-				"<li class=\"blockList\">",
-				"<h4>getId</h4>"
+				"<h4>getId</h4>",
+				"<pre>public&nbsp;long&nbsp;getId()</pre>",
+				"<div class=\"block\">Comment for getId()</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, method.getJavaDoc().html());
 	}
 	
+	@Test
+	public void html_testInnerClassJavadocForOutputFolder() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.Greeting$TestInnerClass");
+		assertNotNull(type);
+		assertEquals("Comment for inner class", type.getJavaDoc().html());
+
+		IField field = type.getField("innerField");
+		assertNotNull(field);
+		String expected = String.join("\n", 
+				"<h4>innerField</h4>",
+				"<pre>protected&nbsp;int innerField</pre>",
+				"<div class=\"block\">Comment for inner field</div>"
+			);
+		assertEquals(expected, field.getJavaDoc().html());
+
+		IMethod method = type.getMethod("getInnerField", Stream.empty());
+		assertNotNull(method);
+		expected = String.join("\n",
+				"<h4>getInnerField</h4>",
+				"<pre>public&nbsp;int&nbsp;getInnerField()</pre>",
+				"<div class=\"block\">Comment for method inside nested class</div>"
+			);
+		assertEquals(expected, method.getJavaDoc().html());
+	}
+
+	@Test
+	public void html_testInnerClassLevel2_JavadocForOutputFolder() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
+		assertNotNull(type);
+		assertEquals("Comment for level 2 nested class", type.getJavaDoc().html());
+
+		IField field = type.getField("innerLevel2Field");
+		assertNotNull(field);
+		String expected = String.join("\n", 
+				"<h4>innerLevel2Field</h4>",
+				"<pre>protected&nbsp;int innerLevel2Field</pre>",
+				"<div class=\"block\">Comment for level 2 inner field</div>"
+			);
+		assertEquals(expected, field.getJavaDoc().html());
+
+		IMethod method = type.getMethod("getInnerLevel2Field", Stream.empty());
+		assertNotNull(method);
+		expected = String.join("\n",
+				"<h4>getInnerLevel2Field</h4>",
+				"<pre>public&nbsp;int&nbsp;getInnerLevel2Field()</pre>",
+				"<div class=\"block\">Comment for method inside level 2 nested class</div>"
+			);
+		assertEquals(expected, method.getJavaDoc().html());
+	}
 }

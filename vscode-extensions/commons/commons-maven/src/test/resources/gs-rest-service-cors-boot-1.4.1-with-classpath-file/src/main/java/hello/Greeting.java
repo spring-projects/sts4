@@ -40,13 +40,31 @@ public class Greeting {
     	/**
     	 * Comment for inner field
     	 */
-    	int innerField;
+    	protected int innerField;
     	
     	/**
     	 * Comment for method inside nested class
     	 */
     	public int getInnerField() {
     		return innerField;
+    	}
+    	
+    	/**
+    	 * Comment for level 2 nested class 
+    	 */
+    	public class TestInnerClassLevel2 {
+    		
+        	/**
+        	 * Comment for level 2 inner field
+        	 */
+    		protected int innerLevel2Field;
+
+        	/**
+        	 * Comment for method inside level 2 nested class
+        	 */
+        	public int getInnerLevel2Field() {
+        		return innerField;
+        	}
     	}
     	
     }

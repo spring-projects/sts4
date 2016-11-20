@@ -1,5 +1,6 @@
 package org.springframework.ide.vscode.commons.javadoc.internal;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.java.IField;
@@ -206,7 +207,7 @@ public class JavadocContents {
 				
 				int javadocStart = indexOfEndLink + JavadocConstants.ANCHOR_SUFFIX_LENGTH;
 				int javadocEnd = indexOfNextElement == -1 ? indexOfBottom : Math.min(indexOfNextElement, indexOfBottom);
-				range = new int[]{javadocStart, javadocEnd};
+				range = sanitizeRange(new int[]{javadocStart, javadocEnd});
 			} else {
 				// the anchor has no suffix
 				range = UNKNOWN_FORMAT;
@@ -237,7 +238,10 @@ public class JavadocContents {
 		lastIndex = this.indexOfMethodDetails == -1 ? lastIndex : this.indexOfMethodDetails;
 		
 		// we take the end of class data
+		final int indexOfStartOfClassData = CharOperation.indexOf(JavadocConstants.START_OF_CLASS_DATA, this.content, false);
 		this.indexOfEndOfClassData = CharOperation.indexOf(JavadocConstants.END_OF_CLASS_DATA, this.content, false, lastIndex);
+		int[] classDataRange = sanitizeRange(new int[] { indexOfStartOfClassData + JavadocConstants.START_OF_CLASS_DATA.length, indexOfEndOfClassData});
+		this.indexOfEndOfClassData = classDataRange[1];
 		
 		// try to find the field detail end
 		this.indexOfFieldsBottom =
@@ -252,9 +256,38 @@ public class JavadocContents {
 		
 		this.indexOfAllMethodsBottom = this.indexOfEndOfClassData;
 	
+		// Get rid of possible <ul><li> tag wrappers
+		int[] fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom});
+		indexOfFieldDetails = fieldsRange[0];
+		indexOfFieldsBottom = fieldsRange[1];
+
+		int[] methodsRange = sanitizeRange(new int[] {
+				indexOfAllMethodsTop + (indexOfAllMethodsTop == indexOfConstructorDetails
+						? JavadocConstants.CONSTRUCTOR_DETAIL.length : JavadocConstants.METHOD_DETAIL.length),
+				indexOfAllMethodsBottom });
+		indexOfAllMethodsTop = methodsRange[0];
+		indexOfAllMethodsBottom = methodsRange[1];
+		
+		// Remove trailing extra tag closings
+		String badEnding = "</li>\n</ul>\n</li>\n</ul>";
+		indexOfAllMethodsBottom = trimBadEnding(badEnding, indexOfAllMethodsBottom, badEnding.length() / 2);
+		
 		this.hasComputedChildrenSections = true;
+		
+	}
+	
+	private int trimBadEnding(String badEnding, int end) {
+		return trimBadEnding(badEnding, end, badEnding.length());
 	}
 
+	private int trimBadEnding(String badEnding, int end, int numberOfCharsToTrim) {
+		if (Arrays.equals(CharOperation.subarray(content, end - badEnding.length(), end), badEnding.toCharArray())) {
+			return end - numberOfCharsToTrim;
+		} else {
+			return end;
+		}
+	}
+	
 	/*
 	 * Compute the ranges of the parts of the javadoc that describe each child of the type (fields, methods)
 	 */
@@ -534,6 +567,54 @@ public class JavadocContents {
 			start = afterHierarchy;
 		}
 		
-		this.typeDocRange = new int[]{start, indexOfNextSummary};
+		int indexOfClassDescriptionEnd = trimBadEnding("<div class=\"summary\">\n<ul class=\"blockList\">\n<li class=\"blockList\">\n", indexOfNextSummary);
+		indexOfClassDescriptionEnd = trimBadEnding("</li>\n</ul>\n</div>\n", indexOfClassDescriptionEnd);
+		this.typeDocRange = new int[]{start, indexOfClassDescriptionEnd};
+		this.typeDocRange = sanitizeRange(typeDocRange);
+		
 	}
+	
+	private int[] trimRange(int[] range) {
+		int start = range[0];
+		int end = range[1];
+		
+		while (start < content.length && start < end && Character.isWhitespace(content[start])) {
+			start++;
+		}
+
+		while (end > 0 && start < end && Character.isWhitespace(content[end-1])) {
+			end--;
+		}
+		
+		return new int[] { start, end };
+	}
+	
+	private int[] trimTag(int[] range, CharSequence tag) {
+		int start = range[0];
+		int end = range[1];
+		
+		char[] startingTag = ("<" + tag).toCharArray();
+		char[] closingTag = ("</" + tag + ">").toCharArray(); 
+		char[] ending = CharOperation.subarray(content, end - closingTag.length, end);
+		char[] starting = CharOperation.subarray(content, start, start + startingTag.length);
+		if (Arrays.equals(closingTag, ending) && Arrays.equals(startingTag, starting)) {
+			return new int[] { CharOperation.indexOf('>', content, start, end) + 1, end - closingTag.length};
+		} else {
+			return range;
+		}
+	}
+	
+	private int[] sanitizeRange(int[] range) {
+		boolean changed = false;
+		do {
+			int[] newRange = trimRange(range);
+			newRange = trimTag(newRange, "div");
+			newRange = trimTag(newRange, "ul");
+			newRange = trimTag(newRange, "li");
+			changed = !Arrays.equals(newRange, range);
+			range = newRange;
+		} while (changed);
+		return range;
+	}
+	
 }
