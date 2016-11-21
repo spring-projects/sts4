@@ -38,11 +38,11 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.completion.AbstractYamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.TopLevelAssistContext;
@@ -376,19 +376,19 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 
 
 		@Override
-		public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+		public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public HoverInfo getHoverInfo() {
+		public Renderable getHoverInfo() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -504,19 +504,19 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 
 		@Override
-		public HoverInfo getHoverInfo() {
+		public Renderable getHoverInfo() {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+		public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
 			// TODO Auto-generated method stub
 			return null;
 		}

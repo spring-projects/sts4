@@ -8,15 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.hover;
-
-import org.springframework.ide.vscode.commons.util.HtmlBuffer;
+package org.springframework.ide.vscode.commons.util;
 
 /**
  * Placeholder. Still need to figure out what exactly we should do with this in
  * vscode. TODO: rename to Renderable
  */
-public interface HoverInfo {
+public interface Renderable {
 
 	void renderAsHtml(HtmlBuffer buffer);
 

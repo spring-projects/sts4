@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 import reactor.util.function.Tuple2;
 
@@ -49,9 +50,9 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 			if (doc!=null) {
 				int offset = doc.toOffset(params.getPosition());
 
-				Tuple2<HoverInfo, IRegion> hoverTuple = hoverInfoProvider.getHoverInfo(doc, offset);
+				Tuple2<Renderable, IRegion> hoverTuple = hoverInfoProvider.getHoverInfo(doc, offset);
 				if (hoverTuple != null) {
-					HoverInfo hoverInfo = hoverTuple.getT1();
+					Renderable hoverInfo = hoverTuple.getT1();
 					IRegion region = hoverTuple.getT2();
 					Range range = doc.toRange(region.getOffset(), region.getLength());
 
