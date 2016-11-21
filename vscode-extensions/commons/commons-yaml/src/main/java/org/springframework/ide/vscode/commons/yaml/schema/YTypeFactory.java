@@ -21,10 +21,10 @@ import java.util.Set;
 
 import javax.inject.Provider;
 
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 /**
  * Static utility method for creating YType objects representing either
@@ -193,7 +193,7 @@ public class YTypeFactory {
 			propertyList.add(p);
 		}
 
-		public void addProperty(String name, YType type, HoverInfo description) {
+		public void addProperty(String name, YType type, Renderable description) {
 			YTypedPropertyImpl prop;
 			addProperty(prop = new YTypedPropertyImpl(name, type));
 			prop.setDescriptionProvider(description);
@@ -314,7 +314,7 @@ public class YTypeFactory {
 
 		final private String name;
 		final private YType type;
-		private HoverInfo description = DescriptionProviders.NO_DESCRIPTION;
+		private Renderable description = Renderables.NO_DESCRIPTION;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -337,11 +337,11 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public HoverInfo getDescription() {
+		public Renderable getDescription() {
 			return description;
 		}
 
-		public void setDescriptionProvider(HoverInfo description) {
+		public void setDescriptionProvider(Renderable description) {
 			this.description = description;
 		}
 	}

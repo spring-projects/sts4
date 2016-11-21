@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal Software, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.yaml.util;
+package org.springframework.ide.vscode.commons.util;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;

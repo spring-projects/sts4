@@ -113,10 +113,6 @@ public class HtmlBuffer {
 		raw("</p>");
 	}
 
-	public void snippet(HtmlSnippet snippet) {
-		snippet.render(this);
-	}
-
 	public void bold(String string) {
 		raw("<b>");
 		text(string);

@@ -12,11 +12,12 @@ package org.springframework.ide.vscode.commons.languageserver.hover;
 
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 import reactor.util.function.Tuple2;
 
 public interface HoverInfoProvider {
 
-	Tuple2<HoverInfo, IRegion> getHoverInfo(IDocument document, int offset) throws Exception;
+	Tuple2<Renderable, IRegion> getHoverInfo(IDocument document, int offset) throws Exception;
 
 }

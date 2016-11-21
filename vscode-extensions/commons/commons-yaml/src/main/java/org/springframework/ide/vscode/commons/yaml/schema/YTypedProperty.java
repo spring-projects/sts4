@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
  * @author Kris De Volder
@@ -18,5 +18,5 @@ import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 public interface YTypedProperty {
 	String getName();
 	YType getType();
-	HoverInfo getDescription();
+	Renderable getDescription();
 }
