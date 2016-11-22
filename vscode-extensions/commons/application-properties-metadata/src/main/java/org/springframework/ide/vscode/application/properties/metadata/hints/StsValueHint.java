@@ -9,14 +9,10 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.HtmlBuffer;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Sts version of {@link ValueHint} contains similar data, but accomoates
@@ -114,26 +110,14 @@ public class StsValueHint {
 	}
 
 	private static Renderable javaDocSnippet(IJavaElement je) {
-		try {
-			Supplier<IJavadoc> jdoc = Suppliers.memoize(() -> je.getJavaDoc());
+		return Renderables.lazy(() -> {
+			IJavadoc jdoc = je.getJavaDoc();
 			if (jdoc != null) {
-				return new Renderable() {
-
-					@Override
-					public void renderAsMarkdown(StringBuilder buffer) {
-						buffer.append(jdoc.get().markdown());
-					}
-
-					@Override
-					public void renderAsHtml(HtmlBuffer buffer) {
-						buffer.raw(jdoc.get().html());
-					}
-				};
+				return jdoc.getRenderable();
+			} else {
+				return Renderables.NO_DESCRIPTION;
 			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return Renderables.NO_DESCRIPTION;
+		});
 	}
 
 	@Override

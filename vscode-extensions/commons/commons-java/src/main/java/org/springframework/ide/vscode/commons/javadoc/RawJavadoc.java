@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.commons.javadoc;
 
+import org.springframework.ide.vscode.commons.util.Renderable;
+
 public class RawJavadoc implements IJavadoc {
 	
 	private String rawContent;
@@ -14,18 +16,8 @@ public class RawJavadoc implements IJavadoc {
 	}
 
 	@Override
-	public String plainText() {
-		throw new UnsupportedOperationException("Not yet implemnted");
-	}
-
-	@Override
-	public String html() {
-		throw new UnsupportedOperationException("Not yet implemnted");
-	}
-
-	@Override
-	public String markdown() {
-		throw new UnsupportedOperationException("Not yet implemnted");
+	public Renderable getRenderable() {
+		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 }

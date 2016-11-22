@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
@@ -59,11 +60,10 @@ public class ProjectsHarness {
 			Path testProjectPath = getProjectPath(name);
 			switch (type) {
 			case MAVEN:
-				MavenCore.buildMavenProject(testProjectPath);
-//				MavenCore.generateJavadocFolderForMavenProject(testProjectPath);
+				MavenBuilder.newBuilder(testProjectPath).clean().pack()./*javadoc().*/skipTests().execute();
 				return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 			case CLASSPATH_TXT:
-				MavenCore.buildMavenProject(testProjectPath);
+				MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
 				return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
 			default:
 				throw new IllegalStateException("Bug!!! Missing case");

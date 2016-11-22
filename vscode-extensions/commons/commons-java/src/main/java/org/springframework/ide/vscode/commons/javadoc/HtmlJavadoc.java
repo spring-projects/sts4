@@ -1,15 +1,14 @@
 package org.springframework.ide.vscode.commons.javadoc;
 
-import com.overzealous.remark.Remark;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 
 public class HtmlJavadoc implements IJavadoc {
 	
 	private String html;
-	private Remark remark;
 	
 	public HtmlJavadoc(String html) {
 		this.html = html;
-		this.remark = new Remark();
 	}
 
 	@Override
@@ -18,18 +17,9 @@ public class HtmlJavadoc implements IJavadoc {
 	}
 
 	@Override
-	public String plainText() {
-		throw new UnsupportedOperationException("Not yet implemnted");
+	public Renderable getRenderable() {
+		return Renderables.htmlBlob(html);
 	}
 
-	@Override
-	public String html() {
-		return html;
-	}
-
-	@Override
-	public String markdown() {
-		return remark.convertFragment(html);
-	}
 
 }

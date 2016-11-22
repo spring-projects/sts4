@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class JavaIndexTest {
 		@Override
 		public Path load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
-			MavenCore.buildMavenProject(testProjectPath);
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 			return testProjectPath;
 		}
 		
@@ -42,7 +43,6 @@ public class JavaIndexTest {
 		@Override
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
-			MavenCore.buildMavenProject(testProjectPath);
 			return createMavenProject(testProjectPath);
 		}
 		
@@ -212,15 +212,15 @@ public class JavaIndexTest {
 		IType type = project.findType("hello.Greeting");
 		
 		assertNotNull(type);
-		assertEquals("Comment for Greeting class", type.getJavaDoc().plainText());
+		assertEquals("Comment for Greeting class", type.getJavaDoc().raw());
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
-		assertEquals("Comment for id field", field.getJavaDoc().plainText());
+		assertEquals("Comment for id field", field.getJavaDoc().raw());
 		
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
-		assertEquals("Comment for getId()", method.getJavaDoc().plainText());
+		assertEquals("Comment for getId()", method.getJavaDoc().raw());
 	}
 
 	@Test
@@ -229,15 +229,15 @@ public class JavaIndexTest {
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("Comment for inner class", type.getJavaDoc().plainText());
+		assertEquals("Comment for inner class", type.getJavaDoc().raw());
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
-		assertEquals("Comment for inner field", field.getJavaDoc().plainText());
+		assertEquals("Comment for inner field", field.getJavaDoc().raw());
 
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
-		assertEquals("Comment for method inside nested class", method.getJavaDoc().plainText());
+		assertEquals("Comment for method inside nested class", method.getJavaDoc().raw());
 	}
 
 	@Test
@@ -249,11 +249,11 @@ public class JavaIndexTest {
 		IType type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
 		assertNotNull(type);
 		String expected = "{@link ApplicationListener}  that replaces the liquibase  {@link ServiceLocator}  with a";
-		assertEquals(expected, type.getJavaDoc().plainText().substring(0, expected.length()));
+		assertEquals(expected, type.getJavaDoc().raw().substring(0, expected.length()));
 		
 		type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener$LiquibasePresent");
 		assertNotNull(type);
-		assertEquals("Inner class to prevent class not found issues.", type.getJavaDoc().plainText());
+		assertEquals("Inner class to prevent class not found issues.", type.getJavaDoc().raw());
 	}
 	
 	@Test
@@ -267,12 +267,12 @@ public class JavaIndexTest {
 		
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
 		assertNotNull(field);
-		assertEquals("Default banner location.", field.getJavaDoc().plainText());
+		assertEquals("Default banner location.", field.getJavaDoc().raw());
 		
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
 		String expected = "Returns read-only ordered Set of the  {@link ApplicationListener} s that will be";
-		assertEquals(expected, method.getJavaDoc().plainText().substring(0, expected.length()));
+		assertEquals(expected, method.getJavaDoc().raw().substring(0, expected.length()));
 	}
 
 	
@@ -288,7 +288,7 @@ public class JavaIndexTest {
 				"<div class=\"block\">An object that maps keys to values.  A map cannot contain duplicate keys;",
 				" each key can map to at most one value."
 				);
-		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
 	}
 
 	@Test
@@ -302,7 +302,7 @@ public class JavaIndexTest {
 		String expected = String.join("\n",
 				"<div class=\"block\">A map entry (key-value pair).  The <tt>Map.entrySet</tt> method returns",
 				" a collection-view of the map, whose elements are of this class.  The");
-		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
 	}
 	
 	@Test
@@ -321,7 +321,7 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;size()</pre>",
 				"<div class=\"block\">Returns the number of elements in this list.</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
 	}
 	
 	@Test
@@ -338,7 +338,7 @@ public class JavaIndexTest {
 		String expected = String.join("\n",
 				"<h4>ArrayList</h4>"
 				);
-		assertEquals(expected, method.getJavaDoc().html().substring(0, expected.length()));
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
 		
 	}
 	
@@ -362,7 +362,7 @@ public class JavaIndexTest {
 				"<dd><a href=\"../../../constant-values.html#org.springframework.boot.SpringApplication.BANNER_LOCATION_PROPERTY_VALUE\">Constant Field Values</a></dd>",
 				"</dl>"
 			);
-		assertEquals(expected, field.getJavaDoc().html());
+		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
 		
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
@@ -377,20 +377,19 @@ public class JavaIndexTest {
 				"<dd>the listeners</dd>",
 				"</dl>"
 			);
-		assertEquals(expected, method.getJavaDoc().html());
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
 	}
 
 	@Test
 	public void html_testJavadocOutputFolder() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		IType type = project.findType("hello.Greeting");
 		
 		assertNotNull(type);
 		String expected = "<div class=\"block\">Comment for Greeting class</div>";
-		assertEquals(expected, type.getJavaDoc().html());
+		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml());
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
@@ -399,7 +398,7 @@ public class JavaIndexTest {
 				"<pre>protected final&nbsp;long id</pre>",
 				"<div class=\"block\">Comment for id field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().html());
+		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
 		
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
@@ -408,19 +407,18 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;long&nbsp;getId()</pre>",
 				"<div class=\"block\">Comment for getId()</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().html());
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
 	}
 	
 	@Test
 	public void html_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("<div class=\"block\">Comment for inner class</div>", type.getJavaDoc().html());
+		assertEquals("<div class=\"block\">Comment for inner class</div>", type.getJavaDoc().getRenderable().toHtml());
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
@@ -429,7 +427,7 @@ public class JavaIndexTest {
 				"<pre>protected&nbsp;int innerField</pre>",
 				"<div class=\"block\">Comment for inner field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().html());
+		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
 
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
@@ -438,19 +436,18 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;getInnerField()</pre>",
 				"<div class=\"block\">Comment for method inside nested class</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().html());
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
 	}
 
 	@Test
 	public void html_testInnerClassLevel2_JavadocForOutputFolder() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
-		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", type.getJavaDoc().html());
+		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", type.getJavaDoc().getRenderable().toHtml());
 
 		IField field = type.getField("innerLevel2Field");
 		assertNotNull(field);
@@ -459,7 +456,7 @@ public class JavaIndexTest {
 				"<pre>protected&nbsp;int innerLevel2Field</pre>",
 				"<div class=\"block\">Comment for level 2 inner field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().html());
+		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
 
 		IMethod method = type.getMethod("getInnerLevel2Field", Stream.empty());
 		assertNotNull(method);
@@ -468,14 +465,13 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;getInnerLevel2Field()</pre>",
 				"<div class=\"block\">Comment for method inside level 2 nested class</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().html());
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
 	}
 
 	@Test
 	public void html_testNoJavadocClass() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		
 		IType type = project.findType("hello.GreetingController");
@@ -487,7 +483,6 @@ public class JavaIndexTest {
 	public void html_testEmptyJavadocClass() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		
 		IType type = project.findType("hello.Application");
@@ -499,7 +494,6 @@ public class JavaIndexTest {
 	public void html_testNoJavadocMethod() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
 		
 		IType type = project.findType("hello.Application");
@@ -511,15 +505,15 @@ public class JavaIndexTest {
 				"<pre>@Bean",
 				"public&nbsp;org.springframework.web.servlet.config.annotation.WebMvcConfigurer&nbsp;corsConfigurer()</pre>"
 			);
-		assertEquals(expected, method.getJavaDoc().html());
+		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
 	}
 
 	@Test
 	public void html_testNoJavadocField() throws Exception {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		MavenCore.generateJavadocFolderForMavenProject(projectPath);
 		MavenJavaProject project = createMavenProject(projectPath);
+		Files.list(project.getOutputFolder().getParent().resolve("site")).forEach(System.out::println);
 		
 		IType type = project.findType("hello.GreetingController");
 		assertNotNull(type);
@@ -533,6 +527,6 @@ public class JavaIndexTest {
 				"<dd><a href=\"../constant-values.html#hello.GreetingController.template\">Constant Field Values</a></dd>",
 				"</dl>"
 			);
-		assertEquals(expected, field.getJavaDoc().html());
+		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
 	}
 }
