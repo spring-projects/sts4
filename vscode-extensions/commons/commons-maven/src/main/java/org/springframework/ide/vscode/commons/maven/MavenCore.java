@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,8 +51,8 @@ import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector;
 import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
-import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
+import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
@@ -81,11 +82,26 @@ public class MavenCore {
 	
 	private MavenBridge maven = new MavenBridge();
 	
-	private Supplier<Optional<JandexIndex>> javaCoreIndex = Suppliers.memoize(() -> {
+	private Supplier<JandexIndex> javaCoreIndex = Suppliers.memoize(() -> {
 		try {
-			return Optional.of(new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile)));
+			return new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), (classpathResource) -> {
+				try {
+					String javaVersion = "8";
+					try {
+						String fullVersion = getJavaRuntimeVersion();
+						javaVersion = fullVersion.substring(fullVersion.indexOf('.') + 1, fullVersion.lastIndexOf('.'));
+					} catch (MavenException e) {
+						Log.log("Cannot determine Java runtime version. Defaulting to version 8", e);
+					}
+					URL javadocUrl = new URL("http://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
+					return new HtmlJavadocProvider((type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER.sourceUrl(javadocUrl, type));
+				} catch (MalformedURLException e) {
+					Log.log(e);
+					return null;
+				}
+			});
 		} catch (MavenException e) {
-			return Optional.empty();
+			return null;
 		}
 	});
 	
@@ -110,23 +126,6 @@ public class MavenCore {
 		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve);
 	}
 	
-	/**
-	 * Builds maven project
-	 * 
-	 * @param Path of the project
-	 * @throws Exception
-	 */
-	public static void buildMavenProject(Path testProjectPath) throws Exception {
-		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
-				? testProjectPath.resolve("mvnw.cmd") : testProjectPath.resolve("mvnw");
-		mvnwPath.toFile().setExecutable(true);
-		ExternalProcess process = new ExternalProcess(testProjectPath.toFile(),
-				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package", "-DskipTests"), true);
-		if (process.getExitValue() != 0) {
-			throw new RuntimeException("Failed to build test project");
-		}
-	}
-
 	/**
 	 * Creates Maven Project descriptor based on the pom file.
 	 * 
@@ -281,7 +280,7 @@ public class MavenCore {
 		return new File(getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
 	}
 	
-	public Optional<JandexIndex> getJavaIndexForJreLibs() {
+	public JandexIndex getJavaIndexForJreLibs() {
 		return javaCoreIndex.get();
 	}
 	

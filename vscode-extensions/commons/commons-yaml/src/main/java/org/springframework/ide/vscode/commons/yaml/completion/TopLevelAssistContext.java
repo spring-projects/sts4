@@ -14,8 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
@@ -52,17 +52,17 @@ public abstract class TopLevelAssistContext implements YamlAssistContext {
 	}
 
 	@Override
-	public HoverInfo getHoverInfo() {
+	public Renderable getHoverInfo() {
 		return null;
 	}
 
 	@Override
-	public HoverInfo getHoverInfo(YamlPathSegment lastSegment) {
+	public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 		return null;
 	}
 
 	@Override
-	public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+	public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
 		return null;
 	}
 

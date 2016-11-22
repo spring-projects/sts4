@@ -7,13 +7,12 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Depre
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.HtmlBuffer;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 /**
  * Sts version of {@link ValueHint} contains similar data, but accomoates
@@ -29,7 +28,7 @@ public class StsValueHint {
 
 
 	private final String value;
-	private final HoverInfo description;
+	private final Renderable description;
 	private final Deprecation deprecation;
 
 	/**
@@ -38,7 +37,7 @@ public class StsValueHint {
 	 * This constructor is private. Use one of the provided
 	 * static 'create' methods instead.
 	 */
-	private StsValueHint(String value, HoverInfo description, Deprecation deprecation) {
+	private StsValueHint(String value, Renderable description, Deprecation deprecation) {
 		this.value = value==null?"null":value.toString();
 		Assert.isLegal(!this.value.startsWith("StsValueHint"));
 		this.description = description;
@@ -58,7 +57,7 @@ public class StsValueHint {
 	}
 
 	public static StsValueHint create(String value) {
-		return new StsValueHint(value, DescriptionProviders.NO_DESCRIPTION, null);
+		return new StsValueHint(value, Renderables.NO_DESCRIPTION, null);
 	}
 
 	public static StsValueHint create(ValueHint hint) {
@@ -92,46 +91,33 @@ public class StsValueHint {
 	/**
 	 * Create a html snippet from a text snippet.
 	 */
-	private static HoverInfo textSnippet(String description) {
+	private static Renderable textSnippet(String description) {
 		if (StringUtil.hasText(description)) {
-			return DescriptionProviders.text(description);
+			return Renderables.text(description);
 		}
-		return DescriptionProviders.NO_DESCRIPTION;
+		return Renderables.NO_DESCRIPTION;
 	}
 
 	public String getValue() {
 		return value;
 	}
 
-	public HoverInfo getDescription() {
+	public Renderable getDescription() {
 		return description;
 	}
-	public HoverInfo getDescriptionProvider() {
+	public Renderable getDescriptionProvider() {
 		return description;
 	}
 
-	public static HoverInfo javaDocSnippet(IJavaElement je) {
-		try {
-			HtmlSnippet jdoc = je.getJavaDoc();
+	private static Renderable javaDocSnippet(IJavaElement je) {
+		return Renderables.lazy(() -> {
+			IJavadoc jdoc = je.getJavaDoc();
 			if (jdoc != null) {
-				return new HoverInfo() {
-
-					@Override
-					public void renderAsMarkdown(StringBuilder buffer) {
-						// TODO not correct md
-						buffer.append(jdoc.toString());
-					}
-
-					@Override
-					public void renderAsHtml(HtmlBuffer buffer) {
-						buffer.raw(jdoc.toHtml());
-					}
-				};
+				return jdoc.getRenderable();
+			} else {
+				return Renderables.NO_DESCRIPTION;
 			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return DescriptionProviders.NO_DESCRIPTION;
+		});
 	}
 
 	@Override

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.hover;
 
-import static org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders.bold;
-import static org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders.concat;
-import static org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders.lineBreak;
-import static org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders.link;
-import static org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders.text;
+import static org.springframework.ide.vscode.commons.util.Renderables.bold;
+import static org.springframework.ide.vscode.commons.util.Renderables.concat;
+import static org.springframework.ide.vscode.commons.util.Renderables.lineBreak;
+import static org.springframework.ide.vscode.commons.util.Renderables.link;
+import static org.springframework.ide.vscode.commons.util.Renderables.text;
 
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -31,9 +31,9 @@ import com.google.common.collect.ImmutableList.Builder;
  */
 public class YPropertyHoverInfo {
 
-	public static HoverInfo create(String contextProperty, YType contextType, YTypedProperty prop) {
+	public static Renderable create(String contextProperty, YType contextType, YTypedProperty prop) {
 
-		Builder<HoverInfo> html = ImmutableList.builder();
+		Builder<Renderable> html = ImmutableList.builder();
 		if (StringUtil.hasText(contextProperty)) {
 			html.add(text(contextProperty));
 			html.add(text("."));
@@ -48,7 +48,7 @@ public class YPropertyHoverInfo {
 			html.add(link(type.toString(), /* no URL */ null));
 		}
 
-		HoverInfo description = prop.getDescription();
+		Renderable description = prop.getDescription();
 		if (description != null) {
 			html.add(lineBreak());
 			html.add(description);

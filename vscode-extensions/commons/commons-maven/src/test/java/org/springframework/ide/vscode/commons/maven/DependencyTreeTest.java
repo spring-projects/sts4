@@ -30,7 +30,7 @@ public class DependencyTreeTest {
 	
 	private void testMavenClasspath(String projectName) throws Exception {
 		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
-		MavenCore.buildMavenProject(testProjectPath);
+		MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
 
 		MavenProject project = MavenCore.getInstance().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		Set<Path> calculatedClassPath = MavenCore.getInstance().resolveDependencies(project, null).stream().map(artifact -> {

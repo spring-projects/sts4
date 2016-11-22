@@ -1,11 +1,9 @@
 package org.springframework.ide.vscode.application.properties.metadata.types;
 
-import javax.inject.Provider;
-
 import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 
 /**
  * Represents a property on a Type that can be accessed by name.
@@ -27,15 +25,15 @@ public class TypedProperty implements YTypedProperty {
 	/**
 	 * Provides a description for this property.
 	 */
-	private final HoverInfo descriptionProvider;
+	private final Renderable descriptionProvider;
 
 	private final Deprecation deprecation;
 
 	public TypedProperty(String name, Type type, Deprecation deprecation) {
-		this(name, type, DescriptionProviders.NO_DESCRIPTION, deprecation);
+		this(name, type, Renderables.NO_DESCRIPTION, deprecation);
 	}
 
-	public TypedProperty(String name, Type type, HoverInfo descriptionProvider, Deprecation deprecation) {
+	public TypedProperty(String name, Type type, Renderable descriptionProvider, Deprecation deprecation) {
 		this.name = name;
 		this.type = type;
 		this.descriptionProvider = descriptionProvider;
@@ -56,7 +54,7 @@ public class TypedProperty implements YTypedProperty {
 	}
 
 	@Override
-	public HoverInfo getDescription() {
+	public Renderable getDescription() {
 		//TODO: real implementation that somehow gets this from somewhere (i.e. the JavaDoc)
 		// Note that presently the application.yml and application.properties editor do not actually
 		// use this description provider but produce hover infos in a different way (so this is only

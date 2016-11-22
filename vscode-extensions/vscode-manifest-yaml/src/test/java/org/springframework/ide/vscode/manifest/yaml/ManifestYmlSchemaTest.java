@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
-import org.springframework.ide.vscode.commons.yaml.util.DescriptionProviders;
 import org.springframework.ide.vscode.manifest.yaml.ManifestYmlSchema;
 
 import com.google.common.collect.ImmutableSet;
@@ -115,14 +115,14 @@ public class ManifestYmlSchemaTest {
 
 	private void assertHasRealDescription(YTypedProperty p) {
 		{
-			String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.toHtml();
+			String noDescriptionText = Renderables.NO_DESCRIPTION.toHtml();
 			String actual = p.getDescription().toHtml();
 			String msg = "Description missing for '"+p.getName()+"'";
 			assertTrue(msg, StringUtil.hasText(actual));
 			assertFalse(msg, noDescriptionText.equals(actual));
 		}
 		{
-			String noDescriptionText = DescriptionProviders.NO_DESCRIPTION.toMarkdown();
+			String noDescriptionText = Renderables.NO_DESCRIPTION.toMarkdown();
 			String actual = p.getDescription().toMarkdown();
 			String msg = "Description missing for '"+p.getName()+"'";
 			assertTrue(msg, StringUtil.hasText(actual));

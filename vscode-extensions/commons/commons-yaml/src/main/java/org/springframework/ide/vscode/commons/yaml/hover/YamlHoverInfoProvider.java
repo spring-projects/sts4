@@ -12,13 +12,13 @@ package org.springframework.ide.vscode.commons.yaml.hover;
 
 import java.util.List;
 
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfo;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.Region;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -59,7 +59,7 @@ public class YamlHoverInfoProvider implements HoverInfoProvider {
 	}
 
 	@Override
-	public Tuple2<HoverInfo, IRegion> getHoverInfo(IDocument doc, int offset) throws Exception {
+	public Tuple2<Renderable, IRegion> getHoverInfo(IDocument doc, int offset) throws Exception {
 		YamlFileAST ast = getAst(doc);
 		if (ast != null) {
 			IRegion region = getHoverRegion(ast, offset);
@@ -82,10 +82,10 @@ public class YamlHoverInfoProvider implements HoverInfoProvider {
 					assistContext = assistPath.traverse(assistContext);
 					if (assistContext != null) {
 						if (path.pointsAtValue()) {
-							HoverInfo info = assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region));
+							Renderable info = assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region));
 							return Tuples.of(info, region);
 						}
-						HoverInfo info = assistContext.getHoverInfo();
+						Renderable info = assistContext.getHoverInfo();
 						return Tuples.of(info, region);
 					}
 				}

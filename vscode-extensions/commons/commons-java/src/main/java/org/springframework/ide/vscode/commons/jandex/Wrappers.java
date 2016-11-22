@@ -11,7 +11,6 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
@@ -20,16 +19,19 @@ import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaType;
+import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMemberValuePair;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class Wrappers {
 	
-	public static IType wrap(IndexView index, ClassInfo info) {
+	private static final String JANDEX_CONTRUCTOR_NAME = "<init>";
+
+	public static IType wrap(JandexIndex index, ClassInfo info, IJavadocProvider javadocProvider) {
 		if (info == null) {
 			return null;
 		}
@@ -43,17 +45,17 @@ public class Wrappers {
 			@Override
 			public IType getDeclaringType() {
 				DotName enclosingClass = info.enclosingClass();
-				return enclosingClass == null ? null : wrap(index, index.getClassByName(enclosingClass));
+				return enclosingClass == null ? null : index.getClassByName(enclosingClass);
 			}
 
 			@Override
 			public String getElementName() {
-				return info.simpleName();
+				return info.simpleName() == null ? info.name().local() : info.simpleName();
 			}
 
 			@Override
-			public HtmlSnippet getJavaDoc() {
-				throw new UnsupportedOperationException("Not yet implemented");
+			public IJavadoc getJavaDoc() {
+				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
 			}
 
 			@Override
@@ -64,7 +66,7 @@ public class Wrappers {
 			@Override
 			public Stream<IAnnotation> getAnnotations() {
 				// TODO: check correctness!
-				return info.annotations().get(info.name()).stream().map(Wrappers::wrap);
+				return info.annotations().get(info.name()).stream().map(a -> wrap(a, javadocProvider));
 			}
 
 			@Override
@@ -79,9 +81,14 @@ public class Wrappers {
 
 			@Override
 			public boolean isInterface() {
-				return false;
+				return Flags.isInterface(info.flags());
 			}
 
+			@Override
+			public boolean isAnnotation() {
+				return Flags.isAnnotation(info.flags());
+			}
+						
 			@Override
 			public String getFullyQualifiedName() {
 				return info.name().toString();
@@ -89,26 +96,26 @@ public class Wrappers {
 
 			@Override
 			public IField getField(String name) {
-				return wrap(index, info.field(name));
+				return wrap(index, info.field(name), javadocProvider);
 			}
 
 			@Override
 			public Stream<IField> getFields() {
 				return info.fields().stream().map(f -> {
-					return wrap(index, f);
+					return wrap(index, f, javadocProvider);
 				});
 			}
 
 			@Override
 			public IMethod getMethod(String name, Stream<IJavaType> parameters) {
 				List<Type> typeParameters = parameters.map(Wrappers::from).collect(Collectors.toList());
-				return wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])));
+				return wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), javadocProvider);
 			}
 
 			@Override
 			public Stream<IMethod> getMethods() {
 				return info.methods().stream().map(m -> {
-					return wrap(index, m);
+					return wrap(index, m, javadocProvider);
 				});
 			}
 
@@ -116,11 +123,11 @@ public class Wrappers {
 			public String toString() {
 				return info.toString();
 			}
-						
+
 		};
 	}
 	
-	public static IField wrap(IndexView index, FieldInfo field) {
+	public static IField wrap(JandexIndex index, FieldInfo field, IJavadocProvider javadocProvider) {
 		if (field == null) {
 			return null;
 		}
@@ -133,7 +140,7 @@ public class Wrappers {
 
 			@Override
 			public IType getDeclaringType() {
-				return wrap(index, field.declaringClass());
+				return wrap(index, field.declaringClass(), javadocProvider);
 			}
 
 			@Override
@@ -142,8 +149,8 @@ public class Wrappers {
 			}
 
 			@Override
-			public HtmlSnippet getJavaDoc() {
-				throw new UnsupportedOperationException("Not yet implemented");
+			public IJavadoc getJavaDoc() {
+				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
 			}
 
 			@Override
@@ -154,7 +161,7 @@ public class Wrappers {
 			@Override
 			public Stream<IAnnotation> getAnnotations() {
 				return field.annotations().stream().map(a -> {
-					return wrap(a);
+					return wrap(a, javadocProvider);
 				});
 			}
 
@@ -170,7 +177,7 @@ public class Wrappers {
 		};
 	}
 
-	public static IMethod wrap(IndexView index, MethodInfo method) {
+	public static IMethod wrap(JandexIndex index, MethodInfo method, IJavadocProvider javadocProvider) {
 		isNotNull(index);
 		isNotNull(method);
 		return new IMethod() {
@@ -179,20 +186,25 @@ public class Wrappers {
 			public int getFlags() {
 				return method.flags();
 			}
+			
+			@Override
+			public boolean isConstructor() {
+				return method.name().equals(JANDEX_CONTRUCTOR_NAME);
+			}
 
 			@Override
 			public IType getDeclaringType() {
-				return wrap(index, method.declaringClass());
+				return wrap(index, method.declaringClass(), javadocProvider);
 			}
 
 			@Override
 			public String getElementName() {
-				return method.name();
+				return isConstructor() ? getDeclaringType().getElementName() : method.name();
 			}
 
 			@Override
-			public HtmlSnippet getJavaDoc() {
-				throw new UnsupportedOperationException("Not yet implemented");
+			public IJavadoc getJavaDoc() {
+				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
 			}
 
 			@Override
@@ -202,7 +214,7 @@ public class Wrappers {
 
 			@Override
 			public Stream<IAnnotation> getAnnotations() {
-				return method.annotations().stream().map(Wrappers::wrap);
+				return method.annotations().stream().map(a -> wrap(a, javadocProvider));
 			}
 
 			@Override
@@ -229,10 +241,11 @@ public class Wrappers {
 			public Stream<IJavaType> parameters() {
 				return method.parameters().stream().map(Wrappers::wrap);
 			}
+
 		};
 	}
 	
-	public static IAnnotation wrap(AnnotationInstance annotation) {
+	public static IAnnotation wrap(AnnotationInstance annotation, IJavadocProvider javadocProvider) {
 		isNotNull(annotation);
 		return new IAnnotation() {
 
@@ -242,8 +255,8 @@ public class Wrappers {
 			}
 
 			@Override
-			public HtmlSnippet getJavaDoc() {
-				throw new UnsupportedOperationException("Not yet implemented");
+			public IJavadoc getJavaDoc() {
+				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
 			}
 
 			@Override
@@ -288,13 +301,6 @@ public class Wrappers {
 		};
 	}
 	
-	public static Type createParameterTypeFromSignature(IndexView index, String signature) {
-		if (signature == null) {
-			return null;
-		}
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
 	public static IPrimitiveType wrap(PrimitiveType type) {
 		switch (type.primitive()) {
 		case SHORT:

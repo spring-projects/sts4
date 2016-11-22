@@ -51,5 +51,7 @@ public interface IMethod extends IMember {
 	 * @return
 	 */
 	Stream<IJavaType> parameters();
+	
+	boolean isConstructor();
 
 }
