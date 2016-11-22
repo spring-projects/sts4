@@ -34,7 +34,7 @@ public interface HtmlJavadocIndex {
 						BufferedReader buffer = new BufferedReader(new InputStreamReader(stream));
 					    return new JavadocContents(buffer.lines().collect(Collectors.joining("\n")));
 					} catch (IOException e) {
-						Log.log(e);
+						Log.log("Cannot load javadoc content from " + url, e);
 						return NO_HTML_CONTENT;
 					} finally {
 						if (stream != null) {

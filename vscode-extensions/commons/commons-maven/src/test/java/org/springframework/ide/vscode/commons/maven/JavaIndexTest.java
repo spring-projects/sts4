@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -17,6 +16,7 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath.JavadocProviderTypes;
@@ -288,7 +288,9 @@ public class JavaIndexTest {
 				"<div class=\"block\">An object that maps keys to values.  A map cannot contain duplicate keys;",
 				" each key can map to at most one value."
 				);
-		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
+		IJavadoc javaDoc = type.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml().substring(0, expected.length()));
 	}
 
 	@Test
@@ -302,7 +304,9 @@ public class JavaIndexTest {
 		String expected = String.join("\n",
 				"<div class=\"block\">A map entry (key-value pair).  The <tt>Map.entrySet</tt> method returns",
 				" a collection-view of the map, whose elements are of this class.  The");
-		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
+		IJavadoc javaDoc = type.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml().substring(0, expected.length()));
 	}
 	
 	@Test
@@ -321,7 +325,9 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;size()</pre>",
 				"<div class=\"block\">Returns the number of elements in this list.</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
+		IJavadoc javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml().substring(0, expected.length()));
 	}
 	
 	@Test
@@ -338,7 +344,9 @@ public class JavaIndexTest {
 		String expected = String.join("\n",
 				"<h4>ArrayList</h4>"
 				);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml().substring(0, expected.length()));
+		IJavadoc javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml().substring(0, expected.length()));
 		
 	}
 	
@@ -362,7 +370,9 @@ public class JavaIndexTest {
 				"<dd><a href=\"../../../constant-values.html#org.springframework.boot.SpringApplication.BANNER_LOCATION_PROPERTY_VALUE\">Constant Field Values</a></dd>",
 				"</dl>"
 			);
-		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = field.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 		
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
@@ -377,7 +387,9 @@ public class JavaIndexTest {
 				"<dd>the listeners</dd>",
 				"</dl>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
+		javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 
 	@Test
@@ -389,7 +401,9 @@ public class JavaIndexTest {
 		
 		assertNotNull(type);
 		String expected = "<div class=\"block\">Comment for Greeting class</div>";
-		assertEquals(expected, type.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = type.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
@@ -398,7 +412,9 @@ public class JavaIndexTest {
 				"<pre>protected final&nbsp;long id</pre>",
 				"<div class=\"block\">Comment for id field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
+		javaDoc = field.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 		
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
@@ -407,7 +423,9 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;long&nbsp;getId()</pre>",
 				"<div class=\"block\">Comment for getId()</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
+		javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 	
 	@Test
@@ -418,7 +436,9 @@ public class JavaIndexTest {
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("<div class=\"block\">Comment for inner class</div>", type.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = type.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals("<div class=\"block\">Comment for inner class</div>", javaDoc.getRenderable().toHtml());
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
@@ -427,7 +447,9 @@ public class JavaIndexTest {
 				"<pre>protected&nbsp;int innerField</pre>",
 				"<div class=\"block\">Comment for inner field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
+		javaDoc = field.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
@@ -436,7 +458,9 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;getInnerField()</pre>",
 				"<div class=\"block\">Comment for method inside nested class</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
+		javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 
 	@Test
@@ -447,7 +471,9 @@ public class JavaIndexTest {
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
-		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", type.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = type.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", javaDoc.getRenderable().toHtml());
 
 		IField field = type.getField("innerLevel2Field");
 		assertNotNull(field);
@@ -456,7 +482,9 @@ public class JavaIndexTest {
 				"<pre>protected&nbsp;int innerLevel2Field</pre>",
 				"<div class=\"block\">Comment for level 2 inner field</div>"
 			);
-		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
+		javaDoc = field.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 
 		IMethod method = type.getMethod("getInnerLevel2Field", Stream.empty());
 		assertNotNull(method);
@@ -465,7 +493,9 @@ public class JavaIndexTest {
 				"<pre>public&nbsp;int&nbsp;getInnerLevel2Field()</pre>",
 				"<div class=\"block\">Comment for method inside level 2 nested class</div>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
+		javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 
 	@Test
@@ -505,7 +535,9 @@ public class JavaIndexTest {
 				"<pre>@Bean",
 				"public&nbsp;org.springframework.web.servlet.config.annotation.WebMvcConfigurer&nbsp;corsConfigurer()</pre>"
 			);
-		assertEquals(expected, method.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = method.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 
 	@Test
@@ -513,7 +545,6 @@ public class JavaIndexTest {
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		MavenJavaProject project = createMavenProject(projectPath);
-		Files.list(project.getOutputFolder().getParent().resolve("site")).forEach(System.out::println);
 		
 		IType type = project.findType("hello.GreetingController");
 		assertNotNull(type);
@@ -527,6 +558,8 @@ public class JavaIndexTest {
 				"<dd><a href=\"../constant-values.html#hello.GreetingController.template\">Constant Field Values</a></dd>",
 				"</dl>"
 			);
-		assertEquals(expected, field.getJavaDoc().getRenderable().toHtml());
+		IJavadoc javaDoc = field.getJavaDoc();
+		assertNotNull(javaDoc);
+		assertEquals(expected, javaDoc.getRenderable().toHtml());
 	}
 }
