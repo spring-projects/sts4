@@ -145,13 +145,15 @@ public class ManifestYamlEditorTest {
 				"  instances: not a number\n" +
 				"  no-route: notBool\n"+
 				"  memory: 1024\n" +
-				"  disk_quota: 2048\n"
+				"  disk_quota: 2048\n" +
+				"  health-check-type: unhealthy"
 		);
 		editor.assertProblems(
 				"not a number|Positive Integer",
 				"notBool|boolean",
 				"1024|Memory",
-				"2048|Memory"
+				"2048|Memory",
+				"unhealthy|Health Check Type"
 		);
 
 		//check for 'range' errors:
@@ -232,6 +234,8 @@ public class ManifestYamlEditorTest {
 				"env:\n"+
 				"  <*>",
 				// ---------------
+				"health-check-type: <*>",
+				// ---------------
 //				"host: <*>",
 				// ---------------
 //				"hosts: \n"+
@@ -297,6 +301,9 @@ public class ManifestYamlEditorTest {
 				"    <*>",
 				// ---------------
 				"applications:\n" +
+				"- health-check-type: <*>",
+				// ---------------
+				"applications:\n" +
 				"- host: <*>",
 				// ---------------
 				"applications:\n" +
@@ -360,6 +367,11 @@ public class ManifestYamlEditorTest {
 				"random-route: false<*>",
 				"random-route: true<*>"
 		);
+		
+		assertCompletions("health-check-type: <*>",
+				"health-check-type: none<*>",
+				"health-check-type: port<*>"
+		);
 	}
 
 	@Test
@@ -392,7 +404,8 @@ public class ManifestYamlEditorTest {
                 "  - instance_ABC\n" +
                 "  - instance_XYZ\n" +
                 "  stack: cflinuxfs2\n" +
-                "  timeout: 80\n"
+                "  timeout: 80\n" +
+                "  health-check-type: none\n"
 		);
 		editor.assertIsHoverRegion("memory");
 		editor.assertIsHoverRegion("inherit");
@@ -414,6 +427,7 @@ public class ManifestYamlEditorTest {
 		editor.assertIsHoverRegion("services");
 		editor.assertIsHoverRegion("stack");
 		editor.assertIsHoverRegion("timeout");
+		editor.assertIsHoverRegion("health-check-type");
 
 		editor.assertHoverContains("memory", "Use the `memory` attribute to specify the memory limit");
 		editor.assertHoverContains("1G", "Use the `memory` attribute to specify the memory limit");
@@ -435,6 +449,7 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("services", "The `services` block consists of a heading, then one or more service instance names");
 	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
+	    editor.assertHoverContains("health-check-type", "Use the `health-check-type` attribute to");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
