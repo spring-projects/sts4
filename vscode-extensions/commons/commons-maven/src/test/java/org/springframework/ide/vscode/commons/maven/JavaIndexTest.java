@@ -389,8 +389,8 @@ public class JavaIndexTest {
 		IType type = project.findType("hello.Greeting");
 		
 		assertNotNull(type);
-		String expected = "Comment for Greeting class";
-		assertEquals(expected, type.getJavaDoc().html().substring(0, expected.length()));
+		String expected = "<div class=\"block\">Comment for Greeting class</div>";
+		assertEquals(expected, type.getJavaDoc().html());
 		
 		IField field = type.getField("id");
 		assertNotNull(field);
@@ -420,7 +420,7 @@ public class JavaIndexTest {
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("Comment for inner class", type.getJavaDoc().html());
+		assertEquals("<div class=\"block\">Comment for inner class</div>", type.getJavaDoc().html());
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
@@ -450,7 +450,7 @@ public class JavaIndexTest {
 		
 		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
-		assertEquals("Comment for level 2 nested class", type.getJavaDoc().html());
+		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", type.getJavaDoc().html());
 
 		IField field = type.getField("innerLevel2Field");
 		assertNotNull(field);
@@ -469,5 +469,70 @@ public class JavaIndexTest {
 				"<div class=\"block\">Comment for method inside level 2 nested class</div>"
 			);
 		assertEquals(expected, method.getJavaDoc().html());
+	}
+
+	@Test
+	public void html_testNoJavadocClass() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.GreetingController");
+		assertNotNull(type);
+		assertNull(type.getJavaDoc());
+	}
+
+	@Test
+	public void html_testEmptyJavadocClass() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.Application");
+		assertNotNull(type);
+		assertNull(type.getJavaDoc());
+	}
+
+	@Test
+	public void html_testNoJavadocMethod() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.Application");
+		assertNotNull(type);
+		IMethod method = type.getMethod("corsConfigurer", Stream.empty());
+		assertNotNull(method);
+		String expected = String.join("\n", 
+				"<h4>corsConfigurer</h4>",
+				"<pre>@Bean",
+				"public&nbsp;org.springframework.web.servlet.config.annotation.WebMvcConfigurer&nbsp;corsConfigurer()</pre>"
+			);
+		assertEquals(expected, method.getJavaDoc().html());
+	}
+
+	@Test
+	public void html_testNoJavadocField() throws Exception {
+		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+		Path projectPath = projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		MavenCore.generateJavadocFolderForMavenProject(projectPath);
+		MavenJavaProject project = createMavenProject(projectPath);
+		
+		IType type = project.findType("hello.GreetingController");
+		assertNotNull(type);
+		IField field = type.getField("template");
+		assertNotNull(field);
+		String expected = String.join("\n", 
+				"<h4>template</h4>",
+				"<pre>public static final&nbsp;<a href=\"http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> template</pre>",
+				"<dl>",
+				"<dt><span class=\"seeLabel\">See Also:</span></dt>",
+				"<dd><a href=\"../constant-values.html#hello.GreetingController.template\">Constant Field Values</a></dd>",
+				"</dl>"
+			);
+		assertEquals(expected, field.getJavaDoc().html());
 	}
 }

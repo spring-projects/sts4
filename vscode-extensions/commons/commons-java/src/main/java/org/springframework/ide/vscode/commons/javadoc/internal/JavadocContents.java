@@ -207,7 +207,7 @@ public class JavadocContents {
 				
 				int javadocStart = indexOfEndLink + JavadocConstants.ANCHOR_SUFFIX_LENGTH;
 				int javadocEnd = indexOfNextElement == -1 ? indexOfBottom : Math.min(indexOfNextElement, indexOfBottom);
-				range = sanitizeRange(new int[]{javadocStart, javadocEnd});
+				range = sanitizeRange(new int[]{javadocStart, javadocEnd}, "ul", "li");
 			} else {
 				// the anchor has no suffix
 				range = UNKNOWN_FORMAT;
@@ -240,7 +240,7 @@ public class JavadocContents {
 		// we take the end of class data
 		final int indexOfStartOfClassData = CharOperation.indexOf(JavadocConstants.START_OF_CLASS_DATA, this.content, false);
 		this.indexOfEndOfClassData = CharOperation.indexOf(JavadocConstants.END_OF_CLASS_DATA, this.content, false, lastIndex);
-		int[] classDataRange = sanitizeRange(new int[] { indexOfStartOfClassData + JavadocConstants.START_OF_CLASS_DATA.length, indexOfEndOfClassData});
+		int[] classDataRange = sanitizeRange(new int[] { indexOfStartOfClassData + JavadocConstants.START_OF_CLASS_DATA.length, indexOfEndOfClassData}, "ul", "li", "div");
 		this.indexOfEndOfClassData = classDataRange[1];
 		
 		// try to find the field detail end
@@ -257,14 +257,14 @@ public class JavadocContents {
 		this.indexOfAllMethodsBottom = this.indexOfEndOfClassData;
 	
 		// Get rid of possible <ul><li> tag wrappers
-		int[] fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom});
+		int[] fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom}, "ul", "li", "div");
 		indexOfFieldDetails = fieldsRange[0];
 		indexOfFieldsBottom = fieldsRange[1];
 
 		int[] methodsRange = sanitizeRange(new int[] {
 				indexOfAllMethodsTop + (indexOfAllMethodsTop == indexOfConstructorDetails
 						? JavadocConstants.CONSTRUCTOR_DETAIL.length : JavadocConstants.METHOD_DETAIL.length),
-				indexOfAllMethodsBottom });
+				indexOfAllMethodsBottom }, "ul", "li", "div");
 		indexOfAllMethodsTop = methodsRange[0];
 		indexOfAllMethodsBottom = methodsRange[1];
 		
@@ -565,12 +565,16 @@ public class JavadocContents {
 		}
 		if (afterHierarchy != indexOfNextSummary) {
 			start = afterHierarchy;
+
+			int indexOfClassDescriptionEnd = trimBadEnding("<div class=\"summary\">\n<ul class=\"blockList\">\n<li class=\"blockList\">\n", indexOfNextSummary);
+			indexOfClassDescriptionEnd = trimBadEnding("</li>\n</ul>\n</div>\n", indexOfClassDescriptionEnd);
+			this.typeDocRange = new int[]{start, indexOfClassDescriptionEnd};
+			this.typeDocRange = sanitizeRange(typeDocRange, "ul", "li");
+		} else {
+			// No room left for class comment;
+			this.typeDocRange = null;
 		}
 		
-		int indexOfClassDescriptionEnd = trimBadEnding("<div class=\"summary\">\n<ul class=\"blockList\">\n<li class=\"blockList\">\n", indexOfNextSummary);
-		indexOfClassDescriptionEnd = trimBadEnding("</li>\n</ul>\n</div>\n", indexOfClassDescriptionEnd);
-		this.typeDocRange = new int[]{start, indexOfClassDescriptionEnd};
-		this.typeDocRange = sanitizeRange(typeDocRange);
 		
 	}
 	
@@ -604,13 +608,16 @@ public class JavadocContents {
 		}
 	}
 	
-	private int[] sanitizeRange(int[] range) {
+	private int[] sanitizeRange(int[] range, CharSequence... removeWrapperTags) {
 		boolean changed = false;
 		do {
 			int[] newRange = trimRange(range);
-			newRange = trimTag(newRange, "div");
-			newRange = trimTag(newRange, "ul");
-			newRange = trimTag(newRange, "li");
+			for (CharSequence tag : removeWrapperTags) {
+				newRange = trimTag(newRange, tag);
+			}
+//			newRange = trimTag(newRange, "div");
+//			newRange = trimTag(newRange, "ul");
+//			newRange = trimTag(newRange, "li");
 			changed = !Arrays.equals(newRange, range);
 			range = newRange;
 		} while (changed);

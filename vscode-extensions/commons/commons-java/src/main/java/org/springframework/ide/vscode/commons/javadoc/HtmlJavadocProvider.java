@@ -22,7 +22,8 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 	public IJavadoc getJavadoc(IType type) {
 		try {
 			JavadocContents javadocContents = findHtml(type);
-			return new HtmlJavadoc(javadocContents.getTypeDoc(type));
+			String html = javadocContents == null ? null : javadocContents.getTypeDoc(type);
+			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
 			Log.log(e);
 			return null;
@@ -34,7 +35,8 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 		try {
 			IType declaringType = field.getDeclaringType();
 			JavadocContents javadocContents = findHtml(declaringType);
-			return new HtmlJavadoc(javadocContents.getFieldDoc(field));
+			String html = javadocContents == null ? null : javadocContents.getFieldDoc(field);
+			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
 			Log.log(e);
 			return null;
@@ -46,7 +48,8 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 		try {
 			IType declaringType = method.getDeclaringType();
 			JavadocContents javadocContents = findHtml(declaringType);
-			return new HtmlJavadoc(javadocContents.getMethodDoc(method));
+			String html = javadocContents == null ? null : javadocContents.getMethodDoc(method);
+			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
 			Log.log(e);
 			return null;
