@@ -16,6 +16,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.overzealous.remark.Remark;
 
@@ -158,6 +159,21 @@ public class Renderables {
 			@Override
 			public void renderAsHtml(HtmlBuffer buffer) {
 				buffer.text(text);
+			}
+		};
+	}
+	
+	public static Renderable lazy(Supplier<Renderable> supplier) {
+		return new Renderable() {
+			
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				supplier.get().renderAsMarkdown(buffer);
+			}
+			
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				supplier.get().renderAsHtml(buffer);
 			}
 		};
 	}

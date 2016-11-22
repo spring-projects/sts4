@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.commons.java.roaster;
 
 import org.jboss.forge.roaster.model.JavaDoc;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 public class RoasterJavadoc implements IJavadoc {
 	
@@ -13,22 +14,13 @@ public class RoasterJavadoc implements IJavadoc {
 
 	@Override
 	public String raw() {
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
-	@Override
-	public String plainText() {
 		return javadoc.getFullText();
 	}
 
 	@Override
-	public String html() {
+	public Renderable getRenderable() {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
-	@Override
-	public String markdown() {
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
 
 }

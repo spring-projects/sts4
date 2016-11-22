@@ -53,8 +53,6 @@ import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
-import org.springframework.ide.vscode.commons.util.ExternalProcess;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
@@ -126,40 +124,6 @@ public class MavenCore {
 		String text = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining());
 		Path dir = classPathFilePath.getParent();
 		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve);
-	}
-	
-	/**
-	 * Builds maven project
-	 * 
-	 * @param Path of the project
-	 * @throws Exception
-	 */
-	public static void buildMavenProject(Path projectPath) throws Exception {
-		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
-				? projectPath.resolve("mvnw.cmd") : projectPath.resolve("mvnw");
-		mvnwPath.toFile().setExecutable(true);
-		ExternalProcess process = new ExternalProcess(projectPath.toFile(),
-				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "clean", "package", "-DskipTests"), true);
-		if (process.getExitValue() != 0) {
-			throw new RuntimeException("Failed to build test project");
-		}
-	}
-
-	/**
-	 * Generate javadoc jar for maven project
-	 * 
-	 * @param Path of the project
-	 * @throws Exception
-	 */
-	public static void generateJavadocFolderForMavenProject(Path projectPath) throws Exception {
-		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win")
-				? projectPath.resolve("mvnw.cmd") : projectPath.resolve("mvnw");
-		mvnwPath.toFile().setExecutable(true);
-		ExternalProcess process = new ExternalProcess(projectPath.toFile(),
-				new ExternalCommand(mvnwPath.toAbsolutePath().toString(), "javadoc:javadoc"), true);
-		if (process.getExitValue() != 0) {
-			throw new RuntimeException("Failed to build test project");
-		}
 	}
 	
 	/**
