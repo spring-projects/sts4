@@ -7,9 +7,9 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Depre
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.HtmlBuffer;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -115,19 +115,18 @@ public class StsValueHint {
 
 	private static Renderable javaDocSnippet(IJavaElement je) {
 		try {
-			Supplier<HtmlSnippet> jdoc = Suppliers.memoize(() -> je.getJavaDoc());
+			Supplier<IJavadoc> jdoc = Suppliers.memoize(() -> je.getJavaDoc());
 			if (jdoc != null) {
 				return new Renderable() {
 
 					@Override
 					public void renderAsMarkdown(StringBuilder buffer) {
-						// TODO not correct md
-						buffer.append(jdoc.get().toString());
+						buffer.append(jdoc.get().markdown());
 					}
 
 					@Override
 					public void renderAsHtml(HtmlBuffer buffer) {
-						buffer.raw(jdoc.get().toHtml());
+						buffer.raw(jdoc.get().html());
 					}
 				};
 			}

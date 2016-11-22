@@ -60,6 +60,7 @@ public class ProjectsHarness {
 			switch (type) {
 			case MAVEN:
 				MavenCore.buildMavenProject(testProjectPath);
+//				MavenCore.generateJavadocFolderForMavenProject(testProjectPath);
 				return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 			case CLASSPATH_TXT:
 				MavenCore.buildMavenProject(testProjectPath);

@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 /**
  * Java project that contains classpath text file 
@@ -40,7 +40,7 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 	}
 
 	@Override
-	public HtmlSnippet getJavaDoc() {
+	public IJavadoc getJavaDoc() {
 		return null;
 	}
 
