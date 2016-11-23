@@ -44,6 +44,8 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Futures;
 
+import com.google.common.collect.ImmutableList;
+
 public class SimpleTextDocumentService implements TextDocumentService {
 
 	private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
@@ -167,7 +169,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletableFuture<CompletionList> NO_COMPLETIONS = Futures.of(
 			new CompletionList(false, Collections.emptyList()));
 
-	public final static CompletableFuture<Hover> NO_HOVER = Futures.of(null);
+	public final static CompletableFuture<Hover> NO_HOVER = Futures.of(new Hover(ImmutableList.of(), null));
 
 
 	@Override
