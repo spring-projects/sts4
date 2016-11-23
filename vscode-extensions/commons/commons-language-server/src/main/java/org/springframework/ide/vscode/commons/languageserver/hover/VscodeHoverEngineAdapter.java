@@ -29,14 +29,29 @@ import reactor.util.function.Tuple2;
 
 public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 
+	public enum HoverType {
+		MARKDOWN,
+		HTML
+	}
+
 	private HoverInfoProvider hoverInfoProvider;
 	private SimpleLanguageServer server;
+	private HoverType type;
 	final static Logger logger = LoggerFactory.getLogger(VscodeHoverEngineAdapter.class);
 
 
 	public VscodeHoverEngineAdapter(SimpleLanguageServer server, HoverInfoProvider hoverInfoProvider) {
+		this(server, hoverInfoProvider, HoverType.MARKDOWN);
+	}
+
+	public VscodeHoverEngineAdapter(SimpleLanguageServer server, HoverInfoProvider hoverInfoProvider, HoverType type) {
 		this.hoverInfoProvider = hoverInfoProvider;
 		this.server = server;
+		this.type = type;
+	}
+
+	public void setHoverType(HoverType type) {
+		this.type = type;
 	}
 
 	@Override
@@ -56,7 +71,7 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 					IRegion region = hoverTuple.getT2();
 					Range range = doc.toRange(region.getOffset(), region.getLength());
 
-					Hover hover = new Hover(Collections.singletonList(hoverInfo.toMarkdown()), range);
+					Hover hover = new Hover(Collections.singletonList(render(hoverInfo, type)), range);
 
 					return Futures.of(hover);
 				}
@@ -65,6 +80,17 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 			logger.error("error computing hover", e);
 		}
 		return SimpleTextDocumentService.NO_HOVER;
+	}
+
+	private static String render(Renderable renderable, HoverType type) {
+		switch (type) {
+		case HTML:
+			return renderable.toHtml();
+		case MARKDOWN:
+			return renderable.toMarkdown();
+		default:
+			return renderable.toMarkdown();
+		}
 	}
 
 }

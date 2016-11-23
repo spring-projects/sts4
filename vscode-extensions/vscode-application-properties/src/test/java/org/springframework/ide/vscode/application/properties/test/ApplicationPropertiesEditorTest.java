@@ -20,6 +20,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.ApplicationPropertiesLanguageServer;
@@ -27,7 +29,7 @@ import org.springframework.ide.vscode.application.properties.metadata.CachingVal
 import org.springframework.ide.vscode.application.properties.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -37,9 +39,6 @@ import org.springframework.ide.vscode.properties.editor.test.harness.StyledStrin
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
-import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.Diagnostic;
-
 /**
  * Boot App Properties Editor tests
  * 
@@ -47,8 +46,6 @@ import org.eclipse.lsp4j.Diagnostic;
  *
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
-	
-	private JavaProjectFinder javaProjectFinder;
 	
 	@Test public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
@@ -171,7 +168,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void testHoverInfos() throws Exception {
+	@Test public void testHoverInfos() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"#foo\n" +
@@ -187,7 +184,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverText("logging.", "<b>logging.level</b>");
 	}
 
-	@Ignore @Test public void testHoverInfosWithSpaces() throws Exception {
+	@Test public void testHoverInfosWithSpaces() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"#foo\n" +
@@ -204,7 +201,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverText("logging.", "<b>logging.level</b>");
 	}
 
-	@Ignore @Test public void testHoverLongAndShort() throws Exception {
+	@Test public void testHoverLongAndShort() throws Exception {
 		data("server.port", INTEGER, 8080, "Port where server listens for http.");
 		data("server.port.fancy", BOOLEAN, 8080, "Whether the port is fancy.");
 		Editor editor = newEditor(
@@ -917,7 +914,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyHoverInfo() throws Exception {
+	@Test public void testDeprecatedPropertyHoverInfo() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
 		Editor editor = newEditor(
 				"# a comment\n"+
@@ -1334,7 +1331,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		}
 	}
 
-	@Ignore @Test public void testClassReferenceCompletion() throws Exception {
+	 @Ignore @Test public void testClassReferenceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));
@@ -1523,7 +1520,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumJavaDocShownInValueHover() throws Exception {
+	@Test public void testEnumJavaDocShownInValueHover() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
@@ -1563,6 +1560,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	protected SimpleLanguageServer newLanguageServer() {
 		ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
 		server.setMaxCompletionsNumber(-1);
+		server.setHoverType(HoverType.HTML);
 		return server;
 	}
 

@@ -329,8 +329,13 @@ public class Editor {
 	 * computed when hovering mouse at position at the end of first occurrence of
 	 * a given string in the editor.
 	 */
-	public void assertHoverText(String afterString, String expectSnippet) {
-		throw new UnsupportedOperationException("Not implemented yet!");
+	public void assertHoverText(String afterString, String expectSnippet) throws Exception {
+		int pos = getRawText().indexOf(afterString);
+		if (pos>=0) {
+			pos += afterString.length();
+		}
+		Hover hover = harness.getHover(document, document.toPosition(pos));
+		assertContains(expectSnippet, hover.getContents().toString());
 	}
 
 	public void setSelection(int start, int end) {

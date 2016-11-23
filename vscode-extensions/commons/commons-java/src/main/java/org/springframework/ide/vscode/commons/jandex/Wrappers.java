@@ -2,20 +2,14 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import static org.springframework.ide.vscode.commons.util.Assert.isNotNull;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.jandex.Type.Kind;
-import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaType;
@@ -25,257 +19,32 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class Wrappers {
 	
-	private static final String JANDEX_CONTRUCTOR_NAME = "<init>";
-
 	public static IType wrap(JandexIndex index, ClassInfo info, IJavadocProvider javadocProvider) {
 		if (info == null) {
 			return null;
 		}
-		return new IType() {
-
-			@Override
-			public int getFlags() {
-				return info.flags();
-			}
-
-			@Override
-			public IType getDeclaringType() {
-				DotName enclosingClass = info.enclosingClass();
-				return enclosingClass == null ? null : index.getClassByName(enclosingClass);
-			}
-
-			@Override
-			public String getElementName() {
-				return info.simpleName() == null ? info.name().local() : info.simpleName();
-			}
-
-			@Override
-			public IJavadoc getJavaDoc() {
-				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
-			}
-
-			@Override
-			public boolean exists() {
-				return true;
-			}
-
-			@Override
-			public Stream<IAnnotation> getAnnotations() {
-				// TODO: check correctness!
-				return info.annotations().get(info.name()).stream().map(a -> wrap(a, javadocProvider));
-			}
-
-			@Override
-			public boolean isClass() {
-				return true;
-			}
-
-			@Override
-			public boolean isEnum() {
-				return Flags.isEnum(info.flags());
-			}
-
-			@Override
-			public boolean isInterface() {
-				return Flags.isInterface(info.flags());
-			}
-
-			@Override
-			public boolean isAnnotation() {
-				return Flags.isAnnotation(info.flags());
-			}
-						
-			@Override
-			public String getFullyQualifiedName() {
-				return info.name().toString();
-			}
-
-			@Override
-			public IField getField(String name) {
-				return wrap(index, info.field(name), javadocProvider);
-			}
-
-			@Override
-			public Stream<IField> getFields() {
-				return info.fields().stream().map(f -> {
-					return wrap(index, f, javadocProvider);
-				});
-			}
-
-			@Override
-			public IMethod getMethod(String name, Stream<IJavaType> parameters) {
-				List<Type> typeParameters = parameters.map(Wrappers::from).collect(Collectors.toList());
-				return wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), javadocProvider);
-			}
-
-			@Override
-			public Stream<IMethod> getMethods() {
-				return info.methods().stream().map(m -> {
-					return wrap(index, m, javadocProvider);
-				});
-			}
-
-			@Override
-			public String toString() {
-				return info.toString();
-			}
-
-		};
+		return new TypeImpl(index, info, javadocProvider);
 	}
 	
 	public static IField wrap(JandexIndex index, FieldInfo field, IJavadocProvider javadocProvider) {
 		if (field == null) {
 			return null;
 		}
-		return new IField() {
-
-			@Override
-			public int getFlags() {
-				return field.flags();
-			}
-
-			@Override
-			public IType getDeclaringType() {
-				return wrap(index, field.declaringClass(), javadocProvider);
-			}
-
-			@Override
-			public String getElementName() {
-				return field.name();
-			}
-
-			@Override
-			public IJavadoc getJavaDoc() {
-				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
-			}
-
-			@Override
-			public boolean exists() {
-				return true;
-			}
-
-			@Override
-			public Stream<IAnnotation> getAnnotations() {
-				return field.annotations().stream().map(a -> {
-					return wrap(a, javadocProvider);
-				});
-			}
-
-			@Override
-			public boolean isEnumConstant() {
-				return Flags.isEnum(field.flags());
-			}
-			
-			@Override
-			public String toString() {
-				return field.toString();
-			}
-		};
+		return new FieldImpl(index, field, javadocProvider);
 	}
 
 	public static IMethod wrap(JandexIndex index, MethodInfo method, IJavadocProvider javadocProvider) {
 		isNotNull(index);
 		isNotNull(method);
-		return new IMethod() {
-
-			@Override
-			public int getFlags() {
-				return method.flags();
-			}
-			
-			@Override
-			public boolean isConstructor() {
-				return method.name().equals(JANDEX_CONTRUCTOR_NAME);
-			}
-
-			@Override
-			public IType getDeclaringType() {
-				return wrap(index, method.declaringClass(), javadocProvider);
-			}
-
-			@Override
-			public String getElementName() {
-				return isConstructor() ? getDeclaringType().getElementName() : method.name();
-			}
-
-			@Override
-			public IJavadoc getJavaDoc() {
-				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
-			}
-
-			@Override
-			public boolean exists() {
-				return true;
-			}
-
-			@Override
-			public Stream<IAnnotation> getAnnotations() {
-				return method.annotations().stream().map(a -> wrap(a, javadocProvider));
-			}
-
-			@Override
-			public IJavaType getReturnType() {
-				return wrap(method.returnType());
-			}
-
-//			@Override
-//			public String getSignature() {
-//				StringBuilder sb = new StringBuilder();
-//				sb.append('(');
-//				method.parameters().forEach(p -> sb.append(signature(p)));
-//				sb.append(')');
-//				sb.append(getReturnType());
-//				return sb.toString();
-//			}
-			
-			@Override
-			public String toString() {
-				return method.toString();
-			}
-
-			@Override
-			public Stream<IJavaType> parameters() {
-				return method.parameters().stream().map(Wrappers::wrap);
-			}
-
-		};
+		return new MethodImpl(index, method, javadocProvider);
 	}
 	
 	public static IAnnotation wrap(AnnotationInstance annotation, IJavadocProvider javadocProvider) {
 		isNotNull(annotation);
-		return new IAnnotation() {
-
-			@Override
-			public String getElementName() {
-				return annotation.name().toString();
-			}
-
-			@Override
-			public IJavadoc getJavaDoc() {
-				return javadocProvider == null ? null : javadocProvider.getJavadoc(this);
-			}
-
-			@Override
-			public boolean exists() {
-				return true;
-			}
-
-			@Override
-			public Stream<IMemberValuePair> getMemberValuePairs() {
-				return annotation.values().stream().map(av -> {
-					return wrap(av);
-				});
-			}
-			
-			@Override
-			public String toString() {
-				return annotation.toString();
-			}
-		};
+		return new AnnotationImpl(annotation, javadocProvider);
 	}
 	
 	public static IMemberValuePair wrap(AnnotationValue annotationValue) {
@@ -324,7 +93,7 @@ public class Wrappers {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static Type from(IJavaType type) {
+	static Type from(IJavaType type) {
 		if (type == IPrimitiveType.BOOLEAN) {
 			return PrimitiveType.BOOLEAN;
 		} else if (type == IPrimitiveType.BYTE) {

@@ -12,6 +12,7 @@ public interface JavadocConstants {
 	char[] FIELD_DETAIL= "<!-- ============ FIELD DETAIL =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] FIELD_SUMMARY = "<!-- =========== FIELD SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] ENUM_CONSTANT_SUMMARY = "<!-- =========== ENUM CONSTANT SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
+	char[] ENUM_CONSTANT_DETAIL = "<!-- ============ ENUM CONSTANT DETAIL =========== -->".toCharArray();
 	char[] ANNOTATION_TYPE_REQUIRED_MEMBER_SUMMARY = "<!-- =========== ANNOTATION TYPE REQUIRED MEMBER SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] ANNOTATION_TYPE_OPTIONAL_MEMBER_SUMMARY = "<!-- =========== ANNOTATION TYPE OPTIONAL MEMBER SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] END_OF_CLASS_DATA = "<!-- ========= END OF CLASS DATA ========= -->".toCharArray(); //$NON-NLS-1$

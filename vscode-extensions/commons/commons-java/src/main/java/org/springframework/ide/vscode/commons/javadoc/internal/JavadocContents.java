@@ -17,11 +17,13 @@ public class JavadocContents {
 	
 	private boolean hasComputedChildrenSections = false;
 	private int indexOfFieldDetails;
+	private int indexOfEnumConstantsDetails;
 	private int indexOfConstructorDetails;
 	private int indexOfMethodDetails;
 	private int indexOfEndOfClassData;
 	
 	private int indexOfFieldsBottom;
+	private int indexOfEnumConstantsBottom;
 	private int indexOfAllMethodsTop;
 	private int indexOfAllMethodsBottom;
 	
@@ -225,10 +227,14 @@ public class JavadocContents {
 		int lastIndex = CharOperation.indexOf(JavadocConstants.SEPARATOR_START, this.content, false, this.childrenStart);
 		lastIndex = lastIndex == -1 ? this.childrenStart : lastIndex;
 
+		// try to find enum cosntants detail start
+		this.indexOfEnumConstantsDetails = CharOperation.indexOf(JavadocConstants.ENUM_CONSTANT_DETAIL, this.content, false, lastIndex);
+		lastIndex = this.indexOfEnumConstantsDetails == -1 ? lastIndex : this.indexOfEnumConstantsDetails;
+
 		// try to find field detail start
 		this.indexOfFieldDetails = CharOperation.indexOf(JavadocConstants.FIELD_DETAIL, this.content, false, lastIndex);
 		lastIndex = this.indexOfFieldDetails == -1 ? lastIndex : this.indexOfFieldDetails;
-		
+				
 		// try to find constructor detail start
 		this.indexOfConstructorDetails = CharOperation.indexOf(JavadocConstants.CONSTRUCTOR_DETAIL, this.content, false, lastIndex);
 		lastIndex = this.indexOfConstructorDetails == -1 ? lastIndex : this.indexOfConstructorDetails;
@@ -242,6 +248,16 @@ public class JavadocContents {
 		this.indexOfEndOfClassData = CharOperation.indexOf(JavadocConstants.END_OF_CLASS_DATA, this.content, false, lastIndex);
 		int[] classDataRange = sanitizeRange(new int[] { indexOfStartOfClassData + JavadocConstants.START_OF_CLASS_DATA.length, indexOfEndOfClassData}, "ul", "li", "div");
 		this.indexOfEndOfClassData = classDataRange[1];
+		
+		// try to find enum constants bottom
+		this.indexOfEnumConstantsBottom = this.indexOfFieldDetails != -1 ? this.indexOfFieldDetails
+				: this.indexOfConstructorDetails != -1 ? this.indexOfConstructorDetails
+						: this.indexOfMethodDetails != -1 ? this.indexOfMethodDetails : this.indexOfEndOfClassData;
+		
+		// Get rid of possible <ul><li> tag wrappers
+		int[] fieldsRange = sanitizeRange(new int[] {indexOfEnumConstantsDetails + JavadocConstants.ENUM_CONSTANT_DETAIL.length, indexOfEnumConstantsBottom}, "ul", "li", "div");
+		indexOfEnumConstantsDetails = fieldsRange[0];
+		indexOfEnumConstantsBottom = fieldsRange[1];
 		
 		// try to find the field detail end
 		this.indexOfFieldsBottom =
@@ -257,7 +273,7 @@ public class JavadocContents {
 		this.indexOfAllMethodsBottom = this.indexOfEndOfClassData;
 	
 		// Get rid of possible <ul><li> tag wrappers
-		int[] fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom}, "ul", "li", "div");
+		fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom}, "ul", "li", "div");
 		indexOfFieldDetails = fieldsRange[0];
 		indexOfFieldsBottom = fieldsRange[1];
 
@@ -303,8 +319,10 @@ public class JavadocContents {
 		char[] anchor = String.valueOf(buffer).toCharArray();
 		
 		int[] range = null;
+		int top = field.isEnumConstant() ? this.indexOfEnumConstantsDetails : this.indexOfFieldDetails;
+		int bottom = field.isEnumConstant() ? this.indexOfEnumConstantsBottom : this.indexOfFieldsBottom;
 		
-		if (this.indexOfFieldDetails == -1 || this.indexOfFieldsBottom == -1) {
+		if (top == -1 || bottom == -1) {
 			// the detail section has no top or bottom, so the doc has an unknown format
 			if (this.unknownFormatAnchorIndexes == null) {
 				this.unknownFormatAnchorIndexes = new int[(int)type.getFields().count()];
@@ -316,7 +334,7 @@ public class JavadocContents {
 			this.tempAnchorIndexesCount = this.unknownFormatAnchorIndexesCount;
 			this.tempLastAnchorFoundIndex = this.unknownFormatLastAnchorFoundIndex;
 			
-			range = computeChildRange(anchor, this.indexOfFieldsBottom);
+			range = computeChildRange(anchor, bottom);
 			
 			this.unknownFormatLastAnchorFoundIndex = this.tempLastAnchorFoundIndex;
 			this.unknownFormatAnchorIndexesCount = this.tempAnchorIndexesCount;
@@ -325,14 +343,14 @@ public class JavadocContents {
 			if (this.fieldAnchorIndexes == null) {
 				this.fieldAnchorIndexes = new int[(int)type.getFields().count()];
 				this.fieldAnchorIndexesCount = 0;
-				this.fieldLastAnchorFoundIndex = this.indexOfFieldDetails;
+				this.fieldLastAnchorFoundIndex = top;
 			}
 			
 			this.tempAnchorIndexes = this.fieldAnchorIndexes;
 			this.tempAnchorIndexesCount = this.fieldAnchorIndexesCount;
 			this.tempLastAnchorFoundIndex = this.fieldLastAnchorFoundIndex;
 			
-			range = computeChildRange(anchor, this.indexOfFieldsBottom);
+			range = computeChildRange(anchor, bottom);
 			
 			this.fieldLastAnchorFoundIndex = this.tempLastAnchorFoundIndex;
 			this.fieldAnchorIndexesCount = this.tempAnchorIndexesCount;

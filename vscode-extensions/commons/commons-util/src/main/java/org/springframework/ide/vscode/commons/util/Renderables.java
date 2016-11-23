@@ -34,24 +34,33 @@ public class Renderables {
 
 	public static final Renderable NO_DESCRIPTION = italic(text(NO_DESCRIPTION_TEXT));
 	
-	private static Remark getHtmlToMarkdownConverter() {
+	public static Remark getHtmlToMarkdownConverter() {
 		return new Remark();
 	}
-
-	public static Renderable htmlBlob(String html) {
+	
+	@FunctionalInterface
+	public interface HtmlContentFiller {
+		void fill(HtmlBuffer buffer);
+	}
+	
+	public static Renderable htmlBlob(HtmlContentFiller contentFiller) {
 		return new Renderable() {
 
 			@Override
 			public void renderAsHtml(HtmlBuffer buffer) {
-				buffer.raw(html);
+				contentFiller.fill(buffer);
 			}
 
 			@Override
 			public void renderAsMarkdown(StringBuilder buffer) {
-				buffer.append(getHtmlToMarkdownConverter().convert(html));
+				buffer.append(getHtmlToMarkdownConverter().convert(toHtml()));
 			}
 			
 		};
+	}
+
+	public static Renderable htmlBlob(String html) {
+		return htmlBlob(buffer -> buffer.raw(html));
 	}
 	
 	public static Renderable concat(Renderable... pieces) {

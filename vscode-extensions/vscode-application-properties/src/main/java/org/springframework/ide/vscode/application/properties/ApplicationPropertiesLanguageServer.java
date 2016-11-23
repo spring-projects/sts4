@@ -14,10 +14,13 @@ import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.application.properties.completions.SpringPropertiesCompletionEngine;
+import org.springframework.ide.vscode.application.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -35,6 +38,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	private TypeUtilProvider typeUtilProvider;
 	private VscodeCompletionEngineAdapter completionEngine;
 	private SpringPropertiesReconcileEngine reconcileEngine;
+	private VscodeHoverEngineAdapter hoverEngine;
 
 
 	public ApplicationPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
@@ -57,7 +61,10 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 		completionEngine.setMaxCompletionsNumber(40);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
-
+		
+		PropertiesHoverInfoProvider hoverInfoProvider = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
+		hoverEngine = new VscodeHoverEngineAdapter(this, hoverInfoProvider);
+		documents.onHover(hoverEngine::getHover);
 	}
 	
 	public void setMaxCompletionsNumber(int number) {
@@ -66,6 +73,10 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	
 	public void setRecordSyntaxErrors(boolean record) {
 		reconcileEngine.setRecordSyntaxErrors(record);
+	}
+	
+	public void setHoverType(HoverType type) {
+		hoverEngine.setHoverType(type);
 	}
 	
 	@Override
@@ -77,6 +88,8 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
+		
+		c.setHoverProvider(true);
 		
 		return c;
 	}
