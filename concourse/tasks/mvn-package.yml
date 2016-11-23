@@ -1,3 +1,13 @@
+# This is meant to be run as a local task
+# I.e. you upload the code from local hd and 
+# It gets built in concourse ci
+#
+# To run it:
+#
+#  - cd to the top of sts4 git repo on your machine
+#  - git clean -fxd (to avoid sending stuff that's not needed like locally built crap in maven target dirs)
+#       Caution! This command may delete files you may still want (if they are new and not yet tracked by git)
+#  - fly -t tools execute -c concourse/tasks/mvn-package.yml
 ---
 platform: linux
 
