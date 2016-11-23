@@ -63,6 +63,8 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
+		
+		YAtomicType t_health_check_type = f.yenum("Health Check Type", "none", "port");
 
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
 		t_strictly_pos_integer.parseWith(ManifestYmlValueParsers.integerAtLeast(1));
@@ -94,7 +96,8 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("random-route", t_boolean),
 			f.yprop("services", t_strings),
 			f.yprop("stack", t_string),
-			f.yprop("timeout", t_pos_integer)
+			f.yprop("timeout", t_pos_integer),
+			f.yprop("health-check-type", t_health_check_type)
 		};
 
 		for (YTypedPropertyImpl prop : props) {

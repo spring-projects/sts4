@@ -38,7 +38,7 @@ public class EnumValueParser implements ValueParser {
 		if (values.contains(str)) {
 			return str;
 		} else {
-			throw new IllegalArgumentException("'"+str+"' is not valid for Enum '"+typeName+"'");
+			throw new IllegalArgumentException("'"+str+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values);
 		}
 	}
 
