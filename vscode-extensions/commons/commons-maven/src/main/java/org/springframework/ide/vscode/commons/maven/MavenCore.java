@@ -86,12 +86,9 @@ public class MavenCore {
 		try {
 			return new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), (classpathResource) -> {
 				try {
-					String javaVersion = "8";
-					try {
-						String fullVersion = getJavaRuntimeVersion();
-						javaVersion = fullVersion.substring(fullVersion.indexOf('.') + 1, fullVersion.lastIndexOf('.'));
-					} catch (MavenException e) {
-						Log.log("Cannot determine Java runtime version. Defaulting to version 8", e);
+					String javaVersion = getJavaRuntimeMinorVersion();
+					if (javaVersion == null) {
+						javaVersion = "8";
 					}
 					URL javadocUrl = new URL("http://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
 					return new HtmlJavadocProvider((type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER.sourceUrl(javadocUrl, type));
@@ -260,8 +257,23 @@ public class MavenCore {
 		return Arrays.stream(s.split(File.pathSeparator)).map(File::new).filter(f -> f.canRead()).map(f -> Paths.get(f.toURI()));
 	}
 	
-	private String getJavaRuntimeVersion() throws MavenException {
+	public String getJavaRuntimeVersion() throws MavenException {
 		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_RUNTIME_VERSION);
+	}
+	
+	public String getJavaRuntimeMinorVersion() {
+		try {
+			String fullVersion = getJavaRuntimeVersion();
+			String[] tokenized = fullVersion.split("\\.");
+			if (tokenized.length > 1) {
+				return tokenized[1];
+			} else {
+				Log.log("Cannot determine minor version for the Java Runtime Version: " + fullVersion);
+			}
+		} catch (MavenException e) {
+			Log.log("Cannot determine Java runtime version. Defaulting to version 8", e);
+		}
+		return null;
 	}
 	
 	private String getJavaHome() throws MavenException {
