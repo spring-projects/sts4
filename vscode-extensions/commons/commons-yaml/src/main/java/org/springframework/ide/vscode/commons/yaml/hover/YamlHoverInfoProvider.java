@@ -63,30 +63,32 @@ public class YamlHoverInfoProvider implements HoverInfoProvider {
 		YamlFileAST ast = getAst(doc);
 		if (ast != null) {
 			IRegion region = getHoverRegion(ast, offset);
-			YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);
-			YamlAssistContext assistContext = assistContextProvider.getGlobalAssistContext(ymlDoc);
-			if (assistContext != null) {
-				List<NodeRef<?>> astPath = ast.findPath(offset);
-				final YamlPath path = YamlPath.fromASTPath(astPath);
-				if (path != null) {
-					YamlPath assistPath = path;
-					if (assistPath.pointsAtKey()) {
-						// When a path points at a key we must tramsform it to a
-						// 'value-terminating path'
-						// to be able to reuse the 'getHoverInfo' method on
-						// YamlAssistContext (as navigation
-						// into 'key' is not defined for YamlAssistContext.
-						String key = path.getLastSegment().toPropString();
-						assistPath = path.dropLast().append(YamlPathSegment.valueAt(key));
-					}
-					assistContext = assistPath.traverse(assistContext);
-					if (assistContext != null) {
-						if (path.pointsAtValue()) {
-							Renderable info = assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region));
+			if (region!=null) {
+				YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);
+				YamlAssistContext assistContext = assistContextProvider.getGlobalAssistContext(ymlDoc);
+				if (assistContext != null) {
+					List<NodeRef<?>> astPath = ast.findPath(offset);
+					final YamlPath path = YamlPath.fromASTPath(astPath);
+					if (path != null) {
+						YamlPath assistPath = path;
+						if (assistPath.pointsAtKey()) {
+							// When a path points at a key we must tramsform it to a
+							// 'value-terminating path'
+							// to be able to reuse the 'getHoverInfo' method on
+							// YamlAssistContext (as navigation
+							// into 'key' is not defined for YamlAssistContext.
+							String key = path.getLastSegment().toPropString();
+							assistPath = path.dropLast().append(YamlPathSegment.valueAt(key));
+						}
+						assistContext = assistPath.traverse(assistContext);
+						if (assistContext != null) {
+							if (path.pointsAtValue()) {
+								Renderable info = assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region));
+								return Tuples.of(info, region);
+							}
+							Renderable info = assistContext.getHoverInfo();
 							return Tuples.of(info, region);
 						}
-						Renderable info = assistContext.getHoverInfo();
-						return Tuples.of(info, region);
 					}
 				}
 			}
