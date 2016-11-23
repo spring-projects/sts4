@@ -1557,14 +1557,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Test public void testNoHoverForUnrecognizedProperty() throws Exception {
-		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
-
+		// Thus property with letter 'g' exists. Important.
+		data("debug", "java.lang.String", null, "Some debug property.");
 		Editor editor;
 
 		editor = newEditor(
-				"my.ggggg: 6754"
+				"ggggg.kkkk: 6754"
 		);
-		editor.assertNoHover("my.ggggg");
+		editor.assertNoHover("ggggg.kkkk");
 	}
 
 	@Override
