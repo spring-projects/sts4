@@ -1556,6 +1556,17 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertLinkTargets("red", "demo.Color.RED");
 	}
 
+	@Test public void testNoHoverForUnrecognizedProperty() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+
+		Editor editor;
+
+		editor = newEditor(
+				"my.ggggg: 6754"
+		);
+		editor.assertNoHover("my.ggggg");
+	}
+
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);

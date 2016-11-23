@@ -1,6 +1,7 @@
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
 
@@ -320,8 +321,10 @@ public class Editor {
 		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
 		assertContains(snippet, hover.getContents().toString());	}
 
-	public void assertNoHover(String string) {
-		throw new UnsupportedOperationException("Not implemented yet!");
+	public void assertNoHover(String hoverOver) throws Exception {
+		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
+		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		assertTrue(hover.getContents().isEmpty());
 	}
 
 	/**

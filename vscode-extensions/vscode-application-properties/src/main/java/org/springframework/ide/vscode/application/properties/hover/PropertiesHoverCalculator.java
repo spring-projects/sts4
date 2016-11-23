@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -20,7 +21,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
@@ -138,27 +138,32 @@ class PropertiesHoverCalculator {
 	 * Search known properties for the best 'match' to show as hover data.
 	 */
 	private PropertyInfo findBestHoverMatch(String propName) {
-		//TODO: optimize, should be able to use index's treemap to find this without iterating all entries.
-		PropertyInfo best = null;
-		int bestCommonPrefixLen = 0; //We try to pick property with longest common prefix
-		int bestExtraLen = Integer.MAX_VALUE;
-		for (PropertyInfo candidate : index) {
-			int commonPrefixLen = StringUtil.commonPrefixLength(propName, candidate.getId());
-			int extraLen = candidate.getId().length()-commonPrefixLen;
-			if (commonPrefixLen==propName.length() && extraLen==0) {
-				//exact match found, can stop searching for better matches
-				return candidate;
-			}
-			//candidate is better if...
-			if (commonPrefixLen>bestCommonPrefixLen // it has a longer common prefix
-			|| commonPrefixLen==bestCommonPrefixLen && extraLen<bestExtraLen //or same common prefix but fewer extra chars
-			) {
-				bestCommonPrefixLen = commonPrefixLen;
-				bestExtraLen = extraLen;
-				best = candidate;
-			}
+		PropertyInfo propertyInfo = index.get(propName);
+		if (propertyInfo == null) {
+			propertyInfo = SpringPropertyIndex.findLongestValidProperty(index, propName);
 		}
-		return best;
+		return propertyInfo;
+//		//TODO: optimize, should be able to use index's treemap to find this without iterating all entries.
+//		PropertyInfo best = null;
+//		int bestCommonPrefixLen = 0; //We try to pick property with longest common prefix
+//		int bestExtraLen = Integer.MAX_VALUE;
+//		for (PropertyInfo candidate : index) {
+//			int commonPrefixLen = StringUtil.commonPrefixLength(propName, candidate.getId());
+//			int extraLen = candidate.getId().length()-commonPrefixLen;
+//			if (commonPrefixLen==propName.length() && extraLen==0) {
+//				//exact match found, can stop searching for better matches
+//				return candidate;
+//			}
+//			//candidate is better if...
+//			if (commonPrefixLen>bestCommonPrefixLen // it has a longer common prefix
+//			|| commonPrefixLen==bestCommonPrefixLen && extraLen<bestExtraLen //or same common prefix but fewer extra chars
+//			) {
+//				bestCommonPrefixLen = commonPrefixLen;
+//				bestExtraLen = extraLen;
+//				best = candidate;
+//			}
+//		}
+//		return best;
 	}
 
 }
