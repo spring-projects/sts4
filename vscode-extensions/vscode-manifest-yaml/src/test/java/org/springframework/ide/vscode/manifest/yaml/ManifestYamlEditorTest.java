@@ -377,36 +377,39 @@ public class ManifestYamlEditorTest {
 	@Test
 	public void hoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
-				"memory: 1G\n" +
-		        "inherit: base-manifest.yml\n"+
-				"applications:\n" +
-				"- buildpack: zbuildpack\n" +
-				"  domain: zdomain\n" +
-				"  name: foo\n" + 
-				"  command: java main.java\n" +
-				"  disk_quota: 1024M\n" +
-				"  domains:\n" +
-				"  - pivotal.io\n" +
-				"  - otherdomain.org\n" +
-				"  env:\n" +
-                "    RAILS_ENV: production\n" +
-                "    RACK_ENV: production\n" +
-                "  host: apppage\n" +
-                "  hosts:\n" +
-                "  - apppage2\n" +
-                "  - appage3\n" + 
-                "  instances: 2\n" +
-                "  no-hostname: true\n" + 
-                "  no-route: true\n" + 
-                "  path: somepath/app.jar\n" +
-                "  random-route: true\n" +
-                "  services:\n" +
-                "  - instance_ABC\n" +
-                "  - instance_XYZ\n" +
-                "  stack: cflinuxfs2\n" +
-                "  timeout: 80\n" +
-                "  health-check-type: none\n"
+			"memory: 1G\n" +
+			"#comment\n" +
+			"inherit: base-manifest.yml\n"+
+			"applications:\n" +
+			"- buildpack: zbuildpack\n" +
+			"  domain: zdomain\n" +
+			"  name: foo\n" + 
+			"  command: java main.java\n" +
+			"  disk_quota: 1024M\n" +
+			"  domains:\n" +
+			"  - pivotal.io\n" +
+			"  - otherdomain.org\n" +
+			"  env:\n" +
+			"    RAILS_ENV: production\n" +
+			"    RACK_ENV: production\n" +
+			"  host: apppage\n" +
+			"  hosts:\n" +
+			"  - apppage2\n" +
+			"  - appage3\n" + 
+			"  instances: 2\n" +
+			"  no-hostname: true\n" + 
+			"  no-route: true\n" + 
+			"  path: somepath/app.jar\n" +
+			"  random-route: true\n" +
+			"  services:\n" +
+			"  - instance_ABC\n" +
+			"  - instance_XYZ\n" +
+			"  stack: cflinuxfs2\n" +
+			"  timeout: 80\n" +
+			"  health-check-type: none\n"
 		);
+		editor.assertNoHover("comment");
+		
 		editor.assertIsHoverRegion("memory");
 		editor.assertIsHoverRegion("inherit");
 		editor.assertIsHoverRegion("applications");
