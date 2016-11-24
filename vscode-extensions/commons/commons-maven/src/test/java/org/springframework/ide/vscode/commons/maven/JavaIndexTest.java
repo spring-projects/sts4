@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
@@ -50,6 +51,15 @@ public class JavaIndexTest {
 	
 	private static MavenJavaProject createMavenProject(Path projectPath) throws Exception {
 		return new MavenJavaProject(projectPath.resolve(MavenCore.POM_XML).toFile());
+	}
+	
+	private static boolean javaVersionHigherThan(int version) {
+		String versionStr = MavenCore.getInstance().getJavaRuntimeMinorVersion();
+		try {
+			return versionStr != null && Integer.valueOf(versionStr) > version;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 	
 	@Test
@@ -278,6 +288,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void html_testClassJavadoc() throws Exception {
+		Assume.assumeTrue(javaVersionHigherThan(6));
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
@@ -295,6 +306,7 @@ public class JavaIndexTest {
 
 	@Test
 	public void html_testNestedClassJavadoc() throws Exception {
+		Assume.assumeTrue(javaVersionHigherThan(6));
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
@@ -311,6 +323,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void html_testMethodJavadoc() throws Exception {
+		Assume.assumeTrue(javaVersionHigherThan(6));
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
@@ -332,6 +345,8 @@ public class JavaIndexTest {
 	
 	@Test
 	public void html_testConstructorJavadoc() throws Exception {
+		Assume.assumeTrue(javaVersionHigherThan(6));
+		
 		MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 
 		MavenJavaProject project = createMavenProject(projectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file"));
