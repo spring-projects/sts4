@@ -408,7 +408,6 @@ public class ManifestYamlEditorTest {
 			"  timeout: 80\n" +
 			"  health-check-type: none\n"
 		);
-		editor.assertNoHover("comment");
 		
 		editor.assertIsHoverRegion("memory");
 		editor.assertIsHoverRegion("inherit");
@@ -453,6 +452,26 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
 	    editor.assertHoverContains("health-check-type", "Use the `health-check-type` attribute to");
+	}
+	
+	@Test
+	public void noHoverInfos() throws Exception {
+		Editor editor = harness.newEditor(
+		    "#comment\n" +
+			"applications:\n" +
+			"- buildpack: zbuildpack\n" +
+			"  name: foo\n" + 
+			"  domains:\n" +
+			"  - pivotal.io\n" +
+			"  - otherdomain.org\n"
+
+		);
+		editor.assertNoHover("comment");
+		
+		// May fail in the future if hover support is added, but if hover support is added in the future,
+		// it is expected that these should start to fail, as right now they have no hover
+		editor.assertNoHover("pivotal.io");
+		editor.assertNoHover("otherdomain.org");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

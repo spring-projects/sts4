@@ -82,12 +82,14 @@ public class YamlHoverInfoProvider implements HoverInfoProvider {
 						}
 						assistContext = assistPath.traverse(assistContext);
 						if (assistContext != null) {
-							if (path.pointsAtValue()) {
-								Renderable info = assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region));
+							Renderable info = path.pointsAtValue()
+									? assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region))
+									: assistContext.getHoverInfo();
+
+						    // Fix for: PT 134914895. If assist context cannot provide an info, then don't return a Tuple.
+							if (info != null) {
 								return Tuples.of(info, region);
 							}
-							Renderable info = assistContext.getHoverInfo();
-							return Tuples.of(info, region);
 						}
 					}
 				}
