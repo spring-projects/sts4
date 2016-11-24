@@ -87,7 +87,6 @@ public abstract class LaunguageServerApp {
 		Connection connection = null;
 		try {
 			LoggingFormat.startLogging();
-
 			connection = connectToNode();
 
 			run(connection);
@@ -110,17 +109,8 @@ public abstract class LaunguageServerApp {
 			InputStream in = socket.getInputStream();
 			OutputStream out = socket.getOutputStream();
 
-			OutputStream intercept = new OutputStream() {
-
-				@Override
-				public void write(int b) throws IOException {
-					out.write(b);
-				}
-			};
-
 			LOG.info("Connected to parent using socket on port " + port);
-
-			return new Connection(in, intercept, socket);
+			return new Connection(in, out, socket);
 		}
 		else {
 			InputStream in = System.in;
@@ -147,7 +137,6 @@ public abstract class LaunguageServerApp {
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
 				try {
-					LOG.info(""+msg);
 					consumer.consume(msg);
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
