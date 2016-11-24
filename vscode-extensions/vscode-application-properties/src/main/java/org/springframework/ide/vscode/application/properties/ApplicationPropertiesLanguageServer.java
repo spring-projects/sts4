@@ -58,7 +58,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 				javaProjectFinder
 		);
 		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
-		completionEngine.setMaxCompletionsNumber(40);
+		completionEngine.setMaxCompletionsNumber(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		
