@@ -166,11 +166,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		return doc;
 	}
 
-	public final static CompletableFuture<CompletionList> NO_COMPLETIONS = Futures.of(
-			new CompletionList(false, Collections.emptyList()));
+	public final static CompletionList NO_COMPLETIONS = new CompletionList(false, Collections.emptyList());
 
-	public final static CompletableFuture<Hover> NO_HOVER = Futures.of(new Hover(ImmutableList.of(), null));
-
+	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
 
 	@Override
 	public CompletableFuture<CompletionList> completion(TextDocumentPositionParams position) {
@@ -178,7 +176,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		if (h!=null) {
 			return completionHandler.handle(position);
 		}
-		return NO_COMPLETIONS;
+		return CompletableFuture.completedFuture(NO_COMPLETIONS);
 	}
 
 	@Override

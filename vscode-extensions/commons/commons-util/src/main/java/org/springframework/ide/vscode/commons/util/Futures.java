@@ -4,10 +4,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class Futures {
 
+	/**
+	 * Depcrecated. Use {@link CompletableFuture}.completedFuture() instead.
+	 */
+	@Deprecated
 	public static <T> CompletableFuture<T> of(T value) {
-		CompletableFuture<T> f = new CompletableFuture<T>();
-		f.complete(value);
-		return f;
+		return CompletableFuture.completedFuture(value);
 	}
 	
 }

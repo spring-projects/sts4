@@ -21,12 +21,12 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SRootNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SSeqNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 /**

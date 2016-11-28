@@ -39,8 +39,7 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	private VscodeCompletionEngineAdapter completionEngine;
 	private SpringPropertiesReconcileEngine reconcileEngine;
 	private VscodeHoverEngineAdapter hoverEngine;
-
-
+	
 	public ApplicationPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;

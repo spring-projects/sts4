@@ -20,21 +20,22 @@ import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 /**
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private final static int MAX_COMPLETIONS = 20;
-
 	private int maxCompletions = MAX_COMPLETIONS;
-
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
-
 	public static final String VS_CODE_CURSOR_MARKER = "{{}}";
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
+
 
 	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
 		this.server = server;
@@ -47,13 +48,20 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	@Override
 	public CompletableFuture<CompletionList> getCompletions(TextDocumentPositionParams params) {
-		//TODO: This returns a CompletableFuture which suggests we should try to do expensive work asyncly.
-		// We are currently just doing all this in a blocking way and wrapping the already computed list into
-		// a trivial pre-resolved future.
-		try {
-			SimpleTextDocumentService documents = server.getTextDocumentService();
-			TextDocument doc = documents.get(params);
-			if (doc!=null) {
+		return getCompletionsMono(params).toFuture();
+	}
+
+
+
+	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
+		SimpleTextDocumentService documents = server.getTextDocumentService();
+		TextDocument doc = documents.get(params);
+		if (doc!=null) {
+			return Mono.fromCallable(() -> {
+				//TODO: This callable is a 'big lump of work' so can't be canceled in pieces.
+				// Should we push using of reactive streems down further and compose this all
+				// using reactive style? If not then this is overkill could just as well use
+				// only standard Java AP such as Executor and CompletableFuture's directly.
 				int offset = doc.toOffset(params.getPosition());
 				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
@@ -75,12 +83,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				list.setItems(items);
-				return Futures.of(list);
-			}
-		} catch (Exception e) {
-			logger.error("error computing completions", e);
+				return list;
+			})
+			.subscribeOn(Schedulers.single()); //!!! without this the mono will just be computed on the same thread that calls it.
 		}
-		return SimpleTextDocumentService.NO_COMPLETIONS;
+		return Mono.just(SimpleTextDocumentService.NO_COMPLETIONS);
 	}
 
 	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
