@@ -59,9 +59,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		if (doc!=null) {
 			return Mono.fromCallable(() -> {
 				//TODO: This callable is a 'big lump of work' so can't be canceled in pieces.
-				// Should we push using of reactive streems down further and compose this all
+				// Should we push using of reactive streams down further and compose this all
 				// using reactive style? If not then this is overkill could just as well use
-				// only standard Java AP such as Executor and CompletableFuture's directly.
+				// only standard Java API such as Executor and CompletableFuture directly.
 				int offset = doc.toOffset(params.getPosition());
 				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
