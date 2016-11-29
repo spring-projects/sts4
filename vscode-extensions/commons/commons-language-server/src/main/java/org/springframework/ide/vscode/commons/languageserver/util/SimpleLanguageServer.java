@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,8 +33,6 @@ import org.springframework.ide.vscode.commons.util.Futures;
 public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware {
 
     private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
-
-    private Consumer<MessageParams> showMessage = m -> {};
 
     private Path workspaceRoot;
 
@@ -69,42 +66,22 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
         return CompletableFuture.completedFuture(result);
     }
 
-    //TODO: What happened to WindowService? Seems to be removed in lsp4j. So how can we show messages?
+	public void onError(String message, Throwable error) {
+		LanguageClient cl = this.client;
+		if (cl != null) {
+			if (error instanceof ShowMessageException)
+				client.showMessage(((ShowMessageException) error).message);
+			else {
+				LOG.log(Level.SEVERE, message, error);
 
-//    @Override
-//    public WindowService getWindowService() {
-//        return new WindowService() {
-//            @Override
-//            public void onShowMessage(Consumer<MessageParams> callback) {
-//                showMessage = callback;
-//            }
-//
-//            @Override
-//            public void onShowMessageRequest(Consumer<ShowMessageRequestParams> callback) {
-//
-//            }
-//
-//            @Override
-//            public void onLogMessage(Consumer<MessageParams> callback) {
-//
-//            }
-//        };
-//    }
+				MessageParams m = new MessageParams();
 
-    public void onError(String message, Throwable error) {
-        if (error instanceof ShowMessageException)
-            showMessage.accept(((ShowMessageException) error).message);
-        else {
-            LOG.log(Level.SEVERE, message, error);
-
-            MessageParams m = new MessageParams();
-
-            m.setMessage(message);
-            m.setType(MessageType.Error);
-
-            showMessage.accept(m);
-        }
-    }
+				m.setMessage(message);
+				m.setType(MessageType.Error);
+				client.showMessage(m);
+			}
+		}
+	}
 
 	protected abstract ServerCapabilities getServerCapabilities();
 
