@@ -15,6 +15,7 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
@@ -27,11 +28,11 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 
 /**
- * Language Server for Spring Boot Application Properties files
- * 
- * @author Alex Boyko
- *
+ * Deprecated: This should not be used. In fact it isn't used anymore, except for in the tests. 
+ * But these tests should be changed to test the 'merged' {@link BootPropertiesLanguageServer}
+ * instead.
  */
+@Deprecated
 public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 	
 	private SpringPropertyIndexProvider indexProvider;

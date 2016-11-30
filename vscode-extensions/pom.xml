@@ -12,8 +12,6 @@
 	<modules>
 		<module>commons</module>
 		<module>vscode-boot-properties</module>
-		<module>vscode-application-properties</module>
-		<module>vscode-application-yaml</module>
 		<module>vscode-manifest-yaml</module>
 	</modules>
 </project>

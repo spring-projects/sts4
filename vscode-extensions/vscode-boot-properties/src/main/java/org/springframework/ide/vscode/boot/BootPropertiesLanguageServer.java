@@ -19,11 +19,11 @@ import org.springframework.ide.vscode.application.properties.metadata.completion
 import org.springframework.ide.vscode.application.properties.metadata.completions.RelaxedNameConfig;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.application.yaml.completions.ApplicationYamlAssistContext;
-import org.springframework.ide.vscode.application.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
+import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
+import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
