@@ -10,24 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot;
 
-import static org.springframework.ide.vscode.commons.util.Providers.lazy;
-
-import javax.inject.Provider;
-
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.springframework.ide.vscode.application.properties.completions.SpringPropertiesCompletionEngine;
-import org.springframework.ide.vscode.application.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.application.properties.metadata.completions.PropertyCompletionFactory;
 import org.springframework.ide.vscode.application.properties.metadata.completions.RelaxedNameConfig;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.application.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.application.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.application.yaml.reconcile.ApplicationYamlReconcileEngine;
+import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
+import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
+import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;

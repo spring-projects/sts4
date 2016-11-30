@@ -35,14 +35,41 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>vscode-application-properties</artifactId>
+			<artifactId>java-properties</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-java</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>vscode-application-yaml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<!-- Test harness -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>project-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>properties-editor-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<plugins>
