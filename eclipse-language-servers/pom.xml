@@ -49,6 +49,8 @@
 
 		<tycho-version>0.26.0</tycho-version>
 		<encoding>UTF-8</encoding>
+		
+		<eclipse-lsp-support-repo>file:///${basedir}/../../../eclipse-language-service/repository/target/repository</eclipse-lsp-support-repo>
 	</properties>
 
 	<profiles>
@@ -118,7 +120,7 @@
 		<repository>
 			<id>eclipse-language-server-local-repo</id>
 			<layout>p2</layout>
-			<url>file:///${basedir}/../../../eclipse-language-service/repository/target/repository</url>
+			<url>${eclipse-lsp-support-repo}</url>
 		</repository>
 	</repositories>
 
