@@ -6,4 +6,10 @@
       <category name="Spring Boot IDE Language Servers for Eclipse"/>
    </feature>
    
+   <category-def name="deps" label="Dependencies"/>
+   
+   <bundle id="org.eclipse.languageserver">
+     <category name="deps"/>
+   </bundle>
+
 </site>
