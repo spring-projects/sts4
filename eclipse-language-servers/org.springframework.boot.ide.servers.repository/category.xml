@@ -6,6 +6,10 @@
       <category name="Spring Boot IDE Language Servers for Eclipse"/>
    </feature>
    
+   <feature id="org.springframework.boot.ide.cloudfoundry.server.feature">
+      <category name="Spring Boot IDE Language Servers for Eclipse"/>
+   </feature>
+   
    <category-def name="deps" label="Dependencies"/>
    
    <bundle id="org.eclipse.languageserver">

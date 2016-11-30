@@ -29,8 +29,10 @@
 	<modules>
 		<module>org.springframework.boot.ide.properties.servers</module>
 		<module>org.springframework.boot.ide.properties.servers.feature</module>
-<!--		<module>org.springframework.boot.ide.cloudfoundry.server</module>
-		<module>org.springframework.boot.ide.cloudfoundry.server.feature</module> -->
+
+		<module>org.springframework.boot.ide.cloudfoundry.server</module>
+		<module>org.springframework.boot.ide.cloudfoundry.server.feature</module>
+
 		<module>org.springframework.boot.ide.servers.repository</module>
 	</modules>
 

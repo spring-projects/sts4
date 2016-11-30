@@ -1,35 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.boot.ide</groupId>
-		<artifactId>org.springframework.boot.ide</artifactId>
+		<artifactId>org.springframework.boot.ide.servers</artifactId>
 		<version>4.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-  <artifactId>org.springframework.boot.ide.cloudfoundry.server</artifactId>
-  <packaging>eclipse-plugin</packaging>
+	<artifactId>org.springframework.boot.ide.cloudfoundry.server</artifactId>
+	<packaging>eclipse-plugin</packaging>
 
-  <build>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>vscode-manifest-yaml</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-plugin</artifactId>
-				<version>${tycho-version}</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
 				<executions>
 					<execution>
-						<id>second-generate-p2-metadata</id>
+						<id>copy</id>
+						<phase>prepare-package</phase>
 						<goals>
-							<goal>p2-metadata</goal>
+							<goal>copy</goal>
 						</goals>
-						<phase>verify</phase>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>vscode-manifest-yaml</artifactId>
+									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
-  </build>
+	</build>
+
 </project>

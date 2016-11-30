@@ -8,13 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.boot.ide.properties.servers;
+package org.springframework.boot.ide.cloudfoundry.server;
 
 /**
  * @author Martin Lippert
  */
 public class Constants {
-	
-	public static final String PLUGIN_ID = "org.springframework.boot.ide.properties.servers";
+
+	public static final String PLUGIN_ID = "org.springframework.boot.ide.cloudfoundry.server";
 
 }
