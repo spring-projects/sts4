@@ -26,7 +26,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
 public class PropertyCompletionFactory {
-
 	
 	public ICompletionProposal valueProposal(String value, String query, Type type, double score, DocumentEdits edits, ValueHintHoverInfo info) {
 		return new ScoreableProposal() {

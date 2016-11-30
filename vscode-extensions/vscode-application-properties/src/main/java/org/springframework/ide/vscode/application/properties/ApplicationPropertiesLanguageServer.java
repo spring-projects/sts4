@@ -70,10 +70,6 @@ public class ApplicationPropertiesLanguageServer extends SimpleLanguageServer {
 		completionEngine.setMaxCompletionsNumber(number);
 	}
 	
-	public void setRecordSyntaxErrors(boolean record) {
-		reconcileEngine.setRecordSyntaxErrors(record);
-	}
-	
 	public void setHoverType(HoverType type) {
 		hoverEngine.setHoverType(type);
 	}

@@ -69,16 +69,9 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	private final DelimitedListReconciler commaListReconciler = new DelimitedListReconciler(COMMA, this::reconcileType);
 	private Parser parser = new AntlrParser();
 
-	private boolean recordSyntaxErrors;
-
 	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider) {
-		this(provider, typeUtilProvider, true);
-	}
-
-	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider, boolean recordSyntaxErrors) {
 		this.fIndexProvider = provider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.recordSyntaxErrors = recordSyntaxErrors;
 	}
 	
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
@@ -88,12 +81,10 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			ParseResults results = parser.parse(doc.get());
 			DuplicateNameChecker duplicateNameChecker = new DuplicateNameChecker(problemCollector);
 			
-			if (recordSyntaxErrors) {
-				results.syntaxErrors.forEach(syntaxError -> {
-					problemCollector.accept(problem(PROP_SYNTAX_ERROR, syntaxError.getMessage(), syntaxError.getOffset(),
-							syntaxError.getLength()));
-				});
-			}
+			results.syntaxErrors.forEach(syntaxError -> {
+				problemCollector.accept(problem(PROP_SYNTAX_ERROR, syntaxError.getMessage(), syntaxError.getOffset(),
+						syntaxError.getLength()));
+			});
 			
 			if (index==null || index.isEmpty()) {
 				//don't report errors when index is empty, simply don't check (otherwise we will just reprot
@@ -136,14 +127,6 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		} finally {
 			problemCollector.endCollecting();
 		}
-	}
-	
-	public void setRecordSyntaxErrors(boolean recordSyntaxErrors) {
-		this.recordSyntaxErrors = recordSyntaxErrors;
-	}
-	
-	public boolean isRecordSyntaxErrors() {
-		return recordSyntaxErrors ;
 	}
 	
 	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property) {

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>vscode-application-yaml</artifactId>
+	<artifactId>vscode-boot-properties</artifactId>
 	<packaging>jar</packaging>
 	
 	<parent>
@@ -13,13 +13,6 @@
 	</parent>
 	
 	<repositories>
-		<!-- Local repository with tools.jar -->
-		<repository>
-			<id>jars-repository</id>
-			<name>Local repository for JAR files</name>
-			<url>file://${basedir}/repo</url>
-		</repository>
-
 		<!-- Sonatype snapshots repository -->
 		<repository>
 			<id>oss-sonatype</id>
@@ -40,53 +33,15 @@
 	</distributionManagement>
 	
 	<dependencies>
-		<!-- Language Servers -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-language-server</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!-- java knowledge engine -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-java</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!-- properties metadata indexer -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>application-properties-metadata</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!-- Yaml -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-yaml</artifactId>
+			<artifactId>vscode-application-properties</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.17</version>
-		</dependency>
-		<!-- Guava collections -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
-		<!-- Test harness -->
-		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>language-server-test-harness</artifactId>
+			<artifactId>vscode-application-yaml</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>properties-editor-test-harness</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -101,7 +56,7 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<!-- Configure fat jar 
+			<!-- Configure fat jar -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -113,7 +68,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> -->
+			</plugin>
 		</plugins>
 	</build>
 </project>

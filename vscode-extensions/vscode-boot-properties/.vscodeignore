@@ -1,0 +1,30 @@
+# IDE configs
+.vscode/**
+.idea/**
+*.iml
+javaconfig.json
+classpath.txt
+tsconfig.json
+tsd.json
+*.xml
+
+# Logs
+*.log*
+
+# Sources
+typings/**
+src/**
+test/**
+lib/**
+!lib/javaconfig.schema.json
+repo/**
+scripts/**
+
+# Compiler output
+out/test/**
+target/**
+!target/vscode-boot-properties-*.jar
+
+# Extensions
+.gitignore
+**/*.map
