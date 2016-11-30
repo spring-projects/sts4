@@ -15,11 +15,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.maven.project.MavenProject;
-import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 /**
  * Wrapper for Maven Core project
@@ -60,12 +62,22 @@ public class MavenJavaProject implements IJavaProject {
 	}
 
 	@Override
-	public IClasspath getClasspath() {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
+		return classpath.fuzzySearchType(searchTerm, typeFilter);
+	}
+	
+	@Override
+	public Flux<IType> allSubtypesOf(IType type) {
+		return classpath.allSubtypesOf(type);
+	}
+		
+	@Override
+	public MavenProjectClasspath getClasspath() {
 		return classpath;
 	}
 
 	public Path getOutputFolder() {
 		return Paths.get(new File(mavenProject.getBuild().getOutputDirectory()).toURI());
 	}
-		
+
 }

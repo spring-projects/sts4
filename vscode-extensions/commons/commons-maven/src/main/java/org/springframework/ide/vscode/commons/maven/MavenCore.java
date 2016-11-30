@@ -84,7 +84,7 @@ public class MavenCore {
 	
 	private Supplier<JandexIndex> javaCoreIndex = Suppliers.memoize(() -> {
 		try {
-			return new JandexIndex(getJreLibs(), jarFile -> findIndexFile(jarFile), (classpathResource) -> {
+			return new JandexIndex(getJreLibs().map(path -> path.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), (classpathResource) -> {
 				try {
 					String javaVersion = getJavaRuntimeMinorVersion();
 					if (javaVersion == null) {
@@ -283,7 +283,14 @@ public class MavenCore {
 	private File findIndexFile(File jarFile) {
 		String suffix = null;
 		try {
-			if (jarFile.toString().startsWith(getJavaHome())) {
+			String javaHome = getJavaHome();
+			if (javaHome != null) {
+				int index = javaHome.lastIndexOf('/');
+				if (index != -1) {
+					javaHome = javaHome.substring(0, index);
+				}
+			}
+			if (jarFile.toString().startsWith(javaHome)) {
 				suffix = getJavaRuntimeVersion();
 			}
 		} catch (MavenException e) {

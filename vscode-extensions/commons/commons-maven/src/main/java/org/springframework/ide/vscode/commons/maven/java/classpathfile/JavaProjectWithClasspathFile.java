@@ -18,6 +18,9 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
+
 /**
  * Java project that contains classpath text file 
  * 
@@ -56,6 +59,16 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 	}
 
 	@Override
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
+		return Flux.empty();
+	}
+
+	@Override
+	public Flux<IType> allSubtypesOf(IType type) {
+		return Flux.empty();
+	}
+
+	@Override
 	public IClasspath getClasspath() {
 		return classpath;
 	}
@@ -89,6 +102,5 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 			return false;
 		return true;
 	}
-
 
 }

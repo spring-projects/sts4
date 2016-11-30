@@ -1331,7 +1331,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		}
 	}
 
-	 @Ignore @Test public void testClassReferenceCompletion() throws Exception {
+	 @Test public void testClassReferenceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));

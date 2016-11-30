@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Type;
@@ -57,7 +58,8 @@ class TypeImpl implements IType {
 	@Override
 	public Stream<IAnnotation> getAnnotations() {
 		// TODO: check correctness!
-		return info.annotations().get(info.name()).stream().map(a -> Wrappers.wrap(a, javadocProvider));
+		List<AnnotationInstance> annotations = info.annotations().get(info.name());
+		return annotations == null ? Stream.empty() : annotations.stream().map(a -> Wrappers.wrap(a, javadocProvider));
 	}
 
 	@Override
@@ -117,13 +119,13 @@ class TypeImpl implements IType {
 
 	@Override
 	public int hashCode() {
-		return info.toString().hashCode();
+		return info.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof TypeImpl) {
-			return info.toString().equals(((TypeImpl)obj).info.toString());
+			return info.equals(((TypeImpl)obj).info);
 		}
 		return super.equals(obj);
 	}

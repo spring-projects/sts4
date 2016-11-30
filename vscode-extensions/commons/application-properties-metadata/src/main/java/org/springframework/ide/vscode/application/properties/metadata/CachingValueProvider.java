@@ -128,17 +128,17 @@ public abstract class CachingValueProvider implements ValueProviderStrategy {
 			}
 		}
 //		debug("full search for: "+query);
-		return getValuesAsycn(javaProject, query);
+		return getValuesAsync(javaProject, query);
 	}
 
-	protected abstract Flux<StsValueHint> getValuesAsycn(IJavaProject javaProject, String query);
+	protected abstract Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query);
 
 	private Tuple2<String,String> key(IJavaProject javaProject, String query) {
 		return Tuples.of(javaProject==null?null:javaProject.getElementName(), query);
 	}
 
 	protected <K,V> Cache<K,V> createCache() {
-		return CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).build();
+		return CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).expireAfterAccess(1, TimeUnit.MINUTES).build();
 	}
 
 	public static void restoreDefaults() {

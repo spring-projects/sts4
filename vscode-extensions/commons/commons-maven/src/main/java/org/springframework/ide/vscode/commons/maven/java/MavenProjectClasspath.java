@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
@@ -25,6 +26,7 @@ import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.java.roaster.RoasterJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
@@ -35,6 +37,9 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 /**
  * Classpath for a maven project
@@ -70,7 +75,7 @@ public class MavenProjectClasspath implements IClasspath {
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> {
+			return new JandexIndex(classpathEntries.map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
 				switch (providerType) {
 				case JAVA_PARSER:
 					return createParserJavadocProvider(classpathResource);
@@ -95,6 +100,14 @@ public class MavenProjectClasspath implements IClasspath {
 		return javaIndex.get().findType(fqName);
 	}
 	
+	public Flux<Tuple2<IType, Double>> fuzzySearchType(String searchTerm, TypeFilter typeFilter) {
+		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
+	}
+	
+	public Flux<IType> allSubtypesOf(IType type) {
+		return javaIndex.get().allSubtypesOf(type);
+	}
+
 	private File findIndexFile(File jarFile) {
 		return new File(maven.getIndexFolder().toString(), jarFile.getName() + "-" + jarFile.lastModified() + ".jdx");
 	}
@@ -219,5 +232,4 @@ public class MavenProjectClasspath implements IClasspath {
 		}
 	}
 
-	
 }

@@ -3,15 +3,18 @@ package org.springframework.ide.vscode.commons.maven;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assume;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
@@ -25,6 +28,8 @@ import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath.J
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import reactor.util.function.Tuple2;
 
 public class JavaIndexTest {
 	
@@ -60,6 +65,26 @@ public class JavaIndexTest {
 		} catch (NumberFormatException e) {
 			return false;
 		}
+	}
+	
+	@Test
+	public void fuzzySearchNoFilter() throws Exception {
+		List<Tuple2<IType, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+				.fuzzySearchTypes("util.Map", null)
+				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
+				.block();
+		assertTrue(results.size() > 10);
+		assertEquals("java.util.Map", results.get(0).getT1().getFullyQualifiedName());
+	}
+	
+	@Test
+	public void fuzzySearchWithFilter() throws Exception {
+		List<Tuple2<IType, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+				.fuzzySearchTypes("util.Map", (type) -> Flags.isPrivate(type.getFlags()))
+				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
+				.block();
+		assertTrue(results.size() > 10);
+		assertEquals("java.util.EnumMap$KeySet", results.get(0).getT1().getFullyQualifiedName());
 	}
 	
 	@Test
