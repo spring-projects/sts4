@@ -64,6 +64,11 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 	}
 
 	@Override
+	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
+		return Flux.empty();
+	}
+
+	@Override
 	public Flux<IType> allSubtypesOf(IType type) {
 		return Flux.empty();
 	}

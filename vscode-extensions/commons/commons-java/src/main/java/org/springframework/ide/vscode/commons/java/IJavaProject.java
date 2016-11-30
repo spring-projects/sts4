@@ -14,6 +14,8 @@ public interface IJavaProject extends IJavaElement {
 	
 	Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter);
 	
+	Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm);
+	
 	Flux<IType> allSubtypesOf(IType type);
 	
 	IClasspath getClasspath();

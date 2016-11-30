@@ -3,7 +3,7 @@
 <plugin>
 
    <extension
-         point="org.eclipse.languageserver.languageServer">
+         point="org.eclipse.lsp4e.languageServer">
       <server
             class="org.springframework.boot.ide.properties.servers.SpringBootPropertiesLanguageServer"
             id="org.eclipse.languageserver.languages.springbootproperties"

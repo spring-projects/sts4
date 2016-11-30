@@ -12,7 +12,7 @@
    
    <category-def name="deps" label="Dependencies"/>
    
-   <bundle id="org.eclipse.languageserver">
+   <bundle id="org.eclipse.lsp4e">
      <category name="deps"/>
    </bundle>
 

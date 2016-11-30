@@ -84,6 +84,8 @@ public class JandexIndex {
 	
 	private Map<File, Supplier<List<Tuple2<String, IType>>>> knownTypes;
 	
+	private Map<File, Supplier<List<String>>> knownPackages;
+	
 	private Cache<File, IJavadocProvider> javadocProvidersCache = CacheBuilder.newBuilder().build();
 
 	private JandexIndex[] baseIndex;
@@ -100,10 +102,12 @@ public class JandexIndex {
 		this.baseIndex = baseIndex;
 		this.index = new ConcurrentHashMap<>();
 		this.knownTypes = new HashMap<>();
+		this.knownPackages = new HashMap<>();
 		this.javadocProviderFactory = javadocProviderFactory;
 		classpathEntries.forEach(file -> {
 			index.put(file, Suppliers.memoize(() -> createIndex(file, indexFileFinder)));
 			knownTypes.put(file, Suppliers.memoize(() -> getKnownTypesStream(file).collect(Collectors.toList())));
+			knownPackages.put(file, Suppliers.memoize(() -> getKnownPackages(file).collect(Collectors.toList())));
 		});
 	}
 	
@@ -225,6 +229,21 @@ public class JandexIndex {
 		return Stream.empty();
 	}
 	
+	private Stream<String> getKnownPackages(File file) {
+		Optional<IndexView> indexView = index.get(file).get();
+		if (indexView.isPresent()) {
+			return indexView.get()
+					.getKnownClasses()
+					.parallelStream()
+					.map(info -> {
+						String name = info.name().toString();
+						return name.substring(0, name.lastIndexOf('.'));
+					})
+					.distinct();
+		}
+		return Stream.empty();
+	}
+	
 	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
 		Flux<Tuple2<IType, Double>> flux = Flux.fromIterable(knownTypes.values())
 				.publishOn(Schedulers.parallel())
@@ -236,6 +255,19 @@ public class JandexIndex {
 			return flux;
 		} else {
 			return Flux.merge(flux, Flux.fromArray(baseIndex).flatMap(index -> index.fuzzySearchTypes(searchTerm, typeFilter)));
+		}
+	}
+	
+	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
+		Flux<Tuple2<String, Double>> flux = Flux.fromIterable(knownPackages.values())
+				.publishOn(Schedulers.parallel())
+				.flatMap(s -> Flux.fromIterable(s.get()))
+				.map(pkg -> Tuples.of(pkg, FuzzyMatcher.matchScore(searchTerm, pkg)))
+				.filter(t -> t.getT2() != 0.0);
+		if (baseIndex == null) {
+			return flux;
+		} else {
+			return Flux.merge(flux, Flux.fromArray(baseIndex).flatMap(index -> index.fuzzySearchPackages(searchTerm)));
 		}
 	}
 	
