@@ -88,6 +88,16 @@ public class JavaIndexTest {
 	}
 	
 	@Test
+	public void fuzzySearchPackage() throws Exception {
+		List<Tuple2<String, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+				.fuzzySearchPackages("util")
+				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
+				.block();
+		assertTrue(results.size() > 10);
+		assertEquals("java.util", results.get(0).getT1());
+	}
+	
+	@Test
 	public void findClassInJar() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("org.springframework.test.web.client.ExpectedCount");

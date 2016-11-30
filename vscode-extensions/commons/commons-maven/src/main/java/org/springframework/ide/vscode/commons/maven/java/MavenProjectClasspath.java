@@ -104,6 +104,10 @@ public class MavenProjectClasspath implements IClasspath {
 		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
 	}
 	
+	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
+		return javaIndex.get().fuzzySearchPackages(searchTerm);
+	}
+
 	public Flux<IType> allSubtypesOf(IType type) {
 		return javaIndex.get().allSubtypesOf(type);
 	}

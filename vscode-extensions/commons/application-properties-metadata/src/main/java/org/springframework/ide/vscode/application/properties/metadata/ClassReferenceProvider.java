@@ -20,6 +20,14 @@ import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
 
+/**
+ * Provides the algorithm for 'class-reference' valueProvider.
+ * <p>
+ * See: https://github.com/spring-projects/spring-boot/blob/master/spring-boot-docs/src/main/asciidoc/appendix-configuration-metadata.adoc
+ *
+ * @author Kris De Volder
+ * @author Alex Boyko
+ */
 public class ClassReferenceProvider extends CachingValueProvider {
 	
 	/**
@@ -44,7 +52,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 		}
 	);
 	
-	public static <K,V> Function<K,V> applyOn(long duration, TimeUnit unit, Function<K,V> func) {
+	private static <K,V> Function<K,V> applyOn(long duration, TimeUnit unit, Function<K,V> func) {
 		Cache<K,V> cache = CacheBuilder.newBuilder().expireAfterAccess(duration, unit).expireAfterWrite(duration, unit).build();
 		return (k) -> {
 			try {

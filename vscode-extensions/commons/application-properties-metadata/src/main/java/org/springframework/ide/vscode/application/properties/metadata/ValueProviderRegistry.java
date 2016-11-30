@@ -48,7 +48,7 @@ public class ValueProviderRegistry {
 	}
 
 	protected void initializeDefaults(ValueProviderRegistry r) {
-//		def("logger-name", LoggerNameProvider.FACTORY);
+		def("logger-name", LoggerNameProvider.FACTORY);
 		def("class-reference", ClassReferenceProvider.FACTORY);
 	}
 

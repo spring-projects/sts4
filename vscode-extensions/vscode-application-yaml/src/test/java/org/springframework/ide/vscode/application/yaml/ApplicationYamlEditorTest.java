@@ -3056,7 +3056,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testLoggerNameCompletion() throws Exception {
+	@Test public void testLoggerNameCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20); // the provider can't be reliably tested if its not allowed to
 											// fetch all its values (even though in 'production' you
 											// wouldn't want it to block the UI thread for this long.

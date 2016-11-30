@@ -67,6 +67,11 @@ public class MavenJavaProject implements IJavaProject {
 	}
 	
 	@Override
+	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
+		return classpath.fuzzySearchPackages(searchTerm);
+	}
+
+	@Override
 	public Flux<IType> allSubtypesOf(IType type) {
 		return classpath.allSubtypesOf(type);
 	}
