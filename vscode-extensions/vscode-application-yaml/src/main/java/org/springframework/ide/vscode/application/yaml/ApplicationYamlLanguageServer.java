@@ -103,7 +103,8 @@ public class ApplicationYamlLanguageServer extends SimpleLanguageServer {
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
-		
+		c.setHoverProvider(true);
+
 		return c;
 	}
 }
