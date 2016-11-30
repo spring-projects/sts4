@@ -86,7 +86,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	protected abstract ServerCapabilities getServerCapabilities();
 
     @Override
-    public CompletableFuture<Void> shutdown() {
+    public CompletableFuture<Object> shutdown() {
     	return Futures.of(null);
     }
 
