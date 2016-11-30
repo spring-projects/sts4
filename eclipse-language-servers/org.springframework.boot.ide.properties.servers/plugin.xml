@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.languageserver.languageServer">
+      <server
+            class="org.springframework.boot.ide.properties.servers.SpringBootPropertiesLanguageServer"
+            id="org.eclipse.languageserver.languages.springbootproperties"
+            label="Spring Boot Properties Language Server">
+      </server>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.properties.application.properties"
+            id="org.eclipse.languageserver.languages.springbootproperties">
+      </contentTypeMapping>
+   </extension>
+
+</plugin>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.springframework.boot.ide.properties.servers.feature"
+      label="Spring Boot IDE Property Editing Language Server Feature"
+      version="4.0.0.qualifier"
+      provider-name="Pivotal, Inc.">
+
+   <requires>
+      <import plugin="org.eclipse.languageserver"/>
+   </requires>
+
+   <plugin
+         id="org.springframework.boot.ide.properties.servers"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
