@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.eclipse.languageserver.ProcessStreamConnectionProvider;
+import org.eclipse.lsp4e.ProcessStreamConnectionProvider;
 import org.osgi.framework.Bundle;
 
 /**
