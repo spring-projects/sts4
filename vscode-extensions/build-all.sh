@@ -6,7 +6,7 @@ cd ${base_dir}/commons-vscode
 npm install
 
 cd $base_dir
-for i in vscode-application-properties  vscode-application-yaml  vscode-manifest-yaml ; do
+for i in vscode-boot-properties vscode-manifest-yaml ; do
     cd ${base_dir}/${i}
     echo "***************************************************************************************"
     echo "***************************************************************************************"
