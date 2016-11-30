@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
+import org.springframework.ide.vscode.application.properties.metadata.hover.PropertyRenderableProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;

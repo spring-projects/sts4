@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Deprecated, this class is here to make porting old STS code easier. Code should
- * avoid using this as much as possible and replaces calls to this by using Slf4J loggers
- * directly.
+ * avoid using this as much as possible and replaces calls to this by using 
+ * {@link java.util.logging.Logger} directly
  */
 @Deprecated
 public class Log {

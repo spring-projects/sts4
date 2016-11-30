@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SDocNode;
@@ -94,17 +96,17 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 		return CompletionFactory.DEFAULT;
 	}
 
-//	@Override
-//	public HoverInfo getHoverInfo() {
-//		return null;
-//	}
-//
-//	@Override
-//	public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
-//		//By default we don't provide value-specific hover, so just show the same hover
-//		// as the assistContext the value is in. This is likely more interesting than showing nothing at all.
-//		return getHoverInfo();
-//	}
+	@Override
+	public Renderable getHoverInfo() {
+		return null;
+	}
+
+	@Override
+	public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
+		//By default we don't provide value-specific hover, so just show the same hover
+		// as the assistContext the value is in. This is likely more interesting than showing nothing at all.
+		return getHoverInfo();
+	}
 
 
 }

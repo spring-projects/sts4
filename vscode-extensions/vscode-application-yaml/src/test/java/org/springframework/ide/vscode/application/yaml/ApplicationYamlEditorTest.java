@@ -66,7 +66,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	///////////////////// ported tests from old STS code base ////////////////////////////////////////////////
 	
-	@Ignore @Test public void testHovers() throws Exception {
+	@Test public void testHovers() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
 				"spring:\n" +
@@ -79,16 +79,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  port: 8888"
 		);
 
-		editor.assertIsHoverRegion("spring");
-		editor.assertIsHoverRegion("application");
 		editor.assertIsHoverRegion("name");
-
-		editor.assertIsHoverRegion("server");
 		editor.assertIsHoverRegion("port");
 
-		editor.assertHoverContains("name", "<b>spring.application.name</b>");
-		editor.assertHoverContains("port", "<b>server.port</b>");
-		editor.assertHoverContains("8888", "<b>server.port</b>"); // hover over value show info about corresponding key. Is this logical?
+		editor.assertHoverContains("name", "**spring.application.name**");
+		editor.assertHoverContains("port", "**server.port**");
+		editor.assertHoverContains("8888", "**server.port**"); // hover over value show info about corresponding key. Is this logical?
 
 		editor.assertNoHover("beyond");
 		editor.assertNoHover("the-valid");
@@ -110,7 +106,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertNoHover("error");
 	}
 
-	@Ignore @Test public void testHoverInfoForEnumValueInMapKey() throws Exception {
+	@Test public void testHoverInfoForEnumValueInMapKey() throws Exception {
 		Editor editor;
 		IJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-app");
 		useProject(project);
@@ -183,7 +179,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testHoverInfoForValueHint() throws Exception {
+	@Test public void testHoverInfoForValueHint() throws Exception {
 		data("my.bonus", "java.lang.String", null, "Bonus type")
 		.valueHint("small", "A small bonus. For a little extra incentive.")
 		.valueHint("large", "An large bonus. For the ones who deserve it.")
@@ -217,6 +213,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.assertHoverContains("data", "Pojo"); // description from json metadata
+		
+		// NOTE: This may be failing because javadoc may not be obtained from a private member
 		editor.assertHoverContains("wavelen", "JavaDoc from field"); // javadoc from field
 		editor.assertHoverContains("name", "Set the name"); // javadoc from setter
 		editor.assertHoverContains("next", "Get the next"); // javadoc from getter

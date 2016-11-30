@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.application.properties.metadata.completion
 import org.springframework.ide.vscode.application.properties.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.hints.ValueHintHoverInfo;
+import org.springframework.ide.vscode.application.properties.metadata.hover.PropertyRenderableProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -36,7 +37,6 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Fuzzy
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
-import org.springframework.ide.vscode.commons.languageserver.completion.ProposalApplier;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
@@ -280,27 +280,27 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			return Collections.emptyList();
 		}
 
-//		@Override
-//		public HoverInfo getValueHoverInfo(YamlDocument doc, DocumentRegion valueRegion) {
-//			String value = valueRegion.toString();
-//
-//			if (TypeUtil.isClass(type)) {
-//				//Special case. We want hovers/hyperlinks even if the class is not a valid hint (as long as it is a class)
-//				StsValueHint hint = StsValueHint.className(value.toString(), typeUtil);
-//				if (hint!=null) {
-//					return new ValueHintHoverInfo(hint);
-//				}
-//			}
-//
-//			Collection<StsValueHint> hints = getHintValues(value, doc, valueRegion.getEnd(), EnumCaseMode.ALIASED);
-//			//The hints where found by fuzzy match so they may not actually match exactly!
-//			for (StsValueHint h : hints) {
-//				if (value.equals(h.getValue())) {
-//					return new ValueHintHoverInfo(h);
-//				}
-//			}
-//			return super.getValueHoverInfo(doc, valueRegion);
-//		}
+		@Override
+		public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion valueRegion) {
+			String value = valueRegion.toString();
+
+			if (TypeUtil.isClass(type)) {
+				//Special case. We want hovers/hyperlinks even if the class is not a valid hint (as long as it is a class)
+				StsValueHint hint = StsValueHint.className(value.toString(), typeUtil);
+				if (hint!=null) {
+					return hint.getDescription();
+				}
+			}
+
+			Collection<StsValueHint> hints = getHintValues(value, doc, valueRegion.getEnd(), EnumCaseMode.ALIASED);
+			//The hints where found by fuzzy match so they may not actually match exactly!
+			for (StsValueHint h : hints) {
+				if (value.equals(h.getValue())) {
+					return h.getDescription();
+				}
+			}
+			return getHoverInfo();
+		}
 
 		protected Collection<StsValueHint> getHintValues(
 				String query,
@@ -357,17 +357,17 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 
 
-//		@Override
-//		public HoverInfo getHoverInfo() {
-//			if (parent instanceof IndexContext) {
-//				//this context is in fact an 'alias' of its parent, representing the
-//				// point in the context hierarchy where a we transition from navigating
-//				// the index to navigating type/bean properties
-//				return parent.getHoverInfo();
-//			} else {
-//				return new JavaTypeNavigationHoverInfo(contextPath.toPropString(), contextPath.getBeanPropertyName(), parent.getType(), getType(), typeUtil);
-//			}
-//		}
+		@Override
+		public Renderable getHoverInfo() {
+			if (parent instanceof IndexContext) {
+				//this context is in fact an 'alias' of its parent, representing the
+				// point in the context hierarchy where a we transition from navigating
+				// the index to navigating type/bean properties
+				return parent.getHoverInfo();
+			} else {
+				return new JavaTypeNavigationHoverInfo(contextPath.toPropString(), contextPath.getBeanPropertyName(), parent.getType(), getType(), typeUtil).getRenderable();
+			}
+		}
 
 		@Override
 		protected Type getType() {
@@ -377,18 +377,6 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 
 		@Override
 		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Renderable getHoverInfo() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -505,10 +493,13 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 
 		@Override
 		public Renderable getHoverInfo() {
-			// TODO Auto-generated method stub
+			PropertyInfo prop = indexNav.getExactMatch();
+			if (prop!=null) {
+				return new PropertyRenderableProvider(typeUtil.getJavaProject(), prop).getRenderable();
+			}
 			return null;
 		}
-
+		
 		@Override
 		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 			// TODO Auto-generated method stub
@@ -520,22 +511,12 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			// TODO Auto-generated method stub
 			return null;
 		}
-
-//		@Override
-//		public HoverInfo getHoverInfo() {
-//			PropertyInfo prop = indexNav.getExactMatch();
-//			if (prop!=null) {
-//				return new SpringPropertyHoverInfo(typeUtil.getJavaProject(), prop);
-//			}
-//			return null;
-//		}
 	}
 
-//	public abstract HoverInfo getHoverInfo();
-//	public HoverInfo getHoverInfo(YamlPathSegment s) {
-//		//ApplicationYamlAssistContext implements getHoverInfo directly. so this is not needed.
-//		return null;
-//	}
+	public Renderable getHoverInfo(YamlPathSegment s) {
+		//ApplicationYamlAssistContext implements getHoverInfo directly. so this is not needed.
+		return null;
+	}
 
 	public static YamlAssistContext global(final FuzzyMap<PropertyInfo> index, final PropertyCompletionFactory completionFactory, final TypeUtil typeUtil, final RelaxedNameConfig conf) {
 		return new TopLevelAssistContext() {
