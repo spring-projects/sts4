@@ -13,6 +13,10 @@
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springbootproperties">
       </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.properties.application.yml"
+            id="org.eclipse.languageserver.languages.springbootproperties">
+      </contentTypeMapping>
    </extension>
 
 </plugin>

@@ -6,7 +6,7 @@
       provider-name="Pivotal, Inc.">
 
    <requires>
-      <import plugin="org.eclipse.languageserver"/>
+      <import plugin="org.eclipse.lsp4e"/>
    </requires>
 
    <plugin
