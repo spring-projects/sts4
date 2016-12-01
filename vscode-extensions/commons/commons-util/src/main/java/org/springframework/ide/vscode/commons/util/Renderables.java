@@ -127,9 +127,9 @@ public class Renderables {
 
 			@Override
 			public void renderAsHtml(HtmlBuffer buffer) {
-				buffer.raw("<s>");
+				buffer.raw("<del>");
 				text.renderAsHtml(buffer);
-				buffer.raw("</s>");
+				buffer.raw("</del>");
 			}
 		};
 	}

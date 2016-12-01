@@ -3,6 +3,7 @@ package org.springframework.ide.vscode.boot.properties.hover;
 import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.SPACES;
 import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.getValueHints;
 import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.getValueType;
+import static org.springframework.ide.vscode.commons.util.Renderables.*;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -21,12 +22,14 @@ import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -114,26 +117,21 @@ class PropertiesHoverCalculator {
 	}
 	
 	private Renderable createRenderable(StsValueHint hint) {
-		return Renderables.htmlBlob((html) -> {
-			/*
-			 * HACK: javadoc comment from HTML javadoc provider coming from
-			 * generated HTML javadoc is very rich and decorating it further
-			 * with some header like labels just makes it look worse
-			 */
-			String descriptionHtml = hint.getDescription().toHtml();
-			if (descriptionHtml.indexOf("<h4>") == -1) {
-				// Simple text like description without proper header
-				html.bold(hint.getValue());
-				html.raw("<p>");
-				html.raw(hint.getDescription().toHtml());
-				html.raw("</p>");
-			} else {
-				// Description is javadoc-like description from HTML javadoc
-				html.raw(hint.getDescription().toHtml());
-			}
-		});
+		Renderable description = hint.getDescription();
+		/*
+		 * HACK: javadoc comment from HTML javadoc provider coming from
+		 * generated HTML javadoc is very rich and decorating it further
+		 * with some header like labels just makes it look worse
+		 */
+		if (description.toHtml().indexOf("<h") == -1) {
+			Builder<Renderable> renderableBuilder = ImmutableList.builder();
+			renderableBuilder.add(bold(text(hint.getValue())));
+			renderableBuilder.add(paragraph(description));
+			return concat(renderableBuilder.build());
+		} else {
+			return description;
+		}
 	}
-	
 
 	/**
 	 * Search known properties for the best 'match' to show as hover data.
