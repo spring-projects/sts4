@@ -11,8 +11,7 @@
 package org.springframework.ide.vscode.commons.util;
 
 /**
- * Placeholder. Still need to figure out what exactly we should do with this in
- * vscode. TODO: rename to Renderable
+ * Renderable can be rendered with various mark-up languages
  */
 public interface Renderable {
 

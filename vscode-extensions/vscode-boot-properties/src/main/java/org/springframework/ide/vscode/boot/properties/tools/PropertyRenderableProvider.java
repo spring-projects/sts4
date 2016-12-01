@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.application.properties.metadata.hover;
+package org.springframework.ide.vscode.boot.properties.tools;
 
 import java.util.ArrayList;
 import java.util.Collections;

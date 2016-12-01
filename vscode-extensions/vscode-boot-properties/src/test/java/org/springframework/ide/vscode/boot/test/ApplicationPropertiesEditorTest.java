@@ -29,7 +29,6 @@ import org.springframework.ide.vscode.application.properties.metadata.Properties
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -180,10 +179,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 		//Case 1: an 'exact' match of the property is in the hover region
 		editor.assertHoverText("server.",
-				"<b>server.port</b>"
+				"**server.port**"
 		);
 		//Case 2: an object/map property has extra text after the property name
-		editor.assertHoverText("logging.", "<b>logging.level</b>");
+		editor.assertHoverText("logging.", "**logging.level**");
 	}
 
 	@Test public void testHoverInfosWithSpaces() throws Exception {
@@ -197,10 +196,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 		//Case 1: an 'exact' match of the property is in the hover region
 		editor.assertHoverText("server.",
-				"<b>server.port</b>"
+				"**server.port**"
 		);
 		//Case 2: an object/map property has extra text after the property name
-		editor.assertHoverText("logging.", "<b>logging.level</b>");
+		editor.assertHoverText("logging.", "**logging.level**");
 	}
 
 	@Test public void testHoverLongAndShort() throws Exception {
@@ -210,8 +209,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"server.port=8080\n" +
 				"server.port.fancy=true\n"
 		);
-		editor.assertHoverText("server.", "<b>server.port</b>");
-		editor.assertHoverText("port.fa", "<b>server.port.fancy</b>");
+		editor.assertHoverText("server.", "**server.port**");
+		editor.assertHoverText("port.fa", "**server.port.fancy**");
 	}
 
 
@@ -924,18 +923,18 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 
 		deprecate("error.path", "server.error.path", null);
-		editor.assertHoverText("path", "<s>error.path</s> -&gt; server.error.path");
-		editor.assertHoverText("path", "<b>Deprecated!</b>");
+		editor.assertHoverText("path", "~~error.path~~ -> server.error.path");
+		editor.assertHoverText("path", "**Deprecated!**");
 
 		deprecate("error.path", "server.error.path", "This is old.");
-		editor.assertHoverText("path", "<s>error.path</s> -&gt; server.error.path");
-		editor.assertHoverText("path", "<b>Deprecated: </b>This is old");
+		editor.assertHoverText("path", "~~error.path~~ -> server.error.path");
+		editor.assertHoverText("path", "**Deprecated: **This is old");
 
 		deprecate("error.path", null, "This is old.");
-		editor.assertHoverText("path", "<b>Deprecated: </b>This is old");
+		editor.assertHoverText("path", "**Deprecated: **This is old");
 
 		deprecate("error.path", null, null);
-		editor.assertHoverText("path", "<b>Deprecated!</b>");
+		editor.assertHoverText("path", "**Deprecated!**");
 	}
 
 	@Ignore @Test public void testDeprecatedPropertyQuickfix() throws Exception {
@@ -1573,7 +1572,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	protected SimpleLanguageServer newLanguageServer() {
 		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
 		server.setMaxCompletionsNumber(-1);
-		server.setHoverType(HoverType.HTML);
 		return server;
 	}
 

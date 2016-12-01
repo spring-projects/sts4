@@ -25,7 +25,6 @@ import org.springframework.ide.vscode.application.properties.metadata.completion
 import org.springframework.ide.vscode.application.properties.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.application.properties.metadata.hints.ValueHintHoverInfo;
-import org.springframework.ide.vscode.application.properties.metadata.hover.PropertyRenderableProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -34,6 +33,7 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.boot.properties.tools.PropertyRenderableProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;

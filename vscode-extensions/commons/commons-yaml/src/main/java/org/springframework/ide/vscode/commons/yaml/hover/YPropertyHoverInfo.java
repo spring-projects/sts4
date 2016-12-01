@@ -51,6 +51,7 @@ public class YPropertyHoverInfo {
 		Renderable description = prop.getDescription();
 		if (description != null) {
 			html.add(lineBreak());
+			html.add(lineBreak());
 			html.add(description);
 		}
 

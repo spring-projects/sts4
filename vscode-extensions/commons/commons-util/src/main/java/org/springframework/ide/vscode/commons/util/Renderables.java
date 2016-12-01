@@ -95,6 +95,44 @@ public class Renderables {
 			}
 		};
 	}
+	
+	public static Renderable paragraph(Renderable text) {
+		return new Renderable() {
+
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				buffer.append("\n");
+				text.renderAsMarkdown(buffer);
+				buffer.append("\n");
+			}
+
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				buffer.raw("<p>");
+				text.renderAsHtml(buffer);
+				buffer.raw("</p>");
+			}
+		};
+	}
+	
+	public static Renderable strikeThrough(Renderable text) {
+		return new Renderable() {
+			
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				buffer.append("~~");
+				text.renderAsMarkdown(buffer);
+				buffer.append("~~");
+			}
+
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				buffer.raw("<s>");
+				text.renderAsHtml(buffer);
+				buffer.raw("</s>");
+			}
+		};
+	}
 
 	public static Renderable link(String text, String url) {
 		return new Renderable() {
@@ -127,7 +165,11 @@ public class Renderables {
 
 			@Override
 			public void renderAsMarkdown(StringBuilder buffer) {
-				buffer.append("\n\n");
+				if (buffer.charAt(buffer.length() - 1) != '\n') {
+					// 2 spaces and then new line would create a line break in text
+					buffer.append("  ");
+				}
+				buffer.append("\n");
 			}
 
 			@Override
@@ -230,7 +272,7 @@ public class Renderables {
 
 		private Renderable[] pieces;
 
-		ConcatRenderables(Renderable[] pieces) {
+		ConcatRenderables(Renderable... pieces) {
 			this.pieces = pieces;
 		}
 
