@@ -16,11 +16,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
 
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.yaml.ApplicationYamlLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -28,9 +30,6 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.properties.editor.test.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.properties.editor.test.harness.StyledStringMatcher;
-
-import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.Diagnostic;
 
 /**
  * This class is a placeholder where we will attempt to copy and port
@@ -3541,9 +3540,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		ApplicationYamlLanguageServer server = new ApplicationYamlLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
 		server.setMaxCompletionsNumber(-1);
 		return server;
+	}
+
+	@Override
+	protected String getFileExtension() {
+		return ".yml";
 	}
 	
 }

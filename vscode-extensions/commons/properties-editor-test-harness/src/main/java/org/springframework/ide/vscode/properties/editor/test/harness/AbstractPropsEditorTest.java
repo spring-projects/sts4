@@ -56,9 +56,20 @@ public abstract class AbstractPropsEditorTest {
 	@Before
 	public void setup() throws Exception {
 		md = new PropertyIndexHarness();
-		harness = new LanguageServerHarness(this::newLanguageServer);
+		harness = new LanguageServerHarness(this::newLanguageServer) {
+			protected String getFileExtension() {
+				return AbstractPropsEditorTest.this.getFileExtension();
+			}
+		};
 		harness.intialize(null);
 	}
+	
+	/**
+	 * Determines the extension used to create temporary uris for editor contents documents.
+	 * Tests need to control this if the language server behavior they are testing varies depending on the
+	 * extension (e.g. different validation, completions etc. for .yml versus .properties
+	 */
+	protected abstract String getFileExtension();
 	
 	protected abstract SimpleLanguageServer newLanguageServer();
 	

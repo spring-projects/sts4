@@ -21,7 +21,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.properties.ApplicationPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 /**
@@ -30,14 +30,14 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
  * @author Alex Boyko
  *
  */
-public class ApplicationPropertiesLanguageServerTest {
+public class BootPropertiesLanguageServerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
-		return Paths.get(ApplicationPropertiesLanguageServer.class.getResource(name).toURI()).toFile();
+		return Paths.get(BootPropertiesLanguageServer.class.getResource(name).toURI()).toFile();
 	}
 
 	private LanguageServerHarness newHarness() throws Exception {
-		Callable<? extends LanguageServer> f = () -> new ApplicationPropertiesLanguageServer((d) -> null, (d) -> null, (d) -> null);
+		Callable<? extends LanguageServer> f = () -> new BootPropertiesLanguageServer((d) -> null, (d) -> null, (d) -> null);
 		return new LanguageServerHarness(f);
 	}
 	

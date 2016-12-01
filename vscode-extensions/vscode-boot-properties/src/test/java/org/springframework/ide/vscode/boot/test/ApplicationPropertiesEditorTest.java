@@ -26,7 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.application.properties.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.application.properties.metadata.PropertiesLoader;
-import org.springframework.ide.vscode.boot.properties.ApplicationPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
@@ -46,6 +46,8 @@ import com.google.common.io.Files;
  *
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
+	
+	
 	
 	@Test public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
@@ -1569,7 +1571,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		ApplicationPropertiesLanguageServer server = new ApplicationPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
 		server.setMaxCompletionsNumber(-1);
 		server.setHoverType(HoverType.HTML);
 		return server;
@@ -1600,6 +1602,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 			result[i] =  before+middle[i]+after;
 		}
 		return result;
+	}
+
+	@Override
+	protected String getFileExtension() {
+		return ".properties";
 	}
 	
 }
