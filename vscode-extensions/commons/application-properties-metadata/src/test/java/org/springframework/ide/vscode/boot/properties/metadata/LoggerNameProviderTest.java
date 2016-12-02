@@ -29,6 +29,7 @@ public class LoggerNameProviderTest {
 
 	private static final String[] JBOSS_RESULTS = {
 			"com.fasterxml.jackson.databind.jsonFormatVisitors", //1
+			// org.jboss is not really a package...
 //			"org.jboss", //2
 			"org.jboss.logging", //3
 			"org.jboss.logging.JBossLogManagerLogger", //4
