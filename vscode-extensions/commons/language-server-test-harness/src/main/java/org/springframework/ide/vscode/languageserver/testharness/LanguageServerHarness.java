@@ -252,7 +252,7 @@ public class LanguageServerHarness {
 	}
 
 
-	private CompletionItem resolveCompletionItem(CompletionItem unresolved) {
+	public CompletionItem resolveCompletionItem(CompletionItem unresolved) {
 		try {
 			return server.getTextDocumentService().resolveCompletionItem(unresolved).get();
 		} catch (Exception e) {

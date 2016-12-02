@@ -344,6 +344,15 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
+	public void completionDetailsAndDocs() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- build<*>"
+		);
+		editor.assertCompletionDetails("buildpack", "Buildpack", "If your application requires a custom buildpack");
+	}
+
+	@Test
 	public void valueCompletions() throws Exception {
 		assertCompletions("disk_quota: <*>",
 				"disk_quota: 1024M<*>",

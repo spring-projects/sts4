@@ -271,8 +271,9 @@ public class PropertiesCompletionProposalsCalculator {
 						DocumentEdits edits = new DocumentEdits(doc);
 						edits.delete(startOfValue, offset);
 						edits.insert(offset, valueCandidate);
-						proposals.add(completionFactory.valueProposal(valueCandidate, query, getValueType(index, typeUtil, propertyName),
-								score, edits, new ValueHintHoverInfo(hint))
+						String valueTypeName = typeUtil.niceTypeName(getValueType(index, typeUtil, propertyName));
+						proposals.add(completionFactory.valueProposal(valueCandidate, query, valueTypeName,
+								score, edits, ValueHintHoverInfo.create(hint))
 						// new ValueProposal(startOfValue, valuePrefix,
 						// valueCandidate, i)
 						);

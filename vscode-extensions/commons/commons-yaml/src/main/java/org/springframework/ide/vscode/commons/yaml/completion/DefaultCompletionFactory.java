@@ -1,10 +1,13 @@
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -53,6 +56,16 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		public DocumentEdits getTextEdit() {
 			return edits;
 		}
+
+		@Override
+		public String getDetail() {
+			return typeUtil.niceTypeName(p.getType());
+		}
+
+		@Override
+		public Renderable getDocumentation() {
+			return YPropertyHoverInfo.create(contextProperty, contextType, p);
+		}
 	}
 	
 	public class ValueProposal extends ScoreableProposal {
@@ -63,14 +76,16 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		private YType type;
 		private double baseScore;
 		private DocumentEdits edits;
+		private YTypeUtil typeUtil;
 
-		public ValueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits) {
+		public ValueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
 			this.value = value;
 			this.query = query;
 			this.label = label;
 			this.type = type;
 			this.baseScore = score;
 			this.edits = edits;
+			this.typeUtil = typeUtil;
 		}
 
 		@Override
@@ -97,6 +112,16 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		public String toString() {
 			return "ValueProposal("+value+")";
 		}
+
+		@Override
+		public String getDetail() {
+			return typeUtil.niceTypeName(type);
+		}
+
+		@Override
+		public Renderable getDocumentation() {
+			return null;
+		}
 	}
 
 	@Override
@@ -105,8 +130,8 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 
 	@Override
-	public ICompletionProposal valueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits) {
-		return new ValueProposal(value, query, label, type, score, edits);
+	public ICompletionProposal valueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
+		return new ValueProposal(value, query, label, type, score, edits, typeUtil);
 	}
 
 }

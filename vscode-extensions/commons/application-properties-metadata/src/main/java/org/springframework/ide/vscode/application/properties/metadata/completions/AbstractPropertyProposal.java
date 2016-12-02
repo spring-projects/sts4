@@ -14,9 +14,17 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 
 public abstract class AbstractPropertyProposal extends ScoreableProposal {
+
+	@Override
+	public String getDetail() {
+		return niceTypeName(getType());
+	}
 
 	protected final IDocument fDoc;
 	private final DocumentEdits proposalApplier;

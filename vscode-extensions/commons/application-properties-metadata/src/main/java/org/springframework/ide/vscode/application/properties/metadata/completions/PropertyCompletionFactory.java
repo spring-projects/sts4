@@ -23,11 +23,13 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
 public class PropertyCompletionFactory {
 	
-	public ICompletionProposal valueProposal(String value, String query, Type type, double score, DocumentEdits edits, ValueHintHoverInfo info) {
+	public ICompletionProposal valueProposal(String value, String query, String niceTypeName, double score, DocumentEdits edits, Renderable info) {
 		return new ScoreableProposal() {
 			
 			@Override
@@ -49,6 +51,16 @@ public class PropertyCompletionFactory {
 			public double getBaseScore() {
 				return score;
 			}
+
+			@Override
+			public String getDetail() {
+				return niceTypeName;
+			}
+
+			@Override
+			public Renderable getDocumentation() {
+				return info;
+			}
 		};
 	}
 
@@ -59,17 +71,10 @@ public class PropertyCompletionFactory {
 	public ScoreableProposal beanProperty(IDocument doc, final String contextProperty, final Type contextType, final String pattern, final TypedProperty property, final double score, DocumentEdits applier, final TypeUtil typeUtil) {
 		AbstractPropertyProposal proposal = new AbstractPropertyProposal(doc, applier) {
 
-//			private HoverInfo hoverInfo;
-
-
-//			@Override
-//			public HoverInfo getAdditionalProposalInfo(IProgressMonitor monitor) {
-//				if (hoverInfo==null) {
-//					String prefix = contextProperty==null?"":contextProperty+".";
-//					hoverInfo = new JavaTypeNavigationHoverInfo(prefix+property.getName(), property.getName(), contextType, property.getType(), typeUtil);
-//				}
-//				return hoverInfo;
-//			}
+			@Override
+			public Renderable getDocumentation() {
+				return YPropertyHoverInfo.create(contextProperty, contextType, property);
+			}
 
 			@Override
 			protected String getBaseDisplayString() {
@@ -100,6 +105,7 @@ public class PropertyCompletionFactory {
 			public String getLabel() {
 				return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
 			}
+
 			
 		};
 		if (property.isDeprecated()) {
@@ -165,6 +171,13 @@ public class PropertyCompletionFactory {
 		@Override
 		public String getLabel() {
 			return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
+		}
+
+		@Override
+		public Renderable getDocumentation() {
+			//TODO: See org.springframework.ide.eclipse.boot.properties.editor.completions.SpringPropertyHoverInfo in old code on how
+			// this used to render docs.
+			return null;
 		}
 		
 	}

@@ -170,7 +170,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					DocumentEdits edits = new DocumentEdits(doc.getDocument());
 					edits.delete(offset-query.length(), offset);
 					edits.insert(offset, value.getValue());
-					completions.add(completionFactory().valueProposal(value.getValue(), query, value.getLabel(), type, score, edits));
+					completions.add(completionFactory().valueProposal(value.getValue(), query, value.getLabel(), type, score, edits, typeUtil));
 				}
 			}
 			return completions;

@@ -101,6 +101,13 @@ public class Renderables {
 
 			@Override
 			public void renderAsMarkdown(StringBuilder buffer) {
+				//TODO: This looks wrong. A paragraphs in markdown are created
+				// by separating the text between them with TWO newlines. So this isn't
+				// quite rigth as it provides no guarantees that there will be 
+				// two newlines before or after the paragraph's text.
+				// The correct implementation should probably check wether text in buffer already
+				// ends with newline(s) and add more only if needed. Then it should 
+				// also append double newline at its end.
 				buffer.append("\n");
 				text.renderAsMarkdown(buffer);
 				buffer.append("\n");
@@ -177,6 +184,10 @@ public class Renderables {
 				buffer.raw("<br>");
 			}
 		};
+	}
+
+	public static Renderable bold(String text) {
+		return bold(text(text));
 	}
 
 	public static Renderable bold(Renderable text) {

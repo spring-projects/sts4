@@ -1,6 +1,7 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
  * Replaces STS/Eclipse's ICompletionProposal
@@ -15,5 +16,8 @@ public interface ICompletionProposal {
 	String getLabel();
 	CompletionItemKind getKind();
 	DocumentEdits getTextEdit();
+
+	String getDetail();
+	Renderable getDocumentation();
 
 }

@@ -610,7 +610,7 @@ public class TypeUtil {
 					ArrayList<TypedProperty> properties = new ArrayList<>(keyHints.size());
 					for (StsValueHint hint : keyHints) {
 						String propName = hint.getValue();
-						properties.add(new TypedProperty(propName, valueType, hint.getDescriptionProvider(), hint.getDeprecation()));
+						properties.add(new TypedProperty(propName, valueType, hint.getDescription(), hint.getDeprecation()));
 					}
 					return properties;
 				}

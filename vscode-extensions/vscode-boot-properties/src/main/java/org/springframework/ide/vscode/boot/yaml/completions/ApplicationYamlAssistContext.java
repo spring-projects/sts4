@@ -272,7 +272,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 							edits.insert(offset, " ");
 						}
 						edits.insert(offset, YamlUtil.stringEscape(value));
-						completions.add(completionFactory.valueProposal(value, query, type, score, edits, new ValueHintHoverInfo(hint)));
+						completions.add(completionFactory.valueProposal(value, query, typeUtil.niceTypeName(type), score, edits, ValueHintHoverInfo.create(hint)));
 					}
 				}
 				return completions;

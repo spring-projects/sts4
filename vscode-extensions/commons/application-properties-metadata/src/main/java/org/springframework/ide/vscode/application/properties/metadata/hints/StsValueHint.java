@@ -105,10 +105,7 @@ public class StsValueHint {
 	public Renderable getDescription() {
 		return description;
 	}
-	public Renderable getDescriptionProvider() {
-		return description;
-	}
-
+	
 	private static Renderable javaDocSnippet(IJavaElement je) {
 		return Renderables.lazy(() -> {
 			IJavadoc jdoc = je.getJavaDoc();

@@ -24,8 +24,10 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Strings;
+import com.google.gson.internal.Streams;
 
 public class Editor {
 
@@ -340,6 +342,22 @@ public class Editor {
 		Hover hover = harness.getHover(document, document.toPosition(pos));
 		assertContains(expectSnippet, hover.getContents().toString());
 	}
+
+	public void assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
+		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
+		if (expectDetail!=null) {
+			assertEquals(expectDetail, it.getDetail());
+		}
+		assertContains(expectDocSnippet, it.getDocumentation());
+	}
+
+	protected CompletionItem assertCompletionWithLabel(String expectLabel) throws Exception {
+		return getCompletions().stream()
+				.filter((item) -> item.getLabel().equals(expectLabel))
+				.findFirst()
+				.get();
+	}
+
 
 	public void setSelection(int start, int end) {
 		Assert.assertTrue(start>=0);

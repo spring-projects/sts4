@@ -109,9 +109,14 @@ public abstract class AbstractPropsEditorTest {
 	/**
 	 * Checks that completions contains a completion with a given display string and that that completion
 	 * has a info hover that contains a given snippet of text.
+	 * <p>
+	 * Deprecated: use assertCompletionDetails instead and also check add an expected 'detail' text of 
+	 * completion item.
 	 */
+	@Deprecated
 	public void assertCompletionWithInfoHover(String editorText, String expectLabel, String expectInfoSnippet) throws Exception {
-		notImplemented();
+		Editor editor = newEditor(editorText);
+		editor.assertCompletionDetails(expectLabel, null, expectInfoSnippet);
 	}
 
 	public boolean isEmptyMetadata() {

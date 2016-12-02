@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 
@@ -43,6 +44,14 @@ public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 	}
 	@Override
 	public DocumentEdits getTextEdit() {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+	@Override
+	public String getDetail() {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+	@Override
+	public Renderable getDocumentation() {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 

@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Futures;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import reactor.core.publisher.Mono;
@@ -94,8 +95,17 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getLabel());
+		item.setDetail(completion.getDetail());
+		item.setDocumentation(toMarkdown(completion.getDocumentation()));
 		adaptEdits(item, doc, completion.getTextEdit());
 		return item;
+	}
+
+	private String toMarkdown(Renderable r) {
+		if (r!=null) {
+			return r.toMarkdown();
+		}
+		return null;
 	}
 
 	private void adaptEdits(CompletionItem item, TextDocument doc, DocumentEdits edits) throws Exception {
