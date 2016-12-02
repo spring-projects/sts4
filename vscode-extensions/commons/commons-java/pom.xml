@@ -40,17 +40,6 @@
 			<artifactId>javaparser-core</artifactId>
 			<version>2.5.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.forge.roaster</groupId>
-			<artifactId>roaster-api</artifactId>
-			<version>${roaster.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.forge.roaster</groupId>
-			<artifactId>roaster-jdt</artifactId>
-			<version>${roaster.version}</version>
-			<scope>runtime</scope>
-		</dependency>
 		<!-- Reactor -->
 		<dependency>
 		    <groupId>io.projectreactor</groupId>

@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
-import org.springframework.ide.vscode.commons.java.roaster.RoasterJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -53,7 +52,7 @@ public class MavenProjectClasspath implements IClasspath {
 	
 	public enum JavadocProviderTypes {
 		JAVA_PARSER,
-		ROASTER,
+//		ROASTER,
 		HTML
 	}
 	
@@ -79,8 +78,8 @@ public class MavenProjectClasspath implements IClasspath {
 				switch (providerType) {
 				case JAVA_PARSER:
 					return createParserJavadocProvider(classpathResource);
-				case ROASTER:
-					return createRoasterJavadocProvider(classpathResource);
+//				case ROASTER:
+//					return createRoasterJavadocProvider(classpathResource);
 				default:
 					return createHtmlJavdocProvider(classpathResource);
 				}
@@ -136,39 +135,42 @@ public class MavenProjectClasspath implements IClasspath {
 			return Arrays.stream(scanner.getIncludedFiles());
 		});
 	}
-	
-	private IJavadocProvider createRoasterJavadocProvider(File classpathResource) {
-		if (classpathResource.isDirectory()) {
-			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
-				return new RoasterJavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
-				});
-			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
-				return new RoasterJavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
-				});
-			} else {
-				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
-			}
-		} else {
-			// Assume it's a JAR file
-			return new RoasterJavadocProvider(type -> {
-				try {
-					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
-					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
-					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
-							type);
-				} catch (MavenException e) {
-					Log.log("Failed to find sources JAR for " + classpathResource, e);
-				} catch (MalformedURLException e) {
-					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
-				}
-				return null;
-			});
-		}
-	}
+
+	/*
+	 * Roaster lib is experiment to generate javadoc from source. Commented out for now since roaster lib is taken out
+	 */
+//	private IJavadocProvider createRoasterJavadocProvider(File classpathResource) {
+//		if (classpathResource.isDirectory()) {
+//			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
+//				return new RoasterJavadocProvider(type -> {
+//					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+//							.sourceUrl(new File(project.getBuild().getSourceDirectory()).toURI().toURL(), type);
+//				});
+//			} else if (classpathResource.toString().startsWith(project.getBuild().getTestOutputDirectory())) {
+//				return new RoasterJavadocProvider(type -> {
+//					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
+//							.sourceUrl(new File(project.getBuild().getTestSourceDirectory()).toURI().toURL(), type);
+//				});
+//			} else {
+//				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
+//			}
+//		} else {
+//			// Assume it's a JAR file
+//			return new RoasterJavadocProvider(type -> {
+//				try {
+//					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
+//					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
+//					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
+//							type);
+//				} catch (MavenException e) {
+//					Log.log("Failed to find sources JAR for " + classpathResource, e);
+//				} catch (MalformedURLException e) {
+//					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+//				}
+//				return null;
+//			});
+//		}
+//	}
 
 	private IJavadocProvider createParserJavadocProvider(File classpathResource) {
 		if (classpathResource.isDirectory()) {
