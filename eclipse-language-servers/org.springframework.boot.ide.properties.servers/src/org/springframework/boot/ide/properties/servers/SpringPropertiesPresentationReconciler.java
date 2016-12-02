@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.boot.ide.properties.editors;
+package org.springframework.boot.ide.properties.servers;
 
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.propertiesfileeditor.IPropertiesFilePartitions;

@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.springframework.boot.ide.cloudfoundry.server.feature"
-      label="Spring Boot IDE Cloud Foundry Manifest Language Server Feature"
-      version="4.0.0.qualifier"
-      provider-name="Pivotal, Inc.">
+	id="org.springframework.boot.ide.cloudfoundry.server.feature"
+	label="Spring Boot IDE Cloud Foundry Manifest Language Server Feature"
+	version="4.0.0.qualifier"
+	provider-name="Pivotal, Inc.">
 
-   <requires>
-      <import plugin="org.eclipse.lsp4e"/>
-   </requires>
+	<requires>
+		<import plugin="org.eclipse.ui.genericeditor"/>
+		<import plugin="org.eclipse.lsp4e"/>
+	</requires>
 
-   <plugin
-         id="org.springframework.boot.ide.cloudfoundry.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+	<plugin
+		id="org.springframework.boot.ide.cloudfoundry.server"
+		download-size="0"
+		install-size="0"
+		version="0.0.0"
+		unpack="false">
+	</plugin>
 
 </feature>

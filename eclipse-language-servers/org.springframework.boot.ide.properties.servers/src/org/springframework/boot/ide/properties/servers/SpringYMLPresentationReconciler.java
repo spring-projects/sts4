@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.boot.ide.properties.editors;
+package org.springframework.boot.ide.properties.servers;
 
 import org.dadacoalition.yedit.editor.ColorManager;
 import org.dadacoalition.yedit.editor.YEditDamageRepairer;

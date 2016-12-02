@@ -91,6 +91,11 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
+				<repository>
+					<id>yedit</id>
+					<layout>p2</layout>
+					<url>http://dist.springsource.com/release/TOOLS/third-party/yedit</url>
+				</repository>
 			</repositories>
 		</profile>
 
