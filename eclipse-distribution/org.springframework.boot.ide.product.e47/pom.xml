@@ -23,6 +23,26 @@
 		<plugins>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-install</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<includeAllDependencies>false</includeAllDependencies>
+				</configuration>
+			</plugin>
+			  
+			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-publisher-plugin</artifactId>
 				<version>${tycho-version}</version>
@@ -101,78 +121,6 @@
 					</execution>
 
 					<execution>
-						<id>zip-sts-repository</id>
-						<phase>install</phase>
-						<configuration>
-							<target>
-
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
-								<property name="dist.full.version" value="${unqualifiedVersion}.${p2.qualifier}-${dist.target}" />
-								<property name="dist.file.name" value="${dist.project}-${dist.full.version}-updatesite.zip" />
-
-								<zip zipfile="${project.build.directory}/repository/${dist.file.name}" filesonly="true">
-									<zipfileset
-										dir="${project.build.directory}/repository">
-										<exclude name="*.zip" />
-										<exclude name="**/*.gz" />
-									</zipfileset>
-								</zip>
-
-								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="SHA1" fileext=".sha1" />
-								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="MD5" fileext=".md5" />
-
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-					<execution>
-						<id>upload-sts-repository</id>
-						<phase>deploy</phase>
-						<configuration>
-							<target>
-
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
-								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
-
-									<delete bucketName="${dist.bucket}">
-										<fileset dir="${dist.path.repo}">
-											<include name="site.xml" />
-											<include name="content.jar" />
-											<include name="artifacts.jar" />
-											<include name="plugins/**" />
-											<include name="features/**" />
-											<include name="binary/**" />
-											<include name="*.zip" />
-											<include name="*.sha1" />
-											<include name="*.md5" />
-										</fileset>
-									</delete>
-
-									<upload bucketName="${dist.bucket}" toDir="${dist.path.repo}" publicRead="true">
-										<fileset
-											dir="${project.build.directory}/repository">
-											<include name="**/*" />
-											<include name="**" />
-										</fileset>
-									</upload>
-
-								</s3>
-
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-					<execution>
 						<id>upload-product-bundles</id>
 						<phase>deploy</phase>
 						<configuration>
@@ -180,8 +128,6 @@
 
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
-								<property name="site.target.dir" value="${project.build.directory}" />
 
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
 
@@ -198,7 +144,7 @@
 
 									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"
 										publicRead="true">
-										<fileset dir="${site.target.dir}">
+										<fileset dir="${project.build.directory}/products">
 											<include name="spring-boot-ide*.zip" />
 											<include name="spring-boot-ide*.zip.md5" />
 											<include name="spring-boot-ide*.zip.sha1" />
@@ -226,14 +172,14 @@
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
-								<copy file="../../common/html/nightly-generic-snippet.html" tofile="../../common/html/sts4-nightly-${dist.target.major}.html"/>
+								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet.html" tofile="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"/>
 		
-								<replace file="../../common/html/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
-								<replace file="../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
-								<replace file="../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
 
 								<s3 accessKey="${accessKey}" secretKey="${secretKey}">
-									<upload bucketName="${dist.bucket}" file="../../common/html/sts4-nightly-${dist.target.major}.html"
+									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
 										toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
 									</upload>
 								</s3>
@@ -266,19 +212,5 @@
 
 		</plugins>
 
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.tycho</groupId>
-					<artifactId>tycho-packaging-plugin</artifactId>
-					<version>${tycho-version}</version>
-					<configuration>
-						<format>yyyyMMddHHmm-'${p2.qualifier}'-'${package.qualifierPrefix}'</format>
-						<archiveSite>true</archiveSite>
-					</configuration>
-				</plugin>
-
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>

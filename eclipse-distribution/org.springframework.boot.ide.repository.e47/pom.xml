@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>org.springframework.boot.ide.repository</artifactId>
+
+	<packaging>eclipse-repository</packaging>
+
+	<properties>
+		<dist.accessKey>${accessKey}</dist.accessKey>
+		<dist.secretKey>${secretKey}</dist.secretKey>
+	</properties>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-install</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+
+					<execution>
+						<id>zip-sts-repository</id>
+						<phase>install</phase>
+						<configuration>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<property name="dist.full.version" value="${unqualifiedVersion}.${p2.qualifier}-${dist.target}" />
+								<property name="dist.file.name" value="${dist.project}-${dist.full.version}-updatesite.zip" />
+
+								<zip zipfile="${project.build.directory}/repository/${dist.file.name}" filesonly="true">
+									<zipfileset
+										dir="${project.build.directory}/repository">
+										<exclude name="*.zip" />
+										<exclude name="**/*.gz" />
+									</zipfileset>
+								</zip>
+
+								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="MD5" fileext=".md5" />
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>upload-sts-repository</id>
+						<phase>deploy</phase>
+						<configuration>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+
+									<delete bucketName="${dist.bucket}">
+										<fileset dir="${dist.path.repo}">
+											<include name="p2.index" />
+											<include name="site.xml" />
+											<include name="content.jar" />
+											<include name="artifacts.xml.xz" />
+											<include name="content.jar" />
+											<include name="content.xml.xz" />
+											<include name="plugins/**" />
+											<include name="features/**" />
+											<include name="binary/**" />
+											<include name="*.zip" />
+											<include name="*.sha1" />
+											<include name="*.md5" />
+										</fileset>
+									</delete>
+
+									<upload bucketName="${dist.bucket}" toDir="${dist.path.repo}" publicRead="true">
+										<fileset
+											dir="${project.build.directory}/repository">
+											<include name="**/*" />
+											<include name="**" />
+										</fileset>
+									</upload>
+
+								</s3>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.build</groupId>
+						<artifactId>org.springframework.build.aws.ant</artifactId>
+						<version>3.1.0.RELEASE</version>
+					</dependency>
+					<dependency>
+						<groupId>net.java.dev.jets3t</groupId>
+						<artifactId>jets3t</artifactId>
+						<version>0.8.1</version>
+					</dependency>
+					<dependency>
+						<groupId>ant-contrib</groupId>
+						<artifactId>ant-contrib</artifactId>
+						<version>20020829</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
+
+	</build>
+</project>

@@ -56,7 +56,7 @@
 		<dist.springide-pathpostfix>${dist.dependencies-version-path}</dist.springide-pathpostfix>
 		<dist.eclipse-integration-commons-version>${dist.dependencies-version-path}</dist.eclipse-integration-commons-version>
 
-		<tycho-version>0.25.0</tycho-version>
+		<tycho-version>0.26.0</tycho-version>
 		<encoding>UTF-8</encoding>
 	</properties>
 
@@ -153,6 +153,7 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e47</module>
+				<module>org.springframework.boot.ide.repository.e47</module>
 			</modules>
 		</profile>
 
@@ -264,6 +265,15 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<skipArchive>true</skipArchive>
+				</configuration>
+			</plugin>
+			
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
 				<version>1.2</version>
@@ -342,7 +352,7 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<format>yyyyMMddHHmm-'${p2.qualifier}'</format>
-						<archiveSite>true</archiveSite>
+						<archiveSite>false</archiveSite>
 						<archive>
 							<addMavenDescriptor>false</addMavenDescriptor>
 						</archive>
