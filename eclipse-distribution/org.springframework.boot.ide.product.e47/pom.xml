@@ -178,7 +178,7 @@
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
 
-								<s3 accessKey="${accessKey}" secretKey="${secretKey}">
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
 									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
 										toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
 									</upload>
