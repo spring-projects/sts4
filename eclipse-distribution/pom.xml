@@ -44,18 +44,55 @@
 		<skip.osx.signing>true</skip.osx.signing>
 
 		<dist.name>Spring Boot IDE</dist.name>
-		<dist.type>snapshot</dist.type>
 
+		<dist.bucket>dist.springsource.com</dist.bucket>
+		<dist.key>TOOLS</dist.key>
+		<dist.project>sts4</dist.project>
+		
+		<dist.pathpostfix>nightly</dist.pathpostfix>
+		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 		<dist.dependencies-version-path>nightly</dist.dependencies-version-path>
 		<dist.springboot-language-servers-pathpostfix>${dist.dependencies-version-path}</dist.springboot-language-servers-pathpostfix>
 		<dist.springide-pathpostfix>${dist.dependencies-version-path}</dist.springide-pathpostfix>
 		<dist.eclipse-integration-commons-version>${dist.dependencies-version-path}</dist.eclipse-integration-commons-version>
 
-		<tycho-version>0.24.0</tycho-version>
+		<tycho-version>0.25.0</tycho-version>
 		<encoding>UTF-8</encoding>
 	</properties>
 
 	<profiles>
+
+		<profile>
+			<id>snapshot</id>
+			<properties>
+				<dist.type>snapshot</dist.type>
+				<dist.path.repo>${dist.type}/TOOLS/sts4/nightly/${dist.target.major}</dist.path.repo>
+				<dist.path.product>${dist.type}/STS4/nightly/dist/${dist.target.major}</dist.path.product>
+				<skip.update-nightly-download-page>false</skip.update-nightly-download-page>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>milestone</id>
+			<properties>
+				<dist.type>milestone</dist.type>
+				<dist.path.repo>${dist.type}/TOOLS/sts4/update/${unqualifiedVersion}.${p2.qualifier}/${dist.target.major}</dist.path.repo>
+				<dist.path.product>${dist.type}/STS4/${unqualifiedVersion}.${p2.qualifier}/dist/${dist.target.major}</dist.path.product>
+				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>release</id>
+			<properties>
+				<dist.type>release</dist.type>
+				<dist.path.repo>${dist.type}/TOOLS/sts4/update/${unqualifiedVersion}.${p2.qualifier}/${dist.target.major}</dist.path.repo>
+				<dist.path.product>${dist.type}/STS4/${unqualifiedVersion}.${p2.qualifier}/dist/${dist.target.major}</dist.path.product>
+				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
+			</properties>
+		</profile>
+
+
 		<profile>
 			<id>e47</id>
 			<properties>
