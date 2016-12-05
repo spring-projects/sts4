@@ -85,7 +85,8 @@ openFile</programArgs>
       <feature id="org.springframework.ide.eclipse.boot.feature" installMode="root"/>
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
 
-      <feature id="org.springframework.boot.ide.properties.feature" installMode="root"/>
+      <feature id="org.springframework.boot.ide.properties.servers.feature" installMode="root"/>
+      <feature id="org.springframework.boot.ide.cloudfoundry.server.feature" installMode="root"/>
 
    </features>
 

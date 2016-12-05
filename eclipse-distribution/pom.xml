@@ -28,9 +28,6 @@
 
 	<modules>
 		<module>org.springframework.boot.ide.branding</module>
-
-		<module>../eclipse-extensions/org.springframework.boot.ide.properties.editors</module>
-		<module>../eclipse-extensions/org.springframework.boot.ide.properties.feature</module>
 	</modules>
 
 	<properties>
@@ -50,6 +47,7 @@
 		<dist.type>snapshot</dist.type>
 
 		<dist.dependencies-version-path>nightly</dist.dependencies-version-path>
+		<dist.springboot-language-servers-pathpostfix>${dist.dependencies-version-path}</dist.springboot-language-servers-pathpostfix>
 		<dist.springide-pathpostfix>${dist.dependencies-version-path}</dist.springide-pathpostfix>
 		<dist.eclipse-integration-commons-version>${dist.dependencies-version-path}</dist.eclipse-integration-commons-version>
 
@@ -83,7 +81,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20161021172207/repository/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>
@@ -149,6 +147,11 @@
 	</profiles>
 
 	<repositories>
+		<repository>
+			<id>spring-boot-language-servers</id>
+			<layout>p2</layout>
+			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
+		</repository>
 		<repository>
 			<id>springide</id>
 			<layout>p2</layout>
