@@ -110,7 +110,7 @@
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
 								    <arg value="Developer ID Application: Trevor Marshall"/>
-								    <arg value="${build.destination.cocoa.x86_64}/STS.app"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide/macosx/cocoa/x86_64/SpringBootIDE.app"/>
 								</exec>
 
 							</target>
