@@ -170,7 +170,7 @@ public class PropertyCompletionFactory {
 
 		@Override
 		public String getLabel() {
-			return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
+			return getBaseDisplayString();
 		}
 
 		@Override

@@ -70,7 +70,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testServerPortCompletion() throws Exception {
 		data("server.port", INTEGER, 8080, "Port where server listens for http.");
 		assertCompletion("ser<*>", "server.port=<*>");
-		assertCompletionDisplayString("ser<*>", "server.port : int");
+		assertCompletionDisplayString("ser<*>", "server.port");
 	}
 
 	@Test public void testLoggingLevelCompletion() throws Exception {
@@ -1501,7 +1501,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"some.property=SOMETHING\n" +
 				"<*>"
 				, // ===============
-				"some.other.property : String"
+				"some.other.property"
 				, // =>
 				"some.property=SOMETHING\n" +
 				"some.other.property=<*>"

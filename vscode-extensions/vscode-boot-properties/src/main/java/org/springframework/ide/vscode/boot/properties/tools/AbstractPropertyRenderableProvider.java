@@ -23,12 +23,6 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public abstract class AbstractPropertyRenderableProvider {
 		
-	/**
-	 * Fake host name that is used in 'action link' urls so that we can
-	 * recognize them as such.
-	 */
-	private static final String ACTION_HOST = "action";
-	
 	public Renderable getRenderable() {
 		Builder<Renderable> renderableBuilder = ImmutableList.builder();
 
@@ -103,9 +97,8 @@ public abstract class AbstractPropertyRenderableProvider {
 	 * link then the provided runnable is to be executed.
 	 */
 	public void actionLink(Builder<Renderable> renderableBuilder, String displayString) {
-		String url = "http://"+ACTION_HOST+"/action-id";
 		renderableBuilder.add(lineBreak());
-		renderableBuilder.add(link(displayString, url));
+		renderableBuilder.add(link(displayString, "null"));
 	}
 	
 	private void defaultValueRenderable(Builder<Renderable> renderableBuilder, String defaultValue) {
