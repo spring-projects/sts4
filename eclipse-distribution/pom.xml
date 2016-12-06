@@ -28,6 +28,7 @@
 
 	<modules>
 		<module>org.springframework.boot.ide.branding</module>
+		<module>org.springframework.boot.ide.branding.feature</module>
 	</modules>
 
 	<properties>

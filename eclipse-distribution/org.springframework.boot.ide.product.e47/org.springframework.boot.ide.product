@@ -43,10 +43,6 @@ openFile</programArgs>
    <vm>
    </vm>
 
-   <plugins>
-      <plugin id="org.springframework.boot.ide.branding"/>
-   </plugins>
-
    <features>
       <feature id="org.eclipse.platform" installMode="root"/>
 
@@ -85,6 +81,7 @@ openFile</programArgs>
       <feature id="org.springframework.ide.eclipse.boot.feature" installMode="root"/>
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
 
+      <feature id="org.springframework.boot.ide.branding.feature" installMode="root"/>
       <feature id="org.springframework.boot.ide.properties.servers.feature" installMode="root"/>
       <feature id="org.springframework.boot.ide.cloudfoundry.server.feature" installMode="root"/>
 
@@ -92,7 +89,7 @@ openFile</programArgs>
 
    <configurations>
    	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
-   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-sts-${unqualifiedVersion}.${p2.qualifier}"/>
+   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-boot-ide-${unqualifiedVersion}.${p2.qualifier}"/>
    	  <property name="osgi.splashPath" value="platform:/base/plugins/org.springframework.boot.ide.branding"/>
    	  
    	  <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
