@@ -24,7 +24,6 @@ import org.springframework.ide.vscode.application.properties.metadata.CachingVal
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -42,8 +41,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 		
-	private JavaProjectFinder javaProjectFinder;
-
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
 		Editor editor = newEditor(
 				"somemap: val\n"+
@@ -139,7 +136,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverContains("INDENT_OUTPUT", "allows enabling (or disabling) indentation");
 	}
 
-	@Ignore @Test public void testHoverInfoForEnumValueInMapKeyCompletion() throws Exception {
+	@Test public void testHoverInfoForEnumValueInMapKeyCompletion() throws Exception {
 		IJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-app");
 		useProject(project);
 
@@ -151,30 +148,32 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 //		System.out.println(downloadSources(type));
 //		System.out.println("<<< source for: "+type.getFullyQualifiedName());
 
-		assertCompletionWithInfoHover(
+		assertCompletionDetails(
 				"spring:\n" +
 				"  jackson:\n" +
 				"    serialization:\n" +
 				"      ind<*>"
 				, // ==========
-				"indent-output : boolean"
+				"indent-output"
 				, // ==>
+				"boolean",
 				"allows enabling (or disabling) indentation"
 		);
 	}
 
-	@Ignore @Test public void testHoverInfoForValueHintCompletion() throws Exception {
+	@Test public void testHoverInfoForValueHintCompletion() throws Exception {
 		data("my.bonus", "java.lang.String", null, "Bonus type")
 		.valueHint("small", "A small bonus. For a little extra incentive.")
 		.valueHint("large", "An large bonus. For the ones who deserve it.")
 		.valueHint("exorbitant", "Truly outrageous. Who deserves a bonus like that?");
 
-		assertCompletionWithInfoHover(
+		assertCompletionDetails(
 				"my:\n" +
 				"  bonus: l<*>"
 				, // ==========
 				"large"
 				, // ==>
+				"String",
 				"For the ones who deserve it"
 		);
 	}
@@ -2992,11 +2991,20 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  level:\n" +
 				"    <*>"
 				, // =>
-				"root : String"
+				"root"
 				,
 				"logging:\n" +
 				"  level:\n" +
 				"    root: <*>"
+		);
+		assertCompletionDetails(
+				"logging:\n" +
+				"  level:\n" +
+				"    <*>"
+				, // =>
+				"root",
+				"String",
+				null
 		);
 	}
 
@@ -3067,12 +3075,18 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  level:\n" +
 				"    boot.auto<*>"
 				, //-----------------
-				"org.springframework.boot.autoconfigure : String"
+				"org.springframework.boot.autoconfigure"
 				, // =>
 				"logging:\n" +
 				"  level:\n" +
 				"    org.springframework.boot.autoconfigure: <*>"
 		);
+		assertCompletionDetails(
+				"logging:\n" +
+				"  level:\n" +
+				"    boot.auto<*>"
+				, //-----------------
+				"org.springframework.boot.autoconfigure", "String", null);
 
 		//Finds a type:
 		assertCompletionWithLabel(
@@ -3080,11 +3094,20 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  level:\n" +
 				"    MesgSource<*>"
 				, //-----------------
-				"org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration : String"
+				"org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration"
 				, // =>
 				"logging:\n" +
 				"  level:\n" +
 				"    org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration: <*>"
+		);
+		assertCompletionDetails(
+				"logging:\n" +
+				"  level:\n" +
+				"    MesgSource<*>"
+				, //-----------------
+				"org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration",
+				"String",
+				null
 		);
 	}
 
@@ -3432,16 +3455,17 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumJavaDocShownInValueContentAssist() throws Exception {
+	@Test public void testEnumJavaDocShownInValueContentAssist() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
-		assertCompletionWithInfoHover(
+		assertCompletionDetails(
 				"my:\n" +
 				"  background: <*>"
 				, // ==========
 				"red"
 				, // ==>
+				"demo.Color[BLUE, GREEN, RED]",
 				"Hot and delicious"
 		);
 	}

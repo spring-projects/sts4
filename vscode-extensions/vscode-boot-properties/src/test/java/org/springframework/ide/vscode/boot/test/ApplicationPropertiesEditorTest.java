@@ -70,7 +70,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testServerPortCompletion() throws Exception {
 		data("server.port", INTEGER, 8080, "Port where server listens for http.");
 		assertCompletion("ser<*>", "server.port=<*>");
-		assertCompletionDisplayString("ser<*>", "server.port");
+		assertCompletionDetails("ser<*>", "server.port", "int", null);
 	}
 
 	@Test public void testLoggingLevelCompletion() throws Exception {
@@ -318,10 +318,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertNotNull(p.findType("demo.Foo"));
 
 		assertCompletionsVariations("volder.foo.l<*>", "volder.foo.list[<*>");
-		assertCompletionsDisplayString("volder.foo.list[0].<*>",
-				"name : String",
-				"description : String",
-				"roles : List<String>");
+		assertCompletionsDisplayStringAndDetail("volder.foo.list[0].<*>",
+				new String[] {"description", "String"},
+				new String[] {"name", "String"},
+				new String[] {"roles", "List<String>"}
+		);
 
 		assertCompletionsVariations("volder.foo.list[0].na<*>",
 				"volder.foo.list[0].name=<*>"
@@ -576,8 +577,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"foo.color-names.green=<*>",
 				"foo.color-names.red=<*>"
 		);
-		assertCompletionsDisplayString("foo.color-names.<*>",
-				"red : String", "green : String", "blue : String"
+		assertCompletionsDisplayStringAndDetail("foo.color-names.<*>",
+				new String[] {"blue",  "String"},
+				new String[] {"green", "String"},
+				new String[] {"red", "String"}
 		);
 		assertCompletionsVariations("foo.color-names.B<*>",
 				"foo.color-names.BLUE=<*>"
@@ -593,8 +596,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsVariations("foo.color-data.B<*>",
 				"foo.color-data.BLUE.<*>"
 		);
-		assertCompletionsDisplayString("foo.color-data.<*>",
-				"blue : demo.ColorData", "green : demo.ColorData", "red : demo.ColorData"
+		assertCompletionsDisplayStringAndDetail("foo.color-data.<*>",
+				new String[] {"blue",  "demo.ColorData"},
+				new String[] {"green", "demo.ColorData"},
+				new String[] {"red", "demo.ColorData"}
 		);
 	}
 
@@ -627,16 +632,16 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		assertCompletion("foo.dat<*>", "foo.data.<*>");
 
-		assertCompletionsDisplayString("foo.data.",
-				"wavelen : double",
-				"name : String",
-				"next : demo.Color[BLUE, GREEN, RED]",
-				"nested : demo.ColorData",
-				"children : List<demo.ColorData>",
-				"mapped-children : Map<String, demo.ColorData>",
-				"color-children : Map<demo.Color[BLUE, GREEN, RED], demo.ColorData>",
-				"tags : List<String>",
-				"funky : boolean"
+		assertCompletionsDisplayStringAndDetail("foo.data.", 
+				new String[] {"children", "List<demo.ColorData>"},
+				new String[] {"color-children", "Map<demo.Color[BLUE, GREEN, RED], demo.ColorData>"},
+				new String[] {"funky", "boolean"},
+				new String[] {"mapped-children", "Map<String, demo.ColorData>"},
+				new String[] {"name", "String"},
+				new String[] {"nested", "demo.ColorData"},
+				new String[] {"next", "demo.Color[BLUE, GREEN, RED]"},
+				new String[] {"tags", "List<String>"},
+				new String[] {"wavelen", "double"}
 		);
 
 		assertCompletionsVariations("foo.data.wav<*>", "foo.data.wavelen=<*>");
@@ -1099,26 +1104,29 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionWithLabel(
 				"logging.level.<*>"
 				, //==============
-				"root : String",
+				"root",
 				//=>
 				"logging.level.root=<*>"
 		);
+		assertCompletionDetails("logging.level.<*>", "root", "String", null);
 
 		assertCompletionWithLabel(
 				"logging.level.r<*>"
 				, //==============
-				"root : String",
+				"root",
 				//=>
 				"logging.level.root=<*>"
 		);
+		assertCompletionDetails("logging.level.r<*>", "root", "String", null);
 
 		assertCompletionWithLabel(
 				"logging.level.ot<*>"
 				, //==============
-				"root : String",
+				"root",
 				//=>
 				"logging.level.root=<*>"
 		);
+		assertCompletionDetails("logging.level.ot<*>", "root", "String", null);
 	}
 
 	@Test public void testHandleAsResourceContentAssist() throws Exception {
@@ -1508,15 +1516,16 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumJavaDocShownInValueContentAssist() throws Exception {
+	@Test public void testEnumJavaDocShownInValueContentAssist() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
-		assertCompletionWithInfoHover(
+		assertCompletionDetails(
 				"my.background=<*>"
 				, // ==========
 				"red"
 				, // ==>
+				"demo.Color[BLUE, GREEN, RED]",
 				"Hot and delicious"
 		);
 	}

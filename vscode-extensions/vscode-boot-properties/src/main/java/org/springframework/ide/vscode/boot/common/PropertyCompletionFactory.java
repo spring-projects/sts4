@@ -8,11 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.application.properties.metadata.completions;
+package org.springframework.ide.vscode.boot.common;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.application.properties.metadata.hints.ValueHintHoverInfo;
 import org.springframework.ide.vscode.application.properties.metadata.types.Type;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeParser;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
@@ -26,6 +25,9 @@ import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 public class PropertyCompletionFactory {
 	
@@ -103,7 +105,7 @@ public class PropertyCompletionFactory {
 
 			@Override
 			public String getLabel() {
-				return getBaseDisplayString() + " : " + typeUtil.niceTypeName(getType());
+				return getBaseDisplayString();
 			}
 
 			
@@ -124,21 +126,18 @@ public class PropertyCompletionFactory {
 		private Match<PropertyInfo> match;
 		private Type type;
 		private TypeUtil typeUtil;
+		private Supplier<PropertyRenderableProvider> propertyRenderable;
 
 		public PropertyProposal(IDocument doc, DocumentEdits applier, Match<PropertyInfo> match,
 				TypeUtil typeUtil) {
 			super(doc, applier);
 			this.typeUtil = typeUtil;
 			this.match = match;
+			this.propertyRenderable = Suppliers.memoize(() -> new ShortDocumentationRenderableProvider(documentContextFinder.find(fDoc), match.data));
 			if (match.data.isDeprecated()) {
 				deprecate();
 			}
 		}
-
-//		@Override
-//		public HoverInfo getAdditionalProposalInfo(IProgressMonitor monitor) {
-//			return new SpringPropertyHoverInfo(documentContextFinder.getJavaProject(fDoc), match.data);
-//		}
 
 		@Override
 		protected String getBaseDisplayString() {
@@ -175,9 +174,7 @@ public class PropertyCompletionFactory {
 
 		@Override
 		public Renderable getDocumentation() {
-			//TODO: See org.springframework.ide.eclipse.boot.properties.editor.completions.SpringPropertyHoverInfo in old code on how
-			// this used to render docs.
-			return null;
+			return propertyRenderable.get().getRenderable();
 		}
 		
 	}

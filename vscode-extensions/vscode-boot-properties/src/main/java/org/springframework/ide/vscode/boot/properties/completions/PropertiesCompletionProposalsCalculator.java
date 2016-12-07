@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.boot.properties.completions;
 
-import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.*;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.*;
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 
 import java.util.ArrayList;
@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
-import org.springframework.ide.vscode.application.properties.metadata.completions.PropertyCompletionFactory;
 import org.springframework.ide.vscode.application.properties.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.application.properties.metadata.hints.HintProviders;
 import org.springframework.ide.vscode.application.properties.metadata.hints.StsValueHint;
@@ -22,6 +21,7 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigator;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;

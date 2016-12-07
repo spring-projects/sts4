@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties.tools;
+package org.springframework.ide.vscode.boot.common;
 
 import static org.springframework.ide.vscode.commons.util.Renderables.*;
 
@@ -32,19 +32,25 @@ public abstract class AbstractPropertyRenderableProvider {
 		if (type==null) {
 			type = Object.class.getName();
 		}
+		renderableBuilder.add(lineBreak());
 		actionLink(renderableBuilder, type);
 		
 		String deflt = formatDefaultValue(getDefaultValue());
 		if (deflt!=null) {
+			renderableBuilder.add(lineBreak());
+			renderableBuilder.add(lineBreak());
 			defaultValueRenderable(renderableBuilder, deflt);
 		}
 		
 		if (isDeprecated()) {
+			renderableBuilder.add(lineBreak());
+			renderableBuilder.add(lineBreak());
 			depreactionRenderable(renderableBuilder);
 		}
 		
 		Renderable description = getDescription();
 		if (description!=null) {
+			renderableBuilder.add(lineBreak());
 			descriptionRenderable(renderableBuilder, description);
 		}
 		
@@ -97,20 +103,15 @@ public abstract class AbstractPropertyRenderableProvider {
 	 * link then the provided runnable is to be executed.
 	 */
 	public void actionLink(Builder<Renderable> renderableBuilder, String displayString) {
-		renderableBuilder.add(lineBreak());
 		renderableBuilder.add(link(displayString, "null"));
 	}
 	
-	private void defaultValueRenderable(Builder<Renderable> renderableBuilder, String defaultValue) {
-		renderableBuilder.add(lineBreak());
-		renderableBuilder.add(lineBreak());
+	protected void defaultValueRenderable(Builder<Renderable> renderableBuilder, String defaultValue) {
 		renderableBuilder.add(text("Default: "));
 		renderableBuilder.add(italic(text(defaultValue)));
 	}
 	
-	private void depreactionRenderable(Builder<Renderable> renderableBuilder) {
-		renderableBuilder.add(lineBreak());
-		renderableBuilder.add(lineBreak());
+	protected void depreactionRenderable(Builder<Renderable> renderableBuilder) {
 		String reason = getDeprecationReason();
 		if (StringUtil.hasText(reason)) {
 			renderableBuilder.add(bold(text("Deprecated: ")));
@@ -120,8 +121,7 @@ public abstract class AbstractPropertyRenderableProvider {
 		}		
 	}
 	
-	private void descriptionRenderable(Builder<Renderable> renderableBuilder, Renderable description) {
-		renderableBuilder.add(lineBreak());
+	protected void descriptionRenderable(Builder<Renderable> renderableBuilder, Renderable description) {
 		renderableBuilder.add(paragraph(description));
 	}
 

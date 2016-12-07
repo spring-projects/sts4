@@ -22,7 +22,7 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
-import org.springframework.ide.vscode.boot.properties.tools.AbstractPropertyRenderableProvider;
+import org.springframework.ide.vscode.boot.common.AbstractPropertyRenderableProvider;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
