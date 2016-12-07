@@ -133,7 +133,7 @@ public class PropertyCompletionFactory {
 			super(doc, applier);
 			this.typeUtil = typeUtil;
 			this.match = match;
-			this.propertyRenderable = Suppliers.memoize(() -> new PropertyRenderableProvider(documentContextFinder.find(fDoc), match.data));
+			this.propertyRenderable = Suppliers.memoize(() -> new ShortDocumentationRenderableProvider(documentContextFinder.find(fDoc), match.data));
 			if (match.data.isDeprecated()) {
 				deprecate();
 			}
