@@ -17,6 +17,7 @@ import static org.springframework.ide.vscode.commons.util.Renderables.link;
 import static org.springframework.ide.vscode.commons.util.Renderables.text;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -29,9 +30,9 @@ import com.google.common.collect.ImmutableList.Builder;
  *
  * @author Kris De Volder
  */
-public class YPropertyHoverInfo {
+public class YPropertyInfoTemplates {
 
-	public static Renderable create(String contextProperty, YType contextType, YTypedProperty prop) {
+	public static Renderable createHover(String contextProperty, YType contextType, YTypedProperty prop) {
 
 		Builder<Renderable> html = ImmutableList.builder();
 		if (StringUtil.hasText(contextProperty)) {
@@ -56,6 +57,16 @@ public class YPropertyHoverInfo {
 		}
 
 		return concat(html.build());
+	}
+	
+	public static Renderable createCompletionDocumentation(String contextProperty, YType contextType, YTypedProperty prop) {
+		/*
+		 * More parameters present to be able to quickly change the format.
+		 * Currently the format for the documentation is just the property
+		 * description
+		 */
+		Renderable r = prop.getDescription();
+		return r == Renderables.NO_DESCRIPTION ? null : r;
 	}
 
 }

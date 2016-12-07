@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Scoreabl
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
 import com.google.common.base.Supplier;
@@ -75,7 +75,7 @@ public class PropertyCompletionFactory {
 
 			@Override
 			public Renderable getDocumentation() {
-				return YPropertyHoverInfo.create(contextProperty, contextType, property);
+				return YPropertyInfoTemplates.createCompletionDocumentation(contextProperty, contextType, property);
 			}
 
 			@Override

@@ -26,7 +26,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
@@ -238,7 +238,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		case KEY_AT_KEY:
 			YTypedProperty prop = getProperty(lastSegment.toPropString());
 			if (prop!=null) {
-				return YPropertyHoverInfo.create(contextPath.toPropString(), getType(), prop);
+				return YPropertyInfoTemplates.createHover(contextPath.toPropString(), getType(), prop);
 			}
 			break;
 		default:

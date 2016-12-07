@@ -63,7 +63,7 @@ public class LoggerNameProviderTest {
 		String query = "jboss";
 		List<String> directQueryResults = getResults(p, query);
 
-		dumpResults("jboss - DIRECT", directQueryResults);
+//		dumpResults("jboss - DIRECT", directQueryResults);
 
 		/*
 		 * Commented out due to search results from JDK present
@@ -99,7 +99,7 @@ public class LoggerNameProviderTest {
 		for (int i = 0; i <= fullQuery.length(); i++) {
 			String query = fullQuery.substring(0, i);
 			List<String> results = getResults(p, query);
-			dumpResults(query, results);
+//			dumpResults(query, results);
 			if (i==fullQuery.length()) {
 				System.out.println("Verifying final result!");
 				//Not checking for exact equals because... quircks of JDT search engine means it
@@ -146,6 +146,7 @@ public class LoggerNameProviderTest {
 		.collect(Collectors.toList());
 	}
 
+	@SuppressWarnings("unused")
 	private void dumpResults(String string, Collection<String> r) {
 		System.out.println(">>> "+string);
 		String[] strings = r.toArray(new String[r.size()]);

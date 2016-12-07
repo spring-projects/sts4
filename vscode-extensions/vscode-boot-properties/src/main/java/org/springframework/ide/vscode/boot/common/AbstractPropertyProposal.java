@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.yaml.hover.YPropertyHoverInfo;
+import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 
