@@ -78,7 +78,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	protected ServerCapabilities getServerCapabilities() {
 		ServerCapabilities c = new ServerCapabilities();
 		
-		c.setTextDocumentSync(TextDocumentSyncKind.Full);
+		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
 		c.setHoverProvider(true);
 		
 		CompletionOptions completionProvider = new CompletionOptions();

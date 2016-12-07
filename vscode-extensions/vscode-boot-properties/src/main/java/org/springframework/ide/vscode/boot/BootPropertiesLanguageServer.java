@@ -151,7 +151,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	protected ServerCapabilities getServerCapabilities() {
 		ServerCapabilities c = new ServerCapabilities();
 		
-		c.setTextDocumentSync(TextDocumentSyncKind.Full);
+		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);

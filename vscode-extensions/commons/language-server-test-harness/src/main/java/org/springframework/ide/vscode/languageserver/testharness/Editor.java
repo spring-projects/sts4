@@ -164,6 +164,10 @@ public class Editor {
 		return document.getText();
 	}
 
+	private void replaceText(int start, int end, String newText) {
+		document = harness.changeDocument(document.getUri(), start, end, newText);
+	}
+
 	public void setRawText(String newContent) throws Exception {
 		document = harness.changeDocument(document.getUri(), newContent);
 	}
@@ -252,8 +256,7 @@ public class Editor {
 			Range rng = edit.getRange();
 			int start = document.toOffset(rng.getStart());
 			int end = document.toOffset(rng.getEnd());
-			String newText = docText.substring(0, start) + replaceWith + docText.substring(end);
-			setRawText(newText);
+			replaceText(start, end, replaceWith);
 			selectionStart = selectionEnd = start+cursorReplaceOffset;
 		} else {
 			String insertText = getInsertText(completion);

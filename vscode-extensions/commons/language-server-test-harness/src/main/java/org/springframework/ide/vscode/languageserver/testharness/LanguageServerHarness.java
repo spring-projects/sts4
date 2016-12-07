@@ -167,6 +167,42 @@ public class LanguageServerHarness {
 		return openDocument(getOrReadFile(file));
 	}
 
+	public synchronized TextDocumentInfo changeDocument(String uri, int start, int end, String replaceText) {
+		TextDocumentInfo oldDoc = documents.get(uri);
+		String oldContent = oldDoc.getText();
+		String newContent = oldContent.substring(0, start) + replaceText + oldContent.substring(end);
+		TextDocumentItem textDocument = setDocumentContent(uri, newContent);
+		DidChangeTextDocumentParams didChange = new DidChangeTextDocumentParams();
+		VersionedTextDocumentIdentifier version = new VersionedTextDocumentIdentifier();
+		version.setUri(uri);
+		version.setVersion(textDocument.getVersion());
+		didChange.setTextDocument(version);
+		switch (getDocumentSyncMode()) {
+		case None:
+			break; //nothing todo
+		case Incremental: {
+			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
+			change.setRange(new Range(oldDoc.toPosition(start), oldDoc.toPosition(end)));
+			change.setRangeLength(end-start);
+			change.setText(replaceText);
+			didChange.setContentChanges(Collections.singletonList(change));
+			break;
+		}
+		case Full: {
+			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
+			change.setText(newContent);
+			didChange.setContentChanges(Collections.singletonList(change));
+			break;
+		}
+		default:
+			throw new IllegalStateException("Unkown SYNC mode: "+getDocumentSyncMode());
+		}
+		if (server!=null) {
+			server.getTextDocumentService().didChange(didChange);
+		}
+		return documents.get(uri);
+	}
+
 	public TextDocumentInfo changeDocument(String uri, String newContent) throws Exception {
 		TextDocumentItem textDocument = setDocumentContent(uri, newContent);
 		DidChangeTextDocumentParams didChange = new DidChangeTextDocumentParams();
@@ -178,7 +214,6 @@ public class LanguageServerHarness {
 		case None:
 			break; //nothing todo
 		case Incremental:
-			throw new IllegalStateException("Incremental sync not yet supported by this test harness");
 		case Full:
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent();
 			change.setText(newContent);
@@ -323,4 +358,5 @@ public class LanguageServerHarness {
 		CompletionItem completion = editor.getFirstCompletion();
 		assertEquals(expected, completion.getLabel());
 	}
+
 }

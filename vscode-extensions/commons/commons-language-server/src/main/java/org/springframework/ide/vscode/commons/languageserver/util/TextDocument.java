@@ -56,8 +56,9 @@ public class TextDocument implements IDocument {
 			//full sync mode
 			setText(change.getText());
 		} else {
-			//incremental sync mode
-			throw new IllegalStateException("Incremental sync not yet implemented");
+			int start = toOffset(rng.getStart());
+			int end = toOffset(rng.getEnd());
+			replace(start, end-start, change.getText());
 		}
 	}
 
@@ -230,8 +231,8 @@ public class TextDocument implements IDocument {
 	}
 
 	@Override
-	public void replace(int start, int len, String ins) {
-		text = text.substring(0, start) + ins + text.substring(start+len);
+	public synchronized void replace(int start, int len, String ins) {
+		setText(text.substring(0, start) + ins + text.substring(start+len));
 	}
 
 	public synchronized TextDocument copy() {

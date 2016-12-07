@@ -56,7 +56,7 @@ public class BootPropertiesLanguageServerTest {
 	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Full);
+		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
 }
