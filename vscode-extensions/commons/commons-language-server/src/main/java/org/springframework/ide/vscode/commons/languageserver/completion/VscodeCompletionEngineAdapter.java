@@ -117,7 +117,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			TextDocument newDoc = doc.copy();
 			edits.apply(newDoc);
 			TextEdit vscodeEdit = new TextEdit();
-			vscodeEdit.setRange(newDoc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
+			vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
 			vscodeEdit.setNewText(vscodeIndentFix(vscodeEdit.getRange().getStart(), replaceEdit.newText));
 			//TODO: cursor offset within newText? for now we assume its always at the end.
 			item.setTextEdit(vscodeEdit);
