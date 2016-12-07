@@ -1,5 +1,6 @@
 package org.springframework.ide.vscode.properties.editor.test.harness;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -102,23 +103,20 @@ public abstract class AbstractPropsEditorTest {
 		harness.assertCompletionDisplayString(editorContents, expected);
 	}
 
-	private void notImplemented() {
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-	
-	/**
-	 * Checks that completions contains a completion with a given display string and that that completion
-	 * has a info hover that contains a given snippet of text.
-	 * <p>
-	 * Deprecated: use assertCompletionDetails instead and also check add an expected 'detail' text of 
-	 * completion item.
-	 */
 	@Deprecated
 	public void assertCompletionWithInfoHover(String editorText, String expectLabel, String expectInfoSnippet) throws Exception {
 		Editor editor = newEditor(editorText);
 		editor.assertCompletionDetails(expectLabel, null, expectInfoSnippet);
 	}
-
+	
+	/**
+	 * Checks that completions contains a completion with a given display string, detail and documentation text
+	 */
+	public void assertCompletionDetails(String editorText, String expectLabel, String expectDetail, String expectDocumenation) throws Exception {
+		Editor editor = newEditor(editorText);
+		editor.assertCompletionDetails(expectLabel, expectDetail, expectDocumenation);
+	}
+	
 	public boolean isEmptyMetadata() {
 		return md.isEmpty();
 	}
@@ -173,6 +171,25 @@ public abstract class AbstractPropsEditorTest {
 			actualLabels[i] = completions.get(i).getLabel();
 		}
 		assertElements(actualLabels, completionsLabels);
+	}
+	
+	public void assertCompletionsDisplayStringAndDetail(String editorText, String[]...expectCompletions) throws Exception {
+		String[] completionsLabels = new String[expectCompletions.length];
+		String[] completionDetails = new String[expectCompletions.length];
+		for (int i = 0; i < expectCompletions.length; i++) {
+			completionsLabels[i] = expectCompletions[i][0];
+			completionDetails[i] = expectCompletions[i][1];
+		}
+		Editor editor = newEditor(editorText);
+		List<CompletionItem> completions = editor.getCompletions();
+		String[] actualLabels = new String[completions.size()];
+		String[] actualDetails = new String[completions.size()];
+		for (int i = 0; i < completions.size(); i++) {
+			actualLabels[i] = completions.get(i).getLabel();
+			actualDetails[i] = completions.get(i).getDetail();
+		}
+		assertElements(actualLabels, completionsLabels);
+		assertArrayEquals(actualDetails, completionDetails);
 	}
 
 	public SpringPropertyIndexProvider getIndexProvider() {

@@ -3,7 +3,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +24,8 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.junit.Assert;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Strings;
-import com.google.gson.internal.Streams;
 
 public class Editor {
 
@@ -202,7 +200,6 @@ public class Editor {
 			: "";
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<Diagnostic> reconcile() {
 		// We assume the language server works synchronously for now and it does an immediate reconcile
 		// when the document changes. In the future this is probably not going to be the case though and then this
@@ -348,7 +345,9 @@ public class Editor {
 		if (expectDetail!=null) {
 			assertEquals(expectDetail, it.getDetail());
 		}
-		assertContains(expectDocSnippet, it.getDocumentation());
+		if (expectDocSnippet!=null) {
+			assertContains(expectDocSnippet, it.getDocumentation());
+		}
 	}
 
 	protected CompletionItem assertCompletionWithLabel(String expectLabel) throws Exception {

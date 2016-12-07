@@ -1,8 +1,8 @@
 package org.springframework.ide.vscode.boot.properties.hover;
 
-import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.SPACES;
-import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.getValueHints;
-import static org.springframework.ide.vscode.boot.properties.tools.CommonLanguageTools.getValueType;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.SPACES;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.getValueHints;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.getValueType;
 import static org.springframework.ide.vscode.commons.util.Renderables.*;
 
 import java.util.Collection;
@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.properties.tools.PropertyRenderableProvider;
+import org.springframework.ide.vscode.boot.common.PropertyRenderableProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;

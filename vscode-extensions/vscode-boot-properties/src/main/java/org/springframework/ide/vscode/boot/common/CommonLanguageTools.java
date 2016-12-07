@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.properties.tools;
+package org.springframework.ide.vscode.boot.common;
 
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 

@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.application.properties.metadata.completions;
+package org.springframework.ide.vscode.boot.common;
 
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
