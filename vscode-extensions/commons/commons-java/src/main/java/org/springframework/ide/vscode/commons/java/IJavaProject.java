@@ -4,7 +4,11 @@ import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 public interface IJavaProject extends IJavaElement {
-	
+
+	/**
+	 * TypeFilter is deprecated. Should use java.util.funcion.Predicate<IType> instead.
+	 */
+	@Deprecated
 	@FunctionalInterface
 	public static interface TypeFilter {
 		boolean accept(IType type);

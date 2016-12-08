@@ -26,6 +26,11 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
  */
 public class DocumentEditsTest {
 
+	//TODO: it is rather strange to put this test in the language-server-test-harness' project.
+	// It really belongs in commons-language-server, but unfortunately that makes it impossible
+	// for the test to use language-server-test-harness (it requires making commons-language-server depend on
+	// language-server-test-harness which causes a cyclic dependency).
+
 	private LanguageServerHarness harness;
 
 	@Before

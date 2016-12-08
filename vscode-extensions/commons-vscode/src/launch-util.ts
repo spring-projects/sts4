@@ -11,7 +11,7 @@ import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
-import {TextDocument, OutputChannel} from 'vscode';
+import {TextDocument, OutputChannel, Disposable, window} from 'vscode';
 
 PortFinder.basePort = 45556;
 
@@ -33,6 +33,7 @@ export function activate(options : ActivatorOptions, context: VSCode.ExtensionCo
 
     var log_output =  VSCode.window.createOutputChannel(options.extensionId+"-debug-log");
     log("Activating '"+options.extensionId+"' extension");
+    window.showInformationMessage("Activating spring-boot extension!");
 
     function log(msg : string) {
         if (log_output) {
@@ -104,11 +105,16 @@ export function activate(options : ActivatorOptions, context: VSCode.ExtensionCo
         let client = new LanguageClient(options.extensionId, options.extensionId, 
             createServer, clientOptions
         );
+        let progressService = new ProgressService();
+        client.onNotification({method: "sts/progress"}, (params : ProgressParams) => {
+            progressService.handle(params);
+        });
         let disposable = client.start();
 
         // Push the disposable to the context's subscriptions so that the 
         // client can be deactivated on extension deactivation
         context.subscriptions.push(disposable);
+        context.subscriptions.push(progressService);
     });
 }
 
@@ -158,4 +164,33 @@ function correctBinname(binname: string) {
 		return binname;
 }
 
+interface ProgressParams {
+    id: string
+    statusMsg?: string
+}
 
+class ProgressService {
+
+    private status = new Map<String, Disposable>();
+
+    handle(params : ProgressParams) {
+        let oldMessage = this.status.get(params.id);
+        if (oldMessage) {
+            oldMessage.dispose();
+        }
+        if (params.statusMsg) {
+            let newMessage = window.setStatusBarMessage(params.statusMsg);
+            this.status.set(params.id, newMessage);
+        }
+    }
+
+    dispose() {
+        if (this.status) {
+            for (let d of this.status.values()) {
+                d.dispose();
+            }
+        }
+        this.status = null;
+    }
+
+}
