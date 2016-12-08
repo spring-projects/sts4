@@ -119,7 +119,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20161021172207/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20161205183421/repository/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>
