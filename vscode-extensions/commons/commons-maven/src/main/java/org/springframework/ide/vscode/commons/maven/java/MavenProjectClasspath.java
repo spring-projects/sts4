@@ -61,7 +61,7 @@ public class MavenProjectClasspath implements IClasspath {
 	private Supplier<JandexIndex> javaIndex;
 	
 	public MavenProjectClasspath(MavenProject project) {
-		this(project, MavenCore.getInstance());
+		this(project, MavenCore.getDefault());
 	}
 
 	MavenProjectClasspath(MavenProject project, MavenCore maven) {
