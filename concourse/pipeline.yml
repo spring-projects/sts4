@@ -9,7 +9,7 @@ resources:
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: master
+    branch: {{branch}}
     username: kdvolder
     private_key: {{rsa_id}}
     paths:
@@ -18,7 +18,7 @@ resources:
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: master
+    branch: {{branch}}
     private_key: {{rsa_id}}
 - name: slack-notification
   type: slack-notification
@@ -47,17 +47,7 @@ jobs:
   - get: sts4
     trigger: true
   - task: build-vscode-extensions
-    config:
-      inputs:
-      - name: sts4
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: kdvolder/sts4-build-env
-      run:
-        path: "./build-all.sh"
-        dir: "sts4/vscode-extensions"
+    file: sts4/concourse/tasks/build-vscode-extensions.yml
     on_failure:
       put: slack-notification
       params:
