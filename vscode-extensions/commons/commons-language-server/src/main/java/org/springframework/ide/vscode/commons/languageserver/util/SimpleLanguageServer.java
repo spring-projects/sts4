@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -18,11 +19,15 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
+import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.Futures;
+
+import reactor.core.publisher.Flux;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
@@ -40,11 +45,20 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private SimpleWorkspaceService workspace;
 
-	private LanguageClient client;
+	private STS4LanguageClient client;
 
 	@Override
-	public void connect(LanguageClient client) {
-		this.client = client;
+	public void connect(LanguageClient _client) {
+		this.client = (STS4LanguageClient) _client;
+		Flux.range(1, 10)
+		.delay(Duration.ofMillis(2000))
+		.doOnNext((i) -> {
+			client.progress(new ProgressParams("test-progress", "Progress ["+i+"] ..."));
+		})
+		.doAfterTerminate(() -> {
+			client.progress(new ProgressParams("test-progress", null));
+		})
+		.subscribe();
 	}
 
     @Override

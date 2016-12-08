@@ -144,8 +144,8 @@ public abstract class LaunguageServerApp {
 				}
 			};
 		};
-		Launcher<LanguageClient> launcher = Launcher.createLauncher(server,
-				LanguageClient.class,
+		Launcher<STS4LanguageClient> launcher = Launcher.createLauncher(server,
+				STS4LanguageClient.class,
 				connection.in,
 				connection.out,
 				executor,

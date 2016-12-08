@@ -37,9 +37,10 @@ import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
-import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
+import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 
 public class LanguageServerHarness {
 
@@ -117,7 +118,7 @@ public class LanguageServerHarness {
 		initParams.setCapabilities(clientCap);
 		initResult = server.initialize(initParams).get();
 		if (server instanceof LanguageClientAware) {
-			((LanguageClientAware) server).connect(new LanguageClient() {
+			((LanguageClientAware) server).connect(new STS4LanguageClient() {
 				@Override
 				public void telemetryEvent(Object object) {
 					// TODO Auto-generated method stub
@@ -143,6 +144,12 @@ public class LanguageServerHarness {
 
 				@Override
 				public void logMessage(MessageParams message) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void progress(ProgressParams progressEvent) {
 					// TODO Auto-generated method stub
 
 				}

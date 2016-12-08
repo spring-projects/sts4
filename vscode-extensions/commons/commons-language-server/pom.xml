@@ -65,13 +65,6 @@
             <artifactId>reactor-core</artifactId>
             <version>${reactor-version}</version>
         </dependency>
-		<!-- testing -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>language-server-test-harness</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 	</dependencies>
 
