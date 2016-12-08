@@ -20,6 +20,20 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
+- name: s3-boot-properties-vsix
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    regexp: sts4/vscode-extensions/vscode-boot-properties-(.*).vsix
+- name: s3-manifest-yaml-vsix
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    regexp: sts4/vscode-extensions/vscode-manifest-yaml-(.*).vsix
 - name: slack-notification
   type: slack-notification
   source:
@@ -48,6 +62,14 @@ jobs:
     trigger: true
   - task: build-vscode-extensions
     file: sts4/concourse/tasks/build-vscode-extensions.yml
+    on_success:
+      aggregate:
+      - put: s3-manifest-yaml-vsix
+        params: 
+          file: sts4/vscode-extensions/vscode-manifest-yaml/*.vsix
+      - put: s3-boot-properties-vsix
+        params: 
+          file: sts4/vscode-extensions/vscode-boot-properties/*.vsix
     on_failure:
       put: slack-notification
       params:
