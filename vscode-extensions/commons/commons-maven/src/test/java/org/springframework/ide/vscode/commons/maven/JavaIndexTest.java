@@ -59,7 +59,7 @@ public class JavaIndexTest {
 	}
 	
 	private static boolean javaVersionHigherThan(int version) {
-		String versionStr = MavenCore.getInstance().getJavaRuntimeMinorVersion();
+		String versionStr = MavenCore.getDefault().getJavaRuntimeMinorVersion();
 		try {
 			return versionStr != null && Integer.valueOf(versionStr) > version;
 		} catch (NumberFormatException e) {
@@ -69,7 +69,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
-		List<Tuple2<IType, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+		List<Tuple2<IType, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
 				.fuzzySearchTypes("util.Map", null)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
@@ -79,7 +79,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void fuzzySearchWithFilter() throws Exception {
-		List<Tuple2<IType, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+		List<Tuple2<IType, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
 				.fuzzySearchTypes("util.Map", (type) -> Flags.isPrivate(type.getFlags()))
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
@@ -89,7 +89,7 @@ public class JavaIndexTest {
 	
 	@Test
 	public void fuzzySearchPackage() throws Exception {
-		List<Tuple2<String, Double>> results = MavenCore.getInstance().getJavaIndexForJreLibs()
+		List<Tuple2<String, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
 				.fuzzySearchPackages("util")
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();

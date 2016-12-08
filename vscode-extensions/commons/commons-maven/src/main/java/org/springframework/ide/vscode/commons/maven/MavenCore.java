@@ -20,6 +20,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.graph.DependencyVisitor;
 import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.util.filter.ScopeDependencyFilter;
 import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
@@ -78,9 +80,9 @@ public class MavenCore {
 	public static final String CLASSPATH_TXT = "classpath.txt";
 	public static final String POM_XML = "pom.xml";
 	
-	private static MavenCore instance = null;
+	private static MavenCore defaultInstance = null;
 	
-	private MavenBridge maven = new MavenBridge();
+	private MavenBridge maven;
 	
 	private Supplier<JandexIndex> javaCoreIndex = Suppliers.memoize(() -> {
 		try {
@@ -102,11 +104,15 @@ public class MavenCore {
 		}
 	});
 	
-	public static MavenCore getInstance() {
-		if (instance == null) {
-			instance = new MavenCore();
+	public static MavenCore getDefault() {
+		if (defaultInstance == null) {
+			defaultInstance = new MavenCore(IMavenConfiguration.DEFAULT);
 		}
-		return instance;
+		return defaultInstance;
+	}
+	
+	public MavenCore(IMavenConfiguration config) {
+		this.maven = new MavenBridge(config);
 	}
 	
 	/**
@@ -212,28 +218,55 @@ public class MavenCore {
 	 * @throws MavenException
 	 */
 	public Set<Artifact> resolveDependencies(MavenProject project, String scope) throws MavenException {
-		Set<Artifact> artifacts = new LinkedHashSet<>();
-
 		MavenExecutionRequest request = maven.createExecutionRequest();
 		DefaultRepositorySystemSession session = maven.createRepositorySession(request);
 
 		DependencyNode graph = readDependencyTree(maven.lookupComponent(org.eclipse.aether.RepositorySystem.class), session, project, scope);
 		if (graph != null) {
-			RepositoryUtils.toArtifacts(artifacts, graph.getChildren(),
-					Collections.singletonList(project.getArtifact().getId()), null);
-
-			// Maven 2.x quirk: an artifact always points at the local repo,
-			// regardless whether resolved or not
-			LocalRepositoryManager lrm = session.getLocalRepositoryManager();
-			for (Artifact artifact : artifacts) {
-				if (!artifact.isResolved()) {
-					String path = lrm.getPathForLocalArtifact(RepositoryUtils.toArtifact(artifact));
-					artifact.setFile(new File(lrm.getRepository().getBasedir(), path));
+			
+			ArrayList<DependencyNode> dependencyNodes = new ArrayList<>();
+			graph.accept(new DependencyVisitor() {
+				public boolean visitEnter(DependencyNode node) {
+					if (node.getDependency() != null) {
+						dependencyNodes.add(node);
+					}
+					return true;
 				}
-			}
+
+				public boolean visitLeave(DependencyNode dependencynode) {
+					return true;
+				}
+			});
+
+			LinkedHashSet<Artifact> artifacts = new LinkedHashSet<>(); 
+			RepositoryUtils.toArtifacts(artifacts, dependencyNodes,
+					Collections.singletonList(project.getArtifact().getId()), null);
+			
+			return artifacts.parallelStream().map(artifact -> {
+				if (!artifact.isResolved()) {
+					try {
+						artifact = maven.resolve(artifact, null, request);
+					} catch (MavenException e) {
+						Log.log(e);
+						// Maven 2.x quirk: an artifact always points at the local repo,
+						// regardless whether resolved or not
+						LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+						String path = lrm.getPathForLocalArtifact(RepositoryUtils.toArtifact(artifact));
+						artifact.setFile(new File(lrm.getRepository().getBasedir(), path));
+					}
+				}
+				return artifact;
+			}).collect(Collectors.toSet());
 		}
 		
-		return artifacts;
+		return Collections.emptySet();
+	}
+	
+	public File localRepositoryFolder() throws MavenException {
+		MavenExecutionRequest request = maven.createExecutionRequest();
+		DefaultRepositorySystemSession session = maven.createRepositorySession(request);
+		LocalRepositoryManager lrm = session.getLocalRepositoryManager();
+		return lrm.getRepository().getBasedir();
 	}
 	
 	public Artifact getSources(Artifact artifact) throws MavenException {

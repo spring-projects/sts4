@@ -124,7 +124,7 @@ class MavenBridge {
 
 	private DefaultPlexusContainer plexus;
 
-	// private final IMavenConfiguration mavenConfiguration;
+	private final IMavenConfiguration mavenConfiguration;
 
 	/**
 	 * Cached parsed settings.xml instance
@@ -137,8 +137,8 @@ class MavenBridge {
 	/** Last modified timestamp of cached user settings */
 	private long settings_timestamp;
 
-	public MavenBridge(/* IMavenConfiguration mavenConfiguration */) {
-		// this.mavenConfiguration = mavenConfiguration;
+	public MavenBridge(IMavenConfiguration mavenConfiguration) {
+		this.mavenConfiguration = mavenConfiguration;
 	}
 
 	/* package */@SuppressWarnings("deprecation")
@@ -151,17 +151,15 @@ class MavenBridge {
 		// workspace
 		// request.setStartTime( new Date() );
 
-		// if(mavenConfiguration.getGlobalSettingsFile() != null) {
-		// request.setGlobalSettingsFile(new
-		// File(mavenConfiguration.getGlobalSettingsFile()));
-		// }
+		if (mavenConfiguration.getGlobalSettingsFile() != null) {
+			request.setGlobalSettingsFile(new File(mavenConfiguration.getGlobalSettingsFile()));
+		}
 
 		File userSettingsFile =  SettingsXmlConfigurationProcessor.DEFAULT_USER_SETTINGS_FILE;
 
-		// if(mavenConfiguration.getUserSettingsFile() != null) {
-		// userSettingsFile = new
-		// File(mavenConfiguration.getUserSettingsFile());
-		// }
+		if (mavenConfiguration.getUserSettingsFile() != null) {
+			userSettingsFile = new File(mavenConfiguration.getUserSettingsFile());
+		}
 		request.setUserSettingsFile(userSettingsFile);
 
 		try {
@@ -247,10 +245,9 @@ class MavenBridge {
 		// MUST NOT use createRequest!
 
 		File userSettingsFile = SettingsXmlConfigurationProcessor.DEFAULT_USER_SETTINGS_FILE;
-		// if(mavenConfiguration.getUserSettingsFile() != null) {
-		// userSettingsFile = new
-		// File(mavenConfiguration.getUserSettingsFile());
-		// }
+		if (mavenConfiguration.getUserSettingsFile() != null) {
+			userSettingsFile = new File(mavenConfiguration.getUserSettingsFile());
+		}
 
 		boolean reload = force_reload || settings == null;
 
@@ -266,10 +263,9 @@ class MavenBridge {
 			Properties systemProperties = new Properties();
 			copyProperties(systemProperties, System.getProperties());
 			request.setSystemProperties(systemProperties);
-			// if(mavenConfiguration.getGlobalSettingsFile() != null) {
-			// request.setGlobalSettingsFile(new
-			// File(mavenConfiguration.getGlobalSettingsFile()));
-			// }
+			if (mavenConfiguration.getGlobalSettingsFile() != null) {
+				request.setGlobalSettingsFile(new File(mavenConfiguration.getGlobalSettingsFile()));
+			}
 			if (userSettingsFile != null) {
 				request.setUserSettingsFile(userSettingsFile);
 			}
