@@ -75,4 +75,4 @@ jobs:
       params:
         channel: "@kdvolder"
         text: | 
-           Concourse ${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
