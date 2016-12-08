@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.maven;
 
-public class DefaultMavenCinfiguration implements IMavenConfiguration {
+public class DefaultMavenConfiguration implements IMavenConfiguration {
 	
 	private String userSettingsFile = null;
 	

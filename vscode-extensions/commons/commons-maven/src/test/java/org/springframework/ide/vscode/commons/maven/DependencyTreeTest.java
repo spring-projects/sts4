@@ -64,7 +64,7 @@ public class DependencyTreeTest {
 	@Test
 	public void dowloadDependenciesTest() throws Exception {
 		String userSettingsFile = Paths.get(getClass().getResource("/maven-config/settings.xml").toURI()).toFile().toString();
-		DefaultMavenCinfiguration mavenConfig = new DefaultMavenCinfiguration();
+		DefaultMavenConfiguration mavenConfig = new DefaultMavenConfiguration();
 		mavenConfig.setUserSettingsFile(userSettingsFile);
 		
 		MavenCore maven = new MavenCore(mavenConfig);
