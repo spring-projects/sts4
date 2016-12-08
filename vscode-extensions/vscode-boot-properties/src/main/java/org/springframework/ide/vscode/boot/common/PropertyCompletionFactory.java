@@ -26,9 +26,6 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
 public class PropertyCompletionFactory {
 	
 	public ICompletionProposal valueProposal(String value, String query, String niceTypeName, double score, DocumentEdits edits, Renderable info) {
@@ -126,14 +123,12 @@ public class PropertyCompletionFactory {
 		private Match<PropertyInfo> match;
 		private Type type;
 		private TypeUtil typeUtil;
-		private Supplier<PropertyRenderableProvider> propertyRenderable;
 
 		public PropertyProposal(IDocument doc, DocumentEdits applier, Match<PropertyInfo> match,
 				TypeUtil typeUtil) {
 			super(doc, applier);
 			this.typeUtil = typeUtil;
 			this.match = match;
-			this.propertyRenderable = Suppliers.memoize(() -> new ShortDocumentationRenderableProvider(documentContextFinder.find(fDoc), match.data));
 			if (match.data.isDeprecated()) {
 				deprecate();
 			}
@@ -174,7 +169,7 @@ public class PropertyCompletionFactory {
 
 		@Override
 		public Renderable getDocumentation() {
-			return propertyRenderable.get().getRenderable();
+			return InformationTemplates.createCompletionDocumentation(match.data);
 		}
 		
 	}

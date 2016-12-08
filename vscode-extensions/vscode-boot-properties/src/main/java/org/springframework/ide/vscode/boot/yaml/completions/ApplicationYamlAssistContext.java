@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.application.properties.metadata.IndexNavigator;
 import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.application.properties.metadata.hints.HintProvider;
@@ -31,9 +32,13 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
-import org.springframework.ide.vscode.boot.common.PropertyRenderableProvider;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.commons.java.IField;
+import org.springframework.ide.vscode.commons.java.IJavaElement;
+import org.springframework.ide.vscode.commons.java.IMember;
+import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
@@ -43,6 +48,7 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.completion.AbstractYamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.TopLevelAssistContext;
@@ -57,6 +63,8 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 import org.springframework.ide.vscode.commons.yaml.util.YamlUtil;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Represents a context insied a "application.yml" file relative to which we can provide
@@ -365,7 +373,12 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				// the index to navigating type/bean properties
 				return parent.getHoverInfo();
 			} else {
-				return new JavaTypeNavigationHoverInfo(contextPath.toPropString(), contextPath.getBeanPropertyName(), parent.getType(), getType(), typeUtil).getRenderable();
+				String id = contextPath.toPropString();
+				String propName = contextPath.getBeanPropertyName();
+				String typeString = typeUtil.niceTypeName(getType());
+				Type parentType = parent.getType();
+				return InformationTemplates.createHover(id, typeString, null,
+						getDescription(typeUtil, parentType, propName), getDeprecation(typeUtil, parentType, propName));
 			}
 		}
 
@@ -495,7 +508,8 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		public Renderable getHoverInfo() {
 			PropertyInfo prop = indexNav.getExactMatch();
 			if (prop!=null) {
-				return new PropertyRenderableProvider(typeUtil.getJavaProject(), prop).getRenderable();
+				return  InformationTemplates.createHover(prop);
+//				return new PropertyRenderableProvider(typeUtil.getJavaProject(), prop).getRenderable();
 			}
 			return null;
 		}
@@ -526,4 +540,66 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			}
 		};
 	}
+	
+	private static Deprecation getDeprecation(TypeUtil typeUtil, Type parentType, String propName) {
+		Map<String, TypedProperty> props = typeUtil.getPropertiesMap(parentType, EnumCaseMode.ALIASED, BeanPropertyNameMode.ALIASED);
+		if (props!=null) {
+			TypedProperty prop = props.get(propName);
+			if (prop!=null) {
+				return prop.getDeprecation();
+			}
+		}
+		return null;
+	}
+	
+	private static Renderable getDescription(TypeUtil typeUtil, Type parentType, String propName) {
+		try {
+			List<IJavaElement> jes = getAllJavaElements(typeUtil, parentType, propName);
+			if (jes != null) {
+				for (IJavaElement je : jes) {
+					if (je instanceof IMember) {
+						IJavadoc javadoc = je.getJavaDoc();
+						if (javadoc != null) {
+							return javadoc.getRenderable();
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return Renderables.NO_DESCRIPTION;
+	}
+	
+	private static List<IJavaElement> getAllJavaElements(TypeUtil typeUtil, Type parentType, String propName) {
+		if (propName!=null) {
+			Type beanType = parentType;
+			if (TypeUtil.isMap(beanType)) {
+				Type keyType = typeUtil.getKeyType(beanType);
+				if (keyType!=null && typeUtil.isEnum(keyType)) {
+					IField field = typeUtil.getEnumConstant(keyType, propName);
+					if (field!=null) {
+						return ImmutableList.of(field);
+					}
+				}
+			} else {
+				ArrayList<IJavaElement> elements = new ArrayList<IJavaElement>(3);
+				maybeAdd(elements, typeUtil.getField(beanType, propName));
+				maybeAdd(elements, typeUtil.getSetter(beanType, propName).get());
+				maybeAdd(elements, typeUtil.getGetter(beanType, propName));
+				if (!elements.isEmpty()) {
+					return elements;
+				}
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	private static void maybeAdd(ArrayList<IJavaElement> elements, IJavaElement e) {
+		if (e!=null) {
+			elements.add(e);
+		}
+	}
+
+
 }
