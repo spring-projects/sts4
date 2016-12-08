@@ -33,7 +33,6 @@ export function activate(options : ActivatorOptions, context: VSCode.ExtensionCo
 
     var log_output =  VSCode.window.createOutputChannel(options.extensionId+"-debug-log");
     log("Activating '"+options.extensionId+"' extension");
-    window.showInformationMessage("Activating spring-boot extension!");
 
     function log(msg : string) {
         if (log_output) {
