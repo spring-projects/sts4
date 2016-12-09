@@ -66,10 +66,10 @@ jobs:
       aggregate:
       - put: s3-manifest-yaml-vsix
         params: 
-          file: sts4/vscode-extensions/vscode-manifest-yaml/*.vsix
+          file: vsix-files/vscode-manifest-yaml-*.vsix
       - put: s3-boot-properties-vsix
         params: 
-          file: sts4/vscode-extensions/vscode-boot-properties/*.vsix
+          file: vsix-files/vscode-boot-properties-*.vsix
     on_failure:
       put: slack-notification
       params:
