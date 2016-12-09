@@ -1,9 +1,15 @@
+##########################################################
 resource_types:
+- name: s3-multi
+  type: docker-image
+  source:
+    repository: kdvolder/s3-resource-simple
 - name: slack-notification
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+#########################################################
 resources:
 - name: docker-git
   type: git
@@ -36,6 +42,17 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/vscode-extensions/vscode-manifest-yaml-(.*).vsix
+- name: website
+  type: s3-multi
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    path: sts4/nigthly-distributions
+    options:
+    - "--acl public-read"
+    - "--delete"
 - name: slack-notification
   type: slack-notification
   source:
@@ -69,12 +86,27 @@ jobs:
       - put: s3-manifest-yaml-vsix
         params: 
           file: vsix-files/vscode-manifest-yaml-*.vsix
+          acl: public-read
       - put: s3-boot-properties-vsix
         params: 
           file: vsix-files/vscode-boot-properties-*.vsix
+          acl: public-read
     on_failure:
       put: slack-notification
       params:
         channel: "@kdvolder"
         text: | 
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-website
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: s3-manifest-yaml-vsix
+      trigger: true
+    - get: s3-boot-properties-vsix
+      trigger: true
+  - task: build-website
+    file: sts4/concourse/tasks/build-website.yml
+  - put: website
+    params:
+      path: website
