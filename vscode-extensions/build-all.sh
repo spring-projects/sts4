@@ -2,6 +2,9 @@
 set -e
 
 base_dir=`pwd`
+
+timestamp=`date -u +%Y%m%d%H%M`
+
 cd ${base_dir}/commons-vscode
 npm install
 
@@ -17,6 +20,11 @@ for i in vscode-boot-properties vscode-manifest-yaml ; do
     echo "***************************************************************************************"
     
     npm install ../commons-vscode
+
+    base_version=`jq -r .version package.json`
+    qualified_version=${base_version}-${timestamp}
+
+    npm version ${qualified_version}
     npm install
     npm run vsce-package
 done

@@ -1,5 +1,5 @@
 {
-  "name": "vscode-manifest-yml",
+  "name": "vscode-manifest-yaml",
   "displayName": "Cloudfoundry Manifest YML Support",
   "description": "Provides validation and content assist for Cloudfoundry manifest.yml files",
   "icon": "icon.png",
