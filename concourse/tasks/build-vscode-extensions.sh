@@ -6,5 +6,9 @@ cd sts4/vscode-extensions
 ./build-all.sh
 
 cd $workdir
-cp sts4/vscode-extensions/vscode-manifest-yaml/*.vsix vsix-files/
-cp sts4/vscode-extensions/vscode-boot-properties/*.vsix vsix-files/
+vsix_files=`find sts4 -name "*.visx"`
+
+for f in ${vsix_files}; do
+    new_name = $(basename "$f" .vsix)-`date -u +%Y%m%d%H%M`
+    mv "$f" "vsix_files/$new_name"
+done
