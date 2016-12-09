@@ -87,7 +87,6 @@ public class DependencyTreeTest {
 			assertNotNull(file);
 			assertTrue(file.toString().startsWith(parentFolderPathStr));
 			assertTrue(file.exists());
-			System.out.println(file);
 		}
 		
 		deleteFolderAndContents(localRepoFolder.toPath());
