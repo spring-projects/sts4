@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.structure;
 
-import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentUtil;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IRegion;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SRootNode;
 
 /**

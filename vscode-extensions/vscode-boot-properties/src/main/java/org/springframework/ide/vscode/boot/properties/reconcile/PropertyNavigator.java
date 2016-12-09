@@ -12,9 +12,9 @@ import org.springframework.ide.vscode.application.properties.metadata.types.Type
 import org.springframework.ide.vscode.application.properties.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 

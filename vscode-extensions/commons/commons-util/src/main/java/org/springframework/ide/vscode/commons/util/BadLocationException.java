@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.commons.languageserver.util;
+package org.springframework.ide.vscode.commons.util;
 
 /**
  * Replacement for Eclipse's BadLocationException (so as ot make porting code easier)

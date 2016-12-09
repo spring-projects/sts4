@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.application.properties.metadata;
 
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IDocument;
 
 
 @FunctionalInterface

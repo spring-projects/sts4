@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
-import org.springframework.ide.vscode.commons.languageserver.util.IRegion;
+import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 import reactor.util.function.Tuple2;

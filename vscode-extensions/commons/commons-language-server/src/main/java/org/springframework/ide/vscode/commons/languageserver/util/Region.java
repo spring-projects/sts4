@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import org.springframework.ide.vscode.commons.util.IRegion;
+
 /**
  * Trivial implementation of {@link IRegion}
  * @author kdvolder

@@ -29,9 +29,9 @@ import org.springframework.ide.vscode.application.properties.metadata.util.Fuzzy
 import org.springframework.ide.vscode.boot.properties.quickfix.ReplaceDeprecatedPropertyQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.BadLocationException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;

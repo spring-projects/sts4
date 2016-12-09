@@ -2,7 +2,7 @@ package org.springframework.ide.vscode.commons.yaml.ast;
 
 import java.io.StringReader;
 
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IDocument;
 import org.yaml.snakeyaml.Yaml;
 
 public class YamlParser implements YamlASTProvider {

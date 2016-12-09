@@ -1,6 +1,8 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.IDocument;
 
 public class DocumentUtil {
 

@@ -1,19 +1,20 @@
 package org.springframework.ide.vscode.commons.languageserver.java;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Log;
 
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
 
-	private final IJavaProjectFinderStrategy[] STRATEGIES = new IJavaProjectFinderStrategy[] {
-		new MavenProjectFinderStrategy(),
-		new JavaProjectWithClasspathFileFinderStrategy()
-	};
+	private final IJavaProjectFinderStrategy[] strategies;
+	
+	public DefaultJavaProjectFinder(IJavaProjectFinderStrategy[] strategies) {
+		this.strategies = strategies;
+	}
 
 	@Override
 	public IJavaProject find(IDocument d) {
-		for (IJavaProjectFinderStrategy strategy : STRATEGIES) {
+		for (IJavaProjectFinderStrategy strategy : strategies) {
 			try {
 				IJavaProject project = strategy.find(d);
 				if (project != null) {
@@ -25,4 +26,5 @@ public class DefaultJavaProjectFinder implements JavaProjectFinder {
 		}
 		return null;
 	}
+	
 }

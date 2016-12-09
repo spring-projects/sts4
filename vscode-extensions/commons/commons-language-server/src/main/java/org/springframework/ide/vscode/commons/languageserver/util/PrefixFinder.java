@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.IDocument;
+
 public abstract class PrefixFinder {
 	public String getPrefix(IDocument doc, int offset, int lowerBound) {
 		try {

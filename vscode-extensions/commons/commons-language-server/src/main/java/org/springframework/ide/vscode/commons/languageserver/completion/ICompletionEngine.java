@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.Collection;
 
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IDocument;
 
 /**
  * @author Kris De Volder

@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.application.properties.metadata.ValueProvi
 import org.springframework.ide.vscode.application.properties.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
+import org.springframework.ide.vscode.commons.util.IDocument;
 
 /**
  * Provides some convenience apis for test code to create / use test data for a SpringPropertyIndex.

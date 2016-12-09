@@ -29,12 +29,16 @@ import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCo
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
+import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.IDocument;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
+import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
+import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
+import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
@@ -54,6 +58,11 @@ import com.google.common.collect.ImmutableList;
  *
  */
 public class BootPropertiesLanguageServer extends SimpleLanguageServer {
+	
+	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
+			new JavaProjectWithClasspathFileFinderStrategy(),
+			new MavenProjectFinderStrategy()
+	});
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
