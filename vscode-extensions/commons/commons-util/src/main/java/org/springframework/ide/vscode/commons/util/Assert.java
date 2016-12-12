@@ -26,4 +26,8 @@ public class Assert {
 		}
 	}
 
+	public static void isTrue(boolean b) {
+		isLegal(b);
+	}
+
 }
