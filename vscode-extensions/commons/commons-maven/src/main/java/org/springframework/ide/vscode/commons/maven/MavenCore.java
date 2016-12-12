@@ -26,12 +26,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
@@ -245,7 +247,7 @@ public class MavenCore {
 			return artifacts.parallelStream().map(artifact -> {
 				if (!artifact.isResolved()) {
 					try {
-						artifact = maven.resolve(artifact, null, request);
+						artifact = maven.resolve(artifact, project.getRemoteArtifactRepositories(), request);
 					} catch (MavenException e) {
 						Log.log(e);
 						// Maven 2.x quirk: an artifact always points at the local repo,
@@ -269,20 +271,20 @@ public class MavenCore {
 		return lrm.getRepository().getBasedir();
 	}
 	
-	public Artifact getSources(Artifact artifact) throws MavenException {
-		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_SOURCES, null, maven.createExecutionRequest());
+	public Artifact getSources(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_SOURCES, repositories, maven.createExecutionRequest());
 	}
 	
-	public Artifact getJavadoc(Artifact artifact) throws MavenException {
-		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_JAVADOC, null, maven.createExecutionRequest());
+	public Artifact getJavadoc(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_JAVADOC, repositories, maven.createExecutionRequest());
 	}
 	
-	public Artifact getTests(Artifact artifact) throws MavenException {
-		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTS, null, maven.createExecutionRequest());
+	public Artifact getTests(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTS, repositories, maven.createExecutionRequest());
 	}
 	
-	public Artifact getTestSources(Artifact artifact) throws MavenException {
-		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTSOURCES, null, maven.createExecutionRequest());
+	public Artifact getTestSources(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
+		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTSOURCES, repositories, maven.createExecutionRequest());
 	}
  	
 	public Stream<Path> getJreLibs() throws MavenException {

@@ -192,7 +192,7 @@ public class MavenProjectClasspath implements IClasspath {
 			return new ParserJavadocProvider(type -> {
 				try {
 					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
-					URL sourceContainer = maven.getSources(artifact).getFile().toURI().toURL();
+					URL sourceContainer = maven.getSources(artifact, project.getRemoteArtifactRepositories()).getFile().toURI().toURL();
 					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
 							type);
 				} catch (MavenException e) {
@@ -225,7 +225,7 @@ public class MavenProjectClasspath implements IClasspath {
 			return new HtmlJavadocProvider(type -> {
 				try {
 					Artifact artifact = getArtifactFromJarFile(classpathResource).get();
-					URL sourceContainer = maven.getJavadoc(artifact).getFile().toURI().toURL();
+					URL sourceContainer = maven.getJavadoc(artifact, project.getRemoteArtifactRepositories()).getFile().toURI().toURL();
 					return SourceUrlProviderFromSourceContainer.JAR_JAVADOC_URL_PROVIDER.sourceUrl(sourceContainer,
 							type);
 				} catch (MavenException e) {

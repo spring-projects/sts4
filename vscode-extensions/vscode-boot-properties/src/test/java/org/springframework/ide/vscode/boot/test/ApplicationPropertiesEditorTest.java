@@ -1577,6 +1577,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertNoHover("ggggg.kkkk");
 	}
 
+	@Test public void testEmptyDescriptionHover() throws Exception {
+		data("debug", "java.lang.String", null, null);
+		Editor editor = newEditor(
+				"debug=something\n"
+		);
+		editor.assertHoverExactText("debug", "[**debug**  \n[java.lang.String](null)]");
+	}
+	
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);

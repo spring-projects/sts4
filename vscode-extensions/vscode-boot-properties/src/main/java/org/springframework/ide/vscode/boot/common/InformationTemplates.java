@@ -24,12 +24,14 @@ public class InformationTemplates {
 	
 	public static Renderable createHover(PropertyInfo info) {
 		Deprecation deprecation = createDeprecation(info);
-		return InformationTemplates.createHover(info.getId(), info.getType(), info.getDefaultValue(), text(info.getDescription()), deprecation);
+		Renderable description = info.getDescription() == null ? null : text(info.getDescription());
+		return InformationTemplates.createHover(info.getId(), info.getType(), info.getDefaultValue(), description, deprecation);
 	}
 	
 	public static Renderable createCompletionDocumentation(PropertyInfo info) {
 		Deprecation deprecation = createDeprecation(info);
-		return InformationTemplates.createCompletionDocumentation(text(info.getDescription()), info.getDefaultValue(), deprecation);
+		Renderable description = info.getDescription() == null ? null : text(info.getDescription());
+		return InformationTemplates.createCompletionDocumentation(description, info.getDefaultValue(), deprecation);
 	}
 	
 	public static Renderable createHover(String id, String type, Object defaultValue, Renderable description, Deprecation deprecation) {
