@@ -28,7 +28,7 @@ public class MavenBuilder {
 		ExternalProcess process = new ExternalProcess(projectPath.toFile(),
 				new ExternalCommand(all.toArray(new String[all.size()])), true);
 		if (process.getExitValue() != 0) {
-			throw new RuntimeException("Failed to build test project");
+			throw new RuntimeException("Failed to build test project! " + process.getErr());
 		}
 	}
 		

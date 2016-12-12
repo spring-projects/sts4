@@ -20,15 +20,15 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.application.properties.metadata.CachingValueProvider;
-import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
+import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
+import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
+import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.properties.editor.test.harness.AbstractPropsEditorTest;
-import org.springframework.ide.vscode.properties.editor.test.harness.StyledStringMatcher;
 
 /**
  * This class is a placeholder where we will attempt to copy and port

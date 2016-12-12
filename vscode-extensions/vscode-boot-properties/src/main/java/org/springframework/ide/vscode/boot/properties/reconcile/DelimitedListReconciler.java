@@ -3,8 +3,8 @@ package org.springframework.ide.vscode.boot.properties.reconcile;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.springframework.ide.vscode.application.properties.metadata.types.Type;
-import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.boot.metadata.types.Type;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 

@@ -1,6 +1,0 @@
-**/classpath.txt
-**/bin/**
-**/*.log.*
-test-projects/**/.classpath
-test-projects/**/.project
-test-projects/**/.factorypath

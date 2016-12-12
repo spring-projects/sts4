@@ -1,7 +1,7 @@
 package org.springframework.ide.vscode.boot.common;
 
-import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.BeanPropertyNameMode;
-import org.springframework.ide.vscode.application.properties.metadata.types.TypeUtil.EnumCaseMode;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 
 /**
  * Config object that determines some aspects of how the freedom of 'relaxed name binding'

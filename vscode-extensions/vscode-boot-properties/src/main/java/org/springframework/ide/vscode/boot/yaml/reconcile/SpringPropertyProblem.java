@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.boot.yaml.reconcile;
 
-import org.springframework.ide.vscode.application.properties.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
