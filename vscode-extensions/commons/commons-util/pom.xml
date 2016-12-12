@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>commons-util</artifactId>
-  <name>commons-util</name>
-  
-  	<parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>commons-util</artifactId>
+	<name>commons-util</name>
+
+	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
@@ -11,6 +12,28 @@
 	</parent>
 
 	<dependencies>
+		<!-- Java implementation of VS Code language server protocol -->
+		<dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>${lsp4j-version}</version>
+		</dependency>
+		<!-- Efficient 'text buffer' implementation from: -->
+		<dependency>
+			<groupId>org.javolution</groupId>
+			<artifactId>javolution-core-java</artifactId>
+			<version>6.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.compendium</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
@@ -23,10 +46,10 @@
 		</dependency>
 		<!-- HTM -> Markdown converter -->
 		<dependency>
-		    <groupId>com.kotcrab.remark</groupId>
-		    <artifactId>remark</artifactId>
-		    <version>1.0.0</version>
+			<groupId>com.kotcrab.remark</groupId>
+			<artifactId>remark</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
-	
+
 </project>

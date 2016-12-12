@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.boot.metadata.types;
 
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 @FunctionalInterface
 public interface TypeUtilProvider {

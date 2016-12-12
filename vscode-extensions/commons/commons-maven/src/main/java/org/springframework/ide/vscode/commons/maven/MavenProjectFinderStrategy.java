@@ -18,8 +18,8 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.FileUtils;
-import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

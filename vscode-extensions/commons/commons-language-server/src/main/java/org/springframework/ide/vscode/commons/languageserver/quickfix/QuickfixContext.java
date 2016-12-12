@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.quickfix;
 
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Provides access to additional context info and objects that quickfixes might

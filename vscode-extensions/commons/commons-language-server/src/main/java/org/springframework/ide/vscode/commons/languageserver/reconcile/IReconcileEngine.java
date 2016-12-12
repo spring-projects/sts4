@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public interface IReconcileEngine {
 	public void reconcile(IDocument doc, IProblemCollector problemCollector);

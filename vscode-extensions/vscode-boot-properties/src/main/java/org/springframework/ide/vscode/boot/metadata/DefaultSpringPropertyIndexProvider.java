@@ -4,7 +4,7 @@ import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
 

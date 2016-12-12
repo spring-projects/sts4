@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.Futures;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from

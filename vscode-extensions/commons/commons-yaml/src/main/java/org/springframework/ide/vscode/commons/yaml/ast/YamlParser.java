@@ -1,9 +1,9 @@
 package org.springframework.ide.vscode.commons.yaml.ast;
 
-import java.io.StringReader;
-
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.yaml.snakeyaml.Yaml;
+
+import javolution.io.CharSequenceReader;
 
 public class YamlParser implements YamlASTProvider {
 
@@ -15,7 +15,9 @@ public class YamlParser implements YamlASTProvider {
 
 	@Override
 	public YamlFileAST getAST(IDocument doc) throws Exception {
-		return new YamlFileAST(yaml.composeAll(new StringReader(doc.get())));
+		CharSequenceReader reader = new CharSequenceReader();
+		reader.setInput(doc.get());
+		return new YamlFileAST(yaml.composeAll(reader));
 	}
 
 }

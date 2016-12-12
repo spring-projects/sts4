@@ -15,10 +15,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
-import org.springframework.ide.vscode.commons.util.IDocument;
-import org.springframework.ide.vscode.commons.util.IRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 /**

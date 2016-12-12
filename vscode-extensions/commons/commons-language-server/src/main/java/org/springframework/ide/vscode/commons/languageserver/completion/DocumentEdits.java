@@ -13,12 +13,12 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 import java.util.ArrayList;
 
 import org.eclipse.lsp4j.TextEdit;
-import org.springframework.ide.vscode.commons.languageserver.util.Region;
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.IDocument;
-import org.springframework.ide.vscode.commons.util.IRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * Helper to make it easier to create composite modifications to IDocument.

@@ -1,6 +1,6 @@
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
-import org.springframework.ide.vscode.commons.util.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * A fake reconcule engine which is not useful except for quickly testing

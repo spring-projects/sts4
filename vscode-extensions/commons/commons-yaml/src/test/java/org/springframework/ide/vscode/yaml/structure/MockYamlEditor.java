@@ -12,16 +12,16 @@ package org.springframework.ide.vscode.yaml.structure;
 
 import static org.junit.Assert.assertTrue;
 
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SRootNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Node;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SRootNode;
 
 /**
  * Yaml editor mock for the tests.

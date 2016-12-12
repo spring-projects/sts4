@@ -1,8 +1,8 @@
 package org.springframework.ide.vscode.commons.languageserver.java;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.IDocument;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultJavaProjectFinder implements JavaProjectFinder {
 

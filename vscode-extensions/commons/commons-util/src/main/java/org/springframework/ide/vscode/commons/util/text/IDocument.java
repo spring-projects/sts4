@@ -1,4 +1,6 @@
-package org.springframework.ide.vscode.commons.util;
+package org.springframework.ide.vscode.commons.util.text;
+
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 
 public interface IDocument {
 

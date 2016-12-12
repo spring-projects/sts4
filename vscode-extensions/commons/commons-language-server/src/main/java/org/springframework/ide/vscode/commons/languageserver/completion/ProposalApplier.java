@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
-import org.springframework.ide.vscode.commons.util.IDocument;
-import org.springframework.ide.vscode.commons.util.IRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 
 /**
  * Interface that represents the methods that one needs to implement in order

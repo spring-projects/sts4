@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.commons.util;
+package org.springframework.ide.vscode.commons.util.text;
 
 /**
  * Mimicks eclipse IRegion (i.e. a region is a offset + length).

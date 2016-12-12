@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.commons.languageserver.util;
+package org.springframework.ide.vscode.commons.util.text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,8 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.IDocument;
-import org.springframework.ide.vscode.commons.util.IRegion;
+
+import javolution.text.Text;
 
 public class TextDocument implements IDocument {
 
@@ -23,7 +23,7 @@ public class TextDocument implements IDocument {
 	private int[] _lineStarts;
 
 	private final String uri;
-	private String text = "";
+	private Text text = new Text("");
 
 	public TextDocument(String uri) {
 		this.uri = uri;
@@ -42,22 +42,22 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public String get() {
-		return getText();
+		return getText().toString();
 	}
 
-	public synchronized String getText() {
+	private synchronized Text getText() {
 		return text;
 	}
 
-	public synchronized void setText(String text) {
-		this.text = text;
+	public synchronized void setText(CharSequence text) {
+		this.text = Text.valueOf(text);
 		this._lineStarts = null;
 	}
 	public void apply(TextDocumentContentChangeEvent change) {
 		Range rng = change.getRange();
 		if (rng==null) {
 			//full sync mode
-			setText(change.getText());
+			setText(new Text(change.getText()));
 		} else {
 			int start = toOffset(rng.getStart());
 			int end = toOffset(rng.getEnd());
@@ -149,7 +149,7 @@ public class TextDocument implements IDocument {
 	@Override
 	public String get(int start, int len) throws BadLocationException {
 		try {
-			return text.substring(start, start+len);
+			return text.subtext(start, start+len).toString();
 		} catch (Exception e) {
 			throw new BadLocationException(e);
 		}
@@ -164,7 +164,7 @@ public class TextDocument implements IDocument {
 	public String getDefaultLineDelimiter() {
 		Matcher newlineFinder = NEWLINE.matcher(text);
 		if (newlineFinder.find()) {
-			return text.substring(newlineFinder.start(), newlineFinder.end());
+			return text.subtext(newlineFinder.start(), newlineFinder.end()).toString();
 		}
 		return System.getProperty("line.separator");
 	}
@@ -235,7 +235,11 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public synchronized void replace(int start, int len, String ins) {
-		setText(text.substring(0, start) + ins + text.substring(start+len));
+		int end = start+len;
+		setText(text
+			.delete(start, end)
+			.insert(start, new Text(ins))	
+		);
 	}
 
 	public synchronized TextDocument copy() {
