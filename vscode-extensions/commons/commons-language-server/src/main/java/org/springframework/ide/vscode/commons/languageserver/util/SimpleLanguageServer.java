@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -157,14 +158,18 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 			@Override
 			public void accept(ReconcileProblem problem) {
-				DiagnosticSeverity severity = getDiagnosticSeverity(problem);
-				if (severity!=null) {
-					Diagnostic d = new Diagnostic();
-					d.setCode(problem.getCode());
-					d.setMessage(problem.getMessage());
-					d.setRange(doc.toRange(problem.getOffset(), problem.getLength()));
-					d.setSeverity(severity);
-					diagnostics.add(d);
+				try {
+					DiagnosticSeverity severity = getDiagnosticSeverity(problem);
+					if (severity!=null) {
+						Diagnostic d = new Diagnostic();
+						d.setCode(problem.getCode());
+						d.setMessage(problem.getMessage());
+						d.setRange(doc.toRange(problem.getOffset(), problem.getLength()));
+						d.setSeverity(severity);
+						diagnostics.add(d);
+					}
+				} catch (BadLocationException e) {
+					LOG.log(Level.WARNING, "Invalid reconcile problem ignored", e);
 				}
 			}
 

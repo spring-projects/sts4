@@ -12,10 +12,10 @@ public interface IDocument {
 	int getNumberOfLines();
 	String getDefaultLineDelimiter();
 	char getChar(int offset) throws BadLocationException;
-	int getLineOfOffset(int offset);
+	int getLineOfOffset(int offset) throws BadLocationException;
 	IRegion getLineInformation(int line);
-	int getLineOffset(int line);
-	void replace(int start, int len, String text);
+	int getLineOffset(int line) throws BadLocationException;
+	void replace(int start, int len, String text) throws BadLocationException;
 	String textBetween(int start, int end) throws BadLocationException;
 
 }

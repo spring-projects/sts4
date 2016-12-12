@@ -9,19 +9,16 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
+import org.springframework.ide.vscode.commons.util.text.linetracker.ILineTracker;
 
 import javolution.text.Text;
 
 public class TextDocument implements IDocument {
 
-	//TODO: This representiation of 'document content' is simplistic and inefficient
-	// for large documents.
-	// Making any change, such as inserting a character a user typed, works by copying the String that represents the
-	// contents. This could really become problematic for largish-documents when there are frequent changes.
-
-	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
-	private int[] _lineStarts;
-
+	ILineTracker lineTracker = new DefaultLineTracker();
+	private static final Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
+	
 	private final String uri;
 	private Text text = new Text("");
 
@@ -32,7 +29,7 @@ public class TextDocument implements IDocument {
 	private TextDocument(TextDocument other) {
 		this.uri = other.uri;
 		this.text = other.text;
-		this._lineStarts = other._lineStarts; //no need to reparse lines.
+		this.lineTracker.set(text.toString());
 	}
 
 	@Override
@@ -49,15 +46,16 @@ public class TextDocument implements IDocument {
 		return text;
 	}
 
-	public synchronized void setText(CharSequence text) {
-		this.text = Text.valueOf(text);
-		this._lineStarts = null;
+	public synchronized void setText(String text) {
+		this.text = new Text(text);
+		this.lineTracker.set(text);
 	}
-	public void apply(TextDocumentContentChangeEvent change) {
+	
+	public void apply(TextDocumentContentChangeEvent change) throws BadLocationException {
 		Range rng = change.getRange();
 		if (rng==null) {
 			//full sync mode
-			setText(new Text(change.getText()));
+			setText(change.getText());
 		} else {
 			int start = toOffset(rng.getStart());
 			int end = toOffset(rng.getEnd());
@@ -70,8 +68,8 @@ public class TextDocument implements IDocument {
 	 * TextDocument because it requires splitting document into lines to determine
 	 * line numbers from offsets.
 	 */
-	public Range toRange(int offset, int length) {
-		int end = offset + length;
+	public Range toRange(int offset, int length) throws BadLocationException {
+		int end = Math.min(offset + length, getLength());
 		Range range = new Range();
 		range.setStart(toPosition(offset));
 		range.setEnd(toPosition(end));
@@ -81,22 +79,12 @@ public class TextDocument implements IDocument {
 	/**
 	 * Determine the line-number a given offset (i.e. what line is the offset inside of?)
 	 */
-	private int lineNumber(int offset) {
-		int[] lineStarts = lineStarts();
-		// TODO Should really use binary search here for speed
-		int lineNumber = 0;
-		for (int i = 0; i < lineStarts.length; i++) {
-			if (lineStarts[i]<=offset) {
-				lineNumber = i;
-			} else {
-				return lineNumber;
-			}
-		}
-		return lineNumber;
+	private int lineNumber(int offset) throws BadLocationException {
+		return lineTracker.getLineNumberOfOffset(offset);
 	}
 
 
-	public Position toPosition(int offset) {
+	public Position toPosition(int offset) throws BadLocationException {
 		int line = lineNumber(offset);
 		int startOfLine = startOfLine(line);
 		int column = offset - startOfLine;
@@ -106,37 +94,20 @@ public class TextDocument implements IDocument {
 		return pos;
 	}
 
-	private int startOfLine(int line) {
-		return lineStarts()[line];
-	}
-
-	private synchronized int[] lineStarts() {
-		if (_lineStarts==null) {
-			_lineStarts = parseLines();
-		}
-		return _lineStarts;
-	}
-
-	private int[] parseLines() {
-		List<Integer> lineStarts = new ArrayList<>();
-		lineStarts.add(0);
-		Matcher matcher = NEWLINE.matcher(getText());
-		int pos = 0;
-		while (matcher.find(pos)) {
-			lineStarts.add(pos = matcher.end());
-		}
-		int[] array = new int[lineStarts.size()];
-		for (int i = 0; i < array.length; i++) {
-			array[i] = lineStarts.get(i);
-		}
-		return array;
+	private int startOfLine(int line) throws BadLocationException {
+		IRegion region = lineTracker.getLineInformation(line);
+		return region.getOffset();
 	}
 
 	@Override
 	public IRegion getLineInformationOfOffset(int offset) {
-		if (offset<=getLength()) {
-			int line = lineNumber(offset);
-			return getLineInformation(line);
+		try {
+			if (offset<=getLength()) {
+				int line = lineNumber(offset);
+				return getLineInformation(line);
+			}
+		} catch (BadLocationException e) {
+			//outside document.
 		}
 		return null;
 	}
@@ -157,7 +128,7 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public int getNumberOfLines() {
-		return lineStarts().length;
+		return lineTracker.getNumberOfLines();
 	}
 
 	@Override
@@ -178,68 +149,38 @@ public class TextDocument implements IDocument {
 	}
 
 	@Override
-	public int getLineOfOffset(int offset) {
-		return lineNumber(offset);
+	public int getLineOfOffset(int offset) throws BadLocationException {
+		return lineTracker.getLineNumberOfOffset(offset);
 	}
 
 	@Override
 	public IRegion getLineInformation(int line) {
-		int[] starts = lineStarts();
-		if (line<starts.length) {
-			int start = starts[line];
-			int nextLine = line+1;
-			int end;
-			if (nextLine>=starts.length) {
-				//no next line. Last line in the document
-				end = getLength();
-			} else {
-				end = starts[line+1];
-				//To behave like Eclipse IDocument we must strip off line delimiter from the end.
-				char c1 = getSafeChar(end-1);
-				if (c1=='\r' || c1=='\n') {
-					end--;
-					char c2 = getSafeChar(end-1);
-					if (c1!=c2 && (c2=='\r' || c2=='\n')) {
-						end--;
-					}
-				}
-			}
-
-			int len = end - start;
-			if (len<0) {
-				len = 0;
-			}
-			return new Region(start, end-start);
+		try {
+			return lineTracker.getLineInformation(line);
+		} catch (BadLocationException e) {
+			//line doesn't exist
 		}
 		return null;
 	}
 
-	private char getSafeChar(int ofs) {
-		try {
-			return getChar(ofs);
-		} catch (BadLocationException e) {
-			return 0;
-		}
-	}
-
 	@Override
-	public int getLineOffset(int line) {
-		return lineStarts()[line];
+	public int getLineOffset(int line) throws BadLocationException {
+		return lineTracker.getLineOffset(line);
 	}
 
-	public int toOffset(Position position) {
-		int line = position.getLine();
-		int lineStart = lineStarts()[line];
+	public int toOffset(Position position) throws BadLocationException {
+		IRegion region = lineTracker.getLineInformation(position.getLine());
+		int lineStart = region.getOffset();
 		return lineStart + position.getCharacter();
 	}
 
 	@Override
-	public synchronized void replace(int start, int len, String ins) {
+	public synchronized void replace(int start, int len, String ins) throws BadLocationException {
 		int end = start+len;
-		setText(text
+		text = text
 			.delete(start, end)
-			.insert(start, new Text(ins))	
-		);
+			.insert(start, new Text(ins));
+		lineTracker.replace(start, len, ins);
 	}
 
 	public synchronized TextDocument copy() {
