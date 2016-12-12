@@ -344,17 +344,17 @@ public class Editor {
 	}
 
 	/**
-	 * Verifies an expected textSnippet is contained in the hover text that is
-	 * computed when hovering mouse at position at the end of first occurrence of
-	 * a given string in the editor.
+	 * Verifies an expected text is the hover text that is computed when
+	 * hovering mouse at position at the end of first occurrence of a given
+	 * string in the editor.
 	 */
-	public void assertHoverExactText(String afterString, String expectSnippet) throws Exception {
+	public void assertHoverExactText(String afterString, String expectedHover) throws Exception {
 		int pos = getRawText().indexOf(afterString);
 		if (pos>=0) {
 			pos += afterString.length();
 		}
 		Hover hover = harness.getHover(document, document.toPosition(pos));
-		assertEquals(expectSnippet, hover.getContents().toString());
+		assertEquals(expectedHover, hover.getContents().toString());
 	}
 
 	public void assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
