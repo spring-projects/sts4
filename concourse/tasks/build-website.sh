@@ -13,13 +13,8 @@ export vscode_manifest_yaml=$(basename s3-manifest-yaml-vsix/*.vsix)
 echo "vscode_manifest_yaml=$vscode_manifest_yaml"
 export vscode_boot_properties=$(basename s3-boot-properties-vsix/*.vsix)
 echo "vscode_boot_properties=$vscode_boot_properties"
-envsubst > "$target/vscode-extensions.html" << XXXXXX
-<!DOCTYPE html>
-<html>
-<body>
 
-<h1>STS4 Vscode Extensions</h1>
-
+envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Property Language Server: 
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_boot_properties}">${vscode_boot_properties}</a> 
@@ -28,6 +23,18 @@ envsubst > "$target/vscode-extensions.html" << XXXXXX
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
 </ul>
+XXXXXX
+
+export vscode_snippet=`cat "$target/vscode-extensions-snippet.html"`
+
+envsubst > "$target/vscode-extensions.html" << XXXXXX
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>STS4 Vscode Extensions</h1>
+
+$vscode_snippet
 
 </body>
 </html>

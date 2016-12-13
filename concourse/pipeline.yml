@@ -49,10 +49,9 @@ resources:
     access_key_id: {{s3_accesskey}}
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
-    path: sts4/nigthly-distributions
+    path: snapshot/STS4/vscode-extensions
     options:
     - "--acl public-read"
-    - "--delete"
 - name: slack-notification
   type: slack-notification
   source:
