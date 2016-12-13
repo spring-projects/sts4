@@ -35,7 +35,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware {
+public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient {
 
     private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
 
