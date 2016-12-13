@@ -47,7 +47,7 @@ export function activate(context: VSCode.ExtensionContext) {
             synchronize: {
                 // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
                 textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    let result : boolean =  /^(.*\/)?pipeline[^\s\\/]*.yml$/i.test(textDocument.fileName);
+                    let result : boolean =  /^(.*)pipeline(.*)\.yml$/i.test(textDocument.fileName);
                     return result;
                 }
             }

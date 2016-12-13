@@ -10,6 +10,8 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -53,7 +55,8 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						reconcile(entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
-					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type);
+					DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(map);
+					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type, schemaContext);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
 						String key = NodeUtil.asScalar(keyNode);

@@ -94,6 +94,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		try {
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
+			LOG.info("didChange: "+url);
 			if (url!=null) {
 				TextDocument doc = getOrCreateDocument(url);
 				for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
@@ -108,7 +109,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params) {
-		//LOG.info("didOpen: "+params);
+		LOG.info("didOpen: "+params.getUri());
 		//Example message:
 		//{
 		//   "jsonrpc":"2.0",
@@ -150,7 +151,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
-		System.out.println("closing: "+params.getTextDocument().getUri());
+		LOG.info("didClose: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
 		if (url!=null) {
 			documents.remove(url);

@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.springframework.ide.vscode.concourse.ConcourseLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 public class ManifestYamlLanguageServerTest {
@@ -19,7 +20,7 @@ public class ManifestYamlLanguageServerTest {
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ConcourseLanguageServer::new);
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -27,7 +28,7 @@ public class ManifestYamlLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ConcourseLanguageServer::new);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 	

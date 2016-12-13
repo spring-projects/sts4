@@ -41,6 +41,8 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 
 	public final int documentSelector;
 	public final YamlPath contextPath;
+	private final YamlDocument doc;
+
 
 	private static PrefixFinder prefixfinder = new PrefixFinder() {
 		protected boolean isPrefixChar(char c) {
@@ -48,6 +50,10 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 		}
 	};
 
+	@Override
+	public YamlDocument getDocument() {
+		return doc;
+	}
 
 	protected final String getPrefix(YamlDocument doc, SNode node, int offset) {
 		//For value completions... in general we would like to determine the whole text
@@ -78,7 +84,8 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 	}
 
 
-	public AbstractYamlAssistContext(int documentSelector, YamlPath contextPath) {
+	public AbstractYamlAssistContext(YamlDocument doc, int documentSelector, YamlPath contextPath) {
+		this.doc = doc;
 		this.documentSelector = documentSelector;
 		this.contextPath = contextPath;
 	}

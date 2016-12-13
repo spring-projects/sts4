@@ -32,4 +32,6 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 	Renderable getHoverInfo(YamlPathSegment lastSegment);
 
 	Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
+
+	YamlDocument getDocument();
 }

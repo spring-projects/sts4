@@ -241,42 +241,52 @@ public class Renderables {
 	}
 
 	public static Renderable fromClasspath(final Class<?> klass, final String resourcePath) {
-		return new Renderable() {
-
-			@Override
-			public void renderAsMarkdown(StringBuilder buffer) {
-				String extension = ".md";
-				String value = getText(klass, resourcePath, extension);
-				if (value != null) {
-					buffer.append(value);
-				} else {
-					NO_DESCRIPTION.renderAsMarkdown(buffer);
-				}
-			}
-
-			@Override
-			public void renderAsHtml(HtmlBuffer buffer) {
-				String extension = ".html";
-				String value = getText(klass, resourcePath, extension);
-				if (value != null) {
-					buffer.raw(value);
-				} else {
-					NO_DESCRIPTION.renderAsHtml(buffer);
-				}
-			}
-
-			private String getText(final Class<?> klass, final String resourcePath, String extension) {
-				try {
-					InputStream stream = klass.getResourceAsStream(resourcePath + extension);
-					if (stream != null) {
-						return IOUtil.toString(stream);
+		if (resourcePath.endsWith(".html")) {
+			return htmlBlob((HtmlBuffer html) -> {
+				html.raw(getText(klass, resourcePath, null));
+			});
+		} else {
+			return new Renderable() {
+	
+				@Override
+				public void renderAsMarkdown(StringBuilder buffer) {
+					String extension = ".md";
+					String value = getText(klass, resourcePath, extension);
+					if (value != null) {
+						buffer.append(value);
+					} else {
+						NO_DESCRIPTION.renderAsMarkdown(buffer);
 					}
-				} catch (Exception e) {
-					logger.error("Error", e);
 				}
-				return null;
+	
+				@Override
+				public void renderAsHtml(HtmlBuffer buffer) {
+					String extension = ".html";
+					String value = getText(klass, resourcePath, extension);
+					if (value != null) {
+						buffer.raw(value);
+					} else {
+						NO_DESCRIPTION.renderAsHtml(buffer);
+					}
+				}
+	
+			};
+		}
+	}
+
+	private static String getText(final Class<?> klass, String resourcePath, String extension) {
+		if (extension!=null) {
+			resourcePath = resourcePath + extension;
+		}
+		try {
+			InputStream stream = klass.getResourceAsStream(resourcePath);
+			if (stream != null) {
+				return IOUtil.toString(stream);
 			}
-		};
+		} catch (Exception e) {
+			logger.error("Error", e);
+		}
+		return null;
 	}
 
 	private static class ConcatRenderables implements Renderable {

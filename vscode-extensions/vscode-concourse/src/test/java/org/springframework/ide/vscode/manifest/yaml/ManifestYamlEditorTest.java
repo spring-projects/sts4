@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.concourse.ConcourseLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -20,7 +21,7 @@ public class ManifestYamlEditorTest {
 	LanguageServerHarness harness;
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		harness = new LanguageServerHarness(ConcourseLanguageServer::new);
 		harness.intialize(null);
 	}
 
@@ -36,7 +37,7 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ConcourseLanguageServer::new);
 		harness.intialize(null);
 
 		Editor editor = harness.newEditor(
