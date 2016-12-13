@@ -1,0 +1,18 @@
+<p>Applications can bind to services such as databases, messaging, and key-value stores.</p>
+
+<p>Applications are deployed into App Spaces. An application can only bind to services instances that exist in the target App Space before the application is deployed.</p>
+
+<p>The <code>services</code> block consists of a heading, then one or more service instance names.</p>
+
+<p>Whoever creates the service chooses the service instance names. These names can convey logical information, as in <code>backend_queue</code>, describe the nature of the service, as in <code>mysql_5.x</code>, or do neither, as in the example below.</p>
+
+<pre>
+---
+  ...
+  services:
+   - instance_ABC
+   - instance_XYZ
+</pre>
+
+<p>Binding to a service instance is a special case of setting an environment 
+variable, namely <code>VCAP_SERVICES</code>.

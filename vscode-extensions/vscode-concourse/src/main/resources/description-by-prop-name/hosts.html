@@ -1,0 +1,11 @@
+<p>Use the <code>hosts</code> attribute to provide multiple hostnames, or subdomains. Each hostname generates a unique route for the app. <code>hosts</code> can be used in conjunction with <code>host</code>. If you define both attributes, Cloud Foundry creates routes for hostnames defined in both <code>host</code> and <code>hosts</code>.</p>
+
+<pre>
+---
+  ...
+  hosts:
+  - app_host1
+  - app_host2
+</pre>
+
+<p>The command line option that overrides this attribute is <code>-n</code>.</p>

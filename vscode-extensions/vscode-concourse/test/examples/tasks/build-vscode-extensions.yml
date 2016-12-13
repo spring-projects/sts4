@@ -1,0 +1,11 @@
+inputs:
+- name: sts4
+outputs:
+- name: vsix-files
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+run:
+  path: "sts4/concourse/tasks/build-vscode-extensions.sh"

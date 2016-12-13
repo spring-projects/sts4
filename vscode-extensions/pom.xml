@@ -13,5 +13,6 @@
 		<module>commons</module>
 		<module>vscode-boot-properties</module>
 		<module>vscode-manifest-yaml</module>
+		<module>vscode-concourse</module>
 	</modules>
 </project>
