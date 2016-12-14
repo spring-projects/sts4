@@ -375,9 +375,9 @@ class MavenBridge {
 			configuration.setResolveDependencies(true);
 			configuration.setResolveVersionRanges(true);
 			request.setGoals(Arrays.asList(new String[] { "compile", "javadoc:javadoc" }));
-//			Properties userProperties = (Properties) request.getUserProperties().clone();
-//			userProperties.put("skipTests", "true");
-//			request.setUserProperties(userProperties);
+			Properties userProperties = (Properties) request.getUserProperties().clone();
+			userProperties.put("show", "private");
+			request.setUserProperties(userProperties);
 			return lookup(Maven.class).execute(request);
 		} catch (MavenExecutionRequestPopulationException e) {
 			throw new MavenException(e);
