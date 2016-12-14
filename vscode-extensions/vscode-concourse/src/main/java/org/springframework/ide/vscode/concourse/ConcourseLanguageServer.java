@@ -1,9 +1,5 @@
 package org.springframework.ide.vscode.concourse;
 
-import java.util.Collection;
-
-import javax.inject.Provider;
-
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
@@ -23,19 +19,14 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextP
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
-import com.google.common.collect.ImmutableList;
-
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
-	private static final Provider<Collection<YValueHint>> NO_BUILDPACKS = () -> ImmutableList.of();
-	
 	private Yaml yaml = new Yaml();
-	private YamlSchema schema = new PipelineYmlSchema(NO_BUILDPACKS);
+	private YamlSchema schema = new PipelineYmlSchema();
 
 	
 	public ConcourseLanguageServer() {

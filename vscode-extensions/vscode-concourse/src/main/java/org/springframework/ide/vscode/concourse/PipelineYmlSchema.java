@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import java.util.Collection;
-
-import javax.inject.Provider;
-
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -21,7 +17,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
 /**
@@ -34,7 +29,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private final YTypeFactory f = new YTypeFactory();
 
-	public PipelineYmlSchema(Provider<Collection<YValueHint>> buildpackProvider) {
+	public PipelineYmlSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		// define schema types
@@ -52,20 +47,22 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
+		
+		YAtomicType t_image_type = f.yatomic("ImageType");
+		t_image_type.addHints("docker_image");
 
 		YAtomicType t_resource_type = f.yatomic("ResourceType");
 		t_resource_type.addHints(
+				f.hint("archive", "archive - The 'archive' resource can fetch and extract .tar.gz archives."),
 				f.hint("git", "git - The 'git' resource can pull and push to git repositories"),
-				f.hint("time",  "time - The 'time' resource can start jobs on a schedule or timestamp outputs."),
 				f.hint("s3", "s3 - The 's3' resource can fetch from and upload to S3 buckets."),
-				f.hint("archive", "archive - The archive resource can fetch and extract .tar.gz archives.")
+				f.hint("semver", "semver - The 'semver' resource can set or bump version numbers."),
+				f.hint("time",  "time - The 'time' resource can start jobs on a schedule or timestamp outputs."),
+				f.hint("docker-image", "docker-image - The 'docker-image' resource can fetch, build, and push Docker images")
 				//TODO: add more resource types and descriptions.
-//
-//				 The semver resource can set or bump version numbers.
 //
 //				 The github-release resource can fetch and publish versioned GitHub resources.
 //
-//				 The docker-image resource can fetch, build, and push Docker images
 //
 //				 The tracker resource can deliver stories and bugs on Pivotal Tracker
 //
@@ -122,9 +119,16 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(job, "public", t_boolean);
 		prop(job, "disable_manual_trigger", t_boolean);
 		prop(job, "plan", f.yseq(step));
+		
+		YType resource_type_def = f.ybean("ResourceTypeDef", 
+			f.yprop("name", t_ne_string),
+			f.yprop("type", t_image_type),
+			f.yprop("source", t_any)
+		);
 
 		prop(TOPLEVEL_TYPE, "resources", f.yseq(resource));
 		prop(TOPLEVEL_TYPE, "jobs", f.yseq(job));
+		prop(TOPLEVEL_TYPE, "resource_types", f.yseq(resource_type_def));
 
 	}
 

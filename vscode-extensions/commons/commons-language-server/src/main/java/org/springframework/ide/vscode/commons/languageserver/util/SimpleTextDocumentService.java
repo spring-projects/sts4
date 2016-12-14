@@ -65,7 +65,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		this.server = server;
 	}
 
-
 	public synchronized void onHover(HoverHandler h) {
 		Assert.isNull("A hover handler is already set, multiple handlers not supported yet", hoverHandler);
 		this.hoverHandler = h;

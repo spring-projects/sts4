@@ -13,11 +13,12 @@ package org.springframework.ide.vscode.manifest.yaml;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.concourse.PipelineYmlSchema;
 
 /**
  * @author Kris De Volder
  */
-public class ManifestYmlSchemaTest {
+public class PipelineYmlSchemaTest {
 
 	@Test
 	public void shouldMakeSomeTests() {
@@ -48,31 +49,14 @@ public class ManifestYmlSchemaTest {
 //			"timeout"
 //	};
 //
-//	private static final String[] TOPLEVEL_PROP_NAMES = {
-//			"applications",
-//			"buildpack",
-//			"command",
-//			"disk_quota",
-//			"domain",
-//			"domains",
-//			"env",
-//			"health-check-type",
-////			"host",
-////			"hosts",
-//			"inherit",
-//			"instances",
-//			"memory",
-////			"name",
-//			"no-hostname",
-//			"no-route",
-//			"path",
-//			"random-route",
-//			"services",
-//			"stack",
-//			"timeout"
-//	};
-//
-//	PipelineYmlSchema schema = new PipelineYmlSchema(null);
+	private static final String[] TOPLEVEL_PROP_NAMES = {
+			"resources",
+			"jobs",
+			"resource-types"
+			//groups
+	};
+
+	PipelineYmlSchema schema = new PipelineYmlSchema();
 //
 //	@Test
 //	public void toplevelProperties() throws Exception {
