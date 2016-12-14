@@ -31,19 +31,17 @@ import reactor.util.function.Tuple2;
  */
 public class MavenJavaProject implements IJavaProject {
 
-	private MavenProject mavenProject;
 	private MavenProjectClasspath classpath;
 	private MavenCore maven;
 
 	public MavenJavaProject(File pom) throws Exception {
 		this.maven = MavenCore.getDefault();
-		this.mavenProject = maven.readProject(pom);
-		this.classpath = new MavenProjectClasspath(mavenProject, maven);
+		this.classpath = new MavenProjectClasspath(pom, maven);
 	}
 
 	@Override
 	public String getElementName() {
-		return mavenProject.getName();
+		return classpath.getName();
 	}
 
 	@Override
@@ -53,7 +51,7 @@ public class MavenJavaProject implements IJavaProject {
 
 	@Override
 	public boolean exists() {
-		return mavenProject != null;
+		return classpath.exists();
 	}
 
 	@Override
@@ -82,7 +80,7 @@ public class MavenJavaProject implements IJavaProject {
 	}
 
 	public Path getOutputFolder() {
-		return Paths.get(new File(mavenProject.getBuild().getOutputDirectory()).toURI());
+		return Paths.get(new File(classpath.getOutputFolder()).toURI());
 	}
 
 }

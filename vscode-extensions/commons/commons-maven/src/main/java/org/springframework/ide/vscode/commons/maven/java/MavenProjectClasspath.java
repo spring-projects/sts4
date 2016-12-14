@@ -15,18 +15,22 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
@@ -57,16 +61,25 @@ public class MavenProjectClasspath implements IClasspath {
 	}
 	
 	private MavenCore maven;
-	private MavenProject project;
+	private File pom;
+	private Supplier<MavenProject> projectSupplier;
 	private Supplier<JandexIndex> javaIndex;
 	
-	public MavenProjectClasspath(MavenProject project) {
-		this(project, MavenCore.getDefault());
+	public MavenProjectClasspath(File pom) {
+		this(pom, MavenCore.getDefault());
 	}
 
-	MavenProjectClasspath(MavenProject project, MavenCore maven) {
+	MavenProjectClasspath(File pom, MavenCore maven) {
 		this.maven = maven;
-		this.project = project;
+		this.pom = pom;
+		this.projectSupplier = Suppliers.memoize(() -> {
+			try {
+				return createMavenProject();
+			} catch (MavenException e) {
+				Log.log(e);
+				return null;
+			}
+		});
 		this.javaIndex = Suppliers.memoize(() -> {
 			Stream<Path> classpathEntries = Stream.empty();
 			try {
@@ -86,13 +99,49 @@ public class MavenProjectClasspath implements IClasspath {
 			}, maven.getJavaIndexForJreLibs());
 		});
 	}
+	
+	private final MavenProject createMavenProject() throws MavenException {
+		MavenExecutionResult result = maven.build(pom);
+		if (result.hasExceptions()) {
+			result.getExceptions().forEach(Log::log);
+		}
+		return result.getProject();
+	}
+	
+	public boolean exists() {
+		return pom.exists();
+	}
+	
+	public String getName() {
+		MavenProject project = projectSupplier.get();
+		return project == null ? null : project.getName();
+	}
 
 	@Override
 	public Stream<Path> getClasspathEntries() throws Exception {
-		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
-			return artifact.getFile().toPath();
-		}), Stream.of(new File(project.getBuild().getOutputDirectory()).toPath(),
-				new File(project.getBuild().getTestOutputDirectory()).toPath()));
+//		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
+//			return artifact.getFile().toPath();
+//		}), projectResolvedOutput());
+		return Stream.concat(projectDependencies().stream().map(a -> a.getFile().toPath()), projectOutput().stream().map(f -> f.toPath()));
+	}
+	
+	private Set<Artifact> projectDependencies() {
+		MavenProject project = projectSupplier.get();
+		return project == null ? Collections.emptySet() : project.getArtifacts();
+	}
+	
+	private List<File> projectOutput() {
+		MavenProject project = projectSupplier.get();
+		if (project == null) {
+			return Collections.emptyList();
+		} else {
+			return Arrays.asList(new File(project.getBuild().getOutputDirectory()), new File(project.getBuild().getTestOutputDirectory()));
+		}
+	}
+	
+	public String getOutputFolder() {
+		MavenProject project = projectSupplier.get();
+		return project == null ? null : project.getBuild().getOutputDirectory();
 	}
 	
 	public IType findType(String fqName) {
@@ -116,12 +165,17 @@ public class MavenProjectClasspath implements IClasspath {
 	}
 	
 	private Optional<Artifact> getArtifactFromJarFile(File file) throws MavenException {
-		return maven.resolveDependencies(project, null).stream().filter(a -> file.equals(a.getFile())).findFirst();
+		MavenProject project = projectSupplier.get();
+		return project.getArtifacts().stream().filter(a -> file.equals(a.getFile())).findFirst();
 	}
 	
 	@Override
 	public Stream<String> getClasspathResources() {
-		return project.getBuild().getResources().stream().flatMap(resource -> {			
+		MavenProject project = projectSupplier.get();
+		if (project == null) {
+			return Stream.empty();
+		}
+		return project.getBuild().getResources().stream().flatMap(resource -> {
 			DirectoryScanner scanner = new DirectoryScanner();
 			scanner.setBasedir(resource.getDirectory());
 			if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
@@ -173,6 +227,10 @@ public class MavenProjectClasspath implements IClasspath {
 //	}
 
 	private IJavadocProvider createParserJavadocProvider(File classpathResource) {
+		MavenProject project = projectSupplier.get();
+		if (project == null) {
+			return null;
+		}
 		if (classpathResource.isDirectory()) {
 			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
 				return new ParserJavadocProvider(type -> {
@@ -206,6 +264,10 @@ public class MavenProjectClasspath implements IClasspath {
 	}
 	
 	private IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
+		MavenProject project = projectSupplier.get();
+		if (project == null) {
+			return null;
+		}
 		if (classpathResource.isDirectory()) {
 			if (classpathResource.toString().startsWith(project.getBuild().getOutputDirectory())) {
 				return new HtmlJavadocProvider(type -> {

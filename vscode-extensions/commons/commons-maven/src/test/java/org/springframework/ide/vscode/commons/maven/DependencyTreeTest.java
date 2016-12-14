@@ -42,7 +42,7 @@ public class DependencyTreeTest {
 		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
 		MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
 
-		MavenProject project = MavenCore.getDefault().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+		MavenProject project = MavenCore.getDefault().readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile(), false);
 		Set<Path> calculatedClassPath = MavenCore.getDefault().resolveDependencies(project, null).stream().map(artifact -> {
 			return Paths.get(artifact.getFile().toURI());
 		}).collect(Collectors.toSet());
@@ -76,7 +76,7 @@ public class DependencyTreeTest {
 		assertFalse(localRepoFolder.exists());
 		
 		Path testProjectPath = Paths.get(getClass().getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
-		MavenProject project = maven.readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+		MavenProject project = maven.readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile(), false);
 		
 		Set<Artifact> calculatedClassPath = maven.resolveDependencies(project, null);
 		
