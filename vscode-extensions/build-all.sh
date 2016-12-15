@@ -9,7 +9,7 @@ cd ${base_dir}/commons-vscode
 npm install
 
 cd $base_dir
-for i in vscode-boot-properties vscode-manifest-yaml ; do
+for i in vscode-boot-properties vscode-manifest-yaml vscode-concourse; do
     cd ${base_dir}/${i}
     echo "***************************************************************************************"
     echo "***************************************************************************************"

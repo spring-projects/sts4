@@ -34,6 +34,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/vscode-extensions/vscode-boot-properties-(.*).vsix
+- name: s3-concourse-vsix
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/vscode-extensions/vscode-concourse-(.*).vsix
 - name: s3-manifest-yaml-vsix
   type: s3
   source:
@@ -91,6 +99,10 @@ jobs:
         params: 
           file: vsix-files/vscode-boot-properties-*.vsix
           acl: public-read
+      - put: s3-concourse-vsix
+        params: 
+          file: vsix-files/vscode-concourse-*.vsix
+          acl: public-read
     on_failure:
       put: slack-notification
       params:
@@ -106,6 +118,10 @@ jobs:
       - build-vsix
       trigger: true
     - get: s3-boot-properties-vsix
+      passed:
+      - build-vsix
+      trigger: true
+    - get: s3-concourse-vsix
       passed:
       - build-vsix
       trigger: true
