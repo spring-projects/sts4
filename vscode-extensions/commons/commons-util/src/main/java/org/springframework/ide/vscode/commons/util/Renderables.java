@@ -241,37 +241,39 @@ public class Renderables {
 	}
 
 	public static Renderable fromClasspath(final Class<?> klass, final String resourcePath) {
-		if (resourcePath.endsWith(".html")) {
-			return htmlBlob((HtmlBuffer html) -> {
-				html.raw(getText(klass, resourcePath, null));
-			});
-		} else {
-			return new Renderable() {
-	
-				@Override
-				public void renderAsMarkdown(StringBuilder buffer) {
-					String extension = ".md";
-					String value = getText(klass, resourcePath, extension);
-					if (value != null) {
-						buffer.append(value);
-					} else {
-						NO_DESCRIPTION.renderAsMarkdown(buffer);
+		return Renderables.lazy(() -> {
+			String html = getText(klass, resourcePath, ".html");
+			String markdown = getText(klass, resourcePath, ".md");
+			if (html==null && markdown==null) {
+				return NO_DESCRIPTION;
+			} else {
+				return new Renderable() {
+					
+					@Override
+					public void renderAsMarkdown(StringBuilder buffer) {
+						if (markdown!=null) {
+							buffer.append(markdown);
+						} else {
+							buffer.append(getHtmlToMarkdownConverter().convert(html));
+						}
 					}
-				}
-	
-				@Override
-				public void renderAsHtml(HtmlBuffer buffer) {
-					String extension = ".html";
-					String value = getText(klass, resourcePath, extension);
-					if (value != null) {
-						buffer.raw(value);
-					} else {
-						NO_DESCRIPTION.renderAsHtml(buffer);
+		
+					@Override
+					public void renderAsHtml(HtmlBuffer buffer) {
+						if (html!=null) {
+							buffer.raw(html);
+						} else {
+							//TODO: proper conversion to html
+							buffer.raw("<pre>");
+							buffer.raw(markdown);
+							buffer.raw("</pre>");
+						}
 					}
-				}
-	
-			};
-		}
+		
+				};
+
+			}
+		});
 	}
 
 	private static String getText(final Class<?> klass, String resourcePath, String extension) {

@@ -1,6 +1,0 @@
-<span class="py">config</span><span class="t"></span><span class="pi">:</span><span class="t"></span><span class="t"> </span><span class="nv"></span><span class="nv">object</span></a></pre></div><p><em>One required.</em> The configuration for the task's running environment.</p><p><code>file</code> points at a <code>.yml</code> file containing the
-<a href="single-page.html#configuring-tasks">task config</a>, which allows this to be tracked
-with your resources.</p><p>The first segment in the path should refer to another source from the plan,
-and the rest of the path is relative to that source.</p><p>For example, if in your plan you have the following
-<a href="single-page.html#get-step"><code>get</code></a> step:</p><div class="highlight"><pre class="verbatim"><span class="t"></span><span class="pi">-</span><span class="t"></span><span class="t"> </span><span class="t"></span><span class="nv"></span><span class="py">get</span><span class="t"></span><span class="pi">:</span><span class="t"></span><span class="t"> </span><span class="nv"></span><span class="nv">something</span></pre></div><p>And the <code>something</code> resource provided a <code>unit.yml</code> file, you
-would set <code>file: something/unit.yml</code>.</p><p><code>config</code> can be defined to inline the task config statically.</p>

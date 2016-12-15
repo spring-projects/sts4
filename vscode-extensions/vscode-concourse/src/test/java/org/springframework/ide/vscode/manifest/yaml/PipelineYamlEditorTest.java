@@ -10,7 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
+
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +25,7 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 
 public class PipelineYamlEditorTest {
 
+	private static final String CURSOR = "<*>";
 	LanguageServerHarness harness;
 
 	@Before public void setup() throws Exception {
@@ -106,6 +111,139 @@ public class PipelineYamlEditorTest {
 	}
 
 	@Test
+	public void primaryStepCompletions() throws Exception {
+		assertContextualCompletions(
+				// Context:
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - <*>"
+				, // ==============
+				"<*>"
+				, // => 
+				"aggregate:\n" +
+				"    - <*>"
+				, // ==============
+				"get: <*>"
+				, // ==============
+				"put: <*>"
+				, // ==============
+				"task: <*>"
+		);
+	}
+
+	@Test
+	public void primaryStepHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - get: something\n" +
+				"  - put: something\n" +
+				"  - aggregate:\n" +
+				"    - task: do-something\n"
+		);
+		
+		editor.assertHoverContains("get", "Fetches a resource");
+		editor.assertHoverContains("put", "Pushes to the given [Resource]");
+		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
+		editor.assertHoverContains("task", "Executes a [Task]");
+	}
+	
+	@Test
+	public void putStepHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - put: something\n" +
+				"    resource: something\n" +
+				"    params:\n" +
+				"      some_param: some_value\n" +
+				"    get_params:\n" +
+				"      skip_download: true\n"
+		);
+
+		editor.assertHoverContains("resource", "The resource to update");
+		editor.assertHoverContains("params", "A map of arbitrary configuration");
+		editor.assertHoverContains("get_params", "A map of arbitrary configuration to forward to the resource that will be utilized during the implicit `get` step");
+	}
+
+	@Test
+	public void getStepHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - get: something\n" +
+				"    resource: something\n" +
+				"    version: latest\n" +
+				"    passed: [other-job]\n" +
+				"    params:\n" +
+				"      some_param: some_value\n" +
+				"    trigger: true\n" +
+				"    on_failure:\n" +
+				"    - bogus: bad\n" +
+				"    on_success:\n" +
+				"    - bogus: bad\n"
+		);
+		editor.assertHoverContains("resource", "The resource to fetch");
+		editor.assertHoverContains("version", "The version of the resource to fetch");
+		editor.assertHoverContains("params", "A map of arbitrary configuration");
+		editor.assertHoverContains("trigger", "Set to `true` to auto-trigger");
+		editor.assertHoverContains("on_failure", "Any step can have `on_failure` tacked onto it");
+		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
+	}
+
+	@Test
+	public void taskStepHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - task: do-something\n" +
+				"    file: some-file.yml\n" +
+				"    privileged: true\n" +
+				"    image: some-image\n" +
+				"    params:\n" +
+				"      map: of-stuff\n" +
+				"    input_mapping:\n" +
+				"      map: of-stuff\n" +
+				"    output_mapping:\n" +
+				"      map: of-stuff\n" +
+				"    config: some-config\n" +
+				"    ensure:\n" +
+				"      bogus: bad\n" +
+				"    on_failure:\n" +
+				"      bogus: bad\n" +
+				"    on_success:\n" +
+				"      bogus: bad\n"
+		);
+		editor.assertHoverContains("file", "`file` points at a `.yml` file containing the task config");
+		editor.assertHoverContains("privileged", "If set to `true`, the task will run with full capabilities");
+		editor.assertHoverContains("image", "Names an artifact source within the plan");
+		editor.assertHoverContains("params", "A map of task parameters to set, overriding those configured in `config` or `file`");
+		editor.assertHoverContains("input_mapping", "A map from task input names to concrete names in the build plan");
+		editor.assertHoverContains("output_mapping", "A map from task output names to concrete names");
+		editor.assertHoverContains("config", "Use `config` to inline the task config");
+	}
+
+	@Test
+	public void aggregateStepHovers() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - aggregate:\n" +
+				"    - get: some-resource\n"
+		);
+		
+		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
+	}
+	
+	@Test
 	public void reconcileSimpleTypes() throws Exception {
 		Editor editor;
 
@@ -114,14 +252,14 @@ public class PipelineYamlEditorTest {
 				"jobs:\n" +
 				"- name: foo\n" +
 				"  serial: boohoo\n" +
-				"  max_in_flight: 0\n" +
+				"  max_in_flight: -1\n" +
 				"  plan:\n" +
 				"  - get: git\n" +
 				"    trigger: yohoho"
 		);
 		editor.assertProblems(
 				"boohoo|boolean",
-				"0|Positive Integer",
+				"-1|Positive Integer",
 				"yohoho|boolean"
 		);
 
@@ -152,31 +290,23 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void toplevelCompletions() throws Exception {
 		Editor editor;
-		editor = harness.newEditor("<*>");
+		editor = harness.newEditor(CURSOR);
 		editor.assertCompletions(
-				"resources:\n"+
-				"- <*>",
-				// ---------------
-				"resource-types:\n" +
-				"- <*>",
-				// ---------------
 				"jobs:\n" +
+				"- <*>"
+				, // ---------------
+				"resource_types:\n" +
+				"- <*>"
+				, // ---------------
+				"resources:\n"+
 				"- <*>"
 		);
 
-		editor = harness.newEditor("ranro<*>");
+		editor = harness.newEditor("rety<*>");
 		editor.assertCompletions(
-				"random-route: <*>"
+				"resource_types:\n" +
+				"- <*>"
 		);
-	}
-
-	@Test
-	public void completionDetailsAndDocs() throws Exception {
-		Editor editor = harness.newEditor(
-				"applications:\n" +
-				"- build<*>"
-		);
-		editor.assertCompletionDetails("buildpack", "Buildpack", "If your application requires a custom buildpack");
 	}
 
 	@Test
@@ -250,6 +380,15 @@ public class PipelineYamlEditorTest {
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////
+
+	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
+		assertContains(CURSOR, conText);
+		textBefore = conText.replace(CURSOR, textBefore);
+		textAfter = Arrays.stream(textAfter)
+				.map((String t) -> conText.replace(CURSOR, t))
+				.collect(Collectors.toList()).toArray(new String[0]);
+		assertCompletions(textBefore, textAfter);
+	}
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
 		Editor editor = harness.newEditor(textBefore);

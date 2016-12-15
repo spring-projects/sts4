@@ -65,6 +65,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						} else {
 							YTypedProperty prop = beanProperties.get(key);
 							if (prop==null) {
+								type = typeUtil.inferMoreSpecificType(type, schemaContext);
 								unknownBeanProperty(keyNode, type, key);
 							} else {
 								reconcile(entry.getValueNode(), prop.getType());

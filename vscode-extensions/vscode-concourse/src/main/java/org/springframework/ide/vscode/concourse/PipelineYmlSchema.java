@@ -14,8 +14,10 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
@@ -44,6 +46,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_pos_integer.parseWith(ValueParsers.POS_INTEGER);
 		YType t_any = f.yany("Object");
 		YType t_params = f.ymap(t_string, t_any);
+		YType t_string_params = f.ymap(t_string, t_string);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
@@ -91,6 +94,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(putStep, "put", t_ne_string);
 		prop(putStep, "resource", t_string);
 		prop(putStep, "params", t_params);
+		prop(putStep, "get_params", t_params);
 
 		YBeanType taskStep = f.ybean("TaskStep");
 		prop(taskStep, "task", t_ne_string);
@@ -98,13 +102,25 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(taskStep, "config", t_any);
 		prop(taskStep, "privileged", t_boolean);
 		prop(taskStep, "params", t_params);
+		prop(taskStep, "image", t_ne_string);
+		prop(taskStep, "input_mapping", t_string_params);
+		prop(taskStep, "output_mapping", t_string_params);
 
-		YType step = f.yunion("Step",
+		YBeanType aggregateStep = f.ybean("AggregateStep");
+		
+		YBeanType[] stepTypes = {
 				getStep,
 				putStep,
-				taskStep
-		);
+				taskStep,
+				aggregateStep
+		};
+		YBeanUnionType step = f.yunion("Step", stepTypes);
+		prop(aggregateStep, "aggregate", f.yseq(step));
 
+		// shared properties applicable for any type of Step:
+		prop(step, "on_success", step);
+		prop(step, "on_failure", step);
+		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", t_ne_string);
 		prop(resource, "type", t_resource_type);
@@ -132,13 +148,13 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	}
 
-	private void prop(YBeanType bean, String name, YType type) {
+	private void prop(AbstractType bean, String name, YType type) {
 		bean.addProperty(name, type, descriptionFor(bean, name));
 	}
 
 	private Renderable descriptionFor(YType owner, String propName) {
 		String typeName = owner.toString();
-		return Renderables.fromClasspath(this.getClass(), "/desc/"+typeName+"/"+propName+".html");
+		return Renderables.fromClasspath(this.getClass(), "/desc/"+typeName+"/"+propName);
 	}
 
 	@Override

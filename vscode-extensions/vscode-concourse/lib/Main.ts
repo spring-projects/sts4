@@ -43,7 +43,9 @@ export function activate(context: VSCode.ExtensionContext) {
             // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
 
             // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-            documentSelector: [ <any> {language: 'yaml', pattern: '**/*pipeline*.yml'}],
+            documentSelector: [ 
+                <any> {language: 'yaml', pattern: '**/*pipeline*.yml'}
+            ],
             synchronize: {
                 // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
                 textDocumentFilter: function(textDocument : TextDocument) : boolean {

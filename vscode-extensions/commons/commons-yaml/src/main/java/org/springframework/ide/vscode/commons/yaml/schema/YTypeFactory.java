@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.schema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,11 +59,8 @@ public class YTypeFactory {
 		return new YBeanType(name, properties);
 	}
 
-	public YType yunion(String name, YBeanType... types) {
-		Assert.isLegal(types.length>0);
-		if (types.length==1) {
-			return types[0];
-		}
+	public YBeanUnionType yunion(String name, YBeanType... types) {
+		Assert.isLegal(types.length>1);
 		return new YBeanUnionType(name, types);
 	}
 	
@@ -126,6 +124,11 @@ public class YTypeFactory {
 		public ValueParser getValueParser(YType type) {
 			return ((AbstractType)type).getParser();
 		}
+
+		@Override
+		public YType inferMoreSpecificType(YType type, DynamicSchemaContext schemaContext) {
+			return ((AbstractType)type).inferMoreSpecificType(schemaContext);
+		}
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +146,10 @@ public class YTypeFactory {
 
 		public boolean isSequenceable() {
 			return false;
+		}
+
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			return this;
 		}
 
 		public boolean isBean() {
@@ -401,19 +408,21 @@ public class YTypeFactory {
 	 */
 	public class YBeanUnionType extends AbstractType {
 		private final String name;
+		private List<YBeanType> types;
 
-		private Map<String, AbstractType> typesByPrimary = new HashMap<>();
-
+		private Map<String, AbstractType> typesByPrimary;
 		private ImmutableList<YTypedProperty> primaryProps;
 
 		public YBeanUnionType(String name, YBeanType... types) {
 			this.name = name;
-			for (YType _t : types) {
-				AbstractType t = (AbstractType)_t;
-				typesByPrimary.put(findPrimary(t, types), t);
-			}
+			this.types = new ArrayList<>(Arrays.asList(types));
 		}
-		private String findPrimary(AbstractType t, YBeanType[] types) {
+		
+		public synchronized void addUnionMember(YBeanType type) {
+			types.add(type);
+		}
+		
+		private String findPrimary(AbstractType t, List<YBeanType> types) {
 			//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
 			// do not care about dynamic context.
 			for (YTypedProperty p : t.getProperties(DynamicSchemaContext.NULL)) {
@@ -425,7 +434,7 @@ public class YTypeFactory {
 			Assert.isLegal(false, "Couldn't find a unique property key for "+t);
 			return null; //unreachable, but compiler doesn't know.
 		}
-		private boolean isUniqueFor(String name, AbstractType t, YBeanType[] types) {
+		private boolean isUniqueFor(String name, AbstractType t, List<YBeanType> types) {
 			for (YBeanType other : types) {
 				if (other!=t) {
 					//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
@@ -463,28 +472,64 @@ public class YTypeFactory {
 		public List<YTypedProperty> getProperties(DynamicSchemaContext dc) {
 			Set<String> existingProps = dc.getDefinedProperties();
 			if (!existingProps.isEmpty()) {
-				for (Entry<String, AbstractType> entry : typesByPrimary.entrySet()) {
+				Builder<YTypedProperty> builder = ImmutableList.builder();
+				for (Entry<String, AbstractType> entry : typesByPrimary().entrySet()) {
 					String primaryName = entry.getKey();
 					if (existingProps.contains(primaryName)) {
-						return entry.getValue().getProperties(dc);
+						builder.addAll(entry.getValue().getProperties(dc));
+						break;
 					}
 				}
+				//Add 'shared' properties too:
+				builder.addAll(super.getProperties(dc));
+				return builder.build();
 			}
 			//Reaching here means we couldn't guess the type from existing props.
 			//We'll just return the primary properties, these are good to give as hints
-			//then, since at least one of them should typically be added.
+			//then, since at least one of them should be added.
 			return getPrimaryProps(dc);
+		}
+
+		private synchronized Map<String, AbstractType> typesByPrimary() {
+			if (typesByPrimary==null) {
+				//To ensure that the map of 'typesByPrimary' is never stale, make the list of
+				// types immutable at this point. The assumption here is that union can be
+				// built up flexibly using mutation ops during initialization, but once it 
+				// starts being used it becomes immutable.
+				types = ImmutableList.copyOf(types);
+				ImmutableMap.Builder<String, AbstractType> builder = ImmutableMap.builder();
+				for (YType _t : types) {
+					AbstractType t = (AbstractType)_t;
+					builder.put(findPrimary(t, types), t);
+				}
+				typesByPrimary = builder.build();
+			}
+			return typesByPrimary;
 		}
 
 		private List<YTypedProperty> getPrimaryProps(DynamicSchemaContext dc) {
 			if (primaryProps==null) {
 				Builder<YTypedProperty> builder = ImmutableList.builder();
-				for (Entry<String, AbstractType> entry : typesByPrimary.entrySet()) {
+				for (Entry<String, AbstractType> entry : typesByPrimary().entrySet()) {
 					builder.add(entry.getValue().getPropertiesMap(dc).get(entry.getKey()));
 				}
 				primaryProps = builder.build();
 			}
 			return primaryProps;
+		}
+		
+		@Override
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			Set<String> existingProps = dc.getDefinedProperties();
+			if (!existingProps.isEmpty()) {
+				for (Entry<String, AbstractType> entry : typesByPrimary().entrySet()) {
+					String primaryName = entry.getKey();
+					if (existingProps.contains(primaryName)) {
+						return entry.getValue();
+					}
+				}
+			}
+			return super.inferMoreSpecificType(dc);
 		}
 	}
 
