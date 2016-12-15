@@ -25,7 +25,7 @@ envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
    <li>Concourse CI Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_concourse}">${vscode_manifest_yaml}</a> 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_concourse}">${vscode_concourse}</a> 
    </li>
 </ul>
 XXXXXX
