@@ -192,7 +192,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			List<TypedProperty> properties = getProperties(query, enumCaseMode, beanMode);
 			if (CollectionUtil.hasElements(properties)) {
 				ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>(properties.size());
-				SNode contextNode = getContextNode(doc);
+				SNode contextNode = getContextNode();
 				Set<String> definedProps = getDefinedProperties(contextNode);
 				for (TypedProperty p : properties) {
 					String name = p.getName();
@@ -443,7 +443,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				YamlPath propertyPath = YamlPath.fromProperty(match.data.getId());
 				YamlPath relativePath = propertyPath.dropFirst(contextPath.size());
 				YamlPathSegment nextSegment = relativePath.getSegment(0);
-				SNode contextNode = getContextNode(file);
+				SNode contextNode = getContextNode();
 				//To determine if this completion is 'in place' or needs to be inserted
 				// elsewhere in the tree, we check whether a node already exists in our
 				// context. If it doesn't we can create it as any child of the context

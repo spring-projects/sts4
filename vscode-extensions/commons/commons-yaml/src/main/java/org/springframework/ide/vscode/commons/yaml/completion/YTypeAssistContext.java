@@ -75,7 +75,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
 		int queryOffset = offset - query.length();
-		SNode contextNode = getContextNode(doc);
+		SNode contextNode = getContextNode();
 		DynamicSchemaContext dynamicCtxt = new SNodeDynamicSchemaContext(contextNode);
 		List<YTypedProperty> properties = typeUtil.getProperties(type, dynamicCtxt);
 		if (CollectionUtil.hasElements(properties)) {
@@ -167,7 +167,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				return contextWith(s, typeUtil.getDomainType(type));
 			}
 			String key = s.toPropString();
-			SNode contextNode = getContextNode(getDocument());
+			SNode contextNode = getContextNode();
 			DynamicSchemaContext dynamicCtxt = new SNodeDynamicSchemaContext(contextNode);
 			Map<String, YTypedProperty> subproperties = typeUtil.getPropertiesMap(type, dynamicCtxt);
 			if (subproperties!=null) {
@@ -232,7 +232,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	
 	private DynamicSchemaContext getSchemaContext() {
 		try {
-			SNode contextNode = getContextNode(getDocument());
+			SNode contextNode = getContextNode();
 			return new SNodeDynamicSchemaContext(contextNode);
 		} catch (Exception e) {
 			Log.log(e);

@@ -3298,6 +3298,22 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      classpath:stuff/wordlist.txt<*>\n"
 		);
 	}
+	
+	@Test public void testCompletionsInContextWithDuplicateKey() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/135708013
+		defaultTestData();
+		
+		assertCompletions(
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: my-app\n" + 
+				"spring:\n" + 
+				"  activemq:\n" + 
+				"    broker-u<*>"
+				, // ==>
+				"fill it in later"
+		);
+	}
 
 	@Test public void testClassReferenceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);

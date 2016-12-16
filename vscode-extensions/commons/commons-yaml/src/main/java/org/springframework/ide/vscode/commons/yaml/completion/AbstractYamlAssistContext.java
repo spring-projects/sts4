@@ -90,8 +90,8 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 		this.contextPath = contextPath;
 	}
 
-	protected SNode getContextNode(YamlDocument file) throws Exception {
-		return contextPath.traverse((SNode)getContextRoot(file));
+	protected SNode getContextNode() throws Exception {
+		return contextPath.traverse((SNode)getContextRoot(getDocument()));
 	}
 
 	protected SDocNode getContextRoot(YamlDocument file) throws Exception {
