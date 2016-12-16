@@ -35,6 +35,7 @@ import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -138,10 +139,14 @@ public class MavenCore {
 	 * @return Maven project instance
 	 * @throws MavenException
 	 */
-	public MavenProject readProject(File pom) throws MavenException {
-		return maven.readProject(pom, maven.createExecutionRequest());
+	public MavenProject readProject(File pom, boolean resolveDependencies) throws MavenException {
+		return maven.readProject(pom, maven.createExecutionRequest(), resolveDependencies);
 	}
 	
+	public MavenExecutionResult build(File pom) throws MavenException {
+		return maven.compileAndGenerateJavadoc(pom);
+	}
+		
 	/**
 	 * Taken from M2E same named method from MavenModelManager
 	 * 

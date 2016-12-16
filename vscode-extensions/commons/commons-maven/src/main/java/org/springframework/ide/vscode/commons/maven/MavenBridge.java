@@ -349,17 +349,38 @@ class MavenBridge {
 		}
 	}
 
-	public MavenProject readProject(final File pomFile, MavenExecutionRequest request) throws MavenException {
+	public MavenProject readProject(final File pomFile, MavenExecutionRequest request, boolean resolveDependencies) throws MavenException {
 		try {
 			lookup(MavenExecutionRequestPopulator.class).populateDefaults(request);
 			ProjectBuildingRequest configuration = request.getProjectBuildingRequest();
 			configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
 			configuration.setRepositorySession(createRepositorySession(request));
+			configuration.setResolveDependencies(resolveDependencies);
 			return lookup(ProjectBuilder.class).build(pomFile, configuration).getProject();
 		} catch (ProjectBuildingException ex) {
 			throw new MavenException(ex);
 		} catch (MavenExecutionRequestPopulationException ex) {
 			throw new MavenException(ex);
+		}
+	}
+	
+	public MavenExecutionResult compileAndGenerateJavadoc(File pom) throws MavenException {
+		try {
+			MavenExecutionRequest request = createExecutionRequest();
+			lookup(MavenExecutionRequestPopulator.class).populateDefaults(request);
+			request.setPom(pom);
+			ProjectBuildingRequest configuration = request.getProjectBuildingRequest();
+			configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+			configuration.setRepositorySession(createRepositorySession(request));
+			configuration.setResolveDependencies(true);
+			configuration.setResolveVersionRanges(true);
+			request.setGoals(Arrays.asList(new String[] { "compile", "javadoc:javadoc" }));
+			Properties userProperties = (Properties) request.getUserProperties().clone();
+			userProperties.put("show", "private");
+			request.setUserProperties(userProperties);
+			return lookup(Maven.class).execute(request);
+		} catch (MavenExecutionRequestPopulationException e) {
+			throw new MavenException(e);
 		}
 	}
 
@@ -675,8 +696,7 @@ class MavenBridge {
 	private synchronized PlexusContainer getPlexusContainer0() throws PlexusContainerException {
 		if (plexus == null) {
 			plexus = newPlexusContainer();
-			// plexus.setLoggerManager(new
-			// EclipseLoggerManager(mavenConfiguration));
+//			plexus.setLoggerManager(new LoggerManager(mavenConfiguration));
 		}
 		return plexus;
 	}

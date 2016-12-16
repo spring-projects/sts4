@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +28,6 @@ import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -244,11 +244,11 @@ public class JandexIndex {
 		return Stream.empty();
 	}
 	
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
 		Flux<Tuple2<IType, Double>> flux = Flux.fromIterable(knownTypes.values())
 				.publishOn(Schedulers.parallel())
 				.flatMap(s -> Flux.fromIterable(s.get()))
-				.filter(t -> typeFilter == null || typeFilter.accept(t.getT2()))
+				.filter(t -> typeFilter == null || typeFilter.test(t.getT2()))
 				.map(t -> Tuples.of(t.getT2(), FuzzyMatcher.matchScore(searchTerm, t.getT1())))
 				.filter(t -> t.getT2() != 0.0);
 		if (baseIndex == null) {
