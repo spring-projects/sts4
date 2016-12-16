@@ -19,6 +19,9 @@ public class FooProperties {
 	private Color color;
 
 	//Map Enum -> Atomic
+	/**
+	 * Some color names. Do you see me?
+	 */
 	private Map<Color,String> colorNames;
 
 	//Map Atomic -> Enum

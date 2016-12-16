@@ -60,8 +60,8 @@ import com.google.common.collect.ImmutableList;
 public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
-			new JavaProjectWithClasspathFileFinderStrategy(),
-			new MavenProjectFinderStrategy()
+			new MavenProjectFinderStrategy(),
+			new JavaProjectWithClasspathFileFinderStrategy()
 	});
 
 	private static final String YML = ".yml";

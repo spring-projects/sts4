@@ -53,6 +53,7 @@ public class MavenBuilder {
 	
 	public MavenBuilder javadoc() {
 		properties.add("javadoc:javadoc");
+		properties.add("-Dshow=private");
 		return this;
 	}
 	
