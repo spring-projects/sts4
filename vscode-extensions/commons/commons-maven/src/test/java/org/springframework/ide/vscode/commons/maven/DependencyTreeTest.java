@@ -79,6 +79,40 @@ public class DependencyTreeTest {
 		MavenProject project = maven.readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile(), false);
 		
 		Set<Artifact> calculatedClassPath = maven.resolveDependencies(project, null);
+		assertEquals(49, calculatedClassPath.size());
+		
+		String parentFolderPathStr = localRepoFolder.toString();
+		for (Artifact artifact : calculatedClassPath) {
+			assertTrue(artifact.isResolved());
+			File file = artifact.getFile();
+			assertNotNull(file);
+			assertTrue(file.toString().startsWith(parentFolderPathStr));
+			assertTrue(file.exists());
+		}
+		
+		deleteFolderAndContents(localRepoFolder.toPath());
+		assertFalse(localRepoFolder.exists());
+	}
+	
+	@Test
+	public void dowloadDependenciesWithProjectBuildingTest() throws Exception {
+		String userSettingsFile = Paths.get(getClass().getResource("/maven-config/settings.xml").toURI()).toFile().toString();
+		DefaultMavenConfiguration mavenConfig = new DefaultMavenConfiguration();
+		mavenConfig.setUserSettingsFile(userSettingsFile);
+		
+		MavenCore maven = new MavenCore(mavenConfig);
+		File localRepoFolder = maven.localRepositoryFolder();
+		if (localRepoFolder.exists()) {
+			deleteFolderAndContents(localRepoFolder.toPath());
+		}
+		
+		assertFalse(localRepoFolder.exists());
+		
+		Path testProjectPath = Paths.get(getClass().getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
+		MavenProject project = maven.readProject(testProjectPath.resolve(MavenCore.POM_XML).toFile(), true);
+		
+		Set<Artifact> calculatedClassPath = project.getArtifacts();
+		assertEquals(49, calculatedClassPath.size());
 		
 		String parentFolderPathStr = localRepoFolder.toString();
 		for (Artifact artifact : calculatedClassPath) {

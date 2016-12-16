@@ -34,7 +34,7 @@ public class MavenJavaProject implements IJavaProject {
 	private MavenProjectClasspath classpath;
 	private MavenCore maven;
 
-	public MavenJavaProject(File pom) throws Exception {
+	public MavenJavaProject(File pom) {
 		this.maven = MavenCore.getDefault();
 		this.classpath = new MavenProjectClasspath(pom, maven);
 	}
