@@ -64,15 +64,17 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		if (!doc.isCommented(offset)) {
 			SRootNode root = doc.getStructure();
 			SNode current = root.find(offset);
-			YamlPath contextPath = getContextPath(doc, current, offset);
-			YamlAssistContext context = getContext(doc, offset, current, contextPath);
-			if (context==null && isDubiousKey(current, offset)) {
-				current = current.getParent();
-				contextPath = contextPath.dropLast();
-				context = getContext(doc, offset, current, contextPath);
-			}
-			if (context!=null) {
-				return context.getCompletions(doc, current, offset);
+			SNode contextNode = getContextNode(doc, current, offset);
+			if (contextNode!=null) {
+				YamlAssistContext context = getContext(doc, contextNode);
+				if (context==null && isDubiousKey(contextNode, offset)) {
+					current = current.getParent();
+					contextNode = contextNode.getParent();
+					context = getContext(doc, contextNode);
+				}
+				if (context!=null) {
+					return context.getCompletions(doc, current, offset);
+				}
 			}
 		}
 		return Collections.emptyList();
@@ -91,12 +93,57 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return false;
 	}
 
-	protected YamlAssistContext getContext(YamlDocument doc, int offset, SNode node, YamlPath contextPath) {
+	protected YamlAssistContext getContext(YamlDocument doc, SNode contextNode) {
 		try {
-			return contextPath.traverse(getGlobalContext(doc));
+			if (contextNode!=null) {
+				YamlPath contextPath = contextNode.getPath();
+				return contextPath.traverse(getGlobalContext(doc));
+			}
 		} catch (Exception e) {
 			logger.error("Error obtaining YamlAssistContext", e);
+		}
+		return null;
+	}
+
+	protected SNode getContextNode(YamlDocument doc, SNode node, int offset) throws Exception {
+		if (node==null) {
 			return null;
+		} else if (node.getNodeType()==SNodeType.KEY) {
+			//slight complication. The area in the key and value of a key node represent different
+			// contexts for content assistance
+			SKeyNode keyNode = (SKeyNode)node;
+			if (keyNode.isInValue(offset)) {
+				return keyNode;
+			} else {
+				return keyNode.getParent();
+			}
+		} else if (node.getNodeType()==SNodeType.RAW) {
+			//Treat raw node as a 'key node'. This is basically assuming that is misclasified
+			// by structure parser because the ':' was not yet typed into the document.
+
+			//Complication: if line with cursor is empty or the cursor is inside the indentation
+			// area then the structure may not reflect correctly the context. This is because
+			// the correct context depends on text the user has not typed yet.(which will change the
+			// indentation level of the current line. So we must use the cursorIndentation
+			// rather than the structure-tree to determine the 'context' node.
+			int cursorIndent = doc.getColumn(offset);
+			int nodeIndent = node.getIndent();
+			int currentIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
+			while (node.getIndent()==-1 || (node.getIndent()>=currentIndent && node.getNodeType()!=SNodeType.DOC)) {
+				node = node.getParent();
+			}
+			return node;
+		} else if (node.getNodeType()==SNodeType.SEQ) {
+			SSeqNode seqNode = (SSeqNode)node;
+			if (seqNode.isInValue(offset)) {
+				return seqNode;
+			} else {
+				return seqNode.getParent();
+			}
+		} else if (node.getNodeType()==SNodeType.DOC) {
+			return node;
+		} else {
+			throw new IllegalStateException("Missing case");
 		}
 	}
 
