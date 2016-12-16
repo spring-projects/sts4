@@ -19,16 +19,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavaProject.TypeFilter;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
@@ -72,14 +71,7 @@ public class MavenProjectClasspath implements IClasspath {
 	MavenProjectClasspath(File pom, MavenCore maven) {
 		this.maven = maven;
 		this.pom = pom;
-		this.projectSupplier = Suppliers.memoize(() -> {
-			try {
-				return createMavenProject();
-			} catch (MavenException e) {
-				Log.log(e);
-				return null;
-			}
-		});
+		this.projectSupplier = Suppliers.memoize(() -> createMavenProject());
 		this.javaIndex = Suppliers.memoize(() -> {
 			Stream<Path> classpathEntries = Stream.empty();
 			try {
@@ -100,12 +92,20 @@ public class MavenProjectClasspath implements IClasspath {
 		});
 	}
 	
-	private final MavenProject createMavenProject() throws MavenException {
-		MavenExecutionResult result = maven.build(pom);
-		if (result.hasExceptions()) {
-			result.getExceptions().forEach(Log::log);
+	private final MavenProject createMavenProject() {
+		try {
+			// Read with resolved dependencies
+			return maven.readProject(pom, true);
+		} catch (MavenException e) {
+			Log.log(e);
+			try {
+				// Try without resolving dependencies - just read the XML
+				return maven.readProject(pom, false);
+			} catch (MavenException e1) {
+				Log.log(e);
+				return null;
+			}
 		}
-		return result.getProject();
 	}
 	
 	public boolean exists() {
@@ -148,7 +148,7 @@ public class MavenProjectClasspath implements IClasspath {
 		return javaIndex.get().findType(fqName);
 	}
 	
-	public Flux<Tuple2<IType, Double>> fuzzySearchType(String searchTerm, TypeFilter typeFilter) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchType(String searchTerm, Predicate<IType> typeFilter) {
 		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
 	}
 	

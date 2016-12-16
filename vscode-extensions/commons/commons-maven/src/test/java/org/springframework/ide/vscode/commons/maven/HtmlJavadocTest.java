@@ -28,6 +28,7 @@ public class HtmlJavadocTest {
 		try {
 			MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
 			testProjectPath = Paths.get(HtmlJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 			return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		} catch (Exception e) {
 			return null;

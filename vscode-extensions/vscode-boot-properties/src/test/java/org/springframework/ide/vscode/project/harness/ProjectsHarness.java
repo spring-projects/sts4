@@ -50,6 +50,7 @@ public class ProjectsHarness {
 			Path testProjectPath = getProjectPath(name);
 			switch (type) {
 			case MAVEN:
+				MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 				return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 			case CLASSPATH_TXT:
 				MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();

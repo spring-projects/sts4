@@ -33,14 +33,11 @@ public class JavaIndexTest {
 		@Override
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
-			return createMavenProject(testProjectPath);
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
+			return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		}
 		
 	});
-	
-	private static MavenJavaProject createMavenProject(Path projectPath) throws Exception {
-		return new MavenJavaProject(projectPath.resolve(MavenCore.POM_XML).toFile());
-	}
 	
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
@@ -75,7 +72,7 @@ public class JavaIndexTest {
 	@Test
 	public void findClassInJar() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration");
+		IType type = project.findType("org.springframework.test.web.client.ExpectedCount");
 		assertNotNull(type);
 	}
 	

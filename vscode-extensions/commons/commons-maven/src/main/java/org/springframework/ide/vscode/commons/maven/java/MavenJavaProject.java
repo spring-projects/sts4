@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.commons.maven.java;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 
-import org.apache.maven.project.MavenProject;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
@@ -60,7 +60,7 @@ public class MavenJavaProject implements IJavaProject {
 	}
 
 	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
 		return classpath.fuzzySearchType(searchTerm, typeFilter);
 	}
 	

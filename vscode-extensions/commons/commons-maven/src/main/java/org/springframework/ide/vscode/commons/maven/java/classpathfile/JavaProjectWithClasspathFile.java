@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -59,7 +60,7 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 	}
 
 	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, TypeFilter typeFilter) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
 		return Flux.empty();
 	}
 
