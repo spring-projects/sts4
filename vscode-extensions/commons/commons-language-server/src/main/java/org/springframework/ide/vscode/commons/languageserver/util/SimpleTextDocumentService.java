@@ -108,7 +108,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params) {
-		LOG.info("didOpen: "+params.getUri());
+		//LOG.info("didOpen: "+params.getUri());
 		//Example message:
 		//{
 		//   "jsonrpc":"2.0",
@@ -150,7 +150,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
-		LOG.info("didClose: "+params.getTextDocument().getUri());
+		//LOG.info("didClose: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
 		if (url!=null) {
 			documents.remove(url);
