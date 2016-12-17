@@ -28,6 +28,7 @@ public interface YamlNavigable<T> {
 	/**
 	 * Traversal which silently ignores ambiguity by picking the first valid target
 	 * returned by traverseAmbiguously.
+	 * 
 	 */
 	default T traverse(YamlPathSegment s) throws Exception {
 		return traverseAmbiguously(s).findFirst().orElse(null);

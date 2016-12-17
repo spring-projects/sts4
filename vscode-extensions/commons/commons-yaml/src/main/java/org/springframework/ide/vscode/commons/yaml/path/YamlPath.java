@@ -129,7 +129,9 @@ public class YamlPath {
 		if (startNode!=null) {
 			Stream<T> result = Stream.of(startNode);
 			for (YamlPathSegment s : segments) {
-				result = result.flatMap((node) -> node.traverseAmbiguously(s));
+				result = result.flatMap((node) -> {
+					return node.traverseAmbiguously(s);
+				});
 			}
 			return result;
 		}

@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
+import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -264,8 +265,17 @@ public class YamlStructureParser {
 		 * Default implementation, doesn't support any type of traversal operation.
 		 * Subclasses must override and implement where appropriate.
 		 */
-		public SNode traverse(YamlPathSegment s) throws Exception {
-			return null;
+		public Stream<SNode> traverseAmbiguously(YamlPathSegment s) {
+			return Stream.empty();
+		}
+
+		/**
+		 * Default implementation, actusllu the same as the default impl provided by
+		 * the interface. This is only here to prevent subclasses from implementing
+		 * this. They should implement traverseAmbiguously instead.
+		 */
+		public SNode traverse(YamlPathSegment s) {
+			return traverseAmbiguously(s).findFirst().orElse(null);
 		}
 
 		protected abstract void dump(Writer out, int indent) throws Exception;
@@ -350,15 +360,15 @@ public class YamlStructureParser {
 		}
 
 		@Override
-		public SNode traverse(YamlPathSegment s) throws Exception {
+		public Stream<SNode> traverseAmbiguously(YamlPathSegment s) {
 			Integer index = s.toIndex();
 			if (index!=null) {
 				List<SNode> cs = getChildren();
 				if (index>=0 && index<cs.size()) {
-					return cs.get(index);
+					return Streams.of(cs.get(index));
 				}
 			}
-			return null;
+			return Stream.empty();
 		}
 	}
 
@@ -462,11 +472,12 @@ public class YamlStructureParser {
 			case VAL_AT_KEY:
 				return this.getChildrenWithKey(s.toPropString());
 			case VAL_AT_INDEX:
-				return Stream.of(this.getSeqChildWithIndex(s.toIndex()));
+				return Streams.of(this.getSeqChildWithIndex(s.toIndex()));
 			default:
 				return Stream.empty();
 			}
 		}
+
 
 		private SSeqNode getSeqChildWithIndex(int index) {
 			if (index>=0) {
