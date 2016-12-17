@@ -93,7 +93,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		try {
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
-			LOG.info("didChange: "+url);
+			//LOG.info("didChange: "+url);
 			if (url!=null) {
 				TextDocument doc = getOrCreateDocument(url);
 				for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
