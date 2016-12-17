@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
@@ -121,18 +122,18 @@ public class YamlPath {
 	}
 
 	public <T extends YamlNavigable<T>> T traverse(T startNode) {
-		try {
-			T node = startNode;
+		return traverseAmbiguously(startNode).findFirst().orElse(null);
+	}
+
+	public <T extends YamlNavigable<T>> Stream<T> traverseAmbiguously(T startNode) {
+		if (startNode!=null) {
+			Stream<T> result = Stream.of(startNode);
 			for (YamlPathSegment s : segments) {
-				if (node==null) {
-					return null;
-				}
-				node = node.traverse(s);
+				result = result.flatMap((node) -> node.traverseAmbiguously(s));
 			}
-			return node;
-		} catch (Exception e) {
-			return null;
+			return result;
 		}
+		return Stream.empty();
 	}
 
 	public YamlPath dropFirst(int dropCount) {
@@ -264,5 +265,6 @@ public class YamlPath {
 		}
 		return new YamlPath(common);
 	}
+
 
 }

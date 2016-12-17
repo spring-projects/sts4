@@ -3,21 +3,34 @@ package org.springframework.ide.vscode.commons.yaml.structure;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.yaml.path.KeyAliases;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 /**
  * A robust, coarse-grained parser that guesses the structure of a
@@ -251,34 +264,56 @@ public class YamlStructureParser {
 		 * Default implementation, doesn't support any type of traversal operation.
 		 * Subclasses must override and implement where appropriate.
 		 */
-		@Override
 		public SNode traverse(YamlPathSegment s) throws Exception {
 			return null;
 		}
 
 		protected abstract void dump(Writer out, int indent) throws Exception;
 
-		public YamlPath getPath() throws Exception {
-			ArrayList<YamlPathSegment> segments = new ArrayList<YamlPathSegment>();
-			buildPath(this, segments);
-			return new YamlPath(segments);
+		public ImmutableList<SNode> getPathNodes() throws Exception {
+			ImmutableList.Builder<SNode> nodes = ImmutableList.builder();
+			buildPath(this, nodes);
+			return nodes.build();
 		}
 
-		private static void buildPath(SNode node, ArrayList<YamlPathSegment> segments) throws Exception {
+		private static void buildPath(SNode node, Builder<SNode> nodes) {
 			if (node!=null) {
-				buildPath(node.getParent(), segments);
+				buildPath(node.getParent(), nodes);
+				nodes.add(node);
+			}
+		}
+		
+		public YamlPath getPath() throws Exception {
+			List<YamlPathSegment> path = new ArrayList<>();
+			for (SNode node : getPathNodes()) {
+				YamlPathSegment segment = getSegment(node);
+				if (segment!=null) {
+					path.add(segment);
+				}
+			}
+			return new YamlPath(path);
+		}
+
+		/**
+		 * Determine a YamlPathSegment that corresponds to given node. This may be 
+		 * null because not all SNodes can be interpreted as 'step' in the yml
+		 * structure (e.g. raw nodes will return null, as will the 'root' node).
+		 */
+		private YamlPathSegment getSegment(SNode node) throws Exception {
+			if (node!=null) {
 				SNodeType nodeType = node.getNodeType();
 				if (nodeType==SNodeType.KEY) {
 					String key = ((SKeyNode)node).getKey();
-					segments.add(YamlPathSegment.valueAt(key));
+					return YamlPathSegment.valueAt(key);
 				} else if (nodeType==SNodeType.SEQ) {
 					int index = ((SSeqNode)node).getIndex();
-					segments.add(YamlPathSegment.valueAt(index));
+					return YamlPathSegment.valueAt(index);
 				} else if (nodeType==SNodeType.DOC) {
 					int index = ((SDocNode)node).getIndex();
-					segments.add(YamlPathSegment.valueAt(index));
+					return YamlPathSegment.valueAt(index);
 				}
 			}
+			return null;
 		}
 
 		public SRootNode getRoot() {
@@ -360,7 +395,7 @@ public class YamlStructureParser {
 
 	public abstract class SChildBearingNode extends SNode {
 		private List<SNode> children = null;
-		private Map<String, SKeyNode> keyMap = null; //lazily constructed index of children children.
+		private Multimap<String, SNode> keyMap = null; //lazily constructed index of children.
 
 		public SChildBearingNode(SChildBearingNode parent, YamlDocument doc, int indent, int start, int end) {
 			super(parent, doc, indent, start, end);
@@ -422,14 +457,14 @@ public class YamlStructureParser {
 		}
 
 		@Override
-		public SNode traverse(YamlPathSegment s) throws Exception {
+		public Stream<SNode> traverseAmbiguously(YamlPathSegment s) {
 			switch (s.getType()) {
 			case VAL_AT_KEY:
-				return this.getChildWithKey(s.toPropString());
+				return this.getChildrenWithKey(s.toPropString());
 			case VAL_AT_INDEX:
-				return this.getSeqChildWithIndex(s.toIndex());
+				return Stream.of(this.getSeqChildWithIndex(s.toIndex()));
 			default:
-				return null;
+				return Stream.empty();
 			}
 		}
 
@@ -446,36 +481,43 @@ public class YamlStructureParser {
 			return null;
 		}
 
-		public SKeyNode getChildWithKey(String key) throws Exception {
+		public Stream<SNode> getChildrenWithKey(String key) {
 			if (CollectionUtil.hasElements(children)) {
-				SKeyNode child = keyMap().get(key);
-				if (child==null) {
-					Iterable<String> keyAliases = getKeyAliases(key);
-					if (keyAliases!=null) {
-						for (String keyAlias : keyAliases) {
-							child = keyMap().get(keyAlias);
-							if (child!=null) {
-								return child;
-							}
+				Stream<SNode> allChildren = Stream.empty();
+				Collection<SNode> plainChildren = keyMap().get(key);
+				if (CollectionUtil.hasElements(plainChildren)) {
+					allChildren = plainChildren.stream();
+				}
+				Iterable<String> keyAliases = getKeyAliases(key);
+				if (keyAliases!=null) {
+					for (String keyAlias : keyAliases) {
+						Collection<SNode> aliasChildren = keyMap().get(keyAlias);
+						if (CollectionUtil.hasElements(aliasChildren)) {
+							allChildren = Stream.concat(allChildren, aliasChildren.stream());
 						}
 					}
 				}
-				return child;
+				return allChildren;
 			}
-			return null;
+			return Stream.empty();
+		}
+		
+		public SKeyNode getChildWithKey(String key) {
+			return (SKeyNode)getChildrenWithKey(key).findFirst().orElse(null);
 		}
 
-		private Map<String, SKeyNode> keyMap() throws Exception {
+		private Multimap<String, SNode> keyMap() {
 			if (keyMap==null) {
-				HashMap<String, SKeyNode> index = new HashMap<String, SKeyNode>();
+				ListMultimap<String, SNode> index = MultimapBuilder.hashKeys().arrayListValues().build();
 				for (SNode node: getChildren()) {
-					if (node.getNodeType()==SNodeType.KEY) {
-						SKeyNode keyNode = (SKeyNode)node;
-						String key = ((SKeyNode)node).getKey();
-						SKeyNode existing = index.get(key);
-						if (existing==null) {
+					try {
+						if (node.getNodeType()==SNodeType.KEY) {
+							SKeyNode keyNode = (SKeyNode)node;
+							String key = ((SKeyNode)node).getKey();
 							index.put(key, keyNode);
 						}
+					} catch (Exception e) {
+						Log.log(e);
 					}
 				}
 				keyMap = index;

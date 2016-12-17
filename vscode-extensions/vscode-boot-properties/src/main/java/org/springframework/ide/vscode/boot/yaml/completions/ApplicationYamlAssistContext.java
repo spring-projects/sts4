@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
@@ -124,27 +125,6 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	public static ApplicationYamlAssistContext subdocument(YamlDocument doc, int documentSelector, FuzzyMap<PropertyInfo> index, PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf) {
 		return new IndexContext(doc, documentSelector, YamlPath.EMPTY, IndexNavigator.with(index), completionFactory, typeUtil, conf);
 	}
-
-	public static YamlAssistContext forPath(YamlDocument doc, YamlPath contextPath,  FuzzyMap<PropertyInfo> index, PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf) {
-		try {
-			YamlPathSegment documentSelector = contextPath.getSegment(0);
-			if (documentSelector!=null) {
-				contextPath = contextPath.dropFirst(1);
-				YamlAssistContext context = ApplicationYamlAssistContext.subdocument(doc, documentSelector.toIndex(), index, completionFactory, typeUtil, conf);
-				for (YamlPathSegment s : contextPath.getSegments()) {
-					if (context==null) return null;
-					context = context.traverse(s);
-				}
-				return context;
-			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return null;
-	}
-
-	@Override
-	abstract public YamlAssistContext traverse(YamlPathSegment s) throws Exception;
 
 	private static class TypeContext extends ApplicationYamlAssistContext {
 
@@ -415,7 +395,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (!matchingProps.isEmpty()) {
 				ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
 				for (Match<PropertyInfo> match : matchingProps) {
-					DocumentEdits edits = createEdits(doc, offset, query, match);
+					DocumentEdits edits = createEdits(doc, node, offset, query, match);
 					ScoreableProposal completion = completionFactory.property(
 							doc.getDocument(), edits, match, typeUtil
 					);
@@ -430,7 +410,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 
 		protected DocumentEdits createEdits(final YamlDocument file,
-				final int offset, final String query, final Match<PropertyInfo> match)
+				SNode node, final int offset, final String query, final Match<PropertyInfo> match)
 				throws Exception {
 			//Edits created lazyly as they are somwehat expensive to compute and mostly
 			// we need only the edits for the one proposal that user picks.

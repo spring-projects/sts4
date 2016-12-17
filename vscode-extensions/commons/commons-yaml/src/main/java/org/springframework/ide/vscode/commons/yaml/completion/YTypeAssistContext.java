@@ -167,7 +167,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				return contextWith(s, typeUtil.getDomainType(type));
 			}
 			String key = s.toPropString();
-			SNode contextNode = getContextNode();
+			SNode contextNode = getContextNode(); 
 			DynamicSchemaContext dynamicCtxt = new SNodeDynamicSchemaContext(contextNode);
 			Map<String, YTypedProperty> subproperties = typeUtil.getPropertiesMap(type, dynamicCtxt);
 			if (subproperties!=null) {

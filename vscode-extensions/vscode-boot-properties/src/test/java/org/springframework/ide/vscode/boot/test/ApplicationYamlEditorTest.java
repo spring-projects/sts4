@@ -3311,7 +3311,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  activemq:\n" + 
 				"    broker-u<*>"
 				, // ==>
-				"fill it in later"
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: my-app\n" + 
+				"spring:\n" + 
+				"  activemq:\n" + 
+				"    broker-url: <*>"
 		);
 	}
 
