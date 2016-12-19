@@ -1,13 +1,13 @@
 {
   "name": "vscode-manifest-yaml",
   "displayName": "Cloudfoundry Manifest YML Support",
-  "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml` files.",
+  "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml`) files.",
   "icon": "icon.png",
   "version": "0.0.1",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kdvolder/vscode-lsapi-example.git"
+    "url": "https://github.com/spring-projects/sts4.git"
   },
   "license": "EPL-1.0",
   "engines": {
