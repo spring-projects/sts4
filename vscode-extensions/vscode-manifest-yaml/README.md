@@ -15,19 +15,23 @@ matches the glob pattern: `manifest*.yml`.
 As you type the manifest is parsed and checked for basic syntactic and structural correctness. Hover over
 an error marker to see an explanation.
 
-![Linting Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png)
+![Linting Screenshot][linting]
 
 ### Content assist
 
 Having trouble remembering all the names of the attributes, and their spelling? Content assist to the
 rescue:
 
-![Content Assist Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png)
+![Content Assist Screenshot][ca]
 
 ### Documentation Hovers
 
 Having trouble remembering exactly what the meaning of each attribute is? Hover over any attribute and 
 read its detailed documentation.
 
-![Hover Docs Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png)
+![Hover Docs Screenshot][hovers]
 
+
+[linting]: https://s29.postimg.org/67wu0d7yv/linting.png
+[ca]: https://s29.postimg.org/q52r9bqtz/content_assist.png
+[hovers]: https://s29.postimg.org/3rv0mipw7/hovers.png
