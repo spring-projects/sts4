@@ -19,6 +19,8 @@ lib/**
 !lib/javaconfig.schema.json
 repo/**
 scripts/**
+readme-imgs/**
+developer-notes.md
 
 # Compiler output
 out/test/**
