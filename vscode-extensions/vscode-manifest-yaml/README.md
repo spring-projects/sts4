@@ -1,7 +1,7 @@
 # Cloud Foundry Manifest Editor for Visual Studio Code
 
-This extension adds basic validation, content-assist and hover infos
-while editing Cloud Foundry [Manifest](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html) Files.
+This extension provides basic validation, content assist and hover infos
+for editing Cloud Foundry [Manifest](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html) Files.
 
 ## Validation
 
@@ -12,7 +12,7 @@ an error marker to see an explanation.
 
 ## Content assist
 
-Having trouble remembering all the names of the attributesm, and their spelling? Content assist to the
+Having trouble remembering all the names of the attributes, and their spelling? Content assist to the
 rescue:
 
 ![Content Assist Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png)
