@@ -1,7 +1,7 @@
 {
   "name": "vscode-manifest-yaml",
   "displayName": "Cloudfoundry Manifest YML Support",
-  "description": "Provides validation and content assist for Cloudfoundry manifest.yml files",
+  "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml` files.",
   "icon": "icon.png",
   "version": "0.0.1",
   "publisher": "Pivotal",
@@ -27,19 +27,6 @@
     "onLanguage:yaml"
   ],
   "main": "./out/lib/Main",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "Example configuration",
-      "properties": {
-        "languageServerExample.maxNumberOfProblems": {
-          "type": "number",
-          "default": 100,
-          "description": "Controls the maximum number of problems produced by the server."
-        }
-      }
-    }
-  },
   "preview": true,
   "scripts": {
     "prepublish": "tsc -p .",

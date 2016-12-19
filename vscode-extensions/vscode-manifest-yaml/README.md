@@ -1,57 +1,30 @@
-# VS Code Language Server for Cloudfoundry Manifest Files
+# Cloud Foundry Manifest Editor for Visual Studio Code
 
-A VSCode extension and Language Server providing support for
-editing `manifest.yml` files, aka 'Cloudfoundry Deployment Manifest'.
+This extension adds basic validation, content-assist and hover infos
+while editing Cloud Foundry [Manifest](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html) Files.
 
-The manifest editor provides content assist and basic validation of
-the manifest's structure as you type. 
+## Validation
 
-# Developer notes
+As you type the manifest is parsed and checked for basic syntactic and structural correctness. Hover over
+an error marker to see an explanation.
 
-## Bulding and Running
+![Linting Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png)
 
-This project consists of three pieces:
+## Content assist
 
- - a vscode-extension which is a language-server client implemented in TypeScript.
- - commons-vscode: a local npm module with some utilities implemented in TypeScript.
- - a language server implemented in Java.
+Having trouble remembering all the names of the attributesm, and their spelling? Content assist to the
+rescue:
 
-To build all these pieces you normally only need to run:
+![Content Assist Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png)
 
-   npm install
+## Documentation Hovers
 
-**However, the first time you build** it might fail trying to
-find the `commons-vscode` module on npm central. Once we publish a stable 
-version of that module on npm central that will no longer be a problem. 
-Until that time, you can work around this by doing a one time manual 
-run of the `preinstall` script prior to running `npm install`:
+Having trouble remembering exactly what the meaning of each attribute is? Hover over any attribute and 
+read its detailed documentation.
 
-    ./scripts/preinstall.sh
-    npm install
+![Hover Docs Screenshot](https://github.com/spring-projects/sts4/raw/master/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png)
 
-Now you can open the client-app in vscode. From the root of this project.
+## Activation
 
-    code .
-
-To launch the language server in a vscode runtime, press F5.
-
-## Debugging
-
-To debug the language server, open `lib/Main.ts` and edit to set the
-`DEBUG` option to `true`. When you laucnh the app next by pressing
-`F5` it will launch with debug options being passed to the JVM.
-
-You can then connect a 'Remote Java' Eclipse debugger on port 8000.
-
-## Packaging as a vscode extension
-
-First make sure the stuff is all built locally:
-
-     ./scripts/preinstall.sh  # only needed if this is the first build.
-     npm install
-
-Then package it:
-
-     npm run vsce-package
-
-This produces a `.vsix` file which you can install directly into vscode.
+The CF manifest editor automatically activates when the name of the `.yml` file you are editing, 
+matches the glob pattern: `manifest*.yml`.
