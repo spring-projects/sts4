@@ -439,7 +439,30 @@ public class PipelineYamlEditorTest {
 				, // => 
 				"repo-a<*>", "repo-b<*>"
 		);
-
+	}
+	
+	@Test
+	public void reconcileDuplicateKeys() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    repository: https://github.com/kdvolder/my-repo\n" +
+				"resources:\n" +
+				"- name: your-repo\n" +
+				"  type: git\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    repository: https://github.com/kdvolder/forked-repo\n"
+		);
+		
+		editor.assertProblems(
+				"resources|Duplicate key",
+				"resources|Duplicate key",
+				"type|Duplicate key",
+				"type|Duplicate key"
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

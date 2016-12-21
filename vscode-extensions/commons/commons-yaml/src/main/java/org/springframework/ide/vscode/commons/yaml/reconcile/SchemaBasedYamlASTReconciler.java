@@ -1,8 +1,12 @@
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -51,6 +55,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			switch (node.getNodeId()) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
+				checkForDuplicateKeys(map);
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
 						reconcile(doc, entry.getKeyNode(), typeUtil.getKeyType(type));
@@ -104,6 +109,28 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				break;
 			default:
 				// other stuff we don't check
+			}
+		}
+	}
+
+	private void checkForDuplicateKeys(MappingNode node) {
+		Set<String> duplicateKeys = new HashSet<>();
+		Set<String> seenKeys = new HashSet<>();
+		for (NodeTuple entry : node.getValue()) {
+			String key = asScalar(entry.getKeyNode());
+			if (key!=null) {
+				if (!seenKeys.add(key)) {
+					duplicateKeys.add(key);
+				}
+			}
+		}
+		if (!duplicateKeys.isEmpty()) {
+			for (NodeTuple entry : node.getValue()) {
+				Node keyNode = entry.getKeyNode();
+				String key = asScalar(keyNode);
+				if (key!=null && duplicateKeys.contains(key)) {
+					problem(keyNode, "Duplicate key '"+key+"'");
+				}
 			}
 		}
 	}
