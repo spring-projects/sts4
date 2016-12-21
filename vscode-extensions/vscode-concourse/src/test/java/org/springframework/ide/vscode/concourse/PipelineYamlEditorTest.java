@@ -135,6 +135,9 @@ public class PipelineYamlEditorTest {
 				"aggregate:\n" +
 				"    - <*>"
 				, // ==============
+				"do:\n" +
+				"    - <*>"
+				, // ==============
 				"get: <*>"
 				, // ==============
 				"put: <*>"
@@ -261,7 +264,22 @@ public class PipelineYamlEditorTest {
 		
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
 	}
-	
+
+	@Test
+	public void doStepHovers() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - do:\n" +
+				"    - get: some-resource\n"
+		);
+		
+		editor.assertHoverContains("do", "performs the given steps serially");
+	}
+
 	@Test
 	public void reconcileSimpleTypes() throws Exception {
 		Editor editor;
