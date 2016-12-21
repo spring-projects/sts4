@@ -48,6 +48,7 @@
 	</repositories>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<yaml-version>1.17</yaml-version>
 		<junit-version>4.11</junit-version>
 		<assertj-version>3.5.2</assertj-version>
