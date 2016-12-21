@@ -149,10 +149,10 @@ public class ManifestYamlEditorTest {
 				"  health-check-type: unhealthy"
 		);
 		editor.assertProblems(
-				"not a number|Positive Integer",
+				"not a number|NumberFormatException",
 				"notBool|boolean",
-				"1024|Memory",
-				"2048|Memory",
+				"1024|doesn't end with a valid unit of memory",
+				"2048|doesn't end with a valid unit of memory",
 				"unhealthy|Health Check Type"
 		);
 
@@ -165,9 +165,9 @@ public class ManifestYamlEditorTest {
 				"  disk_quota: -2048M\n"
 		);
 		editor.assertProblems(
-				"-3|Positive Integer",
-				"-1024M|Memory",
-				"-2048M|Memory"
+				"-3|Value must be at least 1",
+				"-1024M|Negative value is not allowed",
+				"-2048M|Negative value is not allowed"
 		);
 
 		//check that correct values are indeed accepted
