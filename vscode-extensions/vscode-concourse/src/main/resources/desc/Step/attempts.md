@@ -1,4 +1,4 @@
-Retry a step:
+Retry a step.
 
 Any step can set the number of times it should be attempted by attaching an `attempts` parameter with the number of times it should be tried.
 

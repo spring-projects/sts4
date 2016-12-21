@@ -133,6 +133,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		// shared properties applicable for any type of Step:
 		prop(step, "on_success", step);
 		prop(step, "on_failure", step);
+		prop(step, "ensure", step);
 		prop(step, "attempts", t_strictly_pos_integer);
 		
 		YBeanType resource = f.ybean("Resource");

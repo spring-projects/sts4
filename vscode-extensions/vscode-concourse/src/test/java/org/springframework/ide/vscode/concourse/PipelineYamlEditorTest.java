@@ -186,7 +186,9 @@ public class PipelineYamlEditorTest {
 				"    on_failure:\n" +
 				"    - bogus: bad\n" +
 				"    on_success:\n" +
-				"    - bogus: bad\n"
+				"    - bogus: bad\n" +
+				"    ensure:\n" +
+				"      task: cleanups\n"
 		);
 		editor.assertHoverContains("resource", "The resource to fetch");
 		editor.assertHoverContains("version", "The version of the resource to fetch");
@@ -195,6 +197,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("attempts", "Any step can set the number of times it should be attempted");
 		editor.assertHoverContains("on_failure", "Any step can have `on_failure` tacked onto it");
 		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
+		editor.assertHoverContains("ensure", "a second step to execute regardless of the result of the parent step");
 	}
 	
 	@Test
