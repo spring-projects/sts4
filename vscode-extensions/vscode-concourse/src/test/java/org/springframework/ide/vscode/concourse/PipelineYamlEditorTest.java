@@ -182,6 +182,7 @@ public class PipelineYamlEditorTest {
 				"    params:\n" +
 				"      some_param: some_value\n" +
 				"    trigger: true\n" +
+				"    attempts: 10\n" +
 				"    on_failure:\n" +
 				"    - bogus: bad\n" +
 				"    on_success:\n" +
@@ -191,10 +192,11 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("version", "The version of the resource to fetch");
 		editor.assertHoverContains("params", "A map of arbitrary configuration");
 		editor.assertHoverContains("trigger", "Set to `true` to auto-trigger");
+		editor.assertHoverContains("attempts", "Any step can set the number of times it should be attempted");
 		editor.assertHoverContains("on_failure", "Any step can have `on_failure` tacked onto it");
 		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
 	}
-
+	
 	@Test
 	public void taskStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
@@ -212,6 +214,7 @@ public class PipelineYamlEditorTest {
 				"    output_mapping:\n" +
 				"      map: of-stuff\n" +
 				"    config: some-config\n" +
+				"    attempts: 10\n" +
 				"    ensure:\n" +
 				"      bogus: bad\n" +
 				"    on_failure:\n" +
@@ -255,13 +258,15 @@ public class PipelineYamlEditorTest {
 				"  max_in_flight: -1\n" +
 				"  plan:\n" +
 				"  - get: git\n" +
-				"    trigger: yohoho"
+				"    trigger: yohoho\n" +
+				"    attempts: 0\n"
 		);
 		editor.assertProblems(
 				"boohoo|boolean",
 				"-1|must be positive",
 				"git|resource does not exist",
-				"yohoho|boolean"
+				"yohoho|boolean",
+				"0|must be at least 1"
 		);
 
 		//check that correct values are indeed accepted

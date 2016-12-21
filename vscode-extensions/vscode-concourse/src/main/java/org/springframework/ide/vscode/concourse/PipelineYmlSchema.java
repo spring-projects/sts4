@@ -45,6 +45,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_pos_integer = f.yatomic("Positive Integer");
 		t_pos_integer.parseWith(ValueParsers.POS_INTEGER);
+		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
+		t_strictly_pos_integer.parseWith(ValueParsers.integerAtLeast(1));
+
 		YType t_any = f.yany("Object");
 		YType t_params = f.ymap(t_string, t_any);
 		YType t_string_params = f.ymap(t_string, t_string);
@@ -130,6 +133,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		// shared properties applicable for any type of Step:
 		prop(step, "on_success", step);
 		prop(step, "on_failure", step);
+		prop(step, "attempts", t_strictly_pos_integer);
 		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", t_ne_string);
