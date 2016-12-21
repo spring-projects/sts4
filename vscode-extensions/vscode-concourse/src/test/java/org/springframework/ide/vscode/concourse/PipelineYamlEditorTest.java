@@ -118,6 +118,17 @@ public class PipelineYamlEditorTest {
 				"a-single-string|Expecting a 'Sequence'"
 		);
 
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - try:\n" +
+				"      put: a-resource\n"
+		);
+		editor.assertProblems(
+				"a-resource|does not exist"
+		);
+
 		//TODO: Add more test cases for structural problem?
 	}
 
@@ -143,6 +154,9 @@ public class PipelineYamlEditorTest {
 				"put: <*>"
 				, // ==============
 				"task: <*>"
+				, // ==============
+				"try:\n" +
+				"      <*>"
 		);
 	}
 
@@ -154,14 +168,19 @@ public class PipelineYamlEditorTest {
 				"  plan:\n" +
 				"  - get: something\n" +
 				"  - put: something\n" +
+				"  - do: []\n" +
 				"  - aggregate:\n" +
-				"    - task: do-something\n"
+				"    - task: perform-something\n" +
+				"  - try:\n" +
+				"      put: test-logs\n"
 		);
 		
 		editor.assertHoverContains("get", "Fetches a resource");
 		editor.assertHoverContains("put", "Pushes to the given [Resource]");
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
 		editor.assertHoverContains("task", "Executes a [Task]");
+		editor.assertHoverContains("do", "performs the given steps serially");
+		editor.assertHoverContains("try", "Performs the given step, swallowing any failure");
 	}
 	
 	@Test
@@ -263,21 +282,6 @@ public class PipelineYamlEditorTest {
 		);
 		
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
-	}
-
-	@Test
-	public void doStepHovers() throws Exception {
-		Editor editor;
-		
-		editor = harness.newEditor(
-				"jobs:\n" +
-				"- name: some-job\n" +
-				"  plan:\n" +
-				"  - do:\n" +
-				"    - get: some-resource\n"
-		);
-		
-		editor.assertHoverContains("do", "performs the given steps serially");
 	}
 
 	@Test

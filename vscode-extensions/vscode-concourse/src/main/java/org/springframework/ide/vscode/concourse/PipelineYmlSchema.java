@@ -121,17 +121,20 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
+		YBeanType tryStep = f.ybean("TryStep");
 		
 		YBeanType[] stepTypes = {
 				getStep,
 				putStep,
 				taskStep,
 				aggregateStep,
-				doStep
+				doStep,
+				tryStep
 		};
 		YBeanUnionType step = f.yunion("Step", stepTypes);
 		prop(aggregateStep, "aggregate", f.yseq(step));
 		prop(doStep, "do", f.yseq(step));
+		prop(tryStep, "try", step);
 
 		// shared properties applicable for any type of Step:
 		prop(step, "on_success", step);
