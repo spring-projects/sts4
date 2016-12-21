@@ -483,6 +483,24 @@ public class ManifestYamlEditorTest {
 		editor.assertNoHover("otherdomain.org");
 	}
 
+	@Test
+	public void reconcileDuplicateKeys() throws Exception {
+		Editor editor = harness.newEditor(
+				"#comment\n" +
+				"applications:\n" +
+				"- buildpack: zbuildpack\n" +
+				"  name: foo\n" + 
+				"  domains:\n" +
+				"  - pivotal.io\n" +
+				"  domains:\n" +
+				"  - otherdomain.org\n"
+		);
+		editor.assertProblems(
+				"domains|Duplicate key",
+				"domains|Duplicate key"
+		);
+	}
+	
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
