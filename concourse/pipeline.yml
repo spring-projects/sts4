@@ -113,6 +113,8 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
+      passed:
+      - build-vsix
     - get: s3-manifest-yaml-vsix
       passed:
       - build-vsix
