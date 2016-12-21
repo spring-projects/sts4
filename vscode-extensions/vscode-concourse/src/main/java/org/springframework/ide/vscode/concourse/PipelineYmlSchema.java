@@ -135,6 +135,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(step, "on_failure", step);
 		prop(step, "ensure", step);
 		prop(step, "attempts", t_strictly_pos_integer);
+		prop(step, "tags", t_strings);
 		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", t_ne_string);

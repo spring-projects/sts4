@@ -106,6 +106,17 @@ public class PipelineYamlEditorTest {
 		editor.assertProblems(
 				"name: git\n  type: git|Expecting a 'Sequence' but found a 'Map'"
 		);
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - task: a-task\n" +
+				"    tags: a-single-string\n"
+		);
+		editor.assertProblems(
+				"a-single-string|Expecting a 'Sequence'"
+		);
 
 		//TODO: Add more test cases for structural problem?
 	}
@@ -217,6 +228,7 @@ public class PipelineYamlEditorTest {
 				"    output_mapping:\n" +
 				"      map: of-stuff\n" +
 				"    config: some-config\n" +
+				"    tags: [a, b, c]\n"+
 				"    attempts: 10\n" +
 				"    ensure:\n" +
 				"      bogus: bad\n" +
@@ -232,6 +244,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("input_mapping", "A map from task input names to concrete names in the build plan");
 		editor.assertHoverContains("output_mapping", "A map from task output names to concrete names");
 		editor.assertHoverContains("config", "Use `config` to inline the task config");
+		editor.assertHoverContains("tags", "Any step can be directed at a pool of workers");
 	}
 
 	@Test
