@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
 import org.eclipse.lsp4j.CompletionOptions;
@@ -25,22 +35,20 @@ import org.yaml.snakeyaml.Yaml;
 
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
-	private Yaml yaml = new Yaml();
-	private YamlSchema schema = new PipelineYmlSchema();
-
-	
 	public ConcourseLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
-		
-		YamlASTProvider parser = new YamlParser(yaml);
+
+		ConcourseModel models = new ConcourseModel(documents);
+		YamlASTProvider currentAsts = models.getAstProvider(false);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
+		YamlSchema schema = new PipelineYmlSchema(models);
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
 		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
-		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
+		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema);
+		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {

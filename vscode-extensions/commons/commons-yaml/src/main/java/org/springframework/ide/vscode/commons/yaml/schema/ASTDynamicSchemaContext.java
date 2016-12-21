@@ -13,8 +13,10 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.Collections;
 import java.util.Set;
 
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 
 import com.google.common.collect.ImmutableSet;
@@ -28,9 +30,19 @@ import com.google.common.collect.ImmutableSet;
 public class ASTDynamicSchemaContext extends CachingSchemaContext {
 
 	private MappingNode mapNode;
+	private IDocument doc;
 
-	public ASTDynamicSchemaContext(MappingNode map) {
-		this.mapNode = map;
+	public ASTDynamicSchemaContext(IDocument doc, Node node) {
+		this.doc = doc;
+		this.mapNode = as(MappingNode.class, node);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T as(Class<T> klass, Node node) {
+		if (node!=null && klass.isInstance(node)) {
+			return (T) node;
+		}
+		return null;
 	}
 
 	@Override
@@ -46,5 +58,10 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 			return builder.build();
 		}
 		return Collections.emptySet();
+	}
+
+	@Override
+	public IDocument getDocument() {
+		return doc;
 	}
 }

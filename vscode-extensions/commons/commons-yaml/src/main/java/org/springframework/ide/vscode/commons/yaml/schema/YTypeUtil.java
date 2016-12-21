@@ -32,7 +32,7 @@ public interface YTypeUtil {
 	YValueHint[] getHintValues(YType yType);
 	String niceTypeName(YType type);
 	YType getKeyType(YType type);
-	ValueParser getValueParser(YType type);
+	ValueParser getValueParser(YType type, DynamicSchemaContext dc);
 
 	//TODO: only one of these two should be enough?
 	List<YTypedProperty> getProperties(YType type, DynamicSchemaContext dc);
@@ -44,5 +44,5 @@ public interface YTypeUtil {
 	 * present in the context to narrow the type, then the type itself 
 	 * should be returned.
 	 */
-	YType inferMoreSpecificType(YType type, DynamicSchemaContext schemaContext);
+	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);
 }

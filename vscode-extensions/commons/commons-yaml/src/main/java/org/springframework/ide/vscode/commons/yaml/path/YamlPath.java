@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.RootRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.SeqRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
+import org.yaml.snakeyaml.nodes.Node;
 
 /**
  * @author Kris De Volder
@@ -123,6 +124,15 @@ public class YamlPath {
 
 	public <T extends YamlNavigable<T>> T traverse(T startNode) {
 		return traverseAmbiguously(startNode).findFirst().orElse(null);
+	}
+
+	public Stream<Node> traverseAmbiguously(Node startNode) {
+		if (startNode!=null) {
+			return traverseAmbiguously(new NodeCursor(startNode))
+					.map(NodeCursor::getNode);
+			
+		}
+		return Stream.empty();
 	}
 
 	public <T extends YamlNavigable<T>> Stream<T> traverseAmbiguously(T startNode) {

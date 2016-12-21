@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.ide.vscode.commons.util.Collector;
 import org.springframework.ide.vscode.commons.util.IRequestor;
 import org.springframework.ide.vscode.commons.util.RememberLast;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.RootRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.SeqRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleKeyRef;
@@ -25,9 +26,11 @@ import org.yaml.snakeyaml.nodes.SequenceNode;
 public class YamlFileAST {
 
 	private static final List<NodeRef<?>> NO_CHILDREN = Collections.emptyList();
-	private List<Node> nodes;
+	private final List<Node> nodes;
+	private final IDocument doc;
 
-	public YamlFileAST(Iterable<Node> iter) {
+	public YamlFileAST(IDocument doc, Iterable<Node> iter) {
+		this.doc = doc;
 		nodes = new ArrayList<Node>();
 		for (Node node : iter) {
 			nodes.add(node);
@@ -139,6 +142,10 @@ public class YamlFileAST {
 
 	public void put(int index, Node value) {
 		nodes.set(index, value);
+	}
+
+	public IDocument getDocument() {
+		return doc;
 	}
 
 

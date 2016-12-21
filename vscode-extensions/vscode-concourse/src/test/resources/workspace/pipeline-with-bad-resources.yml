@@ -1,0 +1,11 @@
+resources:
+- name: sts4
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
+jobs:
+- name: job1
+  plan:
+  - get: sts4
+  - get: bogus-get
+  - put: bogus-put

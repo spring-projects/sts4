@@ -22,7 +22,35 @@ public abstract class YamlPathSegment {
 	public static enum YamlPathSegmentType {
 		VAL_AT_KEY, //Go to value associate with given key in a map.
 		KEY_AT_KEY, //Go to the key node associated with a given key in a map.
-		VAL_AT_INDEX //Go to value associate with given index in a sequence
+		VAL_AT_INDEX, //Go to value associate with given index in a sequence
+		ANY_CHILD // Go to any child (assumes you are using ambiguous traversal method, otherwise this is probably not very useful)
+	}
+
+	public static class AnyChild extends YamlPathSegment {
+		
+		private static AnyChild INSTANCE = new AnyChild();
+
+		private AnyChild() {}
+
+		@Override
+		public String toNavString() {
+			return ".*";
+		}
+
+		@Override
+		public String toPropString() {
+			return "*";
+		}
+
+		@Override
+		public Integer toIndex() {
+			return null;
+		}
+
+		@Override
+		public YamlPathSegmentType getType() {
+			return YamlPathSegmentType.ANY_CHILD;
+		};
 	}
 
 	public static class AtIndex extends YamlPathSegment {
@@ -133,7 +161,7 @@ public abstract class YamlPathSegment {
 		}
 	}
 
-	private static class KeyAtKey extends ValAtKey {
+	public static class KeyAtKey extends ValAtKey {
 
 		public KeyAtKey(String key) {
 			super(key);
@@ -143,6 +171,7 @@ public abstract class YamlPathSegment {
 		public YamlPathSegmentType getType() {
 			return YamlPathSegmentType.KEY_AT_KEY;
 		}
+
 
 	}
 
@@ -164,6 +193,10 @@ public abstract class YamlPathSegment {
 	}
 	public static YamlPathSegment keyAt(String key) {
 		return new KeyAtKey(key);
+	}
+	
+	public static YamlPathSegment anyChild() {
+		return AnyChild.INSTANCE;
 	}
 
 }

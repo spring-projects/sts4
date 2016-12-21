@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -31,7 +32,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private final YTypeFactory f = new YTypeFactory();
 
-	public PipelineYmlSchema() {
+	public PipelineYmlSchema(ConcourseModel models) {
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		// define schema types
@@ -81,9 +82,18 @@ public class PipelineYmlSchema implements YamlSchema {
 //
 //				 The vagrant-cloud r
 		);
+		
+		YType resourceName = f.yenum("ResourceName", 
+				(parseString, validValues) ->  {
+					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
+				},
+				(DynamicSchemaContext dc) -> {
+					return models.getResourceNames(dc.getDocument());
+				}
+		);
 
 		YBeanType getStep = f.ybean("GetStep");
-		prop(getStep, "get", t_ne_string);
+		prop(getStep, "get", resourceName);
 		prop(getStep, "resource", t_string);
 		prop(getStep, "version", t_version);
 		prop(getStep, "passed", t_strings);
@@ -91,7 +101,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
-		prop(putStep, "put", t_ne_string);
+		prop(putStep, "put", resourceName);
 		prop(putStep, "resource", t_string);
 		prop(putStep, "params", t_params);
 		prop(putStep, "get_params", t_params);

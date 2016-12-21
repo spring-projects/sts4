@@ -15,6 +15,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.yaml.path.KeyAliases;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
@@ -257,6 +258,10 @@ public class YamlStructureParser {
 			return getStart()<=offset && offset<=getTreeEnd();
 		}
 
+		public IDocument getDocument() {
+			return doc.getDocument();
+		}
+		
 		public String getText() throws Exception {
 			return doc.textBetween(start, end);
 		}

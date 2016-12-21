@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.concourse;
 
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
@@ -259,12 +259,15 @@ public class PipelineYamlEditorTest {
 		);
 		editor.assertProblems(
 				"boohoo|boolean",
-				"-1|Positive Integer",
+				"-1|must be positive",
+				"git|resource does not exist",
 				"yohoho|boolean"
 		);
 
 		//check that correct values are indeed accepted
 		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: git\n" +
 				"jobs:\n" +
 				"- name: foo\n" +
 				"  serial: true\n" +
@@ -379,6 +382,33 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("jobs", "At a high level, a job describes some actions to perform");
 	}
 	
+	@Test
+	public void reconcileResourceReferences() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: sts4\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    repository: https://github.com/kdvolder/somestuff\n" + 
+				"jobs:\n" + 
+				"- name: job1\n" + 
+				"  plan:\n" + 
+				"  - get: sts4\n" + 
+				"  - get: bogus-get\n" + 
+				"  - put: bogus-put\n"
+		);
+		editor.assertProblems(
+				"bogus-get|resource does not exist",
+				"bogus-put|resource does not exist"
+		);
+		
+		editor.assertProblems(
+				"bogus-get|[sts4]",
+				"bogus-put|[sts4]"
+		);
+
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.inject.Provider;
 
@@ -120,8 +122,8 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public ValueParser getValueParser(YType type) {
-			return ((AbstractType)type).getParser();
+		public ValueParser getValueParser(YType type, DynamicSchemaContext dc) {
+			return ((AbstractType)type).getParser(dc);
 		}
 
 		@Override
@@ -137,7 +139,7 @@ public class YTypeFactory {
 	 */
 	public static abstract class AbstractType implements YType {
 
-		private ValueParser parser;
+		private SchemaContextAware<ValueParser> parser;
 		private List<YTypedProperty> propertyList = new ArrayList<>();
 		private final List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
@@ -246,11 +248,15 @@ public class YTypeFactory {
 			}
 		}
 
-		public void parseWith(ValueParser parser) {
+		public void parseWith(SchemaContextAware<ValueParser> parser) {
 			this.parser = parser;
 		}
-		public ValueParser getParser() {
-			return parser;
+
+		public void parseWith(ValueParser parser) {
+			parseWith((DynamicSchemaContext dc) -> parser);
+		}
+		private ValueParser getParser(DynamicSchemaContext dc) {
+			return parser == null ? null : parser.withContext(dc);
 		}
 
 	}
@@ -575,6 +581,28 @@ public class YTypeFactory {
 
 	public YTypedPropertyImpl yprop(String name, YType type) {
 		return new YTypedPropertyImpl(name, type);
+	}
+
+	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+		YAtomicType t = yatomic(name);
+		t.addHintProvider(() -> {
+			Collection<String> strings = values.withContext(DynamicSchemaContext.NULL); //TODO: make this really context aware!
+			return strings==null 
+					? null 
+					: strings.stream()
+						.map((s) -> new BasicYValueHint(s))
+						.collect(Collectors.toSet());
+		});
+		t.parseWith((DynamicSchemaContext dc) -> {
+			EnumValueParser enumParser = new EnumValueParser(name, values.withContext(dc)) {
+				@Override
+				protected String createErrorMessage(String parseString, Collection<String> values) {
+					return errorMessageFormatter.apply(parseString, values);
+				}
+			};
+			return enumParser;	
+		});
+		return t;
 	}
 
 	public YAtomicType yenum(String name, String... values) {

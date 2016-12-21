@@ -1,8 +1,10 @@
 package org.springframework.ide.vscode.commons.yaml.ast;
 
+import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.SequenceNode;
 
 /**
  * @author Kris De Volder
@@ -43,6 +45,20 @@ public class NodeUtil {
 	public static String asScalar(Node node) {
 		if (node.getNodeId()==NodeId.scalar) {
 			return ((ScalarNode)node).getValue();
+		}
+		return null;
+	}
+
+	public static MappingNode asMapping(Node node) {
+		if (node!=null && node.getNodeId()==NodeId.mapping) {
+			return (MappingNode) node;
+		}
+		return null;
+	}
+
+	public static SequenceNode asSequence(Node node) {
+		if (node!=null && node.getNodeId()==NodeId.sequence) {
+			return (SequenceNode) node;
 		}
 		return null;
 	}

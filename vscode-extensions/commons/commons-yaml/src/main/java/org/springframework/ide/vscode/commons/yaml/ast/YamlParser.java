@@ -17,7 +17,7 @@ public class YamlParser implements YamlASTProvider {
 	public YamlFileAST getAST(IDocument doc) throws Exception {
 		CharSequenceReader reader = new CharSequenceReader();
 		reader.setInput(doc.get());
-		return new YamlFileAST(yaml.composeAll(reader));
+		return new YamlFileAST(doc, yaml.composeAll(reader));
 	}
 
 }

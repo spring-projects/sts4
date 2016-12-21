@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
@@ -53,6 +54,11 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 			Log.log(e);
 		}
 		return Collections.emptySet();
+	}
+
+	@Override
+	public IDocument getDocument() {
+		return contextNode.getDocument();
 	}
 
 

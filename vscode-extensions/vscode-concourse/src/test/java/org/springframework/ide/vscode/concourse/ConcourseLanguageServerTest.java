@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.concourse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.util.Collection;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -23,7 +22,8 @@ import com.google.common.collect.ImmutableSet;
 public class EnumValueParser implements ValueParser {
 
 	private String typeName;
-	private Set<String> values;
+	private Collection<String> values;
+	
 
 	public EnumValueParser(String typeName, String... values) {
 		this(typeName, ImmutableSet.copyOf(values));
@@ -31,15 +31,21 @@ public class EnumValueParser implements ValueParser {
 
 	public EnumValueParser(String typeName, Collection<String> values) {
 		this.typeName = typeName;
-		this.values = ImmutableSet.copyOf(values);
+		this.values = values;
 	}
 
 	public Object parse(String str) {
-		if (values.contains(str)) {
+		Collection<String> values = this.values;
+		//If values is not known (null) then just assume the str is acceptable.
+		if (values==null || values.contains(str)) {
 			return str;
 		} else {
-			throw new IllegalArgumentException("'"+str+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values);
+			throw new IllegalArgumentException(createErrorMessage(str, values));
 		}
+	}
+
+	protected String createErrorMessage(String parseString, Collection<String> values2) {
+		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values;
 	}
 
 }

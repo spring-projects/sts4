@@ -3,6 +3,7 @@ package org.springframework.ide.vscode.commons.util;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Utility methods to convert exceptions into other types of exceptions, status
@@ -63,6 +64,16 @@ public class ExceptionUtil {
 			out.close();
 		}
 		return dump.toString();
+	}
+
+	/**
+	 * Convert throwables into exception try not to wrap if not needing to.
+	 */
+	public static Exception exception(Throwable cause) {
+		if (cause instanceof Exception) {
+			return (Exception)cause;
+		}
+		return new ExecutionException(cause);
 	}
 
 }

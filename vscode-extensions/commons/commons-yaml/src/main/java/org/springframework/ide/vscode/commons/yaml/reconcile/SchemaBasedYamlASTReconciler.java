@@ -8,6 +8,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
@@ -39,23 +40,23 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		List<Node> nodes = ast.getNodes();
 		if (nodes!=null && !nodes.isEmpty()) {
 			for (Node node : nodes) {
-				reconcile(node, schema.getTopLevelType());
+				reconcile(ast.getDocument(), node, schema.getTopLevelType());
 			}
 		}
 	}
 
-	private void reconcile(Node node, YType type) {
+	private void reconcile(IDocument doc, Node node, YType type) {
 		if (type!=null) {
+			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, node);
 			switch (node.getNodeId()) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
-						reconcile(entry.getKeyNode(), typeUtil.getKeyType(type));
-						reconcile(entry.getValueNode(), typeUtil.getDomainType(type));
+						reconcile(doc, entry.getKeyNode(), typeUtil.getKeyType(type));
+						reconcile(doc, entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
-					DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(map);
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type, schemaContext);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
@@ -68,7 +69,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 								type = typeUtil.inferMoreSpecificType(type, schemaContext);
 								unknownBeanProperty(keyNode, type, key);
 							} else {
-								reconcile(entry.getValueNode(), prop.getType());
+								reconcile(doc, entry.getValueNode(), prop.getType());
 							}
 						}
 					}
@@ -80,7 +81,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				SequenceNode seq = (SequenceNode) node;
 				if (typeUtil.isSequencable(type)) {
 					for (Node el : seq.getValue()) {
-						reconcile(el, typeUtil.getDomainType(type));
+						reconcile(doc, el, typeUtil.getDomainType(type));
 					}
 				} else {
 					expectTypeButFoundSequence(type, node);
@@ -88,7 +89,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				break;
 			case scalar:
 				if (typeUtil.isAtomic(type)) {
-					ValueParser parser = typeUtil.getValueParser(type);
+					ValueParser parser = typeUtil.getValueParser(type, schemaContext);
 					if (parser!=null) {
 						try {
 							parser.parse(NodeUtil.asScalar(node));
@@ -108,11 +109,10 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void valueParseError(YType type, Node node, String parseErrorMsg) {
-		String msg= "Couldn't parse as '"+describe(type)+"'";
-		if (StringUtil.hasText(parseErrorMsg)) {
-			msg += " ("+parseErrorMsg+")";
+		if (!StringUtil.hasText(parseErrorMsg)) {
+			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
 		}
-		problem(node, msg);
+		problem(node, parseErrorMsg);
 	}
 
 	private void unknownBeanProperty(Node keyNode, YType type, String name) {
