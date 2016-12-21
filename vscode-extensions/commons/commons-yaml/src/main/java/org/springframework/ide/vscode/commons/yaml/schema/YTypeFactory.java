@@ -97,8 +97,8 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public YValueHint[] getHintValues(YType type) {
-			return ((AbstractType)type).getHintValues();
+		public YValueHint[] getHintValues(YType type, DynamicSchemaContext dc) {
+			return ((AbstractType)type).getHintValues(dc);
 		}
 
 		@Override
@@ -143,7 +143,7 @@ public class YTypeFactory {
 		private List<YTypedProperty> propertyList = new ArrayList<>();
 		private final List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
-		private Provider<Collection<YValueHint>> hintProvider;
+		private SchemaContextAware<Collection<YValueHint>> hintProvider;
 
 		public boolean isSequenceable() {
 			return false;
@@ -166,11 +166,15 @@ public class YTypeFactory {
 		}
 
 		public void addHintProvider(Provider<Collection<YValueHint>> hintProvider) {
+			addHintProvider((DynamicSchemaContext dc) -> hintProvider.get());
+		}
+
+		public void addHintProvider(SchemaContextAware<Collection<YValueHint>> hintProvider) {
 			this.hintProvider = hintProvider;
 		}
 
-		public YValueHint[] getHintValues() {
-			Collection<YValueHint> providerHints = hintProvider != null ? hintProvider.get() : null;
+		public YValueHint[] getHintValues(DynamicSchemaContext dc) {
+			Collection<YValueHint> providerHints = hintProvider != null ? hintProvider.withContext(dc) : null;
 
 			if (providerHints == null || providerHints.isEmpty()) {
 				return hints.toArray(new YValueHint[hints.size()]);
@@ -585,8 +589,8 @@ public class YTypeFactory {
 
 	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
-		t.addHintProvider(() -> {
-			Collection<String> strings = values.withContext(DynamicSchemaContext.NULL); //TODO: make this really context aware!
+		t.addHintProvider((dc) -> {
+			Collection<String> strings = values.withContext(dc);
 			return strings==null 
 					? null 
 					: strings.stream()

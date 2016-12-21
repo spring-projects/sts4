@@ -406,6 +406,39 @@ public class PipelineYamlEditorTest {
 				"bogus-get|[sts4]",
 				"bogus-put|[sts4]"
 		);
+	}
+
+	@Test
+	public void completionsResourceReferences() throws Exception {
+		assertContextualCompletions(
+				"resources:\n" + 
+				"- name: sts4\n" + 
+				"- name: repo-a\n" +
+				"- name: repo-b\n" +
+				"jobs:\n" + 
+				"- name: job1\n" + 
+				"  plan:\n" + 
+				"  - get: <*>\n" 
+				, //////////////////// 
+				"<*>"
+				, // => 
+				"repo-a<*>", "repo-b<*>", "sts4<*>"
+		);
+
+		assertContextualCompletions(
+				"resources:\n" + 
+				"- name: sts4\n" + 
+				"- name: repo-a\n" +
+				"- name: repo-b\n" +
+				"jobs:\n" + 
+				"- name: job1\n" + 
+				"  plan:\n" + 
+				"  - put: <*>\n" 
+				, //////////////////// 
+				"r<*>"
+				, // => 
+				"repo-a<*>", "repo-b<*>"
+		);
 
 	}
 

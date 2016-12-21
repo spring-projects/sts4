@@ -143,7 +143,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, int offset, String query) {
-		YValueHint[] values = typeUtil.getHintValues(type);
+		YValueHint[] values = typeUtil.getHintValues(type, getSchemaContext());
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
 			for (YValueHint value : values) {

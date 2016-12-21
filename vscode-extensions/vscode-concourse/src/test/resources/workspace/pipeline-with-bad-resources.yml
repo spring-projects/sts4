@@ -3,6 +3,14 @@ resources:
   type: git
   source:
     repository: https://github.com/kdvolder/somestuff
+- name: other-repo
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
+- name: more-stuff
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
 jobs:
 - name: job1
   plan:
