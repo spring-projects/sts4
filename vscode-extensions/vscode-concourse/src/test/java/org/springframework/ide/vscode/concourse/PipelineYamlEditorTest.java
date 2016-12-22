@@ -575,8 +575,10 @@ public class PipelineYamlEditorTest {
 				"  resources: [git-repo, build-artefact, not-a-resource]"
 		);
 		
-		editor.assertProblems("bogus-job|does not exist");
-		editor.assertProblems("not-a-resource|does not exist");
+		editor.assertProblems(
+				"bogus-job|does not exist",
+				"not-a-resource|does not exist"
+		);
 	}
 
 	@Test
