@@ -26,31 +26,31 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
-- name: s3-boot-properties-vsix
+- name: s3-boot-properties-vsix-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
     access_key_id: {{s3_accesskey}}
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
-    regexp: sts4/vscode-extensions/vscode-boot-properties-(.*).vsix
-- name: s3-concourse-vsix
+    regexp: sts4/vscode-extensions/snapshots/vscode-boot-properties-(.*).vsix
+- name: s3-concourse-vsix-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
     access_key_id: {{s3_accesskey}}
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
-    regexp: sts4/vscode-extensions/vscode-concourse-(.*).vsix
-- name: s3-manifest-yaml-vsix
+    regexp: sts4/vscode-extensions/snapshots/vscode-concourse-(.*).vsix
+- name: s3-manifest-yaml-vsix-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
     access_key_id: {{s3_accesskey}}
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
-    regexp: sts4/vscode-extensions/vscode-manifest-yaml-(.*).vsix
-- name: website
+    regexp: sts4/vscode-extensions/snapshots/vscode-manifest-yaml-(.*).vsix
+- name: snapshot-website
   type: s3-multi
   source:
     bucket: {{s3_prod_bucket}}
@@ -83,7 +83,7 @@ jobs:
       build: docker-git/concourse/docker
     get_params: 
       skip_download: true
-- name: build-vsix
+- name: build-vsix-snapshots
   plan:
   - get: sts4
     trigger: true
@@ -91,15 +91,15 @@ jobs:
     file: sts4/concourse/tasks/build-vscode-extensions.yml
     on_success:
       aggregate:
-      - put: s3-manifest-yaml-vsix
+      - put: s3-manifest-yaml-vsix-snapshot
         params: 
           file: vsix-files/vscode-manifest-yaml-*.vsix
           acl: public-read
-      - put: s3-boot-properties-vsix
+      - put: s3-boot-properties-vsix-snapshot
         params: 
           file: vsix-files/vscode-boot-properties-*.vsix
           acl: public-read
-      - put: s3-concourse-vsix
+      - put: s3-concourse-vsix-snapshot
         params: 
           file: vsix-files/vscode-concourse-*.vsix
           acl: public-read
@@ -109,35 +109,56 @@ jobs:
         channel: "@kdvolder"
         text: | 
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-website
+- name: build-snapshot-website
   plan:
   - aggregate:
     - get: sts4
       passed:
-      - build-vsix
-    - get: s3-manifest-yaml-vsix
+      - build-vsix-snapshots
+    - get: s3-manifest-yaml-vsix-snapshot
       passed:
-      - build-vsix
+      - build-vsix-snapshots
       trigger: true
-    - get: s3-boot-properties-vsix
+    - get: s3-boot-properties-vsix-snapshot
       passed:
-      - build-vsix
+      - build-vsix-snapshots
       trigger: true
-    - get: s3-concourse-vsix
+    - get: s3-concourse-vsix-snapshot
       passed:
-      - build-vsix
+      - build-vsix-snapshots
       trigger: true
   - task: build-website
     file: sts4/concourse/tasks/build-website.yml
-  - put: website
+  - put: snapshot-website
     params:
       path: website
+# - name: publish-vscode-manifest-yaml
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#       # passed:
+#       # - build-vsix
+#     - get: s3-manifest-yaml-vsix-snapshot
+#       passed:
+#       - build-vsix-snapshots
+#   - task: vsce-publish-manifest-yaml
+#     file: sts4/concourse/tasks/vsce-publish.yml
+#     input_mapping:
+#       vsix-resource: s3-manifest-yaml-vsix-snapshot
+#     params:
+#       extension_id: vscode-manifest-yaml
+#       vsce_publisher: {{vsce_publisher}}
+#       vsce_token: {{vsce_token}}
+#   - put: sts4
+#     params:
+#       repository: sts4-out
+
 ####################################
-groups:
-- name: main
-  jobs:
-  - build-vsix
-  - build-website
-- name: docker
-  jobs:
-  - build-docker-image
+# groups:
+# - name: main
+#   jobs:
+#   - build-vsix
+#   - build-snapshot-website
+# - name: docker
+#   jobs:
+#   - build-docker-image

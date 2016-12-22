@@ -1,0 +1,99 @@
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+###################################################
+resources:
+- name: sts4
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    tag_filter: vscode-manifest-yaml-*-RC*
+- name: s3-vscode-manifest-yaml-vsix
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/vscode-extensions/releases/vscode-manifest-yaml-(.*).vsix    
+- name: slack-notification
+  type: slack-notification
+  source:
+    url: https://hooks.slack.com/services/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
+######################################################
+jobs:
+- name: build-vscode-manifest-yaml-release
+  plan:
+  - get: sts4
+    trigger: true
+  - task: build-vsix
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-manifest-yaml
+      dist_type: release
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text: | 
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+  - put: s3-vscode-manifest-yaml-vsix
+    params:
+      file: out/*.vsix
+      acl: public-read
+- name: publish-vscode-manifest-yaml-release
+  plan:
+  - do:
+    - get: sts4
+      passed:
+      - build-vscode-manifest-yaml-release
+    - get: s3-vscode-manifest-yaml-vsix
+      passed:
+      - build-vscode-manifest-yaml-release
+    - task: publish-vscode-manifest-yaml-release
+      file: sts4/concourse/tasks/vsce-publish.yml
+      input_mapping:
+        vsix-resource: s3-vscode-manifest-yaml-vsix
+      params:
+        vsce_publisher: {{vsce_publisher}}
+        vsce_token: {{vsce_token}}
+        extension_id: vscode-manifest-yaml
+    - put: sts4
+      params:
+        repository: sts4-out
+        only_tag: true
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text: | 
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+- name: bump-vscode-manifest-yaml-version
+  serial: true
+  plan:
+  - do:
+    - get: sts4
+      passed:
+      - publish-vscode-manifest-yaml-release
+    - task: bump-vscode-manifest-yaml-version
+      file: sts4/concourse/tasks/bump-version.yml
+      params:
+        extension_id: vscode-manifest-yaml
+    - put: sts4
+      timeout: 5m
+      params:
+        repository: sts4-out
+        rebase: true
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text: | 
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+        
+    
