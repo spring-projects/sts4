@@ -1,0 +1,1 @@
+*Optional.* A list of resources that should appear in this group. Resources that are inputs or outputs of jobs in the group are automatically added; they do not have to be explicitly listed here.

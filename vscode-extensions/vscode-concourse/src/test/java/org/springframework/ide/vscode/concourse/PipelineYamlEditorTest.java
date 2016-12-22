@@ -234,6 +234,19 @@ public class PipelineYamlEditorTest {
 	}
 	
 	@Test
+	public void groupHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"groups:\n" +
+				"- name: some-group\n" +
+				"  resources: []\n" +
+				"  jobs: []\n"
+		);
+		editor.assertHoverContains("name", "The name of the group");
+		editor.assertHoverContains("resources", "A list of resources that should appear in this group");
+		editor.assertHoverContains("jobs", " A list of jobs that should appear in this group");
+	}
+	
+	@Test
 	public void taskStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
@@ -342,6 +355,9 @@ public class PipelineYamlEditorTest {
 		Editor editor;
 		editor = harness.newEditor(CURSOR);
 		editor.assertCompletions(
+				"groups:\n" +
+				"- <*>"
+				, // --------------
 				"jobs:\n" +
 				"- <*>"
 				, // ---------------
@@ -421,12 +437,15 @@ public class PipelineYamlEditorTest {
 			"    params:\n" + 
 			"      build: docker-git/concourse/docker\n" + 
 			"    get_params: \n" + 
-			"      skip_download: true\n"
+			"      skip_download: true\n" +
+			"groups:\n" +
+			"- name: a-groups\n"
 		);
 		
 		editor.assertHoverContains("resource_types", "each pipeline can configure its own custom types by specifying `resource_types` at the top level.");
 		editor.assertHoverContains("resources", "A resource is any entity that can be checked for new versions");
 		editor.assertHoverContains("jobs", "At a high level, a job describes some actions to perform");
+		editor.assertHoverContains("groups", "A pipeline may optionally contain a section called `groups`");
 	}
 	
 	@Test
@@ -533,6 +552,31 @@ public class PipelineYamlEditorTest {
 		);
 		
 		editor.assertProblems("not-a-job|does not exist");
+	}
+
+	@Test
+	public void reconcileGroups() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: git-repo\n" + 
+				"- name: build-artefact\n" + 
+				"jobs:\n" + 
+				"- name: build\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"  - task: run-build\n" + 
+				"  - put: build-artefact\n" + 
+				"- name: test\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"groups:\n" +
+				"- name: some-group\n" +
+				"  jobs: [build, test, bogus-job]\n" +
+				"  resources: [git-repo, build-artefact, not-a-resource]"
+		);
+		
+		editor.assertProblems("bogus-job|does not exist");
+		editor.assertProblems("not-a-resource|does not exist");
 	}
 
 	@Test

@@ -172,14 +172,21 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(job, "plan", f.yseq(step));
 		
 		YType resource_type_def = f.ybean("ResourceTypeDef", 
+			//TODO: This way of initializing the props doesn't attach descriptions!
 			f.yprop("name", t_ne_string),
 			f.yprop("type", t_image_type),
 			f.yprop("source", t_any)
 		);
+		
+		YBeanType group = f.ybean("Group");
+		prop(group, "name", t_ne_string);
+		prop(group, "resources", f.yseq(resourceName));
+		prop(group, "jobs", f.yseq(jobName));
 
 		prop(TOPLEVEL_TYPE, "resources", f.yseq(resource));
 		prop(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		prop(TOPLEVEL_TYPE, "resource_types", f.yseq(resource_type_def));
+		prop(TOPLEVEL_TYPE, "groups", f.yseq(group));
 
 	}
 
