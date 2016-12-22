@@ -52,6 +52,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		YType t_params = f.ymap(t_string, t_any);
 		YType t_string_params = f.ymap(t_string, t_string);
 
+		YAtomicType t_duration = f.yatomic("Duration");
+		t_duration.parseWith(ValueParsers.DURATION);
+
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
 		
@@ -142,6 +145,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(step, "ensure", step);
 		prop(step, "attempts", t_strictly_pos_integer);
 		prop(step, "tags", t_strings);
+		prop(step, "timeout", t_duration);
 		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", t_ne_string);

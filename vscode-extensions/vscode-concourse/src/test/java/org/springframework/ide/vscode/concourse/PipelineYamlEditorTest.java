@@ -252,6 +252,7 @@ public class PipelineYamlEditorTest {
 				"    config: some-config\n" +
 				"    tags: [a, b, c]\n"+
 				"    attempts: 10\n" +
+				"    timeout: 1h30m\n" +
 				"    ensure:\n" +
 				"      bogus: bad\n" +
 				"    on_failure:\n" +
@@ -267,6 +268,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("output_mapping", "A map from task output names to concrete names");
 		editor.assertHoverContains("config", "Use `config` to inline the task config");
 		editor.assertHoverContains("tags", "Any step can be directed at a pool of workers");
+		editor.assertHoverContains("timeout", "amount of time to limit the step's execution");
 	}
 
 	@Test
@@ -297,14 +299,16 @@ public class PipelineYamlEditorTest {
 				"  plan:\n" +
 				"  - get: git\n" +
 				"    trigger: yohoho\n" +
-				"    attempts: 0\n"
+				"    attempts: 0\n" +
+				"    timeout: 1h:30m\n"
 		);
 		editor.assertProblems(
 				"boohoo|boolean",
 				"-1|must be positive",
 				"git|resource does not exist",
 				"yohoho|boolean",
-				"0|must be at least 1"
+				"0|must be at least 1",
+				"1h:30m|Duration"
 		);
 
 		//check that correct values are indeed accepted
@@ -507,6 +511,7 @@ public class PipelineYamlEditorTest {
 				"type|Duplicate key"
 		);
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 
