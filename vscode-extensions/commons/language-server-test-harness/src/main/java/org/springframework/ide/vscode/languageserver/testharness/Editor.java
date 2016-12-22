@@ -9,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import javax.swing.text.BadLocationException;
 
@@ -26,6 +29,8 @@ import org.eclipse.lsp4j.TextEdit;
 import org.junit.Assert;
 
 import com.google.common.base.Strings;
+
+import reactor.core.publisher.Flux;
 
 public class Editor {
 
@@ -313,15 +318,48 @@ public class Editor {
 	}
 
 	public void assertIsHoverRegion(String string) throws Exception {
-		int hoverPosition = getRawText().indexOf(string) + string.length() / 2;
+		int hoverPosition = getHoverPosition(string, 1);
 		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
 		assertEquals(string, getText(hover.getRange()));
 	}
 
-	public void assertHoverContains(String hoverOver, String snippet) throws Exception {
-		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
+	public void assertHoverContains(String hoverOver, int occurrence, String snippet) throws Exception {
+		int hoverPosition = getHoverPosition(hoverOver, occurrence);
 		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
-		assertContains(snippet, hover.getContents().toString());	}
+		assertContains(snippet, hover.getContents().toString());
+	}
+
+	private int getHoverPosition(String hoverOver, int occurrence) throws Exception {
+		assertTrue(occurrence>0);
+		return occurrences(getRawText(), hoverOver)
+				.elementAt(occurrence-1)
+				.map(offset -> offset + hoverOver.length()/2)
+				.block();
+	}
+
+	private Flux<Integer> occurrences(String text, String substring) {
+		return Flux.fromIterable(() -> new Iterator<Integer>() {
+			int searchFrom = 0;
+			@Override
+			public boolean hasNext() {
+				return searchFrom>=0 && searchFrom < text.length() && text.indexOf(substring, searchFrom) >= 0;
+			}
+
+			@Override
+			public Integer next() {
+				int found = text.indexOf(substring, searchFrom);
+				assertTrue(found>=0);
+				searchFrom = found+1;
+				return found;
+			}
+		});
+	}
+
+	public void assertHoverContains(String hoverOver, String snippet) throws Exception {
+		int hoverPosition = getHoverPosition(hoverOver,1);
+		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		assertContains(snippet, hover.getContents().toString());
+	}
 
 	public void assertNoHover(String hoverOver) throws Exception {
 		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;

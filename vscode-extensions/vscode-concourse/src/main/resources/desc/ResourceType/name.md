@@ -1,0 +1,1 @@
+*Required.* The name of the new resource type. This should be short and simple. This name will be referenced by `resources` defined within the same pipeline, and `image_resource`s used by tasks running in the pipeline.

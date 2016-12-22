@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import static org.junit.Assert.*;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
@@ -606,6 +607,21 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
+	@Test
+	public void resourceTypeAttributeHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resource_types:\n" + 
+				"- name: s3-multi\n" + 
+				"  type: docker-image\n" + 
+				"  source:\n" + 
+				"    repository: kdvolder/s3-resource-simple\n"
+		);
+		
+		editor.assertHoverContains("name", "This name will be referenced by `resources` defined within the same pipeline");
+		editor.assertHoverContains("type", 2, "used to provide the resource type's container image");
+		editor.assertHoverContains("source", 2, "The location of the resource type's resource");
+	}
+	
 
 	//////////////////////////////////////////////////////////////////////////////
 

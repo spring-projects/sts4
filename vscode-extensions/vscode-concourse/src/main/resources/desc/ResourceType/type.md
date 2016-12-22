@@ -1,0 +1,1 @@
+*Required.* The type of the resource used to provide the resource type's container image. Yes, this is a bit meta. Usually this will be `docker-image`, as the resource type must result in a container image, though there may be other image formats (possibly themselves defined as custom resource types!).

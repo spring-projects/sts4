@@ -61,8 +61,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_image_type = f.yatomic("ImageType");
 		t_image_type.addHints("docker_image");
 
-		YAtomicType t_resource_type = f.yatomic("ResourceType");
-		t_resource_type.addHints(
+		YAtomicType t_resource_type_name = f.yatomic("ResourceType Name");
+		t_resource_type_name.addHints(
 				f.hint("archive", "archive - The 'archive' resource can fetch and extract .tar.gz archives."),
 				f.hint("git", "git - The 'git' resource can pull and push to git repositories"),
 				f.hint("s3", "s3 - The 's3' resource can fetch from and upload to S3 buckets."),
@@ -158,7 +158,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", t_ne_string);
-		prop(resource, "type", t_resource_type);
+		prop(resource, "type", t_resource_type_name);
 		prop(resource, "source", t_any);
 
 		YBeanType job = f.ybean("Job");
@@ -171,12 +171,10 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(job, "disable_manual_trigger", t_boolean);
 		prop(job, "plan", f.yseq(step));
 		
-		YType resource_type_def = f.ybean("ResourceTypeDef", 
-			//TODO: This way of initializing the props doesn't attach descriptions!
-			f.yprop("name", t_ne_string),
-			f.yprop("type", t_image_type),
-			f.yprop("source", t_any)
-		);
+		YBeanType resourceType = f.ybean("ResourceType");
+		prop(resourceType, "name", t_ne_string);
+		prop(resourceType, "type", t_image_type);
+		prop(resourceType, "source", t_any);
 		
 		YBeanType group = f.ybean("Group");
 		prop(group, "name", t_ne_string);
@@ -185,7 +183,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		prop(TOPLEVEL_TYPE, "resources", f.yseq(resource));
 		prop(TOPLEVEL_TYPE, "jobs", f.yseq(job));
-		prop(TOPLEVEL_TYPE, "resource_types", f.yseq(resource_type_def));
+		prop(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		prop(TOPLEVEL_TYPE, "groups", f.yseq(group));
 
 	}
