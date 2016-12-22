@@ -132,3 +132,12 @@ jobs:
   - put: website
     params:
       path: website
+####################################
+groups:
+- name: main
+  jobs:
+  - build-vsix
+  - build-website
+- name: docker
+  jobs:
+  - build-docker-image
