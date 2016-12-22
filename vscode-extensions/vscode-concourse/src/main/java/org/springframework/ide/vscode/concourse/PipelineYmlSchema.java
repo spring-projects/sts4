@@ -89,7 +89,7 @@ public class PipelineYmlSchema implements YamlSchema {
 //				 The vagrant-cloud r
 		);
 		
-		YType resourceName = f.yenum("ResourceName", 
+		YType resourceName = f.yenum("Resource Name", 
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
@@ -98,17 +98,26 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		);
 
+		YType jobName = f.yenum("Job Name", 
+				(parseString, validValues) ->  {
+					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
+				},
+				(DynamicSchemaContext dc) -> {
+					return models.getJobNames(dc.getDocument());
+				}
+		);
+
 		YBeanType getStep = f.ybean("GetStep");
 		prop(getStep, "get", resourceName);
 		prop(getStep, "resource", t_string);
 		prop(getStep, "version", t_version);
-		prop(getStep, "passed", t_strings);
+		prop(getStep, "passed", f.yseq(jobName));
 		prop(getStep, "params", t_params);
 		prop(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
 		prop(putStep, "put", resourceName);
-		prop(putStep, "resource", t_string);
+		prop(putStep, "resource", jobName);
 		prop(putStep, "params", t_params);
 		prop(putStep, "get_params", t_params);
 

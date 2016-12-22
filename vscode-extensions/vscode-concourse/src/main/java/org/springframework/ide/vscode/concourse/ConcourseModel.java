@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.concourse;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.anyChild;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.valueAt;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -42,9 +44,15 @@ public class ConcourseModel {
 		anyChild(),
 		valueAt("name")
 	);
+
+	private static final YamlPath JOB_NAMES_PATH = new YamlPath(
+		valueAt("jobs"),
+		anyChild(),
+		valueAt("name")
+	);
 	
 	private final YamlParser parser;
-	private StaleFallbackCache<String, YamlFileAST> asts = new StaleFallbackCache<>();
+	private final StaleFallbackCache<String, YamlFileAST> asts = new StaleFallbackCache<>();
 
 	public ConcourseModel(SimpleTextDocumentService documents) {
 		Yaml yaml = new Yaml();
@@ -69,17 +77,41 @@ public class ConcourseModel {
 	 * can not be parsed).
 	 */
 	public Set<String> getResourceNames(IDocument doc) {
+		return getStringsFromAst(doc, RESOURCE_NAMES_PATH);
+	}
+
+	
+	/**
+	 * Returns the job names that are defined by given IDocument. If the contents
+	 * of IDocument is not currently parseable then this may return stale information
+	 * retained from a previous successful parse.
+	 * <p>
+	 * It may also return null if its not currently possible to obtain the list of resource
+	 * names (e.g. because there hasn't been a successful parse yet and current document contents
+	 * can not be parsed).
+	 */
+	public Set<String> getJobNames(IDocument doc) {
+		return getStringsFromAst(doc, JOB_NAMES_PATH);
+	}
+
+	private Set<String> getStringsFromAst(IDocument doc, YamlPath path) {
+		return getFromAst(doc, (ast) -> {
+			Node root = ast.get(0);
+			return path
+				.traverseAmbiguously(root)
+				.map(NodeUtil::asScalar)
+				.filter((string) -> string!=null)
+				.collect(Collectors.toSet());
+		});
+	}
+	
+	private <T> T getFromAst(IDocument doc, Function<YamlFileAST, T> getResourceNames) {
 		try {
 			if (doc!=null) {
 				String uri = doc.getUri();
 				if (uri!=null) {
 					YamlFileAST ast = getAst(doc);
-					Node root = ast.get(0);
-					return RESOURCE_NAMES_PATH
-						.traverseAmbiguously(root)
-						.map(NodeUtil::asScalar)
-						.filter((string) -> string!=null)
-						.collect(Collectors.toSet());
+					return getResourceNames.apply(ast);
 				}
 			}
 		} catch (YAMLException e) {
@@ -105,5 +137,6 @@ public class ConcourseModel {
 			return null;
 		};
 	}
+
 
 }

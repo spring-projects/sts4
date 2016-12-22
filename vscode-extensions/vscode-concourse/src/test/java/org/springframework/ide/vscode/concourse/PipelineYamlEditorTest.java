@@ -511,6 +511,54 @@ public class PipelineYamlEditorTest {
 				"type|Duplicate key"
 		);
 	}
+	
+	@Test
+	public void reconcileJobNames() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: git-repo\n" + 
+				"- name: build-artefact\n" + 
+				"jobs:\n" + 
+				"- name: build\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"  - task: run-build\n" + 
+				"  - put: build-artefact\n" + 
+				"- name: test\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"    passed:\n" + 
+				"    - not-a-job\n" + 
+				"    - build\n"
+		);
+		
+		editor.assertProblems("not-a-job|does not exist");
+	}
+
+	@Test
+	public void contentAssistJobNames() throws Exception {
+		assertContextualCompletions(
+				"resources:\n" + 
+				"- name: git-repo\n" + 
+				"- name: build-artefact\n" + 
+				"jobs:\n" + 
+				"- name: build\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"  - task: run-build\n" + 
+				"  - put: build-artefact\n" + 
+				"- name: test\n" + 
+				"  plan:\n" + 
+				"  - get: git-repo\n" + 
+				"    passed:\n" + 
+				"    - <*>\n" 
+				, /////////////////////////// 
+				"<*>"
+				, // =>
+				"build<*>",
+				"test<*>"
+		);
+	}
 
 
 	//////////////////////////////////////////////////////////////////////////////
