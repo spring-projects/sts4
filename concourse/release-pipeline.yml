@@ -78,7 +78,7 @@ jobs:
         vsce_publisher: {{vsce_publisher}}
         vsce_token: {{vsce_token}}
         extension_id: vscode-manifest-yaml
-    - put: sts4
+    - put: sts4-out
       params:
         repository: sts4-out
         only_tag: true
