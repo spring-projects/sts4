@@ -26,5 +26,5 @@ echo "****************************************************************"
 cd $sources
 
 echo "Tagging release"
-git tag ${extension_id}-${release_version}-RELEASE
+git tag -f ${extension_id}-${release_version}-RELEASE
 git clone $workdir/sts4 $workdir/sts4-out
