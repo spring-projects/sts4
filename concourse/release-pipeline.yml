@@ -46,6 +46,15 @@ jobs:
     params:
       file: out/*.vsix
       acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text_file: s3-vscode-manifest-yaml-vsix/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-vscode-manifest-yaml-release
   plan:
   - do:
