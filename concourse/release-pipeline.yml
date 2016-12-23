@@ -6,6 +6,12 @@ resource_types:
     tag: latest
 ###################################################
 resources:
+- name: sts4-out
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    private_key: {{rsa_id}}
 - name: sts4
   type: git
   source:
@@ -94,7 +100,7 @@ jobs:
       file: sts4/concourse/tasks/bump-version.yml
       params:
         extension_id: vscode-manifest-yaml
-    - put: sts4
+    - put: sts4-out
       timeout: 5m
       params:
         repository: sts4-out

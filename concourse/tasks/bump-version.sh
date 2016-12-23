@@ -18,8 +18,10 @@ npm version patch
 new_version=`jq -r .version ${sources}/package.json`
 echo "new_version=${new_version}"
 
+git config user.email "kdevolder@pivotal.io"
+git config user.name "Kris De Volder"
+
 git commit \
     -m "Bump version of ${extension_id} to ${new_version}" \
-    --author 'Kris De Volder <kdevolder@pivotal.io>'
 
 git clone $workdir/sts4 $workdir/sts4-out
