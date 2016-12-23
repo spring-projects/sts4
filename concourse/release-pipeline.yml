@@ -41,7 +41,7 @@ jobs:
       params:
         channel: "@kdvolder"
         text: | 
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
   - put: s3-vscode-manifest-yaml-vsix
     params:
       file: out/*.vsix
@@ -53,7 +53,7 @@ jobs:
         text_file: s3-vscode-manifest-yaml-vsix/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has succeed!
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-vscode-manifest-yaml-release
   plan:
@@ -81,7 +81,7 @@ jobs:
       params:
         channel: "@kdvolder"
         text: | 
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: bump-vscode-manifest-yaml-version
   serial: true
   plan:
@@ -104,6 +104,6 @@ jobs:
       params:
         channel: "@kdvolder"
         text: | 
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_NAME}/${BUILD_JOB_NAME} has failed!
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
         
     
