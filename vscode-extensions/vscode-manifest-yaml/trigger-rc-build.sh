@@ -4,6 +4,7 @@ set -e
 if [ -z "$1" ]; then
     echo "Usage: ./trigger-rc-build.sh ${RC_TAG}"
     echo "Where RC_TAG is one of RC1, RC2, etc."
+    exit 1
 fi
 
 rc_tag=$1
