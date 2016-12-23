@@ -78,6 +78,7 @@ jobs:
   plan:
   - do:
     - get: sts4
+      trigger: true
       passed:
       - publish-vscode-manifest-yaml-release
     - task: bump-vscode-manifest-yaml-version
