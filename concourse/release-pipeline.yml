@@ -55,7 +55,6 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "@kdvolder"
         text_file: s3-vscode-manifest-yaml-vsix/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
@@ -82,6 +81,14 @@ jobs:
       params:
         repository: sts4-out
         only_tag: true
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-vscode-manifest-yaml-vsix/version
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Vscode-manifest-yaml release $TEXT_FILE_CONTENT is now available on vscode-marketplace!
     on_failure:
       put: slack-notification
       params:
@@ -92,7 +99,7 @@ jobs:
   serial: true
   plan:
   - do:
-    - get: sts4
+    - get: sts4-out
       trigger: true
       passed:
       - publish-vscode-manifest-yaml-release
@@ -111,5 +118,3 @@ jobs:
         channel: "@kdvolder"
         text: | 
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-        
-    
