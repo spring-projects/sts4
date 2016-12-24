@@ -87,8 +87,7 @@ jobs:
         text_file: s3-vscode-manifest-yaml-vsix/version
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
-          Vscode-manifest-yaml release $TEXT_FILE_CONTENT is now available on vscode-marketplace!
+          Vscode-manifest-yaml **${TEXT_FILE_CONTENT}** was **released** to [Vscode Marktetplace](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml)
     on_failure:
       put: slack-notification
       params:
