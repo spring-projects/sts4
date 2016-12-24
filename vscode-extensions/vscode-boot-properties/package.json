@@ -28,7 +28,6 @@
     "onLanguage:yaml"
   ],
   "main": "./out/lib/Main",
-  "preview": true,
   "scripts": {
     "prepublish": "tsc -p .",
     "clean": "rm -fr node_modules out *.vsix",
