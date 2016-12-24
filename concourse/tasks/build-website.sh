@@ -21,13 +21,13 @@ echo "vscode_concourse=$vscode_concourse"
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Property Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}/${vscode_boot_properties}">${vscode_boot_properties}</a> 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_boot_properties}">${vscode_boot_properties}</a> 
    </li>
    <li>Cloud Foundry Manifest Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
    <li>Concourse CI Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}/${vscode_concourse}">${vscode_concourse}</a> 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_concourse}">${vscode_concourse}</a> 
    </li>
 </ul>
 XXXXXX
