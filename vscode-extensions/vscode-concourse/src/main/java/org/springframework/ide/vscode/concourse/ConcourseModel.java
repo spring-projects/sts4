@@ -13,10 +13,7 @@ package org.springframework.ide.vscode.concourse;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.anyChild;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.valueAt;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
@@ -34,7 +31,6 @@ import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
 
 /**
  * ConcourseModels is responsible for extracting various bits of information 
@@ -119,7 +115,7 @@ public class ConcourseModel {
 				}
 			}
 		} catch (YAMLException e) {
-			// ignore: garbage in the doc. Can't compute stuff and that's to be expected.
+			// ignore: found garbage in the doc. Can't compute stuff and that's to be expected.
 		} catch (Exception e) {
 			Log.log(e);
 		}

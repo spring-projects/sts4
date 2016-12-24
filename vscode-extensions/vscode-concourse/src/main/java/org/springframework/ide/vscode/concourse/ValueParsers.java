@@ -10,10 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.function.Function;
+
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 
 import com.google.common.collect.Multiset;
@@ -25,6 +28,8 @@ import com.google.common.collect.Multiset;
  * @author Kris De Volder
  */
 public class ValueParsers {
+	
+	//TODO: some of the parsers here are pretty general purpose and could be moved to commons.
 
 	public static final ValueParser NE_STRING = (s) -> {
 		if (StringUtil.hasText(s)) {
@@ -37,14 +42,25 @@ public class ValueParsers {
 	public static final ValueParser POS_INTEGER = integerRange(0, null);
 
 	public static final SchemaContextAware<ValueParser> resourceNameDef(ConcourseModel models) {
+		return acceptOnlyUniqueNames(models::getResourceNames, "resource name");
+	}
+
+	public static final SchemaContextAware<ValueParser> jobNameDef(ConcourseModel models) {
+		return acceptOnlyUniqueNames(models::getJobNames, "job name");
+	}
+
+	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
+			Function<IDocument, Multiset<String>> getDefinedNameCounts,
+			String typeName
+	) {
 		return (dc) -> {
-			Multiset<String> resourceNames = models.getResourceNames(dc.getDocument());
+			Multiset<String> resourceNames = getDefinedNameCounts.apply(dc.getDocument());
 			return (String input) -> {
 				if (resourceNames.count(input)<=1) {
 					//okay
 					return resourceNames; 
 				}
-				throw new IllegalArgumentException("Duplicate resource name '"+input+"'");
+				throw new IllegalArgumentException("Duplicate "+typeName+" '"+input+"'");
 			};
 		};
 	};
@@ -82,6 +98,7 @@ public class ValueParsers {
 					+ " '2h45m'. Valid time units are 'ns', 'us' (or 'µs'), 'ms', 's', "
 			+ "'m', 'h'."
 	);
+
 	
 	
 

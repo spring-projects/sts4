@@ -109,6 +109,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		
 		YAtomicType resourceNameDef = f.yatomic("Resource Name");
 		resourceNameDef.parseWith(ValueParsers.resourceNameDef(models));
+		YAtomicType jobNameDef = f.yatomic("Job Name");
+		jobNameDef.parseWith(ValueParsers.jobNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
 		prop(getStep, "get", resourceName);
@@ -165,7 +167,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(resource, "source", t_any);
 
 		YBeanType job = f.ybean("Job");
-		prop(job, "name", t_ne_string);
+		prop(job, "name", jobNameDef);
 		prop(job, "serial", t_boolean);
 		prop(job, "build_logs_to_retain", t_pos_integer);
 		prop(job, "serial_groups", t_strings);

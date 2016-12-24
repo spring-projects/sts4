@@ -503,6 +503,20 @@ public class PipelineYamlEditorTest {
 	}
 
 	@Test
+	public void reconcileDuplicateJobNames() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" + 
+				"- name: job-1\n" + 
+				"- name: utils\n" + 
+				"- name: job-1\n"
+		);
+		editor.assertProblems(
+				"job-1|Duplicate job name",
+				"job-1|Duplicate job name"
+		);
+	}
+
+	@Test
 	public void completionsResourceReferences() throws Exception {
 		assertContextualCompletions(
 				"resources:\n" + 
