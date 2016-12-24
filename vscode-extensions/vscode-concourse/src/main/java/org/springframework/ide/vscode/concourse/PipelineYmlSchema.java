@@ -165,6 +165,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(resource, "name", resourceNameDef);
 		prop(resource, "type", t_resource_type_name);
 		prop(resource, "source", t_any);
+		prop(resource, "check_every", t_duration);
 
 		YBeanType job = f.ybean("Job");
 		prop(job, "name", jobNameDef);

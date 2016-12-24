@@ -663,6 +663,22 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("source", 2, "The location of the resource type's resource");
 	}
 	
+	@Test
+	public void resourceAttributeHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: sts4\n" + 
+				"  type: git\n" +
+				"  check_every: 5m\n" +
+				"  source:\n" + 
+				"    repository: https://github.com/spring-projects/sts4\n"
+		);
+		
+		editor.assertHoverContains("name", "The name of the resource");
+		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
+		editor.assertHoverContains("source", 2, "The location of the resource");
+		editor.assertHoverContains("check_every", "The interval on which to check for new versions");
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 
