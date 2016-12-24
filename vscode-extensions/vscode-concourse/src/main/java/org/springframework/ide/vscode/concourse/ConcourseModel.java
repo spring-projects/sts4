@@ -27,10 +27,14 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.Node;
+
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 
 /**
  * ConcourseModels is responsible for extracting various bits of information 
@@ -76,7 +80,7 @@ public class ConcourseModel {
 	 * names (e.g. because there hasn't been a successful parse yet and current document contents
 	 * can not be parsed).
 	 */
-	public Set<String> getResourceNames(IDocument doc) {
+	public Multiset<String> getResourceNames(IDocument doc) {
 		return getStringsFromAst(doc, RESOURCE_NAMES_PATH);
 	}
 
@@ -90,18 +94,18 @@ public class ConcourseModel {
 	 * names (e.g. because there hasn't been a successful parse yet and current document contents
 	 * can not be parsed).
 	 */
-	public Set<String> getJobNames(IDocument doc) {
+	public Multiset<String> getJobNames(IDocument doc) {
 		return getStringsFromAst(doc, JOB_NAMES_PATH);
 	}
 
-	private Set<String> getStringsFromAst(IDocument doc, YamlPath path) {
+	private Multiset<String> getStringsFromAst(IDocument doc, YamlPath path) {
 		return getFromAst(doc, (ast) -> {
 			Node root = ast.get(0);
 			return path
 				.traverseAmbiguously(root)
 				.map(NodeUtil::asScalar)
 				.filter((string) -> string!=null)
-				.collect(Collectors.toSet());
+				.collect(CollectorUtil.toMultiset());
 		});
 	}
 	

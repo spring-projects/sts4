@@ -480,6 +480,29 @@ public class PipelineYamlEditorTest {
 	}
 
 	@Test
+	public void reconcileDuplicateResourceNames() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: sts4\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    repository: https://github.com/kdvolder/somestuff\n" + 
+				"- name: utils\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    repository: https://github.com/kdvolder/someutils\n" + 
+				"- name: sts4\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    repository: https://github.com/kdvolder/extras\n" 
+		);
+		editor.assertProblems(
+				"sts4|Duplicate resource name",
+				"sts4|Duplicate resource name"
+		);
+	}
+
+	@Test
 	public void completionsResourceReferences() throws Exception {
 		assertContextualCompletions(
 				"resources:\n" + 

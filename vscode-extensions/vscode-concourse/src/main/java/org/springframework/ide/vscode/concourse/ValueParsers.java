@@ -14,6 +14,9 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
+
+import com.google.common.collect.Multiset;
 
 /**
  * Methods and constants to create/get parsers for some atomic types
@@ -32,6 +35,19 @@ public class ValueParsers {
 	};
 
 	public static final ValueParser POS_INTEGER = integerRange(0, null);
+
+	public static final SchemaContextAware<ValueParser> resourceNameDef(ConcourseModel models) {
+		return (dc) -> {
+			Multiset<String> resourceNames = models.getResourceNames(dc.getDocument());
+			return (String input) -> {
+				if (resourceNames.count(input)<=1) {
+					//okay
+					return resourceNames; 
+				}
+				throw new IllegalArgumentException("Duplicate resource name '"+input+"'");
+			};
+		};
+	};
 
 	public static ValueParser integerAtLeast(final Integer lowerBound) {
 		return integerRange(lowerBound, null);

@@ -106,6 +106,9 @@ public class PipelineYmlSchema implements YamlSchema {
 					return models.getJobNames(dc.getDocument());
 				}
 		);
+		
+		YAtomicType resourceNameDef = f.yatomic("Resource Name");
+		resourceNameDef.parseWith(ValueParsers.resourceNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
 		prop(getStep, "get", resourceName);
@@ -157,7 +160,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(step, "timeout", t_duration);
 		
 		YBeanType resource = f.ybean("Resource");
-		prop(resource, "name", t_ne_string);
+		prop(resource, "name", resourceNameDef);
 		prop(resource, "type", t_resource_type_name);
 		prop(resource, "source", t_any);
 
