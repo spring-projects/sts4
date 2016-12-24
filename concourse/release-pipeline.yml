@@ -99,7 +99,7 @@ jobs:
   serial: true
   plan:
   - do:
-    - get: sts4-out
+    - get: sts4
       trigger: true
       passed:
       - publish-vscode-manifest-yaml-release
