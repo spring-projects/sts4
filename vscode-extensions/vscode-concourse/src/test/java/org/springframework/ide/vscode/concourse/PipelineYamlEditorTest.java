@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import static org.junit.Assert.*;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
-import org.springframework.ide.vscode.concourse.ConcourseLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -462,15 +460,21 @@ public class PipelineYamlEditorTest {
 				"  plan:\n" + 
 				"  - get: sts4\n" + 
 				"  - get: bogus-get\n" + 
+				"  - task: do-stuff\n" + 
+				"    input_mapping:\n" + 
+				"      task-input: bogus-input\n" + 
+				"      repo: sts4\n" + 
 				"  - put: bogus-put\n"
 		);
 		editor.assertProblems(
 				"bogus-get|resource does not exist",
+				"bogus-input|resource does not exist",
 				"bogus-put|resource does not exist"
 		);
 		
 		editor.assertProblems(
 				"bogus-get|[sts4]",
+				"bogus-input|[sts4]",
 				"bogus-put|[sts4]"
 		);
 	}

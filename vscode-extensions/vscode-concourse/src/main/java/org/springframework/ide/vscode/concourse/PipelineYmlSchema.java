@@ -128,7 +128,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(taskStep, "privileged", t_boolean);
 		prop(taskStep, "params", t_params);
 		prop(taskStep, "image", t_ne_string);
-		prop(taskStep, "input_mapping", t_string_params);
+		prop(taskStep, "input_mapping",  f.ymap(t_ne_string, resourceName));
 		prop(taskStep, "output_mapping", t_string_params);
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
