@@ -76,4 +76,8 @@ public class ExceptionUtil {
 		return new ExecutionException(cause);
 	}
 
+	public static Object exception(String string, Throwable error) {
+		return exception(error);
+	}
+
 }

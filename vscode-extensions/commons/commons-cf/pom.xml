@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>commons-cf</artifactId>
+	<name>commons-cf</name>
+	<description>Common code related to 'accessing Cloud Foundry'</description>
+
+	<parent>
+		<groupId>org.springframework.ide.vscode</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
+	<properties>
+		<cloudfoundry.client.version>2.1.0.RELEASE</cloudfoundry.client.version>
+		<client.reactor.version>3.0.4.RELEASE</client.reactor.version>
+		<reactor.netty>0.6.0.RELEASE</reactor.netty>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cloudfoundry</groupId>
+			<artifactId>cloudfoundry-client-reactor</artifactId>
+			<version>${cloudfoundry.client.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cloudfoundry</groupId>
+			<artifactId>cloudfoundry-operations</artifactId>
+			<version>${cloudfoundry.client.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>${client.reactor.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor.ipc</groupId>
+			<artifactId>reactor-netty</artifactId>
+			<version>${reactor.netty}</version>
+		</dependency>
+	</dependencies>
+</project>

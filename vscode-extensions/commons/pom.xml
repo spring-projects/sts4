@@ -16,7 +16,7 @@
 		<module>commons-util</module>
 		<module>commons-java</module>
 		<module>java-properties</module>
-		
+		<module>commons-cf</module>
 		<module>commons-maven</module>
 		
 		
@@ -44,6 +44,11 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
+		</repository>
+	    <repository>
+			<id>spring-releases</id>
+			<name>Spring Releases</name>
+			<url>http://repo.spring.io/release</url>
 		</repository>
 	</repositories>
 
