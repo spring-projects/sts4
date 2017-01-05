@@ -8,13 +8,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.params;
+package org.springframework.ide.vscode.commons.cloudfoundry.client.target;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Provider;
 
+/**
+ * Resolves Cloud Foundry client parameters from registered params providers
+ *
+ */
 public class CFClientParamsFactory {
 
 	public static final CFClientParamsFactory INSTANCE = new CFClientParamsFactory();

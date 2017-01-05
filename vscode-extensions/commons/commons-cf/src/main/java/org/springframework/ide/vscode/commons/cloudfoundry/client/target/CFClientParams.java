@@ -8,13 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.params;
+package org.springframework.ide.vscode.commons.cloudfoundry.client.target;
 
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.commons.cloudfoundry.client.params.CFCredentials.CFCredentialType;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFCredentials.CFCredentialType;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 /**

@@ -78,7 +78,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFSpace;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.SshClientSupport;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.SshHost;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.params.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CancelationTokens.CancelationToken;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientCache.CFClientProvider;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;

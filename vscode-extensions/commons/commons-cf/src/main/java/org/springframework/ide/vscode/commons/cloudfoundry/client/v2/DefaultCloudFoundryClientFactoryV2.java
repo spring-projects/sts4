@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
 
-import org.springframework.ide.vscode.commons.cloudfoundry.client.params.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams;
 
 public class DefaultCloudFoundryClientFactoryV2 {
 
