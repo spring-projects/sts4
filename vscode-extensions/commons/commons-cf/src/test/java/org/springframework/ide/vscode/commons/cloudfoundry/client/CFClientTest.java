@@ -8,6 +8,8 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
+package org.springframework.ide.vscode.commons.cloudfoundry.client;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
