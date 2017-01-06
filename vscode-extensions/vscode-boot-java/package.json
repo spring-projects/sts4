@@ -1,0 +1,47 @@
+{
+  "name": "vscode-boot-java",
+  "displayName": "Spring Boot Java Support",
+  "description": "Provides validation, content assist, and more working with Spring Boot applications Java code",
+  "icon": "spring-boot-logo.png",
+  "version": "0.0.1",
+  "publisher": "Pivotal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "license": "EPL-1.0",
+  "engines": {
+    "npm": "^3.0.0",
+    "vscode": "^1.5.0"
+  },
+  "categories": [
+    "Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "java", "spring-boot"
+  ],
+  "activationEvents": [
+    "onLanguage:ini",
+    "onLanguage:java"
+  ],
+  "main": "./out/lib/Main",
+  "scripts": {
+    "prepublish": "tsc -p .",
+    "clean": "rm -fr node_modules out *.vsix",
+    "compile": "tsc -watch -p ./",
+    "preinstall": "./scripts/preinstall.sh",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "vsce-package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "2.5.x",
+    "commons-vscode": "^0.0.1"
+  },
+  "devDependencies": {
+    "vsce": "^1.17.0",
+    "typescript": "^2.0.x",
+    "@types/node": "^6.0.40",
+    "vscode": "^1.0.0"
+  }
+}
