@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.target;
+package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.io.File;
 import java.io.IOException;

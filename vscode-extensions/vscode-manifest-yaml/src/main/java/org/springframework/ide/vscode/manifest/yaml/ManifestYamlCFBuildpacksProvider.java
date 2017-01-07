@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 

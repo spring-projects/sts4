@@ -26,7 +26,7 @@ import org.cloudfoundry.reactor.tokenprovider.OneTimePasscodeTokenProvider;
 import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
 import org.cloudfoundry.reactor.tokenprovider.RefreshTokenGrantTokenProvider;
 import org.cloudfoundry.reactor.uaa.ReactorUaaClient;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFCredentials;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
 
 /**
  * TODO: Remove this class when the 'thread leak bug' in V2 client is fixed.

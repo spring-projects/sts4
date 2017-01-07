@@ -16,9 +16,9 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParamsFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTargets;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParamsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTargets;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 
