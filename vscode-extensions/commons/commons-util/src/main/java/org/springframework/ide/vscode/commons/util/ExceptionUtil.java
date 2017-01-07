@@ -76,4 +76,13 @@ public class ExceptionUtil {
 		return new ExecutionException(cause);
 	}
 
+	public static Object exception(String message, Throwable error) {
+		if (message != null) {
+			// Wrap only if there is an additional message
+			return new ExecutionException(message, error);
+		} else {
+			return exception(error);
+		}
+	}
+
 }

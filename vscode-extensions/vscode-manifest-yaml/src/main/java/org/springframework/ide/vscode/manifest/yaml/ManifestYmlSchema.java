@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
@@ -41,7 +42,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		"name", "host", "hosts"
 	);
 
-	public ManifestYmlSchema(Provider<Collection<YValueHint>> buildpackProvider) {
+	public ManifestYmlSchema(Provider<Collection<YValueHint>> buildpackProvider, Provider<Collection<YValueHint>> servicesProvider) {
 		this.buildpackProvider = buildpackProvider;
 		YTypeFactory f = new YTypeFactory();
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -51,15 +52,20 @@ public class ManifestYmlSchema implements YamlSchema {
 
 		YBeanType application = f.ybean("Application");
 		YAtomicType t_path = f.yatomic("Path");
-
-		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		
+		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		t_buildpack.addHintProvider(this.buildpackProvider);
+		
+		YType t_service_string = f.yatomic("String");
+		if (servicesProvider != null && t_service_string instanceof AbstractType) {
+			((AbstractType)t_service_string).addHintProvider(servicesProvider);
+		} 
+		YType t_services = f.yseq(t_service_string);
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
-
+		
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
@@ -94,7 +100,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
-			f.yprop("services", t_strings),
+			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),
 			f.yprop("health-check-type", t_health_check_type)

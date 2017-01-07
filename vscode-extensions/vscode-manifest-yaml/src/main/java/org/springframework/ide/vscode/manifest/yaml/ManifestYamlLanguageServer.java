@@ -1,12 +1,20 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Provider;
 
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParamsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTargets;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -32,16 +40,25 @@ import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
-	private static final Provider<Collection<YValueHint>> NO_BUILDPACKS = () -> ImmutableList.of();
+	private static final Provider<Collection<YValueHint>> NO_PROVIDER = () -> ImmutableList.of();
+	private static Logger logger = Logger.getLogger(ManifestYamlLanguageServer.class.getName());
 	
 	private Yaml yaml = new Yaml();
-	private YamlSchema schema = new ManifestYmlSchema(NO_BUILDPACKS);
+	private YamlSchema schema;
+	private CFClientTargets cfClientTargets;
 
 	
 	public ManifestYamlLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
 		
 		YamlASTProvider parser = new YamlParser(yaml);
+		
+		CFClientTargets cfTargets = getCFTargets();
+		
+		Provider<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider(cfTargets);
+		Provider<Collection<YValueHint>> servicesProvider = getServicesProvider(cfTargets);
+
+		schema = new ManifestYmlSchema(buildPacksProvider, servicesProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -72,7 +89,48 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine ::getHover);
 	}
+	
+	private CFClientTargets getCFTargets()  {
+		if (cfClientTargets == null) {
+			CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
+			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
+			cfClientTargets = new CFClientTargets(paramsFactory, clientFactory);
+		}
+		return cfClientTargets;
+	}
 
+	private Provider<Collection<YValueHint>> getBuildpacksProvider(CFClientTargets targets) {
+
+		try {
+			if (targets != null) {
+				List<CFClientTarget> cfTargets = targets.getTargets();
+				if (cfTargets != null && !cfTargets.isEmpty()) {;
+					return new ManifestYamlCFBuildpacksProvider(cfTargets);
+				}
+			}
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		}
+
+		return NO_PROVIDER;
+	}
+	
+	private Provider<Collection<YValueHint>> getServicesProvider(CFClientTargets targets) {
+
+		try {
+			if (targets != null) {
+				List<CFClientTarget> cfTargets = targets.getTargets();
+				if (cfTargets != null && !cfTargets.isEmpty()) {
+					return new ManifestYamlCFServicesProvider(cfTargets);
+				}
+			}
+
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		}
+
+		return null;
+	}
 	
 	@Override
 	protected ServerCapabilities getServerCapabilities() {

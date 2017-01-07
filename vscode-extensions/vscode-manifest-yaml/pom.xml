@@ -42,6 +42,12 @@
 			<artifactId>commons-yaml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- CF -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-cf</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>

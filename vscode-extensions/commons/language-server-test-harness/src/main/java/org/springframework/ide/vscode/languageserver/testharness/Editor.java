@@ -238,6 +238,22 @@ public class Editor {
 		assertEquals(expect.toString(), actual.toString());
 	}
 
+	public void assertContainsCompletions(String... expectTextAfter) throws Exception {
+		StringBuilder actual = new StringBuilder();
+
+		for (CompletionItem completion : getCompletions()) {
+			Editor editor = this.clone();
+			editor.apply(completion);
+			actual.append(editor.getText());
+			actual.append("\n-------------------\n");
+		}
+		String actualText = actual.toString();
+
+		for (String after : expectTextAfter) {
+			assertContains(after, actualText);
+		}
+	}
+
 	public void apply(CompletionItem completion) throws Exception {
 		TextEdit edit = completion.getTextEdit();
 		String docText = document.getText();
