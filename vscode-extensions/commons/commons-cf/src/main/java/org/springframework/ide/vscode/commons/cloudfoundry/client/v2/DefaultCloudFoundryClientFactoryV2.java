@@ -12,9 +12,9 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams;
 
-public class DefaultCloudFoundryClientFactoryV2 {
+public class DefaultCloudFoundryClientFactoryV2 implements CloudFoundryClientFactory {
 
-	public static final DefaultCloudFoundryClientFactoryV2 INSTANCE = new DefaultCloudFoundryClientFactoryV2();
+	public static final CloudFoundryClientFactory INSTANCE = new DefaultCloudFoundryClientFactoryV2();
 
 	/**
 	 * Use 'INSTANCE' constant instead. This class is a singleton.
@@ -23,7 +23,11 @@ public class DefaultCloudFoundryClientFactoryV2 {
 
 	private CloudFoundryClientCache cache = new CloudFoundryClientCache();
 
-	public ClientRequests getClient(CFClientParams params) {
+	/* (non-Javadoc)
+	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory#getClient(org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams)
+	 */
+	@Override
+	public ClientRequests getClient(CFClientParams params) throws Exception {
 		return new DefaultClientRequestsV2(cache, params);
 	}
 }

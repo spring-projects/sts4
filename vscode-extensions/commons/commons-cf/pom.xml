@@ -11,13 +11,6 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
-	<properties>
-		<cloudfoundry.client.version>2.1.0.RELEASE</cloudfoundry.client.version>
-		<client.reactor.version>3.0.4.RELEASE</client.reactor.version>
-		<reactor.netty>0.6.0.RELEASE</reactor.netty>
-	</properties>
-
 
 	<dependencies>
 		<dependency>
@@ -28,22 +21,22 @@
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-client-reactor</artifactId>
-			<version>${cloudfoundry.client.version}</version>
+			<version>${cloudfoundry-client-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-operations</artifactId>
-			<version>${cloudfoundry.client.version}</version>
+			<version>${cloudfoundry-client-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-core</artifactId>
-			<version>${client.reactor.version}</version>
+			<version>${reactor-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.projectreactor.ipc</groupId>
 			<artifactId>reactor-netty</artifactId>
-			<version>${reactor.netty}</version>
+			<version>${reactor-netty}</version>
 		</dependency>
 	</dependencies>
 </project>

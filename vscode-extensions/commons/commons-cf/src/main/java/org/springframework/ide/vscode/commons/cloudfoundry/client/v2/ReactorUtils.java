@@ -38,11 +38,12 @@ public class ReactorUtils {
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(45); // reflects default timeout of Mono.block in reactor 2.x.
 	public static boolean DUMP_STACK_ON_TIMEOUT = false;
 
-	/**
-	 * Convert a {@link CancelationToken} into a Mono that raises
-	 * an {@link OperationCanceledException} when the token is canceled.
-	 */
-	public static <T> Mono<T> toMono(CancelationToken cancelToken) {
+	// TODO: uncommented when cancellation is handled in vscode
+//	/**
+//	 * Convert a {@link CancelationToken} into a Mono that raises
+//	 * an {@link OperationCanceledException} when the token is canceled.
+//	 */
+//	public static <T> Mono<T> toMono(CancelationToken cancelToken) {
 //		return Mono.delay(Duration.ofSeconds(1))
 //		.then((ping) ->
 //			cancelToken.isCanceled()
@@ -50,9 +51,7 @@ public class ReactorUtils {
 //				: Mono.empty()
 //		)
 //		.repeatWhenEmpty((x) -> x);
-		
-		return Mono.empty();
-	}
+//	}
 
 	/**
 	 * Similar to Mono.get but logs a more traceable version of the exception to Eclipse's error
@@ -79,9 +78,12 @@ public class ReactorUtils {
 	 */
 	public static <T> T get(Duration timeout, CancelationToken cancelationToken, Mono<T> mono) throws Exception {
 		try {
-			return Mono.first(mono, 
-					toMono(cancelationToken))
-			.otherwise(errorFilter(cancelationToken))
+			return mono
+					// TODO: uncomment when cancellation properly supported in vscode
+//					Mono
+//					.first(mono, 
+//					toMono(cancelationToken))
+//			.otherwise(errorFilter(cancelationToken))
 			.block(timeout);
 		} catch (Exception e) {
 			dumpStacks();

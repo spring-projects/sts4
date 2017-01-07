@@ -148,4 +148,12 @@ public class CFClientParams {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "CFClientParams [apiUrl=" + apiUrl + ", username=" + username + ", credentials=" + credentials
+				+ ", skipSslValidation=" + skipSslValidation + ", orgName=" + orgName + ", spaceName=" + spaceName
+				+ "]";
+	}
+
+	
 }

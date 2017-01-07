@@ -10,33 +10,32 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParamsFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientTargets;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 
 public class CFClientTest {
 
-	@Ignore @Test public void testGetBuildpacksFromCliParams() throws Exception {
 
-		CFClientParams params = CFClientParamsFactory.INSTANCE.getParams().get(0);
-		assertNotNull(params);
+	
+	@Ignore @Test public void testGetBuildpacksFromCliParamsTarget() throws Exception {
 
-		ClientRequests requests = DefaultCloudFoundryClientFactoryV2.INSTANCE.getClient(params);
+		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
+		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
 
-		assertNotNull(requests);
+		CFClientTargets targets = new CFClientTargets(paramsFactory, clientFactory);
+		CFClientTarget target = targets.getTargets().get(0);
 
-		List<CFBuildpack> buildPacks = requests.getBuildpacks();
+		List<CFBuildpack> buildPacks = target.getBuildpacks();
 		assertTrue(!buildPacks.isEmpty());
-
 	}
 
 }
