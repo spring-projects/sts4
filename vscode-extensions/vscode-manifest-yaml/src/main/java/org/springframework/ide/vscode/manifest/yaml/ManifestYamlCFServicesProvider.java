@@ -16,47 +16,47 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Provider;
-
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-public class ManifestYamlCFServicesProvider implements Provider<Collection<YValueHint>> {
+public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider  {
 
-	private final List<CFTarget> targets;
 
 	private static final Logger logger = Logger.getLogger(ManifestYamlCFServicesProvider.class.getName());
 
-	public ManifestYamlCFServicesProvider(List<CFTarget> targets) {
-		this.targets = targets;
+	public ManifestYamlCFServicesProvider(CFTargetsFactory targetsFactory) {
+		super(targetsFactory);
 	}
 
 	@Override
 	public Collection<YValueHint> get() {
 		List<YValueHint> hints = new ArrayList<>();
+		
+		try {
+	
+			List<CFTarget> targets = getUpdatedCFTargets();
 
-		if (targets != null) {
 			for (CFTarget cfTarget : targets) {
-
-				try {
-					List<CFServiceInstance> services = cfTarget.getClientRequests().getServices();
-					if (services != null) {
-						for (CFServiceInstance service : services) {
-							String name = service.getName();
-							String label = getServiceLabel(cfTarget, service);
-							YValueHint hint = new BasicYValueHint(name, label);
-							if (!hints.contains(hint)) {
-								hints.add(hint);
-							}
+				List<CFServiceInstance> services = cfTarget.getClientRequests().getServices();
+				if (services != null) {
+					for (CFServiceInstance service : services) {
+						String name = service.getName();
+						String label = getServiceLabel(cfTarget, service);
+						YValueHint hint = new BasicYValueHint(name, label);
+						if (!hints.contains(hint)) {
+							hints.add(hint);
 						}
-					} 
-				} catch (Exception e) {
-					logger.log(Level.SEVERE, e.getMessage(), e);
+					}
 				}
 			}
+	 
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
+
 		return hints;
 	}
 

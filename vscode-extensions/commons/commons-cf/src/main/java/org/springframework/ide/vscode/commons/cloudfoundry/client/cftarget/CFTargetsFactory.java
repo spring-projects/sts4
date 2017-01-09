@@ -21,16 +21,21 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultClou
  * Creates targets given a client parameters factory and a client factory.
  *
  */
-public class CFTargets {
+public class CFTargetsFactory {
 
-	private final CFClientParamsFactory paramsFactory;
 	private final CloudFoundryClientFactory clientFactory;
+	private final CFClientParamsFactory paramsFactory;
 
-	public CFTargets(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory) {
-		this.paramsFactory = paramsFactory;
+	public CFTargetsFactory(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory) {
 		this.clientFactory = clientFactory;
+		this.paramsFactory = paramsFactory;
 	}
 
+	/**
+	 * 
+	 * @return up-to-date list of CF targets.
+	 * @throws Exception
+	 */
 	public List<CFTarget> getTargets() throws Exception {
 		List<CFClientParams> allParams = paramsFactory.getParams();
 		List<CFTarget> targets = new ArrayList<>();
@@ -59,10 +64,11 @@ public class CFTargets {
 		}
 	}
 
-	public static CFTargets createDefaultV2Targets() {
-		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
+	public static CFTargetsFactory createDefaultV2TargetsFactory() {
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-		return new CFTargets(paramsFactory, clientFactory);
+		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
+
+		return new CFTargetsFactory(paramsFactory, clientFactory);
 	}
 
 }
