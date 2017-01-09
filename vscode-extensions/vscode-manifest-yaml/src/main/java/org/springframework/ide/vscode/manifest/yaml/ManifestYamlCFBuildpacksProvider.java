@@ -56,6 +56,12 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
+		
+		// TODO: probably a very bad thing to do, but for now a workaround to notify the user via the CA UI that there are no
+		// CF targets available.
+		if (hints.isEmpty()) {
+			hints.add(NO_CF_TARGET_HINT);
+		}
 		return hints;
 	}
 

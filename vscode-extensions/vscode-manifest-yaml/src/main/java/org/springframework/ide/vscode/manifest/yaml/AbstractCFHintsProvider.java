@@ -18,6 +18,7 @@ import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 import com.google.common.collect.Lists;
@@ -25,6 +26,12 @@ import com.google.common.collect.Lists;
 public abstract class AbstractCFHintsProvider implements Provider<Collection<YValueHint>> {
 
 	private final CFTargetsFactory targetsFactory;
+
+	/*
+	 * TODO: This is probably a very wrong way of handling "No connections available"
+	 */
+	public static final YValueHint NO_CF_TARGET_HINT = new BasicYValueHint("",
+			"No valid Cloud Foundry target found. Please ensure that you are connected to Cloud Foundry and try again.");
 
 	public AbstractCFHintsProvider(CFTargetsFactory targetsFactory) {
 		this.targetsFactory = targetsFactory;
