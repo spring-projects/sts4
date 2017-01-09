@@ -51,6 +51,7 @@ public class CfCliParamsProvider implements Provider<List<CFClientParams>> {
 				Map<String, Object> userData = mapper.readValue(file, Map.class);
 				if (userData != null) {
 					String refreshToken = (String) userData.get(REFRESH_TOKEN);
+					// Only support connecting to CF via refresh token for now
 					if (refreshToken == null) {
 						return null;
 					}
@@ -76,6 +77,7 @@ public class CfCliParamsProvider implements Provider<List<CFClientParams>> {
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
+		// Support Unix systems for now
 		if (!System.getProperty("os.name").toLowerCase().startsWith("win")) {
 			String homeDir = getUnixHomeDir();
 			if (homeDir != null) {

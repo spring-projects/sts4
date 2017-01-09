@@ -15,7 +15,12 @@ import java.util.List;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 
+/**
+ * Creates targets given a client parameters factory and a client factory.
+ *
+ */
 public class CFClientTargets {
 
 	private final CFClientParamsFactory paramsFactory;
@@ -52,6 +57,12 @@ public class CFClientTargets {
 		} else {
 			return cfApiUrl;
 		}
+	}
+
+	public static CFClientTargets createDefaultV2ClientTargets() {
+		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
+		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
+		return new CFClientTargets(paramsFactory, clientFactory);
 	}
 
 }

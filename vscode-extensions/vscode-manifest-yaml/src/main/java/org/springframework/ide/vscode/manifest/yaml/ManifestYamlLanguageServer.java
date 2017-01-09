@@ -90,11 +90,9 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine ::getHover);
 	}
 	
-	private CFClientTargets getCFTargets()  {
+	private CFClientTargets getCFTargets() {
 		if (cfClientTargets == null) {
-			CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
-			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-			cfClientTargets = new CFClientTargets(paramsFactory, clientFactory);
+			cfClientTargets = CFClientTargets.createDefaultV2ClientTargets();
 		}
 		return cfClientTargets;
 	}
