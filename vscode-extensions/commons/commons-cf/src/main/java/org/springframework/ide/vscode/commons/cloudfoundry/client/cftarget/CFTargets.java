@@ -21,24 +21,24 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultClou
  * Creates targets given a client parameters factory and a client factory.
  *
  */
-public class CFClientTargets {
+public class CFTargets {
 
 	private final CFClientParamsFactory paramsFactory;
 	private final CloudFoundryClientFactory clientFactory;
 
-	public CFClientTargets(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory) {
+	public CFTargets(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory) {
 		this.paramsFactory = paramsFactory;
 		this.clientFactory = clientFactory;
 	}
 
-	public List<CFClientTarget> getTargets() throws Exception {
+	public List<CFTarget> getTargets() throws Exception {
 		List<CFClientParams> allParams = paramsFactory.getParams();
-		List<CFClientTarget> targets = new ArrayList<>();
+		List<CFTarget> targets = new ArrayList<>();
 		if (allParams != null) {
 			for (CFClientParams parameters : allParams) {
 				ClientRequests requests = clientFactory.getClient(parameters);
 				if (requests != null) {
-					targets.add(new CFClientTarget(parameters, requests, getTargetName(parameters)));
+					targets.add(new CFTarget(parameters, requests, getTargetName(parameters)));
 				}
 			}
 		}
@@ -59,10 +59,10 @@ public class CFClientTargets {
 		}
 	}
 
-	public static CFClientTargets createDefaultV2ClientTargets() {
+	public static CFTargets createDefaultV2Targets() {
 		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-		return new CFClientTargets(paramsFactory, clientFactory);
+		return new CFTargets(paramsFactory, clientFactory);
 	}
 
 }

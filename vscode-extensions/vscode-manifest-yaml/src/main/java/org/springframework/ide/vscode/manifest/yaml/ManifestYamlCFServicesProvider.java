@@ -19,17 +19,17 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public class ManifestYamlCFServicesProvider implements Provider<Collection<YValueHint>> {
 
-	private final List<CFClientTarget> targets;
+	private final List<CFTarget> targets;
 
 	private static final Logger logger = Logger.getLogger(ManifestYamlCFServicesProvider.class.getName());
 
-	public ManifestYamlCFServicesProvider(List<CFClientTarget> targets) {
+	public ManifestYamlCFServicesProvider(List<CFTarget> targets) {
 		this.targets = targets;
 	}
 
@@ -38,14 +38,14 @@ public class ManifestYamlCFServicesProvider implements Provider<Collection<YValu
 		List<YValueHint> hints = new ArrayList<>();
 
 		if (targets != null) {
-			for (CFClientTarget cfClientTarget : targets) {
+			for (CFTarget cfTarget : targets) {
 
 				try {
-					List<CFServiceInstance> services = cfClientTarget.getClientRequests().getServices();
+					List<CFServiceInstance> services = cfTarget.getClientRequests().getServices();
 					if (services != null) {
 						for (CFServiceInstance service : services) {
 							String name = service.getName();
-							String label = getServiceLabel(cfClientTarget, service);
+							String label = getServiceLabel(cfTarget, service);
 							YValueHint hint = new BasicYValueHint(name, label);
 							if (!hints.contains(hint)) {
 								hints.add(hint);
@@ -60,7 +60,7 @@ public class ManifestYamlCFServicesProvider implements Provider<Collection<YValu
 		return hints;
 	}
 
-	private String getServiceLabel(CFClientTarget cfClientTarget, CFServiceInstance service) {
+	private String getServiceLabel(CFTarget cfClientTarget, CFServiceInstance service) {
 		return service.getName() + " - " + service.getPlan() + " (" + cfClientTarget.getParams().getOrgName() + " - "
 				+ cfClientTarget.getParams().getSpaceName() + ")";
 	}

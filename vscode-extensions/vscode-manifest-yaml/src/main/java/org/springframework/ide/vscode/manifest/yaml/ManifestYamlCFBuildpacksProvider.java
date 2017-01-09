@@ -19,17 +19,17 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public class ManifestYamlCFBuildpacksProvider implements Provider<Collection<YValueHint>> {
 
-	private final List<CFClientTarget> targets;
+	private final List<CFTarget> targets;
 	private static final Logger logger = Logger.getLogger(ManifestYamlCFBuildpacksProvider.class.getName());
 
 
-	public ManifestYamlCFBuildpacksProvider(List<CFClientTarget> targets) {
+	public ManifestYamlCFBuildpacksProvider(List<CFTarget> targets) {
 		this.targets = targets;
 	}
 	
@@ -39,15 +39,15 @@ public class ManifestYamlCFBuildpacksProvider implements Provider<Collection<YVa
 		List<YValueHint> hints = new ArrayList<>();
 
 		if (targets != null) {
-			for (CFClientTarget cfClientTarget : targets) {
+			for (CFTarget cfTarget : targets) {
 		
 				List<CFBuildpack> buildpacks;
 				try {
-					buildpacks = cfClientTarget.getBuildpacks();
+					buildpacks = cfTarget.getBuildpacks();
 					if (buildpacks != null) {
 						for (CFBuildpack buildpack : buildpacks) {
 							String name = buildpack.getName();
-							String label = getBuildpackLabel(cfClientTarget, buildpack);
+							String label = getBuildpackLabel(cfTarget, buildpack);
 							YValueHint hint = new BasicYValueHint(name, label);
 							if (!hints.contains(hint)) {
 								hints.add(hint);
@@ -62,7 +62,7 @@ public class ManifestYamlCFBuildpacksProvider implements Provider<Collection<YVa
 		return hints;
 	}
 
-	protected String getBuildpackLabel(CFClientTarget target, CFBuildpack buildpack) {
+	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {
 		return buildpack.getName() + " (" + target.getName() + ")";
 	}
 

@@ -17,8 +17,8 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParamsFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTargets;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargets;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 
@@ -31,8 +31,8 @@ public class CFClientTest {
 		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
 
-		CFClientTargets targets = new CFClientTargets(paramsFactory, clientFactory);
-		CFClientTarget target = targets.getTargets().get(0);
+		CFTargets targets = new CFTargets(paramsFactory, clientFactory);
+		CFTarget target = targets.getTargets().get(0);
 
 		List<CFBuildpack> buildPacks = target.getBuildpacks();
 		assertTrue(!buildPacks.isEmpty());

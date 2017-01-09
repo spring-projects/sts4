@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
 
-public class CFClientTarget {
+public class CFTarget {
 
 	private final CFClientParams params;
 	private final ClientRequests requests;
@@ -27,9 +27,9 @@ public class CFClientTarget {
 	 * Cached information
 	 */
 	private List<CFBuildpack> buildpacks;
-	private final static Logger logger = Logger.getLogger(CFClientTarget.class.getName());
+	private final static Logger logger = Logger.getLogger(CFTarget.class.getName());
 
-	public CFClientTarget(CFClientParams params, ClientRequests requests, String targetName) {
+	public CFTarget(CFClientParams params, ClientRequests requests, String targetName) {
 		this.params = params;
 		this.requests = requests;
 		this.targetName = targetName;

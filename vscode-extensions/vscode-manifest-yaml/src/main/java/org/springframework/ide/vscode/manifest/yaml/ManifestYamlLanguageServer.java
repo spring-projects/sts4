@@ -10,11 +10,8 @@ import javax.inject.Provider;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParamsFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientTargets;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargets;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -45,7 +42,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
-	private CFClientTargets cfClientTargets;
+	private CFTargets cfTargets;
 
 	
 	public ManifestYamlLanguageServer() {
@@ -53,7 +50,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		
 		YamlASTProvider parser = new YamlParser(yaml);
 		
-		CFClientTargets cfTargets = getCFTargets();
+		CFTargets cfTargets = getCFTargets();
 		
 		Provider<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider(cfTargets);
 		Provider<Collection<YValueHint>> servicesProvider = getServicesProvider(cfTargets);
@@ -90,18 +87,19 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine ::getHover);
 	}
 	
-	private CFClientTargets getCFTargets() {
-		if (cfClientTargets == null) {
-			cfClientTargets = CFClientTargets.createDefaultV2ClientTargets();
+	private CFTargets getCFTargets() {
+		// TODO: probably shouldn't be cached as targets can change during a language server session
+		if (cfTargets == null) {
+			cfTargets = CFTargets.createDefaultV2Targets();
 		}
-		return cfClientTargets;
+		return cfTargets;
 	}
 
-	private Provider<Collection<YValueHint>> getBuildpacksProvider(CFClientTargets targets) {
+	private Provider<Collection<YValueHint>> getBuildpacksProvider(CFTargets targets) {
 
 		try {
 			if (targets != null) {
-				List<CFClientTarget> cfTargets = targets.getTargets();
+				List<CFTarget> cfTargets = targets.getTargets();
 				if (cfTargets != null && !cfTargets.isEmpty()) {;
 					return new ManifestYamlCFBuildpacksProvider(cfTargets);
 				}
@@ -113,11 +111,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		return NO_PROVIDER;
 	}
 	
-	private Provider<Collection<YValueHint>> getServicesProvider(CFClientTargets targets) {
+	private Provider<Collection<YValueHint>> getServicesProvider(CFTargets targets) {
 
 		try {
 			if (targets != null) {
-				List<CFClientTarget> cfTargets = targets.getTargets();
+				List<CFTarget> cfTargets = targets.getTargets();
 				if (cfTargets != null && !cfTargets.isEmpty()) {
 					return new ManifestYamlCFServicesProvider(cfTargets);
 				}
