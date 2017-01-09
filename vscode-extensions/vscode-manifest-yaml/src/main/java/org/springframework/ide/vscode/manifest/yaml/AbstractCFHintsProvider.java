@@ -44,7 +44,7 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 			// needs to be up-to-date)
 			List<CFTarget> updatedTargets = targetsFactory.getTargets();
 			if (updatedTargets != null) {
-				Lists.newArrayList(updatedTargets.iterator());
+				return Lists.newArrayList(updatedTargets.iterator());
 			}
 		}
 		return Collections.emptyList();
