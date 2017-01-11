@@ -626,28 +626,30 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	}
 
 	private Mono<Void> pushExisting(ApplicationDetail app, CFPushArguments params) {
-		String appName = params.getAppName();
-		UUID appId = UUID.fromString(app.getId());
-		return updateApp(appId, params)
-		.then(getApplicationDetail(appName))
-		.then((appDetail) -> {
-			return Flux.merge(
-				setRoutes(appDetail, params.getRoutes()),
-				bindAndUnbindServices(appName, params.getServices())
-			).then();
-		})
-		.then(mono_debug("Uploading[1]..."))
-		.then(Mono.fromCallable(() -> {
-			debug("Uploading[2]...");
+		// TODO: push is using v1 below which was not ported to vscode CF support.
+//		String appName = params.getAppName();
+//		UUID appId = UUID.fromString(app.getId());
+//		return updateApp(appId, params)
+//		.then(getApplicationDetail(appName))
+//		.then((appDetail) -> {
+//			return Flux.merge(
+//				setRoutes(appDetail, params.getRoutes()),
+//				bindAndUnbindServices(appName, params.getServices())
+//			).then();
+//		})
+//		.then(mono_debug("Uploading[1]..."))
+//		.then(Mono.fromCallable(() -> {
+//			debug("Uploading[2]...");
 //			v1().uploadApplication(appName, params.getApplicationData());
-			debug("Uploading[2] DONE");
-			return "who cares";
-		}))
-		.then(mono_debug("Uploading[1] DONE"))
-		.then(params.isNoStart()
-			? stopApp(appName)
-			: restartApp(appName)
-		);
+//			debug("Uploading[2] DONE");
+//			return "who cares";
+//		}))
+//		.then(mono_debug("Uploading[1] DONE"))
+//		.then(params.isNoStart()
+//			? stopApp(appName)
+//			: restartApp(appName)
+//		);
+		throw new Error("Application push not currently supported in CF vscode");
 	}
 
 //	private DefaultClientRequestsV1 v1() throws Exception {
