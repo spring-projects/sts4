@@ -16,18 +16,22 @@ import java.util.List;
 import javax.inject.Provider;
 
 /**
- * Resolves Cloud Foundry client parameters from registered params providers
+ * Resolves Cloud Foundry client parameters from params providers (for example,
+ * a provider would be a cf CLI config parser that parses params from the CLI
+ * config.json file)
  *
  */
 public class CFClientParamsFactory {
 
 	public static final CFClientParamsFactory INSTANCE = new CFClientParamsFactory();
 
-	@SuppressWarnings("unchecked")
 	private List<Provider<List<CFClientParams>>> providers = new ArrayList<>();
 
 	private CFClientParamsFactory() {
-		// Singleton
+		// For now, only support cf CLI.
+		// Maybe in the future other ways of retrieving client params can be
+		// supported
+		// in addition to the cf CLI config.
 		addProvider(new CfCliParamsProvider());
 	}
 

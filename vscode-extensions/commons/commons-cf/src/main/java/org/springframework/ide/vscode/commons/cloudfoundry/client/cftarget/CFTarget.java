@@ -17,6 +17,12 @@ import java.util.logging.Logger;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
 
+/**
+ * 
+ * Wrapper around a {@link ClientRequests} that may contain cached information
+ * like buildpacks
+ *
+ */
 public class CFTarget {
 
 	private final CFClientParams params;
@@ -34,18 +40,17 @@ public class CFTarget {
 		this.requests = requests;
 		this.targetName = targetName;
 	}
-	
+
 	public CFClientParams getParams() {
 		return params;
 	}
 
-
 	public List<CFBuildpack> getBuildpacks() {
 		if (buildpacks == null) {
 			try {
-				buildpacks=getClientRequests().getBuildpacks();
+				buildpacks = getClientRequests().getBuildpacks();
 			} catch (Exception e) {
-				logger .log(Level.SEVERE, e.getMessage(), e);
+				logger.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return buildpacks;
@@ -63,6 +68,4 @@ public class CFTarget {
 	public String toString() {
 		return "CFClientTarget [params=" + params + ", targetName=" + targetName + "]";
 	}
-	
-	
 }

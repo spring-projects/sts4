@@ -19,15 +19,22 @@ public class DefaultCloudFoundryClientFactoryV2 implements CloudFoundryClientFac
 	/**
 	 * Use 'INSTANCE' constant instead. This class is a singleton.
 	 */
-	private DefaultCloudFoundryClientFactoryV2() {}
+	private DefaultCloudFoundryClientFactoryV2() {
+	}
 
 	private CloudFoundryClientCache cache = new CloudFoundryClientCache();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory#getClient(org.springframework.ide.vscode.commons.cloudfoundry.client.target.CFClientParams)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.v2.
+	 * CloudFoundryClientFactory#getClient(org.springframework.ide.vscode.
+	 * commons.cloudfoundry.client.cftarget.CFClientParams,
+	 * org.springframework.ide.vscode.commons.cloudfoundry.client.v2.
+	 * RequestTimeouts)
 	 */
 	@Override
-	public ClientRequests getClient(CFClientParams params) throws Exception {
-		return new DefaultClientRequestsV2(cache, params);
+	public ClientRequests getClient(CFClientParams params, ClientTimeouts timeouts) throws Exception {
+		return new DefaultClientRequestsV2(cache, params, timeouts);
 	}
 }

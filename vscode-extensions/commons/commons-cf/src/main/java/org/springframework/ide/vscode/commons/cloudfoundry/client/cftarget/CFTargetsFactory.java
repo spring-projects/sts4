@@ -16,6 +16,7 @@ import java.util.List;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
 
 /**
  * Creates targets given a client parameters factory and a client factory.
@@ -25,10 +26,12 @@ public class CFTargetsFactory {
 
 	private final CloudFoundryClientFactory clientFactory;
 	private final CFClientParamsFactory paramsFactory;
+	private final ClientTimeouts timeouts;
 
-	public CFTargetsFactory(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory) {
+	public CFTargetsFactory(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory, ClientTimeouts timeouts) {
 		this.clientFactory = clientFactory;
 		this.paramsFactory = paramsFactory;
+		this.timeouts = timeouts;
 	}
 
 	/**
@@ -41,7 +44,7 @@ public class CFTargetsFactory {
 		List<CFTarget> targets = new ArrayList<>();
 		if (allParams != null) {
 			for (CFClientParams parameters : allParams) {
-				ClientRequests requests = clientFactory.getClient(parameters);
+				ClientRequests requests = clientFactory.getClient(parameters, timeouts);
 				if (requests != null) {
 					targets.add(new CFTarget(parameters, requests, getTargetName(parameters)));
 				}
@@ -64,11 +67,11 @@ public class CFTargetsFactory {
 		}
 	}
 
-	public static CFTargetsFactory createDefaultV2TargetsFactory() {
+	public static CFTargetsFactory createDefaultV2TargetsFactory(ClientTimeouts timeouts) {
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
 		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
 
-		return new CFTargetsFactory(paramsFactory, clientFactory);
+		return new CFTargetsFactory(paramsFactory, clientFactory, timeouts);
 	}
 
 }

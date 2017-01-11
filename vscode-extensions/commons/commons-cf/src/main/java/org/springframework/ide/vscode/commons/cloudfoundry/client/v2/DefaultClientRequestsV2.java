@@ -99,11 +99,7 @@ import reactor.core.publisher.Mono;
  */
 public class DefaultClientRequestsV2 implements ClientRequests {
 
-	private static final Duration APP_START_TIMEOUT = Duration.ofMillis(60*10);
-	private static final Duration GET_SERVICES_TIMEOUT = Duration.ofSeconds(60);
-	private static final Duration GET_SPACES_TIMEOUT = Duration.ofSeconds(20);
-	private static final Duration GET_USERNAME_TIMEOUT = Duration.ofSeconds(5);
-    private static final Logger logger = Logger.getLogger(DefaultClientRequestsV2.class.getName());
+	private static final Logger logger = Logger.getLogger(DefaultClientRequestsV2.class.getName());
 	private static final boolean DEBUG = false;
 
 
@@ -150,8 +146,10 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	private Mono<GetInfoResponse> info;
 	private Mono<String> spaceId;
 	private AbstractUaaTokenProvider _tokenProvider;
+	
+	private final ClientTimeouts timeouts;
 
-	public DefaultClientRequestsV2(CloudFoundryClientCache clients, CFClientParams params) {
+	public DefaultClientRequestsV2(CloudFoundryClientCache clients, CFClientParams params, ClientTimeouts timeouts) {
 		this.params = params;
 		CFClientProvider provider = clients.getOrCreate(params.getUsername(), params.getCredentials(), params.getHost(), params.skipSslValidation());
 		this._client = provider.client;
@@ -167,6 +165,9 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		this.orgId = getOrgId();
 		this.spaceId = getSpaceId();
 		this.info = client_getInfo().cache();
+		
+		// timeouts must never be null
+		this.timeouts = timeouts != null ? timeouts : ClientTimeouts.DEFAULT_TIMEOUTS;
 	}
 
 	private Mono<CloudFoundryOperations> client_createOperations(OrganizationSummary org) {
@@ -311,7 +312,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 
 	@Override
 	public List<CFServiceInstance> getServices() throws Exception {
-		return ReactorUtils.get(GET_SERVICES_TIMEOUT, CancelationTokens.NULL,
+		return ReactorUtils.get(timeouts.getServicesTimeout(), CancelationTokens.NULL,
 			log("operations.services.listInstances()",
 				_operations
 				.services()
@@ -400,7 +401,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 
 	@Override
 	public void restartApplication(String appName, CancelationToken cancelationToken) throws Exception {
-		ReactorUtils.get(APP_START_TIMEOUT, cancelationToken,
+		ReactorUtils.get(timeouts.getAppStartTimeout(), cancelationToken,
 			restartApp(appName)
 		);
 	}
@@ -493,7 +494,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 
 	@Override
 	public List<CFSpace> getSpaces() throws Exception {
-		Object it = ReactorUtils.get(GET_SPACES_TIMEOUT, log("operations.organizations().list()",
+		Object it = ReactorUtils.get(timeouts.getSpacesTimeout(), log("operations.organizations().list()",
 				_operations.organizations()
 				.list()
 			)
@@ -551,7 +552,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	@Override
 	public List<CFBuildpack> getBuildpacks() throws Exception {
 		//XXX CF V2: getBuilpacks using 'operations' API.
-		return ReactorUtils.get(
+		return ReactorUtils.get(timeouts.getBuildpacksTimeout(),
 			PaginationUtils.requestClientV2Resources((page) -> {
 				return client_listBuildpacks(page);
 			})
@@ -617,7 +618,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	@Override
 	public void push(CFPushArguments params, CancelationToken cancelationToken) throws Exception {
 		String appName = params.getAppName();
-		ReactorUtils.get(APP_START_TIMEOUT, cancelationToken,
+		ReactorUtils.get(timeouts.getAppStartTimeout(), cancelationToken,
 			ifApplicationExists(appName,
 				((app) -> pushExisting(app, params)),
 				firstPush(params)
@@ -1326,7 +1327,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	public Mono<String> getUserName() {
 		return log("uaa.getUsername",
 				_uaa.getUsername()
-		).timeout(GET_USERNAME_TIMEOUT);
+		).timeout(timeouts.getUsernameTimeout());
 	}
 
 }

@@ -1,5 +1,16 @@
+/*******************************************************************************
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.time.Duration;
 import java.util.Collection;
 
 import javax.inject.Provider;
@@ -8,6 +19,7 @@ import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -35,6 +47,16 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
 	private CFTargetsFactory cfTargetsFactory;
+	
+	private static final ClientTimeouts VSCODE_CF_CLIENT_TIMEOUTS = new ClientTimeouts() {
+
+		@Override
+		public Duration getServicesTimeout() {
+			// Use shorter timeouts for services because it is used in dynamic
+			// values for content assist
+			return Duration.ofSeconds(15);
+		}	
+	};
 
 	
 	public ManifestYamlLanguageServer() {
@@ -79,7 +101,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	
 	private CFTargetsFactory getCFTargetsFactory() {
 		if (cfTargetsFactory == null) {
-			cfTargetsFactory = CFTargetsFactory.createDefaultV2TargetsFactory();
+			cfTargetsFactory = CFTargetsFactory.createDefaultV2TargetsFactory(VSCODE_CF_CLIENT_TIMEOUTS);
 		}
 		return cfTargetsFactory;
 	}
