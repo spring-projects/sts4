@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Provider;
-
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
@@ -31,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  *
  */
-public class CfCliParamsProvider implements Provider<List<CFClientParams>> {
+public class CfCliParamsProvider implements ClientParamsProvider {
 
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
@@ -42,8 +40,14 @@ public class CfCliParamsProvider implements Provider<List<CFClientParams>> {
 
 	private static Logger logger = Logger.getLogger(CfCliParamsProvider.class.getName());
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
+	 * ClientParamsProvider#getParams()
+	 */
 	@Override
-	public List<CFClientParams> get() {
+	public List<CFClientParams> getParams() {
 		try {
 			File file = getConfigJsonFile();
 			if (file != null) {
@@ -74,6 +78,17 @@ public class CfCliParamsProvider implements Provider<List<CFClientParams>> {
 		}
 
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
+	 * ClientParamsProvider#noParamsAvailableMessage()
+	 */
+	@Override
+	public String noParamsAvailableMessage() {
+		return "No Cloud Foundry targets. Please use cf CLI to configure and login to a Cloud Foundry target.";
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {

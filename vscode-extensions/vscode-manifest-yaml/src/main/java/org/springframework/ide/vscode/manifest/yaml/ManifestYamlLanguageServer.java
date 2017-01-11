@@ -19,7 +19,11 @@ import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -101,7 +105,9 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	
 	private CFTargetsFactory getCFTargetsFactory() {
 		if (cfTargetsFactory == null) {
-			cfTargetsFactory = CFTargetsFactory.createDefaultV2TargetsFactory(VSCODE_CF_CLIENT_TIMEOUTS);
+			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
+			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
+			cfTargetsFactory = new CFTargetsFactory(paramsProvider, clientFactory, VSCODE_CF_CLIENT_TIMEOUTS);
 		}
 		return cfTargetsFactory;
 	}

@@ -650,7 +650,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 //			? stopApp(appName)
 //			: restartApp(appName)
 //		);
-		throw new Error("Application push not currently supported in CF vscode");
+		throw ExceptionUtil.notImplemented("Application push not currently supported in CF vscode");
 	}
 
 //	private DefaultClientRequestsV1 v1() throws Exception {

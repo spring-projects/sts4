@@ -14,23 +14,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 
 /**
- * Creates targets given a client parameters factory and a client factory.
+ * Creates targets given a client parameters provider and a client factory.
  *
  */
 public class CFTargetsFactory {
 
 	private final CloudFoundryClientFactory clientFactory;
-	private final CFClientParamsFactory paramsFactory;
+	private final ClientParamsProvider paramsProvider;
 	private final ClientTimeouts timeouts;
 
-	public CFTargetsFactory(CFClientParamsFactory paramsFactory, CloudFoundryClientFactory clientFactory, ClientTimeouts timeouts) {
+	public CFTargetsFactory(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory, ClientTimeouts timeouts) {
 		this.clientFactory = clientFactory;
-		this.paramsFactory = paramsFactory;
+		this.paramsProvider = paramsProvider;
 		this.timeouts = timeouts;
 	}
 
@@ -40,7 +39,7 @@ public class CFTargetsFactory {
 	 * @throws Exception
 	 */
 	public List<CFTarget> getTargets() throws Exception {
-		List<CFClientParams> allParams = paramsFactory.getParams();
+		List<CFClientParams> allParams = paramsProvider.getParams();
 		List<CFTarget> targets = new ArrayList<>();
 		if (allParams != null) {
 			for (CFClientParams parameters : allParams) {
@@ -51,6 +50,10 @@ public class CFTargetsFactory {
 			}
 		}
 		return targets;
+	}
+	
+	public String noTargetsMessage() {
+		return paramsProvider.noParamsAvailableMessage();
 	}
 
 	protected String getTargetName(CFClientParams params) {
@@ -66,12 +69,4 @@ public class CFTargetsFactory {
 			return cfApiUrl;
 		}
 	}
-
-	public static CFTargetsFactory createDefaultV2TargetsFactory(ClientTimeouts timeouts) {
-		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-		CFClientParamsFactory paramsFactory = CFClientParamsFactory.INSTANCE;
-
-		return new CFTargetsFactory(paramsFactory, clientFactory, timeouts);
-	}
-
 }
