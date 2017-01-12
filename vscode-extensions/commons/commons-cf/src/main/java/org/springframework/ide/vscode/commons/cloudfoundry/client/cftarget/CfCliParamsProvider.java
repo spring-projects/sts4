@@ -88,7 +88,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	 */
 	@Override
 	public String noParamsAvailableMessage() {
-		return "No valid Cloud Foundry connection found. Please use cf CLI to configure and login to Cloud Foundry.";
+		return "Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.";
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
