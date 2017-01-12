@@ -17,6 +17,7 @@ if [ "$dist_type" != release ]; then
     base_version=`jq -r .version package.json`
     qualified_version=${base_version}-${timestamp}
     npm version ${qualified_version}
+    echo -e "\n*Version: ${qualified_version}*" >> README.md
 fi
 
 npm install
