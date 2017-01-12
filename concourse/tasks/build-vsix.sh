@@ -19,7 +19,7 @@ if [ "$dist_type" != release ]; then
     npm version ${qualified_version}
     echo -e "\n*Version: ${qualified_version}*" >> README.md
 else
-    echo -e "\n*Version: ${base_version}*-RELEASE" >> README.md
+    echo -e "\n*Version: ${base_version}-RELEASE*" >> README.md
 fi
 
 npm install
