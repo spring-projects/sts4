@@ -43,6 +43,10 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 				}
 			}
 		}
+
+		if (hints.isEmpty()) {
+			hints.add(new BasicYValueHint(EMPTY_VALUE, "No buildpacks found. " + targetsFactory.noTargetsMessage()));
+		}
 		return hints;
 	}
 

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,30 +41,28 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 	@Override
 	public Collection<YValueHint> get() {
 		Collection<YValueHint> hints = new ArrayList<>();
-		List<CFTarget> targets = null;
+		// TODO: Probably not the most ideal thing to do, but for now show any
+		// CF errors
+		// in the CA UI, as well as cases where there are no targets
 		try {
-			targets = targetsFactory.getTargets();
-		} catch (Throwable e) {
-			// Don't throw exception. Just log, and instead show a "no targets"
-			// hint below
-			logger.log(Level.SEVERE, e.getMessage(), e);
-		}
-
-		if (targets == null || targets.isEmpty()) {
-			// TODO: Probably a wrong thing to do, but for now show that
-			// there are
-			// no targets as a "hint" so that it appears
-			// in CA UI
-			hints.add(new BasicYValueHint(EMPTY_VALUE, targetsFactory.noTargetsMessage()));
-		} else {
-			try {
+			List<CFTarget> targets = targetsFactory.getTargets();
+			if (targets == null || targets.isEmpty()) {
+				hints.add(new BasicYValueHint(EMPTY_VALUE, targetsFactory.noTargetsMessage()));
+			} else {
 				Collection<YValueHint> resolvedHints = getHints(targets);
 				hints.addAll(resolvedHints);
-			} catch (Exception e) {
-				throw ExceptionUtil.unchecked(e);
+			}
+		} catch (Throwable e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+			// Don't throw exception as to allow the CA to be displayed to the
+			// user.
+			if (e instanceof IOException || ExceptionUtil.getDeepestCause(e) instanceof IOException) {
+				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + targetsFactory.noTargetsMessage()));
+			} else {
+				hints.add(new BasicYValueHint(EMPTY_VALUE,
+						"Unable to fetch Cloud Foundry proposals due to:  " + e.getMessage()));
 			}
 		}
-
 		return hints;
 	}
 
