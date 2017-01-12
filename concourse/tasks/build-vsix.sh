@@ -17,9 +17,9 @@ if [ "$dist_type" != release ]; then
     # for snapshot build, work the timestamp into package.json version qualifier
     qualified_version=${base_version}-${timestamp}
     npm version ${qualified_version}
-    echo -e "\n*Version: ${qualified_version}*" >> README.md
+    echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 else
-    echo -e "\n*Version: ${base_version}-RELEASE*" >> README.md
+    echo -e "\n\n*Version: ${base_version}-RELEASE*" >> README.md
 fi
 
 npm install
