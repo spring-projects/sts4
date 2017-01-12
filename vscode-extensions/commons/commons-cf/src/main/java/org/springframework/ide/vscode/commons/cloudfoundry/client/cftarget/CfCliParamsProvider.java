@@ -110,17 +110,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	}
 
 	private String getUnixHomeDir() throws IOException, InterruptedException {
-		File currentWorkDir = null; /*
-									 * use current working dir which means pass
-									 * null
-									 */
-		ExternalProcess homeDirProcess = new ExternalProcess(currentWorkDir,
-				new ExternalCommand("/bin/bash", "-c", "echo $HOME"), true);
-		String homeDir = homeDirProcess.getOut();
-		if (homeDir != null) {
-			homeDir = homeDir.trim(); // remove any new line chars
-		}
-		return homeDir;
+		return System.getProperty("user.home");
 	}
 
 	private void log(Exception e) {
