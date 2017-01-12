@@ -12,12 +12,14 @@ npm install ../commons-vscode
 
 timestamp=`date -u +%Y%m%d%H%M`
 
+base_version=`jq -r .version package.json`
 if [ "$dist_type" != release ]; then
     # for snapshot build, work the timestamp into package.json version qualifier
-    base_version=`jq -r .version package.json`
     qualified_version=${base_version}-${timestamp}
     npm version ${qualified_version}
     echo -e "\n*Version: ${qualified_version}*" >> README.md
+else
+    echo -e "\n*Version: ${base_version}*-RELEASE" >> README.md
 fi
 
 npm install
