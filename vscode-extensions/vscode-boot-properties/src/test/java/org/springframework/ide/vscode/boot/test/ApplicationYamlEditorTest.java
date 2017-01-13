@@ -3592,6 +3592,39 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT"
 		);
 	}
+
+	@Test public void PT_137299017_extra_space_wth_bean_property_value_completion() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		data("color", "demo.ColorData", null, "colorful stuff");
+		
+		assertCompletions(
+				"color:\n" +
+				"  next:<*>"
+				,  //==>
+				"color:\n" +
+				"  next: blue<*>"
+				, // ==
+				"color:\n" +
+				"  next: green<*>"
+				, // ==
+				"color:\n" +
+				"  next: red<*>"
+		);
+	}
+
+	@Test public void PT_137299017_extra_space_wth_index_property_value_completion() throws Exception {
+		defaultTestData();
+		assertCompletions(
+				"flyway:\n"+ 
+				"  enabled:<*>"
+				, // ==>
+				"flyway:\n"+ 
+				"  enabled: false<*>"
+				, // ==
+				"flyway:\n"+ 
+				"  enabled: true<*>"
+		);
+	}
 	
 	///////////////// cruft ////////////////////////////////////////////////////////
 

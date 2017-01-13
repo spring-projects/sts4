@@ -501,6 +501,22 @@ public class ManifestYamlEditorTest {
 		);
 	}
 	
+	@Test public void PT_137299017_extra_space_with_completion() throws Exception {
+		assertCompletions(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  random-route:<*>"
+				, // ==> 
+				"applications:\n" +
+				"- name: foo\n" +
+				"  random-route: false<*>"
+				, // --
+				"applications:\n" +
+				"- name: foo\n" +
+				"  random-route: true<*>"
+		);
+	}
+	
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {

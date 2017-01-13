@@ -149,8 +149,12 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			for (YValueHint value : values) {
 				double score = FuzzyMatcher.matchScore(query, value.getValue());
 				if (score!=0 && !value.equals(query)) {
+					int queryStart = offset-query.length();
 					DocumentEdits edits = new DocumentEdits(doc.getDocument());
-					edits.delete(offset-query.length(), offset);
+					edits.delete(queryStart, offset);
+					if (!Character.isWhitespace(doc.getChar(queryStart))) {
+						edits.insert(offset, " ");
+					}
 					edits.insert(offset, value.getValue());
 					completions.add(completionFactory().valueProposal(value.getValue(), query, value.getLabel(), type, score, edits, typeUtil));
 				}
