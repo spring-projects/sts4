@@ -152,7 +152,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					int queryStart = offset-query.length();
 					DocumentEdits edits = new DocumentEdits(doc.getDocument());
 					edits.delete(queryStart, offset);
-					if (!Character.isWhitespace(doc.getChar(queryStart))) {
+					if (!Character.isWhitespace(doc.getChar(queryStart-1))) {
 						edits.insert(offset, " ");
 					}
 					edits.insert(offset, value.getValue());
