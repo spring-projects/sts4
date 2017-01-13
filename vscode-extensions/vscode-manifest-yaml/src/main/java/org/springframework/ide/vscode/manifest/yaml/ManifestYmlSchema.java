@@ -19,7 +19,6 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
@@ -56,10 +55,12 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		t_buildpack.addHintProvider(this.buildpackProvider);
 		
-		YType t_service_string = f.yatomic("String");
-		if (servicesProvider != null && t_service_string instanceof AbstractType) {
-			((AbstractType)t_service_string).addHintProvider(servicesProvider);
-		} 
+		YAtomicType t_service_string = f.yatomic("String");
+		if (servicesProvider != null) {
+			t_service_string.addHintProvider(servicesProvider);
+			t_service_string
+					.parseWith(ManifestYmlValueParsers.fromHints(t_service_string.toString(), servicesProvider));
+		}
 		YType t_services = f.yseq(t_service_string);
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2016 Pivotal, Inc.
+ * Copyright (c) 2014-2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.commons.util;
 
 import java.util.Collection;
 
+import javax.inject.Provider;
+
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -22,7 +24,7 @@ import com.google.common.collect.ImmutableSet;
 public class EnumValueParser implements ValueParser {
 
 	private String typeName;
-	private Collection<String> values;
+	private Provider<Collection<String>> values;
 	
 
 	public EnumValueParser(String typeName, String... values) {
@@ -30,12 +32,16 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	public EnumValueParser(String typeName, Collection<String> values) {
+		this(typeName, () -> values);
+	}
+	
+	public EnumValueParser(String typeName, Provider<Collection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
 	}
 
 	public Object parse(String str) {
-		Collection<String> values = this.values;
+		Collection<String> values = this.values.get();
 		//If values is not known (null) then just assume the str is acceptable.
 		if (values==null || values.contains(str)) {
 			return str;

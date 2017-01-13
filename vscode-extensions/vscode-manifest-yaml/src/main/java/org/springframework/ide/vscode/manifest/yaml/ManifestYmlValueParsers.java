@@ -10,12 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.util.Collection;
 import java.util.Set;
 
+import javax.inject.Provider;
+
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Sets;
 
 /**
@@ -85,6 +91,24 @@ public class ManifestYmlValueParsers {
 				return value;
 			}
 		};
+	}
+
+	public static ValueParser fromHints(String typeName, Provider<Collection<YValueHint>> hintProvider) {
+		Provider<Collection<String>> values= () -> {
+			Collection<YValueHint> hints = hintProvider.get();
+			if (hints != null) {
+				Builder<String> builder = ImmutableSet.builder();
+				
+				for (YValueHint hint : hints ) {
+					builder.add(hint.getValue());
+				}
+				return builder.build();
+			}
+	
+			return null;
+		};
+		
+		return new EnumValueParser(typeName, values);
 	}
 
 }
