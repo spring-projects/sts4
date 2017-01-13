@@ -1,4 +1,3 @@
-package org.springframework.ide.vscode.manifest.yaml;
 /*******************************************************************************
  * Copyright (c) 2015, 2016 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
@@ -9,7 +8,7 @@ package org.springframework.ide.vscode.manifest.yaml;
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
+package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

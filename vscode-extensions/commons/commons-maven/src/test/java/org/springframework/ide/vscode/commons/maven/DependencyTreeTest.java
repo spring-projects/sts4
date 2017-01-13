@@ -1,5 +1,3 @@
-package org.springframework.ide.vscode.commons.maven;
-
 /*******************************************************************************
  * Copyright (c) 2016 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
@@ -10,6 +8,8 @@ package org.springframework.ide.vscode.commons.maven;
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
+package org.springframework.ide.vscode.commons.maven;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
