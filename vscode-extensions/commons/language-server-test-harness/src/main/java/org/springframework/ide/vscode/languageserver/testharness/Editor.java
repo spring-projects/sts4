@@ -271,9 +271,14 @@ public class Editor {
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
 			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
-			// mimick that behavior. I'm not sure this fix is really emulating it faithfully as its undocumented :-(
-			int indentFix = edit.getRange().getStart().getCharacter();
-			replaceWith = replaceWith.replaceAll("\\n", "\n"+Strings.repeat(" ", indentFix));
+			// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
+			int referenceLine = edit.getRange().getStart().getLine();
+			int cursorOffset = edit.getRange().getStart().getCharacter();
+			String referenceIndent = document.getLineIndentString(referenceLine);
+			if (cursorOffset<referenceIndent.length()) {
+				referenceIndent = referenceIndent.substring(0, cursorOffset);
+			}
+			replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
 
 			int cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
 			if (cursorReplaceOffset>=0) {

@@ -158,6 +158,22 @@ public class PipelineYamlEditorTest {
 				"      <*>"
 		);
 	}
+	
+	@Test
+	public void PT_136196057_do_step_completion_indentation() throws Exception {
+		assertCompletions(
+				"jobs:\n" +
+				"- name:\n"+
+				"  plan:\n" +
+				"  - do<*>"
+				, // => 
+				"jobs:\n" +
+				"- name:\n"+
+				"  plan:\n" +
+				"  - do:\n" +
+				"    - <*>"
+		);
+	}
 
 	@Test
 	public void primaryStepHovers() throws Exception {

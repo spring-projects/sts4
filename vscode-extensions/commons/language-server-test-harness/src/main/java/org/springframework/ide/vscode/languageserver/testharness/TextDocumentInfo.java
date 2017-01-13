@@ -142,4 +142,24 @@ public class TextDocumentInfo {
 		return id;
 	}
 
+	public String getLineIndentString(int line) {
+		int start = startOfLine(line);
+		int scan = start;
+		char c = getSafeChar(scan);
+		StringBuilder indentStr = new StringBuilder();
+		while (c==' '|| c=='\t') {
+			indentStr.append(c);
+			c = getSafeChar(++scan);
+		}
+		return indentStr.toString();
+	}
+
+	private char getSafeChar(int pos) {
+		String text = getText();
+		if (pos>0 && pos<text.length()) {
+			return text.charAt(pos);
+		}
+		return 0;
+	}
+
 }

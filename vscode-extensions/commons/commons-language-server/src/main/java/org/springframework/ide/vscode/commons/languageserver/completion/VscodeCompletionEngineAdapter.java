@@ -129,18 +129,24 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			edits.apply(newDoc);
 			TextEdit vscodeEdit = new TextEdit();
 			vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-			vscodeEdit.setNewText(vscodeIndentFix(vscodeEdit.getRange().getStart(), replaceEdit.newText));
+			vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
 			//TODO: cursor offset within newText? for now we assume its always at the end.
 			item.setTextEdit(vscodeEdit);
 		}
 	}
 
-	private String vscodeIndentFix(Position start, String newText) {
+	private String vscodeIndentFix(TextDocument doc, Position start, String newText) {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
-		int vscodeMagicIndent = start.getCharacter();
-		return StringUtil.stripIndentation(vscodeMagicIndent, newText);
+		//See here: https://github.com/Microsoft/language-server-protocol/issues/83
+		int referenceLine = start.getLine();
+		int referenceLineIndent = doc.getLineIndentation(referenceLine);
+		int vscodeMagicIndent = Math.min(start.getCharacter(), referenceLineIndent);
+		return vscodeMagicIndent>0
+				? StringUtil.stripIndentation(vscodeMagicIndent, newText)
+				: newText;
 	}
+
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletion(CompletionItem unresolved) {

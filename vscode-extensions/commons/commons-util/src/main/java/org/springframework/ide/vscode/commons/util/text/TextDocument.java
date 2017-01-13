@@ -208,4 +208,47 @@ public class TextDocument implements IDocument {
 		return "TextDocument(uri="+uri+",\n"+this.text+"\n)";
 	}
 
+	/**
+	 * Returns the number of leading spaces in front of a line. If the line only contains spaces then
+	 * this returns the number of spaces the line contains.
+	 * <p>
+	 * This may return -1 if, for some reason, a line's indentation cannot be determined (e.g. the line does
+	 * not exist in the document)
+	 */
+	public int getLineIndentation(int line) {
+		//TODO: this works fine only if we assume all indentation is done with spaces only.
+		// To generalize this it should probably return a String containing exactly the spaces
+		// and tabs at the front of the line.
+		IRegion r = getLineInformation(line);
+		if (r==null) {
+			//not a line in the document so it has no indentation
+			return -1;
+		}
+		int len = r.getLength();
+		int startOfLine = r.getOffset();
+		int leadingSpaces = 0;
+		while (leadingSpaces<len) {
+			char c = getSafeChar(startOfLine+leadingSpaces);
+			if (c==' ') {
+				leadingSpaces++;
+			} else if (c!=' ') {
+				return leadingSpaces;
+			}
+			leadingSpaces++;
+		}
+		return leadingSpaces;
+	}
+
+	/**
+	 * Like getChar but never throws {@link BadLocationException}. Instead it
+	 * return (char)0 for offsets outside the document.
+	 */
+	public char getSafeChar(int offset) {
+		try {
+			return getChar(offset);
+		} catch (BadLocationException e) {
+			return 0;
+		}
+	}
+
 }
