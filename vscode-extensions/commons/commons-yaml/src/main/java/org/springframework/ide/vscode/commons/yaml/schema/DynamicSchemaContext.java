@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -38,6 +39,12 @@ public interface DynamicSchemaContext {
 		public IDocument getDocument() {
 			return null;
 		}
+
+		@Override
+		public YamlPath getPath() {
+			return null;
+		}
+		
 	};
 
 	/**
@@ -59,5 +66,10 @@ public interface DynamicSchemaContext {
 	 * to it based on its uri.
 	 */
 	IDocument getDocument();
+
+	/**
+	 * Returns the yamlpath leading to the current node.
+	 */
+	YamlPath getPath();
 
 }

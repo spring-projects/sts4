@@ -44,6 +44,10 @@ import com.google.common.collect.ImmutableMap;
  */
 public class YTypeFactory {
 
+	public YType contextAware(String name, SchemaContextAware<YType> guessType) {
+		return new YContextSensitive(name, guessType);
+	}
+
 	public YType yany(String name) {
 		return new YAny(name);
 	}
@@ -264,6 +268,32 @@ public class YTypeFactory {
 		}
 
 	}
+
+	/**
+	 * Represents a type that depends on the DynamicSchemaContext
+	 */
+	public static class YContextSensitive extends YAny {
+
+		private final SchemaContextAware<YType> typeGuesser;
+
+		public YContextSensitive(String name, SchemaContextAware<YType> typeGuesser) {
+			super(name);
+			this.typeGuesser = typeGuesser;
+		}
+
+		@Override
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			if (dc!=null) {
+				YType inferred = typeGuesser.withContext(dc);
+				if (inferred!=null) {
+					return inferred;
+				}
+			}
+			return this;
+		}
+		
+	}
+
 	
 	/**
 	 * Represents a type that is completely unconstrained. Anything goes: A map, a sequence or some
@@ -415,7 +445,7 @@ public class YTypeFactory {
 	 * this property is being assigned a value we can infer from that which
 	 * specific bean-type we are dealing with.
 	 */
-	public class YBeanUnionType extends AbstractType {
+	public static class YBeanUnionType extends AbstractType {
 		private final String name;
 		private List<YBeanType> types;
 
@@ -424,10 +454,13 @@ public class YTypeFactory {
 
 		public YBeanUnionType(String name, YBeanType... types) {
 			this.name = name;
-			this.types = new ArrayList<>(Arrays.asList(types));
+			this.types = new ArrayList<>();
+			for (YBeanType t : types) {
+				addUnionMember(t);
+			}
 		}
 		
-		public synchronized void addUnionMember(YBeanType type) {
+		private void addUnionMember(YBeanType type) {
 			types.add(type);
 		}
 		

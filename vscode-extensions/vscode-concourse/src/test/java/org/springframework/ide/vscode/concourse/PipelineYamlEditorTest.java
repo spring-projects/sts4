@@ -638,6 +638,23 @@ public class PipelineYamlEditorTest {
 				"not-a-resource|does not exist"
 		);
 	}
+	
+	@Test 
+	public void reconcileGitResource() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: sts4-out\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    uri: git@github.com:spring-projects/sts4.git\n" + 
+				"    bogus: bad\n" +
+				"    branch: {{branch}}\n" + 
+				"    private_key: {{rsa_id}}\n"
+		);
+		editor.assertProblems(
+				"bogus|Unknown property"
+		);
+	}
 
 	@Test
 	public void contentAssistJobNames() throws Exception {

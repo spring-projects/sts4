@@ -26,6 +26,8 @@ import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -54,23 +56,26 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	public void reconcile(YamlFileAST ast) {
 		List<Node> nodes = ast.getNodes();
 		if (nodes!=null && !nodes.isEmpty()) {
-			for (Node node : nodes) {
-				reconcile(ast.getDocument(), node, schema.getTopLevelType());
+			for (int i = 0; i < nodes.size(); i++) {
+				Node node = nodes.get(i);
+				reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
 			}
 		}
 	}
 
-	private void reconcile(IDocument doc, Node node, YType type) {
+	private void reconcile(IDocument doc, YamlPath path, Node node, YType type) {
 		if (type!=null) {
-			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, node);
+			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, path, node);
+			type = typeUtil.inferMoreSpecificType(type, schemaContext);
 			switch (node.getNodeId()) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
 				checkForDuplicateKeys(map);
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
-						reconcile(doc, entry.getKeyNode(), typeUtil.getKeyType(type));
-						reconcile(doc, entry.getValueNode(), typeUtil.getDomainType(type));
+						String key = NodeUtil.asScalar(entry.getKeyNode());
+						reconcile(doc, keyAt(path, key), entry.getKeyNode(), typeUtil.getKeyType(type));
+						reconcile(doc, valueAt(path, key), entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type, schemaContext);
@@ -82,10 +87,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						} else {
 							YTypedProperty prop = beanProperties.get(key);
 							if (prop==null) {
-								type = typeUtil.inferMoreSpecificType(type, schemaContext);
 								unknownBeanProperty(keyNode, type, key);
 							} else {
-								reconcile(doc, entry.getValueNode(), prop.getType());
+								reconcile(doc, valueAt(path, key), entry.getValueNode(), prop.getType());
 							}
 						}
 					}
@@ -96,8 +100,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			case sequence:
 				SequenceNode seq = (SequenceNode) node;
 				if (typeUtil.isSequencable(type)) {
-					for (Node el : seq.getValue()) {
-						reconcile(doc, el, typeUtil.getDomainType(type));
+					for (int i = 0; i < seq.getValue().size(); i++) {
+						Node el = seq.getValue().get(i);
+						reconcile(doc, valueAt(path, i), el, typeUtil.getDomainType(type));
 					}
 				} else {
 					expectTypeButFoundSequence(type, node);
@@ -122,6 +127,27 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
+	}
+
+	private YamlPath keyAt(YamlPath path, String key) {
+		if (path!=null && key!=null) {
+			return path.append(YamlPathSegment.keyAt(key));
+		}
+		return null;
+	}
+
+	private YamlPath valueAt(YamlPath path, int index) {
+		if (path!=null) {
+			return path.append(YamlPathSegment.valueAt(index));
+		}
+		return null;
+	}
+
+	private YamlPath valueAt(YamlPath path, String key) {
+		if (path!=null && key!=null) {
+			return path.append(YamlPathSegment.valueAt(key));
+		}
+		return null;
 	}
 
 	private void checkForDuplicateKeys(MappingNode node) {

@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.RootRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.SeqRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
@@ -121,6 +122,14 @@ public class YamlPath {
 		newPath[segments.length] = s;
 		return new YamlPath(newPath);
 	}
+	
+	public Node traverseToNode(YamlFileAST root) {
+		ASTCursor cursor = traverse(new ASTRootCursor(root));
+		if (cursor instanceof NodeCursor) {
+			return ((NodeCursor)cursor).getNode();
+		}
+		return null;
+	}
 
 	public <T extends YamlNavigable<T>> T traverse(T startNode) {
 		return traverseAmbiguously(startNode).findFirst().orElse(null);
@@ -129,8 +138,7 @@ public class YamlPath {
 	public Stream<Node> traverseAmbiguously(Node startNode) {
 		if (startNode!=null) {
 			return traverseAmbiguously(new NodeCursor(startNode))
-					.map(NodeCursor::getNode);
-			
+			.map((ASTCursor cursor) -> (Node)cursor.getNode());
 		}
 		return Stream.empty();
 	}

@@ -14,8 +14,6 @@ import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.KeyAtKey;
-import org.yaml.snakeyaml.nodes.CollectionNode;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.SequenceNode;
@@ -27,7 +25,7 @@ import org.yaml.snakeyaml.nodes.SequenceNode;
  * 
  * @author Kris De Volder
  */
-public class NodeCursor implements YamlNavigable<NodeCursor> {
+public class NodeCursor extends ASTCursor {
 	
 	private final Node currentNode;
 	
@@ -35,9 +33,11 @@ public class NodeCursor implements YamlNavigable<NodeCursor> {
 		Assert.isNotNull(node);
 		this.currentNode = node;
 	}
+	
+	
 
 	@Override
-	public Stream<NodeCursor> traverseAmbiguously(YamlPathSegment s) {
+	public Stream<ASTCursor> traverseAmbiguously(YamlPathSegment s) {
 		switch (s.getType()) {
 		case KEY_AT_KEY: {
 			String key = s.toPropString();
@@ -87,6 +87,7 @@ public class NodeCursor implements YamlNavigable<NodeCursor> {
 		}
 	}
 
+	@Override
 	public Node getNode() {
 		return currentNode;
 	}

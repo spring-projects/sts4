@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
@@ -31,9 +32,11 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 
 	private MappingNode mapNode;
 	private IDocument doc;
+	private YamlPath path;
 
-	public ASTDynamicSchemaContext(IDocument doc, Node node) {
+	public ASTDynamicSchemaContext(IDocument doc, YamlPath path, Node node) {
 		this.doc = doc;
+		this.path = path;
 		this.mapNode = as(MappingNode.class, node);
 	}
 
@@ -63,5 +66,10 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 	@Override
 	public IDocument getDocument() {
 		return doc;
+	}
+	
+	@Override
+	public YamlPath getPath() {
+		return path;
 	}
 }

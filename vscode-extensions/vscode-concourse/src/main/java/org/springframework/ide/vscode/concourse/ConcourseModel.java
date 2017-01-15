@@ -122,7 +122,15 @@ public class ConcourseModel {
 		return null;
 	}
 
-	private YamlFileAST getAst(IDocument doc) throws Exception {
+	public YamlFileAST getSafeAst(IDocument doc) {
+		try {
+			return getAst(doc);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public YamlFileAST getAst(IDocument doc) throws Exception {
 		return getAstProvider(true).getAST(doc);
 	}
 

@@ -54,7 +54,7 @@ public class NodeUtil {
 	 * @return String value or null if node is not a Scalar node.
 	 */
 	public static String asScalar(Node node) {
-		if (node.getNodeId()==NodeId.scalar) {
+		if (node!=null && node.getNodeId()==NodeId.scalar) {
 			return ((ScalarNode)node).getValue();
 		}
 		return null;

@@ -10,8 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.Set;
+
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
@@ -153,18 +159,39 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop(doStep, "do", f.yseq(step));
 		prop(tryStep, "try", step);
 
-		// shared properties applicable for any type of Step:
-		prop(step, "on_success", step);
-		prop(step, "on_failure", step);
-		prop(step, "ensure", step);
-		prop(step, "attempts", t_strictly_pos_integer);
-		prop(step, "tags", t_strings);
-		prop(step, "timeout", t_duration);
+		// shared properties applicable for any subtype of Step:
+		for (YBeanType subStep : stepTypes) {
+			prop(step, subStep, "on_success", step);
+			prop(step, subStep, "on_failure", step);
+			prop(step, subStep, "ensure", step);
+			prop(step, subStep, "attempts", t_strictly_pos_integer);
+			prop(step, subStep, "tags", t_strings);
+			prop(step, subStep, "timeout", t_duration);
+		}
+
+		YType gitResourceSource = t_any;
+		
+		YType resourceSource = f.contextAware("ResourceSource", (dc) -> {
+			YamlPath path = dc.getPath();
+			if (path!=null) {
+				YamlFileAST root = models.getSafeAst(dc.getDocument());
+				if (root!=null) {
+					String typeTag = NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt("type")).traverseToNode(root));
+					switch (typeTag) {
+					case "git":
+						return gitResourceSource;
+					default:
+						break;
+					}
+				}
+			}
+			return t_any;
+		});
 		
 		YBeanType resource = f.ybean("Resource");
 		prop(resource, "name", resourceNameDef);
 		prop(resource, "type", t_resource_type_name);
-		prop(resource, "source", t_any);
+		prop(resource, "source", resourceSource);
 		prop(resource, "check_every", t_duration);
 
 		YBeanType job = f.ybean("Job");
@@ -194,8 +221,12 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	}
 
+	private void prop(AbstractType superType, AbstractType bean, String name, YType type) {
+		bean.addProperty(name, type, descriptionFor(superType, name));
+	}
+
 	private void prop(AbstractType bean, String name, YType type) {
-		bean.addProperty(name, type, descriptionFor(bean, name));
+		prop(bean, bean, name, type);
 	}
 
 	private Renderable descriptionFor(YType owner, String propName) {
