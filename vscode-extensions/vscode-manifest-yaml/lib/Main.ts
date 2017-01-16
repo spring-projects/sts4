@@ -11,7 +11,6 @@ import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
 
-var DEBUG = false;
 const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
     //If DEBUG is falsy then
     //   we launch from the 'fat jar' (which has to be built by running mvn package)
