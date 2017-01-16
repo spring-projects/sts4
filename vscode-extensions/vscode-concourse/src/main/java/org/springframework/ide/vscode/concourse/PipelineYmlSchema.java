@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import java.util.Set;
-
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
@@ -25,7 +23,9 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractT
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
 /**
@@ -36,7 +36,15 @@ public class PipelineYmlSchema implements YamlSchema {
 	private final YBeanType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
-	private final YTypeFactory f = new YTypeFactory();
+	public final YTypeFactory f = new YTypeFactory();
+	public final YType t_string = f.yatomic("String");
+	public final YType t_strings = f.yseq(t_string);
+	public final YAtomicType t_boolean = f.yenum("boolean", "true", "false");
+	public final YType t_any = f.yany("Object");
+	public final YType t_params = f.ymap(t_string, t_any);
+	public final YType t_string_params = f.ymap(t_string, t_string);
+	
+	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -44,19 +52,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Pipeline");
 
-		YType t_string = f.yatomic("String");
 		YAtomicType t_ne_string = f.yatomic("String");
 		t_ne_string.parseWith(ValueParsers.NE_STRING);
-		YType t_strings = f.yseq(t_string);
-		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_pos_integer = f.yatomic("Positive Integer");
 		t_pos_integer.parseWith(ValueParsers.POS_INTEGER);
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
 		t_strictly_pos_integer.parseWith(ValueParsers.integerAtLeast(1));
-
-		YType t_any = f.yany("Object");
-		YType t_params = f.ymap(t_string, t_any);
-		YType t_string_params = f.ymap(t_string, t_string);
 
 		YAtomicType t_duration = f.yatomic("Duration");
 		t_duration.parseWith(ValueParsers.DURATION);
@@ -119,28 +120,28 @@ public class PipelineYmlSchema implements YamlSchema {
 		jobNameDef.parseWith(ValueParsers.jobNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
-		prop(getStep, "get", resourceName);
-		prop(getStep, "resource", t_string);
-		prop(getStep, "version", t_version);
-		prop(getStep, "passed", f.yseq(jobName));
-		prop(getStep, "params", t_params);
-		prop(getStep, "trigger", t_boolean);
+		addProp(getStep, "get", resourceName);
+		addProp(getStep, "resource", t_string);
+		addProp(getStep, "version", t_version);
+		addProp(getStep, "passed", f.yseq(jobName));
+		addProp(getStep, "params", t_params);
+		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
-		prop(putStep, "put", resourceName);
-		prop(putStep, "resource", jobName);
-		prop(putStep, "params", t_params);
-		prop(putStep, "get_params", t_params);
+		addProp(putStep, "put", resourceName);
+		addProp(putStep, "resource", jobName);
+		addProp(putStep, "params", t_params);
+		addProp(putStep, "get_params", t_params);
 
 		YBeanType taskStep = f.ybean("TaskStep");
-		prop(taskStep, "task", t_ne_string);
-		prop(taskStep, "file", t_string);
-		prop(taskStep, "config", t_any);
-		prop(taskStep, "privileged", t_boolean);
-		prop(taskStep, "params", t_params);
-		prop(taskStep, "image", t_ne_string);
-		prop(taskStep, "input_mapping",  f.ymap(t_ne_string, resourceName));
-		prop(taskStep, "output_mapping", t_string_params);
+		addProp(taskStep, "task", t_ne_string);
+		addProp(taskStep, "file", t_string);
+		addProp(taskStep, "config", t_any);
+		addProp(taskStep, "privileged", t_boolean);
+		addProp(taskStep, "params", t_params);
+		addProp(taskStep, "image", t_ne_string);
+		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, resourceName));
+		addProp(taskStep, "output_mapping", t_string_params);
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
@@ -155,83 +156,111 @@ public class PipelineYmlSchema implements YamlSchema {
 				tryStep
 		};
 		YBeanUnionType step = f.yunion("Step", stepTypes);
-		prop(aggregateStep, "aggregate", f.yseq(step));
-		prop(doStep, "do", f.yseq(step));
-		prop(tryStep, "try", step);
+		addProp(aggregateStep, "aggregate", f.yseq(step));
+		addProp(doStep, "do", f.yseq(step));
+		addProp(tryStep, "try", step);
 
 		// shared properties applicable for any subtype of Step:
 		for (YBeanType subStep : stepTypes) {
-			prop(step, subStep, "on_success", step);
-			prop(step, subStep, "on_failure", step);
-			prop(step, subStep, "ensure", step);
-			prop(step, subStep, "attempts", t_strictly_pos_integer);
-			prop(step, subStep, "tags", t_strings);
-			prop(step, subStep, "timeout", t_duration);
+			addProp(step, subStep, "on_success", step);
+			addProp(step, subStep, "on_failure", step);
+			addProp(step, subStep, "ensure", step);
+			addProp(step, subStep, "attempts", t_strictly_pos_integer);
+			addProp(step, subStep, "tags", t_strings);
+			addProp(step, subStep, "timeout", t_duration);
 		}
 
-		YType gitResourceSource = t_any;
-		
 		YType resourceSource = f.contextAware("ResourceSource", (dc) -> {
-			YamlPath path = dc.getPath();
-			if (path!=null) {
-				YamlFileAST root = models.getSafeAst(dc.getDocument());
-				if (root!=null) {
-					String typeTag = NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt("type")).traverseToNode(root));
-					switch (typeTag) {
-					case "git":
-						return gitResourceSource;
-					default:
-						break;
-					}
-				}
+			String typeTag = getResourceTypeTag(models, dc);
+			if (typeTag!=null) {
+				return resourceTypes.getSourceType(typeTag);
 			}
 			return t_any;
 		});
 		
 		YBeanType resource = f.ybean("Resource");
-		prop(resource, "name", resourceNameDef);
-		prop(resource, "type", t_resource_type_name);
-		prop(resource, "source", resourceSource);
-		prop(resource, "check_every", t_duration);
+		addProp(resource, "name", resourceNameDef);
+		addProp(resource, "type", t_resource_type_name);
+		addProp(resource, "source", resourceSource);
+		addProp(resource, "check_every", t_duration);
 
 		YBeanType job = f.ybean("Job");
-		prop(job, "name", jobNameDef);
-		prop(job, "serial", t_boolean);
-		prop(job, "build_logs_to_retain", t_pos_integer);
-		prop(job, "serial_groups", t_strings);
-		prop(job, "max_in_flight", t_pos_integer);
-		prop(job, "public", t_boolean);
-		prop(job, "disable_manual_trigger", t_boolean);
-		prop(job, "plan", f.yseq(step));
+		addProp(job, "name", jobNameDef);
+		addProp(job, "serial", t_boolean);
+		addProp(job, "build_logs_to_retain", t_pos_integer);
+		addProp(job, "serial_groups", t_strings);
+		addProp(job, "max_in_flight", t_pos_integer);
+		addProp(job, "public", t_boolean);
+		addProp(job, "disable_manual_trigger", t_boolean);
+		addProp(job, "plan", f.yseq(step));
 		
 		YBeanType resourceType = f.ybean("ResourceType");
-		prop(resourceType, "name", t_ne_string);
-		prop(resourceType, "type", t_image_type);
-		prop(resourceType, "source", t_any);
+		addProp(resourceType, "name", t_ne_string);
+		addProp(resourceType, "type", t_image_type);
+		addProp(resourceType, "source", t_any);
 		
 		YBeanType group = f.ybean("Group");
-		prop(group, "name", t_ne_string);
-		prop(group, "resources", f.yseq(resourceName));
-		prop(group, "jobs", f.yseq(jobName));
+		addProp(group, "name", t_ne_string);
+		addProp(group, "resources", f.yseq(resourceName));
+		addProp(group, "jobs", f.yseq(jobName));
 
-		prop(TOPLEVEL_TYPE, "resources", f.yseq(resource));
-		prop(TOPLEVEL_TYPE, "jobs", f.yseq(job));
-		prop(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
-		prop(TOPLEVEL_TYPE, "groups", f.yseq(group));
-
+		addProp(TOPLEVEL_TYPE, "resources", f.yseq(resource));
+		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
+		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
+		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
+		
+		initializeDefaultResourceTypes();
 	}
 
-	private void prop(AbstractType superType, AbstractType bean, String name, YType type) {
-		bean.addProperty(name, type, descriptionFor(superType, name));
+	private void initializeDefaultResourceTypes() {
+		YBeanType gitSource = f.ybean("GitResourceSource");
+		addProp(gitSource, "uri", t_string);
+		addProp(gitSource, "branch", t_string);
+		addProp(gitSource, "private_key", t_string);
+		addProp(gitSource, "username", t_string);
+		addProp(gitSource, "password", t_string);
+		addProp(gitSource, "paths", t_strings);
+		addProp(gitSource, "ignore_paths", t_strings);
+		addProp(gitSource, "skip_ssl_verification", t_boolean);
+		addProp(gitSource, "tag_filter", t_string);
+		addProp(gitSource, "git_config", t_string);
+		addProp(gitSource, "disable_ci_skip", t_boolean);
+		addProp(gitSource, "commit_verification_keys", t_strings);
+		addProp(gitSource, "commit_verification_key_ids", t_strings);
+		addProp(gitSource, "gpg_keyserver", t_strings);
+		
+		resourceTypes.def("git", gitSource);
 	}
 
-	private void prop(AbstractType bean, String name, YType type) {
-		prop(bean, bean, name, type);
+	private String getResourceTypeTag(ConcourseModel models, DynamicSchemaContext dc) {
+		YamlPath path = dc.getPath();
+		if (path!=null) {
+			YamlFileAST root = models.getSafeAst(dc.getDocument());
+			if (root!=null) {
+				return NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt("type")).traverseToNode(root));
+			}
+		}
+		return null;
 	}
 
-	private Renderable descriptionFor(YType owner, String propName) {
+	private YTypedProperty prop(AbstractType beanType, String name, YType type) {
+		YTypedPropertyImpl prop = f.yprop(name, type);
+		prop.setDescriptionProvider(descriptionFor(beanType, name));
+		return prop;
+	}
+
+
+	private void addProp(AbstractType superType, AbstractType bean, String name, YType type) {
+		bean.addProperty(prop(superType, name, type));
+	}
+
+	private void addProp(AbstractType bean, String name, YType type) {
+		addProp(bean, bean, name, type);
+	}
+
+	public static Renderable descriptionFor(YType owner, String propName) {
 		String typeName = owner.toString();
-		return Renderables.fromClasspath(this.getClass(), "/desc/"+typeName+"/"+propName);
+		return Renderables.fromClasspath(PipelineYmlSchema.class, "/desc/"+typeName+"/"+propName);
 	}
 
 	@Override

@@ -470,7 +470,7 @@ public class PipelineYamlEditorTest {
 				"- name: sts4\n" + 
 				"  type: git\n" + 
 				"  source:\n" + 
-				"    repository: https://github.com/kdvolder/somestuff\n" + 
+				"    uri: https://github.com/kdvolder/somestuff\n" + 
 				"jobs:\n" + 
 				"- name: job1\n" + 
 				"  plan:\n" + 
@@ -502,15 +502,15 @@ public class PipelineYamlEditorTest {
 				"- name: sts4\n" + 
 				"  type: git\n" + 
 				"  source:\n" + 
-				"    repository: https://github.com/kdvolder/somestuff\n" + 
+				"    uri: https://github.com/kdvolder/somestuff\n" + 
 				"- name: utils\n" + 
 				"  type: git\n" + 
 				"  source:\n" + 
-				"    repository: https://github.com/kdvolder/someutils\n" + 
+				"    uri: https://github.com/kdvolder/someutils\n" + 
 				"- name: sts4\n" + 
 				"  type: git\n" + 
 				"  source:\n" + 
-				"    repository: https://github.com/kdvolder/extras\n" 
+				"    uri: https://github.com/kdvolder/extras\n" 
 		);
 		editor.assertProblems(
 				"sts4|Duplicate resource name",
@@ -572,13 +572,13 @@ public class PipelineYamlEditorTest {
 				"- name: my-repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    repository: https://github.com/kdvolder/my-repo\n" +
+				"    uri: https://github.com/kdvolder/my-repo\n" +
 				"resources:\n" +
 				"- name: your-repo\n" +
 				"  type: git\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    repository: https://github.com/kdvolder/forked-repo\n"
+				"    uri: https://github.com/kdvolder/forked-repo\n"
 		);
 		
 		editor.assertProblems(

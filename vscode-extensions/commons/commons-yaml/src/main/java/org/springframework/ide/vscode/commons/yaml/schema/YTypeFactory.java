@@ -607,8 +607,9 @@ public class YTypeFactory {
 			return description;
 		}
 
-		public void setDescriptionProvider(Renderable description) {
+		public YTypedPropertyImpl setDescriptionProvider(Renderable description) {
 			this.description = description;
+			return this;
 		}
 	}
 

@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
@@ -67,7 +68,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		if (type!=null) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, path, node);
 			type = typeUtil.inferMoreSpecificType(type, schemaContext);
-			switch (node.getNodeId()) {
+			switch (getNodeId(node)) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
 				checkForDuplicateKeys(map);
@@ -113,7 +114,10 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					ValueParser parser = typeUtil.getValueParser(type, schemaContext);
 					if (parser!=null) {
 						try {
-							parser.parse(NodeUtil.asScalar(node));
+							String value = NodeUtil.asScalar(node);
+							if (value!=null) {
+								parser.parse(value);
+							}
 						} catch (Exception e) {
 							String msg = ExceptionUtil.getMessage(e);
 							valueParseError(type, node, msg);
@@ -127,6 +131,36 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
+	}
+
+	protected NodeId getNodeId(Node node) {
+		NodeId id = node.getNodeId();
+		if (id==NodeId.mapping && isMoustacheVar((MappingNode)node)) {
+			return NodeId.scalar;
+		}
+		return id;
+	}
+
+	/**
+	 * 'Moustache' variables look like `{{name}}` and unfortuately when
+	 * parsed these will parse as a kind of map. But since these vars are meant to be replaced
+	 * with some kind of string we should treat them as scalar instead.
+	 * <p>
+	 * This function recognizes a mapping node that actually is moustache var pattern. 
+	 */
+	private boolean isMoustacheVar(Node node) {
+		return NodeUtil.asScalar(debrace(debrace(node))) != null;
+	}
+
+	private Node debrace(Node _node) {
+		MappingNode node = NodeUtil.asMapping(_node);
+		if (node!=null && node.getFlowStyle() && node.getValue().size()==1) {
+			NodeTuple entry = node.getValue().get(0);
+			if ("".equals(NodeUtil.asScalar(entry.getValueNode()))) {
+				return entry.getKeyNode();
+			}
+		}
+		return null;
 	}
 
 	private YamlPath keyAt(YamlPath path, String key) {
