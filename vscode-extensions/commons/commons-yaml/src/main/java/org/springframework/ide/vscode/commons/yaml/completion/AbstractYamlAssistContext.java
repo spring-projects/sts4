@@ -74,6 +74,9 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 					return "";
 				}
 			}
+		} else if (node.getNodeType()==SNodeType.SEQ) {
+			//Careful, don't include the '-' at start of the node as part of the prefix.
+			return prefixfinder.getPrefix(doc.getDocument(), offset, node.getStart()+1);
 //		} else if (node.getNodeType()==SNodeType.RAW) {
 //			TODO: Handle this as we could be in a value that's on the next line instead of right behind the node
 		}

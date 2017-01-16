@@ -91,6 +91,10 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						//property not yet defined
 						YType YType = p.getType();
 						edits.delete(queryOffset, query);
+						if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
+							//See https://www.pivotaltracker.com/story/show/137722057
+							edits.insert(queryOffset, " ");
+						}
 						edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(YType));
 						proposals.add(completionFactory().beanProperty(doc.getDocument(),
 								contextPath.toPropString(), getType(),

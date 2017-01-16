@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -376,7 +377,7 @@ public class ManifestYamlEditorTest {
 				"random-route: false<*>",
 				"random-route: true<*>"
 		);
-		
+
 		assertCompletions("health-check-type: <*>",
 				"health-check-type: none<*>",
 				"health-check-type: port<*>"
@@ -392,7 +393,7 @@ public class ManifestYamlEditorTest {
 			"applications:\n" +
 			"- buildpack: zbuildpack\n" +
 			"  domain: zdomain\n" +
-			"  name: foo\n" + 
+			"  name: foo\n" +
 			"  command: java main.java\n" +
 			"  disk_quota: 1024M\n" +
 			"  domains:\n" +
@@ -404,10 +405,10 @@ public class ManifestYamlEditorTest {
 			"  host: apppage\n" +
 			"  hosts:\n" +
 			"  - apppage2\n" +
-			"  - appage3\n" + 
+			"  - appage3\n" +
 			"  instances: 2\n" +
-			"  no-hostname: true\n" + 
-			"  no-route: true\n" + 
+			"  no-hostname: true\n" +
+			"  no-route: true\n" +
 			"  path: somepath/app.jar\n" +
 			"  random-route: true\n" +
 			"  services:\n" +
@@ -417,7 +418,7 @@ public class ManifestYamlEditorTest {
 			"  timeout: 80\n" +
 			"  health-check-type: none\n"
 		);
-		
+
 		editor.assertIsHoverRegion("memory");
 		editor.assertIsHoverRegion("inherit");
 		editor.assertIsHoverRegion("applications");
@@ -462,21 +463,21 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
 	    editor.assertHoverContains("health-check-type", "Use the `health-check-type` attribute to");
 	}
-	
+
 	@Test
 	public void noHoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
 		    "#comment\n" +
 			"applications:\n" +
 			"- buildpack: zbuildpack\n" +
-			"  name: foo\n" + 
+			"  name: foo\n" +
 			"  domains:\n" +
 			"  - pivotal.io\n" +
 			"  - otherdomain.org\n"
 
 		);
 		editor.assertNoHover("comment");
-		
+
 		// May fail in the future if hover support is added, but if hover support is added in the future,
 		// it is expected that these should start to fail, as right now they have no hover
 		editor.assertNoHover("pivotal.io");
@@ -489,7 +490,7 @@ public class ManifestYamlEditorTest {
 				"#comment\n" +
 				"applications:\n" +
 				"- buildpack: zbuildpack\n" +
-				"  name: foo\n" + 
+				"  name: foo\n" +
 				"  domains:\n" +
 				"  - pivotal.io\n" +
 				"  domains:\n" +
@@ -500,13 +501,13 @@ public class ManifestYamlEditorTest {
 				"domains|Duplicate key"
 		);
 	}
-	
+
 	@Test public void PT_137299017_extra_space_with_completion() throws Exception {
 		assertCompletions(
 				"applications:\n" +
 				"- name: foo\n" +
 				"  random-route:<*>"
-				, // ==> 
+				, // ==>
 				"applications:\n" +
 				"- name: foo\n" +
 				"  random-route: false<*>"
@@ -516,7 +517,163 @@ public class ManifestYamlEditorTest {
 				"  random-route: true<*>"
 		);
 	}
-	
+
+	@Test public void PT_137722057_extra_space_with_completion() throws Exception {
+		assertCompletions(
+				"applications:\n" +
+				"-<*>",
+				// ===>
+				"applications:\n" +
+				"- buildpack: <*>",
+				// ---------------
+				"applications:\n" +
+				"- command: <*>",
+				// ---------------
+				"applications:\n" +
+				"- disk_quota: <*>",
+				// ---------------
+				"applications:\n" +
+				"- domain: <*>",
+				// ---------------
+				"applications:\n" +
+				"- domains:\n"+
+				"  - <*>",
+				// ---------------
+				"applications:\n" +
+				"- env:\n"+
+				"    <*>",
+				// ---------------
+				"applications:\n" +
+				"- health-check-type: <*>",
+				// ---------------
+				"applications:\n" +
+				"- host: <*>",
+				// ---------------
+				"applications:\n" +
+				"- hosts:\n"+
+				"  - <*>",
+				// ---------------
+				"applications:\n" +
+				"- instances: <*>",
+				// ---------------
+				"applications:\n" +
+				"- memory: <*>",
+				// ---------------
+				"applications:\n" +
+				"- name: <*>",
+				// ---------------
+				"applications:\n" +
+				"- no-hostname: <*>",
+				// ---------------
+				"applications:\n" +
+				"- no-route: <*>",
+				// ---------------
+				"applications:\n" +
+				"- path: <*>",
+				// ---------------
+				"applications:\n" +
+				"- random-route: <*>",
+				// ---------------
+				"applications:\n" +
+				"- services:\n"+
+				"  - <*>",
+				// ---------------
+				"applications:\n" +
+				"- stack: <*>",
+				// ---------------
+				"applications:\n" +
+				"- timeout: <*>"
+		);
+
+		//Second example
+		assertCompletions(
+				"applications:\n" +
+				"-<*>\n" +
+				"- name: test"
+				, // ==>
+				"applications:\n" +
+				"- buildpack: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- command: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- disk_quota: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- domain: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- domains:\n" +
+				"  - <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- env:\n" +
+				"    <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- health-check-type: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- host: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- hosts:\n" +
+				"  - <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- instances: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- memory: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- name: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- no-hostname: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- no-route: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- path: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- random-route: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- services:\n" +
+				"  - <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- stack: <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- timeout: <*>\n" +
+				"- name: test"
+		);
+
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {

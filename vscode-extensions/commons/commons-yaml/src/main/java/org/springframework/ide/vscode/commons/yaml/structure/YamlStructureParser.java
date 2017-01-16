@@ -707,7 +707,11 @@ public class YamlStructureParser {
 		}
 
 		public boolean isInValue(int offset) {
-			return offset>=getStart()+2 //"- ".length()
+			int len = getNodeEnd() - getStart();
+			//Careful, generally a seq node starts with a "- ". But... there's a special case
+			// if the node text is only lenght 1. Thne its just a "-" alone (no space).
+			int dashLen = len==1 ? 1 : 2;
+			return offset>=getStart()+dashLen
 					&& offset <= getTreeEnd();
 		}
 	}
