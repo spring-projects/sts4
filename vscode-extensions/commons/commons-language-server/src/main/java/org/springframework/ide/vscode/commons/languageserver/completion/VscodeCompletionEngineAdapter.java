@@ -65,7 +65,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
-		TextDocument doc = documents.get(params);
+		TextDocument doc = documents.get(params).copy();
 		if (doc!=null) {
 			return Mono.fromCallable(() -> {
 				//TODO: This callable is a 'big lump of work' so can't be canceled in pieces.

@@ -11,13 +11,6 @@ import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
 
-const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
-    //If DEBUG is falsy then
-    //   we launch from the 'fat jar' (which has to be built by running mvn package)
-    //if DEBUG is truthy then
-    //   - we launch the Java project directly from the classes folder produced by Eclipse JDT compiler
-    //   - we add DEBUG_ARG to the launch so that remote debugger can attach on port 8000
-
 var log_output : OutputChannel = null;
 
 function log(msg : string) {

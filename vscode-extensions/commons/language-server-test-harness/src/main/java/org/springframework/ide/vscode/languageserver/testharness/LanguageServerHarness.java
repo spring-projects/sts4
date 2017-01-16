@@ -173,8 +173,6 @@ public class LanguageServerHarness {
 	public TextDocumentInfo openDocument(TextDocumentInfo documentInfo) throws Exception {
 		DidOpenTextDocumentParams didOpen = new DidOpenTextDocumentParams();
 		didOpen.setTextDocument(documentInfo.getDocument());
-		didOpen.setText(documentInfo.getText());
-		didOpen.setUri(documentInfo.getUri());
 		if (server!=null) {
 			server.getTextDocumentService().didOpen(didOpen);
 		}
