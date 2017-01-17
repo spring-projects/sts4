@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
 
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 
 public interface CloudFoundryClientFactory {

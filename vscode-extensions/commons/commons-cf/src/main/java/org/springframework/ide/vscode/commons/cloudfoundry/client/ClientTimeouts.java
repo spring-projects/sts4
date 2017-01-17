@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
+package org.springframework.ide.vscode.commons.cloudfoundry.client;
 
 import java.time.Duration;
 

@@ -76,6 +76,8 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFCloudDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFSpace;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.SshClientSupport;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.SshHost;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;

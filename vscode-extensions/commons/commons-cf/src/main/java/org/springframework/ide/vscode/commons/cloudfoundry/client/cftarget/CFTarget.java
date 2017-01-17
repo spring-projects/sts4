@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

@@ -8,24 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
+package org.springframework.ide.vscode.commons.cloudfoundry.client;
+
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFApplication;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFApplicationDetail;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFCloudDomain;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFSpace;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.SshClientSupport;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CancelationTokens.CancelationToken;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public interface ClientRequests {
 
