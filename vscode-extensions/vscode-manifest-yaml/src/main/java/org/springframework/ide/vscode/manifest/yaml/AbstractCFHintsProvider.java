@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
@@ -29,13 +29,13 @@ import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 public abstract class AbstractCFHintsProvider implements Provider<Collection<YValueHint>> {
 
 	public static final String EMPTY_VALUE = "";
-	protected final CFTargetsFactory targetsFactory;
+	protected final CFTargetCache targetCache;
 
 	private static final Logger logger = Logger.getLogger(AbstractCFHintsProvider.class.getName());
 
-	public AbstractCFHintsProvider(CFTargetsFactory targetsFactory) {
-		Assert.isNotNull(targetsFactory);
-		this.targetsFactory = targetsFactory;
+	public AbstractCFHintsProvider(CFTargetCache targetCache) {
+		Assert.isNotNull(targetCache);
+		this.targetCache = targetCache;
 	}
 
 	@Override
@@ -45,19 +45,15 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 		// CF errors
 		// in the CA UI, as well as cases where there are no targets
 		try {
-			List<CFTarget> targets = targetsFactory.getTargets();
-			if (targets == null || targets.isEmpty()) {
-				hints.add(new BasicYValueHint(EMPTY_VALUE, targetsFactory.noTargetsMessage()));
-			} else {
-				Collection<YValueHint> resolvedHints = getHints(targets);
-				hints.addAll(resolvedHints);
-			}
+			List<CFTarget> targets = targetCache.getOrCreate();
+			Collection<YValueHint> resolvedHints = getHints(targets);
+			hints.addAll(resolvedHints);
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
 			// Don't throw exception as to allow the CA to be displayed to the
 			// user.
 			if (e instanceof IOException || ExceptionUtil.getDeepestCause(e) instanceof IOException) {
-				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + targetsFactory.noTargetsMessage()));
+				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + e.getMessage()));
 			} else {
 				hints.add(new BasicYValueHint(EMPTY_VALUE,
 						"Unable to fetch Cloud Foundry proposals due to:  " + e.getMessage()));

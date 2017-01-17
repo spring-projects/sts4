@@ -18,9 +18,9 @@ import javax.inject.Provider;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
@@ -50,7 +50,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
-	private CFTargetsFactory cfTargetsFactory;
+	private CFTargetCache cfTargetCache;
 	
 	private static final ClientTimeouts VSCODE_CF_CLIENT_TIMEOUTS = new ClientTimeouts() {
 
@@ -103,21 +103,21 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine ::getHover);
 	}
 	
-	private CFTargetsFactory getCFTargetsFactory() {
-		if (cfTargetsFactory == null) {
+	private CFTargetCache getCfTargetCache() {
+		if (cfTargetCache == null) {
 			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
 			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-			cfTargetsFactory = new CFTargetsFactory(paramsProvider, clientFactory, VSCODE_CF_CLIENT_TIMEOUTS);
+			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, VSCODE_CF_CLIENT_TIMEOUTS);
 		}
-		return cfTargetsFactory;
+		return cfTargetCache;
 	}
 
 	private Provider<Collection<YValueHint>> getBuildpacksProvider() {
-		return new ManifestYamlCFBuildpacksProvider(getCFTargetsFactory());
+		return new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
 	}
 	
 	private Provider<Collection<YValueHint>> getServicesProvider() {
-		return new ManifestYamlCFServicesProvider(getCFTargetsFactory());
+		return new ManifestYamlCFServicesProvider(getCfTargetCache());
 	}
 	
 	@Override

@@ -17,9 +17,9 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
@@ -38,8 +38,8 @@ public class CFClientTest {
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
 		ClientTimeouts timeouts = ClientTimeouts.DEFAULT_TIMEOUTS;
 
-		CFTargetsFactory targets = new CFTargetsFactory(cliProvider, clientFactory, timeouts);
-		CFTarget target = targets.getTargets().get(0);
+		CFTargetCache targetCache = new CFTargetCache(cliProvider, clientFactory, timeouts);
+		CFTarget target = targetCache.getOrCreate().get(0);
 
 		List<CFBuildpack> buildPacks = target.getBuildpacks();
 		assertTrue(!buildPacks.isEmpty());

@@ -26,6 +26,7 @@ import org.cloudfoundry.reactor.tokenprovider.OneTimePasscodeTokenProvider;
 import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
 import org.cloudfoundry.reactor.tokenprovider.RefreshTokenGrantTokenProvider;
 import org.cloudfoundry.reactor.uaa.ReactorUaaClient;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
 
 /**
@@ -99,16 +100,16 @@ public class CloudFoundryClientCache {
 			return null;
 		}
 
-		public CFClientProvider(Params params) {
+		public CFClientProvider(CFClientParams params) {
 			long sslTimeout = Long.getLong("sts.bootdash.cf.client.ssl.handshake.timeout", 60); //TODO: make a preference for this?
 			Optional<Boolean> keepAlive = getBooleanSystemProp("http.keepAlive");
 			debug("cf client keepAlive = "+keepAlive);
 			connection = DefaultConnectionContext.builder()
-					.proxyConfiguration(Optional.ofNullable(getProxy(params.host)))
-					.apiHost(params.host)
+					.proxyConfiguration(Optional.ofNullable(getProxy(params.getHost())))
+					.apiHost(params.getHost())
 					.sslHandshakeTimeout(Duration.ofSeconds(sslTimeout))
 					.keepAlive(keepAlive)
-					.skipSslValidation(params.skipSsl)
+					.skipSslValidation(params.skipSslValidation())
 					.build();
 
 			tokenProvider = createTokenProvider(params);
@@ -129,12 +130,12 @@ public class CloudFoundryClientCache {
 					.build();
 		}
 
-		private TokenProvider createTokenProvider(Params params) {
-			CFCredentials creds = params.credentials;
+		private TokenProvider createTokenProvider(CFClientParams params) {
+			CFCredentials creds = params.getCredentials();
 			switch (creds.getType()) {
 			case PASSWORD:
 				return PasswordGrantTokenProvider.builder()
-						.username(params.username)
+						.username(params.getUsername())
 						.password(creds.getSecret())
 						.build();
 			case REFRESH_TOKEN:
@@ -167,71 +168,12 @@ public class CloudFoundryClientCache {
 		}
 	}
 
-	public static class Params {
-		public final String username;
-		public final CFCredentials credentials;
-		public final String host;
-		public final boolean skipSsl;
-		public Params(String username, CFCredentials credentials, String host, boolean skipSsl) {
-			super();
-			this.username = username;
-			this.credentials = credentials;
-			this.host = host;
-			this.skipSsl = skipSsl;
-		}
 
-		@Override
-		public String toString() {
-			return "Params [username=" + username + ", host=" + host + ", skipSsl=" + skipSsl
-					+ "]";
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((host == null) ? 0 : host.hashCode());
-			result = prime * result + ((credentials == null) ? 0 : credentials.hashCode());
-			result = prime * result + (skipSsl ? 1231 : 1237);
-			result = prime * result + ((username == null) ? 0 : username.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Params other = (Params) obj;
-			if (host == null) {
-				if (other.host != null)
-					return false;
-			} else if (!host.equals(other.host))
-				return false;
-			if (credentials == null) {
-				if (other.credentials != null)
-					return false;
-			} else if (!credentials.equals(other.credentials))
-				return false;
-			if (skipSsl != other.skipSsl)
-				return false;
-			if (username == null) {
-				if (other.username != null)
-					return false;
-			} else if (!username.equals(other.username))
-				return false;
-			return true;
-		}
-	}
-
-	private Map<Params, CFClientProvider> cache = new HashMap<>();
+	private Map<CFClientParams, CFClientProvider> cache = new HashMap<>();
 
 	private int clientCount = 0;
 
-	public synchronized CFClientProvider getOrCreate(String username, CFCredentials credentials, String host, boolean skipSsl) {
-		Params params = new Params(username, credentials, host, skipSsl);
+	public synchronized CFClientProvider getOrCreate(CFClientParams params) {
 		CFClientProvider client = cache.get(params);
 		if (client==null) {
 			clientCount++;
@@ -243,7 +185,7 @@ public class CloudFoundryClientCache {
 		return client;
 	}
 
-	protected CFClientProvider create(Params params) {
+	protected CFClientProvider create(CFClientParams params) {
 		return new CFClientProvider(params);
 	}
 

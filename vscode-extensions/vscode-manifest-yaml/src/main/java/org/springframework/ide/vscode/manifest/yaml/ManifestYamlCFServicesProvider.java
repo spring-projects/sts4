@@ -16,14 +16,14 @@ import java.util.List;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 
-	public ManifestYamlCFServicesProvider(CFTargetsFactory targetsFactory) {
-		super(targetsFactory);
+	public ManifestYamlCFServicesProvider(CFTargetCache cache) {
+		super(cache);
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 		List<YValueHint> hints = new ArrayList<>();
 
 		for (CFTarget cfTarget : targets) {
-			List<CFServiceInstance> services = cfTarget.getClientRequests().getServices();
+			List<CFServiceInstance> services = cfTarget.getServices();
 			if (services != null) {
 				for (CFServiceInstance service : services) {
 					String name = service.getName();

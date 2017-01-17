@@ -16,14 +16,14 @@ import java.util.List;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetsFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 
-	public ManifestYamlCFBuildpacksProvider(CFTargetsFactory targetsFactory) {
-		super(targetsFactory);
+	public ManifestYamlCFBuildpacksProvider(CFTargetCache cache) {
+		super(cache);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 		}
 
 		if (hints.isEmpty()) {
-			hints.add(new BasicYValueHint(EMPTY_VALUE, "No buildpacks found. " + targetsFactory.noTargetsMessage()));
+			hints.add(new BasicYValueHint(EMPTY_VALUE, "No Cloud Foundry buildpacks found."));
 		}
 		return hints;
 	}

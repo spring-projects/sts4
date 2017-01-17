@@ -53,6 +53,11 @@ public class CFClientParams {
 		this.orgName = orgName;
 		this.spaceName = spaceName;
 	}
+	
+	public CFClientParams(String apiUrl, String username, CFCredentials credentials, boolean skipSslValidation) {
+		this(apiUrl, username, credentials, null /* no org */,
+				null /* no space */, skipSslValidation);
+	}
 
 	public CFCredentials getCredentials() {
 		return credentials;

@@ -151,7 +151,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 
 	public DefaultClientRequestsV2(CloudFoundryClientCache clients, CFClientParams params, ClientTimeouts timeouts) {
 		this.params = params;
-		CFClientProvider provider = clients.getOrCreate(params.getUsername(), params.getCredentials(), params.getHost(), params.skipSslValidation());
+		CFClientProvider provider = clients.getOrCreate(params);
 		this._client = provider.client;
 		this._uaa = provider.uaaClient;
 		this._tokenProvider = (AbstractUaaTokenProvider) provider.tokenProvider;
@@ -203,7 +203,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		}
 	}
 
-	@Override
+//	@Override
 	public List<CFApplication> getApplicationsWithBasicInfo() throws Exception {
 		return ReactorUtils.get(operations_listApps());
 	}
@@ -330,7 +330,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	 * list. This is to avoid one 'bad apple' from spoiling the whole batch. (I.e if failing to fetch details for
 	 * some apps we can still return details for the others rather than throw an exception).
 	 */
-	@Override
+//	@Override
 	public Flux<CFApplicationDetail> getApplicationDetails(List<CFApplication> appsToLookUp) throws Exception {
 		return Flux.fromIterable(appsToLookUp)
 		.flatMap((CFApplication appSummary) -> {
@@ -383,7 +383,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		};
 	}
 
-	@Override
+//	@Override
 	public void stopApplication(String appName) throws Exception {
 		ReactorUtils.get(
 			stopApp(appName)
@@ -399,7 +399,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public void restartApplication(String appName, CancelationToken cancelationToken) throws Exception {
 		ReactorUtils.get(timeouts.getAppStartTimeout(), cancelationToken,
 			restartApp(appName)
@@ -414,7 +414,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public void logout() {
 		_operations = null;
 		_client = null;
@@ -424,7 +424,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		return _client==null;
 	}
 
-	@Override
+//	@Override
 	public List<CFStack> getStacks() throws Exception {
 		return ReactorUtils.get(
 			log("operations.stacks().list()",
@@ -436,7 +436,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public SshClientSupport getSshClientSupport() throws Exception {
 		return new SshClientSupport() {
 
@@ -492,7 +492,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		return client_createOperations(org);
 	}
 
-	@Override
+//	@Override
 	public List<CFSpace> getSpaces() throws Exception {
 		Object it = ReactorUtils.get(timeouts.getSpacesTimeout(), log("operations.organizations().list()",
 				_operations.organizations()
@@ -514,7 +514,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		return (List<CFSpace>) it;
 	}
 
-	@Override
+//	@Override
 	public String getHealthCheck(UUID appGuid) throws Exception {
 		//XXX CF V2: getHealthcheck (via operations API)
 		// See: https://www.pivotaltracker.com/story/show/116462215
@@ -524,7 +524,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public void setHealthCheck(UUID guid, String hcType) throws Exception {
 		//XXX CF V2: setHealthCheck (via operations API)
 		// See: https://www.pivotaltracker.com/story/show/116462369
@@ -533,7 +533,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public List<CFCloudDomain> getDomains() throws Exception {
 		//XXX CF V2: list domains using 'operations' api.
 		return ReactorUtils.get(Duration.ofMinutes(2),
@@ -561,7 +561,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public CFApplicationDetail getApplication(String appName) throws Exception {
 		return ReactorUtils.get(
 				getApplicationMono(appName)
@@ -579,7 +579,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	}
 
 
-	@Override
+//	@Override
 	public void deleteApplication(String appName) throws Exception {
 		ReactorUtils.get(
 			log("operations.applications().delete(name="+appName+")",
@@ -592,7 +592,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public boolean applicationExists(String appName) throws Exception {
 		return ReactorUtils.get(
 				getApplicationMono(appName)
@@ -615,7 +615,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		});
 	}
 
-	@Override
+//	@Override
 	public void push(CFPushArguments params, CancelationToken cancelationToken) throws Exception {
 		String appName = params.getAppName();
 		ReactorUtils.get(timeouts.getAppStartTimeout(), cancelationToken,
@@ -1113,7 +1113,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 //		deleteServiceMono(serviceName).get();
 //	}
 
-	@Override
+//	@Override
 	public Mono<Void> deleteServiceAsync(String serviceName) {
 		return getService(serviceName)
 		.then(this::deleteServiceInstance);
@@ -1150,7 +1150,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		.map(this::dropObjectsFromMap);
 	}
 
-	@Override
+//	@Override
 	public Map<String, String> getApplicationEnvironment(String appName) throws Exception {
 		return ReactorUtils.get(getEnv(appName));
 	}
@@ -1318,12 +1318,12 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		);
 	}
 
-	@Override
+//	@Override
 	public String getRefreshToken() {
 		return _tokenProvider.getRefreshToken();
 	}
 
-	@Override
+//	@Override
 	public Mono<String> getUserName() {
 		return log("uaa.getUsername",
 				_uaa.getUsername()
