@@ -33,6 +33,29 @@ public class ExceptionUtil {
 		}
 		return cause;
 	}
+	
+	/**
+	 * 
+	 * @param e
+	 * @param toLookFor type of throwable to look for in the given throwable.
+	 * @return the throwable instance of the given type, or null if nothing found.
+	 */
+	public static Throwable getThrowable(Throwable e, Class<? extends Throwable> toLookFor) {
+		if (e.getClass().equals(toLookFor)) {
+			return e;
+		}
+		
+		Throwable cause = e;
+		Throwable parent = e.getCause();
+		while (parent != null && parent != e) {
+			cause = parent;
+			parent = cause.getCause();
+			if (cause.getClass().equals(toLookFor)) {
+				return cause;
+			}
+		}
+		return null;
+	}
 
 	public static String getMessage(Throwable e) {
 		// The message of nested exception is usually more interesting than the

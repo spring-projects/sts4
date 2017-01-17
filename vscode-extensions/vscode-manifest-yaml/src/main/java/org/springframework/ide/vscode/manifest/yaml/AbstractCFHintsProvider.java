@@ -50,9 +50,9 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 			hints.addAll(resolvedHints);
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
-			// Don't throw exception as to allow the CA to be displayed to the
+			// Don't propagate exception as to allow the CA to be displayed to the
 			// user.
-			if (e instanceof IOException || ExceptionUtil.getDeepestCause(e) instanceof IOException) {
+			if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
 				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + e.getMessage()));
 			} else {
 				hints.add(new BasicYValueHint(EMPTY_VALUE, e.getMessage()));
