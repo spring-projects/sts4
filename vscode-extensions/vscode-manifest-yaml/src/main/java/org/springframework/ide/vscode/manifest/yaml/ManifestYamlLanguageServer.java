@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cli.CliClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -106,7 +107,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private CFTargetCache getCfTargetCache() {
 		if (cfTargetCache == null) {
 			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
-			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
+			CloudFoundryClientFactory clientFactory = new CliClientFactory();
+//			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
 			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, VSCODE_CF_CLIENT_TIMEOUTS);
 		}
 		return cfTargetCache;
