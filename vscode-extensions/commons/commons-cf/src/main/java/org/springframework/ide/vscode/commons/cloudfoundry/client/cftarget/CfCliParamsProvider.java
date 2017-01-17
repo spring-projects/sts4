@@ -15,11 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
-import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,8 +33,6 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	public static final String NAME = "Name";
 	public static final String SSL_DISABLED = "SSLDisabled";
 
-	private static Logger logger = Logger.getLogger(CfCliParamsProvider.class.getName());
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -47,48 +40,38 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	 * ClientParamsProvider#getParams()
 	 */
 	@Override
-	public List<CFClientParams> getParams() {
-		try {
-			File file = getConfigJsonFile();
-			if (file != null) {
-				ObjectMapper mapper = new ObjectMapper();
-				Map<String, Object> userData = mapper.readValue(file, Map.class);
-				if (userData != null) {
-					String refreshToken = (String) userData.get(REFRESH_TOKEN);
-					// Only support connecting to CF via refresh token for now
-					if (refreshToken == null) {
-						return null;
-					}
-					CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
-					boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
-					String target = (String) userData.get(TARGET);
-					Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
-					Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
-					if (target != null && orgFields != null && spaceFields != null) {
-						String orgName = (String) orgFields.get(NAME);
-						String spaceName = (String) spaceFields.get(NAME);
-						List<CFClientParams> params = new ArrayList<>();
-						params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
-						return params;
-					}
+	public List<CFClientParams> getParams() throws Exception {
+		File file = getConfigJsonFile();
+		List<CFClientParams> params = new ArrayList<>();
+
+		if (file != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> userData = mapper.readValue(file, Map.class);
+			if (userData != null) {
+				String refreshToken = (String) userData.get(REFRESH_TOKEN);
+				// Only support connecting to CF via refresh token for now
+				if (refreshToken == null) {
+					return null;
+				}
+				CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
+				boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
+				String target = (String) userData.get(TARGET);
+				Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
+				Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
+				if (target != null && orgFields != null && spaceFields != null) {
+					String orgName = (String) orgFields.get(NAME);
+					String spaceName = (String) spaceFields.get(NAME);
+					params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
 				}
 			}
-		} catch (IOException | InterruptedException e) {
-			log(e);
 		}
 
-		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
-	 * ClientParamsProvider#noParamsAvailableMessage()
-	 */
-	@Override
-	public String noParamsAvailableMessage() {
-		return "Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.";
+		if (params.isEmpty()) {
+			throw new Exception(
+					"Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.");
+		} else {
+			return params;
+		}
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
@@ -112,9 +95,4 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	private String getUnixHomeDir() throws IOException, InterruptedException {
 		return System.getProperty("user.home");
 	}
-
-	private void log(Exception e) {
-		logger.log(Level.SEVERE, e.getMessage(), e);
-	}
-
 }

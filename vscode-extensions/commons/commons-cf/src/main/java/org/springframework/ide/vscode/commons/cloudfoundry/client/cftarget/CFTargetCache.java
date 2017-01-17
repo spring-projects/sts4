@@ -12,11 +12,10 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.cache.CacheBuilder;
@@ -53,7 +52,8 @@ public class CFTargetCache {
 
 	/**
 	 * @return non-null list of targets, or throws exception if no targets found
-	 * @throws Exception if no targets found, or error in resolving targets
+	 * @throws Exception
+	 *             if no targets found, or error in resolving targets
 	 */
 	public synchronized List<CFTarget> getOrCreate() throws Exception {
 
@@ -66,10 +66,6 @@ public class CFTargetCache {
 					targets.add(target);
 				}
 			}
-		}
-
-		if (targets.isEmpty()) {
-			throw new ExecutionException(new Error(paramsProvider.noParamsAvailableMessage()));
 		}
 
 		return targets;

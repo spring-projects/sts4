@@ -55,8 +55,7 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 			if (e instanceof IOException || ExceptionUtil.getDeepestCause(e) instanceof IOException) {
 				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + e.getMessage()));
 			} else {
-				hints.add(new BasicYValueHint(EMPTY_VALUE,
-						"Unable to fetch Cloud Foundry proposals due to:  " + e.getMessage()));
+				hints.add(new BasicYValueHint(EMPTY_VALUE, e.getMessage()));
 			}
 		}
 		return hints;

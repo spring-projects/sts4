@@ -14,8 +14,11 @@ import java.util.List;
 
 public interface ClientParamsProvider {
 
-	List<CFClientParams> getParams();
-
-	String noParamsAvailableMessage();
+	/**
+	 * 
+	 * @return non-null list of params to connect to Cloud Foundry
+	 * @throws Exception if failure to resolve any params for Cloud Foundry
+	 */
+	List<CFClientParams> getParams() throws Exception;
 
 }

@@ -8,10 +8,8 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
+package org.springframework.ide.vscode.commons.cloudfoundry.client;
 
-import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 
 public interface CloudFoundryClientFactory {
