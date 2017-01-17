@@ -50,18 +50,17 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 			if (userData != null) {
 				String refreshToken = (String) userData.get(REFRESH_TOKEN);
 				// Only support connecting to CF via refresh token for now
-				if (refreshToken == null) {
-					return null;
-				}
-				CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
-				boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
-				String target = (String) userData.get(TARGET);
-				Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
-				Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
-				if (target != null && orgFields != null && spaceFields != null) {
-					String orgName = (String) orgFields.get(NAME);
-					String spaceName = (String) spaceFields.get(NAME);
-					params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
+				if (isRefreshTokenSet(refreshToken)) {
+					CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
+					boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
+					String target = (String) userData.get(TARGET);
+					Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
+					Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
+					if (target != null && orgFields != null && spaceFields != null) {
+						String orgName = (String) orgFields.get(NAME);
+						String spaceName = (String) spaceFields.get(NAME);
+						params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
+					}
 				}
 			}
 		}
@@ -72,6 +71,10 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		} else {
 			return params;
 		}
+	}
+	
+	private boolean isRefreshTokenSet(String token) {
+		return token != null && token.trim().length() > 0;
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
@@ -95,4 +98,5 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	private String getUnixHomeDir() throws IOException, InterruptedException {
 		return System.getProperty("user.home");
 	}
+
 }

@@ -16,9 +16,10 @@ public interface ClientParamsProvider {
 
 	/**
 	 * 
-	 * @return non-null list of params to connect to Cloud Foundry
+	 * @return non-null list of VALID params to connect to Cloud Foundry
 	 * @throws Exception if failure to resolve any params for Cloud Foundry
 	 */
 	List<CFClientParams> getParams() throws Exception;
+
 
 }
