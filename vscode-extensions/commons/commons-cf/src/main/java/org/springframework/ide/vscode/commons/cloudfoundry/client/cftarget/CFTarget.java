@@ -75,11 +75,11 @@ public class CFTarget {
 		return params;
 	}
 
-	public List<CFBuildpack> getBuildpacks() throws ExecutionException {
+	public List<CFBuildpack> getBuildpacks() throws Exception {
 		return this.buildpacksCache.get(getName());
 	}
 
-	public List<CFServiceInstance> getServices() throws ExecutionException {
+	public List<CFServiceInstance> getServices() throws Exception {
 		return this.servicesCache.get(getName());
 	}
 
@@ -95,4 +95,5 @@ public class CFTarget {
 	public String toString() {
 		return "CFClientTarget [params=" + params + ", targetName=" + targetName + "]";
 	}
+
 }

@@ -21,6 +21,7 @@ import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
@@ -50,12 +51,17 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 			hints.addAll(resolvedHints);
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
-			// Don't propagate exception as to allow the CA to be displayed to the
+			// Don't propagate exception as to allow the CA to be displayed to
+			// the
 			// user.
-			if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
-				hints.add(new BasicYValueHint(EMPTY_VALUE, "Connection failure. " + e.getMessage()));
-			} else {
+			if (ExceptionUtil.getThrowable(e, NoTargetsException.class) != null) {
 				hints.add(new BasicYValueHint(EMPTY_VALUE, e.getMessage()));
+			} else if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
+				hints.add(new BasicYValueHint(EMPTY_VALUE,
+						"Connection failure to Cloud Foundry. Please check the log for more details."));
+			} else {
+				hints.add(new BasicYValueHint(EMPTY_VALUE,
+						"Failed to fetch values from Cloud Foundry. Please check the log for more details."));
 			}
 		}
 		return hints;

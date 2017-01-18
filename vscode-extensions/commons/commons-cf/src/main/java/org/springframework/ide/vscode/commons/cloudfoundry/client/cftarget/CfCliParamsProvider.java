@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
@@ -42,39 +43,43 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	 * ClientParamsProvider#getParams()
 	 */
 	@Override
-	public List<CFClientParams> getParams() throws Exception {
-		File file = getConfigJsonFile();
+	public List<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
 		List<CFClientParams> params = new ArrayList<>();
 
-		if (file != null) {
-			ObjectMapper mapper = new ObjectMapper();
-			Map<String, Object> userData = mapper.readValue(file, Map.class);
-			if (userData != null) {
-				String refreshToken = (String) userData.get(REFRESH_TOKEN);
-				// Only support connecting to CF via refresh token for now
-				if (isRefreshTokenSet(refreshToken)) {
-					CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
-					boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
-					String target = (String) userData.get(TARGET);
-					Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
-					Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
-					if (target != null && orgFields != null && spaceFields != null) {
-						String orgName = (String) orgFields.get(NAME);
-						String spaceName = (String) spaceFields.get(NAME);
-						params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
+		try {
+			File file = getConfigJsonFile();
+			if (file != null) {
+				ObjectMapper mapper = new ObjectMapper();
+				Map<String, Object> userData = mapper.readValue(file, Map.class);
+				if (userData != null) {
+					String refreshToken = (String) userData.get(REFRESH_TOKEN);
+					// Only support connecting to CF via refresh token for now
+					if (isRefreshTokenSet(refreshToken)) {
+						CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
+						boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
+						String target = (String) userData.get(TARGET);
+						Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
+						Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
+						if (target != null && orgFields != null && spaceFields != null) {
+							String orgName = (String) orgFields.get(NAME);
+							String spaceName = (String) spaceFields.get(NAME);
+							params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
+						}
 					}
 				}
 			}
+		} catch (IOException | InterruptedException e) {
+			throw new ExecutionException(e);
 		}
 
 		if (params.isEmpty()) {
-			throw new Exception(
+			throw new NoTargetsException(
 					"Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.");
 		} else {
 			return params;
 		}
 	}
-	
+
 	private boolean isRefreshTokenSet(String token) {
 		return StringUtil.hasText(token);
 	}

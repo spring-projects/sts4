@@ -52,10 +52,12 @@ public class CFTargetCache {
 
 	/**
 	 * @return non-null list of targets, or throws exception if no targets found
+	 * @throws NoTargetsException
+	 *             if no targets found
 	 * @throws Exception
-	 *             if no targets found, or error in resolving targets
+	 *             for any other error encountered
 	 */
-	public synchronized List<CFTarget> getOrCreate() throws Exception {
+	public synchronized List<CFTarget> getOrCreate() throws NoTargetsException, Exception {
 
 		List<CFClientParams> allParams = paramsProvider.getParams();
 		List<CFTarget> targets = new ArrayList<>();
@@ -88,4 +90,6 @@ public class CFTargetCache {
 			return cfApiUrl;
 		}
 	}
+
+
 }
