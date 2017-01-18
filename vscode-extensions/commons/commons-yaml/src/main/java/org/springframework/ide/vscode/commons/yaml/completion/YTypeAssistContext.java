@@ -52,8 +52,8 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	public YTypeAssistContext(YTypeAssistContext parent, YamlPath contextPath, YType YType, YTypeUtil typeUtil) {
 		super(parent.getDocument(), parent.documentSelector, contextPath);
 		this.parent = parent;
-		this.type = YType;
 		this.typeUtil = typeUtil;
+		this.type = typeUtil.inferMoreSpecificType(YType, getSchemaContext());
 	}
 
 	public YTypeAssistContext(TopLevelAssistContext parent, int documentSelector, YType type, YTypeUtil typeUtil) {
@@ -76,7 +76,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
 		int queryOffset = offset - query.length();
 		SNode contextNode = getContextNode();
-		DynamicSchemaContext dynamicCtxt = new SNodeDynamicSchemaContext(contextNode);
+		DynamicSchemaContext dynamicCtxt = getSchemaContext();
 		List<YTypedProperty> properties = typeUtil.getProperties(type, dynamicCtxt);
 		if (CollectionUtil.hasElements(properties)) {
 			ArrayList<ICompletionProposal> proposals = new ArrayList<>(properties.size());
@@ -171,12 +171,11 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	@Override
 	public YamlAssistContext traverse(YamlPathSegment s) throws Exception {
 		if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
+			DynamicSchemaContext dynamicCtxt = getSchemaContext();
 			if (typeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 				return contextWith(s, typeUtil.getDomainType(type));
 			}
 			String key = s.toPropString();
-			SNode contextNode = getContextNode(); 
-			DynamicSchemaContext dynamicCtxt = new SNodeDynamicSchemaContext(contextNode);
 			Map<String, YTypedProperty> subproperties = typeUtil.getPropertiesMap(type, dynamicCtxt);
 			if (subproperties!=null) {
 				return contextWith(s, getType(subproperties.get(key)));
@@ -237,11 +236,12 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		}
 		return null;
 	}
-	
-	private DynamicSchemaContext getSchemaContext() {
+
+	protected DynamicSchemaContext getSchemaContext() {
 		try {
 			SNode contextNode = getContextNode();
-			return new SNodeDynamicSchemaContext(contextNode);
+			YamlPath fullContextPath = contextPath.prepend(YamlPathSegment.valueAt(documentSelector));
+			return new SNodeDynamicSchemaContext(contextNode, fullContextPath);
 		} catch (Exception e) {
 			Log.log(e);
 			return DynamicSchemaContext.NULL;

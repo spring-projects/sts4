@@ -117,12 +117,19 @@ public class YamlPath {
 		return null;
 	}
 
+	public YamlPath prepend(YamlPathSegment s) {
+		YamlPathSegment[] newPath = new YamlPathSegment[segments.length+1];
+		newPath[0] = s;
+		System.arraycopy(segments, 0, newPath, 1, segments.length);
+		return new YamlPath(newPath);
+	}
+
 	public YamlPath append(YamlPathSegment s) {
 		YamlPathSegment[] newPath = Arrays.copyOf(segments, segments.length+1);
 		newPath[segments.length] = s;
 		return new YamlPath(newPath);
 	}
-	
+
 	public Node traverseToNode(YamlFileAST root) {
 		ASTCursor cursor = traverse(new ASTRootCursor(root));
 		if (cursor instanceof NodeCursor) {

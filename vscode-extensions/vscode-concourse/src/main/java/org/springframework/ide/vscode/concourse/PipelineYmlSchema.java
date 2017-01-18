@@ -39,11 +39,17 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YTypeFactory f = new YTypeFactory();
 	public final YType t_string = f.yatomic("String");
 	public final YType t_strings = f.yseq(t_string);
+	public final YType t_pair = f.ybean("NameValuePair",
+			f.yprop("name", t_string),
+			f.yprop("value", t_string)
+	);
+	public final YType t_pair_list = f.yseq(t_pair);
+
 	public final YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 	public final YType t_any = f.yany("Object");
 	public final YType t_params = f.ymap(t_string, t_any);
 	public final YType t_string_params = f.ymap(t_string, t_string);
-	
+
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
 	public PipelineYmlSchema(ConcourseModel models) {
@@ -64,7 +70,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
-		
+
 		YAtomicType t_image_type = f.yatomic("ImageType");
 		t_image_type.addHints("docker_image");
 
@@ -95,8 +101,8 @@ public class PipelineYmlSchema implements YamlSchema {
 //
 //				 The vagrant-cloud r
 		);
-		
-		YType resourceName = f.yenum("Resource Name", 
+
+		YType resourceName = f.yenum("Resource Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
@@ -105,7 +111,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		);
 
-		YType jobName = f.yenum("Job Name", 
+		YType jobName = f.yenum("Job Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
@@ -113,7 +119,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return models.getJobNames(dc.getDocument());
 				}
 		);
-		
+
 		YAtomicType resourceNameDef = f.yatomic("Resource Name");
 		resourceNameDef.parseWith(ValueParsers.resourceNameDef(models));
 		YAtomicType jobNameDef = f.yatomic("Job Name");
@@ -146,7 +152,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
 		YBeanType tryStep = f.ybean("TryStep");
-		
+
 		YBeanType[] stepTypes = {
 				getStep,
 				putStep,
@@ -175,9 +181,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			if (typeTag!=null) {
 				return resourceTypes.getSourceType(typeTag);
 			}
-			return t_any;
+			return null;
 		});
-		
+
 		YBeanType resource = f.ybean("Resource");
 		addProp(resource, "name", resourceNameDef);
 		addProp(resource, "type", t_resource_type_name);
@@ -193,12 +199,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "public", t_boolean);
 		addProp(job, "disable_manual_trigger", t_boolean);
 		addProp(job, "plan", f.yseq(step));
-		
+
 		YBeanType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", t_ne_string);
 		addProp(resourceType, "type", t_image_type);
 		addProp(resourceType, "source", t_any);
-		
+
 		YBeanType group = f.ybean("Group");
 		addProp(group, "name", t_ne_string);
 		addProp(group, "resources", f.yseq(resourceName));
@@ -208,7 +214,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
-		
+
 		initializeDefaultResourceTypes();
 	}
 
@@ -223,12 +229,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(gitSource, "ignore_paths", t_strings);
 		addProp(gitSource, "skip_ssl_verification", t_boolean);
 		addProp(gitSource, "tag_filter", t_string);
-		addProp(gitSource, "git_config", t_string);
+		addProp(gitSource, "git_config", t_pair_list);
 		addProp(gitSource, "disable_ci_skip", t_boolean);
 		addProp(gitSource, "commit_verification_keys", t_strings);
 		addProp(gitSource, "commit_verification_key_ids", t_strings);
-		addProp(gitSource, "gpg_keyserver", t_strings);
-		
+		addProp(gitSource, "gpg_keyserver", t_string);
+
 		resourceTypes.def("git", gitSource);
 	}
 

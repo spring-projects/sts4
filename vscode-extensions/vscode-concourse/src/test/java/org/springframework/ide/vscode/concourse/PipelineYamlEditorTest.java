@@ -100,12 +100,12 @@ public class PipelineYamlEditorTest {
 		editor = harness.newEditor(
 				"resources:\n" +
 				"  name: git\n" +
-				"  type: git\n" 
+				"  type: git\n"
 		);
 		editor.assertProblems(
 				"name: git\n  type: git|Expecting a 'Sequence' but found a 'Map'"
 		);
-		
+
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- name: a-job\n" +
@@ -141,7 +141,7 @@ public class PipelineYamlEditorTest {
 				"  - <*>"
 				, // ==============
 				"<*>"
-				, // => 
+				, // =>
 				"aggregate:\n" +
 				"    - <*>"
 				, // ==============
@@ -158,7 +158,7 @@ public class PipelineYamlEditorTest {
 				"      <*>"
 		);
 	}
-	
+
 	@Test
 	public void PT_136196057_do_step_completion_indentation() throws Exception {
 		assertCompletions(
@@ -166,7 +166,7 @@ public class PipelineYamlEditorTest {
 				"- name:\n"+
 				"  plan:\n" +
 				"  - do<*>"
-				, // => 
+				, // =>
 				"jobs:\n" +
 				"- name:\n"+
 				"  plan:\n" +
@@ -189,7 +189,7 @@ public class PipelineYamlEditorTest {
 				"  - try:\n" +
 				"      put: test-logs\n"
 		);
-		
+
 		editor.assertHoverContains("get", "Fetches a resource");
 		editor.assertHoverContains("put", "Pushes to the given [Resource]");
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
@@ -197,7 +197,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("do", "performs the given steps serially");
 		editor.assertHoverContains("try", "Performs the given step, swallowing any failure");
 	}
-	
+
 	@Test
 	public void putStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
@@ -247,7 +247,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
 		editor.assertHoverContains("ensure", "a second step to execute regardless of the result of the parent step");
 	}
-	
+
 	@Test
 	public void groupHovers() throws Exception {
 		Editor editor = harness.newEditor(
@@ -260,7 +260,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("resources", "A list of resources that should appear in this group");
 		editor.assertHoverContains("jobs", " A list of jobs that should appear in this group");
 	}
-	
+
 	@Test
 	public void taskStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
@@ -302,7 +302,7 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void aggregateStepHovers() throws Exception {
 		Editor editor;
-		
+
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- name: some-job\n" +
@@ -310,7 +310,7 @@ public class PipelineYamlEditorTest {
 				"  - aggregate:\n" +
 				"    - get: some-resource\n"
 		);
-		
+
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
 	}
 
@@ -427,59 +427,59 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void topLevelHoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
-			"resource_types:\n" + 
-			"- name: s3-multi\n" + 
-			"  type: docker-image\n" + 
-			"  source:\n" + 
-			"    repository: kdvolder/s3-resource-simple\n" + 
-			"resources:\n" + 
-			"- name: docker-git\n" + 
-			"  type: git\n" + 
-			"  source:\n" + 
-			"    uri: git@github.com:spring-projects/sts4.git\n" + 
-			"    branch: {{branch}}\n" + 
-			"    username: kdvolder\n" + 
-			"    private_key: {{rsa_id}}\n" + 
-			"    paths:\n" + 
-			"    - concourse/docker\n" + 
-			"jobs:\n" + 
-			"- name: build-docker-image\n" + 
-			"  serial: true\n" + 
-			"  plan:\n" + 
-			"  - get: docker-git\n" + 
-			"    trigger: true\n" + 
-			"  - put: docker-image\n" + 
-			"    params:\n" + 
-			"      build: docker-git/concourse/docker\n" + 
-			"    get_params: \n" + 
+			"resource_types:\n" +
+			"- name: s3-multi\n" +
+			"  type: docker-image\n" +
+			"  source:\n" +
+			"    repository: kdvolder/s3-resource-simple\n" +
+			"resources:\n" +
+			"- name: docker-git\n" +
+			"  type: git\n" +
+			"  source:\n" +
+			"    uri: git@github.com:spring-projects/sts4.git\n" +
+			"    branch: {{branch}}\n" +
+			"    username: kdvolder\n" +
+			"    private_key: {{rsa_id}}\n" +
+			"    paths:\n" +
+			"    - concourse/docker\n" +
+			"jobs:\n" +
+			"- name: build-docker-image\n" +
+			"  serial: true\n" +
+			"  plan:\n" +
+			"  - get: docker-git\n" +
+			"    trigger: true\n" +
+			"  - put: docker-image\n" +
+			"    params:\n" +
+			"      build: docker-git/concourse/docker\n" +
+			"    get_params: \n" +
 			"      skip_download: true\n" +
 			"groups:\n" +
 			"- name: a-groups\n"
 		);
-		
+
 		editor.assertHoverContains("resource_types", "each pipeline can configure its own custom types by specifying `resource_types` at the top level.");
 		editor.assertHoverContains("resources", "A resource is any entity that can be checked for new versions");
 		editor.assertHoverContains("jobs", "At a high level, a job describes some actions to perform");
 		editor.assertHoverContains("groups", "A pipeline may optionally contain a section called `groups`");
 	}
-	
+
 	@Test
 	public void reconcileResourceReferences() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: sts4\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    uri: https://github.com/kdvolder/somestuff\n" + 
-				"jobs:\n" + 
-				"- name: job1\n" + 
-				"  plan:\n" + 
-				"  - get: sts4\n" + 
-				"  - get: bogus-get\n" + 
-				"  - task: do-stuff\n" + 
-				"    input_mapping:\n" + 
-				"      task-input: bogus-input\n" + 
-				"      repo: sts4\n" + 
+				"resources:\n" +
+				"- name: sts4\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/kdvolder/somestuff\n" +
+				"jobs:\n" +
+				"- name: job1\n" +
+				"  plan:\n" +
+				"  - get: sts4\n" +
+				"  - get: bogus-get\n" +
+				"  - task: do-stuff\n" +
+				"    input_mapping:\n" +
+				"      task-input: bogus-input\n" +
+				"      repo: sts4\n" +
 				"  - put: bogus-put\n"
 		);
 		editor.assertProblems(
@@ -487,7 +487,7 @@ public class PipelineYamlEditorTest {
 				"bogus-input|resource does not exist",
 				"bogus-put|resource does not exist"
 		);
-		
+
 		editor.assertProblems(
 				"bogus-get|[sts4]",
 				"bogus-input|[sts4]",
@@ -498,19 +498,19 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void reconcileDuplicateResourceNames() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: sts4\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    uri: https://github.com/kdvolder/somestuff\n" + 
-				"- name: utils\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    uri: https://github.com/kdvolder/someutils\n" + 
-				"- name: sts4\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    uri: https://github.com/kdvolder/extras\n" 
+				"resources:\n" +
+				"- name: sts4\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/kdvolder/somestuff\n" +
+				"- name: utils\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/kdvolder/someutils\n" +
+				"- name: sts4\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/kdvolder/extras\n"
 		);
 		editor.assertProblems(
 				"sts4|Duplicate resource name",
@@ -521,9 +521,9 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void reconcileDuplicateJobNames() throws Exception {
 		Editor editor = harness.newEditor(
-				"jobs:\n" + 
-				"- name: job-1\n" + 
-				"- name: utils\n" + 
+				"jobs:\n" +
+				"- name: job-1\n" +
+				"- name: utils\n" +
 				"- name: job-1\n"
 		);
 		editor.assertProblems(
@@ -535,36 +535,36 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void completionsResourceReferences() throws Exception {
 		assertContextualCompletions(
-				"resources:\n" + 
-				"- name: sts4\n" + 
+				"resources:\n" +
+				"- name: sts4\n" +
 				"- name: repo-a\n" +
 				"- name: repo-b\n" +
-				"jobs:\n" + 
-				"- name: job1\n" + 
-				"  plan:\n" + 
-				"  - get: <*>\n" 
-				, //////////////////// 
+				"jobs:\n" +
+				"- name: job1\n" +
+				"  plan:\n" +
+				"  - get: <*>\n"
+				, ////////////////////
 				"<*>"
-				, // => 
+				, // =>
 				"repo-a<*>", "repo-b<*>", "sts4<*>"
 		);
 
 		assertContextualCompletions(
-				"resources:\n" + 
-				"- name: sts4\n" + 
+				"resources:\n" +
+				"- name: sts4\n" +
 				"- name: repo-a\n" +
 				"- name: repo-b\n" +
-				"jobs:\n" + 
-				"- name: job1\n" + 
-				"  plan:\n" + 
-				"  - put: <*>\n" 
-				, //////////////////// 
+				"jobs:\n" +
+				"- name: job1\n" +
+				"  plan:\n" +
+				"  - put: <*>\n"
+				, ////////////////////
 				"r<*>"
-				, // => 
+				, // =>
 				"repo-a<*>", "repo-b<*>"
 		);
 	}
-	
+
 	@Test
 	public void reconcileDuplicateKeys() throws Exception {
 		Editor editor = harness.newEditor(
@@ -580,7 +580,7 @@ public class PipelineYamlEditorTest {
 				"  source:\n" +
 				"    uri: https://github.com/kdvolder/forked-repo\n"
 		);
-		
+
 		editor.assertProblems(
 				"resources|Duplicate key",
 				"resources|Duplicate key",
@@ -588,92 +588,138 @@ public class PipelineYamlEditorTest {
 				"type|Duplicate key"
 		);
 	}
-	
+
 	@Test
 	public void reconcileJobNames() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: git-repo\n" + 
-				"- name: build-artefact\n" + 
-				"jobs:\n" + 
-				"- name: build\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
-				"  - task: run-build\n" + 
-				"  - put: build-artefact\n" + 
-				"- name: test\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
-				"    passed:\n" + 
-				"    - not-a-job\n" + 
+				"resources:\n" +
+				"- name: git-repo\n" +
+				"- name: build-artefact\n" +
+				"jobs:\n" +
+				"- name: build\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
+				"  - task: run-build\n" +
+				"  - put: build-artefact\n" +
+				"- name: test\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
+				"    passed:\n" +
+				"    - not-a-job\n" +
 				"    - build\n"
 		);
-		
+
 		editor.assertProblems("not-a-job|does not exist");
 	}
 
 	@Test
 	public void reconcileGroups() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: git-repo\n" + 
-				"- name: build-artefact\n" + 
-				"jobs:\n" + 
-				"- name: build\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
-				"  - task: run-build\n" + 
-				"  - put: build-artefact\n" + 
-				"- name: test\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
+				"resources:\n" +
+				"- name: git-repo\n" +
+				"- name: build-artefact\n" +
+				"jobs:\n" +
+				"- name: build\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
+				"  - task: run-build\n" +
+				"  - put: build-artefact\n" +
+				"- name: test\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
 				"groups:\n" +
 				"- name: some-group\n" +
 				"  jobs: [build, test, bogus-job]\n" +
 				"  resources: [git-repo, build-artefact, not-a-resource]"
 		);
-		
+
 		editor.assertProblems(
 				"bogus-job|does not exist",
 				"not-a-resource|does not exist"
 		);
 	}
-	
-	@Test 
-	public void reconcileGitResource() throws Exception {
+
+	@Test public void reconcileGitResourceSource() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: sts4-out\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    uri: git@github.com:spring-projects/sts4.git\n" + 
+				"resources:\n" +
+				"- name: sts4-out\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:spring-projects/sts4.git\n" +
 				"    bogus: bad\n" +
-				"    branch: {{branch}}\n" + 
-				"    private_key: {{rsa_id}}\n"
+				"    branch: {{branch}}\n" +
+				"    private_key: {{rsa_id}}\n" +
+				"    username: jeffy\n" +
+				"    password: {{git_passwords}}\n" +
+				"    paths: not-a-list\n" +
+				"    ignore_paths: also-not-a-list\n" +
+				"    skip_ssl_verification: skip-it\n" +
+				"    tag_filter: RELEASE_*\n" +
+				"    git_config:\n" +
+				"    - name: good\n" +
+				"      val: bad\n" +
+				"    disable_ci_skip: no_ci_skip\n" +
+				"    commit_verification_keys: not-a-list-of-keys\n" +
+				"    commit_verification_key_ids: not-a-list-of-ids\n" +
+				"    gpg_keyserver: hkp://somekeyserver.net"
 		);
 		editor.assertProblems(
-				"bogus|Unknown property"
+				"bogus|Unknown property",
+				"not-a-list|Expecting a 'Sequence'",
+				"also-not-a-list|Expecting a 'Sequence'",
+				"skip-it|'boolean'",
+				"val|Unknown property",
+				"no_ci_skip|'boolean'",
+				"not-a-list-of-keys|Expecting a 'Sequence'",
+				"not-a-list-of-ids|Expecting a 'Sequence'"
 		);
+	}
+
+	@Test public void gitResourceSourceHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: sts4-out\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:spring-projects/sts4.git\n" +
+				"    bogus: bad\n" +
+				"    branch: {{branch}}\n" +
+				"    private_key: {{rsa_id}}\n" +
+				"    username: jeffy\n" +
+				"    password: {{git_passwords}}\n" +
+				"    paths: not-a-list\n" +
+				"    ignore_paths: also-not-a-list\n" +
+				"    skip_ssl_verification: skip-it\n" +
+				"    tag_filter: RELEASE_*\n" +
+				"    git_config:\n" +
+				"    - name: good\n" +
+				"      val: bad\n" +
+				"    disable_ci_skip: no_ci_skip\n" +
+				"    commit_verification_keys: not-a-list-of-keys\n" +
+				"    commit_verification_key_ids: not-a-list-of-ids\n" +
+				"    gpg_keyserver: hkp://somekeyserver.net"
+		);
+		editor.assertHoverContains("uri", "*Required.* The location of the repository.");
 	}
 
 	@Test
 	public void contentAssistJobNames() throws Exception {
 		assertContextualCompletions(
-				"resources:\n" + 
-				"- name: git-repo\n" + 
-				"- name: build-artefact\n" + 
-				"jobs:\n" + 
-				"- name: build\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
-				"  - task: run-build\n" + 
-				"  - put: build-artefact\n" + 
-				"- name: test\n" + 
-				"  plan:\n" + 
-				"  - get: git-repo\n" + 
-				"    passed:\n" + 
-				"    - <*>\n" 
-				, /////////////////////////// 
+				"resources:\n" +
+				"- name: git-repo\n" +
+				"- name: build-artefact\n" +
+				"jobs:\n" +
+				"- name: build\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
+				"  - task: run-build\n" +
+				"  - put: build-artefact\n" +
+				"- name: test\n" +
+				"  plan:\n" +
+				"  - get: git-repo\n" +
+				"    passed:\n" +
+				"    - <*>\n"
+				, ///////////////////////////
 				"<*>"
 				, // =>
 				"build<*>",
@@ -684,29 +730,29 @@ public class PipelineYamlEditorTest {
 	@Test
 	public void resourceTypeAttributeHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"resource_types:\n" + 
-				"- name: s3-multi\n" + 
-				"  type: docker-image\n" + 
-				"  source:\n" + 
+				"resource_types:\n" +
+				"- name: s3-multi\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
 				"    repository: kdvolder/s3-resource-simple\n"
 		);
-		
+
 		editor.assertHoverContains("name", "This name will be referenced by `resources` defined within the same pipeline");
 		editor.assertHoverContains("type", 2, "used to provide the resource type's container image");
 		editor.assertHoverContains("source", 2, "The location of the resource type's resource");
 	}
-	
+
 	@Test
 	public void resourceAttributeHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: sts4\n" + 
+				"resources:\n" +
+				"- name: sts4\n" +
 				"  type: git\n" +
 				"  check_every: 5m\n" +
-				"  source:\n" + 
+				"  source:\n" +
 				"    repository: https://github.com/spring-projects/sts4\n"
 		);
-		
+
 		editor.assertHoverContains("name", "The name of the resource");
 		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
 		editor.assertHoverContains("source", 2, "The location of the resource");

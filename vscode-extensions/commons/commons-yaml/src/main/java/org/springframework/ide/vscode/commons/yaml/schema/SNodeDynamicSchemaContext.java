@@ -31,9 +31,11 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 
 	private SNode contextNode;
+	private YamlPath contextPath;
 
-	public SNodeDynamicSchemaContext(SNode contextNode) {
+	public SNodeDynamicSchemaContext(SNode contextNode, YamlPath contextPath) {
 		this.contextNode = contextNode;
+		this.contextPath = contextPath;
 	}
 
 	@Override
@@ -64,8 +66,7 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 
 	@Override
 	public YamlPath getPath() {
-		// TODO Auto-generated method stub
-		return null;
+		return contextPath;
 	}
 
 
