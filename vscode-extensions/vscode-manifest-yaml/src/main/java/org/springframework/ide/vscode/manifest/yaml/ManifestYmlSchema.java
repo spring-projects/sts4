@@ -58,7 +58,7 @@ public class ManifestYmlSchema implements YamlSchema {
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
 		
-		YAtomicType t_service_string = f.yatomic("String");
+		YAtomicType t_service_string = f.yatomic("Service");
 		if (servicesProvider != null) {
 			t_service_string.addHintProvider(servicesProvider);
 			t_service_string.parseWith(ManifestYmlValueParsers.fromHints(t_service_string.toString(), servicesProvider));

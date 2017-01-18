@@ -49,7 +49,18 @@
 			<id>spring-releases</id>
 			<name>Spring Releases</name>
 			<url>http://repo.spring.io/release</url>
+			<snapshots>
+                <enabled>false</enabled>
+            </snapshots>
 		</repository>
+		<repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>http://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
 	</repositories>
 
 	<properties>
@@ -63,9 +74,9 @@
 		<jersey-2-version>2.10</jersey-2-version>
 		<lsp4j-version>0.1.0-SNAPSHOT</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
-		<reactor-version>3.0.4.RELEASE</reactor-version>
+		<reactor-version>3.0.5.BUILD-SNAPSHOT</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>
-	    <cloudfoundry-client-version>2.1.0.RELEASE</cloudfoundry-client-version>
+	    <cloudfoundry-client-version>2.3.0.BUILD-SNAPSHOT</cloudfoundry-client-version>
 	</properties>
 
 	<build>
