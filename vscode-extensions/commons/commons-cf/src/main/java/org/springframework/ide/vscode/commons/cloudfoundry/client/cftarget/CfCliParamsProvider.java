@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ide.vscode.commons.util.StringUtil;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -74,7 +76,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	}
 	
 	private boolean isRefreshTokenSet(String token) {
-		return token != null && token.trim().length() > 0;
+		return StringUtil.hasText(token);
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
