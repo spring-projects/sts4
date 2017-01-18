@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.time.Duration;
 import java.util.Collection;
 
 import javax.inject.Provider;
@@ -18,11 +17,11 @@ import javax.inject.Provider;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
@@ -51,17 +50,6 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
 	private CFTargetCache cfTargetCache;
-	
-	private static final ClientTimeouts VSCODE_CF_CLIENT_TIMEOUTS = new ClientTimeouts() {
-
-		@Override
-		public Duration getServicesTimeout() {
-			// Use shorter timeouts for services because it is used in dynamic
-			// values for content assist
-			return Duration.ofSeconds(15);
-		}	
-	};
-
 	
 	public ManifestYamlLanguageServer() {
 		SimpleTextDocumentService documents = getTextDocumentService();
@@ -107,7 +95,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		if (cfTargetCache == null) {
 			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
 			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, VSCODE_CF_CLIENT_TIMEOUTS);
+			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, new ClientTimeouts());
 		}
 		return cfTargetCache;
 	}
