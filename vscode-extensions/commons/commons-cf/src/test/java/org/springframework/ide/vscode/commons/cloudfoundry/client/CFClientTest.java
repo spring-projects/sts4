@@ -30,7 +30,7 @@ public class CFClientTest {
 	 */
 	@Ignore
 	@Test
-	public void testGetBuildpacksFromCliParamsTarget() throws Exception {
+	public void testFromCliParamsTarget() throws Exception {
 
 		ClientParamsProvider cliProvider = new CfCliParamsProvider();
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
@@ -41,6 +41,8 @@ public class CFClientTest {
 
 		List<CFBuildpack> buildPacks = target.getBuildpacks();
 		assertTrue(!buildPacks.isEmpty());
+		List<CFServiceInstance> services = target.getServices();
+		assertTrue(!services.isEmpty());
 	}
 
 }
