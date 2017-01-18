@@ -12,6 +12,10 @@
 
 	<category-def name="deps" label="Dependencies"/>
 
+	<feature id="tm-feature">
+		<category name="deps"/>
+	</feature>
+
 	<bundle id="org.eclipse.lsp4e">
 		<category name="deps"/>
 	</bundle>
@@ -25,10 +29,6 @@
 	</bundle>
 
 	<bundle id="org.eclipse.xtext.xbase.lib">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.dadacoalition.yedit">
 		<category name="deps"/>
 	</bundle>
 

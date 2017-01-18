@@ -28,9 +28,21 @@
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
-            class="org.springframework.boot.ide.cloudfoundry.server.CloudFoundryYMLPresentationReconciler"
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.manifest.yml">
       </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.tm4e.core.grammars">
+      <grammar
+      		scopeName="source.yaml"
+            path="./syntaxes/YAML.tmLanguage" >
+      </grammar>      
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.manifest.yml"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
    </extension>
 
    <extension

@@ -59,9 +59,21 @@
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
-            class="org.springframework.boot.ide.properties.servers.SpringYMLPresentationReconciler"
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.properties.application.yml">
       </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.tm4e.core.grammars">
+      <grammar
+      		scopeName="source.yaml"
+            path="./syntaxes/YAML.tmLanguage" >
+      </grammar>      
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
    </extension>
 
    <extension
