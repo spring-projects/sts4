@@ -41,6 +41,12 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	public Object parse(String str) {
+		// IMPORTANT: check the text FIRST before fetching values
+		// from the hints provider, as the hints provider may be expensive when resolving values
+		if (!StringUtil.hasText(str)) {
+			throw new IllegalArgumentException(createBlankTextErrorMessage());
+		}
+		
 		Collection<String> values = this.values.get();
 		//If values is not known (null) then just assume the str is acceptable.
 		if (values==null || values.contains(str)) {
@@ -48,6 +54,10 @@ public class EnumValueParser implements ValueParser {
 		} else {
 			throw new IllegalArgumentException(createErrorMessage(str, values));
 		}
+	}
+
+	protected String createBlankTextErrorMessage() {
+		return "'"+typeName+"'" + " cannot be blank.";
 	}
 
 	protected String createErrorMessage(String parseString, Collection<String> values2) {
