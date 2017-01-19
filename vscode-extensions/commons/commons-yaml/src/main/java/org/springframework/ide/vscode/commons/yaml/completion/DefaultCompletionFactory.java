@@ -15,7 +15,6 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
@@ -25,6 +24,9 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public class DefaultCompletionFactory implements CompletionFactory {
 	
+	private static final String EMPTY_VALUE = "";
+	private static final int ERROR_COMPLETION_SCORE = -10000000;
+
 	public static class BeanPropertyProposal extends ScoreableProposal {
 
 		private IDocument doc;
@@ -146,10 +148,42 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 
 	@Override
-	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits,
-			YTypeUtil typeUtil) {
-		String value = ""; // Empty value for the proposal. Purpose is to show a message with no value to fill in.
-		double score = FuzzyMatcher.matchScore(query, value);
-		return new ValueProposal(value, query, message, type, score, edits, typeUtil);
+	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits) {
+		final String value = EMPTY_VALUE; // Empty value for the proposal. Purpose is to show a message with no value to fill in.
+		final double score = ERROR_COMPLETION_SCORE;
+		final Renderable documentation = null;
+		final String niceDescription = message;
+		return new ScoreableProposal() {
+			
+			@Override
+			public DocumentEdits getTextEdit() {
+				return edits;
+			}
+			
+			@Override
+			public String getLabel() {
+				return value;
+			}
+			
+			@Override
+			public CompletionItemKind getKind() {
+				return CompletionItemKind.Value;
+			}
+			
+			@Override
+			public Renderable getDocumentation() {
+				return documentation;
+			}
+			
+			@Override
+			public String getDetail() {
+				return niceDescription;
+			}
+			
+			@Override
+			public double getBaseScore() {
+				return score;
+			}
+		};
 	}
 }

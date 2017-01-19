@@ -33,8 +33,7 @@ public interface CompletionFactory {
 	 * @param query
 	 * @param type
 	 * @param edits
-	 * @param typeUtil
-	 * @return
+	 * @return non-null proposal
 	 */
-	ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil);
+	ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits);
 }
