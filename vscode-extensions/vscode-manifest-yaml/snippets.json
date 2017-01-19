@@ -1,0 +1,11 @@
+{
+  "Minimal CF Manifest": {
+    "prefix": "applications",
+    "body": [
+      "applications:",
+      "- name: ${1:name}",
+      "  $0"
+    ],
+    "description": "Minimal CF Manifest"
+  }
+}
