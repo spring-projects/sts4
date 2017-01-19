@@ -639,7 +639,7 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
-	@Test public void reconcileGitResourceSource() throws Exception {
+	@Test public void gitResourceSourceReconcile() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: sts4-out\n" +
@@ -672,6 +672,51 @@ public class PipelineYamlEditorTest {
 				"no_ci_skip|'boolean'",
 				"not-a-list-of-keys|Expecting a 'Sequence'",
 				"not-a-list-of-ids|Expecting a 'Sequence'"
+		);
+	}
+
+	@Test public void gitResourceSourceCompletions() throws Exception {
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: the-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    <*>"
+				, //================
+				"<*>"
+				, // ==>
+				"branch: <*>"
+				,
+				"commit_verification_key_ids:\n" +
+				"    - <*>"
+				,
+				"commit_verification_keys:\n" +
+				"    - <*>"
+				,
+				"disable_ci_skip: <*>"
+				,
+				"git_config:\n" +
+				"    - <*>"
+				,
+				"gpg_keyserver: <*>"
+				,
+				"ignore_paths:\n" +
+				"    - <*>"
+				,
+				"password: <*>"
+				,
+				"paths:\n" +
+				"    - <*>"
+				,
+				"private_key: <*>"
+				,
+				"skip_ssl_verification: <*>"
+				,
+				"tag_filter: <*>"
+				,
+				"uri: <*>"
+				,
+				"username: <*>"
 		);
 	}
 
