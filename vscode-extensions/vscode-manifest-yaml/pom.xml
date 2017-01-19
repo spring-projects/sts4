@@ -11,6 +11,11 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
+	<version>0.0.2-SNAPSHOT</version>
+	
+	<properties>
+		<dependencies.version>0.0.1-SNAPSHOT</dependencies.version>
+	</properties>
 	
 	<repositories>
 		<!-- Local repository with tools.jar -->
@@ -34,25 +39,25 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<!-- Yaml -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-yaml</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<!-- CF -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-cf</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>language-server-test-harness</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
