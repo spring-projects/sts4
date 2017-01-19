@@ -11,8 +11,7 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.Collection;
-
-import javax.inject.Provider;
+import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
@@ -56,8 +55,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		
 		YamlASTProvider parser = new YamlParser(yaml);
 				
-		Provider<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
-		Provider<Collection<YValueHint>> servicesProvider = getServicesProvider();
+		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
+		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
 
 		schema = new ManifestYmlSchema(buildPacksProvider, servicesProvider);
 
@@ -100,11 +99,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		return cfTargetCache;
 	}
 
-	private Provider<Collection<YValueHint>> getBuildpacksProvider() {
+	private Callable<Collection<YValueHint>> getBuildpacksProvider() {
 		return new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
 	}
 	
-	private Provider<Collection<YValueHint>> getServicesProvider() {
+	private Callable<Collection<YValueHint>> getServicesProvider() {
 		return new ManifestYamlCFServicesProvider(getCfTargetCache());
 	}
 	

@@ -12,8 +12,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.Collection;
 import java.util.Set;
-
-import javax.inject.Provider;
+import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -35,13 +34,13 @@ public class ManifestYmlSchema implements YamlSchema {
 
 	private final YBeanType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
-	private final Provider<Collection<YValueHint>> buildpackProvider;
+	private final Callable<Collection<YValueHint>> buildpackProvider;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
 		"name", "host", "hosts"
 	);
 
-	public ManifestYmlSchema(Provider<Collection<YValueHint>> buildpackProvider, Provider<Collection<YValueHint>> servicesProvider) {
+	public ManifestYmlSchema(Callable<Collection<YValueHint>> buildpackProvider, Callable<Collection<YValueHint>> servicesProvider) {
 		this.buildpackProvider = buildpackProvider;
 		YTypeFactory f = new YTypeFactory();
 		TYPE_UTIL = f.TYPE_UTIL;

@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -40,6 +41,8 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
+
+import com.google.common.collect.ImmutableList;
 
 public class YTypeAssistContext extends AbstractYamlAssistContext {
 
@@ -147,7 +150,13 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, int offset, String query) {
-		YValueHint[] values = typeUtil.getHintValues(type, getSchemaContext());
+		YValueHint[] values=null;
+		try {
+			values = typeUtil.getHintValues(type, getSchemaContext());
+		} catch (Exception e) {
+			DocumentEdits edits = new DocumentEdits(doc.getDocument());
+			return ImmutableList.of(completionFactory().errorMessage(ExceptionUtil.getMessage(e), query, type, edits, typeUtil));
+		}
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
 			for (YValueHint value : values) {

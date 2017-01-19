@@ -11,11 +11,11 @@
 
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
@@ -145,4 +145,11 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		return new ValueProposal(value, query, label, type, score, edits, typeUtil);
 	}
 
+	@Override
+	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits,
+			YTypeUtil typeUtil) {
+		String value = ""; // Empty value for the proposal. Purpose is to show a message with no value to fill in.
+		double score = FuzzyMatcher.matchScore(query, value);
+		return new ValueProposal(value, query, message, type, score, edits, typeUtil);
+	}
 }

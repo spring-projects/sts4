@@ -29,7 +29,7 @@ public interface YTypeUtil {
 	boolean isSequencable(YType type);
 	boolean isBean(YType type);
 	YType getDomainType(YType type);
-	YValueHint[] getHintValues(YType yType, DynamicSchemaContext dc);
+	YValueHint[] getHintValues(YType yType, DynamicSchemaContext dc) throws Exception;
 	String niceTypeName(YType type);
 	YType getKeyType(YType type);
 	ValueParser getValueParser(YType type, DynamicSchemaContext dc);

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.yaml.schema;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -20,10 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
@@ -101,7 +99,7 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public YValueHint[] getHintValues(YType type, DynamicSchemaContext dc) {
+		public YValueHint[] getHintValues(YType type, DynamicSchemaContext dc) throws Exception {
 			return ((AbstractType)type).getHintValues(dc);
 		}
 
@@ -147,7 +145,7 @@ public class YTypeFactory {
 		private List<YTypedProperty> propertyList = new ArrayList<>();
 		private final List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
-		private SchemaContextAware<Collection<YValueHint>> hintProvider;
+		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
 
 		public boolean isSequenceable() {
 			return false;
@@ -169,17 +167,17 @@ public class YTypeFactory {
 			return null;
 		}
 
-		public void addHintProvider(Provider<Collection<YValueHint>> hintProvider) {
-			addHintProvider((DynamicSchemaContext dc) -> hintProvider.get());
+		public void addHintProvider(Callable<Collection<YValueHint>> hintProvider) {
+			addHintProvider((DynamicSchemaContext dc) -> hintProvider);
 		}
 
-		public void addHintProvider(SchemaContextAware<Collection<YValueHint>> hintProvider) {
+		public void addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
 			this.hintProvider = hintProvider;
 		}
 
-		public YValueHint[] getHintValues(DynamicSchemaContext dc) {
-			Collection<YValueHint> providerHints = hintProvider != null ? hintProvider.withContext(dc) : null;
-
+		public YValueHint[] getHintValues(DynamicSchemaContext dc) throws Exception {
+			Collection<YValueHint> providerHints=getProviderHints(dc);
+		
 			if (providerHints == null || providerHints.isEmpty()) {
 				return hints.toArray(new YValueHint[hints.size()]);
 			} else {
@@ -197,6 +195,16 @@ public class YTypeFactory {
 				}
 				return mergedHints.toArray(new YValueHint[mergedHints.size()]);
 			}
+		}
+
+		private Collection<YValueHint> getProviderHints(DynamicSchemaContext dc) throws Exception {
+			if (hintProvider != null) {
+				Callable<Collection<YValueHint>> withContext = hintProvider.withContext(dc);
+				if (withContext != null) {
+					 return withContext.call();
+				}
+			}
+			return ImmutableList.of();
 		}
 
 		public List<YTypedProperty> getProperties(DynamicSchemaContext dc) {
@@ -627,7 +635,7 @@ public class YTypeFactory {
 			Collection<String> strings = values.withContext(dc);
 			return strings==null 
 					? null 
-					: strings.stream()
+					: () -> strings.stream()
 						.map((s) -> new BasicYValueHint(s))
 						.collect(Collectors.toSet());
 		});

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 import javax.inject.Provider;
 
@@ -32,15 +33,18 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	public EnumValueParser(String typeName, Collection<String> values) {
-		this(typeName, () -> values);
+		this(typeName, provider(values));
+	}
+	public EnumValueParser(String typeName, Callable<Collection<String>> values) {
+		this(typeName, provider(values));
 	}
 	
 	public EnumValueParser(String typeName, Provider<Collection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
 	}
-
-	public Object parse(String str) {
+	
+	public Object parse(String str)  {
 		// IMPORTANT: check the text FIRST before fetching values
 		// from the hints provider, as the hints provider may be expensive when resolving values
 		if (!StringUtil.hasText(str)) {
@@ -48,6 +52,7 @@ public class EnumValueParser implements ValueParser {
 		}
 		
 		Collection<String> values = this.values.get();
+
 		//If values is not known (null) then just assume the str is acceptable.
 		if (values==null || values.contains(str)) {
 			return str;
@@ -62,6 +67,22 @@ public class EnumValueParser implements ValueParser {
 
 	protected String createErrorMessage(String parseString, Collection<String> values) {
 		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values;
+	}
+	
+	
+	private static <T> Provider<T> provider(T values) {
+		return () -> values;
+	}
+	
+	private static <T> Provider<T> provider(Callable<T> values) {
+		return () -> {
+			try {
+				return values.call();
+			} catch (Exception e) {
+				// Ignore
+				return null;
+			}
+		};
 	}
 
 }

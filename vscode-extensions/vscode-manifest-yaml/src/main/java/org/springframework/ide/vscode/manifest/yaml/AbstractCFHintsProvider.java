@@ -14,10 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Provider;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -27,7 +26,7 @@ import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-public abstract class AbstractCFHintsProvider implements Provider<Collection<YValueHint>> {
+public abstract class AbstractCFHintsProvider implements Callable<Collection<YValueHint>> {
 
 	public static final String EMPTY_VALUE = "";
 	protected final CFTargetCache targetCache;
@@ -40,7 +39,7 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 	}
 
 	@Override
-	public Collection<YValueHint> get() {
+	public Collection<YValueHint> call() throws Exception {
 		Collection<YValueHint> hints = new ArrayList<>();
 		// TODO: Probably not the most ideal thing to do, but for now show any
 		// CF errors

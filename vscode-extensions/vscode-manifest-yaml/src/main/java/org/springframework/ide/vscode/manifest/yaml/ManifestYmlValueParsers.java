@@ -12,8 +12,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.Collection;
 import java.util.Set;
-
-import javax.inject.Provider;
+import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
@@ -93,9 +92,9 @@ public class ManifestYmlValueParsers {
 		};
 	}
 
-	public static ValueParser fromHints(String typeName, Provider<Collection<YValueHint>> hintProvider) {
-		Provider<Collection<String>> values= () -> {
-			Collection<YValueHint> hints = hintProvider.get();
+	public static ValueParser fromHints(String typeName, Callable<Collection<YValueHint>> hintProvider) {
+		Callable<Collection<String>> values= () -> {
+			Collection<YValueHint> hints = hintProvider.call();
 			if (hints != null) {
 				Builder<String> builder = ImmutableSet.builder();
 				
