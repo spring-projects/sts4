@@ -50,18 +50,21 @@ public abstract class AbstractCFHintsProvider implements Provider<Collection<YVa
 			Collection<YValueHint> resolvedHints = getHints(targets);
 			hints.addAll(resolvedHints);
 		} catch (Throwable e) {
-			logger.log(Level.SEVERE, e.getMessage(), e);
-			// Don't propagate exception as to allow the CA to be displayed to
-			// the
-			// user.
+			// Don't log the no target found error. Just inform the user
 			if (ExceptionUtil.getThrowable(e, NoTargetsException.class) != null) {
 				hints.add(new BasicYValueHint(EMPTY_VALUE, e.getMessage()));
-			} else if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
-				hints.add(new BasicYValueHint(EMPTY_VALUE,
-						"Connection failure to Cloud Foundry. Please check the log for more details."));
 			} else {
-				hints.add(new BasicYValueHint(EMPTY_VALUE,
-						"Failed to fetch values from Cloud Foundry. Please check the log for more details."));
+				
+				// Log any other error
+				logger.log(Level.SEVERE, e.getMessage(), e);
+
+				if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
+					hints.add(new BasicYValueHint(EMPTY_VALUE,
+							"Connection failure to Cloud Foundry. Please check the log for more details."));
+				} else {
+					hints.add(new BasicYValueHint(EMPTY_VALUE,
+							"Failed to fetch values from Cloud Foundry. Please check the log for more details."));
+				}
 			}
 		}
 		return hints;
