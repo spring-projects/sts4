@@ -60,8 +60,8 @@ public class EnumValueParser implements ValueParser {
 		return "'"+typeName+"'" + " cannot be blank.";
 	}
 
-	protected String createErrorMessage(String parseString, Collection<String> values2) {
-		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values2;
+	protected String createErrorMessage(String parseString, Collection<String> values) {
+		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values;
 	}
 
 }
