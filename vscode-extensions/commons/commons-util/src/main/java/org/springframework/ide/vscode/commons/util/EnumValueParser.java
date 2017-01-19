@@ -61,7 +61,7 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	protected String createErrorMessage(String parseString, Collection<String> values2) {
-		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values;
+		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values2;
 	}
 
 }
