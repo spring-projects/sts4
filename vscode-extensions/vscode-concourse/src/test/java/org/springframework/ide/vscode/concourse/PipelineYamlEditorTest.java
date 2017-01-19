@@ -718,6 +718,20 @@ public class PipelineYamlEditorTest {
 				,
 				"username: <*>"
 		);
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: the-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    git_config:\n" +
+				"    - <*>"
+				, // =============
+				"<*>"
+				, // ==>
+				"name: <*>",
+				"value: <*>"
+		);
 	}
 
 	@Test public void gitResourceSourceHovers() throws Exception {
@@ -745,6 +759,18 @@ public class PipelineYamlEditorTest {
 				"    gpg_keyserver: hkp://somekeyserver.net"
 		);
 		editor.assertHoverContains("uri", "*Required.* The location of the repository.");
+		editor.assertHoverContains("branch", "The branch to track");
+		editor.assertHoverContains("private_key", "Private key to use when pulling/pushing");
+		editor.assertHoverContains("username", "Username for HTTP(S) auth");
+		editor.assertHoverContains("password", "Password for HTTP(S) auth");
+		editor.assertHoverContains("paths", "a list of glob patterns");
+		editor.assertHoverContains("ignore_paths", "The inverse of `paths`");
+		editor.assertHoverContains("skip_ssl_verification", "Skips git ssl verification");
+		editor.assertHoverContains("tag_filter", "the resource will only detect commits");
+		editor.assertHoverContains("git_config", "configure git global options");
+		editor.assertHoverContains("disable_ci_skip", "Allows for commits that have been labeled with `[ci skip]`");
+		editor.assertHoverContains("commit_verification_keys", "Array of GPG public keys");
+		editor.assertHoverContains("commit_verification_key_ids", "Array of GPG public key ids");
 	}
 
 	@Test
