@@ -24,8 +24,27 @@
     "manifest.yml"
   ],
   "activationEvents": [
-    "onLanguage:yaml"
+    "onLanguage:manifest-yaml"
   ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "manifest-yaml",
+        "aliases": [
+          "cloudfoundry-manifest"
+        ],
+        "filenamePatterns": [
+          "*manifest*.yml"
+        ],
+        "configuration": "./yaml-support/language-configuration.json"
+      }
+    ],
+    "grammars": [{
+      "language": "manifest-yaml",
+      "scopeName": "source.yaml",
+      "path": "./yaml-support/yaml.tmLanguage"
+    }]
+  },
   "main": "./out/lib/Main",
   "scripts": {
     "prepublish": "tsc -p .",
