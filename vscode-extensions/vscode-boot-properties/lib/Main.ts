@@ -16,6 +16,7 @@ import * as commons from 'commons-vscode';
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG: false,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-properties',
         fatJarFile: 'target/vscode-boot-properties-0.0.1-SNAPSHOT.jar',
         clientOptions: {

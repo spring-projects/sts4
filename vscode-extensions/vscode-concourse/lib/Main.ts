@@ -32,6 +32,7 @@ function error(msg : string) {
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG : false,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-concourse',
         fatJarFile: 'target/vscode-concourse-0.0.1-SNAPSHOT.jar',
         clientOptions: {
