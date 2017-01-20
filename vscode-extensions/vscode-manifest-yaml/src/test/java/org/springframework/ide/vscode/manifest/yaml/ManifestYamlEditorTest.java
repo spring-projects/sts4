@@ -17,10 +17,8 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -30,7 +28,7 @@ public class ManifestYamlEditorTest {
 	MockCloudfoundry cfClientFactory = new MockCloudfoundry();
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cfClientFactory));
 		harness.intialize(null);
 	}
 
@@ -684,7 +682,6 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
-	@Ignore
 	public void noReconcileErrorsWhenCFFactoryThrows() throws Exception {
 		cfClientFactory.throwException(new IOException("Can't create a client!"));
 		Editor editor = harness.newEditor(
@@ -699,7 +696,6 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
-	@Ignore
 	public void noReconcileErrorsWhenClientThrows() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
 		when(cfClient.getBuildpacks()).thenThrow(new IOException("Can't get buildpacks"));

@@ -21,7 +21,7 @@ public class ManifestYamlEditorCFTest {
 
 	@Before
 	public void setup() throws Exception {
-		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer());
 		harness.intialize(null);
 	}
 
