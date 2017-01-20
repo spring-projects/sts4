@@ -24,7 +24,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public class DefaultCompletionFactory implements CompletionFactory {
 	
-	private static final String EMPTY_VALUE = "";
 	private static final int ERROR_COMPLETION_SCORE = -10000000;
 
 	public static class BeanPropertyProposal extends ScoreableProposal {
@@ -138,16 +137,12 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 	
 	public static final class ErrorProposal extends ScoreableProposal {
-		private final String value;
-		private final double score;
 		private final String label;
 		private DocumentEdits edits;
 		private YTypeUtil typeUtil;
 		private YType type;
 
-		public ErrorProposal(String value,  String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
-			this.value = value;
-			this.score = score;
+		public ErrorProposal(String label, YType type, DocumentEdits edits, YTypeUtil typeUtil) {
 			this.label = label;
 			this.edits = edits;
 			this.typeUtil = typeUtil;
@@ -176,12 +171,12 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		@Override
 		public double getBaseScore() {
-			return score;
+			return ERROR_COMPLETION_SCORE;
 		}
 
 		@Override
 		public String toString() {
-			return "ErrorProposal("+value+")";
+			return "ErrorProposal()";
 		}
 
 		@Override
@@ -202,9 +197,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 	@Override
 	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil) {
-		final double score = ERROR_COMPLETION_SCORE;
-		final String value = EMPTY_VALUE;
 		final String label = message;
-		return new ErrorProposal(value, label, type, score, edits, typeUtil);
+		return new ErrorProposal(label, type, edits, typeUtil);
 	}
 }
