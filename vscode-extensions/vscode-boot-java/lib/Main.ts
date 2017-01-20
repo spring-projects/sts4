@@ -17,45 +17,17 @@ import * as commons from 'commons-vscode';
 
 export function activate(context: VSCode.ExtensionContext) {
 
-    let CONNECT_TO_LS = false;
-
-    if (CONNECT_TO_LS) {
-        let connectionInfo = {
-            port: 5007
-        };
-        let serverOptions = () => {
-            let socket = net.connect(connectionInfo);
-            let result: StreamInfo = {
-                writer: socket,
-                reader: socket
-            };
-            return Promise.resolve(result);
-        };
-
-        let clientOptions: LanguageClientOptions = {
+    let options: commons.ActivatorOptions = {
+        DEBUG: false,
+        CONNECT_TO_LS: true,
+        extensionId: 'vscode-boot-java',
+        fatJarFile: 'target/vscode-boot-java-0.0.1-SNAPSHOT.jar',
+        clientOptions: {
             documentSelector: ['java'],
             synchronize: {
                 configurationSection: 'vscode-boot-java'
             }
-        };
-
-        let lc = new LanguageClient('vscode-boot-java', serverOptions, clientOptions);
-        lc.trace = Trace.Verbose;
-        let disposable = lc.start();
-        context.subscriptions.push(disposable);
-    }
-    else {
-        let options: commons.ActivatorOptions = {
-            DEBUG: false,
-            extensionId: 'vscode-boot-java',
-            fatJarFile: 'target/vscode-boot-java-0.0.1-SNAPSHOT.jar',
-            clientOptions: {
-                documentSelector: ['java'],
-                synchronize: {
-                    configurationSection: 'vscode-boot-java'
-                }
-            }
-        };
-        commons.activate(options, context);
-    }
+        }
+    };
+    commons.activate(options, context);
 }
