@@ -11,11 +11,17 @@
 
 package org.springframework.ide.vscode.commons.yaml.ast;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
+import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Kris De Volder
@@ -72,6 +78,24 @@ public class NodeUtil {
 			return (SequenceNode) node;
 		}
 		return null;
+	}
+
+	/**
+	 * Get the scalar values of all keys of the given {@link MappingNode} as Strings.
+	 * Any non-scalar keys are silently ignored.
+	 */
+	public static Set<String> getScalarKeys(MappingNode mapNode) {
+		if (mapNode!=null) {
+			ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+			for (NodeTuple entry : mapNode.getValue()) {
+				String key = NodeUtil.asScalar(entry.getKeyNode());
+				if (key!=null) { //key not a scalar? => something funky so skip it
+					builder.add(key);
+				}
+			}
+			return builder.build();
+		}
+		return Collections.emptySet();
 	}
 
 }

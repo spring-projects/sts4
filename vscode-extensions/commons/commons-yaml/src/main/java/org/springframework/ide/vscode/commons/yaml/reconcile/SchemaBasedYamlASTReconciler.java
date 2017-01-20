@@ -19,9 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -61,14 +64,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	public void reconcile(YamlFileAST ast) {
 		List<Node> nodes = ast.getNodes();
 		IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
-		if (expectedDocs.isInRange(nodes.size())) {
-			if (nodes!=null && !nodes.isEmpty()) {
-				for (int i = 0; i < nodes.size(); i++) {
-					Node node = nodes.get(i);
-					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
-				}
-			}
-		} else {
+		if (!expectedDocs.isInRange(nodes.size())) {
 			//wrong number of documents in the file. Figure out a good error message.
 			if (nodes.isEmpty()) {
 				problem(allOf(ast.getDocument()), "'"+schema.getName()+"' must have at least some Yaml content");
@@ -79,6 +75,12 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			} else if (expectedDocs.isTooSmall(nodes.size())) {
 				int lowerBound = expectedDocs.getLowerBound();
 				problem(endOf(ast.getDocument()), "'"+schema.getName()+"' should have at least "+lowerBound+" Yaml Documents");
+			}
+		}
+		if (nodes!=null && !nodes.isEmpty()) {
+			for (int i = 0; i < nodes.size(); i++) {
+				Node node = nodes.get(i);
+				reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
 			}
 		}
 	}
@@ -117,6 +119,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					}
 				} else if (typeUtil.isBean(type)) {
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type, schemaContext);
+					checkRequiredProperties(map, type, beanProperties);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
 						String key = NodeUtil.asScalar(keyNode);
@@ -169,6 +172,31 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 		}
 	}
+
+	private void checkRequiredProperties(MappingNode map, YType type, Map<String, YTypedProperty> beanProperties) {
+		Set<String> foundProps = NodeUtil.getScalarKeys(map);
+		boolean allPropertiesKnown = beanProperties.keySet().containsAll(foundProps);
+		//Don't check for missing properties if some properties look like they might be spelled incorrectly.
+		if (allPropertiesKnown) {
+			Set<String> missingProps = beanProperties.values().stream()
+					.filter(YTypedProperty::isRequired)
+					.map(YTypedProperty::getName)
+					.filter((required) -> !foundProps.contains(required))
+					.collect(Collectors.toSet());
+			if (!missingProps.isEmpty()) {
+				String message;
+				if (missingProps.size()==1) {
+					// slightly more specific message when only one missing property
+					String missing = missingProps.stream().findFirst().get();
+					message = "Property '"+missing+"' is required for '"+type+"'";
+				} else {
+					message = "Properties "+missingProps+" are required for '"+type+"'";
+				}
+				problem(map, message);
+			}
+		}
+	}
+
 
 	protected NodeId getNodeId(Node node) {
 		NodeId id = node.getNodeId();

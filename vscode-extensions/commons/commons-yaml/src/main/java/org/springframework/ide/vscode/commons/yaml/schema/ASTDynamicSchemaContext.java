@@ -50,24 +50,14 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 
 	@Override
 	protected Set<String> computeDefinedProperties() {
-		if (mapNode!=null) {
-			ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-			for (NodeTuple entry : mapNode.getValue()) {
-				String key = NodeUtil.asScalar(entry.getKeyNode());
-				if (key!=null) { //key not a scalar? => something funky so skip it
-					builder.add(key);
-				}
-			}
-			return builder.build();
-		}
-		return Collections.emptySet();
+		return NodeUtil.getScalarKeys(mapNode);
 	}
 
 	@Override
 	public IDocument getDocument() {
 		return doc;
 	}
-	
+
 	@Override
 	public YamlPath getPath() {
 		return path;

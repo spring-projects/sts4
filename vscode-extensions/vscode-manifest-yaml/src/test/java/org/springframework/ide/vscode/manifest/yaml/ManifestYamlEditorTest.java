@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -132,6 +131,8 @@ public class ManifestYamlEditorTest {
 
 		//Using a 'composite' element where a scalar type is expected
 		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
 				"memory:\n"+
 				"- bad sequence\n" +
 				"buildpack:\n" +
@@ -698,12 +699,16 @@ public class ManifestYamlEditorTest {
 					"---\n" +
 					"applications:\n"+
 					"- name: foo\n" +
+					"  bad-one: xx\n" +
 					"---\n" +
 					"applications:\n"+
-					"- name: foo\n"
+					"- name: foo\n" +
+					"  bad-two: xx"
 			);
 			editor.assertProblems(
-				"---|'Cloudfoundry Manifest' should not have more than 1 Yaml Document"
+				"bad-one|Unknown property", //should still reconcile the documents even thought there's too many of them!
+				"---|'Cloudfoundry Manifest' should not have more than 1 Yaml Document",
+				"bad-two|Unknown property" //should still reconcile the documents even thought there's too many of them!
 			);
 			//also check the location of the marker since there are two occurrences of '---' in the editor text.
 			Diagnostic problem = editor.assertProblem("---");
@@ -737,12 +742,10 @@ public class ManifestYamlEditorTest {
 
 		//when the file is empty (there is no AST at all)
 		editor = harness.newEditor(
-				"foo: v1\n"
+				"buildpack: some-buildpack"
 		);
 		editor.assertProblems(
-
-				"foo|Unkown property",
-				"foo: v1|'applications' is required"
+				"buildpack: some-buildpack|'applications' is required"
 		);
 
 	}
@@ -756,7 +759,7 @@ public class ManifestYamlEditorTest {
 		);
 		editor.assertProblems(
 				"memory: 1G|Property 'name' is required",
-				":|should not be empty"
+				"|should not be empty"
 		);
 	}
 
