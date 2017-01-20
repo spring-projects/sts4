@@ -10,15 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 public class ManifestYamlEditorTest {
 
 	LanguageServerHarness harness;
+	MockCloudfoundry cfClientFactory = new MockCloudfoundry();
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
@@ -672,6 +681,38 @@ public class ManifestYamlEditorTest {
 				"- name: test"
 		);
 
+	}
+
+	@Test
+	@Ignore
+	public void noReconcileErrorsWhenCFFactoryThrows() throws Exception {
+		cfClientFactory.throwException(new IOException("Can't create a client!"));
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpack: bad-buildpack\n" +
+				"  services:\n" +
+				"  - bad-service\n" +
+				"  bogus: bad" //a token error to make sure reconciler is actually running!
+		);
+		editor.assertProblems("bogus|Unknown property");
+	}
+
+	@Test
+	@Ignore
+	public void noReconcileErrorsWhenClientThrows() throws Exception {
+		ClientRequests cfClient = cfClientFactory.client;
+		when(cfClient.getBuildpacks()).thenThrow(new IOException("Can't get buildpacks"));
+		when(cfClient.getServices()).thenThrow(new IOException("Can't get services"));
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpack: bad-buildpack\n" +
+				"  services:\n" +
+				"  - bad-service\n" +
+				"  bogus: bad" //a token error to make sure reconciler is actually running!
+		);
+		editor.assertProblems("bogus|Unknown property");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

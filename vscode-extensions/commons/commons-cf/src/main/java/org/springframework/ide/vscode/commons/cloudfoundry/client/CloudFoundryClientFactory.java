@@ -13,7 +13,5 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 
 public interface CloudFoundryClientFactory {
-
 	ClientRequests getClient(CFClientParams params, ClientTimeouts timeouts) throws Exception;
-
 }

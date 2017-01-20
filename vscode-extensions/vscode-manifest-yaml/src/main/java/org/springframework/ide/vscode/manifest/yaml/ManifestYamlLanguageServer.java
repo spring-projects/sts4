@@ -45,16 +45,22 @@ import org.yaml.snakeyaml.Yaml;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
-	
+
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
 	private CFTargetCache cfTargetCache;
-	
+	private final CloudFoundryClientFactory cfClientFactory;
+
 	public ManifestYamlLanguageServer() {
+		this(DefaultCloudFoundryClientFactoryV2.INSTANCE);
+	}
+
+	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory) {
+		this.cfClientFactory = cfClientFactory;
 		SimpleTextDocumentService documents = getTextDocumentService();
-		
+
 		YamlASTProvider parser = new YamlParser(yaml);
-				
+
 		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
 		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
 
@@ -73,7 +79,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 			TextDocument doc = params.getDocument();
 			validateWith(doc, engine);
 		});
-		
+
 //		workspace.onDidChangeConfiguraton(settings -> {
 //			System.out.println("Config changed: "+params);
 //			Integer val = settings.getInt("languageServerExample", "maxNumberOfProblems");
@@ -84,16 +90,16 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //				}
 //			}
 //		});
-		
+
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine ::getHover);
 	}
-	
+
 	private CFTargetCache getCfTargetCache() {
 		if (cfTargetCache == null) {
 			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
-			CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
+			CloudFoundryClientFactory clientFactory = cfClientFactory;
 			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, new ClientTimeouts());
 		}
 		return cfTargetCache;
@@ -102,22 +108,22 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private Callable<Collection<YValueHint>> getBuildpacksProvider() {
 		return new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
 	}
-	
+
 	private Callable<Collection<YValueHint>> getServicesProvider() {
 		return new ManifestYamlCFServicesProvider(getCfTargetCache());
 	}
-	
+
 	@Override
 	protected ServerCapabilities getServerCapabilities() {
 		ServerCapabilities c = new ServerCapabilities();
-		
+
 		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
 		c.setHoverProvider(true);
-		
+
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
-		
+
 		return c;
 	}
 }
