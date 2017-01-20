@@ -64,6 +64,19 @@ public class ExceptionUtil {
 		String msg = cause.getClass().getSimpleName() + ": " + cause.getMessage();
 		return msg;
 	}
+	
+	/**
+	 * 
+	 * @param e
+	 * @return a nicer message suitable for display to the user
+	 */
+	public static String getMessageForUserDisplay(Throwable e) {
+		// The message of nested exception is usually more interesting than the
+		// one on top.
+		Throwable cause = getDeepestCause(e);
+		String msg = cause.getMessage();
+		return msg;
+	}
 
 	public static IllegalStateException notImplemented(String string) {
 		return new IllegalStateException("Not implemented: " + string);

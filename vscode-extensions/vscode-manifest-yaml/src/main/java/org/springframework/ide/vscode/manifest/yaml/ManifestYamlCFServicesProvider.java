@@ -28,11 +28,12 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 
 	@Override
 	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-		List<YValueHint> hints = new ArrayList<>();
 
 		for (CFTarget cfTarget : targets) {
 			List<CFServiceInstance> services = cfTarget.getServices();
-			if (services != null) {
+			if (services != null && !services.isEmpty()) {
+				List<YValueHint> hints = new ArrayList<>();
+
 				for (CFServiceInstance service : services) {
 					String name = service.getName();
 					String label = getServiceLabel(cfTarget, service);
@@ -41,10 +42,12 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 						hints.add(hint);
 					}
 				}
+				return hints;
 			}
 		}
-
-		return hints;
+		// Return null if no hints an be resolved rather than empty list (seems to be
+		// what is expected for parsing for reconciler)
+		return null;
 	}
 
 	private String getServiceLabel(CFTarget cfClientTarget, CFServiceInstance service) {
