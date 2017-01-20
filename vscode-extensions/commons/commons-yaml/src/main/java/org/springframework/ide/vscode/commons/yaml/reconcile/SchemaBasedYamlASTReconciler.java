@@ -18,9 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.IntegerRange;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -56,12 +60,45 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	@Override
 	public void reconcile(YamlFileAST ast) {
 		List<Node> nodes = ast.getNodes();
-		if (nodes!=null && !nodes.isEmpty()) {
-			for (int i = 0; i < nodes.size(); i++) {
-				Node node = nodes.get(i);
-				reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
+		IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
+		if (expectedDocs.isInRange(nodes.size())) {
+			if (nodes!=null && !nodes.isEmpty()) {
+				for (int i = 0; i < nodes.size(); i++) {
+					Node node = nodes.get(i);
+					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
+				}
+			}
+		} else {
+			//wrong number of documents in the file. Figure out a good error message.
+			if (nodes.isEmpty()) {
+				problem(allOf(ast.getDocument()), "'"+schema.getName()+"' must have at least some Yaml content");
+			} else if (expectedDocs.isTooLarge(nodes.size())) {
+				int upperBound = expectedDocs.getUpperBound();
+				Node extraNode = nodes.get(upperBound);
+				problem(dashesAtStartOf(ast, extraNode), "'"+schema.getName()+"' should not have more than "+upperBound+" Yaml Documents");
+			} else if (expectedDocs.isTooSmall(nodes.size())) {
+				int lowerBound = expectedDocs.getLowerBound();
+				problem(endOf(ast.getDocument()), "'"+schema.getName()+"' should have at least "+lowerBound+" Yaml Documents");
 			}
 		}
+	}
+
+	private DocumentRegion dashesAtStartOf(YamlFileAST ast, Node node) {
+		try {
+			int start = node.getStartMark().getIndex();
+			int end = node.getEndMark().getIndex();
+			String text = ast.getDocument().textBetween(start, end);
+			DocumentRegion textBefore = new DocumentRegion(ast.getDocument(), 0, start)
+					.trimEnd(Pattern.compile("\\s*"));
+			DocumentRegion dashes = textBefore.subSequence(textBefore.getLength()-3);
+			if (dashes.toString().equals("---")) {
+				return dashes;
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		//something unexpected... we couldn't find the '---'. So just mark the entire node.
+		return allOf(ast, node);
 	}
 
 	private void reconcile(IDocument doc, YamlPath path, Node node, YType type) {
@@ -135,7 +172,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	protected NodeId getNodeId(Node node) {
 		NodeId id = node.getNodeId();
-		if (id==NodeId.mapping && isMoustacheVar((MappingNode)node)) {
+		if (id==NodeId.mapping && isMoustacheVar(node)) {
 			return NodeId.scalar;
 		}
 		return id;
@@ -146,7 +183,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	 * parsed these will parse as a kind of map. But since these vars are meant to be replaced
 	 * with some kind of string we should treat them as scalar instead.
 	 * <p>
-	 * This function recognizes a mapping node that actually is moustache var pattern. 
+	 * This function recognizes a mapping node that actually is moustache var pattern.
 	 */
 	private boolean isMoustacheVar(Node node) {
 		return NodeUtil.asScalar(debrace(debrace(node))) != null;
@@ -265,5 +302,21 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private void problem(Node node, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, node));
 	}
+
+	private void problem(DocumentRegion region, String msg) {
+		problems.accept(YamlSchemaProblems.schemaProblem(msg, region));
+	}
+
+	private DocumentRegion endOf(IDocument document) {
+		return new DocumentRegion(document, document.getLength(), document.getLength());
+	}
+
+	private DocumentRegion allOf(IDocument doc) {
+		return new DocumentRegion(doc, 0, doc.getLength());
+	}
+	private DocumentRegion allOf(YamlFileAST ast, Node node) {
+		return new DocumentRegion(ast.getDocument(), node.getStartMark().getIndex(), node.getEndMark().getIndex());
+	}
+
 
 }

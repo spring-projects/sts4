@@ -15,6 +15,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.yaml.snakeyaml.nodes.Node;
 
 /**
@@ -53,4 +55,9 @@ public class YamlSchemaProblems {
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(SCHEMA_PROBLEM, msg, start, end-start);
 	}
+
+	public static ReconcileProblem schemaProblem(String msg, DocumentRegion node) {
+		return new ReconcileProblemImpl(SCHEMA_PROBLEM, msg, node.getStart(), node.getLength());
+	}
+
 }

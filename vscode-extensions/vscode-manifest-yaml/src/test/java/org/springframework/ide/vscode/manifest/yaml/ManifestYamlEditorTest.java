@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import static org.junit.Assert.*;
-
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
@@ -679,6 +680,84 @@ public class ManifestYamlEditorTest {
 				"- name: test"
 		);
 
+	}
+
+	@Test public void numberOfYamlDocumentsShouldBeExactlyOne() throws Exception {
+		Editor editor;
+
+		{
+			//when the file is empty (there is no AST at all)
+			editor = harness.newEditor("#Emptyfile");
+			editor.assertProblems("#Emptyfile|'Cloudfoundry Manifest' must have at least some Yaml content");
+		}
+
+		{
+			//when the file has too many documents... then highlight the '---' marker introducing the first document
+			//exceeding the range.
+			editor = harness.newEditor(
+					"---\n" +
+					"applications:\n"+
+					"- name: foo\n" +
+					"---\n" +
+					"applications:\n"+
+					"- name: foo\n"
+			);
+			editor.assertProblems(
+				"---|'Cloudfoundry Manifest' should not have more than 1 Yaml Document"
+			);
+			//also check the location of the marker since there are two occurrences of '---' in the editor text.
+			Diagnostic problem = editor.assertProblem("---");
+			assertTrue(problem.getRange().getStart().getLine()>1);
+		}
+
+		{
+			// Also check that looking for the '---' isn't confused by extra whitespace
+			editor = harness.newEditor(
+					"---\n" +
+					"applications:\n"+
+					"- name: foo\n" +
+					"  \n"+
+					"---\n" +
+					"   \n"+
+					"applications:\n"+
+					"- name: foo\n"
+			);
+			editor.assertProblems(
+				"---|'Cloudfoundry Manifest' should not have more than 1 Yaml Document"
+			);
+			//also check the location of the marker since there are two occurrences of '---' in the editor text.
+			Diagnostic problem = editor.assertProblem("---");
+			assertTrue(problem.getRange().getStart().getLine()>1);
+		}
+
+	}
+
+	@Test public void applicationsPropertyIsRequired() throws Exception {
+		Editor editor;
+
+		//when the file is empty (there is no AST at all)
+		editor = harness.newEditor(
+				"foo: v1\n"
+		);
+		editor.assertProblems(
+
+				"foo|Unkown property",
+				"foo: v1|'applications' is required"
+		);
+
+	}
+
+	@Test public void namePropertyIsRequired() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: this-is-good\n" +
+				"- memory: 1G\n" +
+				"- name:\n"
+		);
+		editor.assertProblems(
+				"memory: 1G|Property 'name' is required",
+				":|should not be empty"
+		);
 	}
 
 	@Test

@@ -20,7 +20,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.TestAsse
 
 public class DurationParserTest {
 
-	private ValueParser parser = ValueParsers.DURATION;
+	private ValueParser parser = ConcourseValueParsers.DURATION;
 	
 	@Test
 	public void goodExamples() {

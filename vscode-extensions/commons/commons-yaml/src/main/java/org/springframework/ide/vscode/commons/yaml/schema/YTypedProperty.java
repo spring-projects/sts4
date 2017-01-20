@@ -19,4 +19,5 @@ public interface YTypedProperty {
 	String getName();
 	YType getType();
 	Renderable getDescription();
+	default boolean isRequired() { return false; }
 }

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import org.springframework.ide.vscode.commons.util.IntegerRange;
+
 /**
  * A 'schema' provides a toplevel type, which dictates the valid structure of a
  * YamlDocument and a {@link YTypeUtil} which provides the means to 'interpret'
@@ -19,7 +21,9 @@ package org.springframework.ide.vscode.commons.yaml.schema;
  */
 public interface YamlSchema {
 
+	default IntegerRange expectedNumberOfDocuments() { return IntegerRange.ANY; };
 	YType getTopLevelType();
 	YTypeUtil getTypeUtil();
+	default String getName() { return getTopLevelType().toString(); }
 
 }

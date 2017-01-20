@@ -27,19 +27,7 @@ import com.google.common.collect.Multiset;
  *
  * @author Kris De Volder
  */
-public class ValueParsers {
-	
-	//TODO: some of the parsers here are pretty general purpose and could be moved to commons.
-
-	public static final ValueParser NE_STRING = (s) -> {
-		if (StringUtil.hasText(s)) {
-			return s;
-		} else {
-			throw new IllegalArgumentException("String should not be empty");
-		}
-	};
-
-	public static final ValueParser POS_INTEGER = integerRange(0, null);
+public class ConcourseValueParsers {
 
 	public static final SchemaContextAware<ValueParser> resourceNameDef(ConcourseModel models) {
 		return acceptOnlyUniqueNames(models::getResourceNames, "resource name");
@@ -58,38 +46,13 @@ public class ValueParsers {
 			return (String input) -> {
 				if (resourceNames.count(input)<=1) {
 					//okay
-					return resourceNames; 
+					return resourceNames;
 				}
 				throw new IllegalArgumentException("Duplicate "+typeName+" '"+input+"'");
 			};
 		};
 	};
 
-	public static ValueParser integerAtLeast(final Integer lowerBound) {
-		return integerRange(lowerBound, null);
-	}
-
-	public static ValueParser integerRange(final Integer lowerBound, final Integer upperBound) {
-		Assert.isLegal(lowerBound==null || upperBound==null || lowerBound <= upperBound);
-		return new ValueParser() {
-			@Override
-			public Object parse(String str) {
-				int value = Integer.parseInt(str);
-				if (lowerBound!=null && value<lowerBound) {
-					if (lowerBound==0) {
-						throw new NumberFormatException("Value must be positive");
-					} else {
-						throw new NumberFormatException("Value must be at least "+lowerBound);
-					}
-				}
-				if (upperBound!=null && value>upperBound) {
-					throw new NumberFormatException("Value must be at most "+upperBound);
-				}
-				return value;
-			}
-		};
-	}
-	
 	public static ValueParser DURATION = new RegexpParser(
 			"^(([0-9]+(.[0-9]+)?)(ns|us|µs|ms|s|h|m))+$",
 			"Duration",
@@ -99,7 +62,7 @@ public class ValueParsers {
 			+ "'m', 'h'."
 	);
 
-	
-	
+
+
 
 }

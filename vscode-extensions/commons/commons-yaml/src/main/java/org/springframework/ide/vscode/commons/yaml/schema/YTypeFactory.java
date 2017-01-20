@@ -66,7 +66,7 @@ public class YTypeFactory {
 		Assert.isLegal(types.length>1);
 		return new YBeanUnionType(name, types);
 	}
-	
+
 	/**
 	 * YTypeUtil instances capable of 'interpreting' the YType objects created by this
 	 * YTypeFactory
@@ -177,7 +177,7 @@ public class YTypeFactory {
 
 		public YValueHint[] getHintValues(DynamicSchemaContext dc) throws Exception {
 			Collection<YValueHint> providerHints=getProviderHints(dc);
-		
+
 			if (providerHints == null || providerHints.isEmpty()) {
 				return hints.toArray(new YValueHint[hints.size()]);
 			} else {
@@ -229,6 +229,7 @@ public class YTypeFactory {
 			return false;
 		}
 
+		@Override
 		public abstract String toString(); // force each sublcass to implement a (nice) toString method.
 
 		public void addProperty(YTypedProperty p) {
@@ -255,7 +256,7 @@ public class YTypeFactory {
 				}
 			}
 		}
-		
+
 		public void addHints(YValueHint... extraHints) {
 			for (YValueHint h : extraHints) {
 				if (!hints.contains(h)) {
@@ -299,10 +300,10 @@ public class YTypeFactory {
 			}
 			return this;
 		}
-		
+
 	}
 
-	
+
 	/**
 	 * Represents a type that is completely unconstrained. Anything goes: A map, a sequence or some
 	 * atomic value.
@@ -406,6 +407,7 @@ public class YTypeFactory {
 			return name;
 		}
 
+		@Override
 		public boolean isBean() {
 			return true;
 		}
@@ -445,7 +447,7 @@ public class YTypeFactory {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Represents a union of several bean types. It is assumed one primary property
 	 * exists in each of the the sub-bean types that can be used to identify the
@@ -467,11 +469,11 @@ public class YTypeFactory {
 				addUnionMember(t);
 			}
 		}
-		
+
 		private void addUnionMember(YBeanType type) {
 			types.add(type);
 		}
-		
+
 		private String findPrimary(AbstractType t, List<YBeanType> types) {
 			//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
 			// do not care about dynamic context.
@@ -544,7 +546,7 @@ public class YTypeFactory {
 			if (typesByPrimary==null) {
 				//To ensure that the map of 'typesByPrimary' is never stale, make the list of
 				// types immutable at this point. The assumption here is that union can be
-				// built up flexibly using mutation ops during initialization, but once it 
+				// built up flexibly using mutation ops during initialization, but once it
 				// starts being used it becomes immutable.
 				types = ImmutableList.copyOf(types);
 				ImmutableMap.Builder<String, AbstractType> builder = ImmutableMap.builder();
@@ -567,7 +569,7 @@ public class YTypeFactory {
 			}
 			return primaryProps;
 		}
-		
+
 		@Override
 		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
 			Set<String> existingProps = dc.getDefinedProperties();
@@ -589,6 +591,7 @@ public class YTypeFactory {
 		final private String name;
 		final private YType type;
 		private Renderable description = Renderables.NO_DESCRIPTION;
+		private boolean isRequired;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -619,6 +622,16 @@ public class YTypeFactory {
 			this.description = description;
 			return this;
 		}
+
+		public YTypedPropertyImpl isRequired(boolean b) {
+			this.isRequired = b;
+			return this;
+		}
+
+		@Override
+		public boolean isRequired() {
+			return isRequired;
+		}
 	}
 
 	public YAtomicType yatomic(String name) {
@@ -633,8 +646,8 @@ public class YTypeFactory {
 		YAtomicType t = yatomic(name);
 		t.addHintProvider((dc) -> {
 			Collection<String> strings = values.withContext(dc);
-			return strings==null 
-					? null 
+			return strings==null
+					? null
 					: () -> strings.stream()
 						.map((s) -> new BasicYValueHint(s))
 						.collect(Collectors.toSet());
@@ -646,7 +659,7 @@ public class YTypeFactory {
 					return errorMessageFormatter.apply(parseString, values);
 				}
 			};
-			return enumParser;	
+			return enumParser;
 		});
 		return t;
 	}
@@ -657,7 +670,7 @@ public class YTypeFactory {
 		t.parseWith(new EnumValueParser(name, values));
 		return t;
 	}
-	
+
 	public YValueHint hint(String value, String label) {
 		return new BasicYValueHint(value, label);
 	}

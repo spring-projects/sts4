@@ -14,8 +14,10 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
@@ -40,23 +42,28 @@ public class ManifestYmlSchema implements YamlSchema {
 		"name", "host", "hosts"
 	);
 
+	@Override
+	public IntegerRange expectedNumberOfDocuments() {
+		return IntegerRange.exactly(1);
+	}
+
 	public ManifestYmlSchema(Callable<Collection<YValueHint>> buildpackProvider, Callable<Collection<YValueHint>> servicesProvider) {
 		this.buildpackProvider = buildpackProvider;
 		YTypeFactory f = new YTypeFactory();
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		// define schema types
-		TOPLEVEL_TYPE = f.ybean("manifest.yml schema");
+		TOPLEVEL_TYPE = f.ybean("Cloudfoundry Manifest");
 
 		YBeanType application = f.ybean("Application");
 		YAtomicType t_path = f.yatomic("Path");
-		
+
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		if (this.buildpackProvider != null) {
 			t_buildpack.addHintProvider(this.buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
-		
+
 		YAtomicType t_service_string = f.yatomic("Service");
 		if (servicesProvider != null) {
 			t_service_string.addHintProvider(servicesProvider);
@@ -65,13 +72,15 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_services = f.yseq(t_service_string);
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
+		YAtomicType t_ne_string = f.yatomic("String");
+		t_ne_string.parseWith(ValueParsers.NE_STRING);
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
-		
+
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
-		
+
 		YAtomicType t_health_check_type = f.yenum("Health Check Type", "none", "port");
 
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
@@ -83,7 +92,8 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_env = f.ymap(t_string, t_string);
 
 		// define schema structure...
-		TOPLEVEL_TYPE.addProperty("applications", f.yseq(application));
+		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application))
+				.isRequired(true));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
 		YTypedPropertyImpl[] props = {
@@ -97,7 +107,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("hosts", t_strings),
 			f.yprop("instances", t_strictly_pos_integer),
 			f.yprop("memory", t_memory),
-			f.yprop("name", t_string),
+			f.yprop("name", t_ne_string).isRequired(true),
 			f.yprop("no-hostname", t_boolean),
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),

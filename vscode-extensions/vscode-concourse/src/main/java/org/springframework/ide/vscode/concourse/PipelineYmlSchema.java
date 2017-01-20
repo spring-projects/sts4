@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -66,7 +67,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_strictly_pos_integer.parseWith(ValueParsers.integerAtLeast(1));
 
 		YAtomicType t_duration = f.yatomic("Duration");
-		t_duration.parseWith(ValueParsers.DURATION);
+		t_duration.parseWith(ConcourseValueParsers.DURATION);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
@@ -121,9 +122,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		);
 
 		YAtomicType resourceNameDef = f.yatomic("Resource Name");
-		resourceNameDef.parseWith(ValueParsers.resourceNameDef(models));
+		resourceNameDef.parseWith(ConcourseValueParsers.resourceNameDef(models));
 		YAtomicType jobNameDef = f.yatomic("Job Name");
-		jobNameDef.parseWith(ValueParsers.jobNameDef(models));
+		jobNameDef.parseWith(ConcourseValueParsers.jobNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
 		addProp(getStep, "get", resourceName);
