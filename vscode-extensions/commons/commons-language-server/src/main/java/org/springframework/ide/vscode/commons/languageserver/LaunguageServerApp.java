@@ -15,10 +15,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.nio.channels.AsynchronousServerSocketChannel;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.Channels;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +37,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 
 /**
@@ -38,24 +45,44 @@ import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
  * write to create suitable 'main' method to launch a language server.
  * <p>
  * The easiest way to use this is to create your own static main method.
- * Then call this class's start method with a Provider<LanguageServer> as
+ * Then call this class's start method with a Provider<SimpleLanguageServer> as
  * a argument.
  * <p>
  * Alternatively, you can also subclass it and implement the abstract
  * `createServer` method.
  *
  * @author Kris De Volder
+ * @author Martin Lippert
  */
 public abstract class LaunguageServerApp {
 
-	public static void start(Provider<LanguageServer> languageServerFactory) throws IOException {
+	private static final String STANDALONE_STARTUP = "standalone-startup";
+	private static final int SERVER_STANDALONE_PORT = 5007;
+
+	public static void start(Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override
-			protected LanguageServer createServer() {
+			protected SimpleLanguageServer createServer() {
 				return languageServerFactory.get();
 			}
 		};
-		app.start();
+
+		if (System.getProperty(STANDALONE_STARTUP, "false").equals("true")) {
+			app.startAsServer();
+		}
+		else {
+			app.start();
+		}
+	}
+
+	public static void startAsServer(Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
+		LaunguageServerApp app = new LaunguageServerApp() {
+			@Override
+			protected SimpleLanguageServer createServer() {
+				return languageServerFactory.get();
+			}
+		};
+		app.startAsServer();
 	}
 
 	protected static class Connection {
@@ -112,7 +139,50 @@ public abstract class LaunguageServerApp {
 		}
 	}
 
-	private static Connection connectToNode() throws IOException {
+	/**
+	 * starts up the language server and let it listen for connections from the outside
+	 * instead of connecting itself to an existing port or channel.
+	 *
+	 * This is meant for development only, to reduce turnaround times while working
+	 * on the language server from within an IDE, so that you can start the language
+	 * server right away in debug mode and let the vscode extension connect to that
+	 * instance instead of vice versa.
+	 *
+	 * Source of inspiration:
+	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
+	 */
+	public void startAsServer() throws IOException, InterruptedException {
+		LOG.info("Starting LS as standlone server");
+
+		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
+			MessageConsumer result = consumer;
+			return result;
+		};
+
+		SimpleLanguageServer languageServer = createServer();
+		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
+				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), Executors.newCachedThreadPool(), wrapper);
+
+		languageServer.connect(launcher.getRemoteProxy());
+		Future<?> future = launcher.startListening();
+		while (!future.isDone()) {
+			Thread.sleep(10_000l);
+		}
+	}
+
+    private <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress, ExecutorService executorService, Function<MessageConsumer, MessageConsumer> wrapper) throws IOException {
+        AsynchronousServerSocketChannel serverSocket = AsynchronousServerSocketChannel.open().bind(socketAddress);
+        AsynchronousSocketChannel socketChannel;
+        try {
+            socketChannel = serverSocket.accept().get();
+            return Launcher.createIoLauncher(localService, remoteInterface, Channels.newInputStream(socketChannel), Channels.newOutputStream(socketChannel), executorService, wrapper);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Connection connectToNode() throws IOException {
 		String port = System.getProperty("server.port");
 
 		if (port != null) {
@@ -172,7 +242,7 @@ public abstract class LaunguageServerApp {
 		launcher.startListening().get();
 	}
 
-	protected abstract LanguageServer createServer();
+	protected abstract SimpleLanguageServer createServer();
 
 
 }

@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class Main {
    	SimpleLanguageServer server = new ManifestYamlLanguageServer();
    	
-   	public static void main(String[] args) throws IOException {
+   	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(ManifestYamlLanguageServer::new);
 	}
 }

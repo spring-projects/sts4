@@ -29,7 +29,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class Main {
 		
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(() -> {
 			JavaProjectFinder javaProjectFinder = BootPropertiesLanguageServer.DEFAULT_PROJECT_FINDER;
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);

@@ -19,7 +19,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class Main {
    	SimpleLanguageServer server = new ConcourseLanguageServer();
    	
-   	public static void main(String[] args) throws IOException {
+   	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(ConcourseLanguageServer::new);
 	}
 }
