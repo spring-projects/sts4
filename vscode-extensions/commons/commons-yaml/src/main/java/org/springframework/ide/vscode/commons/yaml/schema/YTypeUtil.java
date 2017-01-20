@@ -35,13 +35,13 @@ public interface YTypeUtil {
 	ValueParser getValueParser(YType type, DynamicSchemaContext dc);
 
 	//TODO: only one of these two should be enough?
-	List<YTypedProperty> getProperties(YType type, DynamicSchemaContext dc);
-	Map<String, YTypedProperty> getPropertiesMap(YType yType, DynamicSchemaContext dc);
+	List<YTypedProperty> getProperties(YType type);
+	Map<String, YTypedProperty> getPropertiesMap(YType yType);
 
 	/**
 	 * Given a {@link DynamicSchemaContext} attempt to get a more specific type, as
 	 * may be inferred by stuff present in the context. If not enough information is
-	 * present in the context to narrow the type, then the type itself 
+	 * present in the context to narrow the type, then the type itself
 	 * should be returned.
 	 */
 	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);

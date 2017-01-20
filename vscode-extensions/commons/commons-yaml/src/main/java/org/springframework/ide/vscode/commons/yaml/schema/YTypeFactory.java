@@ -89,13 +89,13 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public Map<String, YTypedProperty> getPropertiesMap(YType type, DynamicSchemaContext dc) {
-			return ((AbstractType)type).getPropertiesMap(dc);
+		public Map<String, YTypedProperty> getPropertiesMap(YType type) {
+			return ((AbstractType)type).getPropertiesMap();
 		}
 
 		@Override
-		public List<YTypedProperty> getProperties(YType type, DynamicSchemaContext dc) {
-			return ((AbstractType)type).getProperties(dc);
+		public List<YTypedProperty> getProperties(YType type) {
+			return ((AbstractType)type).getProperties();
 		}
 
 		@Override
@@ -207,11 +207,11 @@ public class YTypeFactory {
 			return ImmutableList.of();
 		}
 
-		public List<YTypedProperty> getProperties(DynamicSchemaContext dc) {
+		public List<YTypedProperty> getProperties() {
 			return Collections.unmodifiableList(propertyList);
 		}
 
-		public Map<String, YTypedProperty> getPropertiesMap(DynamicSchemaContext dc) {
+		public Map<String, YTypedProperty> getPropertiesMap() {
 			if (cachedPropertyMap==null) {
 				cachedPropertyMap = new LinkedHashMap<>();
 				for (YTypedProperty p : propertyList) {
@@ -412,25 +412,6 @@ public class YTypeFactory {
 			return true;
 		}
 
-		/**
-		 * Deprecated. This method disregards {@link DynamicSchemaContext}. This may be
-		 * alright for Schemas which don't rely on it but it will result in incorrect/inaccurate
-		 * behavior for Schemas that do.
-		 */
-		@Deprecated
-		public List<YTypedProperty> getProperties() {
-			return getProperties(DynamicSchemaContext.NULL);
-		}
-
-		/**
-		 * Deprecated. This method disregards {@link DynamicSchemaContext}. This may be
-		 * alright for Schemas which don't rely on it but it will result in incorrect/inaccurate
-		 * behavior for Schemas that do.
-		 */
-		@Deprecated
-		public Map<String, YTypedProperty> getPropertiesMap() {
-			return getPropertiesMap(DynamicSchemaContext.NULL);
-		}
 	}
 
 	public static class YAtomicType extends AbstractType {
@@ -477,7 +458,7 @@ public class YTypeFactory {
 		private String findPrimary(AbstractType t, List<YBeanType> types) {
 			//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
 			// do not care about dynamic context.
-			for (YTypedProperty p : t.getProperties(DynamicSchemaContext.NULL)) {
+			for (YTypedProperty p : t.getProperties()) {
 				String name = p.getName();
 				if (isUniqueFor(name, t, types)) {
 					return name;
@@ -491,7 +472,7 @@ public class YTypeFactory {
 				if (other!=t) {
 					//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
 					// do not care about dynamic context.
-					if (other.getPropertiesMap(DynamicSchemaContext.NULL).containsKey(name)) {
+					if (other.getPropertiesMap().containsKey(name)) {
 						return false;
 					}
 				}
@@ -508,38 +489,11 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public Map<String, YTypedProperty> getPropertiesMap(DynamicSchemaContext dc) {
-			return asMap(getProperties(dc));
-		}
-
-		private Map<String, YTypedProperty> asMap(List<YTypedProperty> properties) {
-			ImmutableMap.Builder<String, YTypedProperty> builder = ImmutableMap.builder();
-			for (YTypedProperty p : properties) {
-				builder.put(p.getName(), p);
-			}
-			return builder.build();
-		}
-
-		@Override
-		public List<YTypedProperty> getProperties(DynamicSchemaContext dc) {
-			Set<String> existingProps = dc.getDefinedProperties();
-			if (!existingProps.isEmpty()) {
-				Builder<YTypedProperty> builder = ImmutableList.builder();
-				for (Entry<String, AbstractType> entry : typesByPrimary().entrySet()) {
-					String primaryName = entry.getKey();
-					if (existingProps.contains(primaryName)) {
-						builder.addAll(entry.getValue().getProperties(dc));
-						break;
-					}
-				}
-				//Add 'shared' properties too:
-				builder.addAll(super.getProperties(dc));
-				return builder.build();
-			}
+		public List<YTypedProperty> getProperties() {
 			//Reaching here means we couldn't guess the type from existing props.
 			//We'll just return the primary properties, these are good to give as hints
 			//then, since at least one of them should be added.
-			return getPrimaryProps(dc);
+			return getPrimaryProps();
 		}
 
 		private synchronized Map<String, AbstractType> typesByPrimary() {
@@ -559,11 +513,11 @@ public class YTypeFactory {
 			return typesByPrimary;
 		}
 
-		private List<YTypedProperty> getPrimaryProps(DynamicSchemaContext dc) {
+		private List<YTypedProperty> getPrimaryProps() {
 			if (primaryProps==null) {
 				Builder<YTypedProperty> builder = ImmutableList.builder();
 				for (Entry<String, AbstractType> entry : typesByPrimary().entrySet()) {
-					builder.add(entry.getValue().getPropertiesMap(dc).get(entry.getKey()));
+					builder.add(entry.getValue().getPropertiesMap().get(entry.getKey()));
 				}
 				primaryProps = builder.build();
 			}

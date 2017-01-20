@@ -80,7 +80,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		int queryOffset = offset - query.length();
 		SNode contextNode = getContextNode();
 		DynamicSchemaContext dynamicCtxt = getSchemaContext();
-		List<YTypedProperty> properties = typeUtil.getProperties(type, dynamicCtxt);
+		List<YTypedProperty> properties = typeUtil.getProperties(type);
 		if (CollectionUtil.hasElements(properties)) {
 			ArrayList<ICompletionProposal> proposals = new ArrayList<>(properties.size());
 			Set<String> definedProps = dynamicCtxt.getDefinedProperties();
@@ -180,12 +180,11 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	@Override
 	public YamlAssistContext traverse(YamlPathSegment s) throws Exception {
 		if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
-			DynamicSchemaContext dynamicCtxt = getSchemaContext();
 			if (typeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 				return contextWith(s, typeUtil.getDomainType(type));
 			}
 			String key = s.toPropString();
-			Map<String, YTypedProperty> subproperties = typeUtil.getPropertiesMap(type, dynamicCtxt);
+			Map<String, YTypedProperty> subproperties = typeUtil.getPropertiesMap(type);
 			if (subproperties!=null) {
 				return contextWith(s, getType(subproperties.get(key)));
 			}
@@ -265,6 +264,6 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 	private YTypedProperty getProperty(String name) {
-		return typeUtil.getPropertiesMap(getType(),  getSchemaContext()).get(name);
+		return typeUtil.getPropertiesMap(getType()).get(name);
 	}
 }

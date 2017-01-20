@@ -118,7 +118,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						reconcile(doc, valueAt(path, key), entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
-					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type, schemaContext);
+					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type);
 					checkRequiredProperties(map, type, beanProperties);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
