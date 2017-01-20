@@ -136,6 +136,59 @@ public class DefaultCompletionFactory implements CompletionFactory {
 			return null;
 		}
 	}
+	
+	public static final class ErrorProposal extends ScoreableProposal {
+		private final String value;
+		private final double score;
+		private final String label;
+		private DocumentEdits edits;
+		private YTypeUtil typeUtil;
+		private YType type;
+
+		public ErrorProposal(String value,  String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
+			this.value = value;
+			this.score = score;
+			this.label = label;
+			this.edits = edits;
+			this.typeUtil = typeUtil;
+			this.type = type;
+		}
+
+		@Override
+		public DocumentEdits getTextEdit() {
+			return edits;
+		}
+
+		@Override
+		public String getLabel() {
+			return label;
+		}
+
+		@Override
+		public CompletionItemKind getKind() {
+			return CompletionItemKind.Value;
+		}
+
+		@Override
+		public Renderable getDocumentation() {
+			return null;
+		}
+
+		@Override
+		public double getBaseScore() {
+			return score;
+		}
+
+		@Override
+		public String toString() {
+			return "ErrorProposal("+value+")";
+		}
+
+		@Override
+		public String getDetail() {
+			return typeUtil.niceTypeName(type);
+		}
+	}
 
 	@Override
 	public ICompletionProposal beanProperty(IDocument doc, String contextProperty, YType contextType, String query, YTypedProperty p, double score, DocumentEdits edits, YTypeUtil typeUtil) {
@@ -148,42 +201,10 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 
 	@Override
-	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits) {
-		final String value = EMPTY_VALUE; // Empty value for the proposal. Purpose is to show a message with no value to fill in.
+	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil) {
 		final double score = ERROR_COMPLETION_SCORE;
-		final Renderable documentation = null;
-		final String niceDescription = message;
-		return new ScoreableProposal() {
-			
-			@Override
-			public DocumentEdits getTextEdit() {
-				return edits;
-			}
-			
-			@Override
-			public String getLabel() {
-				return value;
-			}
-			
-			@Override
-			public CompletionItemKind getKind() {
-				return CompletionItemKind.Value;
-			}
-			
-			@Override
-			public Renderable getDocumentation() {
-				return documentation;
-			}
-			
-			@Override
-			public String getDetail() {
-				return niceDescription;
-			}
-			
-			@Override
-			public double getBaseScore() {
-				return score;
-			}
-		};
+		final String value = EMPTY_VALUE;
+		final String label = message;
+		return new ErrorProposal(value, label, type, score, edits, typeUtil);
 	}
 }

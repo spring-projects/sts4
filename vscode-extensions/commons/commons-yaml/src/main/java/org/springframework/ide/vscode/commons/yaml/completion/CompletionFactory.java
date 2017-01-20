@@ -35,5 +35,5 @@ public interface CompletionFactory {
 	 * @param edits
 	 * @return non-null proposal
 	 */
-	ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits);
+	ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil);
 }

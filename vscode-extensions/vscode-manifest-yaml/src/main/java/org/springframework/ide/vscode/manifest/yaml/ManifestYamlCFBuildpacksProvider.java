@@ -44,9 +44,6 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 			}
 		}
 
-		if (hints.isEmpty()) {
-			hints.add(new BasicYValueHint(EMPTY_VALUE, "No Cloud Foundry buildpacks found."));
-		}
 		return hints;
 	}
 

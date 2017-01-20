@@ -41,9 +41,6 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	@Override
 	public Collection<YValueHint> call() throws Exception {
 		Collection<YValueHint> hints = new ArrayList<>();
-		// TODO: Probably not the most ideal thing to do, but for now show any
-		// CF errors
-		// in the CA UI, as well as cases where there are no targets
 		try {
 			List<CFTarget> targets = targetCache.getOrCreate();
 			Collection<YValueHint> resolvedHints = getHints(targets);

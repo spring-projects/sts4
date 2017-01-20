@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
 
+	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.";
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
 	public static final String ORGANIZATION_FIELDS = "OrganizationFields";
@@ -74,7 +75,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 
 		if (params.isEmpty()) {
 			throw new NoTargetsException(
-					"Unable to fetch information from Cloud Foundry. Please use cf CLI to configure and login to Cloud Foundry.");
+					NO_CLI_TARGETS_FOUND_MESSAGE);
 		} else {
 			return params;
 		}

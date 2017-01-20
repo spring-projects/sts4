@@ -44,9 +44,6 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 			}
 		}
 
-		if (hints.isEmpty()) {
-			hints.add(new BasicYValueHint(EMPTY_VALUE, "No Cloud Foundry service instances available"));
-		}
 		return hints;
 	}
 
