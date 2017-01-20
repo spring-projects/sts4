@@ -20,7 +20,8 @@ const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,susp
 
 export interface ActivatorOptions {
     DEBUG: boolean;
-    CONNECT_TO_LS: boolean;
+    CONNECT_TO_LS?: boolean;
+    TRACE?: boolean;
     extensionId: string;
     clientOptions: LanguageClientOptions;
     fatJarFile: string;
@@ -28,13 +29,10 @@ export interface ActivatorOptions {
 
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext) {
-
-    let CONNECT_TO_LS = options.CONNECT_TO_LS;
-    if (CONNECT_TO_LS) {
-        connectToLS(options.extensionId, context, options.clientOptions);
-    }
-    else {
-        let DEBUG = options.DEBUG;
+    let DEBUG = options.DEBUG;
+    if (options.CONNECT_TO_LS) {
+        connectToLS(context, options);
+    } else {
         let clientOptions = options.clientOptions;
         let fatJarFile = Path.resolve(context.extensionPath, options.fatJarFile);
 
@@ -107,12 +105,12 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                 });
             }
 
-            setupLanguageClient(options.extensionId, context, createServer, clientOptions);
+            setupLanguageClient(context, createServer, options);
         });
     }
 }
 
-function connectToLS(extensionId: string, context: VSCode.ExtensionContext, clientOptions: LanguageClientOptions) {
+function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions) {
     let connectionInfo = {
         port: 5007
     };
@@ -126,15 +124,17 @@ function connectToLS(extensionId: string, context: VSCode.ExtensionContext, clie
         return Promise.resolve(result);
     };
 
-    setupLanguageClient(extensionId, context, serverOptions, clientOptions);
+    setupLanguageClient(context, serverOptions, options);
 }
 
-function setupLanguageClient(extensionId: string, context: VSCode.ExtensionContext, createServer: ServerOptions, clientOptions: LanguageClientOptions) {
+function setupLanguageClient(context: VSCode.ExtensionContext, createServer: ServerOptions, options: ActivatorOptions) {
     // Create the language client and start the client.
-    let client = new LanguageClient(extensionId, extensionId,
-        createServer, clientOptions
+    let client = new LanguageClient(options.extensionId, options.extensionId,
+        createServer, options.clientOptions
     );
-    client.trace = Trace.Verbose;
+    if (options.TRACE) {
+        client.trace = Trace.Verbose;
+    }
 
     let progressService = new ProgressService();
     client.onNotification({ method: "sts/progress" }, (params: ProgressParams) => {
