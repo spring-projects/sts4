@@ -343,6 +343,7 @@ public class PipelineYamlEditorTest {
 		editor = harness.newEditor(
 				"resources:\n" +
 				"- name: git\n" +
+				"  type: git\n" +
 				"jobs:\n" +
 				"- name: foo\n" +
 				"  serial: true\n" +
@@ -471,6 +472,7 @@ public class PipelineYamlEditorTest {
 				"  type: git\n" +
 				"  source:\n" +
 				"    uri: https://github.com/kdvolder/somestuff\n" +
+				"    branch: master\n" +
 				"jobs:\n" +
 				"- name: job1\n" +
 				"  plan:\n" +
@@ -501,16 +503,10 @@ public class PipelineYamlEditorTest {
 				"resources:\n" +
 				"- name: sts4\n" +
 				"  type: git\n" +
-				"  source:\n" +
-				"    uri: https://github.com/kdvolder/somestuff\n" +
 				"- name: utils\n" +
 				"  type: git\n" +
-				"  source:\n" +
-				"    uri: https://github.com/kdvolder/someutils\n" +
 				"- name: sts4\n" +
-				"  type: git\n" +
-				"  source:\n" +
-				"    uri: https://github.com/kdvolder/extras\n"
+				"  type: git\n"
 		);
 		editor.assertProblems(
 				"sts4|Duplicate resource name",
@@ -527,7 +523,10 @@ public class PipelineYamlEditorTest {
 				"- name: job-1\n"
 		);
 		editor.assertProblems(
+				"name: job-1|'plan' is required",
 				"job-1|Duplicate job name",
+				"name: utils|'plan' is required",
+				"name: job-1|'plan' is required",
 				"job-1|Duplicate job name"
 		);
 	}
@@ -572,12 +571,14 @@ public class PipelineYamlEditorTest {
 				"- name: my-repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
+				"    branch: master\n" +
 				"    uri: https://github.com/kdvolder/my-repo\n" +
 				"resources:\n" +
 				"- name: your-repo\n" +
 				"  type: git\n" +
 				"  type: git\n" +
 				"  source:\n" +
+				"    branch: master\n" +
 				"    uri: https://github.com/kdvolder/forked-repo\n"
 		);
 
@@ -594,7 +595,9 @@ public class PipelineYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: git-repo\n" +
+				"  type: git\n" +
 				"- name: build-artefact\n" +
+				"  type: git\n" +
 				"jobs:\n" +
 				"- name: build\n" +
 				"  plan:\n" +
@@ -617,7 +620,9 @@ public class PipelineYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: git-repo\n" +
+				"  type: git\n" +
 				"- name: build-artefact\n" +
+				"  type: git\n" +
 				"jobs:\n" +
 				"- name: build\n" +
 				"  plan:\n" +

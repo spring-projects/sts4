@@ -114,7 +114,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YType jobName = f.yenum("Job Name",
 				(parseString, validValues) ->  {
-					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
+					return "The '"+parseString+"' Job does not exist. Existing jobs: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
 					return models.getJobNames(dc.getDocument());
@@ -186,20 +186,20 @@ public class PipelineYmlSchema implements YamlSchema {
 		});
 
 		YBeanType resource = f.ybean("Resource");
-		addProp(resource, "name", resourceNameDef);
-		addProp(resource, "type", t_resource_type_name);
+		addProp(resource, "name", resourceNameDef).isRequired(true);
+		addProp(resource, "type", t_resource_type_name).isRequired(true);
 		addProp(resource, "source", resourceSource);
 		addProp(resource, "check_every", t_duration);
 
 		YBeanType job = f.ybean("Job");
-		addProp(job, "name", jobNameDef);
+		addProp(job, "name", jobNameDef).isRequired(true);
+		addProp(job, "plan", f.yseq(step)).isRequired(true);
 		addProp(job, "serial", t_boolean);
 		addProp(job, "build_logs_to_retain", t_pos_integer);
 		addProp(job, "serial_groups", t_strings);
 		addProp(job, "max_in_flight", t_pos_integer);
 		addProp(job, "public", t_boolean);
 		addProp(job, "disable_manual_trigger", t_boolean);
-		addProp(job, "plan", f.yseq(step));
 
 		YBeanType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", t_ne_string);
@@ -221,8 +221,8 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private void initializeDefaultResourceTypes() {
 		YBeanType gitSource = f.ybean("GitResourceSource");
-		addProp(gitSource, "uri", t_string);
-		addProp(gitSource, "branch", t_string);
+		addProp(gitSource, "uri", t_string).isRequired(true);
+		addProp(gitSource, "branch", t_string).isRequired(true);
 		addProp(gitSource, "private_key", t_string);
 		addProp(gitSource, "username", t_string);
 		addProp(gitSource, "password", t_string);
@@ -250,19 +250,21 @@ public class PipelineYmlSchema implements YamlSchema {
 		return null;
 	}
 
-	private YTypedProperty prop(AbstractType beanType, String name, YType type) {
+	private YTypedPropertyImpl prop(AbstractType beanType, String name, YType type) {
 		YTypedPropertyImpl prop = f.yprop(name, type);
 		prop.setDescriptionProvider(descriptionFor(beanType, name));
 		return prop;
 	}
 
 
-	private void addProp(AbstractType superType, AbstractType bean, String name, YType type) {
-		bean.addProperty(prop(superType, name, type));
+	private YTypedPropertyImpl addProp(AbstractType superType, AbstractType bean, String name, YType type) {
+		YTypedPropertyImpl p = prop(superType, name, type);
+		bean.addProperty(p);
+		return p;
 	}
 
-	private void addProp(AbstractType bean, String name, YType type) {
-		addProp(bean, bean, name, type);
+	private YTypedPropertyImpl addProp(AbstractType bean, String name, YType type) {
+		return addProp(bean, bean, name, type);
 	}
 
 	public static Renderable descriptionFor(YType owner, String propName) {
