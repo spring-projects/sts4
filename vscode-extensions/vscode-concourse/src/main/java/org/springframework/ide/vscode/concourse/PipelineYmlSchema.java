@@ -40,6 +40,9 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	public final YTypeFactory f = new YTypeFactory();
 	public final YType t_string = f.yatomic("String");
+	public final YType t_ne_string = f.yatomic("String")
+			.parseWith(ValueParsers.NE_STRING);
+
 	public final YType t_strings = f.yseq(t_string);
 	public final YType t_pair = f.ybean("NameValuePair",
 			f.yprop("name", t_string),
@@ -63,9 +66,6 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Pipeline");
-
-		YAtomicType t_ne_string = f.yatomic("String");
-		t_ne_string.parseWith(ValueParsers.NE_STRING);
 
 		YAtomicType t_duration = f.yatomic("Duration");
 		t_duration.parseWith(ConcourseValueParsers.DURATION);
@@ -132,16 +132,19 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "resource", t_string);
 		addProp(getStep, "version", t_version);
 		addProp(getStep, "passed", f.yseq(jobName));
-		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
+		YType t_get_params = f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("get", models, dc))
-		));
+		);
+		addProp(getStep, "params", t_get_params);
 		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
 		addProp(putStep, "put", resourceName);
 		addProp(putStep, "resource", jobName);
-		addProp(putStep, "params", t_params);
-		addProp(putStep, "get_params", t_params);
+		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
+			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
+		));
+		addProp(putStep, "get_params", t_get_params);
 
 		YBeanType taskStep = f.ybean("TaskStep");
 		addProp(taskStep, "task", t_ne_string);
@@ -219,7 +222,8 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private void initializeDefaultResourceTypes() {
-		// git resource
+		////////////////////////////////////////////////////
+		// git
 		YBeanType gitSource = f.ybean("GitResourceSource");
 		addProp(gitSource, "uri", t_string).isRequired(true);
 		addProp(gitSource, "branch", t_string).isRequired(true);
@@ -242,8 +246,15 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(gitGetParams, "disable_git_lfs", t_boolean);
 
 		YBeanType gitPutParams = f.ybean("GitPutParams");
-		resourceTypes.def("git", gitSource, gitGetParams, gitPutParams);
+		addProp(gitPutParams, "repository", t_ne_string).isRequired(true);
+		addProp(gitPutParams, "rebase", t_boolean);
+		addProp(gitPutParams, "tag", t_ne_string);
+		addProp(gitPutParams, "only_tag", t_boolean);
+		addProp(gitPutParams, "tag_prefix", t_string);
+		addProp(gitPutParams, "force", t_boolean);
+		addProp(gitPutParams, "annotate", t_ne_string);
 
+		resourceTypes.def("git", gitSource, gitGetParams, gitPutParams);
 	}
 
 	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {

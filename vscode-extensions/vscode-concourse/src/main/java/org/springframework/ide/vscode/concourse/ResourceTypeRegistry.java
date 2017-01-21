@@ -18,8 +18,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 
 /**
- * Keeps track of known resource types. For now this only keeps track of the resource-types that
- * are built-in to concourse.
+ * Keeps track of known resource types.
  *
  * @author Kris De Volder
  */
@@ -76,6 +75,16 @@ public class ResourceTypeRegistry {
 			ResourceTypeInfo v = resourceTypes.get(typeTag);
 			if (v!=null) {
 				return v.getIn();
+			}
+		}
+		return null;
+	}
+
+	public YType getOutParamsType(String typeTag) {
+		if (typeTag!=null) {
+			ResourceTypeInfo v = resourceTypes.get(typeTag);
+			if (v!=null) {
+				return v.getOut();
 			}
 		}
 		return null;

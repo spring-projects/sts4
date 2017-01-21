@@ -853,7 +853,6 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
-	@Ignore
 	@Test public void gitResourcePutParamsCompletions() throws Exception {
 		String context =
 				"resources:\n" +
@@ -869,19 +868,19 @@ public class PipelineYamlEditorTest {
 		assertContextualCompletions(context,
 				"<*>"
 				, // ===>
-				"repository: <*>"
-				,
-				"rebase: <*>"
-				,
-				"tag: <*>\n"
-				,
-				"only_tag: <*>"
-				,
-				"tag_prefix: <*>"
+				"annotate: <*>"
 				,
 				"force: <*>"
 				,
-				"annotate: <*>"
+				"only_tag: <*>"
+				,
+				"rebase: <*>"
+				,
+				"repository: <*>"
+				,
+				"tag: <*>"
+				,
+				"tag_prefix: <*>"
 		);
 		assertContextualCompletions(context,
 				"rebase: <*>"
@@ -901,6 +900,70 @@ public class PipelineYamlEditorTest {
 				"force: false<*>",
 				"force: true<*>"
 		);
+	}
+
+	@Test public void gitResourcePutParamsReconcile() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    params: {}\n"
+		);
+		editor.assertProblems("{}|'repository' is required");
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    params:\n" +
+				"      repository: some-other-repo\n" +
+				"      rebase: do-rebase\n" +
+				"      only_tag: do-tag\n" +
+				"      force: force-it\n"
+		);
+		editor.assertProblems(
+				"do-rebase|'boolean'",
+				"do-tag|'boolean'",
+				"force-it|'boolean'"
+		);
+	}
+
+	@Test public void gitResourcePutParamsHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    params:\n" +
+				"      repository: some-other-repo\n" +
+				"      rebase: do-rebase\n" +
+				"      tag: the-tag-file\n" +
+				"      only_tag: do-tag\n" +
+				"      tag_prefix: RELEASE\n" +
+				"      force: force-it\n" +
+				"      annotate: release-annotion\n"
+		);
+
+		editor.assertHoverContains("repository", "The path of the repository");
+		editor.assertHoverContains("rebase", "attempt rebasing");
+		editor.assertHoverContains("tag", "HEAD will be tagged");
+		editor.assertHoverContains("only_tag", "push only the tags");
+		editor.assertHoverContains("tag_prefix", "prepended with this string");
+		editor.assertHoverContains("force", "pushed regardless of the upstream state");
+		editor.assertHoverContains("annotate", "path to a file containing the annotation message");
 	}
 
 	@Test
