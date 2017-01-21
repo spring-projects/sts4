@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -825,6 +826,25 @@ public class PipelineYamlEditorTest {
 				"  - get: my-git\n" +
 				"    params:\n" +
 				"      depth: -1\n" +
+				"      disable_git_lfs: not-bool\n" +
+				"      submodules: none"
+		);
+		editor.assertHoverContains("depth", "using the `--depth` option");
+		editor.assertHoverContains("submodules", "If `none`, submodules will not be fetched");
+		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
+	}
+
+	@Test public void gitResourceGetParamsHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"    params:\n" +
+				"      depth: -1\n" +
 				"      disable_git_lfs: not-bool\n"
 		);
 		editor.assertProblems(
@@ -833,6 +853,55 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
+	@Ignore
+	@Test public void gitResourcePutParamsCompletions() throws Exception {
+		String context =
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    params:\n" +
+				"      <*>";
+
+		assertContextualCompletions(context,
+				"<*>"
+				, // ===>
+				"repository: <*>"
+				,
+				"rebase: <*>"
+				,
+				"tag: <*>\n"
+				,
+				"only_tag: <*>"
+				,
+				"tag_prefix: <*>"
+				,
+				"force: <*>"
+				,
+				"annotate: <*>"
+		);
+		assertContextualCompletions(context,
+				"rebase: <*>"
+				, // ===>
+				"rebase: false<*>",
+				"rebase: true<*>"
+		);
+		assertContextualCompletions(context,
+				"only_tag: <*>"
+				, // ===>
+				"only_tag: false<*>",
+				"only_tag: true<*>"
+		);
+		assertContextualCompletions(context,
+				"force: <*>"
+				, // ===>
+				"force: false<*>",
+				"force: true<*>"
+		);
+	}
 
 	@Test
 	public void contentAssistJobNames() throws Exception {
