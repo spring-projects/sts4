@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -182,7 +183,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					.filter(YTypedProperty::isRequired)
 					.map(YTypedProperty::getName)
 					.filter((required) -> !foundProps.contains(required))
-					.collect(Collectors.toSet());
+					.collect(Collectors.toCollection(TreeSet::new));
 			if (!missingProps.isEmpty()) {
 				String message;
 				if (missingProps.size()==1) {

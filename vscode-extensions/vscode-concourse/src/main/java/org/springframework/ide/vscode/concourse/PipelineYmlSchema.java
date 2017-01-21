@@ -177,13 +177,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "timeout", t_duration);
 		}
 
-		YType resourceSource = f.contextAware("ResourceSource", (dc) -> {
-			String typeTag = getResourceTypeTag(models, dc);
-			if (typeTag!=null) {
-				return resourceTypes.getSourceType(typeTag);
-			}
-			return null;
-		});
+		YType resourceSource = f.contextAware("ResourceSource", (dc) ->
+			resourceTypes.getSourceType(getResourceTypeTag(models, dc))
+		);
 
 		YBeanType resource = f.ybean("Resource");
 		addProp(resource, "name", resourceNameDef).isRequired(true);
@@ -202,12 +198,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "disable_manual_trigger", t_boolean);
 
 		YBeanType resourceType = f.ybean("ResourceType");
-		addProp(resourceType, "name", t_ne_string);
-		addProp(resourceType, "type", t_image_type);
-		addProp(resourceType, "source", t_any);
+		addProp(resourceType, "name", t_ne_string).isRequired(true);
+		addProp(resourceType, "type", t_image_type).isRequired(true);
+		addProp(resourceType, "source", resourceSource);
 
 		YBeanType group = f.ybean("Group");
-		addProp(group, "name", t_ne_string);
+		addProp(group, "name", t_ne_string).isRequired(true);
 		addProp(group, "resources", f.yseq(resourceName));
 		addProp(group, "jobs", f.yseq(jobName));
 
@@ -255,7 +251,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		prop.setDescriptionProvider(descriptionFor(beanType, name));
 		return prop;
 	}
-
 
 	private YTypedPropertyImpl addProp(AbstractType superType, AbstractType bean, String name, YType type) {
 		YTypedPropertyImpl p = prop(superType, name, type);

@@ -835,6 +835,86 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("check_every", "The interval on which to check for new versions");
 	}
 
+	@Test public void requiredPropertiesReconcile() throws Exception {
+		Editor editor;
+
+		//addProp(resource, "name", resourceNameDef).isRequired(true);
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- type: foo"
+		);
+		editor.assertProblems("type: foo|'name' is required");
+
+		//addProp(resource, "type", t_resource_type_name).isRequired(true);
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo"
+		);
+		editor.assertProblems("name: foo|'type' is required");
+
+		//Both name and type missing:
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- source: {}"
+		);
+		editor.assertProblems("source: {}|[name, type] are required");
+
+		//addProp(job, "name", jobNameDef).isRequired(true);
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: foo"
+		);
+		editor.assertProblems("name: foo|'plan' is required");
+
+		//addProp(job, "plan", f.yseq(step)).isRequired(true);
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- plan: []"
+		);
+		editor.assertProblems("plan: []|'name' is required");
+
+		//addProp(resourceType, "name", t_ne_string).isRequired(true);
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- type: docker-image"
+		);
+		editor.assertProblems("type: docker-image|'name' is required");
+
+		//addProp(resourceType, "type", t_image_type).isRequired(true);
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: foo"
+		);
+		editor.assertProblems("name: foo|'type' is required");
+
+		//addProp(gitSource, "uri", t_string).isRequired(true);
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    branch: master"
+		);
+		editor.assertProblems("branch: master|'uri' is required");
+
+		//addProp(gitSource, "branch", t_string).isRequired(true);
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://yada"
+		);
+		editor.assertProblems("uri: https://yada|'branch' is required");
+
+		//addProp(group, "name", t_ne_string).isRequired(true);
+		editor = harness.newEditor(
+				"groups:\n" +
+				"- jobs: []"
+		);
+		editor.assertProblems("jobs: []|'name' is required");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
