@@ -46,7 +46,7 @@ public class YTypeFactory {
 		return new YContextSensitive(name, guessType);
 	}
 
-	public YType yany(String name) {
+	public AbstractType yany(String name) {
 		return new YAny(name);
 	}
 
@@ -246,7 +246,7 @@ public class YTypeFactory {
 		public void addProperty(String name, YType type) {
 			addProperty(new YTypedPropertyImpl(name, type));
 		}
-		public void addHints(String... strings) {
+		public AbstractType addHints(String... strings) {
 			if (strings != null) {
 				for (String value : strings) {
 					BasicYValueHint hint = new BasicYValueHint(value);
@@ -255,6 +255,7 @@ public class YTypeFactory {
 					}
 				}
 			}
+			return this;
 		}
 
 		public void addHints(YValueHint... extraHints) {
@@ -269,8 +270,9 @@ public class YTypeFactory {
 			this.parser = parser;
 		}
 
-		public void parseWith(ValueParser parser) {
+		public AbstractType parseWith(ValueParser parser) {
 			parseWith((DynamicSchemaContext dc) -> parser);
+			return this;
 		}
 		private ValueParser getParser(DynamicSchemaContext dc) {
 			return parser == null ? null : parser.withContext(dc);

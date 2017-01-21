@@ -98,4 +98,19 @@ public class NodeUtil {
 		return Collections.emptySet();
 	}
 
+	public static String getScalarProperty(Node node, String propName) {
+		if (node instanceof MappingNode) {
+			for (NodeTuple entry : ((MappingNode)node).getValue()) {
+				String key = NodeUtil.asScalar(entry.getKeyNode());
+				if (propName.equals(key)) {
+					String value = asScalar(entry.getValueNode());
+					if (value!=null) {
+						return value;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 }

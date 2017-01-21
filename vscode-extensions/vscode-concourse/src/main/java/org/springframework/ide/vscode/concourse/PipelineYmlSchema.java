@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -50,6 +51,10 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_any = f.yany("Object");
 	public final YType t_params = f.ymap(t_string, t_any);
 	public final YType t_string_params = f.ymap(t_string, t_string);
+	public final YType t_pos_integer = f.yatomic("Positive Integer")
+			.parseWith(ValueParsers.POS_INTEGER);
+	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
+			.parseWith(ValueParsers.integerAtLeast(1));
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
@@ -61,10 +66,6 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YAtomicType t_ne_string = f.yatomic("String");
 		t_ne_string.parseWith(ValueParsers.NE_STRING);
-		YAtomicType t_pos_integer = f.yatomic("Positive Integer");
-		t_pos_integer.parseWith(ValueParsers.POS_INTEGER);
-		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
-		t_strictly_pos_integer.parseWith(ValueParsers.integerAtLeast(1));
 
 		YAtomicType t_duration = f.yatomic("Duration");
 		t_duration.parseWith(ConcourseValueParsers.DURATION);
@@ -131,7 +132,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "resource", t_string);
 		addProp(getStep, "version", t_version);
 		addProp(getStep, "passed", f.yseq(jobName));
-		addProp(getStep, "params", t_params);
+		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
+			resourceTypes.getInParamsType(getResourceType("get", models, dc))
+		));
 		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
@@ -216,6 +219,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private void initializeDefaultResourceTypes() {
+		// git resource
 		YBeanType gitSource = f.ybean("GitResourceSource");
 		addProp(gitSource, "uri", t_string).isRequired(true);
 		addProp(gitSource, "branch", t_string).isRequired(true);
@@ -232,15 +236,34 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(gitSource, "commit_verification_key_ids", t_strings);
 		addProp(gitSource, "gpg_keyserver", t_string);
 
-		resourceTypes.def("git", gitSource);
+		YBeanType gitGetParams = f.ybean("GitGetParams");
+		addProp(gitGetParams, "depth", t_pos_integer);
+		addProp(gitGetParams, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
+		addProp(gitGetParams, "disable_git_lfs", t_boolean);
+
+		YBeanType gitPutParams = f.ybean("GitPutParams");
+		resourceTypes.def("git", gitSource, gitGetParams, gitPutParams);
+
+	}
+
+	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {
+		String resourceName = getParentPropertyValue(resourceNameProp, models, dc);
+		if (resourceName!=null) {
+			return models.getResourceType(dc.getDocument(), resourceName);
+		}
+		return null;
 	}
 
 	private String getResourceTypeTag(ConcourseModel models, DynamicSchemaContext dc) {
+		return getParentPropertyValue("type", models, dc);
+	}
+
+	private String getParentPropertyValue(String propName, ConcourseModel models, DynamicSchemaContext dc) {
 		YamlPath path = dc.getPath();
 		if (path!=null) {
 			YamlFileAST root = models.getSafeAst(dc.getDocument());
 			if (root!=null) {
-				return NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt("type")).traverseToNode(root));
+				return NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root));
 			}
 		}
 		return null;

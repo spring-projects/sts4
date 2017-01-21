@@ -25,19 +25,58 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType
  */
 public class ResourceTypeRegistry {
 
-	private Map<String, YType> sourceTypes = new HashMap<>();
+	private static class ResourceTypeInfo {
+		private final YBeanType source;
+		private final YBeanType in;
+		private final YBeanType out;
+
+		public ResourceTypeInfo(YBeanType source, YBeanType in, YBeanType out) {
+			super();
+			this.source = source;
+			this.in = in;
+			this.out = out;
+		}
+
+		public YBeanType getSource() {
+			return source;
+		}
+
+		public YBeanType getIn() {
+			return in;
+		}
+
+		public YBeanType getOut() {
+			return out;
+		}
+	}
+
+	private Map<String, ResourceTypeInfo> resourceTypes = new HashMap<>();
+
 
 	public ResourceTypeRegistry() {
 	}
 
-	public void def(String resourceTypeName, YBeanType sourceType) {
-		Assert.isLegal(!sourceTypes.containsKey(resourceTypeName), "Multiple definitions for '"+resourceTypeName+"'");
-		sourceTypes.put(resourceTypeName, sourceType);
+	public void def(String resourceTypeName, YBeanType source, YBeanType in, YBeanType out) {
+		Assert.isLegal(!resourceTypes.containsKey(resourceTypeName), "Multiple definitions for '"+resourceTypeName+"'");
+		resourceTypes.put(resourceTypeName, new ResourceTypeInfo(source, in, out));
 	}
 
 	public YType getSourceType(String typeTag) {
 		if (typeTag!=null) {
-			return sourceTypes.get(typeTag);
+			ResourceTypeInfo v = resourceTypes.get(typeTag);
+			if (v!=null) {
+				return v.getSource();
+			}
+		}
+		return null;
+	}
+
+	public YType getInParamsType(String typeTag) {
+		if (typeTag!=null) {
+			ResourceTypeInfo v = resourceTypes.get(typeTag);
+			if (v!=null) {
+				return v.getIn();
+			}
 		}
 		return null;
 	}

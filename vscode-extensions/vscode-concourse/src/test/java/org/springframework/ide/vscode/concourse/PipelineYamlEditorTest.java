@@ -778,6 +778,62 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("commit_verification_key_ids", "Array of GPG public key ids");
 	}
 
+	@Test public void gitResourceGetParamsCompletions() throws Exception {
+		String context =
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"    params:\n" +
+				"      <*>";
+
+		assertContextualCompletions(context,
+				"<*>"
+				, // ===>
+				"depth: <*>"
+				,
+				"disable_git_lfs: <*>"
+				,
+				"submodules:\n"+
+				"        <*>"
+		);
+		assertContextualCompletions(context,
+				"disable_git_lfs: <*>"
+				, // ===>
+				"disable_git_lfs: false<*>",
+				"disable_git_lfs: true<*>"
+		);
+		assertContextualCompletions(context,
+				"submodules: <*>"
+				, // ===>
+				"submodules: all<*>",
+				"submodules: none<*>"
+		);
+	}
+
+	@Test public void gitResourceGetParamsReconcile() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"    params:\n" +
+				"      depth: -1\n" +
+				"      disable_git_lfs: not-bool\n"
+		);
+		editor.assertProblems(
+				"-1|must be positive",
+				"not-bool|'boolean'"
+		);
+	}
+
+
 	@Test
 	public void contentAssistJobNames() throws Exception {
 		assertContextualCompletions(
