@@ -1224,6 +1224,24 @@ public class PipelineYamlEditorTest {
 				"- name: a-job\n" +
 				"  plan:\n" +
 				"  - put: my-docker-image\n" +
+				"    params:\n" +
+				"      build: path/to/docker/dir\n" +
+				"      load: path/to/image\n" +
+				"      dockerfile: path/to/Dockerfile\n"+
+				"      cache: cache-it\n" +
+				"      cache_tag: the-cache-tag\n" +
+				"      load_base: path/to/base-image\n" +
+				"      load_file: path/to/file-to-load\n" +
+				"      load_repository: some-repo\n" +
+				"      load_tag: some-tag\n" +
+				"      import_file: path/to/file-to-import\n" +
+				"      pull_repository: path/to/repository-to-pull\n" +
+				"      pull_tag: tag-to-pull\n" +
+				"      tag: path/to/file-containing-tag\n" +
+				"      tag_prefix: v\n" +
+				"      tag_as_latest: tag-latest\n" +
+				"      build_args: the-build-args\n" +
+				"      build_args_file: path/to/file-with-build-args.json\n" +
 				"    get_params:\n" +
 				"      save: save-it\n" +
 				"      rootfs: tar-it\n" +
@@ -1231,10 +1249,32 @@ public class PipelineYamlEditorTest {
 		);
 
 		editor.assertProblems(
+				"cache-it|'boolean'",
+				"tag-latest|'boolean'",
+				"the-build-args|Expecting a 'Map'",
+
 				"save-it|'boolean'",
 				"tar-it|'boolean'",
 				"skip-it|'boolean'"
 		);
+
+		editor.assertHoverContains("build", "directory containing a `Dockerfile`");
+		editor.assertHoverContains("load", "directory containing an image");
+		editor.assertHoverContains("dockerfile", "path of the `Dockerfile` in the directory");
+		editor.assertHoverContains("cache", "first pull `image:tag` from the Docker registry");
+		editor.assertHoverContains("cache_tag", "specific tag to pull");
+		editor.assertHoverContains("load_base", "path to a directory containing an image to `docker load`");
+		editor.assertHoverContains("load_file", "path to a file to `docker load`");
+		editor.assertHoverContains("load_repository", "repository of the image loaded from `load_file`");
+		editor.assertHoverContains("load_tag", "tag of image loaded from `load_file`");
+		editor.assertHoverContains("import_file", "file to `docker import`");
+		editor.assertHoverContains("pull_repository", "repository to pull down");
+		editor.assertHoverContains("pull_tag", "tag of the repository to pull down");
+		editor.assertHoverContains(" tag:", "a path to a file containing the name"); // The word 'tag' occurs many times in editor so add use " tag: " to be precise
+		editor.assertHoverContains("tag_prefix", "prepended with this string");
+		editor.assertHoverContains("tag_as_latest", "tagged as `latest`");
+		editor.assertHoverContains("build_args", "map of Docker build arguments");
+		editor.assertHoverContains("build_args_file", "JSON file containing");
 
 		editor.assertHoverContains("save", "docker save");
 		editor.assertHoverContains("rootfs", "a `.tar` file of the image");
