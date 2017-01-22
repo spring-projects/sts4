@@ -1123,7 +1123,7 @@ public class PipelineYamlEditorTest {
 	}
 
 
-	@Test public void dockerImageResourceSourceReconcile() throws Exception {
+	@Test public void dockerImageResourceSourceReconcileAndHovers() throws Exception {
 		Editor editor;
 
 		editor = harness.newEditor(
@@ -1172,52 +1172,7 @@ public class PipelineYamlEditorTest {
 				"bogus_ca_certs_prop|Unknown property", //ca_certs
 				"bogus_client_cert_prop|Unknown property" //client_certs
 		);
-	}
 
-	@Test public void dockerImageResourceSourceHovers() throws Exception {
-		Editor editor;
-
-		editor = harness.newEditor(
-				"resources:\n" +
-				"- name: my-docker-image\n" +
-				"  type: docker-image\n" +
-				"  source:\n" +
-				"    tag: latest\n"
-		);
-		editor.assertProblems("tag: latest|'repository' is required");
-
-		editor = harness.newEditor(
-				"resources:\n" +
-				"- name: my-docker-image\n" +
-				"  type: docker-image\n" +
-				"  source:\n" +
-				"    repository: kdvolder/sts4-build-env\n" +
-				"    tag: latest\n" +
-				"    username: kdvolder\n" +
-				"    password: {{docker_password}}\n" +
-				"    aws_access_key_id: {{aws_access_key}}\n" +
-				"    aws_secret_access_key: {{aws_secret_key}}\n" +
-				"    insecure_registries: no-list\n" +
-				"    registry_mirror: https://my-docker-registry.com\n" +
-				"    ca_certs:\n" +
-				"    - domain: example.com:443\n" +
-				"      cert: |\n" +
-				"        -----BEGIN CERTIFICATE-----\n" +
-				"        ...\n" +
-				"        -----END CERTIFICATE-----\n" +
-				"      bogus_ca_certs_prop: bad\n" +
-				"    client_certs:\n" +
-				"    - domain: example.com:443\n" +
-				"      cert: |\n" +
-				"        -----BEGIN CERTIFICATE-----\n" +
-				"        ...\n" +
-				"        -----END CERTIFICATE-----\n" +
-				"      key: |\n" +
-				"        -----BEGIN RSA PRIVATE KEY-----\n" +
-				"        ...\n" +
-				"        -----END RSA PRIVATE KEY-----\n" +
-				"      bogus_client_cert_prop: bad\n"
-		);
 		editor.assertHoverContains("repository", "The name of the repository");
 		editor.assertHoverContains("tag", "The tag to track");
 		editor.assertHoverContains("username", "username to authenticate");
@@ -1228,6 +1183,34 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("registry_mirror", "URL pointing to a docker registry");
 		editor.assertHoverContains("ca_certs", "Each entry specifies the x509 CA certificate for");
 		editor.assertHoverContains("client_certs", "Each entry specifies the x509 certificate and key");
+	}
+
+	@Test public void dockerImageResourceGetParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: docker-image\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: my-docker-image\n" +
+				"    params:\n" +
+				"      save: save-it\n" +
+				"      rootfs: tar-it\n" +
+				"      skip_download: skip-it\n"
+		);
+
+		editor.assertProblems(
+				"save-it|'boolean'",
+				"tar-it|'boolean'",
+				"skip-it|'boolean'"
+		);
+
+		editor.assertHoverContains("save", "docker save");
+		editor.assertHoverContains("rootfs", "a `.tar` file of the image");
+		editor.assertHoverContains("skip_download", "Skip `docker pull`");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
