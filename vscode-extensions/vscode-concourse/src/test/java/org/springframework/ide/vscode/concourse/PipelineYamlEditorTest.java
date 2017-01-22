@@ -815,7 +815,7 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
-	@Test public void gitResourceGetParamsReconcile() throws Exception {
+	@Test public void gitResourceGetParamsHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: my-git\n" +
@@ -834,7 +834,7 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
 	}
 
-	@Test public void gitResourceGetParamsHovers() throws Exception {
+	@Test public void gitResourceGetParamsReconcile() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: my-git\n" +
@@ -964,6 +964,26 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("tag_prefix", "prepended with this string");
 		editor.assertHoverContains("force", "pushed regardless of the upstream state");
 		editor.assertHoverContains("annotate", "path to a file containing the annotation message");
+	}
+
+	@Test public void gitResourcePut_get_params_Hovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    get_params:\n" +
+				"      depth: 1\n" +
+				"      submodules: none\n" +
+				"      disable_git_lfs: true\n"
+		);
+
+		editor.assertHoverContains("depth", "using the `--depth` option");
+		editor.assertHoverContains("submodules", "If `none`, submodules will not be fetched");
+		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
 	}
 
 	@Test

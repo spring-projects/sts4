@@ -132,10 +132,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "resource", t_string);
 		addProp(getStep, "version", t_version);
 		addProp(getStep, "passed", f.yseq(jobName));
-		YType t_get_params = f.contextAware("GetParams", (dc) ->
+		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("get", models, dc))
-		);
-		addProp(getStep, "params", t_get_params);
+		));
 		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
@@ -144,8 +143,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
 		));
-		addProp(putStep, "get_params", t_get_params);
-
+		addProp(putStep, "get_params", f.contextAware("GetParams", (dc) ->
+			resourceTypes.getInParamsType(getResourceType("put", models, dc))
+		));
 		YBeanType taskStep = f.ybean("TaskStep");
 		addProp(taskStep, "task", t_ne_string);
 		addProp(taskStep, "file", t_string);
