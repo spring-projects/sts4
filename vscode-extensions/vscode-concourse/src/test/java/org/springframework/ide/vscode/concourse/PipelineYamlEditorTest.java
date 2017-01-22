@@ -1213,6 +1213,34 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("skip_download", "Skip `docker pull`");
 	}
 
+	@Test public void dockerImageResourcePutParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: docker-image\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-docker-image\n" +
+				"    get_params:\n" +
+				"      save: save-it\n" +
+				"      rootfs: tar-it\n" +
+				"      skip_download: skip-it\n"
+		);
+
+		editor.assertProblems(
+				"save-it|'boolean'",
+				"tar-it|'boolean'",
+				"skip-it|'boolean'"
+		);
+
+		editor.assertHoverContains("save", "docker save");
+		editor.assertHoverContains("rootfs", "a `.tar` file of the image");
+		editor.assertHoverContains("skip_download", "Skip `docker pull`");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
