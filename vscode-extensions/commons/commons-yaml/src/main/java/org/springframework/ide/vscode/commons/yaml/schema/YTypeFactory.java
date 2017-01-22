@@ -548,6 +548,7 @@ public class YTypeFactory {
 		final private YType type;
 		private Renderable description = Renderables.NO_DESCRIPTION;
 		private boolean isRequired;
+		private boolean isDeprecated;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -587,6 +588,10 @@ public class YTypeFactory {
 		@Override
 		public boolean isRequired() {
 			return isRequired;
+		}
+
+		public void isDeprecated(boolean isDeprecated) {
+			this.isDeprecated = isDeprecated;
 		}
 	}
 

@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.concourse;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -27,7 +26,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
 /**
@@ -222,39 +220,84 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private void initializeDefaultResourceTypes() {
-		////////////////////////////////////////////////////
-		// git
-		YBeanType gitSource = f.ybean("GitResourceSource");
-		addProp(gitSource, "uri", t_string).isRequired(true);
-		addProp(gitSource, "branch", t_string).isRequired(true);
-		addProp(gitSource, "private_key", t_string);
-		addProp(gitSource, "username", t_string);
-		addProp(gitSource, "password", t_string);
-		addProp(gitSource, "paths", t_strings);
-		addProp(gitSource, "ignore_paths", t_strings);
-		addProp(gitSource, "skip_ssl_verification", t_boolean);
-		addProp(gitSource, "tag_filter", t_string);
-		addProp(gitSource, "git_config", t_pair_list);
-		addProp(gitSource, "disable_ci_skip", t_boolean);
-		addProp(gitSource, "commit_verification_keys", t_strings);
-		addProp(gitSource, "commit_verification_key_ids", t_strings);
-		addProp(gitSource, "gpg_keyserver", t_string);
+		// git :
+		{
+			YBeanType source = f.ybean("GitSource");
+			addProp(source, "uri", t_string).isRequired(true);
+			addProp(source, "branch", t_string).isRequired(true);
+			addProp(source, "private_key", t_string);
+			addProp(source, "username", t_string);
+			addProp(source, "password", t_string);
+			addProp(source, "paths", t_strings);
+			addProp(source, "ignore_paths", t_strings);
+			addProp(source, "skip_ssl_verification", t_boolean);
+			addProp(source, "tag_filter", t_string);
+			addProp(source, "git_config", t_pair_list);
+			addProp(source, "disable_ci_skip", t_boolean);
+			addProp(source, "commit_verification_keys", t_strings);
+			addProp(source, "commit_verification_key_ids", t_strings);
+			addProp(source, "gpg_keyserver", t_string);
 
-		YBeanType gitGetParams = f.ybean("GitGetParams");
-		addProp(gitGetParams, "depth", t_pos_integer);
-		addProp(gitGetParams, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
-		addProp(gitGetParams, "disable_git_lfs", t_boolean);
+			YBeanType get = f.ybean("GitGetParams");
+			addProp(get, "depth", t_pos_integer);
+			addProp(get, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
+			addProp(get, "disable_git_lfs", t_boolean);
 
-		YBeanType gitPutParams = f.ybean("GitPutParams");
-		addProp(gitPutParams, "repository", t_ne_string).isRequired(true);
-		addProp(gitPutParams, "rebase", t_boolean);
-		addProp(gitPutParams, "tag", t_ne_string);
-		addProp(gitPutParams, "only_tag", t_boolean);
-		addProp(gitPutParams, "tag_prefix", t_string);
-		addProp(gitPutParams, "force", t_boolean);
-		addProp(gitPutParams, "annotate", t_ne_string);
+			YBeanType put = f.ybean("GitPutParams");
+			addProp(put, "repository", t_ne_string).isRequired(true);
+			addProp(put, "rebase", t_boolean);
+			addProp(put, "tag", t_ne_string);
+			addProp(put, "only_tag", t_boolean);
+			addProp(put, "tag_prefix", t_string);
+			addProp(put, "force", t_boolean);
+			addProp(put, "annotate", t_ne_string);
 
-		resourceTypes.def("git", gitSource, gitGetParams, gitPutParams);
+			resourceTypes.def("git", source, get, put);
+		}
+		//docker-image:
+		{
+			YBeanType source = f.ybean("DockerImageSource");
+			addProp(source, "repository", t_ne_string).isRequired(true);
+			addProp(source, "tag", t_ne_string);
+			addProp(source, "username", t_ne_string);
+			addProp(source, "password", t_ne_string);
+			addProp(source, "aws_access_key_id", t_ne_string);
+			addProp(source, "aws_secret_access_key", t_ne_string);
+			addProp(source, "insecure_registries", t_strings);
+			addProp(source, "registry_mirror", t_strings);
+			YBeanType t_cert_entry = f.ybean("DomainAndCert",
+					f.yprop("domain", t_ne_string),
+					f.yprop("cert", t_ne_string)
+			);
+			addProp(source, "ca_certs", f.yseq(t_cert_entry));
+			addProp(source, "client_certs", f.yseq(t_cert_entry));
+
+			YBeanType get = f.ybean("DockerImageGetParams");
+			addProp(get, "save", t_boolean);
+			addProp(get, "rootfs", t_boolean);
+			addProp(get, "skip_download", t_boolean);
+
+			YBeanType put = f.ybean("DockerImagePutParams");
+			addProp(put, "build", t_ne_string);
+			addProp(put, "load", t_ne_string);
+			addProp(put, "dockerfile", t_ne_string);
+			addProp(put, "cache", t_boolean);
+			addProp(put, "cache_tag", t_ne_string);
+			addProp(put, "load_base", t_ne_string);
+			addProp(put, "load_file", t_ne_string);
+			addProp(put, "load_repository", t_ne_string);
+			addProp(put, "load_tag", t_ne_string);
+			addProp(put, "import_file", t_ne_string);
+			addProp(put, "pull_repository", t_ne_string).isDeprecated(true);
+			addProp(put, "pull_tag", t_ne_string).isDeprecated(true);
+			addProp(put, "tag", t_ne_string);
+			addProp(put, "tag_prefix", t_ne_string);
+			addProp(put, "tag_as_latest", t_boolean);
+			addProp(put, "build_args", t_string_params);
+			addProp(put, "build_args_file", t_ne_string);
+
+			resourceTypes.def("docker-image", source, get, put);
+		}
 	}
 
 	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {

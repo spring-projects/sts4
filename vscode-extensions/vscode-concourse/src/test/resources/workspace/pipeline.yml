@@ -60,7 +60,6 @@ resources:
   type: docker-image
   source:
     username: {{docker_hub_username}}
-    email: {{docker_hub_email}}
     password: {{docker_hub_password}}
     repository: kdvolder/sts4-build-env
 ########################################################################################

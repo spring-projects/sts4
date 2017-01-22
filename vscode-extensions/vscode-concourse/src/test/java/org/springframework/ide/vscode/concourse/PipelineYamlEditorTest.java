@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
