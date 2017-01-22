@@ -264,13 +264,16 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "aws_access_key_id", t_ne_string);
 			addProp(source, "aws_secret_access_key", t_ne_string);
 			addProp(source, "insecure_registries", t_strings);
-			addProp(source, "registry_mirror", t_strings);
-			YBeanType t_cert_entry = f.ybean("DomainAndCert",
+			addProp(source, "registry_mirror", t_ne_string);
+			addProp(source, "ca_certs", f.yseq(f.ybean("CaCertsEntry",
 					f.yprop("domain", t_ne_string),
 					f.yprop("cert", t_ne_string)
-			);
-			addProp(source, "ca_certs", f.yseq(t_cert_entry));
-			addProp(source, "client_certs", f.yseq(t_cert_entry));
+			)));
+			addProp(source, "client_certs", f.yseq(f.ybean("ClientCertsEntry",
+					f.yprop("domain", t_ne_string),
+					f.yprop("key", t_ne_string),
+					f.yprop("cert", t_ne_string)
+			)));
 
 			YBeanType get = f.ybean("DockerImageGetParams");
 			addProp(get, "save", t_boolean);
