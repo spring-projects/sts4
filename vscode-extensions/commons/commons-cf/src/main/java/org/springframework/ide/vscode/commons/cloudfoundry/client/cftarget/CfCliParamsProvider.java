@@ -86,24 +86,21 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	}
 
 	private File getConfigJsonFile() throws IOException, InterruptedException {
-		// Support Unix systems for now
-		if (!System.getProperty("os.name").toLowerCase().startsWith("win")) {
-			String homeDir = getUnixHomeDir();
-			if (homeDir != null) {
-				if (!homeDir.endsWith("/")) {
-					homeDir += '/';
-				}
-				String filePath = homeDir + ".cf/config.json";
-				File file = new File(filePath);
-				if (file.exists() && file.canRead()) {
-					return file;
-				}
+		String homeDir = getHomeDir();
+		if (homeDir != null) {
+			if (!homeDir.endsWith("/")) {
+				homeDir += '/';
+			}
+			String filePath = homeDir + ".cf/config.json";
+			File file = new File(filePath);
+			if (file.exists() && file.canRead()) {
+				return file;
 			}
 		}
 		return null;
 	}
 
-	private String getUnixHomeDir() throws IOException, InterruptedException {
+	private String getHomeDir() throws IOException, InterruptedException {
 		return System.getProperty("user.home");
 	}
 
