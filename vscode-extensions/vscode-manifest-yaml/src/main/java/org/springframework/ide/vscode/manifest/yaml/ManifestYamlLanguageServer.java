@@ -50,13 +50,15 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private YamlSchema schema;
 	private CFTargetCache cfTargetCache;
 	private final CloudFoundryClientFactory cfClientFactory;
+	private final ClientParamsProvider cfParamsProvider;
 
 	public ManifestYamlLanguageServer() {
-		this(DefaultCloudFoundryClientFactoryV2.INSTANCE);
+		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, new CfCliParamsProvider());
 	}
 
-	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory) {
+	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider cfParamsProvider) {
 		this.cfClientFactory = cfClientFactory;
+		this.cfParamsProvider=cfParamsProvider;
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		YamlASTProvider parser = new YamlParser(yaml);
@@ -98,7 +100,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private CFTargetCache getCfTargetCache() {
 		if (cfTargetCache == null) {
-			ClientParamsProvider paramsProvider = new CfCliParamsProvider();
+			ClientParamsProvider paramsProvider = cfParamsProvider;
 			CloudFoundryClientFactory clientFactory = cfClientFactory;
 			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, new ClientTimeouts());
 		}

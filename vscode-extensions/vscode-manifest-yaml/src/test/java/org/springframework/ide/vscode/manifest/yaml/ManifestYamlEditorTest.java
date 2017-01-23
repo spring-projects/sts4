@@ -19,6 +19,8 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -26,9 +28,10 @@ public class ManifestYamlEditorTest {
 
 	LanguageServerHarness harness;
 	MockCloudfoundry cfClientFactory = new MockCloudfoundry();
+	ClientParamsProvider cfParamsProvider = new CfCliParamsProvider();
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cfClientFactory));
+		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cfClientFactory, cfParamsProvider));
 		harness.intialize(null);
 	}
 
