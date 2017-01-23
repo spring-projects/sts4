@@ -68,9 +68,9 @@ public class ExceptionUtil {
 	/**
 	 * 
 	 * @param e
-	 * @return a nicer message suitable for display to the user
+	 * @return only the message in the error without any appended information
 	 */
-	public static String getMessageForUserDisplay(Throwable e) {
+	public static String getMessageOnly(Throwable e) {
 		// The message of nested exception is usually more interesting than the
 		// one on top.
 		Throwable cause = getDeepestCause(e);

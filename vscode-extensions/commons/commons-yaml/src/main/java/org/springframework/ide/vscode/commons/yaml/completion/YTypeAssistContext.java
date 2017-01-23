@@ -155,7 +155,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			values = typeUtil.getHintValues(type, getSchemaContext());
 		} catch (Exception e) {
 			DocumentEdits edits = new DocumentEdits(doc.getDocument());
-			return ImmutableList.of(completionFactory().errorMessage(ExceptionUtil.getMessageForUserDisplay(e), query, type, edits, typeUtil));
+			return ImmutableList.of(completionFactory().errorMessage(ExceptionUtil.getMessageOnly(e), query, type, edits, typeUtil));
 		}
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
