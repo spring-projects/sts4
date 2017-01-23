@@ -44,11 +44,11 @@ public class EnumValueParser implements ValueParser {
 		this.values = values;
 	}
 	
-	public Object parse(String str)  {
+	public Object parse(String str) throws Exception  {
 		// IMPORTANT: check the text FIRST before fetching values
 		// from the hints provider, as the hints provider may be expensive when resolving values
 		if (!StringUtil.hasText(str)) {
-			throw new IllegalArgumentException(createBlankTextErrorMessage());
+			throw toError(createBlankTextErrorMessage());
 		}
 		
 		Collection<String> values = this.values.get();
@@ -57,8 +57,12 @@ public class EnumValueParser implements ValueParser {
 		if (values==null || values.contains(str)) {
 			return str;
 		} else {
-			throw new IllegalArgumentException(createErrorMessage(str, values));
+			throw toError(createErrorMessage(str, values));
 		}
+	}
+	
+	protected Exception toError(String message) throws Exception{
+		return ExceptionUtil.asValueParseException(message);
 	}
 
 	protected String createBlankTextErrorMessage() {

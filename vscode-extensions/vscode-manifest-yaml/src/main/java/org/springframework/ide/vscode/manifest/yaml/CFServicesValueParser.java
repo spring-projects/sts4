@@ -24,5 +24,9 @@ public class CFServicesValueParser extends EnumValueParser {
 	protected String createErrorMessage(String parseString, Collection<String> values) {
 		return "There is no service instance called '" + parseString + "'. Available service instances are: " + values;
 	}
+	
+	protected String createBlankTextErrorMessage() {
+		return "At least one service instance name must be specified";
+	}
 
 }

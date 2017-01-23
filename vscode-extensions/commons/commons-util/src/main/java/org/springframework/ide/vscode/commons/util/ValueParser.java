@@ -22,5 +22,5 @@ public interface ValueParser {
 	 * May either return null, or throw an {@link IllegalArgumentException} to indicate
 	 * that the String is not the format this parser expects.
 	 */
-	Object parse(String str);
+	Object parse(String str) throws Exception;
 }

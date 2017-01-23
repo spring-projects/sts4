@@ -36,7 +36,7 @@ public class RegexpParser implements ValueParser {
 	}
 
 	@Override
-	public Object parse(String str) {
+	public Object parse(String str) throws Exception {
 		Matcher matcher = pat.matcher(str);
 		if (matcher.matches()) {
 			return matcher;

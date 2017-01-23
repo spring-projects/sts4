@@ -35,7 +35,7 @@ public class ValueParsers {
 		Assert.isLegal(lowerBound==null || upperBound==null || lowerBound <= upperBound);
 		return new ValueParser() {
 			@Override
-			public Object parse(String str) {
+			public Object parse(String str) throws Exception {
 				int value = Integer.parseInt(str);
 				if (lowerBound!=null && value<lowerBound) {
 					if (lowerBound==0) {
