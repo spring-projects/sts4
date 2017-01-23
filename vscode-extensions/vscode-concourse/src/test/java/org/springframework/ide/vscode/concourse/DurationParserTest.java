@@ -23,7 +23,7 @@ public class DurationParserTest {
 	private ValueParser parser = ConcourseValueParsers.DURATION;
 	
 	@Test
-	public void goodExamples() {
+	public void goodExamples() throws Exception {
 		parser.parse("1h40m");
 		parser.parse("1.5h");
 		parser.parse("23h59m59s99ms200µs100ns");
@@ -40,7 +40,7 @@ public class DurationParserTest {
 		try {
 			parser.parse(string);
 			fail("Should have failed parsing!");
-		} catch (IllegalArgumentException e) {
+		} catch (Exception e) {
 			assertContains("Duration", ExceptionUtil.getMessage(e));
 		}
 	}
