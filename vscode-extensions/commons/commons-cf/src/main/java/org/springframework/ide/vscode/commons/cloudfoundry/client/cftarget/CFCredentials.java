@@ -116,7 +116,7 @@ public class CFCredentials {
 		if (password==null) {
 			return null;
 		}
-		return type==CFCredentialType.PASSWORD
+		return (type==CFCredentialType.PASSWORD || type==CFCredentialType.REFRESH_TOKEN)
 				? "****"
 				: password;
 	}

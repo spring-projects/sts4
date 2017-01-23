@@ -160,7 +160,7 @@ public class CloudFoundryClientCache {
 		}
 	}
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	private static void debug(String string) {
 		if (DEBUG) {
