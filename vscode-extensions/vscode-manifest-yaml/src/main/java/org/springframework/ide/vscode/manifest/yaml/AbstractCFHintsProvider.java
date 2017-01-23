@@ -23,7 +23,6 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public abstract class AbstractCFHintsProvider implements Callable<Collection<YValueHint>> {
@@ -44,7 +43,9 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 		try {
 			List<CFTarget> targets = targetCache.getOrCreate();
 			Collection<YValueHint> resolvedHints = getHints(targets);
-			hints.addAll(resolvedHints);
+			if (resolvedHints != null) {
+				hints.addAll(resolvedHints);
+			}
 		} catch (Throwable e) {
 			// Convert any non "no-target" errors to something useful. The
 			// "no-target" errors
