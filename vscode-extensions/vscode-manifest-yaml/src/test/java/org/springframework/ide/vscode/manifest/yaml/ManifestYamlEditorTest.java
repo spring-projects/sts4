@@ -737,19 +737,6 @@ public class ManifestYamlEditorTest {
 
 	}
 
-	@Test public void applicationsPropertyIsRequired() throws Exception {
-		Editor editor;
-
-		//when the file is empty (there is no AST at all)
-		editor = harness.newEditor(
-				"buildpack: some-buildpack"
-		);
-		editor.assertProblems(
-				"buildpack: some-buildpack|'applications' is required"
-		);
-
-	}
-
 	@Test public void namePropertyIsRequired() throws Exception {
 		Editor editor = harness.newEditor(
 				"applications:\n" +

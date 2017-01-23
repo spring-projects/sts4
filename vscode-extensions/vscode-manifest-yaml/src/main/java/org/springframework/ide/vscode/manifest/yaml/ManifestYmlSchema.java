@@ -92,8 +92,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_env = f.ymap(t_string, t_string);
 
 		// define schema structure...
-		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application))
-				.isRequired(true));
+		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application)));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
 		YTypedPropertyImpl[] props = {
