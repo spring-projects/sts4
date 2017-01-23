@@ -67,7 +67,8 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_service_string = f.yatomic("Service");
 		if (servicesProvider != null) {
 			t_service_string.addHintProvider(servicesProvider);
-			t_service_string.parseWith(ManifestYmlValueParsers.fromHints(t_service_string.toString(), servicesProvider));
+			t_service_string.parseWith(new CFServicesValueParser(t_service_string.toString(),
+					ManifestYmlValueParsers.getValuesFromHints(servicesProvider)));
 		}
 		YType t_services = f.yseq(t_service_string);
 
