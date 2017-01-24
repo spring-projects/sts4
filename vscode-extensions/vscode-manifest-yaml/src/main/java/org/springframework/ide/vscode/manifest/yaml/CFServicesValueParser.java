@@ -15,6 +15,7 @@ import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 
 public class CFServicesValueParser extends EnumValueParser {
 
@@ -32,8 +33,14 @@ public class CFServicesValueParser extends EnumValueParser {
 		return "At least one service instance name must be specified";
 	}
 
-	@Override
-	protected Exception createException(String message) {
+	protected Exception errorOnParse(String message) {
+		// Parse errors should be indicated differently than regular schema
+		// problems (e.g. unknown service may be a warning)
 		return new ReconcileException(message, ManifestYamlSchemaProblemsTypes.UNKNOWN_SERVICES_PROBLEM);
+	}
+
+	protected Exception errorOnBlank(String message) {
+		// Blank errors should be regular schema problems
+		return new ReconcileException(message, YamlSchemaProblems.SCHEMA_PROBLEM);
 	}
 }

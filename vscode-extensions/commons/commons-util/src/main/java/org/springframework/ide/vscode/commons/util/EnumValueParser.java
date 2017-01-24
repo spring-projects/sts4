@@ -26,7 +26,6 @@ public class EnumValueParser implements ValueParser {
 
 	private String typeName;
 	private Provider<Collection<String>> values;
-	
 
 	public EnumValueParser(String typeName, String... values) {
 		this(typeName, ImmutableSet.copyOf(values));
@@ -35,50 +34,54 @@ public class EnumValueParser implements ValueParser {
 	public EnumValueParser(String typeName, Collection<String> values) {
 		this(typeName, provider(values));
 	}
+
 	public EnumValueParser(String typeName, Callable<Collection<String>> values) {
 		this(typeName, provider(values));
 	}
-	
+
 	public EnumValueParser(String typeName, Provider<Collection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
 	}
-	
-	public Object parse(String str) throws Exception  {
+
+	public Object parse(String str) throws Exception {
 		// IMPORTANT: check the text FIRST before fetching values
-		// from the hints provider, as the hints provider may be expensive when resolving values
+		// from the hints provider, as the hints provider may be expensive when
+		// resolving values
 		if (!StringUtil.hasText(str)) {
-			throw createException(createBlankTextErrorMessage());
+			throw errorOnBlank(createBlankTextErrorMessage());
 		}
-		
+
 		Collection<String> values = this.values.get();
 
-		//If values is not known (null) then just assume the str is acceptable.
-		if (values==null || values.contains(str)) {
+		// If values is not known (null) then just assume the str is acceptable.
+		if (values == null || values.contains(str)) {
 			return str;
 		} else {
-			throw createException(createErrorMessage(str, values));
+			throw errorOnParse(createErrorMessage(str, values));
 		}
-	}
-	
-	
-	protected Exception createException(String message) {
-		return new IllegalArgumentException(message);
 	}
 
 	protected String createBlankTextErrorMessage() {
-		return "'"+typeName+"'" + " cannot be blank.";
+		return "'" + typeName + "'" + " cannot be blank.";
 	}
 
 	protected String createErrorMessage(String parseString, Collection<String> values) {
-		return "'"+parseString+"' is not valid for Enum '"+typeName+"'. Valid values are: "+values;
+		return "'" + parseString + "' is not valid for Enum '" + typeName + "'. Valid values are: " + values;
 	}
-	
-	
+
+	protected Exception errorOnParse(String message) {
+		return new IllegalArgumentException(message);
+	}
+
+	protected Exception errorOnBlank(String message) {
+		return new IllegalArgumentException(message);
+	}
+
 	private static <T> Provider<T> provider(T values) {
 		return () -> values;
 	}
-	
+
 	private static <T> Provider<T> provider(Callable<T> values) {
 		return () -> {
 			try {
