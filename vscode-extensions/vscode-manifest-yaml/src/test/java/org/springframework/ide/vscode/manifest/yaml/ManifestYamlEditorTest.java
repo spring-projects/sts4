@@ -19,13 +19,13 @@ import java.io.IOException;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -790,6 +790,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 	
+	@Ignore
 	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
@@ -810,6 +811,7 @@ public class ManifestYamlEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 	
+	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
