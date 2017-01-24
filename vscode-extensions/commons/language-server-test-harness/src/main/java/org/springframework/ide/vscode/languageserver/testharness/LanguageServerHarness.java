@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -38,6 +39,7 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -373,6 +375,10 @@ public class LanguageServerHarness {
 		Editor editor = newEditor(editorContents);
 		CompletionItem completion = editor.getFirstCompletion();
 		assertEquals(expected, completion.getLabel());
+	}
+
+	public List<? extends Location> getDefinitions(TextDocumentPositionParams params) throws Exception {
+		return server.getTextDocumentService().definition(params).get();
 	}
 
 }

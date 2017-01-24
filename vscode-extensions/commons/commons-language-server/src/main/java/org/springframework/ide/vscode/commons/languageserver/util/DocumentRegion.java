@@ -65,6 +65,13 @@ public class DocumentRegion implements CharSequence {
 		this.end = limitRange(end, start, doc.getLength());
 	}
 
+	/**
+	 * Create {@link DocumentRegion} covering the whole document.
+	 */
+	public DocumentRegion(IDocument doc) {
+		this(doc, 0, doc.getLength());
+	}
+
 	private int limitRange(int offset, int min, int max) {
 		if (offset<min) {
 			return min;

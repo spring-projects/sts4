@@ -277,7 +277,6 @@ public class YTypeFactory {
 		private ValueParser getParser(DynamicSchemaContext dc) {
 			return parser == null ? null : parser.withContext(dc);
 		}
-
 	}
 
 	/**

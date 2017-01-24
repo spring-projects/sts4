@@ -23,6 +23,12 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 	private final YamlSchema schema;
 
+	/**
+	 * An optional type collector can be added. It will notified about all the types
+	 * the reconciler infers when reconciling an AST.
+	 */
+	private ITypeCollector typeCollector;
+
 	public YamlSchemaBasedReconcileEngine(YamlASTProvider parser, YamlSchema schema) {
 		super(parser);
 		this.schema = schema;
@@ -35,6 +41,14 @@ public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 
 	@Override
 	protected YamlASTReconciler getASTReconciler(IDocument doc, IProblemCollector problems) {
-		return new SchemaBasedYamlASTReconciler(problems, schema);
+		return new SchemaBasedYamlASTReconciler(problems, schema, typeCollector);
+	}
+
+	public ITypeCollector getTypeCollector() {
+		return typeCollector;
+	}
+
+	public void setTypeCollector(ITypeCollector typeCollector) {
+		this.typeCollector = typeCollector;
 	}
 }
