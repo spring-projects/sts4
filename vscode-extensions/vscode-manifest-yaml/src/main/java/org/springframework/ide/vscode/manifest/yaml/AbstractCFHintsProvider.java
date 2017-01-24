@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 public abstract class AbstractCFHintsProvider implements Callable<Collection<YValueHint>> {
@@ -57,15 +58,14 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				logger.log(Level.SEVERE, e.getMessage(), e);
 
 				if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
-					throw ExceptionUtil.asValueParseException(
+					throw new ValueParseException(
 							"Connection failure to Cloud Foundry. Please check the log for more details.");
 
 				} else {
-					throw ExceptionUtil.asValueParseException(
+					throw new ValueParseException(
 							"Failed to fetch values from Cloud Foundry. Please check the log for more details.");
 				}
-			}
-			else {
+			} else {
 				throw e;
 			}
 		}

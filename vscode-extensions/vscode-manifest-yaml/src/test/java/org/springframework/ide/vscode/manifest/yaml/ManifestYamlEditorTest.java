@@ -10,19 +10,26 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+
+import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlEditorTest {
 
@@ -781,6 +788,42 @@ public class ManifestYamlEditorTest {
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
 		);
 		editor.assertProblems("bogus|Unknown property");
+	}
+	
+	@Test
+	public void reconcileShowsWarningOnUnknownService() throws Exception {
+		ClientRequests cfClient = cfClientFactory.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("myservice");
+		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - bad-service\n"
+				
+		);
+		editor.assertProblems("bad-service|There is no service instance called");
+
+		Diagnostic problem = editor.assertProblem("bad-service");
+		
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+	
+	@Test
+	public void reconcileShowsWarningOnNoService() throws Exception {
+		ClientRequests cfClient = cfClientFactory.client;
+		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - bad-service\n");
+		editor.assertProblems("bad-service|There is no service instance called");
+
+		Diagnostic problem = editor.assertProblem("bad-service");
+		
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

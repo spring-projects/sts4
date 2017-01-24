@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 
 public class CFServicesValueParser extends EnumValueParser {
@@ -21,12 +22,18 @@ public class CFServicesValueParser extends EnumValueParser {
 		super(typeName, values);
 	}
 
+	@Override
 	protected String createErrorMessage(String parseString, Collection<String> values) {
 		return "There is no service instance called '" + parseString + "'. Available service instances are: " + values;
 	}
-	
+
+	@Override
 	protected String createBlankTextErrorMessage() {
 		return "At least one service instance name must be specified";
 	}
 
+	@Override
+	protected Exception createException(String message) {
+		return new ReconcileException(message, ManifestYamlSchemaProblemsTypes.UNKNOWN_SERVICES_PROBLEM);
+	}
 }

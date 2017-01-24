@@ -11,6 +11,7 @@
 
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import static org.springframework.ide.vscode.commons.util.ExceptionUtil.getSimpleError;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 
 import java.util.ArrayList;
@@ -21,11 +22,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypeProvider;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -160,8 +162,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 								parser.parse(value);
 							}
 						} catch (Exception e) {
-							String msg = ExceptionUtil.getMessage(e);
-							valueParseError(type, node, msg);
+							ProblemType problemType = getProblemType(e);
+							String msg = getMessage(e);
+							valueParseError(type, node, msg, problemType);
 						}
 					}
 				} else {
@@ -172,6 +175,27 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
+	}
+
+	private String getMessage(Exception _e) {
+		Throwable e = ExceptionUtil.getDeepestCause(_e);
+
+		// If value parse exception, do not append any additional information
+		if (e instanceof ReconcileException) {
+			String msg = e.getMessage();
+			if (StringUtil.hasText(msg)) {
+				return msg;
+			} else {
+				return "An error occurred: " + getSimpleError(e);
+			}
+		} else {
+			return ExceptionUtil.getMessage(e);
+		}
+	}
+
+	protected ProblemType getProblemType(Exception _e) {
+		Throwable e = ExceptionUtil.getDeepestCause(_e);
+		return e instanceof ProblemTypeProvider ? ((ProblemTypeProvider) e).getProblemType() : YamlSchemaProblems.SCHEMA_PROBLEM;
 	}
 
 	private void checkRequiredProperties(MappingNode map, YType type, Map<String, YTypedProperty> beanProperties) {
@@ -271,12 +295,12 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 		}
 	}
-
-	private void valueParseError(YType type, Node node, String parseErrorMsg) {
+	
+	private void valueParseError(YType type, Node node, String parseErrorMsg, ProblemType problemType) {
 		if (!StringUtil.hasText(parseErrorMsg)) {
 			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
 		}
-		problem(node, parseErrorMsg);
+		problem(node, parseErrorMsg, problemType);
 	}
 
 	private void unknownBeanProperty(Node keyNode, YType type, String name) {
@@ -330,6 +354,10 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	private void problem(Node node, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, node));
+	}
+	
+	private void problem(Node node, String msg, ProblemType problemType) {
+		problems.accept(YamlSchemaProblems.problem(msg, node, problemType));
 	}
 
 	private void problem(DocumentRegion region, String msg) {

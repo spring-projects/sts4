@@ -61,15 +61,7 @@ public class ExceptionUtil {
 		// The message of nested exception is usually more interesting than the
 		// one on top.
 		Throwable cause = getDeepestCause(e);
-		// If value parse exception, do not append any additional information
-		if (cause instanceof ValueParseException) {
-			String msg = cause.getMessage();
-			if (StringUtil.hasText(msg)) {
-				return msg;
-			} else {
-				return "An error occurred: " + getSimpleError(cause);
-			}
-		} else if (cause != null) {
+		if (cause != null) {
 			String msg = getSimpleError(cause) + ": " + cause.getMessage();
 			return msg;
 		} else {
@@ -77,7 +69,7 @@ public class ExceptionUtil {
 		}
 	}
 
-	private static String getSimpleError(Throwable e) {
+	public static String getSimpleError(Throwable e) {
 		return e.getClass().getSimpleName();
 	}
 	
@@ -134,9 +126,5 @@ public class ExceptionUtil {
 		} else {
 			return exception(error);
 		}
-	}
-	
-	public static Exception asValueParseException(String message) {
-		return new ValueParseException(message);
 	}
 }
