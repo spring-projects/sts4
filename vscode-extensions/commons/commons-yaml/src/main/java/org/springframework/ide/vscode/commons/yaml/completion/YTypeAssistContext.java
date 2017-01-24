@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.util.ExceptionUtil.getSimpleError;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +29,8 @@ import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
@@ -155,7 +159,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			values = typeUtil.getHintValues(type, getSchemaContext());
 		} catch (Exception e) {
 			DocumentEdits edits = new DocumentEdits(doc.getDocument());
-			return ImmutableList.of(completionFactory().errorMessage(ExceptionUtil.getMessage(e), query, type, edits, typeUtil));
+			return ImmutableList.of(completionFactory().errorMessage(getMessage(e), query, type, edits, typeUtil));
 		}
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
@@ -175,6 +179,22 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			return completions;
 		}
 		return Collections.emptyList();
+	}
+
+	private String getMessage(Exception _e) {
+		Throwable e = ExceptionUtil.getDeepestCause(_e);
+
+		// If value parse exception, do not append any additional information
+		if (e instanceof ValueParseException) {
+			String msg = e.getMessage();
+			if (StringUtil.hasText(msg)) {
+				return msg;
+			} else {
+				return "An error occurred: " + getSimpleError(e);
+			}
+		} else {
+			return ExceptionUtil.getMessage(e);
+		}
 	}
 
 	@Override
