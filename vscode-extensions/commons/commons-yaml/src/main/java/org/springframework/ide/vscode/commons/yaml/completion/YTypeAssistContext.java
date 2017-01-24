@@ -186,12 +186,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 		// If value parse exception, do not append any additional information
 		if (e instanceof ValueParseException) {
-			String msg = e.getMessage();
-			if (StringUtil.hasText(msg)) {
-				return msg;
-			} else {
-				return "An error occurred: " + getSimpleError(e);
-			}
+			return ExceptionUtil.getMessageNoAppendedInformation(e);
 		} else {
 			return ExceptionUtil.getMessage(e);
 		}
