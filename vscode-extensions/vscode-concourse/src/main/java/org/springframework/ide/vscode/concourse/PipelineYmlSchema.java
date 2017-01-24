@@ -57,6 +57,8 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
 			.parseWith(ValueParsers.integerAtLeast(1));
 
+	public final YAtomicType t_resource_name;
+
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
 	public PipelineYmlSchema(ConcourseModel models) {
@@ -102,7 +104,7 @@ public class PipelineYmlSchema implements YamlSchema {
 //				 The vagrant-cloud r
 		);
 
-		YType resourceName = f.yenum("Resource Name",
+		this.t_resource_name = f.yenum("Resource Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
@@ -126,7 +128,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		jobNameDef.parseWith(ConcourseValueParsers.jobNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
-		addProp(getStep, "get", resourceName);
+		addProp(getStep, "get", t_resource_name);
 		addProp(getStep, "resource", t_string);
 		addProp(getStep, "version", t_version);
 		addProp(getStep, "passed", f.yseq(jobName));
@@ -136,7 +138,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
-		addProp(putStep, "put", resourceName);
+		addProp(putStep, "put", t_resource_name);
 		addProp(putStep, "resource", jobName);
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
@@ -151,7 +153,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(taskStep, "privileged", t_boolean);
 		addProp(taskStep, "params", t_params);
 		addProp(taskStep, "image", t_ne_string);
-		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, resourceName));
+		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, t_resource_name));
 		addProp(taskStep, "output_mapping", t_string_params);
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
@@ -208,7 +210,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YBeanType group = f.ybean("Group");
 		addProp(group, "name", t_ne_string).isRequired(true);
-		addProp(group, "resources", f.yseq(resourceName));
+		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(jobName));
 
 		addProp(TOPLEVEL_TYPE, "resources", f.yseq(resource));

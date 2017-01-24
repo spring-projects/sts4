@@ -27,7 +27,7 @@ import org.yaml.snakeyaml.scanner.ScannerException;
  * @author Kris De Volder
  */
 public abstract class YamlReconcileEngine implements IReconcileEngine {
-	
+
 	final static Logger logger = LoggerFactory.getLogger(YamlReconcileEngine.class);
 
 	protected final YamlASTProvider parser;

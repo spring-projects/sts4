@@ -21,11 +21,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -54,34 +52,43 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private final IProblemCollector problems;
 	private final YamlSchema schema;
 	private final YTypeUtil typeUtil;
+	private final ITypeCollector typeCollector;
 
-	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema) {
+	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema, ITypeCollector typeCollector) {
 		this.problems = problems;
 		this.schema = schema;
+		this.typeCollector = typeCollector;
 		this.typeUtil = schema.getTypeUtil();
 	}
 
 	@Override
 	public void reconcile(YamlFileAST ast) {
-		List<Node> nodes = ast.getNodes();
-		IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
-		if (!expectedDocs.isInRange(nodes.size())) {
-			//wrong number of documents in the file. Figure out a good error message.
-			if (nodes.isEmpty()) {
-				problem(allOf(ast.getDocument()), "'"+schema.getName()+"' must have at least some Yaml content");
-			} else if (expectedDocs.isTooLarge(nodes.size())) {
-				int upperBound = expectedDocs.getUpperBound();
-				Node extraNode = nodes.get(upperBound);
-				problem(dashesAtStartOf(ast, extraNode), "'"+schema.getName()+"' should not have more than "+upperBound+" Yaml Documents");
-			} else if (expectedDocs.isTooSmall(nodes.size())) {
-				int lowerBound = expectedDocs.getLowerBound();
-				problem(endOf(ast.getDocument()), "'"+schema.getName()+"' should have at least "+lowerBound+" Yaml Documents");
+		if (typeCollector!=null) typeCollector.beginCollecting(ast);
+		try {
+			List<Node> nodes = ast.getNodes();
+			IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
+			if (!expectedDocs.isInRange(nodes.size())) {
+				//wrong number of documents in the file. Figure out a good error message.
+				if (nodes.isEmpty()) {
+					problem(allOf(ast.getDocument()), "'"+schema.getName()+"' must have at least some Yaml content");
+				} else if (expectedDocs.isTooLarge(nodes.size())) {
+					int upperBound = expectedDocs.getUpperBound();
+					Node extraNode = nodes.get(upperBound);
+					problem(dashesAtStartOf(ast, extraNode), "'"+schema.getName()+"' should not have more than "+upperBound+" Yaml Documents");
+				} else if (expectedDocs.isTooSmall(nodes.size())) {
+					int lowerBound = expectedDocs.getLowerBound();
+					problem(endOf(ast.getDocument()), "'"+schema.getName()+"' should have at least "+lowerBound+" Yaml Documents");
+				}
 			}
-		}
-		if (nodes!=null && !nodes.isEmpty()) {
-			for (int i = 0; i < nodes.size(); i++) {
-				Node node = nodes.get(i);
-				reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
+			if (nodes!=null && !nodes.isEmpty()) {
+				for (int i = 0; i < nodes.size(); i++) {
+					Node node = nodes.get(i);
+					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
+				}
+			}
+		} finally {
+			if (typeCollector!=null) {
+				typeCollector.endCollecting(ast);
 			}
 		}
 	}
@@ -89,8 +96,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private DocumentRegion dashesAtStartOf(YamlFileAST ast, Node node) {
 		try {
 			int start = node.getStartMark().getIndex();
-			int end = node.getEndMark().getIndex();
-			String text = ast.getDocument().textBetween(start, end);
 			DocumentRegion textBefore = new DocumentRegion(ast.getDocument(), 0, start)
 					.trimEnd(Pattern.compile("\\s*"));
 			DocumentRegion dashes = textBefore.subSequence(textBefore.getLength()-3);
@@ -108,6 +113,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		if (type!=null) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, path, node);
 			type = typeUtil.inferMoreSpecificType(type, schemaContext);
+			if (typeCollector!=null) {
+				typeCollector.accept(node, type);
+			}
 			switch (getNodeId(node)) {
 			case mapping:
 				MappingNode map = (MappingNode) node;

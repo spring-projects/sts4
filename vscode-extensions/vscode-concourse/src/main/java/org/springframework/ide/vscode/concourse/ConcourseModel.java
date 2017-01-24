@@ -14,6 +14,7 @@ import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.a
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.valueAt;
 
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
@@ -54,7 +55,7 @@ public class ConcourseModel {
 		valueAt("name")
 	);
 
-	private static final YamlPath RESOURCES_FROM_ROOT_PATH = new YamlPath(
+	private static final YamlPath RESOURCES_PATH = new YamlPath(
 		anyChild(), // skip over the root node which contains multiple doces
 		valueAt("resources"),
 		anyChild()
@@ -62,6 +63,9 @@ public class ConcourseModel {
 
 	private final YamlParser parser;
 	private final StaleFallbackCache<String, YamlFileAST> asts = new StaleFallbackCache<>();
+
+	private final ASTTypeCache astTypes = new ASTTypeCache();
+
 
 	public ConcourseModel(SimpleTextDocumentService documents) {
 		Yaml yaml = new Yaml();
@@ -101,7 +105,7 @@ public class ConcourseModel {
 	 */
 	public String getResourceType(IDocument doc, String resourceName) {
 		return getFromAst(doc, (ast) -> {
-			Node resource = RESOURCES_FROM_ROOT_PATH.traverseAmbiguously(new ASTRootCursor(ast))
+			Node resource = RESOURCES_PATH.traverseAmbiguously(new ASTRootCursor(ast))
 			.map((cursor) -> ((NodeCursor)cursor).getNode())
 			.filter((resourceNode) -> resourceName.equals(NodeUtil.getScalarProperty(resourceNode, "name")))
 			.findFirst().orElse(null);
@@ -141,7 +145,7 @@ public class ConcourseModel {
 			if (doc!=null) {
 				String uri = doc.getUri();
 				if (uri!=null) {
-					YamlFileAST ast = getAst(doc);
+					YamlFileAST ast = getAst(doc, true);
 					return astFunction.apply(ast);
 				}
 			}
@@ -154,15 +158,11 @@ public class ConcourseModel {
 	}
 
 	public YamlFileAST getSafeAst(IDocument doc) {
-		try {
-			return getAst(doc);
-		} catch (Exception e) {
-			return null;
-		}
+		return getSafeAst(doc, true);
 	}
 
-	public YamlFileAST getAst(IDocument doc) throws Exception {
-		return getAstProvider(true).getAST(doc);
+	public YamlFileAST getAst(IDocument doc, boolean allowStaleAst) throws Exception {
+		return getAstProvider(allowStaleAst).getAST(doc);
 	}
 
 	public YamlASTProvider getAstProvider(boolean allowStaleAsts) {
@@ -175,6 +175,27 @@ public class ConcourseModel {
 			}
 			return null;
 		};
+	}
+
+	public YamlFileAST getSafeAst(IDocument doc, boolean allowStaleAst) {
+		if (doc!=null) {
+			try {
+				return getAst(doc, allowStaleAst);
+			} catch (Exception e) {
+				//ignored
+			}
+		}
+		return null;
+	}
+
+	public ASTTypeCache getAstTypeCache() {
+		return astTypes;
+	}
+
+	public Stream<Node> getResourceDefinitionNodes(YamlFileAST ast, String name) {
+		return RESOURCE_NAMES_PATH.prepend(YamlPathSegment.anyChild())
+				.traverseAmbiguously(ast)
+				.filter(node -> name.equals(NodeUtil.asScalar(node)));
 	}
 
 }

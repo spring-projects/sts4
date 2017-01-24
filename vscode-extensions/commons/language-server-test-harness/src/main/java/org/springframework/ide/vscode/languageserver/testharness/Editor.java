@@ -31,9 +31,12 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.junit.Assert;
 
@@ -496,6 +499,45 @@ public class Editor {
 
 	public void ignoreProblem(Object type) {
 		ignoredTypes.add(type.toString());
+	}
+
+	public void assertGotoDefinition(Position pos, Range expectedTarget) throws Exception {
+		TextDocumentIdentifier textDocumentId = document.getId();
+		TextDocumentPositionParams params = new TextDocumentPositionParams(textDocumentId, textDocumentId.getUri(), pos);
+		List<? extends Location> defs = harness.getDefinitions(params);
+		assertEquals(1, defs.size());
+		assertEquals(new Location(textDocumentId.getUri(), expectedTarget), defs.get(0));
+	}
+
+	/**
+	 * Determines the position of (the middle of) a snippet of text in the document.
+	 *
+	 * @param contextSnippet A larger snippet containing the actual snippet to look for.
+	 *                   This larger snippet is used to narrow the section of the document
+	 *                   where we look for the actual snippet. This is useful when the snippet
+	 *                   occurs multiple times in the document.
+	 * @param focusSnippet The snippet to look for
+	 */
+	public Position positionOf(String longSnippet, String focusSnippet) throws Exception {
+		Range r = rangeOf(longSnippet, focusSnippet);
+		return r==null?null:r.getStart();
+	}
+
+	/**
+	 * Determines the range of a snippet of text in the document.
+	 *
+	 * @param contextSnippet A larger snippet containing the actual snippet to look for.
+	 *                   This larger snippet is used to narrow the section of the document
+	 *                   where we look for the actual snippet. This is useful when the snippet
+	 *                   occurs multiple times in the document.
+	 * @param focusSnippet The snippet to look for
+	 */
+	public Range rangeOf(String longSnippet, String focusSnippet) throws Exception {
+		int relativeOffset = longSnippet.indexOf(focusSnippet);
+		int contextStart = getRawText().indexOf(longSnippet);
+		Assert.assertTrue("'"+longSnippet+"' not found in editor", contextStart>=0);
+		int start = contextStart+relativeOffset;
+		return new Range(document.toPosition(start), document.toPosition(start+focusSnippet.length()));
 	}
 
 }

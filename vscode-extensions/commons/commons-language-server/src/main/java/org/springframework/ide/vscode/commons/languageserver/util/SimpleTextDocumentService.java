@@ -72,6 +72,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private CompletionResolveHandler completionResolveHandler = null;
 	private HoverHandler hoverHandler = null;
 
+	private DefinitionHandler definitionHandler;
+
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
 	}
@@ -89,6 +91,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onCompletionResolve(CompletionResolveHandler h) {
 		Assert.isNull("A completionResolveHandler handler is already set, multiple handlers not supported yet", completionResolveHandler);
 		this.completionResolveHandler = h;
+	}
+
+	public synchronized void onDefinition(DefinitionHandler h) {
+		Assert.isNull("A defintion handler is already set, multiple handlers not supported yet", definitionHandler);
+		this.definitionHandler = h;
 	}
 
 	/**
@@ -221,9 +228,15 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		return Futures.of(null);
 	}
 
+	@SuppressWarnings({ "unchecked"})
 	@Override
 	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
-		return Futures.of(Collections.emptyList());
+		DefinitionHandler h = this.definitionHandler;
+		if (h!=null) {
+			Object r = h.handle(position); //YUCK!
+			return (CompletableFuture<List<? extends Location>>) r;
+		}
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
@@ -292,6 +305,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
 		return Futures.of(Collections.emptyList());
+	}
+
+	public void onDefinition(TextDocumentPositionParams h) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

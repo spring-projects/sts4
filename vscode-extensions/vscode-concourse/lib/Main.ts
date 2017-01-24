@@ -11,9 +11,6 @@ import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
 
-var DEBUG = false;
-const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
-
 var log_output : OutputChannel = null;
 
 function log(msg : string) {

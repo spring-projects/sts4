@@ -18,20 +18,16 @@ import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCo
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
-import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.yaml.snakeyaml.Yaml;
 
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
@@ -42,20 +38,22 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		YamlASTProvider currentAsts = models.getAstProvider(false);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
-		YamlSchema schema = new PipelineYmlSchema(models);
+		PipelineYmlSchema schema = new PipelineYmlSchema(models);
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
 		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+		YamlSchemaBasedReconcileEngine reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, schema);
+		reconcileEngine.setTypeCollector(models.getAstTypeCache());
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc, engine);
+			validateWith(doc, reconcileEngine);
 		});
-		
+
 //		workspace.onDidChangeConfiguraton(settings -> {
 //			System.out.println("Config changed: "+params);
 //			Integer val = settings.getInt("languageServerExample", "maxNumberOfProblems");
@@ -66,24 +64,27 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 //				}
 //			}
 //		});
-		
+
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
-		documents.onHover(hoverEngine ::getHover);
+		documents.onHover(hoverEngine::getHover);
+		documents.onDefinition(definitionFinder);
 	}
 
-	
+
 	@Override
 	protected ServerCapabilities getServerCapabilities() {
 		ServerCapabilities c = new ServerCapabilities();
-		
+
 		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
 		c.setHoverProvider(true);
-		
+
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
-		
+
+		c.setDefinitionProvider(true);
+
 		return c;
 	}
 }

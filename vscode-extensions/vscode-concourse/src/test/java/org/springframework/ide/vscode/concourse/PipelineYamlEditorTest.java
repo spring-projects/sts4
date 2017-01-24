@@ -1281,6 +1281,31 @@ public class PipelineYamlEditorTest {
 		editor.assertHoverContains("skip_download", "Skip `docker pull`");
 	}
 
+	@Test
+	public void gotoResourceDefinition() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"- name: build-env\n" +
+				"  type: docker-image\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"    params:\n" +
+				"      rootfs: true\n" +
+				"      save: true\n" +
+				"  - put: build-env\n" +
+				"    build: my-git/docker\n"
+		);
+
+		editor.assertGotoDefinition(editor.positionOf("get: my-git", "my-git"),
+				editor.rangeOf("- name: my-git", "my-git")
+		);
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
