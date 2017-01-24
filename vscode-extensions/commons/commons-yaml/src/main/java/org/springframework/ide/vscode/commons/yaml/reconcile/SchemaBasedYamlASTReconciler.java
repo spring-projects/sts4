@@ -143,6 +143,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 							if (prop==null) {
 								unknownBeanProperty(keyNode, type, key);
 							} else {
+								if (prop.isDeprecated()) {
+									problems.accept(YamlSchemaProblems.deprecatedProperty(keyNode, type, prop));
+								}
 								reconcile(doc, valueAt(path, key), entry.getValueNode(), prop.getType());
 							}
 						}
@@ -305,7 +308,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 		}
 	}
-	
+
 	private void valueParseError(YType type, Node node, String parseErrorMsg, ProblemType problemType) {
 		if (!StringUtil.hasText(parseErrorMsg)) {
 			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
@@ -365,9 +368,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private void problem(Node node, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, node));
 	}
-	
+
 	private void problem(Node node, String msg, ProblemType problemType) {
-		problems.accept(YamlSchemaProblems.problem(msg, node, problemType));
+		problems.accept(YamlSchemaProblems.problem(problemType, msg, node));
 	}
 
 	private void problem(DocumentRegion region, String msg) {

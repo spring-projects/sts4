@@ -592,6 +592,11 @@ public class YTypeFactory {
 		public void isDeprecated(boolean isDeprecated) {
 			this.isDeprecated = isDeprecated;
 		}
+
+		@Override
+		public boolean isDeprecated() {
+			return this.isDeprecated;
+		}
 	}
 
 	public YAtomicType yatomic(String name) {

@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import static org.junit.Assert.assertEquals;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -1250,6 +1253,8 @@ public class PipelineYamlEditorTest {
 
 		editor.assertProblems(
 				"cache-it|'boolean'",
+				"pull_repository|Deprecated",
+				"pull_tag|Deprecated",
 				"tag-latest|'boolean'",
 				"the-build-args|Expecting a 'Map'",
 
@@ -1257,6 +1262,8 @@ public class PipelineYamlEditorTest {
 				"tar-it|'boolean'",
 				"skip-it|'boolean'"
 		);
+		assertEquals(DiagnosticSeverity.Warning, editor.assertProblem("pull_repository").getSeverity());
+		assertEquals(DiagnosticSeverity.Warning, editor.assertProblem("pull_tag").getSeverity());
 
 		editor.assertHoverContains("build", "directory containing a `Dockerfile`");
 		editor.assertHoverContains("load", "directory containing an image");
@@ -1304,7 +1311,6 @@ public class PipelineYamlEditorTest {
 				editor.rangeOf("- name: my-git", "my-git")
 		);
 	}
-
 
 	//////////////////////////////////////////////////////////////////////////////
 

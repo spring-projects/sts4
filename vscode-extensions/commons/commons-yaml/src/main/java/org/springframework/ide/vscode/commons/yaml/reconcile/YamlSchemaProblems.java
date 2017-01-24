@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -16,6 +15,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.yaml.schema.YType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.yaml.snakeyaml.nodes.Node;
 
 /**
@@ -25,11 +26,12 @@ import org.yaml.snakeyaml.nodes.Node;
  */
 public class YamlSchemaProblems {
 
-	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem");
 	public static final ProblemType SYNTAX_PROBLEM = problemType("YamlSyntaxProblem");
+	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem");
+	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING);
 
 	public static ProblemType problemType(final String typeName, ProblemSeverity defaultSeverity) {
-		
+
 		return new ProblemType() {
 			@Override
 			public String toString() {
@@ -45,7 +47,7 @@ public class YamlSchemaProblems {
 			}
 		};
 	}
-	
+
 	public static ProblemType problemType(final String typeName) {
 		return problemType(typeName, ProblemSeverity.ERROR);
 	}
@@ -63,8 +65,12 @@ public class YamlSchemaProblems {
 	public static ReconcileProblem schemaProblem(String msg, DocumentRegion node) {
 		return new ReconcileProblemImpl(SCHEMA_PROBLEM, msg, node.getStart(), node.getLength());
 	}
-	
-	public static ReconcileProblem problem(String msg, Node node, ProblemType problemType) {
+
+	public static ReconcileProblem deprecatedProperty(Node node, YType bean, YTypedProperty property) {
+		return problem(DEPRECATED_PROPERTY, "Property '"+property.getName()+"' of '"+bean+"' is Deprecated", node);
+	}
+
+	public static ReconcileProblem problem(ProblemType problemType, String msg, Node node) {
 		int start = node.getStartMark().getIndex();
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
