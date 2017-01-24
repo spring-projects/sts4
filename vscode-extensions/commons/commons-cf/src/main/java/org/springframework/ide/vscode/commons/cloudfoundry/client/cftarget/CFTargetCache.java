@@ -29,8 +29,8 @@ public class CFTargetCache {
 	private final ClientTimeouts timeouts;
 	private final LoadingCache<CFClientParams, CFTarget> cache;
 
-	public static final long EXPIRATION_20_SECS = 20;
-	public static final long EXPIRATION_1_HOUR = 1;
+	public static final long SERVICES_EXPIRATION = 10;
+	public static final long TARGET_EXPIRATION = 1;
 
 	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
@@ -47,7 +47,7 @@ public class CFTargetCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().expireAfterAccess(EXPIRATION_1_HOUR, TimeUnit.HOURS).build(loader);
+		cache = CacheBuilder.newBuilder().expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS).build(loader);
 	}
 
 	/**

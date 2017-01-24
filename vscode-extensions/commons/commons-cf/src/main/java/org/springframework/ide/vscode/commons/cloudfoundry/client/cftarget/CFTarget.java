@@ -55,7 +55,7 @@ public class CFTarget {
 			}
 		};
 		this.servicesCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.EXPIRATION_20_SECS, TimeUnit.SECONDS).build(servicesLoader);
+				.expireAfterAccess(CFTargetCache.SERVICES_EXPIRATION, TimeUnit.SECONDS).build(servicesLoader);
 
 		CacheLoader<String, List<CFBuildpack>> buildpacksLoader = new CacheLoader<String, List<CFBuildpack>>() {
 
@@ -68,7 +68,7 @@ public class CFTarget {
 			}
 		};
 		this.buildpacksCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.EXPIRATION_1_HOUR, TimeUnit.HOURS).build(buildpacksLoader);
+				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION, TimeUnit.HOURS).build(buildpacksLoader);
 	}
 
 	public CFClientParams getParams() {
