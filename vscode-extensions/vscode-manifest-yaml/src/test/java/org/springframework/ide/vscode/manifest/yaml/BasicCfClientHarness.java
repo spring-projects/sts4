@@ -30,7 +30,12 @@ import com.google.common.collect.ImmutableList;
 /**
  * An alternative to using mockito for mocking the CF client, as the mockito
  * version of the CF client seems to fail when run on OpenJDK (which is used for
- * the sts4 concourse ci build)
+ * the sts4 concourse ci build).
+ * <p/>
+ * This also allows additional testing of the general manifest-yaml vscode
+ * framework, as the framework should be able to take any client factory,
+ * including the basic one below, and still produce correct results for content
+ * assist as well as reconcile
  *
  */
 public class BasicCfClientHarness {
@@ -70,7 +75,7 @@ public class BasicCfClientHarness {
 
 		/*
 		 * Create the client "ahead of time" so that it can be configured before
-		 * the language server is tested 
+		 * the language server is tested
 		 */
 		private BasicClientRequests preexistingClient = new BasicClientRequests(DEFAULT_PARAMS, new ClientTimeouts());
 

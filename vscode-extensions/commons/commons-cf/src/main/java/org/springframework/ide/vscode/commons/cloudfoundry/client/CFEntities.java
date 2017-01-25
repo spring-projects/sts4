@@ -18,4 +18,10 @@ public class CFEntities {
 	public static CFBuildpack createBuildpack(String name) {
 		return new CFBuildpackImpl(name);
 	}
+
+	public static CFServiceInstance createServiceInstance(String name, String service, String plan,
+			String documentationUrl, String description, String dashboardUrl) {
+		return new CFServiceInstanceImpl(name, service, plan, documentationUrl, description, dashboardUrl);
+	}
+
 }
