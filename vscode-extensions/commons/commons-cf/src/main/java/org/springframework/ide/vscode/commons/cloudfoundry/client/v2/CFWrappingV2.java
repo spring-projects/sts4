@@ -15,6 +15,7 @@ import org.cloudfoundry.operations.services.ServiceInstance;
 import org.cloudfoundry.operations.services.ServiceInstanceType;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFEntities;
 
 /**
  * Various helper methods to 'wrap' objects returned by CF client into our own
@@ -27,55 +28,11 @@ public class CFWrappingV2 {
 
 	public static CFBuildpack wrap(Buildpack buildpack) {
 		String name = buildpack.getName();
-		return new CFBuildpackImpl(name);
+		return CFEntities.createBuildpack(name);
 	}
 	
 	public static CFServiceInstance wrap(ServiceInstance service) {
 		return new CFServiceInstanceImpl(service);
-	}
-
-	public static CFBuildpack buildpack(String name) {
-		return new CFBuildpackImpl(name);
-	}
-
-	public static class CFBuildpackImpl implements CFBuildpack {
-
-		private final String name;
-
-		public CFBuildpackImpl(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CFBuildpackImpl other = (CFBuildpackImpl) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
-		}
-
 	}
 
 	public static class CFServiceInstanceImpl implements CFServiceInstance {
