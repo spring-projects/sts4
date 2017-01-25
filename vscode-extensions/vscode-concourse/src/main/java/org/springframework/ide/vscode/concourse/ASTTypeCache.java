@@ -80,7 +80,7 @@ public class ASTTypeCache implements ITypeCollector {
 	 * Declares a given YType as 'interesting'. This means that nodes of this type will be
 	 * added to the index.
 	 */
-	public void addInterestingType(YAtomicType type) {
+	public void addInterestingType(YType type) {
 		this.interestingTypes.add(type);
 	}
 

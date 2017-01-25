@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.Location;
@@ -17,9 +19,11 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -27,16 +31,45 @@ import reactor.core.publisher.Flux;
 
 public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseLanguageServer> {
 
+	@FunctionalInterface
+	private interface Handler {
+		Flux<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
+	}
+
 	private final ConcourseModel models;
-	private final PipelineYmlSchema schema;
 	private ASTTypeCache astTypes;
+	private Map<YType, Handler> findersByType = new HashMap<>();
 
 	public ConcourseDefinitionFinder(ConcourseLanguageServer server, ConcourseModel models, PipelineYmlSchema schema) {
 		super(server);
 		this.models = models;
-		this.schema = schema;
 		this.astTypes = models.getAstTypeCache();
-		astTypes.addInterestingType(schema.t_resource_name);
+		findByPath(schema.t_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);
+		findByPath(schema.t_job_name, ConcourseModel.JOB_NAMES_PATH);
+	}
+
+	/**
+	 * Add a handler that finds the definitions for a target node within the same document
+	 * by following a {@link YamlPath} to find candidate nodes.
+	 *
+	 * @param refType the type inferred by the reconciler for the target node.
+	 * @param definitionsPath Path that points to all nodes within the same file corresponding
+	 *            to definitions of nodes of the given type.
+	 */
+	private void findByPath(YType refType, YamlPath definitionsPath) {
+		astTypes.addInterestingType(refType);
+		Handler handler = (Node refNode, TextDocument doc, YamlFileAST ast) -> {
+			String name = NodeUtil.asScalar(refNode);
+			if (name!=null) {
+				return Flux.fromStream(definitionsPath.traverseAmbiguously(ast))
+						.filter((node) -> name.equals(NodeUtil.asScalar(node)))
+						.map((node) -> toLocation(doc, node))
+						.filter(Optional::isPresent)
+						.map(Optional::get);
+			}
+			return Flux.empty();
+		};
+		findersByType.put(refType, handler);
 	}
 
 	@Override
@@ -48,12 +81,11 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 				Node refNode = ast.findNode(doc.toOffset(params.getPosition()));
 				if (refNode!=null) {
 					YType type = astTypes.getType(ast, refNode);
-					if (schema.t_resource_name==type) {
-						String name = NodeUtil.asScalar(refNode);
-						return Flux.fromStream(models.getResourceDefinitionNodes(ast, name))
-								.map((node) -> toLocation(doc, node))
-								.filter(Optional::isPresent)
-								.map(Optional::get);
+					if (type!=null) {
+						Handler handler = findersByType.get(type);
+						if (handler!=null) {
+							return handler.handle(refNode, doc, ast);
+						}
 					}
 				}
 			}

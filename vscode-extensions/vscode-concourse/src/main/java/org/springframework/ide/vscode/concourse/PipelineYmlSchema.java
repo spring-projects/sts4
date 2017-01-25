@@ -92,8 +92,10 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.integerAtLeast(1));
 
 	public final YAtomicType t_resource_name;
+	public final YAtomicType t_job_name;
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
+
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -119,7 +121,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		);
 
-		this.t_resource_name = f.yenum("Resource Name",
+		t_resource_name = f.yenum("Resource Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
@@ -128,7 +130,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		);
 
-		YType jobName = f.yenum("Job Name",
+		t_job_name = f.yenum("Job Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' Job does not exist. Existing jobs: "+validValues;
 				},
@@ -146,7 +148,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "get", t_resource_name);
 		addProp(getStep, "resource", t_string);
 		addProp(getStep, "version", t_version);
-		addProp(getStep, "passed", f.yseq(jobName));
+		addProp(getStep, "passed", f.yseq(t_job_name));
 		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("get", models, dc))
 		));
@@ -154,7 +156,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YBeanType putStep = f.ybean("PutStep");
 		addProp(putStep, "put", t_resource_name);
-		addProp(putStep, "resource", jobName);
+		addProp(putStep, "resource", t_job_name);
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
 		));
@@ -226,7 +228,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType group = f.ybean("Group");
 		addProp(group, "name", t_ne_string).isRequired(true);
 		addProp(group, "resources", f.yseq(t_resource_name));
-		addProp(group, "jobs", f.yseq(jobName));
+		addProp(group, "jobs", f.yseq(t_job_name));
 
 		addProp(TOPLEVEL_TYPE, "resources", f.yseq(resource));
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));

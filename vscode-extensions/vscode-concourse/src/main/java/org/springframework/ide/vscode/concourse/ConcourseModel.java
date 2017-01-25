@@ -15,11 +15,7 @@ import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.v
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
@@ -32,7 +28,6 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
-import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
@@ -41,13 +36,9 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.Node;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableMultiset.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-
-import reactor.core.publisher.Flux;
 
 /**
  * ConcourseModels is responsible for extracting various bits of information
@@ -56,28 +47,28 @@ import reactor.core.publisher.Flux;
  */
 public class ConcourseModel {
 
-	private static final YamlPath RESOURCE_NAMES_PATH = new YamlPath(
-		valueAt("resources"),
+	public static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		anyChild(),
-		valueAt("name")
-	);
-
-	private static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		valueAt("jobs"),
 		anyChild(),
 		valueAt("name")
 	);
 
-	private static final YamlPath RESOURCE_TYPE_NAMES_PATH = new YamlPath(
-			valueAt("resource_types"),
-			anyChild(),
-			valueAt("name")
+	public static final YamlPath RESOURCE_TYPE_NAMES_PATH = new YamlPath(
+		anyChild(),
+		valueAt("resource_types"),
+		anyChild(),
+		valueAt("name")
 	);
 
-	private static final YamlPath RESOURCES_PATH = new YamlPath(
+	public static final YamlPath RESOURCES_PATH = new YamlPath(
 		anyChild(), // skip over the root node which contains multiple doces
 		valueAt("resources"),
 		anyChild()
+	);
+
+	public static final YamlPath RESOURCE_NAMES_PATH = RESOURCES_PATH.append(
+		valueAt("name")
 	);
 
 	private final YamlParser parser;
@@ -150,9 +141,8 @@ public class ConcourseModel {
 
 	private Multiset<String> getStringsFromAst(IDocument doc, YamlPath path) {
 		return getFromAst(doc, (ast) -> {
-			Node root = ast.get(0);
 			return path
-				.traverseAmbiguously(root)
+				.traverseAmbiguously(ast)
 				.map(NodeUtil::asScalar)
 				.filter((string) -> string!=null)
 				.collect(CollectorUtil.toMultiset());
@@ -229,12 +219,6 @@ public class ConcourseModel {
 
 	public ASTTypeCache getAstTypeCache() {
 		return astTypes;
-	}
-
-	public Stream<Node> getResourceDefinitionNodes(YamlFileAST ast, String name) {
-		return RESOURCE_NAMES_PATH.prepend(YamlPathSegment.anyChild())
-				.traverseAmbiguously(ast)
-				.filter(node -> name.equals(NodeUtil.asScalar(node)));
 	}
 
 }

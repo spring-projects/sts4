@@ -1315,6 +1315,29 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
+	@Test
+	public void gotoJobDefinition() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: prepare-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"  - task: preparations\n" +
+				"    file: my-git/ci/tasks/preparations.yml\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: my-git\n" +
+				"    passed:\n" +
+				"    - prepare-stuff\n"
+		);
+		editor.assertGotoDefinition(editor.positionOf("- prepare-stuff", "prepare-stuff"),
+				editor.rangeOf("- name: prepare-stuff", "prepare-stuff")
+		);
+	}
+
 	@Test public void reconcileResourceTypeNames() throws Exception {
 		String userDefinedResourceTypesSnippet =
 				"resource_types:\n" +
