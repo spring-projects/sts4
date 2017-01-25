@@ -3,7 +3,7 @@
   "displayName": "Cloudfoundry Manifest YML Support",
   "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml`) files.",
   "icon": "icon.png",
-  "version": "0.0.2",
+  "version": "0.0.2-201701250238",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -39,15 +39,19 @@
         "configuration": "./yaml-support/language-configuration.json"
       }
     ],
-    "grammars": [{
-      "language": "manifest-yaml",
-      "scopeName": "source.yaml",
-      "path": "./yaml-support/yaml.tmLanguage"
-    }],
-    "snippets": [{
-      "language": "manifest-yaml",
-      "path": "./snippets.json"
-    }]
+    "grammars": [
+      {
+        "language": "manifest-yaml",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "manifest-yaml",
+        "path": "./snippets.json"
+      }
+    ]
   },
   "main": "./out/lib/Main",
   "scripts": {

@@ -73,3 +73,5 @@ Then package it:
      npm run vsce-package
 
 This produces a `.vsix` file which you can install directly into vscode.
+
+*Version: 0.0.1-201701250238*

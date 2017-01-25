@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
@@ -194,7 +195,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		Throwable e = ExceptionUtil.getDeepestCause(_e);
 
 		// If value parse exception, do not append any additional information
-		if (e instanceof ReconcileException) {
+		if (e instanceof ValueParseException) {
 			String msg = e.getMessage();
 			if (StringUtil.hasText(msg)) {
 				return msg;

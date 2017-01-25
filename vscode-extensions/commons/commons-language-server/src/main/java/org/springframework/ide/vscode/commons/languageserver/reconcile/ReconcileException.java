@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
+import org.springframework.ide.vscode.commons.util.ValueParseException;
+
 /**
  * Exception if there is a failure when parsing a value. It does not wrap
  * other exceptions such that when thrown, the parse exception is the "deepest"
  * error.
  *
  */
-public class ReconcileException extends Exception implements ProblemTypeProvider {
+public class ReconcileException extends ValueParseException implements ProblemTypeProvider {
 
 	private static final long serialVersionUID = 1L;
 	private final ProblemType problemType;

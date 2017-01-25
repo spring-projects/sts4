@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Application Properties Support",
   "description": "Provides validation and content assist for Spring Boot application.properties and application.yml file",
   "icon": "spring-boot-logo.png",
-  "version": "0.0.1",
+  "version": "0.0.1-201701250238",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -19,7 +19,10 @@
     "Linters"
   ],
   "keywords": [
-    "java-properties", "spring-boot", "application-properties", "application-yaml"
+    "java-properties",
+    "spring-boot",
+    "application-properties",
+    "application-yaml"
   ],
   "activationEvents": [
     "onLanguage:ini",
