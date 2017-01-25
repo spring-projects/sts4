@@ -792,11 +792,29 @@ public class ManifestYamlEditorTest {
 	
 	@Ignore
 	@Test
+	public void reconcileCFService() throws Exception {
+		ClientRequests cfClient = cfClientFactory.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("myservice");
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - myservice\n"
+				
+		);
+		// Should have no problems
+		editor.assertProblems(/*none*/);
+	}
+	
+	@Ignore
+	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("myservice");
-		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -834,4 +852,5 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertCompletions(textAfter);
 	}
+	
 }

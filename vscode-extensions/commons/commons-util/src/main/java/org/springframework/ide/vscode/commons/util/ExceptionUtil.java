@@ -68,6 +68,17 @@ public class ExceptionUtil {
 			return "An error occurred: " + getSimpleError(e);
 		}
 	}
+	
+	public static String getMessageNoAppendedInformation(Throwable e) {
+		Throwable deepestCause = ExceptionUtil.getDeepestCause(e);
+		String msg = deepestCause != null ? deepestCause.getMessage() : null;
+
+		if (StringUtil.hasText(msg)) {
+			return msg;
+		} else {
+			return "An error occurred: " + getSimpleError(e);
+		}
+	}
 
 	public static String getSimpleError(Throwable e) {
 		return e.getClass().getSimpleName();

@@ -29,10 +29,16 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 	@Override
 	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
 
+		// NOTE: empty list of services is a VALID result. A CF target may have
+		// no service instances
+		// created, so if empty list is returned from the client, then RETURN empty list. don't
+		// return null
+		// for empty services cases
+		List<YValueHint> hints = new ArrayList<>();
+
 		for (CFTarget cfTarget : targets) {
 			List<CFServiceInstance> services = cfTarget.getServices();
 			if (services != null && !services.isEmpty()) {
-				List<YValueHint> hints = new ArrayList<>();
 
 				for (CFServiceInstance service : services) {
 					String name = service.getName();
@@ -45,9 +51,8 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 				return hints;
 			}
 		}
-		// Return null if no hints an be resolved rather than empty list (seems to be
-		// what is expected for parsing for reconciler)
-		return null;
+
+		return hints;
 	}
 
 	private String getServiceLabel(CFTarget cfClientTarget, CFServiceInstance service) {
