@@ -28,11 +28,13 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 
 	@Override
 	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
+
+		List<YValueHint> hints = new ArrayList<>();
+
 		for (CFTarget cfTarget : targets) {
 
 			List<CFBuildpack> buildpacks = cfTarget.getBuildpacks();
 			if (buildpacks != null && !buildpacks.isEmpty()) {
-				List<YValueHint> hints = new ArrayList<>();
 
 				for (CFBuildpack buildpack : buildpacks) {
 					String name = buildpack.getName();
@@ -45,9 +47,12 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 				return hints;
 			}
 		}
-		// Return null if no hints an be resolved rather than empty list (seems to be
-		// what is expected for parsing for reconciler)
-		return null;
+		// Contract for the reconciler: return null if values cannot be
+		// resolved. Otherwise
+		// return non-empty list of buildpacks. For CF targets, a non-empty list
+		// of buildpacks is
+		// typically expected. 
+		return !hints.isEmpty() ? hints : null;
 	}
 
 	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {

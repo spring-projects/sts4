@@ -790,7 +790,6 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 	
-	@Ignore
 	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
@@ -811,7 +810,6 @@ public class ManifestYamlEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 	
-	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -40,13 +39,13 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 
 	@Override
 	public Collection<YValueHint> call() throws Exception {
-		Collection<YValueHint> hints = new ArrayList<>();
+		
 		try {
 			List<CFTarget> targets = targetCache.getOrCreate();
-			Collection<YValueHint> resolvedHints = getHints(targets);
-			if (resolvedHints != null) {
-				hints.addAll(resolvedHints);
-			}
+			
+			// Do NOT wrap the results in another list. Allow null values to return
+			// as the reconcile framework expects null if hints failed to be resolved
+			return getHints(targets);
 		} catch (Throwable e) {
 			// Convert any error into something readable to the user as it may
 			// appear in the content assist
@@ -75,7 +74,6 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				}
 			}
 		}
-		return hints;
 	}
 
 	/**
