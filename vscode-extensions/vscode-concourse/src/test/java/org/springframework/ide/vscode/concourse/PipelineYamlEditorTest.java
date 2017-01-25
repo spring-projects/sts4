@@ -1363,6 +1363,46 @@ public class PipelineYamlEditorTest {
 		}
 	}
 
+	@Test public void contentAssistResourceTypeNames() throws Exception {
+		String[] goodNames = {
+				//user-defined:
+				"s3-multi", "slack-notification",
+				//built-in:
+				"git", "hg", "time", "s3",
+				"archive", "semver", "github-release",
+				"docker-image", "tracker", "pool", "cf", "bosh-io-release",
+				"bosh-io-stemcell", "bosh-deployment", "vagrant-cloud"
+		};
+		Arrays.sort(goodNames);
+
+		String context =
+				"resource_types:\n" +
+				"- name: s3-multi\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/s3-resource-simple\n" +
+				"- name: slack-notification\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: cfcommunity/slack-notification-resource\n" +
+				"    tag: latest\n" +
+				"resources:\n" +
+				"- type: <*>";
+
+		//All the good names are accepted:
+		String[] expectedCompletions = new String[goodNames.length];
+		for (int i = 0; i < expectedCompletions.length; i++) {
+			expectedCompletions[i] = goodNames[i] +"<*>";
+		}
+
+		assertContextualCompletions(context,
+				"<*>"
+				, // ===>
+				expectedCompletions
+		);
+
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
