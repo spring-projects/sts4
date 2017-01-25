@@ -24,8 +24,27 @@
     "pipeline.yml"
   ],
   "activationEvents": [
-    "onLanguage:yaml"
+    "onLanguage:concourse-pipeline-yaml"
   ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "concourse-pipeline-yaml",
+        "aliases": [
+          "concourse-pipeline"
+        ],
+        "filenamePatterns": [
+          "*pipeline*.yml"
+        ],
+        "configuration": "./yaml-support/language-configuration.json"
+      }
+    ],
+    "grammars": [{
+      "language": "concourse-pipeline-yaml",
+      "scopeName": "source.yaml",
+      "path": "./yaml-support/yaml.tmLanguage"
+    }]
+  },
   "main": "./out/lib/Main",
   "scripts": {
     "prepublish": "tsc -p .",

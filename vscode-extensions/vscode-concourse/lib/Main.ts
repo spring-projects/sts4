@@ -13,6 +13,8 @@ import {TextDocument, OutputChannel} from 'vscode';
 
 var log_output : OutputChannel = null;
 
+const PIPELINE_LANGUAGE_ID = "concourse-pipeline-yaml";
+
 function log(msg : string) {
     if (log_output) {
         log_output.append(msg +"\n");
@@ -41,13 +43,12 @@ export function activate(context: VSCode.ExtensionContext) {
             // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
 
             // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-            documentSelector: [ 
-                <any> {language: 'yaml', pattern: '**/*pipeline*.yml'}
-            ],
+            documentSelector: [ PIPELINE_LANGUAGE_ID ],
             synchronize: {
                 // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
                 textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    let result : boolean =  /^(.*)pipeline(.*)\.yml$/i.test(textDocument.fileName);
+                    let result : boolean =  PIPELINE_LANGUAGE_ID===textDocument.languageId;
+                    // old way: let result : boolean =  /^(.*)pipeline(.*)\.yml$/i.test(textDocument.fileName);
                     return result;
                 }
             }
