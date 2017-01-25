@@ -46,6 +46,10 @@ public class ConcourseValueParsers {
 		return acceptOnlyUniqueNames(models::getJobNames, "job name");
 	}
 
+	public static SchemaContextAware<ValueParser> resourceTypeNameDef(ConcourseModel models) {
+		return acceptOnlyUniqueNames(models::getResourceTypeNames, "resource-type name");
+	}
+
 	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
 			Function<IDocument, Multiset<String>> getDefinedNameCounts,
 			String typeName
@@ -70,6 +74,4 @@ public class ConcourseValueParsers {
 					+ " '2h45m'. Valid time units are 'ns', 'us' (or 'µs'), 'ms', 's', "
 			+ "'m', 'h'."
 	);
-
-
 }

@@ -521,6 +521,21 @@ public class PipelineYamlEditorTest {
 	}
 
 	@Test
+	public void reconcileDuplicateResourceTypeNames() throws Exception {
+		Editor editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: slack-notification\n" +
+				"  type: docker_image\n" +
+				"- name: slack-notification\n" +
+				"  type: docker_image"
+		);
+		editor.assertProblems(
+				"slack-notification|Duplicate resource-type name",
+				"slack-notification|Duplicate resource-type name"
+		);
+	}
+
+	@Test
 	public void reconcileDuplicateJobNames() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +

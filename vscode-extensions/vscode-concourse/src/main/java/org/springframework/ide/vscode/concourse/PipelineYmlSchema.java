@@ -143,6 +143,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		resourceNameDef.parseWith(ConcourseValueParsers.resourceNameDef(models));
 		YAtomicType jobNameDef = f.yatomic("Job Name");
 		jobNameDef.parseWith(ConcourseValueParsers.jobNameDef(models));
+		YAtomicType resourceTypeNameDef = f.yatomic("ResourceType Name");
+		resourceTypeNameDef.parseWith(ConcourseValueParsers.resourceTypeNameDef(models));
 
 		YBeanType getStep = f.ybean("GetStep");
 		addProp(getStep, "get", t_resource_name);
@@ -221,7 +223,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "disable_manual_trigger", t_boolean);
 
 		YBeanType resourceType = f.ybean("ResourceType");
-		addProp(resourceType, "name", t_ne_string).isRequired(true);
+		addProp(resourceType, "name", resourceTypeNameDef).isRequired(true);
 		addProp(resourceType, "type", t_image_type).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 
