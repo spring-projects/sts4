@@ -10,14 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * Methods and constants to create/get parsers for some atomic types
@@ -26,6 +32,17 @@ import com.google.common.collect.Multiset;
  * @author Kris De Volder
  */
 public class ConcourseValueParsers {
+
+//	public static final SchemaContextAware<ValueParser> resourceTypeName(ConcourseModel models) {
+//		return (dc) -> {
+//			return new EnumValueParser("ResourceType Name", models.getResourceTypeNames(dc.getDocument())) {
+//				@Override
+//				protected String createErrorMessage(String value, Collection<String> validValues) {
+//					return "The '"+value+"' Resource Type does not exist. Existing resource types: "+validValues;
+//				}
+//			};
+//		};
+//	};
 
 	public static final SchemaContextAware<ValueParser> resourceNameDef(ConcourseModel models) {
 		return acceptOnlyUniqueNames(models::getResourceNames, "resource name");
@@ -59,8 +76,6 @@ public class ConcourseValueParsers {
 					+ " '2h45m'. Valid time units are 'ns', 'us' (or 'µs'), 'ms', 's', "
 			+ "'m', 'h'."
 	);
-
-
 
 
 }

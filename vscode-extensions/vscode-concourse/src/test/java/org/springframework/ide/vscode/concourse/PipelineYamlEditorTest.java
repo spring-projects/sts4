@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
@@ -396,22 +395,26 @@ public class PipelineYamlEditorTest {
 
 	@Test
 	public void valueCompletions() throws Exception {
+		String [] builtInResourceTypes = {
+				"git", "hg", "time", "s3",
+				"archive", "semver", "github-release",
+				"docker-image", "tracker", "pool", "cf", "bosh-io-release",
+				"bosh-io-stemcell", "bosh-deployment", "vagrant-cloud"
+		};
+		Arrays.sort(builtInResourceTypes);
+
+		String[] expectedCompletions = new String[builtInResourceTypes.length];
+		for (int i = 0; i < expectedCompletions.length; i++) {
+			expectedCompletions[i] =
+					"resources:\n" +
+					"- type: "+builtInResourceTypes[i]+"<*>";
+		}
+
 		assertCompletions(
 				"resources:\n" +
 				"- type: <*>"
 				, //=>
-				"resources:\n" +
-				"- type: archive<*>",
-				"resources:\n" +
-				"- type: docker-image<*>",
-				"resources:\n" +
-				"- type: git<*>",
-				"resources:\n" +
-				"- type: s3<*>",
-				"resources:\n" +
-				"- type: semver<*>",
-				"resources:\n" +
-				"- type: time<*>"
+				expectedCompletions
 		);
 		assertCompletions(
 				"jobs:\n" +
@@ -1051,9 +1054,9 @@ public class PipelineYamlEditorTest {
 		//addProp(resource, "name", resourceNameDef).isRequired(true);
 		editor = harness.newEditor(
 				"resources:\n" +
-				"- type: foo"
+				"- type: git"
 		);
-		editor.assertProblems("type: foo|'name' is required");
+		editor.assertProblems("type: git|'name' is required");
 
 		//addProp(resource, "type", t_resource_type_name).isRequired(true);
 		editor = harness.newEditor(
@@ -1310,6 +1313,54 @@ public class PipelineYamlEditorTest {
 		editor.assertGotoDefinition(editor.positionOf("get: my-git", "my-git"),
 				editor.rangeOf("- name: my-git", "my-git")
 		);
+	}
+
+	@Test public void reconcileResourceTypeNames() throws Exception {
+		String userDefinedResourceTypesSnippet =
+				"resource_types:\n" +
+				"- name: s3-multi\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/s3-resource-simple\n" +
+				"- name: slack-notification\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: cfcommunity/slack-notification-resource\n" +
+				"    tag: latest\n";
+		String[] goodNames = {
+				//user-defined:
+				"s3-multi", "slack-notification",
+				//built-in:
+				"git", "hg", "time", "s3",
+				"archive", "semver", "github-release",
+				"docker-image", "tracker", "pool", "cf", "bosh-io-release",
+				"bosh-io-stemcell", "bosh-deployment", "vagrant-cloud"
+		};
+		String[] badNames = {
+				"bogus", "wrong", "not-defined-resource-type"
+		};
+
+		//All the bad names are detected and flagged:
+		for (String badName : badNames) {
+			Editor editor = harness.newEditor(
+					userDefinedResourceTypesSnippet +
+					"resources:\n" +
+					"- name: the-resource\n" +
+					"  type: "+badName
+			);
+			editor.assertProblems(badName+"|Resource Type does not exist");
+		}
+
+		//All the good names are accepted:
+		for (String goodName : goodNames) {
+			Editor editor = harness.newEditor(
+					userDefinedResourceTypesSnippet +
+					"resources:\n" +
+					"- name: the-resource\n" +
+					"  type: "+goodName
+			);
+			editor.assertProblems(/*None*/);
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

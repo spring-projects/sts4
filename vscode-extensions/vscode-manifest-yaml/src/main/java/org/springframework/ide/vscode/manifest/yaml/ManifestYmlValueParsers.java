@@ -92,27 +92,4 @@ public class ManifestYmlValueParsers {
 		};
 	}
 
-	public static ValueParser fromHints(String typeName, Callable<Collection<YValueHint>> hintProvider) {
-		Callable<Collection<String>> values = getValuesFromHints(hintProvider);
-		
-		return new EnumValueParser(typeName, values);
-	}
-
-	public static Callable<Collection<String>> getValuesFromHints(Callable<Collection<YValueHint>> hintProvider) {
-		Callable<Collection<String>> values= () -> {
-			Collection<YValueHint> hints = hintProvider.call();
-			if (hints != null) {
-				Builder<String> builder = ImmutableSet.builder();
-				
-				for (YValueHint hint : hints ) {
-					builder.add(hint.getValue());
-				}
-				return builder.build();
-			}
-	
-			return null;
-		};
-		return values;
-	}
-
 }

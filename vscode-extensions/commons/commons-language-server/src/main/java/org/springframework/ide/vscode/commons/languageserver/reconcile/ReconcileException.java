@@ -18,9 +18,6 @@ package org.springframework.ide.vscode.commons.languageserver.reconcile;
  */
 public class ReconcileException extends Exception implements ProblemTypeProvider {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 	private final ProblemType problemType;
 

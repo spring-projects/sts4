@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -25,13 +28,44 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicTy
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
+
+import reactor.core.publisher.Flux;
+
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
 /**
  * @author Kris De Volder
  */
 public class PipelineYmlSchema implements YamlSchema {
+
+	//TODO: the infos for composing this should probably be integrated somehow in the ResourceTypeRegistry so
+	// we only have a list of built-in resource types in a single place.
+	public static final YValueHint[] BUILT_IN_RESOURCE_TYPES = {
+			hint("git", "The 'git' resource can pull and push to git repositories."),
+			hint("hg", "The 'hg' resource can pull and push to Mercurial repositories."),
+			hint("time",  "The 'time' resource can start jobs on a schedule or timestamp outputs."),
+			hint("s3", "The 's3' resource can fetch from and upload to S3 buckets."),
+			hint("archive", "The 'archive' resource can fetch and extract .tar.gz archives."),
+			hint("semver", "The 'semver' resource can set or bump version numbers."),
+			hint("github-release", "The 'github-release' resource can fetch and publish versioned GitHub resources."),
+			hint("docker-image", "The 'docker-image' resource can fetch, build, and push Docker images."),
+			hint("tracker", "The 'tracker' resource can deliver stories and bugs on Pivotal Tracker."),
+			hint("pool", "The 'pool' resource allows you to configure how to serialize use of an external system. "
+					+ "This lets you prevent test interference or overwork on shared systems."),
+			hint("cf", "The cf resource can deploy an application to Cloud Foundry."),
+			hint("bosh-io-release", "The bosh-io-release resource can track and fetch new BOSH releases from bosh.io."),
+			hint("bosh-io-stemcell", "The bosh-io-stemcell resource can track and fetch new BOSH stemcells from bosh.io."),
+			hint("bosh-deployment", "The bosh-deployment resource can deploy BOSH stemcells and releases."),
+			hint("vagrant-cloud", "The vagrant-cloud resource can fetch and publish Vagrant boxes to Atlas.")
+	};
+
+	public static final Set<String> BUILT_IN_RESOURCE_TYPE_NAMES = Flux.fromArray(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES)
+			.map(YValueHint::getValue)
+			.collect(Collectors.toSet())
+			.block();
+
 
 	private final YBeanType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
@@ -76,32 +110,13 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_image_type = f.yatomic("ImageType");
 		t_image_type.addHints("docker_image");
 
-		YAtomicType t_resource_type_name = f.yatomic("ResourceType Name");
-		t_resource_type_name.addHints(
-				f.hint("archive", "archive - The 'archive' resource can fetch and extract .tar.gz archives."),
-				f.hint("git", "git - The 'git' resource can pull and push to git repositories"),
-				f.hint("s3", "s3 - The 's3' resource can fetch from and upload to S3 buckets."),
-				f.hint("semver", "semver - The 'semver' resource can set or bump version numbers."),
-				f.hint("time",  "time - The 'time' resource can start jobs on a schedule or timestamp outputs."),
-				f.hint("docker-image", "docker-image - The 'docker-image' resource can fetch, build, and push Docker images")
-				//TODO: add more resource types and descriptions.
-//
-//				 The github-release resource can fetch and publish versioned GitHub resources.
-//
-//
-//				 The tracker resource can deliver stories and bugs on Pivotal Tracker
-//
-//				 The pool resource allows you to configure how to serialize use of an external system. This lets you prevent test interference or overwork on shared systems.
-//
-//				 The cf resource can deploy an application to Cloud Foundry.
-//
-//				 The bosh-io-release resource can track and fetch new BOSH releases from bosh.io.
-//
-//				 The bosh-io-stemcell resource can track and fetch new BOSH stemcells from bosh.io.
-//
-//				 The bosh-deployment resource can deploy BOSH stemcells and releases.
-//
-//				 The vagrant-cloud r
+		YAtomicType t_resource_type_name = f.yenumFromHints("ResourceType Name",
+				(parseString, validValues) ->  {
+					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
+				},
+				(DynamicSchemaContext dc) -> {
+					return models.getResourceTypeNameHints(dc.getDocument());
+				}
 		);
 
 		this.t_resource_name = f.yenum("Resource Name",
@@ -109,7 +124,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return models.getResourceNames(dc.getDocument());
+					return (models.getResourceNames(dc.getDocument()));
 				}
 		);
 
@@ -219,6 +234,10 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
 
 		initializeDefaultResourceTypes();
+	}
+
+	private static YValueHint hint(String value, String description) {
+		return YTypeFactory.hint(value, value + " - " + description);
 	}
 
 	private void initializeDefaultResourceTypes() {

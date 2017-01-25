@@ -23,15 +23,20 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import javax.inject.Provider;
+
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multiset;
 
 /**
  * Static utility method for creating YType objects representing either
@@ -607,6 +612,21 @@ public class YTypeFactory {
 		return new YTypedPropertyImpl(name, type);
 	}
 
+	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
+		YAtomicType t = yatomic(name);
+		t.addHintProvider((dc) -> () -> values.withContext(dc));
+		t.parseWith((DynamicSchemaContext dc) -> {
+			Collection<String> strings = YTypeFactory.values(values.withContext(dc));
+			return new EnumValueParser("blah", strings) {
+				@Override
+				protected String createErrorMessage(String parseString, Collection<String> values) {
+					return errorMessageFormatter.apply(parseString, values);
+				}
+			};
+		});
+		return t;
+	}
+
 	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
 		t.addHintProvider((dc) -> {
@@ -629,6 +649,10 @@ public class YTypeFactory {
 		return t;
 	}
 
+	public static Collection<String> values(Collection<YValueHint> hints) {
+		return hints.stream().map(YValueHint::getValue).collect(Collectors.toList());
+	}
+
 	public YAtomicType yenum(String name, String... values) {
 		YAtomicType t = yatomic(name);
 		t.addHints(values);
@@ -636,8 +660,35 @@ public class YTypeFactory {
 		return t;
 	}
 
-	public YValueHint hint(String value, String label) {
+	public static Callable<Collection<String>> valuesFromHintProvider(Callable<Collection<YValueHint>> hintProvider) {
+		Callable<Collection<String>> values = () -> {
+			Collection<YValueHint> hints = hintProvider.call();
+			if (hints != null) {
+				ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+				for (YValueHint hint : hints ) {
+					builder.add(hint.getValue());
+				}
+				return builder.build();
+			}
+			return null;
+		};
+		return values;
+	}
+
+	public static YValueHint hint(String value, String label) {
 		return new BasicYValueHint(value, label);
 	}
+
+	public static YValueHint hint(String value) {
+		return new BasicYValueHint(value);
+	}
+
+	public static Collection<YValueHint> hints(Collection<String> values) {
+		if (values!=null) {
+			return values.stream().map(YTypeFactory::hint).collect(Collectors.toList());
+		}
+		return null;
+	}
+
 
 }

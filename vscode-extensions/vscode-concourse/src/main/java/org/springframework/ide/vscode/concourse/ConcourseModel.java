@@ -13,7 +13,12 @@ package org.springframework.ide.vscode.concourse;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.anyChild;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.valueAt;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -28,13 +33,21 @@ import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableMultiset.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+
+import reactor.core.publisher.Flux;
 
 /**
  * ConcourseModels is responsible for extracting various bits of information
@@ -53,6 +66,12 @@ public class ConcourseModel {
 		valueAt("jobs"),
 		anyChild(),
 		valueAt("name")
+	);
+
+	private static final YamlPath RESOURCE_TYPE_NAMES_PATH = new YamlPath(
+			valueAt("resource_types"),
+			anyChild(),
+			valueAt("name")
 	);
 
 	private static final YamlPath RESOURCES_PATH = new YamlPath(
@@ -139,6 +158,26 @@ public class ConcourseModel {
 				.collect(CollectorUtil.toMultiset());
 		});
 	}
+
+	public Multiset<String> getResourceTypeNames(IDocument doc) {
+		Collection<YValueHint> hints = getResourceTypeNameHints(doc);
+		if (hints!=null) {
+			return ImmutableMultiset.copyOf(YTypeFactory.values(hints));
+		}
+		return null;
+	}
+
+	public Collection<YValueHint> getResourceTypeNameHints(IDocument doc) {
+		Multiset<String> userDefined = getStringsFromAst(doc, RESOURCE_TYPE_NAMES_PATH);
+		if (userDefined!=null) {
+			Builder<YValueHint> builder = ImmutableMultiset.builder();
+			builder.addAll(YTypeFactory.hints(userDefined));
+			builder.addAll(Arrays.asList(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES));
+			return builder.build();
+		}
+		return null;
+	}
+
 
 	private <T> T getFromAst(IDocument doc, Function<YamlFileAST, T> astFunction) {
 		try {
