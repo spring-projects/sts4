@@ -102,6 +102,13 @@ jobs:
         params: 
           file: vsix-files/vscode-concourse-*.vsix
           acl: public-read
+      on_success:
+        put: slack-notification
+        params:
+          channel: "@kdvolder"
+          text: |
+            SUCCESS Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}!
+            New snapshots available at http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
     on_failure:
       put: slack-notification
       params:
