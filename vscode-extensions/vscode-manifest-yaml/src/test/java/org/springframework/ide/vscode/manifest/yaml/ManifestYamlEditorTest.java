@@ -790,12 +790,30 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 	
+	
+	@Test
+	public void reconcileCFService() throws Exception {
+		ClientRequests cfClient = cfClientFactory.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("myservice");
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - myservice\n"
+				
+		);
+		// Should have no problems
+		editor.assertProblems(/*none*/);
+	}
+	
 	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("myservice");
-		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -810,6 +828,7 @@ public class ManifestYamlEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 	
+	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
