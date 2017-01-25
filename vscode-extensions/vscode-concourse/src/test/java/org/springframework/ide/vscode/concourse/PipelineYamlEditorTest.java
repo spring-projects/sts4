@@ -1338,6 +1338,21 @@ public class PipelineYamlEditorTest {
 		);
 	}
 
+	@Test
+	public void gotoResourceTypeDefinition() throws Exception {
+		Editor editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: slack-notification\n" +
+				"  type: docker_image\n" +
+				"resources:\n" +
+				"- name: zazazee\n" +
+				"  type: slack-notification\n"
+		);
+		editor.assertGotoDefinition(editor.positionOf("type: slack-notification", "slack-notification"),
+				editor.rangeOf("- name: slack-notification", "slack-notification")
+		);
+	}
+
 	@Test public void reconcileResourceTypeNames() throws Exception {
 		String userDefinedResourceTypesSnippet =
 				"resource_types:\n" +

@@ -19,7 +19,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -38,7 +37,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 
 	private final ConcourseModel models;
 	private ASTTypeCache astTypes;
-	private Map<YType, Handler> findersByType = new HashMap<>();
+	private Map<YType, Handler> handlers = new HashMap<>();
 
 	public ConcourseDefinitionFinder(ConcourseLanguageServer server, ConcourseModel models, PipelineYmlSchema schema) {
 		super(server);
@@ -46,6 +45,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 		this.astTypes = models.getAstTypeCache();
 		findByPath(schema.t_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);
 		findByPath(schema.t_job_name, ConcourseModel.JOB_NAMES_PATH);
+		findByPath(schema.t_resource_type_name, ConcourseModel.RESOURCE_TYPE_NAMES_PATH);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 			}
 			return Flux.empty();
 		};
-		findersByType.put(refType, handler);
+		handlers.put(refType, handler);
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 				if (refNode!=null) {
 					YType type = astTypes.getType(ast, refNode);
 					if (type!=null) {
-						Handler handler = findersByType.get(type);
+						Handler handler = handlers.get(type);
 						if (handler!=null) {
 							return handler.handle(refNode, doc, ast);
 						}
@@ -90,7 +90,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 				}
 			}
 		} catch (Exception e) {
-			return Flux.error(e);
+			Log.log(e);
 		}
 		return Flux.empty();
 	}

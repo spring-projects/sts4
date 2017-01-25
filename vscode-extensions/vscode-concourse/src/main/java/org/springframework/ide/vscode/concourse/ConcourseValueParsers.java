@@ -10,20 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 
-import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * Methods and constants to create/get parsers for some atomic types

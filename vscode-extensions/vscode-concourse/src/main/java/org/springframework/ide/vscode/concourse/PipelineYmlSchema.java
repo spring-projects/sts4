@@ -93,9 +93,9 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	public final YAtomicType t_resource_name;
 	public final YAtomicType t_job_name;
+	public final YAtomicType t_resource_type_name;
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
-
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -112,7 +112,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_image_type = f.yatomic("ImageType");
 		t_image_type.addHints("docker_image");
 
-		YAtomicType t_resource_type_name = f.yenumFromHints("ResourceType Name",
+		t_resource_type_name = f.yenumFromHints("ResourceType Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
 				},
