@@ -790,6 +790,11 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 	
+	//////////////////////////////////////////////////////////////////////////////
+
+	// These tests are on ignore because they fail in the concourse ci build that uses OpenJDK.
+	// Possible issue is with mockito does not behave as expected using OpenJDK vs Oracle JVM
+	// These tests pass when running on an Oracle JVM.
 	@Ignore
 	@Test
 	public void reconcileCFService() throws Exception {

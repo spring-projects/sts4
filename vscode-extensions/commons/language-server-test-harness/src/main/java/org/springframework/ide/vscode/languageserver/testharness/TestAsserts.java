@@ -21,4 +21,9 @@ public class TestAsserts {
 		}
 	}
 
+	public static void assertDoesNotContain(String needle, String haystack) {
+		if (haystack!=null && haystack.contains(needle)) {
+			fail("Found: "+needle+"\n in \n"+haystack);
+		}
+	}
 }

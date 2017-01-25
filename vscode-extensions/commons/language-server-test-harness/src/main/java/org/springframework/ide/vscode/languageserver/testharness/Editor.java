@@ -14,7 +14,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -261,6 +261,22 @@ public class Editor {
 
 		for (String after : expectTextAfter) {
 			assertContains(after, actualText);
+		}
+	}
+
+	public void assertDoesNotContainCompletions(String... notToBeFound) throws Exception {
+		StringBuilder actual = new StringBuilder();
+
+		for (CompletionItem completion : getCompletions()) {
+			Editor editor = this.clone();
+			editor.apply(completion);
+			actual.append(editor.getText());
+			actual.append("\n-------------------\n");
+		}
+		String actualText = actual.toString();
+
+		for (String after : notToBeFound) {
+			assertDoesNotContain(after, actualText);
 		}
 	}
 
