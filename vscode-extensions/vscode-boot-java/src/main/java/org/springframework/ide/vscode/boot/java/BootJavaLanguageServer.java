@@ -52,7 +52,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			validateWith(doc, reconcileEngine);
 		});
 		
-		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine();
+		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder);
 		completionEngine = new VscodeCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletionsNumber(100);
 		documents.onCompletion(completionEngine::getCompletions);

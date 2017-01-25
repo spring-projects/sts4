@@ -8,13 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.boot.java.completions;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
+/**
+ * @author Martin Lippert
+ */
 public class BootJavaReconcileEngine implements IReconcileEngine {
 
 	@Override
