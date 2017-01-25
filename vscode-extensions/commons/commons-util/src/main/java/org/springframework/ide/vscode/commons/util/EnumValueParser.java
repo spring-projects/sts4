@@ -44,6 +44,7 @@ public class EnumValueParser implements ValueParser {
 		this.values = values;
 	}
 
+	@Override
 	public Object parse(String str) throws Exception {
 		// IMPORTANT: check the text FIRST before fetching values
 		// from the hints provider, as the hints provider may be expensive when
@@ -71,11 +72,11 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	protected Exception errorOnParse(String message) {
-		return new IllegalArgumentException(message);
+		return new ValueParseException(message);
 	}
 
 	protected Exception errorOnBlank(String message) {
-		return new IllegalArgumentException(message);
+		return new ValueParseException(message);
 	}
 
 	private static <T> Provider<T> provider(T values) {
