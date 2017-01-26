@@ -55,6 +55,17 @@ public class BasicCfClientHarness {
 		return paramsProvider;
 	}
 
+	public void addServiceInstances(String... serviceInstances) {
+		List<CFServiceInstance> services = null;
+		if (serviceInstances != null) {
+			services = new ArrayList<CFServiceInstance>();
+			for (String name : serviceInstances) {
+				services.add(createServiceInstance(name));
+			}
+		}
+		getBasicClientFactory().getExistingClientInHarness().setServices(services);
+	}
+
 	public void addBuildpacks(String... buildpacks) {
 
 		// Allow testing of null condition when vscode asks for buildpacks from
@@ -70,6 +81,13 @@ public class BasicCfClientHarness {
 
 		getBasicClientFactory().getExistingClientInHarness().setBuildPacks(asList);
 	}
+
+	protected CFServiceInstance createServiceInstance(String name) {
+		return CFEntities.createServiceInstance(name, null, null, null, null, null);
+	}
+
+	////////////////////////////////////////////////
+	// "Mocked" CF client types
 
 	public static final class BasicCFClientFactory implements CloudFoundryClientFactory {
 
