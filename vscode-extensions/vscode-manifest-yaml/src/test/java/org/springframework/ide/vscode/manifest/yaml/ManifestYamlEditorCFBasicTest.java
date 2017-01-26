@@ -54,11 +54,10 @@ public class ManifestYamlEditorCFBasicTest {
 		assertDoesNotContainCompletions("buildpack: <*>", "buildpack: wrong_buildpack<*>");
 	}
 
-	@Ignore
 	@Test
 	public void contentAssistServices() throws Exception {
 		basicCfClientHarness.addServiceInstances("mysql");
-		assertContainsCompletions("services:\n" + " - <*>", "mysql");
+		assertContainsCompletions("services:\n" + "  - <*>", "mysql");
 	}
 
 	@Test
