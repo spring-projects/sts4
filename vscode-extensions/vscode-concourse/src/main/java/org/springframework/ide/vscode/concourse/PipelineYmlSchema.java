@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPro
 import reactor.core.publisher.Flux;
 
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
@@ -238,9 +239,31 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
 
-		task = f.ybean("TaskConfig");
+		YBeanType t_image_resource = f.ybean("ImageResource");
+		for (YTypedProperty p : resource.getProperties()) {
+			if (!"name".equals(p.getName())) {
+				t_image_resource.addProperty(p);
+			}
+		}
+
 		YType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
-		addProp(task, "platform", t_platform);
+
+		YType t_name_and_path = f.ybean("NameAndPath" ,
+				f.yprop("name", t_ne_string).isRequired(true),
+				f.yprop("path", t_ne_string)
+		);
+
+		YType t_command = f.yany("Command");
+		//TODO: add structure for command.
+
+		task = f.ybean("TaskConfig");
+		addProp(task, "platform", t_platform).isRequired(true);
+		addProp(task, "image_resource", t_image_resource);
+		addProp(task, "image", t_ne_string);
+		addProp(task, "inputs", f.yseq(t_name_and_path));
+		addProp(task, "outputs", f.yseq(t_name_and_path));
+		addProp(task, "run", t_command).isRequired(true);
+		addProp(task, "params", t_string_params);
 
 		initializeDefaultResourceTypes();
 	}

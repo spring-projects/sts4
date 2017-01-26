@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.util.Collection;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 import javax.inject.Provider;
@@ -68,7 +69,7 @@ public class EnumValueParser implements ValueParser {
 	}
 
 	protected String createErrorMessage(String parseString, Collection<String> values) {
-		return "'" + parseString + "' is not valid for Enum '" + typeName + "'. Valid values are: " + values;
+		return "'" + parseString + "' is an unknown '" + typeName + "'. Valid values are: " + new TreeSet<>(values);
 	}
 
 	protected Exception errorOnParse(String message) {

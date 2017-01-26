@@ -1451,13 +1451,20 @@ public class ConcourseEditorTest {
 				, // ===>
 				expectedCompletions
 		);
-
 	}
 
 	@Test public void reconcileTaskFileToplevelProperties() throws Exception {
-		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		Editor editor;
+
+		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"image: some-image"
+		);
+		editor.assertProblems("image: some-image|[platform, run] are required");
+
+		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"platform: a-platform\n" +
 				"image_resource:\n" +
+				"  name: should-not-be-here\n" +
 				"  type: docker-image\n" +
 				"  source:\n" +
 				"    bogus-source-prop: bad\n" +
@@ -1469,13 +1476,16 @@ public class ConcourseEditorTest {
 				"outputs:\n" +
 				"- path: path/to/output\n" +
 				"run:\n" +
-				"  path: my-app/scripts/test"
+				"  path: my-app/scripts/test\n" +
+				"params: the-params\n"
 		);
 		editor.assertProblems(
-				"a-platform|blah",
-				"bogus-source-prop|Unkown property",
+				"a-platform|unknown 'Platform'",
+				"name|Unknown property",
+				"bogus-source-prop|Unknown property",
 				"path: path/to/input|'name' is required",
-				"path: path/to/output|'name' is required"
+				"path: path/to/output|'name' is required",
+				"the-params|Expecting a 'Map'"
 		);
 	}
 
