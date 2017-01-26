@@ -59,6 +59,18 @@ public class ManifestYamlEditorCFBasicTest {
 		basicCfClientHarness.addServiceInstances("mysql");
 		assertContainsCompletions("services:\n" + "  - <*>", "mysql");
 	}
+	
+	@Test
+	public void contentAssistDoesNotContainServices() throws Exception {
+		basicCfClientHarness.addServiceInstances("mysql");
+		assertDoesNotContainCompletions("services:\n" + "  - <*>", "wrongsql");
+	}
+	
+	@Test
+	public void contentAssistDoesNotContainServicesEmptyServices() throws Exception {
+		basicCfClientHarness.addServiceInstances(/*no services*/);
+		assertDoesNotContainCompletions("services:\n" + "  - <*>", "mysql");
+	}
 
 	@Test
 	public void reconcileCFService() throws Exception {
