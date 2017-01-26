@@ -41,7 +41,7 @@ public class ExceptionUtil {
 	 * @return the throwable instance of the given type, or null if nothing found.
 	 */
 	public static Throwable getThrowable(Throwable e, Class<? extends Throwable> toLookFor) {
-		if (e.getClass().isAssignableFrom(toLookFor)) {
+		if (toLookFor.isAssignableFrom(e.getClass())) {
 			return e;
 		}
 		
@@ -50,7 +50,7 @@ public class ExceptionUtil {
 		while (parent != null && parent != e) {
 			cause = parent;
 			parent = cause.getCause();
-			if (cause.getClass().isAssignableFrom(toLookFor)) {
+			if (toLookFor.isAssignableFrom(cause.getClass())) {
 				return cause;
 			}
 		}
