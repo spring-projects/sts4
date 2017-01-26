@@ -1459,7 +1459,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"image: some-image"
 		);
-		editor.assertProblems("image: some-image|[platform, run] are required");
+		editor.assertProblems("image: some-image|[inputs, platform, run] are required");
 
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"platform: a-platform\n" +
@@ -1535,6 +1535,14 @@ public class ConcourseEditorTest {
 				"run:\n" +
 				"  path: sts4/concourse/tasks/build-vscode-extensions.sh"
 		);
+
+		editor.assertHoverContains("platform", "The platform the task should run on");
+		editor.assertHoverContains("image_resource", "The base image of the container");
+		editor.assertHoverContains("image", "A string specifying the rootfs of the container");
+		editor.assertHoverContains("inputs", "The expected set of inputs for the task");
+		editor.assertHoverContains("outputs", "The artifacts produced by the task");
+		editor.assertHoverContains("run", "Note that this is *not* provided as a script blob");
+		editor.assertHoverContains("params", "A key-value mapping of values that are exposed to the task via environment variables");
 
 		editor.assertHoverContains("platform", "The platform the task should run on");
 	}
