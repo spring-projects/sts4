@@ -112,7 +112,17 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			throw new IllegalStateException("Not implemented");
 
 		});
-		documents.onHover(forPipelines.hoverEngine::getHover); //TODO: dispatch based on language id
+		documents.onHover(params -> {
+			TextDocument doc = documents.get(params);
+			if (doc!=null) {
+				if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+					return forPipelines.hoverEngine.getHover(params);
+				} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+					return forTasks.hoverEngine.getHover(params);
+				}
+			}
+			return SimpleTextDocumentService.NO_HOVER;
+		});
 		documents.onDefinition(definitionFinder);
 	}
 

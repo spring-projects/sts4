@@ -1480,7 +1480,6 @@ public class ConcourseEditorTest {
 				"params: the-params\n"
 		);
 		editor.assertProblems(
-				"a-platform|unknown 'Platform'",
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
 				"path: path/to/input|'name' is required",
@@ -1512,7 +1511,34 @@ public class ConcourseEditorTest {
 				"run:\n" +
 				"  <*>"
 		);
+
+		assertTaskCompletions(
+				"platform: <*>"
+				, //=>
+				"platform: darwin<*>",
+				"platform: linux<*>",
+				"platform: windows<*>"
+		);
 	}
+
+	@Test public void hoversForTaskFileToplevelProperties() throws Exception {
+		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"image: some-image\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"inputs: []\n" +
+				"outputs: []\n" +
+				"params: {}\n" +
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: sts4/concourse/tasks/build-vscode-extensions.sh"
+		);
+
+		editor.assertHoverContains("platform", "The platform the task should run on");
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 

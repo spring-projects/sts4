@@ -246,7 +246,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			}
 		}
 
-		YType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
+		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
+		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
 
 		YType t_name_and_path = f.ybean("NameAndPath" ,
 				f.yprop("name", t_ne_string).isRequired(true),
