@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.concurrent.CompletableFuture;
+
+import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
@@ -29,36 +32,54 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextP
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
+import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+
+import com.google.common.collect.ImmutableList;
 
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
+	YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
+	SimpleTextDocumentService documents = getTextDocumentService();
+	ConcourseModel models = new ConcourseModel(documents);
+	YamlASTProvider currentAsts = models.getAstProvider(false);
+
+	private class SchemaSpecificPieces {
+
+		final YamlSchema schema;
+		final VscodeCompletionEngine completionEngine;
+		final VscodeHoverEngineAdapter hoverEngine;
+		final YamlSchemaBasedReconcileEngine reconcileEngine;
+
+		SchemaSpecificPieces(YamlSchema schema) {
+			this.schema = schema;
+			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
+			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
+			this.completionEngine = new VscodeCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
+
+			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
+			this.hoverEngine = new VscodeHoverEngineAdapter(ConcourseLanguageServer.this, infoProvider);
+
+			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+			reconcileEngine.setTypeCollector(models.getAstTypeCache());
+		}
+
+	}
+
 	public ConcourseLanguageServer() {
-		SimpleTextDocumentService documents = getTextDocumentService();
+		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
 
-		ConcourseModel models = new ConcourseModel(documents);
-		YamlASTProvider currentAsts = models.getAstProvider(false);
-
-		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
-		PipelineYmlSchema schema = new PipelineYmlSchema(models);
-		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
-		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
-		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
-		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
-		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-
-		YamlSchemaBasedReconcileEngine pipelineReconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
-		pipelineReconcileEngine.setTypeCollector(models.getAstTypeCache());
-		YamlSchemaBasedReconcileEngine taskReconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema.getTaskSchema());
-		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, schema);
+		SchemaSpecificPieces forPipelines = new SchemaSpecificPieces(pipelineSchema);
+		SchemaSpecificPieces forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema());
+		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, pipelineSchema);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-				validateWith(doc, pipelineReconcileEngine);
+				validateWith(doc, forPipelines.reconcileEngine);
 			} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-				validateWith(doc, taskReconcileEngine);
+				validateWith(doc, forTasks.reconcileEngine);
 			} else {
 				validateWith(doc, IReconcileEngine.NULL);
 			}
@@ -75,9 +96,23 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 //			}
 //		});
 
-		documents.onCompletion(completionEngine::getCompletions);
-		documents.onCompletionResolve(completionEngine::resolveCompletion);
-		documents.onHover(hoverEngine::getHover);
+		documents.onCompletion(params -> {
+			TextDocument doc = documents.get(params);
+			if (doc!=null) {
+				if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+					return forPipelines.completionEngine.getCompletions(params);
+				} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+					return forTasks.completionEngine.getCompletions(params);
+				}
+			}
+			return CompletableFuture.completedFuture(new CompletionList(false, ImmutableList.of()));
+		});
+		documents.onCompletionResolve(params -> {
+			//this is a bogus implementation. But its not currently used.
+			throw new IllegalStateException("Not implemented");
+
+		});
+		documents.onHover(forPipelines.hoverEngine::getHover); //TODO: dispatch based on language id
 		documents.onDefinition(definitionFinder);
 	}
 

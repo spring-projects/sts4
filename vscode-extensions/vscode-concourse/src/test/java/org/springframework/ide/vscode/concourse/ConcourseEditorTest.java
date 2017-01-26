@@ -1489,6 +1489,31 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void contentAssistTaskFileToplevelProperties() throws Exception {
+		assertTaskCompletions(
+				"<*>"
+				, // ==>
+				"image: <*>"
+				,
+				"image_resource:\n" +
+				"  <*>"
+				,
+				"inputs:\n" +
+				"- <*>"
+				,
+				"outputs:\n" +
+				"- <*>"
+				,
+				"params:\n" +
+				"  <*>"
+				,
+				"platform: <*>"
+				,
+				"run:\n" +
+				"  <*>"
+		);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
@@ -1504,4 +1529,11 @@ public class ConcourseEditorTest {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertCompletions(textAfter);
 	}
+
+	private void assertTaskCompletions(String textBefore, String... textAfter) throws Exception  {
+		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK, textBefore);
+		editor.assertCompletions(textAfter);
+	}
+
+
 }
