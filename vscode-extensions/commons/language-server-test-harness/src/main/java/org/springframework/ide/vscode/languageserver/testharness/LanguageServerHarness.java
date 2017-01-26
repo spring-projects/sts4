@@ -81,23 +81,23 @@ public class LanguageServerHarness {
 		this(factory, LanguageIds.PLAINTEXT);
 	}
 
-	public synchronized TextDocumentInfo getOrReadFile(File file) throws Exception {
+	public synchronized TextDocumentInfo getOrReadFile(File file, String languageId) throws Exception {
 		String uri = file.toURI().toString();
 		TextDocumentInfo d = documents.get(uri);
 		if (d==null) {
-			documents.put(uri, d = readFile(file));
+			documents.put(uri, d = readFile(file, languageId));
 		}
 		return d;
 	}
 
-	public TextDocumentInfo readFile(File file) throws Exception {
+	public TextDocumentInfo readFile(File file, String languageId) throws Exception {
 		byte[] encoded = Files.readAllBytes(file.toPath());
 		String content = new String(encoded, getEncoding());
 		TextDocumentItem document = new TextDocumentItem();
 		document.setText(content);
 		document.setUri(file.toURI().toString());
 		document.setVersion(getFirstVersion());
-		document.setLanguageId(getDefaultLanguageId());
+		document.setLanguageId(languageId);
 		return new TextDocumentInfo(document);
 	}
 
@@ -188,8 +188,8 @@ public class LanguageServerHarness {
 		return documentInfo;
 	}
 
-	public TextDocumentInfo openDocument(File file) throws Exception {
-		return openDocument(getOrReadFile(file));
+	public TextDocumentInfo openDocument(File file, String languageId) throws Exception {
+		return openDocument(getOrReadFile(file, languageId));
 	}
 
 	public synchronized TextDocumentInfo changeDocument(String uri, int start, int end, String replaceText) {
@@ -330,9 +330,13 @@ public class LanguageServerHarness {
 		return new Editor(this, contents, getDefaultLanguageId());
 	}
 
-	public synchronized TextDocumentInfo createWorkingCopy(String contents) throws Exception {
+	public Editor newEditor(String languageId, String contents) throws Exception {
+		return new Editor(this, contents, languageId);
+	}
+
+	public synchronized TextDocumentInfo createWorkingCopy(String contents, String languageId) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
-		doc.setLanguageId(getDefaultLanguageId());
+		doc.setLanguageId(languageId);
 		doc.setText(contents);
 		doc.setUri(createTempUri());
 		doc.setVersion(getFirstVersion());

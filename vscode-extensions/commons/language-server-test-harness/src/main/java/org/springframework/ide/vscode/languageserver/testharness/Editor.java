@@ -99,7 +99,7 @@ public class Editor {
 		this.harness = harness;
 		this.languageId = languageId;
 		EditorState state = new EditorState(contents);
-		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents));
+		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents, languageId));
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();

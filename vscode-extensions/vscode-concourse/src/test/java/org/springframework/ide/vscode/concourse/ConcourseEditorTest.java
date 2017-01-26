@@ -1454,6 +1454,31 @@ public class ConcourseEditorTest {
 
 	}
 
+	@Test public void reconcileTaskFileToplevelProperties() throws Exception {
+		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"platform: a-platform\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    bogus-source-prop: bad\n" +
+				"    repository: ruby\n" +
+				"    tag: '2.1'\n" +
+				"image: some-image\n" +
+				"inputs:\n" +
+				"- path: path/to/input\n" +
+				"outputs:\n" +
+				"- path: path/to/output\n" +
+				"run:\n" +
+				"  path: my-app/scripts/test"
+		);
+		editor.assertProblems(
+				"a-platform|blah",
+				"bogus-source-prop|Unkown property",
+				"path: path/to/input|'name' is required",
+				"path: path/to/output|'name' is required"
+		);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
