@@ -27,16 +27,19 @@ public class TextDocument implements IDocument {
 
 	ILineTracker lineTracker = new DefaultLineTracker();
 	private static final Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
-	
+
+	private final String languageId;
 	private final String uri;
 	private Text text = new Text("");
 
-	public TextDocument(String uri) {
+	public TextDocument(String uri, String languageId) {
 		this.uri = uri;
+		this.languageId = languageId;
 	}
 
 	private TextDocument(TextDocument other) {
 		this.uri = other.uri;
+		this.languageId = other.getLanguageId();
 		this.text = other.text;
 		this.lineTracker.set(text.toString());
 	}
@@ -59,7 +62,7 @@ public class TextDocument implements IDocument {
 		this.text = new Text(text);
 		this.lineTracker.set(text);
 	}
-	
+
 	public void apply(TextDocumentContentChangeEvent change) throws BadLocationException {
 		Range rng = change.getRange();
 		if (rng==null) {
@@ -247,6 +250,10 @@ public class TextDocument implements IDocument {
 		} catch (BadLocationException e) {
 			return 0;
 		}
+	}
+
+	public String getLanguageId() {
+		return languageId;
 	}
 
 }

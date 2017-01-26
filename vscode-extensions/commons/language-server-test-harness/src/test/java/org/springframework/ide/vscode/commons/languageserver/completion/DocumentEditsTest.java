@@ -53,7 +53,7 @@ public class DocumentEditsTest {
 		}
 
 		private IDocument getFreshDocument(Editor editor) throws Exception {
-			TextDocument doc = new TextDocument(null);
+			TextDocument doc = new TextDocument(null, editor.getLanguageId());
 			doc.setText(editor.getRawText());
 			return doc;
 		}

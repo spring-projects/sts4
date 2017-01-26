@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -52,6 +51,7 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 
@@ -62,6 +62,7 @@ public class LanguageServerHarness {
 	private Random random = new Random();
 
 	private Callable<? extends LanguageServer> factory;
+	private String defaultLanguageId;
 
 	private LanguageServer server;
 
@@ -70,8 +71,14 @@ public class LanguageServerHarness {
 	private Map<String,TextDocumentInfo> documents = new HashMap<>();
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 
-	public LanguageServerHarness(Callable<? extends LanguageServer> factory) throws Exception {
+
+	public LanguageServerHarness(Callable<? extends LanguageServer> factory, String defaultLanguageId) {
 		this.factory = factory;
+		this.defaultLanguageId = defaultLanguageId;
+	}
+
+	public LanguageServerHarness(Callable<? extends LanguageServer> factory) throws Exception {
+		this(factory, LanguageIds.PLAINTEXT);
 	}
 
 	public synchronized TextDocumentInfo getOrReadFile(File file) throws Exception {
@@ -90,7 +97,7 @@ public class LanguageServerHarness {
 		document.setText(content);
 		document.setUri(file.toURI().toString());
 		document.setVersion(getFirstVersion());
-		document.setLanguageId(getLanguageId());
+		document.setLanguageId(getDefaultLanguageId());
 		return new TextDocumentInfo(document);
 	}
 
@@ -109,8 +116,8 @@ public class LanguageServerHarness {
 		return Charset.forName("utf8");
 	}
 
-	protected String getLanguageId() {
-		return "plaintext";
+	protected String getDefaultLanguageId() {
+		return defaultLanguageId;
 	}
 
 	protected String getFileExtension() {
@@ -320,12 +327,12 @@ public class LanguageServerHarness {
 	}
 
 	public Editor newEditor(String contents) throws Exception {
-		return new Editor(this, contents);
+		return new Editor(this, contents, getDefaultLanguageId());
 	}
 
 	public synchronized TextDocumentInfo createWorkingCopy(String contents) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
-		doc.setLanguageId(getLanguageId());
+		doc.setLanguageId(getDefaultLanguageId());
 		doc.setText(contents);
 		doc.setUri(createTempUri());
 		doc.setVersion(getFirstVersion());

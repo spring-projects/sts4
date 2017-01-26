@@ -66,7 +66,6 @@ public class PipelineYmlSchema implements YamlSchema {
 			.collect(Collectors.toSet())
 			.block();
 
-
 	private final YBeanType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
@@ -94,6 +93,8 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YAtomicType t_resource_name;
 	public final YAtomicType t_job_name;
 	public final YAtomicType t_resource_type_name;
+
+	public final YBeanType task;
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
@@ -236,6 +237,10 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
+
+		task = f.ybean("TaskConfig");
+		YType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
+		addProp(task, "platform", t_platform);
 
 		initializeDefaultResourceTypes();
 	}
@@ -380,5 +385,25 @@ public class PipelineYmlSchema implements YamlSchema {
 	@Override
 	public YTypeUtil getTypeUtil() {
 		return TYPE_UTIL;
+	}
+
+	public YamlSchema getTaskSchema() {
+		return new YamlSchema() {
+
+			@Override
+			public YTypeUtil getTypeUtil() {
+				return TYPE_UTIL;
+			}
+
+			@Override
+			public YType getTopLevelType() {
+				return task;
+			}
+
+			@Override
+			public String toString() {
+				return "TaskYamlSchema";
+			}
+		};
 	}
 }

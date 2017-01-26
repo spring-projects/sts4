@@ -24,23 +24,47 @@
     "pipeline.yml"
   ],
   "activationEvents": [
-    "onLanguage:concourse-pipeline-yaml"
+    "onLanguage:concourse-pipeline-yaml",
+    "onLanguage:concourse-task-yaml"
   ],
   "contributes": {
     "languages": [
       {
         "id": "concourse-pipeline-yaml",
         "aliases": [
-          "concourse-pipeline"
+          "Concourse Pipeline"
+        ],
+        "extensions": [
+          ".yml"
         ],
         "filenamePatterns": [
           "*pipeline*.yml"
         ],
+        "firstLine": "^#(\\s)*pipeline(\\s)*",
+        "configuration": "./yaml-support/language-configuration.json"
+      },
+      {
+        "id": "concourse-task-yaml",
+        "aliases": [
+          "Concourse Task"
+        ],
+        "extensions": [
+          ".yml"
+        ],
+        "filenamePatterns": [
+          "*task*.yml",
+          "**/tasks/*.yml"
+        ],
+        "firstLine": "^#(\\s)*task(\\s)*",
         "configuration": "./yaml-support/language-configuration.json"
       }
     ],
     "grammars": [{
       "language": "concourse-pipeline-yaml",
+      "scopeName": "source.yaml",
+      "path": "./yaml-support/yaml.tmLanguage"
+    }, {
+      "language": "concourse-task-yaml",
       "scopeName": "source.yaml",
       "path": "./yaml-support/yaml.tmLanguage"
     }]

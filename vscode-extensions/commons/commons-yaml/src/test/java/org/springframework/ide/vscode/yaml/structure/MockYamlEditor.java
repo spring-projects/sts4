@@ -25,12 +25,12 @@ import org.yaml.snakeyaml.nodes.Node;
 
 /**
  * Yaml editor mock for the tests.
- * 
+ *
  * @author Alex Boyko
  *
  */
 class MockYamlEditor {
-	
+
 	private Yaml yaml;
 	private YamlASTProvider parser;
 
@@ -41,7 +41,7 @@ class MockYamlEditor {
 		this.yaml = new Yaml();
 		this.parser = new YamlParser(yaml);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "YamlEditor("+text+")";
@@ -49,14 +49,18 @@ class MockYamlEditor {
 
 	public SRootNode parseStructure() throws Exception {
 		YamlStructureProvider sp = YamlStructureProvider.DEFAULT;
-		TextDocument _doc = new TextDocument(null);
+		TextDocument _doc = new TextDocument(null, getLanguageId());
 		_doc.setText(text);
 		YamlDocument doc = new YamlDocument(_doc, sp);
 		return sp.getStructure(doc);
 	}
-	
+
+	protected String getLanguageId() {
+		return "yaml";
+	}
+
 	public YamlFileAST parse() throws Exception {
-		TextDocument _doc = new TextDocument(null);
+		TextDocument _doc = new TextDocument(null, getLanguageId());
 		_doc.setText(text);
 		return parser.getAST(_doc);
 	}
@@ -91,7 +95,7 @@ class MockYamlEditor {
 		}
 		return -1;
 	}
-	
+
 	public String textBetween(int start, int end) {
 		return text.substring(start, end);
 	}
@@ -107,5 +111,5 @@ class MockYamlEditor {
 		int end = node.getEndMark().getIndex();
 		return textBetween(start, end);
 	}
-	
+
 }

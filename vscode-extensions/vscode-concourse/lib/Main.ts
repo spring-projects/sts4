@@ -14,6 +14,7 @@ import {TextDocument, OutputChannel} from 'vscode';
 var log_output : OutputChannel = null;
 
 const PIPELINE_LANGUAGE_ID = "concourse-pipeline-yaml";
+const TASK_LANGUAGE_ID = "concourse-task-yaml";
 
 function log(msg : string) {
     if (log_output) {
@@ -35,21 +36,12 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-concourse',
         fatJarFile: 'target/vscode-concourse-0.0.1-SNAPSHOT.jar',
         clientOptions: {
-            // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead
-            // Reasons:
-            // 1. documentSelector is just passed over to functions like #registerHoverProvider(documentSelector, ...) that take documentSelector
-            // parameter in string | DocumentFilter | string[] | DocumentFilter[] format
-            // 2. Combination of non string|string[] documentSelector parameter and synchronize.textDocumentFilter function makes doc synchronization
-            // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
-
-            // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
             documentSelector: [ PIPELINE_LANGUAGE_ID ],
             synchronize: {
                 // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
                 textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    let result : boolean =  PIPELINE_LANGUAGE_ID===textDocument.languageId;
-                    // old way: let result : boolean =  /^(.*)pipeline(.*)\.yml$/i.test(textDocument.fileName);
-                    return result;
+                    let languageId = textDocument.languageId;
+                    return  PIPELINE_LANGUAGE_ID===languageId || TASK_LANGUAGE_ID===languageId;
                 }
             }
         }

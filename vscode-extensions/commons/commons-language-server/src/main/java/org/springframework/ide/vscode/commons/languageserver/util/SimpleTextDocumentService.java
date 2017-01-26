@@ -53,10 +53,10 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -113,7 +113,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			String url = docId.getUri();
 			//LOG.info("didChange: "+url);
 			if (url!=null) {
-				TextDocument doc = getOrCreateDocument(url);
+				TextDocument doc = getDocument(url);
 				for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
 					doc.apply(change);
 					didChangeContent(doc, change);
@@ -141,9 +141,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		//   }
 		//}
 		String url = params.getTextDocument().getUri();
+		String languageId = params.getTextDocument().getLanguageId();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
-			TextDocument doc = getOrCreateDocument(url);
+			TextDocument doc = createDocument(url, languageId);
 			doc.setText(text);
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
@@ -175,7 +176,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		}
 	}
 
-
 	void didChangeContent(TextDocument doc, TextDocumentContentChangeEvent change) {
 		documentChangeListeners.fire(new TextDocumentContentChange(doc, change));
 	}
@@ -184,11 +184,21 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		documentChangeListeners.add(l);
 	}
 
-	private synchronized TextDocument getOrCreateDocument(String url) {
+	private synchronized TextDocument getDocument(String url) {
 		TextDocument doc = documents.get(url);
 		if (doc==null) {
-			documents.put(url, doc = new TextDocument(url));
+			LOG.warning("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
+			doc = createDocument(url, LanguageIds.PLAINTEXT);
 		}
+		return doc;
+	}
+
+	private synchronized TextDocument createDocument(String url, String languageId) {
+		if (documents.get(url)!=null) {
+			LOG.warning("Creating document ["+url+"] but it already exists. Existing document discarded!");
+		}
+		TextDocument doc = new TextDocument(url, languageId);
+		documents.put(url, doc);
 		return doc;
 	}
 
@@ -220,12 +230,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		if (h!=null) {
 			return hoverHandler.handle(position);
 		}
-		return Futures.of(null);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams position) {
-		return Futures.of(null);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@SuppressWarnings({ "unchecked"})
@@ -241,47 +251,47 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
-		return Futures.of(null);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> rangeFormatting(DocumentRangeFormattingParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<List<? extends TextEdit>> onTypeFormatting(DocumentOnTypeFormattingParams params) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
-		return Futures.of(null);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
@@ -304,12 +314,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
-		return Futures.of(Collections.emptyList());
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
-
-	public void onDefinition(TextDocumentPositionParams h) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

@@ -13,11 +13,13 @@ package org.springframework.ide.vscode.concourse;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -44,14 +46,22 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		YamlSchemaBasedReconcileEngine reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+
+		YamlSchemaBasedReconcileEngine pipelineReconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+		pipelineReconcileEngine.setTypeCollector(models.getAstTypeCache());
+		YamlSchemaBasedReconcileEngine taskReconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema.getTaskSchema());
 		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, schema);
-		reconcileEngine.setTypeCollector(models.getAstTypeCache());
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc, reconcileEngine);
+			if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+				validateWith(doc, pipelineReconcileEngine);
+			} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+				validateWith(doc, taskReconcileEngine);
+			} else {
+				validateWith(doc, IReconcileEngine.NULL);
+			}
 		});
 
 //		workspace.onDidChangeConfiguraton(settings -> {

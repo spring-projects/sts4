@@ -93,9 +93,11 @@ public class Editor {
 
 	private int selectionStart;
 	private Set<String> ignoredTypes;
+	private String languageId;
 
-	public Editor(LanguageServerHarness harness, String contents) throws Exception {
+	public Editor(LanguageServerHarness harness, String contents, String languageId) throws Exception {
 		this.harness = harness;
+		this.languageId = languageId;
 		EditorState state = new EditorState(contents);
 		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents));
 		this.selectionStart = state.selectionStart;
@@ -329,7 +331,7 @@ public class Editor {
 	@Override
 	public Editor clone() {
 		try {
-			return new Editor(harness, getText());
+			return new Editor(harness, getText(), getLanguageId());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -554,6 +556,10 @@ public class Editor {
 		Assert.assertTrue("'"+longSnippet+"' not found in editor", contextStart>=0);
 		int start = contextStart+relativeOffset;
 		return new Range(document.toPosition(start), document.toPosition(start+focusSnippet.length()));
+	}
+
+	public String getLanguageId() {
+		return languageId;
 	}
 
 }

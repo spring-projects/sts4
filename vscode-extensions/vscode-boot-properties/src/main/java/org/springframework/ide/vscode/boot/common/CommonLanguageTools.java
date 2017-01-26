@@ -28,6 +28,7 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigator;
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -54,7 +55,7 @@ public class CommonLanguageTools {
 			} else {
 				prop = CommonLanguageTools.findLongestValidProperty(index, propertyName);
 				if (prop!=null) {
-					TextDocument doc = new TextDocument(null);
+					TextDocument doc = new TextDocument(null, LanguageIds.PLAINTEXT);
 					doc.setText(propertyName);
 					PropertyNavigator navigator = new PropertyNavigator(doc, null, typeUtil, new DocumentRegion(doc, 0, doc.getLength()));
 					return navigator.navigate(prop.getId().length(), TypeParser.parse(prop.getType()));

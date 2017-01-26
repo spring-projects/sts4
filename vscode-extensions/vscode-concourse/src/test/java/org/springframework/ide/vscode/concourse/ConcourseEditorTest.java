@@ -20,17 +20,18 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-public class PipelineYamlEditorTest {
+public class ConcourseEditorTest {
 
 	private static final String CURSOR = "<*>";
 	LanguageServerHarness harness;
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(ConcourseLanguageServer::new);
+		harness = new LanguageServerHarness(ConcourseLanguageServer::new, LanguageIds.CONCOURSE_PIPELINE);
 		harness.intialize(null);
 	}
 
@@ -45,9 +46,6 @@ public class PipelineYamlEditorTest {
 	}
 
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ConcourseLanguageServer::new);
-		harness.intialize(null);
-
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
 				"- sequence"
@@ -90,7 +88,7 @@ public class PipelineYamlEditorTest {
 	}
 
 	private String getClasspathResourceText(String resourceName) throws Exception {
-		InputStream stream = PipelineYamlEditorTest.class.getClassLoader().getResourceAsStream(resourceName);
+		InputStream stream = ConcourseEditorTest.class.getClassLoader().getResourceAsStream(resourceName);
 		return IOUtil.toString(stream);
 	}
 
