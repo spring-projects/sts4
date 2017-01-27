@@ -1547,6 +1547,38 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("platform", "The platform the task should run on");
 	}
 
+	@Test public void reconcileEmbeddedTaskConfig() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: foo\n" +
+				"  plan:\n" +
+				"  - task: the-task\n" +
+				"    config:\n" +
+				"      platform: a-platform\n" +
+				"      image_resource:\n" +
+				"        name: should-not-be-here\n" +
+				"        type: docker-image\n" +
+				"        source:\n" +
+				"          bogus-source-prop: bad\n" +
+				"          repository: ruby\n" +
+				"          tag: '2.1'\n" +
+				"      image: some-image\n" +
+				"      inputs:\n" +
+				"      - path: path/to/input\n" +
+				"      outputs:\n" +
+				"      - path: path/to/output\n" +
+				"      run:\n" +
+				"        path: my-app/scripts/test\n" +
+				"      params: the-params"
+		);
+		editor.assertProblems(
+				"name|Unknown property",
+				"bogus-source-prop|Unknown property",
+				"path: path/to/input|'name' is required",
+				"path: path/to/output|'name' is required",
+				"the-params|Expecting a 'Map'"
+		);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 

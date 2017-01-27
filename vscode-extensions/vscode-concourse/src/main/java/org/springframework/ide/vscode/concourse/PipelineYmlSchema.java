@@ -148,6 +148,43 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType resourceTypeNameDef = f.yatomic("ResourceType Name");
 		resourceTypeNameDef.parseWith(ConcourseValueParsers.resourceTypeNameDef(models));
 
+		YType resourceSource = f.contextAware("ResourceSource", (dc) ->
+			resourceTypes.getSourceType(getResourceTypeTag(models, dc))
+		);
+
+		YBeanType resource = f.ybean("Resource");
+		addProp(resource, "name", resourceNameDef).isRequired(true);
+		addProp(resource, "type", t_resource_type_name).isRequired(true);
+		addProp(resource, "source", resourceSource);
+		addProp(resource, "check_every", t_duration);
+
+		YBeanType t_image_resource = f.ybean("ImageResource");
+		for (YTypedProperty p : resource.getProperties()) {
+			if (!"name".equals(p.getName())) {
+				t_image_resource.addProperty(p);
+			}
+		}
+
+		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
+		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
+
+		YType t_name_and_path = f.ybean("NameAndPath" ,
+				f.yprop("name", t_ne_string).isRequired(true),
+				f.yprop("path", t_ne_string)
+		);
+
+		YType t_command = f.yany("Command");
+		//TODO: add structure for command.
+
+		task = f.ybean("TaskConfig");
+		addProp(task, "platform", t_platform).isRequired(true);
+		addProp(task, "image_resource", t_image_resource);
+		addProp(task, "image", t_ne_string);
+		addProp(task, "inputs", f.yseq(t_name_and_path)).isRequired(true);
+		addProp(task, "outputs", f.yseq(t_name_and_path));
+		addProp(task, "run", t_command).isRequired(true);
+		addProp(task, "params", t_string_params);
+
 		YBeanType getStep = f.ybean("GetStep");
 		addProp(getStep, "get", t_resource_name);
 		addProp(getStep, "resource", t_string);
@@ -170,7 +207,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType taskStep = f.ybean("TaskStep");
 		addProp(taskStep, "task", t_ne_string);
 		addProp(taskStep, "file", t_string);
-		addProp(taskStep, "config", t_any);
+		addProp(taskStep, "config", task);
 		addProp(taskStep, "privileged", t_boolean);
 		addProp(taskStep, "params", t_params);
 		addProp(taskStep, "image", t_ne_string);
@@ -204,16 +241,6 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "timeout", t_duration);
 		}
 
-		YType resourceSource = f.contextAware("ResourceSource", (dc) ->
-			resourceTypes.getSourceType(getResourceTypeTag(models, dc))
-		);
-
-		YBeanType resource = f.ybean("Resource");
-		addProp(resource, "name", resourceNameDef).isRequired(true);
-		addProp(resource, "type", t_resource_type_name).isRequired(true);
-		addProp(resource, "source", resourceSource);
-		addProp(resource, "check_every", t_duration);
-
 		YBeanType job = f.ybean("Job");
 		addProp(job, "name", jobNameDef).isRequired(true);
 		addProp(job, "plan", f.yseq(step)).isRequired(true);
@@ -238,33 +265,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
-
-		YBeanType t_image_resource = f.ybean("ImageResource");
-		for (YTypedProperty p : resource.getProperties()) {
-			if (!"name".equals(p.getName())) {
-				t_image_resource.addProperty(p);
-			}
-		}
-
-		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
-		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
-
-		YType t_name_and_path = f.ybean("NameAndPath" ,
-				f.yprop("name", t_ne_string).isRequired(true),
-				f.yprop("path", t_ne_string)
-		);
-
-		YType t_command = f.yany("Command");
-		//TODO: add structure for command.
-
-		task = f.ybean("TaskConfig");
-		addProp(task, "platform", t_platform).isRequired(true);
-		addProp(task, "image_resource", t_image_resource);
-		addProp(task, "image", t_ne_string);
-		addProp(task, "inputs", f.yseq(t_name_and_path)).isRequired(true);
-		addProp(task, "outputs", f.yseq(t_name_and_path));
-		addProp(task, "run", t_command).isRequired(true);
-		addProp(task, "params", t_string_params);
 
 		initializeDefaultResourceTypes();
 	}
