@@ -1543,6 +1543,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("outputs", "The artifacts produced by the task");
 		editor.assertHoverContains("run", "Note that this is *not* provided as a script blob");
 		editor.assertHoverContains("params", "A key-value mapping of values that are exposed to the task via environment variables");
+		editor.assertHoverContains("repository", "The name of the repository");
 
 		editor.assertHoverContains("platform", "The platform the task should run on");
 	}
@@ -1624,6 +1625,21 @@ public class ConcourseEditorTest {
 				"  user: admin\n"
 		);
 		editor.assertProblems("user: admin|'path' is required");
+	}
+
+	@Test public void nameAndPathHoversInTaskInputsAndOutputs() throws Exception {
+		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"inputs:\n" +
+				"- name: sts4\n" +
+				"  path: botk\n" +
+				"outputs:\n" +
+				"- name: vsix-files\n" +
+				"  path: zaza"
+		);
+		editor.assertHoverContains("name", 1, "The logical name of the input");
+		editor.assertHoverContains("name", 2, "The logical name of the output");
+		editor.assertHoverContains("path", 1, "The path where the input will be placed");
+		editor.assertHoverContains("path", 2, "The path to a directory where the output will be taken from");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -168,10 +168,13 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
 		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
 
-		YType t_name_and_path = f.ybean("NameAndPath" ,
-				f.yprop("name", t_ne_string).isRequired(true),
-				f.yprop("path", t_ne_string)
-		);
+		YBeanType t_input = f.ybean("TaskInput");
+		addProp(t_input, "name", t_ne_string).isRequired(true);
+		addProp(t_input, "path", t_ne_string);
+
+		YBeanType t_output = f.ybean("TaskOutput");
+		addProp(t_output, "name", t_ne_string).isRequired(true);
+		addProp(t_output, "path", t_ne_string);
 
 		YBeanType t_command = f.ybean("Command");
 		addProp(t_command, "path", t_ne_string).isRequired(true);
@@ -183,8 +186,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "platform", t_platform).isRequired(true);
 		addProp(task, "image_resource", t_image_resource);
 		addProp(task, "image", t_ne_string);
-		addProp(task, "inputs", f.yseq(t_name_and_path)).isRequired(true);
-		addProp(task, "outputs", f.yseq(t_name_and_path));
+		addProp(task, "inputs", f.yseq(t_input)).isRequired(true);
+		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);
 
