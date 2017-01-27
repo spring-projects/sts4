@@ -24,6 +24,8 @@ import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
+import org.eclipse.lsp4j.jsonrpc.messages.Message;
+import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
 
 /**
@@ -42,6 +44,10 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 
 		setCommands(commands);
 		setWorkingDirectory(workingDir);
+	}
+	
+	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
+		System.out.println("custom message arrived: " + message.toString());
 	}
 	
 	protected String getJDKLocation() {

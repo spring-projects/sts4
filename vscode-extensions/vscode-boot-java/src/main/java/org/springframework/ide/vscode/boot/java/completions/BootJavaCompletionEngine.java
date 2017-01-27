@@ -111,7 +111,9 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 		IJavaProject project = this.projectFinder.find(doc);
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
-		return classpathEntries.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new); 
+		return classpathEntries
+				.filter(path -> path.toFile().exists())
+				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new); 
 	}
 
 }

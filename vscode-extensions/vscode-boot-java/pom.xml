@@ -44,14 +44,6 @@
 			<version>${project.version}</version>
 		</dependency>
 	
-		<!-- Test harness -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>language-server-test-harness</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
 		<!-- Eclipse JDT for parsing (at the moment) -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
@@ -65,6 +57,14 @@
 			<version>2.4</version>
 		</dependency>
 
+		<!-- Test harness -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-test-harness</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<plugins>

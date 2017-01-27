@@ -34,7 +34,7 @@ public class ScopeCompletionProcessor {
 				MemberValuePair memberPair = (MemberValuePair) node.getParent();
 				
 				// case: @Scope(value=<*>)
-				if (memberPair.getName() != null && memberPair.getValue().toString().equals("$missing$")) {
+				if ("value".equals(memberPair.getName().toString()) && memberPair.getValue().toString().equals("$missing$")) {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
 						completions.add(proposal);
@@ -49,8 +49,22 @@ public class ScopeCompletionProcessor {
 				}
 			}
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				// case: @Scope(value="")
+				// case: @Scope("...")
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
+					String prefix = doc.get(node.getStartPosition(), offset - node.getStartPosition());
+					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
+						if (completion.getValue().startsWith(prefix)) {
+							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
+							completions.add(proposal);
+						}
+					}
+				}
+			}
+			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair) {
+				MemberValuePair memberPair = (MemberValuePair) node.getParent();
+				
+				// case: @Scope(value=<*>)
+				if ("value".equals(memberPair.getName().toString()) && node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
 					String prefix = doc.get(node.getStartPosition(), offset - node.getStartPosition());
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
