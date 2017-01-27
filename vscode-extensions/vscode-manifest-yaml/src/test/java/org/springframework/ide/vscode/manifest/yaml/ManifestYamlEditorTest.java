@@ -24,7 +24,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -33,9 +34,12 @@ import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlEditorTest {
 
+	CFClientParams DEFAULT_PARAMS = new CFClientParams("test.io", "testuser",
+			CFCredentials.fromRefreshToken("refreshtoken"), false);
+	ClientParamsProvider cfParamsProvider = () -> ImmutableList.of(DEFAULT_PARAMS);
+
 	LanguageServerHarness harness;
 	MockCloudfoundry cfClientFactory = new MockCloudfoundry();
-	ClientParamsProvider cfParamsProvider = new CfCliParamsProvider();
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cfClientFactory, cfParamsProvider));
@@ -789,13 +793,12 @@ public class ManifestYamlEditorTest {
 		);
 		editor.assertProblems("bogus|Unknown property");
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	// These tests are on ignore because they fail in the concourse ci build that uses OpenJDK.
 	// Possible issue is with mockito does not behave as expected using OpenJDK vs Oracle JVM
 	// These tests pass when running on an Oracle JVM.
-	@Ignore
 	@Test
 	public void reconcileCFService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
@@ -807,13 +810,12 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  services:\n" +
 				"  - myservice\n"
-				
+
 		);
 		// Should have no problems
 		editor.assertProblems(/*none*/);
 	}
-	
-	@Ignore
+
 	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
 		ClientRequests cfClient = cfClientFactory.client;
@@ -825,15 +827,15 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  services:\n" +
 				"  - bad-service\n"
-				
+
 		);
 		editor.assertProblems("bad-service|There is no service instance called");
 
 		Diagnostic problem = editor.assertProblem("bad-service");
-		
+
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
-	
+
 	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
@@ -847,7 +849,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bad-service|There is no service instance called");
 
 		Diagnostic problem = editor.assertProblem("bad-service");
-		
+
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
@@ -857,5 +859,5 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertCompletions(textAfter);
 	}
-	
+
 }
