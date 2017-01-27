@@ -1,5 +1,20 @@
 # Developer notes
 
+## Getting and installing latest snapshot
+
+The latest snapshot .vsix file can be downloaded from here:
+
+http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
+
+You should get the file called `vscode-manifest-yaml-<version>.vsix`.
+
+To install it in vscode follow these steps:
+
+ - open vscode
+ - Press `CTRL-SHIFT-P` and type 'vsix' in the search box
+ - Select the `Extensions: Install from vsix file` command
+ - Install the `.vsix` you downloaded earlier.
+
 ## Bulding and Running
 
 This project consists of three pieces:
