@@ -24,7 +24,12 @@ import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
+import org.eclipse.lsp4j.jsonrpc.messages.Message;
+import org.eclipse.lsp4j.jsonrpc.messages.NotificationMessage;
+import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
+
+import com.google.gson.JsonObject;
 
 /**
  * @author Martin Lippert
@@ -42,6 +47,22 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 
 		setCommands(commands);
 		setWorkingDirectory(workingDir);
+	}
+	
+	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
+		if (message instanceof NotificationMessage) {
+			NotificationMessage notificationMessage = (NotificationMessage) message;
+			if ("sts/progress".equals(notificationMessage.getMethod())) {
+				JsonObject params = (JsonObject) notificationMessage.getParams();
+				if (params.has("statusMsg")) {
+					String status = params.get("statusMsg").getAsString();
+					System.out.println("STS4 Language Server Status Update: " + status);
+				}
+				else {
+					System.out.println("STS4 Language Server Status Update: DONE");
+				}
+			}
+		}
 	}
 	
 	protected String getJDKLocation() {
