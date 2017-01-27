@@ -42,13 +42,11 @@ import com.google.common.io.Files;
  * Boot App Properties Editor tests
  * 
  * @author Alex Boyko
- *
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	
-	
-	
-	@Test public void testReconcileCatchesParseError() throws Exception {
+	@Test
+	public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
 		editor.assertProblems("key|extraneous input");
 	}
