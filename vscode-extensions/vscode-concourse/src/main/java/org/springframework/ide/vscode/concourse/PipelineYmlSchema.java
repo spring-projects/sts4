@@ -173,8 +173,11 @@ public class PipelineYmlSchema implements YamlSchema {
 				f.yprop("path", t_ne_string)
 		);
 
-		YType t_command = f.yany("Command");
-		//TODO: add structure for command.
+		YBeanType t_command = f.ybean("Command");
+		addProp(t_command, "path", t_ne_string).isRequired(true);
+		addProp(t_command, "args", t_strings);
+		addProp(t_command, "dir", t_ne_string);
+		addProp(t_command, "user", t_string);
 
 		task = f.ybean("TaskConfig");
 		addProp(task, "platform", t_platform).isRequired(true);

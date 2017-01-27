@@ -1580,6 +1580,52 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void taskRunPropertiesValidationAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"inputs:\n" +
+				"- name: sts4\n" +
+				"outputs:\n" +
+				"- name: vsix-files\n" +
+				"platform: linux\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"run:\n" +
+				"  path: sts4/concourse/tasks/build-vscode-extensions.sh\n" +
+				"  args: the-args\n" +
+				"  user: admin\n" +
+				"  dir: the-dir\n" +
+				"  bogus: bad\n"
+		);
+		editor.assertProblems(
+				"the-args|Expecting a 'Sequence'",
+				"bogus|Unknown property"
+		);
+
+		editor.assertHoverContains("path", "The command to execute, relative to the task's working directory");
+		editor.assertHoverContains("args", "Arguments to pass to the command");
+		editor.assertHoverContains("dir", "A directory, relative to the initial working directory, to set as the working directory");
+		editor.assertHoverContains("user", "Explicitly set the user to run as");
+
+		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"inputs:\n" +
+				"- name: sts4\n" +
+				"outputs:\n" +
+				"- name: vsix-files\n" +
+				"platform: linux\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"run:\n" +
+				"  user: admin\n"
+		);
+		editor.assertProblems("user: admin|'path' is required");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
