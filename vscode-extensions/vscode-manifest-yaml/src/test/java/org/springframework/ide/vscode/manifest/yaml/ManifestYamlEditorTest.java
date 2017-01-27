@@ -791,11 +791,6 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 
-	//////////////////////////////////////////////////////////////////////////////
-
-	// These tests are on ignore because they fail in the concourse ci build that uses OpenJDK.
-	// Possible issue is with mockito does not behave as expected using OpenJDK vs Oracle JVM
-	// These tests pass when running on an Oracle JVM.
 	@Test
 	public void reconcileCFService() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
@@ -833,7 +828,6 @@ public class ManifestYamlEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
-	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
