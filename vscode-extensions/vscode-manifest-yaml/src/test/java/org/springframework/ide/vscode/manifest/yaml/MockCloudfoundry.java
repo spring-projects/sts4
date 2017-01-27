@@ -10,30 +10,48 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
-public class MockCloudfoundry implements CloudFoundryClientFactory {
+import com.google.common.collect.ImmutableList;
 
-	public final ClientRequests client = Mockito.mock(ClientRequests.class);
-	private Exception toThrow = null;
+public class MockCloudfoundry {
 
-	@Override
-	public ClientRequests getClient(CFClientParams params, ClientTimeouts timeouts) throws Exception {
-		if (toThrow==null) {
-			return client;
+	public final CFClientParams DEFAULT_PARAMS = new CFClientParams("test.io", "testuser",
+			CFCredentials.fromRefreshToken("refreshtoken"), false);
+
+	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
+	public final ClientRequests client = mock(ClientRequests.class);
+	public final ClientParamsProvider paramsProvider = mock(ClientParamsProvider.class);
+
+	public MockCloudfoundry() {
+		try {
+			//program some default behavior into mocks... most tests will use this.
+			//other tests should 'reset' the mocks and reprogram them as needed.
+			when(factory.getClient(any(), any())).thenReturn(client);
+			when(paramsProvider.getParams()).thenReturn(ImmutableList.of(DEFAULT_PARAMS));
+		} catch (Exception e) {
+			throw ExceptionUtil.unchecked(e);
 		}
-		throw toThrow;
 	}
 
 	/**
-	 * Makes the factory throw the given exception when its 'getClient' method is called.
+	 * Reset the mocks. Use this if the default's programmed into the mocks don't suite your test case.
+	 * <p>
+	 * Note: you may also choose to call {@link Mockito}.mock directly if you do not want to
+	 * reset all of the mocks.
 	 */
-	public void throwException(Exception e) {
-		toThrow = e;
+	public void reset() throws Exception {
+		Mockito.reset(factory, client, paramsProvider);
 	}
 
 }

@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 
@@ -34,15 +34,11 @@ import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlEditorTest {
 
-	CFClientParams DEFAULT_PARAMS = new CFClientParams("test.io", "testuser",
-			CFCredentials.fromRefreshToken("refreshtoken"), false);
-	ClientParamsProvider cfParamsProvider = () -> ImmutableList.of(DEFAULT_PARAMS);
-
 	LanguageServerHarness harness;
-	MockCloudfoundry cfClientFactory = new MockCloudfoundry();
+	MockCloudfoundry cloudfoundry = new MockCloudfoundry();
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cfClientFactory, cfParamsProvider));
+		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.paramsProvider));
 		harness.intialize(null);
 	}
 
@@ -766,7 +762,8 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void noReconcileErrorsWhenCFFactoryThrows() throws Exception {
-		cfClientFactory.throwException(new IOException("Can't create a client!"));
+		reset(cloudfoundry.factory);
+		when(cloudfoundry.factory.getClient(any(), any())).thenThrow(new IOException("Can't create a client!"));
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -780,7 +777,7 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void noReconcileErrorsWhenClientThrows() throws Exception {
-		ClientRequests cfClient = cfClientFactory.client;
+		ClientRequests cfClient = cloudfoundry.client;
 		when(cfClient.getBuildpacks()).thenThrow(new IOException("Can't get buildpacks"));
 		when(cfClient.getServices()).thenThrow(new IOException("Can't get services"));
 		Editor editor = harness.newEditor(
@@ -801,7 +798,7 @@ public class ManifestYamlEditorTest {
 	// These tests pass when running on an Oracle JVM.
 	@Test
 	public void reconcileCFService() throws Exception {
-		ClientRequests cfClient = cfClientFactory.client;
+		ClientRequests cfClient = cloudfoundry.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("myservice");
 		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
@@ -818,7 +815,7 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void reconcileShowsWarningOnUnknownService() throws Exception {
-		ClientRequests cfClient = cfClientFactory.client;
+		ClientRequests cfClient = cloudfoundry.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("myservice");
 		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
@@ -839,7 +836,7 @@ public class ManifestYamlEditorTest {
 	@Ignore
 	@Test
 	public void reconcileShowsWarningOnNoService() throws Exception {
-		ClientRequests cfClient = cfClientFactory.client;
+		ClientRequests cfClient = cloudfoundry.client;
 		when(cfClient.getServices()).thenReturn(ImmutableList.of());
 		Editor editor = harness.newEditor(
 				"applications:\n" +
