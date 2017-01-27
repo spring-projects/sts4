@@ -36,7 +36,7 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-concourse',
         fatJarFile: 'target/vscode-concourse-0.0.1-SNAPSHOT.jar',
         clientOptions: {
-            documentSelector: [ PIPELINE_LANGUAGE_ID ],
+            documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ],
             synchronize: {
                 // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
                 textDocumentFilter: function(textDocument : TextDocument) : boolean {
