@@ -59,4 +59,9 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 		return service.getName() + " - " + service.getPlan() + " (" + cfClientTarget.getParams().getOrgName() + " - "
 				+ cfClientTarget.getParams().getSpaceName() + ")";
 	}
+
+	@Override
+	protected String getTypeName() {
+		return "Service";
+	}
 }

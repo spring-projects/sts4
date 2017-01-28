@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
 
-	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "No Cloudfoundry Targets: Please use the cf CLI to login.";
+	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "No Cloud Foundry targets found: Use CF CLI to login";
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
 	public static final String ORGANIZATION_FIELDS = "OrganizationFields";

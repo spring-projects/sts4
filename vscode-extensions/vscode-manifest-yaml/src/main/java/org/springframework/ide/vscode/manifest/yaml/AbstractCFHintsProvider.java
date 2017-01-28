@@ -37,6 +37,12 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 		this.targetCache = targetCache;
 	}
 
+	/**
+	 * Used in error messages. For example "Failed to get ${type-name}s from Cloudfoundry".
+	 * @return
+	 */
+	protected abstract String getTypeName();
+
 	@Override
 	public Collection<YValueHint> call() throws Exception {
 
@@ -63,15 +69,8 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 			} else {
 				// Log any other error
 				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
-
-				if (ExceptionUtil.getThrowable(e, IOException.class) != null) {
-					throw new ValueParseException(
-							"Connection failure to Cloud Foundry. Please check the log for more details.");
-
-				} else {
-					throw new ValueParseException(
-							"Failed to fetch values from Cloud Foundry. Please check the log for more details.");
-				}
+				throw new ValueParseException(
+						"Failed to get "+getTypeName()+" from Cloud Foundry: "+ExceptionUtil.getMessage(e));
 			}
 		}
 	}

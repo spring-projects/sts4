@@ -51,11 +51,16 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 		// resolved. Otherwise
 		// return non-empty list of buildpacks. For CF targets, a non-empty list
 		// of buildpacks is
-		// typically expected. 
+		// typically expected.
 		return !hints.isEmpty() ? hints : null;
 	}
 
 	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {
 		return buildpack.getName() + " (" + target.getName() + ")";
+	}
+
+	@Override
+	protected String getTypeName() {
+		return "Buildpack";
 	}
 }
