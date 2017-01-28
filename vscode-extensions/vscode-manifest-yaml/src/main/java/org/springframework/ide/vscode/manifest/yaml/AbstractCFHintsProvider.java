@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -70,7 +69,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				// Log any other error
 				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
 				throw new ValueParseException(
-						"Failed to get "+getTypeName()+" from Cloud Foundry: "+ExceptionUtil.getMessage(e));
+						"Failed to get "+getTypeName()+"s from Cloud Foundry: "+ExceptionUtil.getMessage(e));
 			}
 		}
 	}
