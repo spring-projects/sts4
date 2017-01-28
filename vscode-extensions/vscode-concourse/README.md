@@ -26,7 +26,7 @@ an error marker to see an explanation:
 
 ### Content assist
 
-Having trouble remembering all the names of the attributes, and their spelling? Or can't remmeber
+Having trouble remembering all the names of the attributes, and their spelling? Or can't remember
 which resource properties to set in the `get` task params versus its `source` attributes? 
 Content assist to the rescue:
 
@@ -41,7 +41,7 @@ read its detailed documentation:
 
 ## Limitations
 
-This vacode-extension is still a work in progress. At the moment only a select few of the [built-in resource-types](https://concourse.ci/resource-types.html)
+This Vscode Extension is still a work in progress. At the moment only a select few of the [built-in resource-types](https://concourse.ci/resource-types.html)
 have been fully defined in the Editor's Schema. 
 
 The resource-types that are already defined in the schema are:
@@ -55,5 +55,5 @@ the near future.
 
 ## Issues and Feature Requests
 
-Please report any issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
 
