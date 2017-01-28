@@ -1304,6 +1304,192 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("skip_download", "Skip `docker pull`");
 	}
 
+	@Test public void s3ResourceSourceReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: s3-snapshots\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    access_key_id: the-key"
+		);
+		editor.assertProblems("access_key_id: the-key|'bucket' is required");
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: s3-snapshots\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    bucket: the-bucket\n" +
+				"    access_key_id: the-access-key\n" +
+				"    secret_access_key: the-secret-key\n" +
+				"    region_name: bogus-region\n" +
+				"    private: is-private\n" +
+				"    cloudfront_url: https://d5yxxxxx.cloudfront.net\n" +
+				"    endpoint: https://blah.custom.com/blah/blah\n" +
+				"    disable_ssl: no_ssl_checking\n" +
+				"    server_side_encryption: some-encryption-algo\n" + //TODO: validation and CA? What values are acceptable?
+				"    sse_kms_key_id: the-master-key-id\n" +
+				"    use_v2_signing: should-use-v2\n" +
+				"    regexp: path-to-file-(.*).tar.gz\n" +
+				"    versioned_file: path/to/file.tar.gz\n"
+		);
+		editor.assertProblems(
+				"bogus-region|unknown 'S3Region'",
+				"is-private|'boolean'",
+				"no_ssl_checking|'boolean'",
+				"should-use-v2|'boolean'"
+		);
+
+		editor.assertHoverContains("bucket", "The name of the bucket");
+		editor.assertHoverContains("access_key_id", "The AWS access key");
+		editor.assertHoverContains("secret_access_key", "The AWS secret key");
+		editor.assertHoverContains("region_name", "The region the bucket is in");
+		editor.assertHoverContains("private", "Indicates that the bucket is private");
+		editor.assertHoverContains("cloudfront_url", "The URL (scheme and domain) of your CloudFront distribution");
+		editor.assertHoverContains("endpoint", "Custom endpoint for using S3");
+		editor.assertHoverContains("disable_ssl", "Disable SSL for the endpoint");
+		editor.assertHoverContains("server_side_encryption", "An encryption algorithm to use");
+		editor.assertHoverContains("sse_kms_key_id", "The ID of the AWS KMS master encryption key");
+		editor.assertHoverContains("use_v2_signing", "Use signature v2 signing");
+		editor.assertHoverContains("regexp", "The pattern to match filenames against within S3");
+		editor.assertHoverContains("versioned_file", "If you enable versioning for your S3 bucket");
+	}
+
+	@Test public void s3ResourceRegionCompletions() throws Exception {
+		String[] validRegions = {
+				//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+				"us-west-1", "us-west-2", "ca-central-1",
+				"EU", "eu-west-1", "eu-west-2", "eu-central-1",
+				"ap-south-1", "ap-southeast-1", "ap-southeast-2",
+				"ap-northeast-1", "ap-northeast-2",
+				"sa-east-1", "us-east-2"
+		};
+		Arrays.sort(validRegions);
+
+		String[] expectedCompletions = new String[validRegions.length];
+		for (int i = 0; i < expectedCompletions.length; i++) {
+			expectedCompletions[i] = validRegions[i]+"<*>";
+		}
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: s3-snapshots\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    region_name: <*>"
+				, //===================
+				"<*>"
+				, // ===>
+				expectedCompletions
+		);
+	}
+
+	@Test public void s3ResourceGetParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-s3-bucket\n" +
+				"  type: s3\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: my-s3-bucket\n" +
+				"    params:\n" +
+				"      no-params-expected: bad"
+		);
+
+		editor.assertProblems(
+				"no-params-expected|Unknown property"
+		);
+	}
+
+	@Test public void s3ResourcePutParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-s3-bucket\n" +
+				"  type: s3\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-s3-bucket\n" +
+				"    params:\n" +
+				"      acl: public-read\n" +
+				"    get_params:\n" +
+				"      no-params-expected: bad"
+		);
+		editor.assertProblems(
+				"acl: public-read|'file' is required",
+				"no-params-expected|Unknown property"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-s3-bucket\n" +
+				"  type: s3\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-s3-bucket\n" +
+				"    params:\n" +
+				"      file: path/to/file\n" +
+				"      acl: bad-acl\n" +
+				"      content_type: anything/goes\n"
+		);
+		editor.assertProblems(
+				"bad-acl|unknown 'S3CannedAcl'"
+		);
+
+		editor.assertHoverContains("file", "Path to the file to upload");
+		editor.assertHoverContains("acl", "Canned Acl");
+		editor.assertHoverContains("content_type", "MIME");
+	}
+
+	@Test public void s3ResourcePutParamsContentAssist() throws Exception {
+		String[] cannedAcls = { //See http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
+				"private",
+				"public-read",
+				"public-read-write",
+				"aws-exec-read",
+				"authenticated-read",
+				"bucket-owner-read",
+				"bucket-owner-full-control",
+				"log-delivery-write"
+		};
+		Arrays.sort(cannedAcls);
+
+		String conText =
+				"resources:\n" +
+				"- name: my-s3-bucket\n" +
+				"  type: s3\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-s3-bucket\n" +
+				"    params:\n" +
+				"      <*>";
+
+		assertContextualCompletions(conText,
+				"content_type: json<*>"
+				, //=>
+				"content_type: application/json; charset=utf-8<*>"
+		);
+
+		String[] expectedAclCompletions = new String[cannedAcls.length];
+		for (int i = 0; i < expectedAclCompletions.length; i++) {
+			expectedAclCompletions[i] = "acl: "+cannedAcls[i]+"<*>";
+		}
+		assertContextualCompletions(conText,
+				"acl: <*>"
+				, // ===>
+				expectedAclCompletions
+		);
+	}
+
 	@Test
 	public void gotoResourceDefinition() throws Exception {
 		Editor editor = harness.newEditor(

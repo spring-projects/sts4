@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.concourse;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -94,6 +95,9 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YAtomicType t_resource_name;
 	public final YAtomicType t_job_name;
 	public final YAtomicType t_resource_type_name;
+	public final YType t_mime_type = f.yatomic("MimeType")
+			.parseWith(ValueParsers.NE_STRING)
+			.addHints(MimeTypes.getKnownMimeTypes());
 
 	public final YBeanType task;
 
@@ -360,6 +364,53 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "build_args_file", t_ne_string);
 
 			resourceTypes.def("docker-image", source, get, put);
+		}
+		//s3
+		{
+			String[] validRegions = {
+			};
+			YType t_s3_region = f.yenum("S3Region",
+					//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+					 "us-west-1", "us-west-2",
+					 "ca-central-1", "EU", "eu-west-1",
+					 "eu-west-2", "eu-central-1",
+					 "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+					 "sa-east-1",
+					 "us-east-2"
+			);
+
+			YType t_canned_acl = f.yenum("S3CannedAcl",
+					//See http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
+					"private", "public-read", "public-read-write", "aws-exec-read",
+					"authenticated-read", "bucket-owner-read", "bucket-owner-full-control",
+					"log-delivery-write"
+			);
+
+			YBeanType source = f.ybean("S3Source");
+			addProp(source, "bucket", t_ne_string).isRequired(true);
+			addProp(source, "access_key_id", t_ne_string);
+			addProp(source, "secret_access_key", t_ne_string);
+			addProp(source, "region_name", t_s3_region);
+			addProp(source, "private", t_boolean);
+			addProp(source, "cloudfront_url", t_ne_string);
+			addProp(source, "endpoint", t_ne_string);
+			addProp(source, "disable_ssl", t_boolean);
+			addProp(source, "server_side_encryption", t_ne_string);
+			addProp(source, "sse_kms_key_id", t_ne_string);
+			addProp(source, "use_v2_signing", t_boolean);
+			addProp(source, "regexp", t_ne_string);
+			addProp(source, "versioned_file", t_ne_string);
+			source.requireOneOf("regexp", "versioned_file");
+
+			YBeanType get = f.ybean("S3GetParams");
+			//Note: S3GetParams intentionally has no properties since no params are expected according to the docs.
+
+			YBeanType put = f.ybean("S3PutParams");
+			addProp(put, "file", t_ne_string).isRequired(true);
+			addProp(put, "acl", t_canned_acl);
+			addProp(put, "content_type", t_mime_type);
+
+			resourceTypes.def("s3", source, get, put);
 		}
 	}
 

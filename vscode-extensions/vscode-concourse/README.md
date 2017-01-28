@@ -48,8 +48,9 @@ The resource-types that are already defined in the schema are:
 
  - git
  - docker-image
+ - s3
  
-For other resource-types content assist and checking is still very limited. However, we intend
+For other resource-types content assist and checking is still very limited. We intend
 to grow this list and provide a similar level of support for all of the built-in resource types in
 the near future.
 

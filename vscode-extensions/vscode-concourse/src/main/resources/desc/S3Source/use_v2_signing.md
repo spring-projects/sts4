@@ -1,0 +1,1 @@
+*Optional.* Use signature v2 signing, useful for S3 compatible providers that do not support v4.

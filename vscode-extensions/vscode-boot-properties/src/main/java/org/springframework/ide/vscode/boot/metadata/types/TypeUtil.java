@@ -14,7 +14,6 @@ package org.springframework.ide.vscode.boot.metadata.types;
 import static org.springframework.ide.vscode.commons.util.ArrayUtils.firstElement;
 import static org.springframework.ide.vscode.commons.util.ArrayUtils.lastElement;
 
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,12 +53,12 @@ import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.net.MediaType;
 
 import reactor.core.publisher.Flux;
 
@@ -185,36 +183,43 @@ public class TypeUtil {
 	private static final Map<String,ValueParser> VALUE_PARSERS = new HashMap<>();
 	static {
 		VALUE_PARSERS.put(Byte.class.getName(), new RadixableParser() {
+			@Override
 			public Object parse(String str, int radix) {
 				return Byte.parseByte(str, radix);
 			}
 		});
 		VALUE_PARSERS.put(Integer.class.getName(), new RadixableParser() {
+			@Override
 			public Object parse(String str, int radix) {
 				return Integer.parseInt(str, radix);
 			}
 		});
 		VALUE_PARSERS.put(Long.class.getName(), new RadixableParser() {
+			@Override
 			public Object parse(String str, int radix) {
 				return Long.parseLong(str, radix);
 			}
 		});
 		VALUE_PARSERS.put(Short.class.getName(), new RadixableParser() {
+			@Override
 			public Object parse(String str, int radix) {
 				return Short.parseShort(str, radix);
 			}
 		});
 		VALUE_PARSERS.put(Double.class.getName(), new ValueParser() {
+			@Override
 			public Object parse(String str) {
 				return Double.parseDouble(str);
 			}
 		});
 		VALUE_PARSERS.put(Float.class.getName(), new ValueParser() {
+			@Override
 			public Object parse(String str) {
 				return Float.parseFloat(str);
 			}
 		});
 		VALUE_PARSERS.put(Boolean.class.getName(), new ValueParser() {
+			@Override
 			public Object parse(String str) {
 				//The 'more obvious' implementation is too liberal and accepts anything as okay.
 				//return Boolean.parseBoolean(str);
@@ -573,20 +578,7 @@ public class TypeUtil {
 		valueHints("org.springframework.util.MimeType", new LazyProvider<String[]>() {
 			@Override
 			protected String[] compute() {
-				try {
-					Field f = MediaType.class.getDeclaredField("KNOWN_TYPES");
-					f.setAccessible(true);
-					@SuppressWarnings("unchecked")
-					Map<MediaType, MediaType> map = (Map<MediaType, MediaType>) f.get(null);
-					TreeSet<String> mediaTypes = new TreeSet<>();
-					for (MediaType m : map.keySet()) {
-						mediaTypes.add(m.toString());
-					}
-					return mediaTypes.toArray(new String[mediaTypes.size()]);
-				} catch (Exception e) {
-					Log.log(e);
-				}
-				return null;
+				return MimeTypes.getKnownMimeTypes();
 			}
 		});
 		valueHints("org.springframework.core.io.Resource", new ResourceHintProvider());

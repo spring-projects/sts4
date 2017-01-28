@@ -418,6 +418,11 @@ public class YTypeFactory {
 			return true;
 		}
 
+		public void requireOneOf(String... properties) {
+			Assert.isLegal(properties.length>1);
+			//TODO: implement support for this.
+		}
+
 	}
 
 	public static class YAtomicType extends AbstractType {
