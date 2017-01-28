@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -23,7 +24,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public class DefaultCompletionFactory implements CompletionFactory {
-	
+
 	private static final int ERROR_COMPLETION_SCORE = -10000000;
 
 	public static class BeanPropertyProposal extends ScoreableProposal {
@@ -48,7 +49,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 			this.edits = edits;
 			this.typeUtil = typeUtil;
 		}
-		
+
 		@Override
 		public double getBaseScore() {
 			return baseScore;
@@ -79,7 +80,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 			return YPropertyInfoTemplates.createCompletionDocumentation(contextProperty, contextType, p);
 		}
 	}
-	
+
 	public class ValueProposal extends ScoreableProposal {
 
 		private String value;
@@ -119,7 +120,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		public DocumentEdits getTextEdit() {
 			return edits;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "ValueProposal("+value+")";
@@ -135,38 +136,42 @@ public class DefaultCompletionFactory implements CompletionFactory {
 			return null;
 		}
 	}
-	
-	public static final class ErrorProposal extends ScoreableProposal {
-		private final String label;
-		private DocumentEdits edits;
-		private YTypeUtil typeUtil;
-		private YType type;
 
-		public ErrorProposal(String label, YType type, DocumentEdits edits, YTypeUtil typeUtil) {
-			this.label = label;
-			this.edits = edits;
-			this.typeUtil = typeUtil;
-			this.type = type;
+	public static final class ErrorProposal extends ScoreableProposal {
+		private final String longMessage;
+		private String shortMessage;
+		private String filterText;
+
+		public ErrorProposal(String query, String longMessage) {
+			this.filterText = query;
+			int split = longMessage.indexOf(": ");
+			if (split>0) {
+				this.shortMessage = longMessage.substring(0, split);
+				this.longMessage = longMessage.substring(split+2);
+			} else {
+				this.longMessage = longMessage;
+				this.shortMessage = longMessage;
+			}
 		}
 
 		@Override
 		public DocumentEdits getTextEdit() {
-			return edits;
+			return new DocumentEdits(null);
 		}
 
 		@Override
 		public String getLabel() {
-			return label;
+			return shortMessage;
 		}
 
 		@Override
 		public CompletionItemKind getKind() {
-			return CompletionItemKind.Value;
+			return CompletionItemKind.Text;
 		}
 
 		@Override
 		public Renderable getDocumentation() {
-			return null;
+			return Renderables.text(longMessage);
 		}
 
 		@Override
@@ -181,7 +186,12 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		@Override
 		public String getDetail() {
-			return typeUtil.niceTypeName(type);
+			return "Error";
+		}
+
+		@Override
+		public String getFilterText() {
+			return filterText;
 		}
 	}
 
@@ -196,8 +206,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 
 	@Override
-	public ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil) {
-		final String label = message;
-		return new ErrorProposal(label, type, edits, typeUtil);
+	public ICompletionProposal errorMessage(String query, String longMessage) {
+		return new ErrorProposal(query, longMessage);
 	}
 }

@@ -39,10 +39,10 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 
 	@Override
 	public Collection<YValueHint> call() throws Exception {
-		
+
 		try {
 			List<CFTarget> targets = targetCache.getOrCreate();
-			
+
 			// Do NOT wrap the results in another list. Allow null values to return
 			// as the reconcile framework expects null if hints failed to be resolved
 			return getHints(targets);
@@ -59,7 +59,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				// Do not log the no-targets exception as it may be encountered
 				// frequently
 				// if a user does not have a CF client installed
-				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(noTargetsError));
+				throw new ValueParseException("No Cloudfoundry Targets: "+ExceptionUtil.getMessageNoAppendedInformation(noTargetsError));
 			} else {
 				// Log any other error
 				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
@@ -77,7 +77,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	}
 
 	/**
-	 * 
+	 *
 	 * @return non-null list of hints. Return empty if no hints available
 	 */
 	abstract protected Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception;

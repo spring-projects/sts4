@@ -15,7 +15,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
@@ -27,8 +29,12 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
 
 import com.google.common.collect.ImmutableList;
 
@@ -842,6 +848,57 @@ public class ManifestYamlEditorTest {
 		Diagnostic problem = editor.assertProblem("bad-service");
 
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
+	@Test
+	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn() throws Exception {
+		reset(cloudfoundry.paramsProvider);
+
+		String exceptionMessage = "Please login to cf";
+
+		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(exceptionMessage));
+
+		String textBefore =
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - <*>";
+		Editor editor = harness.newEditor(
+				textBefore
+		);
+
+		//Applying the single completion should do nothing in the editor:
+		editor.assertCompletions(textBefore);
+
+		//The message from the exception should appear in the 'doc string':
+		editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", exceptionMessage);
+
+	}
+
+	@Test
+	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn_nonEmptyQueryString() throws Exception {
+		reset(cloudfoundry.paramsProvider);
+
+		String exceptionMessage = "Please login to cf";
+
+		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(exceptionMessage));
+
+		String textBefore =
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - something<*>";
+		Editor editor = harness.newEditor(
+				textBefore
+		);
+
+		//Applying the single completion should do nothing in the editor:
+		editor.assertCompletions(textBefore);
+
+		//The message from the exception should appear in the 'doc string':
+		CompletionItem completion = editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", exceptionMessage);
+		//query string should match the 'filter text' otherwise vscode will filter the item and it will be gone!
+		assertEquals("something", completion.getFilterText());
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

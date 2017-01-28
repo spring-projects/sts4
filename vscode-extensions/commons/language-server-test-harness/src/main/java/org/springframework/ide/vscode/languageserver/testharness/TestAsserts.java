@@ -11,7 +11,10 @@
 
 package org.springframework.ide.vscode.languageserver.testharness;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import java.util.Collection;
 
 public class TestAsserts {
 
@@ -26,4 +29,14 @@ public class TestAsserts {
 			fail("Found: "+needle+"\n in \n"+haystack);
 		}
 	}
+
+	public static <T> T assertOneElement(Collection<T> collection) {
+		assertEquals("Wrong number of elements in "+ collection, 1, collection.size());
+		for (T t : collection) {
+			return t;
+		}
+		throw new AssertionError("No elements found");
+	}
+
+
 }

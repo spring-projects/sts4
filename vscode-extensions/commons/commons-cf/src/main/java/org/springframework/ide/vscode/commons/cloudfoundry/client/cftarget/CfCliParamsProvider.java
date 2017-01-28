@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Provides existing Cloud Foundry client params, like target and credentials,
  * from the CLI config.json in the file system.
- * 
+ *
  *
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
@@ -39,7 +39,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
 	 * ClientParamsProvider#getParams()
 	 */

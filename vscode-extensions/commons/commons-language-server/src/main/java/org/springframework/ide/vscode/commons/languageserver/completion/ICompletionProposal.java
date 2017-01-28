@@ -30,5 +30,6 @@ public interface ICompletionProposal {
 
 	String getDetail();
 	Renderable getDocumentation();
+	default String getFilterText() { return getLabel(); }
 
 }

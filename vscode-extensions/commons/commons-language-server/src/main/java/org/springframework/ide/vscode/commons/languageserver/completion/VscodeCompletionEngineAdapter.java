@@ -105,7 +105,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setLabel(completion.getLabel());
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
-		item.setFilterText(completion.getLabel());
+		item.setFilterText(completion.getFilterText());
 		item.setDetail(completion.getDetail());
 		item.setDocumentation(toMarkdown(completion.getDocumentation()));
 		adaptEdits(item, doc, completion.getTextEdit());

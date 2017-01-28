@@ -24,16 +24,13 @@ public interface CompletionFactory {
 
 	ICompletionProposal beanProperty(IDocument doc, String contextProperty, YType contextType, String query, YTypedProperty p, double score, DocumentEdits edits, YTypeUtil typeUtil);
 	ICompletionProposal valueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil);
-    
+
 	/**
-	 * Creates a completion with an EMPTY value and a display message indicating some error condition. The purpose of this is
-	 * to show the user a completion with some meaningful information on why completion values were not fetched.
-	 * 
-	 * @param message the error message to display to the user in the completion
-	 * @param query
-	 * @param type
-	 * @param edits
-	 * @return non-null proposal
+	 * Create a fake completion proposal that represents an error message. Such a proposal, when applied does nothing. Its main purpose is to
+	 * show a (possibly lengthy) error message to the user.
+	 * <p>
+	 * If the error message is long you can include a ": " to divide the string into a 'short message' and a longer explanation. The longer explanation
+	 * will be chopped-off from the message and displayed as a 'doc string'.
 	 */
-	ICompletionProposal errorMessage(String message, String query, YType type, DocumentEdits edits, YTypeUtil typeUtil);
+	ICompletionProposal errorMessage(String query, String message);
 }

@@ -444,7 +444,7 @@ public class Editor {
 		assertEquals(expectedHover, hover.getContents().toString());
 	}
 
-	public void assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
+	public CompletionItem assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
 		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
 		if (expectDetail!=null) {
 			assertEquals(expectDetail, it.getDetail());
@@ -452,6 +452,7 @@ public class Editor {
 		if (expectDocSnippet!=null) {
 			assertContains(expectDocSnippet, it.getDocumentation());
 		}
+		return it;
 	}
 
 	protected CompletionItem assertCompletionWithLabel(String expectLabel) throws Exception {
