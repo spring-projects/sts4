@@ -1,64 +1,59 @@
-# VS Code Language Server for Concourse Pipeline and Task Configuration Files
+# Concourse Pipeline and Task Editor for Visual Studio Code
 
-A VSCode extension and Language Server providing support for
-editing Concourse CI configuration files. Supports editing both
-pipeline definition files and task definition files.
+This extension provides validation, content assist and documentation hovers
+for editing [Concourse](https://concourse.ci/) Pipeline and Task configuration files.
 
-The editor provides content assist and validation as you type. 
-These feature are activated for `.yml` files that follow certain 
-naming conventions:
+## Usage
+
+The Concourse editor automatically activates when the name of the  `.yml` file you are editing 
+follows a certain pattern:
 
   - `**/*pipeline*.yml` : activates support for editing pipelines
   - `**/tasks/*.yml` : activates support for editing tasks.
+  
+You can also define your own patterns and map them to the language-ids `concourse-pipeline-yaml` 
+or `concourse-task-taml` by defining `files.associations` in workspace settings. 
+See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
 
-# Developer notes
+## Functionality
 
-## Bulding and Running
+### Validation
 
-This project consists of three pieces:
+As you type the text is parsed and checked for basic syntactic and structural correctness. Hover over
+an error marker to see an explanation:
 
- - a vscode-extension which is a language-server client implemented in TypeScript.
- - commons-vscode: a local npm module with some utilities implemented in TypeScript.
- - a language server implemented in Java.
+**TODO: screenshot(s)**
 
-To build all these pieces you normally only need to run:
+### Content assist
 
-   npm install
+Having trouble remembering all the names of the attributes, and their spelling? Or can't remmeber
+which resource properties to set in the `get` task params versus its `source` attributes? 
+Content assist to the rescue:
 
-**However, the first time you build** it might fail trying to
-find the `commons-vscode` module on npm central. Once we publish a stable 
-version of that module on npm central that will no longer be a problem. 
-Until that time, you can work around this by doing a one time manual 
-run of the `preinstall` script prior to running `npm install`:
+**TODO: screenshot(s)**
 
-    ./scripts/preinstall.sh
-    npm install
+### Documentation Hovers
 
-Now you can open the client-app in vscode. From the root of this project.
+Having trouble remembering exactly what the meaning of each attribute is? Hover over an attribute and 
+read its detailed documentation:
 
-    code .
+**TODO: screenshot(s)**
 
-To launch the language server in a vscode runtime, press F5.
+## Limitations
 
-## Debugging
+This vacode-extension is still a work in progress. At the moment only a select few of the [built-in resource-types](https://concourse.ci/resource-types.html)
+have been fully defined in the Editor's Schema. 
 
-To debug the language server, open `lib/Main.ts` and edit to set the
-`DEBUG` option to `true`. When you launch the app next by pressing
-`F5` it will launch with debug options being passed to the JVM.
+The resource-types that are already defined in the schema are:
 
-You can then connect a 'Remote Java' Eclipse debugger on port 8000.
+ - git
+ - docker-image
+ 
+For other resource-types content assist and checking is still very limited. However, we intend
+to grow this list and provide a similar level of support of for all of the built-in resource types in
+the near future.
 
-## Packaging as a vscode extension
+## Issues and Feature Requests
 
-First make sure the stuff is all built locally:
+Please report any issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
 
-     ./scripts/preinstall.sh  # only needed if this is the first build.
-     npm install
-
-Then package it:
-
-     npm run vsce-package
-
-This produces a `.vsix` file which you can install directly into vscode.
-
-*Version: 0.0.1-201701250238*

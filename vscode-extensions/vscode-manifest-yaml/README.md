@@ -35,6 +35,3 @@ read its detailed documentation.
 [linting]: https://s29.postimg.org/67wu0d7yv/linting.png
 [ca]: https://s29.postimg.org/q52r9bqtz/content_assist.png
 [hovers]: https://s29.postimg.org/3rv0mipw7/hovers.png
-
-
-*Version: 0.0.2-201701250238*
