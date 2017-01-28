@@ -854,9 +854,7 @@ public class ManifestYamlEditorTest {
 	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn() throws Exception {
 		reset(cloudfoundry.paramsProvider);
 
-		String exceptionMessage = "Please login to cf";
-
-		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(exceptionMessage));
+		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
 
 		String textBefore =
 				"applications:\n" +
@@ -871,7 +869,7 @@ public class ManifestYamlEditorTest {
 		editor.assertCompletions(textBefore);
 
 		//The message from the exception should appear in the 'doc string':
-		editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", exceptionMessage);
+		editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", "Please login");
 
 	}
 
@@ -879,9 +877,7 @@ public class ManifestYamlEditorTest {
 	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn_nonEmptyQueryString() throws Exception {
 		reset(cloudfoundry.paramsProvider);
 
-		String exceptionMessage = "Please login to cf";
-
-		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(exceptionMessage));
+		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
 
 		String textBefore =
 				"applications:\n" +
@@ -896,7 +892,7 @@ public class ManifestYamlEditorTest {
 		editor.assertCompletions(textBefore);
 
 		//The message from the exception should appear in the 'doc string':
-		CompletionItem completion = editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", exceptionMessage);
+		CompletionItem completion = editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", "Please login");
 		//query string should match the 'filter text' otherwise vscode will filter the item and it will be gone!
 		assertEquals("something", completion.getFilterText());
 	}

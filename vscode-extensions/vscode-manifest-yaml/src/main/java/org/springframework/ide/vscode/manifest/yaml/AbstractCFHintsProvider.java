@@ -59,7 +59,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				// Do not log the no-targets exception as it may be encountered
 				// frequently
 				// if a user does not have a CF client installed
-				throw new ValueParseException("No Cloudfoundry Targets: "+ExceptionUtil.getMessageNoAppendedInformation(noTargetsError));
+				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(noTargetsError));
 			} else {
 				// Log any other error
 				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
