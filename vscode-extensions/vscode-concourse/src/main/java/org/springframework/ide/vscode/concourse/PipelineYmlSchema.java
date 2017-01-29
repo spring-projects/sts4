@@ -194,6 +194,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);
+		task.requireOneOf("image_resource", "image");
 
 		YBeanType getStep = f.ybean("GetStep");
 		addProp(getStep, "get", t_resource_name);

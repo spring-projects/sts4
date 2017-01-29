@@ -1675,8 +1675,10 @@ public class ConcourseEditorTest {
 				"params: the-params\n"
 		);
 		editor.assertProblems(
+				"image_resource|Only one of [image_resource, image] should be defined",
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
+				"image|Only one of [image_resource, image] should be defined",
 				"path: path/to/input|'name' is required",
 				"path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
@@ -1768,8 +1770,10 @@ public class ConcourseEditorTest {
 				"      params: the-params"
 		);
 		editor.assertProblems(
+				"image_resource|Only one of [image_resource, image] should be defined",
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
+				"image|Only one of [image_resource, image] should be defined",
 				"path: path/to/input|'name' is required",
 				"path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
