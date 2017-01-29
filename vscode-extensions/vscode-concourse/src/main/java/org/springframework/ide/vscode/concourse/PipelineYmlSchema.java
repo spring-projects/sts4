@@ -223,6 +223,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(taskStep, "image", t_ne_string);
 		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, t_resource_name));
 		addProp(taskStep, "output_mapping", t_string_params);
+		taskStep.requireOneOf("config", "file");
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");

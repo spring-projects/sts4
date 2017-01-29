@@ -114,6 +114,7 @@ public class ConcourseEditorTest {
 				"    tags: a-single-string\n"
 		);
 		editor.assertProblems(
+				"task: a-task\n    tags: a-single-string|One of [config, file] is required",
 				"a-single-string|Expecting a 'Sequence'"
 		);
 
@@ -483,6 +484,7 @@ public class ConcourseEditorTest {
 				"  - get: sts4\n" +
 				"  - get: bogus-get\n" +
 				"  - task: do-stuff\n" +
+				"    file: some-file.yml\n" +
 				"    input_mapping:\n" +
 				"      task-input: bogus-input\n" +
 				"      repo: sts4\n" +
@@ -622,6 +624,7 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - get: git-repo\n" +
 				"  - task: run-build\n" +
+				"    file: some-task.yml\n" +
 				"  - put: build-artefact\n" +
 				"- name: test\n" +
 				"  plan:\n" +
@@ -647,6 +650,7 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - get: git-repo\n" +
 				"  - task: run-build\n" +
+				"    file: tasks/some-task.yml\n" +
 				"  - put: build-artefact\n" +
 				"- name: test\n" +
 				"  plan:\n" +
