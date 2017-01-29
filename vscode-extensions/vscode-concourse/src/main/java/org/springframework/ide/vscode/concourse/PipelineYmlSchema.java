@@ -99,6 +99,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.NE_STRING)
 			.addHints(MimeTypes.getKnownMimeTypes());
 
+	public final YType t_duration = f.yatomic("Duration")
+			.parseWith(ConcourseValueParsers.DURATION);
+
 	public final AbstractType task;
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
@@ -108,9 +111,6 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Pipeline");
-
-		YAtomicType t_duration = f.yatomic("Duration");
-		t_duration.parseWith(ConcourseValueParsers.DURATION);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
@@ -208,7 +208,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YBeanType putStep = f.ybean("PutStep");
 		addProp(putStep, "put", t_resource_name);
-		addProp(putStep, "resource", t_job_name);
+		addProp(putStep, "resource", t_resource_name);
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
 		));
@@ -291,8 +291,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_string).isRequired(true);
 			addProp(source, "branch", t_string).isRequired(true);
-			addProp(source, "private_key", t_string);
-			addProp(source, "username", t_string);
+			addProp(source, "private_key", t_ne_string);
+			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_string);
 			addProp(source, "paths", t_strings);
 			addProp(source, "ignore_paths", t_strings);
@@ -369,8 +369,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		}
 		//s3
 		{
-			String[] validRegions = {
-			};
 			YType t_s3_region = f.yenum("S3Region",
 					//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
 					 "us-west-1", "us-west-2",
@@ -414,6 +412,32 @@ public class PipelineYmlSchema implements YamlSchema {
 
 			resourceTypes.def("s3", source, get, put);
 		}
+		//pool
+		{
+			AbstractType source = f.ybean("PoolSource");
+			addProp(source, "uri", t_ne_string).isRequired(true);
+			addProp(source, "branch", t_ne_string).isRequired(true);
+			addProp(source, "pool", t_ne_string).isRequired(true);
+			addProp(source, "private_key", t_ne_string);
+			addProp(source, "username", t_ne_string);
+			addProp(source, "password", t_string);
+			addProp(source, "retry_delay", t_duration);
+
+			AbstractType get = f.ybean("PoolGetParams");
+			//get params deliberately left empty
+
+			AbstractType put = f.ybean("PoolPutParams");
+			addProp(put, "acquire", t_boolean);
+			addProp(put, "claim", t_ne_string);
+			addProp(put, "release", t_ne_string);
+			addProp(put, "add", t_ne_string);
+			addProp(put, "add_claimed", t_ne_string);
+			addProp(put, "remove", t_ne_string);
+			put.requireOneOf(put.getPropertyNames());
+
+			resourceTypes.def("pool", source, get, put);
+		}
+
 	}
 
 	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {

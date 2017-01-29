@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -293,6 +294,13 @@ public class YTypeFactory {
 		public void requireOneOf(String... properties) {
 			Assert.isLegal(properties.length>1);
 			this.oneOfConstraints.add(properties);
+		}
+
+		public String[] getPropertyNames() {
+			return getProperties().stream()
+					.map(YTypedProperty::getName)
+					.collect(Collectors.toCollection(TreeSet::new))
+					.toArray(new String[0]);
 		}
 	}
 

@@ -1499,6 +1499,110 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void poolResourceSourceReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: swimming-pool\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    private_key: stuff"
+		);
+		editor.assertProblems(
+				"private_key: stuff|[branch, pool, uri] are required"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: the--locks\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    uri: git@github.com:concourse/locks.git\n" +
+				"    branch: master\n" +
+				"    pool: aws\n" +
+				"    private_key: |\n" +
+				"      -----BEGIN RSA PRIVATE KEY-----\n" +
+				"      MIIEowIBAAKCAQEAtCS10/f7W7lkQaSgD/mVeaSOvSF9ql4hf/zfMwfVGgHWjj+W\n" +
+				"      ...\n" +
+				"      DWiJL+OFeg9kawcUL6hQ8JeXPhlImG6RTUffma9+iGQyyBMCGd1l\n" +
+				"      -----END RSA PRIVATE KEY-----\n" +
+				"    username: jonhsmith\n" +
+				"    password: his-password\n" +
+				"    retry_delay: retry-after\n"
+		);
+		System.out.println(editor.getRawText());
+		editor.assertProblems(
+				"retry-after|'Duration'"
+		);
+
+		editor.assertHoverContains("uri", "The location of the repository.");
+		editor.assertHoverContains("branch", "The branch to track");
+		editor.assertHoverContains("pool", 2, "The logical name of your pool of things to lock");
+		editor.assertHoverContains("private_key", "Private key to use when pulling/pushing");
+		editor.assertHoverContains("username", "Username for HTTP(S) auth");
+		editor.assertHoverContains("password", "Password for HTTP(S) auth ");
+		editor.assertHoverContains("retry_delay", "how long to wait until retrying");
+	}
+
+	@Test public void poolResourceGetParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-locks\n" +
+				"  type: pool\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: my-locks\n" +
+				"    params:\n" +
+				"      no-params-expected: bad"
+		);
+
+		editor.assertProblems(
+				"no-params-expected|Unknown property"
+		);
+	}
+
+	@Test public void poolResourcePutParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-locks\n" +
+				"  type: pool\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-locks\n" +
+				"    params:\n" +
+				"      acquire: should-acquire\n" +
+				"      claim: a-specific-lock\n" +
+				"      release: path/to/lock\n" +
+				"      add: path/to/lock\n" +
+				"      add_claimed: path/to/lock\n" +
+				"      remove: path/to/lock"
+		);
+
+		editor.assertProblems(
+				"acquire|Only one of",
+				"should-acquire|'boolean'",
+				"claim|Only one of",
+				"release|Only one of",
+				"add|Only one of",
+				"add_claimed|Only one of",
+				"remove|Only one of"
+		);
+
+		editor.assertHoverContains("acquire", "attempt to move a randomly chosen lock");
+		editor.assertHoverContains("claim", "the specified lock from the pool will be acquired");
+		editor.assertHoverContains("release", "release the lock");
+		editor.assertHoverContains("add", "add a new lock to the pool in the unclaimed state");
+		editor.assertHoverContains("add_claimed", "in the *claimed* state");
+		editor.assertHoverContains("remove", "remove the given lock from the pool");
+	}
+
 	@Test
 	public void gotoResourceDefinition() throws Exception {
 		Editor editor = harness.newEditor(
