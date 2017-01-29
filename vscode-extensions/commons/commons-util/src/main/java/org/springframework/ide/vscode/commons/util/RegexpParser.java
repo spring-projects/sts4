@@ -15,15 +15,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegexpParser implements ValueParser {
-	
+
 	final private Pattern pat;
 	final private String typeName; // used only for error message
 	final private String patternDescription; //Human readable description of the regexp pay
-	
+
 	/**
 	 * Create a RegexpParser which succeeds if the input string matches the given regexp
 	 * and fail otherwise.
-	 * 
+	 *
 	 * @param regexp
 	 * @param typeName Name of the type (used in error message for failing parses)
 	 * @param patternDescription Human readable description of the regexp pattern (included in the error message for failing parses)
@@ -41,7 +41,7 @@ public class RegexpParser implements ValueParser {
 		if (matcher.matches()) {
 			return matcher;
 		}
-		throw new IllegalArgumentException("'"+str+"' is not a valid '"+typeName+"'. "+patternDescription);
+		throw new ValueParseException("'"+str+"' is not a valid '"+typeName+"'. "+patternDescription);
 	}
 
 }
