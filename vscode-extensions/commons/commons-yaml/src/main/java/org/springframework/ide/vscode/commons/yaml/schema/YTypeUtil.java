@@ -45,4 +45,5 @@ public interface YTypeUtil {
 	 * should be returned.
 	 */
 	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);
+	List<String[]> getOneOfConstraints(YType type);
 }

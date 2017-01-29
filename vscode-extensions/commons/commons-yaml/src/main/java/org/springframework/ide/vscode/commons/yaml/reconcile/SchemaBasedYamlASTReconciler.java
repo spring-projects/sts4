@@ -15,6 +15,7 @@ import static org.springframework.ide.vscode.commons.util.ExceptionUtil.getSimpl
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
+
+import com.google.gson.internal.Streams;
 
 public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
@@ -217,6 +220,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		boolean allPropertiesKnown = beanProperties.keySet().containsAll(foundProps);
 		//Don't check for missing properties if some properties look like they might be spelled incorrectly.
 		if (allPropertiesKnown) {
+			//Check for missing required properties:
 			Set<String> missingProps = beanProperties.values().stream()
 					.filter(YTypedProperty::isRequired)
 					.map(YTypedProperty::getName)
@@ -232,6 +236,25 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					message = "Properties "+missingProps+" are required for '"+type+"'";
 				}
 				problem(map, message);
+			}
+
+			//Check for missing/extra 'one-of' constrained properties
+			for (String[] _requiredProps : typeUtil.getOneOfConstraints(type)) {
+				List<String> requiredProps = Arrays.asList(_requiredProps);
+				long foundPropsCount = requiredProps.stream()
+					.filter(foundProps::contains)
+					.count();
+				if (foundPropsCount==0) {
+					problem(map, "One of "+requiredProps+" is required for '"+type+"'");
+				} else if (foundPropsCount>1) {
+					//Mark each of the found keys as a violation:
+					for (NodeTuple entry : map.getValue()) {
+						String key = NodeUtil.asScalar(entry.getKeyNode());
+						if (key!=null && requiredProps.contains(key)) {
+							problem(entry.getKeyNode(), "Only one of "+requiredProps+" should be defined for '"+type+"'");
+						}
+					}
+				}
 			}
 		}
 	}

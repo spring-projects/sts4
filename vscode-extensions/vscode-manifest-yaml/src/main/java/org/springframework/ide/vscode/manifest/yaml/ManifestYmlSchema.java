@@ -20,8 +20,8 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ManifestYmlSchema implements YamlSchema {
 
-	private final YBeanType TOPLEVEL_TYPE;
+	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 	private final Callable<Collection<YValueHint>> buildpackProvider;
 
@@ -55,7 +55,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Cloudfoundry Manifest");
 
-		YBeanType application = f.ybean("Application");
+		AbstractType application = f.ybean("Application");
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
@@ -136,7 +136,7 @@ public class ManifestYmlSchema implements YamlSchema {
 	}
 
 	@Override
-	public YBeanType getTopLevelType() {
+	public AbstractType getTopLevelType() {
 		return TOPLEVEL_TYPE;
 	}
 

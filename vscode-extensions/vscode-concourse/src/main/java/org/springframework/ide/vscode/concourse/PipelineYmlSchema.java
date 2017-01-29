@@ -68,7 +68,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.collect(Collectors.toSet())
 			.block();
 
-	private final YBeanType TOPLEVEL_TYPE;
+	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
 	public final YTypeFactory f = new YTypeFactory();
@@ -99,7 +99,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.NE_STRING)
 			.addHints(MimeTypes.getKnownMimeTypes());
 
-	public final YBeanType task;
+	public final AbstractType task;
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
@@ -156,13 +156,13 @@ public class PipelineYmlSchema implements YamlSchema {
 			resourceTypes.getSourceType(getResourceTypeTag(models, dc))
 		);
 
-		YBeanType resource = f.ybean("Resource");
+		AbstractType resource = f.ybean("Resource");
 		addProp(resource, "name", resourceNameDef).isRequired(true);
 		addProp(resource, "type", t_resource_type_name).isRequired(true);
 		addProp(resource, "source", resourceSource);
 		addProp(resource, "check_every", t_duration);
 
-		YBeanType t_image_resource = f.ybean("ImageResource");
+		AbstractType t_image_resource = f.ybean("ImageResource");
 		for (YTypedProperty p : resource.getProperties()) {
 			if (!"name".equals(p.getName())) {
 				t_image_resource.addProperty(p);
@@ -172,15 +172,15 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
 		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
 
-		YBeanType t_input = f.ybean("TaskInput");
+		AbstractType t_input = f.ybean("TaskInput");
 		addProp(t_input, "name", t_ne_string).isRequired(true);
 		addProp(t_input, "path", t_ne_string);
 
-		YBeanType t_output = f.ybean("TaskOutput");
+		AbstractType t_output = f.ybean("TaskOutput");
 		addProp(t_output, "name", t_ne_string).isRequired(true);
 		addProp(t_output, "path", t_ne_string);
 
-		YBeanType t_command = f.ybean("Command");
+		AbstractType t_command = f.ybean("Command");
 		addProp(t_command, "path", t_ne_string).isRequired(true);
 		addProp(t_command, "args", t_strings);
 		addProp(t_command, "dir", t_ne_string);
@@ -242,7 +242,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(tryStep, "try", step);
 
 		// shared properties applicable for any subtype of Step:
-		for (YBeanType subStep : stepTypes) {
+		for (AbstractType subStep : stepTypes) {
 			addProp(step, subStep, "on_success", step);
 			addProp(step, subStep, "on_failure", step);
 			addProp(step, subStep, "ensure", step);
@@ -251,7 +251,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "timeout", t_duration);
 		}
 
-		YBeanType job = f.ybean("Job");
+		AbstractType job = f.ybean("Job");
 		addProp(job, "name", jobNameDef).isRequired(true);
 		addProp(job, "plan", f.yseq(step)).isRequired(true);
 		addProp(job, "serial", t_boolean);
@@ -261,12 +261,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "public", t_boolean);
 		addProp(job, "disable_manual_trigger", t_boolean);
 
-		YBeanType resourceType = f.ybean("ResourceType");
+		AbstractType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", resourceTypeNameDef).isRequired(true);
 		addProp(resourceType, "type", t_image_type).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 
-		YBeanType group = f.ybean("Group");
+		AbstractType group = f.ybean("Group");
 		addProp(group, "name", t_ne_string).isRequired(true);
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
@@ -286,7 +286,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	private void initializeDefaultResourceTypes() {
 		// git :
 		{
-			YBeanType source = f.ybean("GitSource");
+			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_string).isRequired(true);
 			addProp(source, "branch", t_string).isRequired(true);
 			addProp(source, "private_key", t_string);
@@ -302,12 +302,12 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "commit_verification_key_ids", t_strings);
 			addProp(source, "gpg_keyserver", t_string);
 
-			YBeanType get = f.ybean("GitGetParams");
+			AbstractType get = f.ybean("GitGetParams");
 			addProp(get, "depth", t_pos_integer);
 			addProp(get, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
 			addProp(get, "disable_git_lfs", t_boolean);
 
-			YBeanType put = f.ybean("GitPutParams");
+			AbstractType put = f.ybean("GitPutParams");
 			addProp(put, "repository", t_ne_string).isRequired(true);
 			addProp(put, "rebase", t_boolean);
 			addProp(put, "tag", t_ne_string);
@@ -320,7 +320,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		}
 		//docker-image:
 		{
-			YBeanType source = f.ybean("DockerImageSource");
+			AbstractType source = f.ybean("DockerImageSource");
 			addProp(source, "repository", t_ne_string).isRequired(true);
 			addProp(source, "tag", t_ne_string);
 			addProp(source, "username", t_ne_string);
@@ -339,12 +339,12 @@ public class PipelineYmlSchema implements YamlSchema {
 					f.yprop("cert", t_ne_string)
 			)));
 
-			YBeanType get = f.ybean("DockerImageGetParams");
+			AbstractType get = f.ybean("DockerImageGetParams");
 			addProp(get, "save", t_boolean);
 			addProp(get, "rootfs", t_boolean);
 			addProp(get, "skip_download", t_boolean);
 
-			YBeanType put = f.ybean("DockerImagePutParams");
+			AbstractType put = f.ybean("DockerImagePutParams");
 			addProp(put, "build", t_ne_string);
 			addProp(put, "load", t_ne_string);
 			addProp(put, "dockerfile", t_ne_string);
@@ -386,7 +386,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					"log-delivery-write"
 			);
 
-			YBeanType source = f.ybean("S3Source");
+			AbstractType source = f.ybean("S3Source");
 			addProp(source, "bucket", t_ne_string).isRequired(true);
 			addProp(source, "access_key_id", t_ne_string);
 			addProp(source, "secret_access_key", t_ne_string);
@@ -402,10 +402,10 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "versioned_file", t_ne_string);
 			source.requireOneOf("regexp", "versioned_file");
 
-			YBeanType get = f.ybean("S3GetParams");
+			AbstractType get = f.ybean("S3GetParams");
 			//Note: S3GetParams intentionally has no properties since no params are expected according to the docs.
 
-			YBeanType put = f.ybean("S3PutParams");
+			AbstractType put = f.ybean("S3PutParams");
 			addProp(put, "file", t_ne_string).isRequired(true);
 			addProp(put, "acl", t_canned_acl);
 			addProp(put, "content_type", t_mime_type);
@@ -459,7 +459,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	@Override
-	public YBeanType getTopLevelType() {
+	public AbstractType getTopLevelType() {
 		return TOPLEVEL_TYPE;
 	}
 

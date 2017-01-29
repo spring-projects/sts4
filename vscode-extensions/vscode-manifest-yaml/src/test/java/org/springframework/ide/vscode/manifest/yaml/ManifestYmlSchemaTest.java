@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.manifest.yaml.ManifestYmlSchema;
 
@@ -131,7 +131,7 @@ public class ManifestYmlSchemaTest {
 
 	private List<YTypedProperty> getNestedProps() {
 		YSeqType applications = (YSeqType) schema.getTopLevelType().getPropertiesMap().get("applications").getType();
-		YBeanType application = (YBeanType) applications.getDomainType();
+		AbstractType application = (AbstractType) applications.getDomainType();
 		return application.getProperties();
 	}
 

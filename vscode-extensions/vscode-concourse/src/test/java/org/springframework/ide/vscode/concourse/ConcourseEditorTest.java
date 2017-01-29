@@ -1314,7 +1314,10 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    access_key_id: the-key"
 		);
-		editor.assertProblems("access_key_id: the-key|'bucket' is required");
+		editor.assertProblems(
+				"access_key_id: the-key|'bucket' is required",
+				"access_key_id: the-key|One of [regexp, versioned_file] is required"
+		);
 
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -1339,7 +1342,9 @@ public class ConcourseEditorTest {
 				"bogus-region|unknown 'S3Region'",
 				"is-private|'boolean'",
 				"no_ssl_checking|'boolean'",
-				"should-use-v2|'boolean'"
+				"should-use-v2|'boolean'",
+				"regexp|Only one of [regexp, versioned_file] should be defined",
+				"versioned_file|Only one of [regexp, versioned_file] should be defined"
 		);
 
 		editor.assertHoverContains("bucket", "The name of the bucket");

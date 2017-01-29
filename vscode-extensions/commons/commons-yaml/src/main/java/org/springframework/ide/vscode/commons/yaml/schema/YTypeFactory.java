@@ -23,20 +23,16 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import javax.inject.Provider;
-
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
 
 /**
  * Static utility method for creating YType objects representing either
@@ -137,6 +133,11 @@ public class YTypeFactory {
 		public YType inferMoreSpecificType(YType type, DynamicSchemaContext schemaContext) {
 			return ((AbstractType)type).inferMoreSpecificType(schemaContext);
 		}
+
+		@Override
+		public List<String[]> getOneOfConstraints(YType type) {
+			return ((AbstractType)type).getOneOfConstraints();
+		}
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -151,6 +152,8 @@ public class YTypeFactory {
 		private final List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
+
+		private List<String[]> oneOfConstraints = new ArrayList<>(1);
 
 		public boolean isSequenceable() {
 			return false;
@@ -210,6 +213,10 @@ public class YTypeFactory {
 				}
 			}
 			return ImmutableList.of();
+		}
+
+		public List<String[]> getOneOfConstraints() {
+			return ImmutableList.copyOf(oneOfConstraints);
 		}
 
 		public List<YTypedProperty> getProperties() {
@@ -281,6 +288,11 @@ public class YTypeFactory {
 		}
 		private ValueParser getParser(DynamicSchemaContext dc) {
 			return parser == null ? null : parser.withContext(dc);
+		}
+
+		public void requireOneOf(String... properties) {
+			Assert.isLegal(properties.length>1);
+			this.oneOfConstraints.add(properties);
 		}
 	}
 
@@ -418,11 +430,6 @@ public class YTypeFactory {
 			return true;
 		}
 
-		public void requireOneOf(String... properties) {
-			Assert.isLegal(properties.length>1);
-			//TODO: implement support for this.
-		}
-
 	}
 
 	public static class YAtomicType extends AbstractType {
@@ -479,7 +486,7 @@ public class YTypeFactory {
 			return null; //unreachable, but compiler doesn't know.
 		}
 		private boolean isUniqueFor(String name, AbstractType t, List<YBeanType> types) {
-			for (YBeanType other : types) {
+			for (AbstractType other : types) {
 				if (other!=t) {
 					//Note: passing null dynamic context below is okay, assuming the properties in YBeanType
 					// do not care about dynamic context.

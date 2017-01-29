@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 
 /**
  * Keeps track of known resource types.
@@ -25,26 +25,26 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType
 public class ResourceTypeRegistry {
 
 	private static class ResourceTypeInfo {
-		private final YBeanType source;
-		private final YBeanType in;
-		private final YBeanType out;
+		private final AbstractType source;
+		private final AbstractType in;
+		private final AbstractType out;
 
-		public ResourceTypeInfo(YBeanType source, YBeanType in, YBeanType out) {
+		public ResourceTypeInfo(AbstractType source, AbstractType in, AbstractType out) {
 			super();
 			this.source = source;
 			this.in = in;
 			this.out = out;
 		}
 
-		public YBeanType getSource() {
+		public AbstractType getSource() {
 			return source;
 		}
 
-		public YBeanType getIn() {
+		public AbstractType getIn() {
 			return in;
 		}
 
-		public YBeanType getOut() {
+		public AbstractType getOut() {
 			return out;
 		}
 	}
@@ -55,7 +55,7 @@ public class ResourceTypeRegistry {
 	public ResourceTypeRegistry() {
 	}
 
-	public void def(String resourceTypeName, YBeanType source, YBeanType in, YBeanType out) {
+	public void def(String resourceTypeName, AbstractType source, AbstractType in, AbstractType out) {
 		Assert.isLegal(!resourceTypes.containsKey(resourceTypeName), "Multiple definitions for '"+resourceTypeName+"'");
 		resourceTypes.put(resourceTypeName, new ResourceTypeInfo(source, in, out));
 	}
