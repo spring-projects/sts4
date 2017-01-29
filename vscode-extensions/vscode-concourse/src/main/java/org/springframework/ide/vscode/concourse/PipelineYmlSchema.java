@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -36,6 +37,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.yaml.snakeyaml.nodes.Node;
 
 /**
  * @author Kris De Volder
@@ -196,9 +198,19 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "params", t_string_params);
 		task.requireOneOf("image_resource", "image");
 
+		AbstractType t_put_get_name = f.contextAware("Name", (dc) -> {
+			if (getParentPropertyNode("resource", models, dc)!=null) {
+				return null;
+			} else {
+				return t_resource_name;
+			}
+		})
+		.treatAsAtomic(true)
+		.parseWith(ValueParsers.NE_STRING);
+
 		YBeanType getStep = f.ybean("GetStep");
-		addProp(getStep, "get", t_resource_name);
-		addProp(getStep, "resource", t_string);
+		addProp(getStep, "get", t_put_get_name);
+		addProp(getStep, "resource", t_resource_name);
 		addProp(getStep, "version", t_version);
 		addProp(getStep, "passed", f.yseq(t_job_name));
 		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
@@ -207,7 +219,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(getStep, "trigger", t_boolean);
 
 		YBeanType putStep = f.ybean("PutStep");
-		addProp(putStep, "put", t_resource_name);
+		addProp(putStep, "put", t_put_get_name);
 		addProp(putStep, "resource", t_resource_name);
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
@@ -441,7 +453,10 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {
-		String resourceName = getParentPropertyValue(resourceNameProp, models, dc);
+		String resourceName = getParentPropertyValue("resource", models, dc);
+		if (resourceName==null) {
+			resourceName = getParentPropertyValue(resourceNameProp, models, dc);
+		}
 		if (resourceName!=null) {
 			return models.getResourceType(dc.getDocument(), resourceName);
 		}
@@ -453,11 +468,15 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private String getParentPropertyValue(String propName, ConcourseModel models, DynamicSchemaContext dc) {
+		return NodeUtil.asScalar(getParentPropertyNode(propName, models, dc));
+	}
+
+	private Node getParentPropertyNode(String propName, ConcourseModel models, DynamicSchemaContext dc) {
 		YamlPath path = dc.getPath();
 		if (path!=null) {
 			YamlFileAST root = models.getSafeAst(dc.getDocument());
 			if (root!=null) {
-				return NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root));
+				return path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root);
 			}
 		}
 		return null;

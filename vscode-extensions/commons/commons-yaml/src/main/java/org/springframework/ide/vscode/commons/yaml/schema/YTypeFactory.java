@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class YTypeFactory {
 
-	public YType contextAware(String name, SchemaContextAware<YType> guessType) {
+	public YContextSensitive contextAware(String name, SchemaContextAware<YType> guessType) {
 		return new YContextSensitive(name, guessType);
 	}
 
@@ -180,8 +180,9 @@ public class YTypeFactory {
 			addHintProvider((DynamicSchemaContext dc) -> hintProvider);
 		}
 
-		public void addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
+		public AbstractType addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
 			this.hintProvider = hintProvider;
+			return this;
 		}
 
 		public YValueHint[] getHintValues(DynamicSchemaContext dc) throws Exception {
@@ -307,12 +308,15 @@ public class YTypeFactory {
 	/**
 	 * Represents a type that depends on the DynamicSchemaContext
 	 */
-	public static class YContextSensitive extends YAny {
+	public static class YContextSensitive extends AbstractType {
 
 		private final SchemaContextAware<YType> typeGuesser;
+		private final String name;
+
+		boolean treatAsAtomic = false;
 
 		public YContextSensitive(String name, SchemaContextAware<YType> typeGuesser) {
-			super(name);
+			this.name = name;
 			this.typeGuesser = typeGuesser;
 		}
 
@@ -324,6 +328,38 @@ public class YTypeFactory {
 					return inferred;
 				}
 			}
+			return this;
+		}
+
+		@Override
+		public boolean isAtomic() {
+			return true;
+		}
+
+		@Override
+		public boolean isSequenceable() {
+			return !treatAsAtomic;
+		}
+
+		@Override
+		public boolean isMap() {
+			return !treatAsAtomic;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+		/**
+		 * If set to false (which is the default), then this type (when not yet inferred to a
+		 * more specific version of itself) will be treated as if it can be anything (i.e atomic, map or sequence)
+		 * <p>
+		 * If set to true, then it is treated as strictly atomic type instead (i.e it isn't valid to
+		 * use a map or sequence for its value).
+		 */
+		public YContextSensitive treatAsAtomic(boolean isAtomic) {
+			this.treatAsAtomic = isAtomic;
 			return this;
 		}
 

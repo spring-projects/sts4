@@ -1603,6 +1603,159 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("remove", "remove the given lock from the pool");
 	}
 
+	@Test public void reconcileExplicitResourceAttributeInPutStep() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/138568839
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: aws-environments\n" +
+				"  type: pool\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"    - put: environment-1\n" +
+				"      resource: aws-environments\n" +
+				"      params:\n" +
+				"        acquire: true\n" +
+				"        bogus_param: bad\n" +
+				"      get_params:\n" +
+				"        bogus_get_param: bad"
+		);
+		editor.assertProblems(
+				"bogus_param|Unknown property",
+				"bogus_get_param|Unknown property"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: aws-environments\n" +
+				"  type: pool\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"    - get: environment-1\n" +
+				"      resource: aws-environments\n" +
+				"      params:\n" +
+				"        bogus_param: bad\n"
+		);
+		editor.assertProblems(
+				"bogus_param|Unknown property"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: aws-environments\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    uri: git@github.com:concourse/locks.git\n" +
+				"    branch: master\n" +
+				"    pool: aws\n" +
+				"    private_key: |\n" +
+				"      -----BEGIN RSA PRIVATE KEY-----\n" +
+				"      MIIEowIBAAKCAQEAtCS10/f7W7lkQaSgD/mVeaSOvSF9ql4hf/zfMwfVGgHWjj+W\n" +
+				"      ...\n" +
+				"      DWiJL+OFeg9kawcUL6hQ8JeXPhlImG6RTUffma9+iGQyyBMCGd1l\n" +
+				"      -----END RSA PRIVATE KEY-----\n" +
+				"    username: jonhsmith\n" +
+				"    password: his-password\n" +
+				"    retry_delay: 10s\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"    - get: aws-environments\n" +
+				"      params: {}     \n" +
+				"    - put: environment-1\n" +
+				"      resource: aws-environments\n" +
+				"      params: {acquire: true}\n" +
+				"    - put: environment-2\n" +
+				"      resource: aws-environments\n" +
+				"      params: \n" +
+				"        acquire: true\n" +
+				"        bogus_param: blah\n" +
+				"    - task: test-multi-aws\n" +
+				"      file: my-scripts/test-multi-aws.yml\n" +
+				"    - put: aws-environments\n" +
+				"      params: {release: environment-1}\n" +
+				"    - put: aws-environments\n" +
+				"      params: {release: environment-2}"
+		);
+		editor.assertProblems(
+				"bogus_param|Unknown property"
+		);
+	}
+
+	@Test
+	public void resourceNameContentAssist() throws Exception {
+		String conText;
+
+		conText =
+				"resources:\n" +
+				"- name: foo-resource\n" +
+				"- name: bar-resource\n" +
+				"- name: other-resource\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"  - <*>";
+		assertContextualCompletions(conText
+				, // ==============
+				"get: <*>"
+				,
+				"get: bar-resource<*>",
+				"get: foo-resource<*>",
+				"get: other-resource<*>"
+		);
+		assertContextualCompletions(conText
+				, // ==============
+				"put: <*>"
+				, // ==>
+				"put: bar-resource<*>",
+				"put: foo-resource<*>",
+				"put: other-resource<*>"
+		);
+
+
+		conText =
+				"resources:\n" +
+				"- name: foo-resource\n" +
+				"- name: bar-resource\n" +
+				"- name: other-resource\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"  - put: something\n" +
+				"    <*>";
+		assertContextualCompletions(conText
+				, // ==============
+				"resource: <*>"
+				, // ==>
+				"resource: bar-resource<*>",
+				"resource: foo-resource<*>",
+				"resource: other-resource<*>"
+		);
+
+		conText =
+				"resources:\n" +
+				"- name: foo-resource\n" +
+				"- name: bar-resource\n" +
+				"- name: other-resource\n" +
+				"jobs:\n" +
+				"- name: test-multi-aws\n" +
+				"  plan:\n" +
+				"  - <*>\n" +
+				"    resource: foo-resource\n"; // presence of explicit 'resource' attribute should disable treating the name in put/get as a resource-name
+
+		assertContextualCompletions(conText,
+				"put: <*>"
+				// ==> NONE
+		);
+		assertContextualCompletions(conText,
+				"get: <*>"
+				// ==> NONE
+		);
+	}
+
 	@Test
 	public void gotoResourceDefinition() throws Exception {
 		Editor editor = harness.newEditor(
