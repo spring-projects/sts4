@@ -27,7 +27,7 @@ public class CFTargetCache {
 	private final ClientParamsProvider paramsProvider;
 	private final CloudFoundryClientFactory clientFactory;
 	private final ClientTimeouts timeouts;
-	private final LoadingCache<CFClientParams, CFTarget> cache;
+	private final LoadingCache<ClientParamsCacheKey, CFTarget> cache;
 
 	public static final long SERVICES_EXPIRATION = 10;
 	public static final long TARGET_EXPIRATION = 1;
@@ -39,11 +39,11 @@ public class CFTargetCache {
 		this.paramsProvider = paramsProvider;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
-		CacheLoader<CFClientParams, CFTarget> loader = new CacheLoader<CFClientParams, CFTarget>() {
+		CacheLoader<ClientParamsCacheKey, CFTarget> loader = new CacheLoader<ClientParamsCacheKey, CFTarget>() {
 
 			@Override
-			public CFTarget load(CFClientParams params) throws Exception {
-				return create(params);
+			public CFTarget load(ClientParamsCacheKey params) throws Exception {
+				return create(params.fullParams);
 			}
 
 		};
@@ -63,8 +63,14 @@ public class CFTargetCache {
 		List<CFTarget> targets = new ArrayList<>();
 		if (allParams != null) {
 			for (CFClientParams params : allParams) {
-				CFTarget target = cache.get(params);
+				ClientParamsCacheKey key = ClientParamsCacheKey.from(params);
+				CFTarget target = cache.get(key);
 				if (target != null) {
+					// If any CF errors occurred in the target, refresh once
+					if (target.hasCFFailure()) {
+						 cache.refresh(key);
+						 target = cache.get(key);
+					}
 					targets.add(target);
 				}
 			}
