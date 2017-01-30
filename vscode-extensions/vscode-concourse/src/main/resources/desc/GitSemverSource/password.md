@@ -1,0 +1,1 @@
+*Optional.* Password for HTTP(S) auth when pulling/pushing.

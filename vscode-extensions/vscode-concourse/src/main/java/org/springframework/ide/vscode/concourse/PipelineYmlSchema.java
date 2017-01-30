@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -30,14 +29,13 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicTy
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
-
-import reactor.core.publisher.Flux;
-
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.yaml.snakeyaml.nodes.Node;
+
+import reactor.core.publisher.Flux;
 
 /**
  * @author Kris De Volder
@@ -108,7 +106,24 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
+	private final ConcourseModel models;
+
+	public final YType t_semver = f.yatomic("Semver")
+			.parseWith(ValueParsers.NE_STRING); //TODO: use real semver parser.
+
+	public final YType t_s3_region = f.yenum("S3Region",
+			//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+			 "us-west-1", "us-west-2",
+			 "ca-central-1", "EU", "eu-west-1",
+			 "eu-west-2", "eu-central-1",
+			 "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+			 "sa-east-1",
+			 "us-east-2"
+	);
+
+
 	public PipelineYmlSchema(ConcourseModel models) {
+		this.models = models;
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		// define schema types
@@ -205,7 +220,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				return t_resource_name;
 			}
 		})
-		.treatAsAtomic(true)
+		.treatAsAtomic()
 		.parseWith(ValueParsers.NE_STRING);
 
 		YBeanType getStep = f.ybean("GetStep");
@@ -381,16 +396,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		}
 		//s3
 		{
-			YType t_s3_region = f.yenum("S3Region",
-					//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
-					 "us-west-1", "us-west-2",
-					 "ca-central-1", "EU", "eu-west-1",
-					 "eu-west-2", "eu-central-1",
-					 "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-					 "sa-east-1",
-					 "us-east-2"
-			);
-
 			YType t_canned_acl = f.yenum("S3CannedAcl",
 					//See http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
 					"private", "public-read", "public-read-write", "aws-exec-read",
@@ -449,7 +454,70 @@ public class PipelineYmlSchema implements YamlSchema {
 
 			resourceTypes.def("pool", source, get, put);
 		}
+		//semver
+		{
+			AbstractType git_source = f.ybean("GitSemverSource");
+			addProp(git_source, "uri", t_ne_string).isRequired(true);
+			addProp(git_source, "branch", t_ne_string).isRequired(true);
+			addProp(git_source, "file", t_ne_string).isRequired(true);
+			addProp(git_source, "private_key", t_ne_string);
+			addProp(git_source, "username", t_ne_string);
+			addProp(git_source, "password", t_ne_string);
+			addProp(git_source, "git_user", t_ne_string);
 
+			AbstractType s3_source = f.ybean("S3SemverSource");
+			addProp(s3_source, "bucket", t_ne_string).isRequired(true);
+			addProp(s3_source, "key", t_ne_string).isRequired(true);
+			addProp(s3_source, "access_key_id", t_ne_string).isRequired(true);
+			addProp(s3_source, "secret_access_key", t_ne_string).isRequired(true);
+			addProp(s3_source, "region_name", t_s3_region);
+			addProp(s3_source, "endpoint", t_ne_string);
+			addProp(s3_source, "disable_ssl", t_boolean);
+
+			AbstractType swift_source = f.ybean("SwiftSemverSource");
+			addProp(swift_source, "openstack", t_any).isRequired(true);
+
+			AbstractType[] driverSpecificSources = {
+					git_source, s3_source, swift_source
+			};
+
+			AbstractType source = f.contextAware("SemverSource", (dc) -> {
+				switch (getSemverDriverName(dc)) {
+				case "git":
+					return git_source;
+				case "s3":
+					return s3_source;
+				case "swift":
+					return swift_source;
+				default:
+					return null;
+				}
+			}).treatAsBean();
+			addProp(source, "initial_version", t_semver);
+			addProp(source, "driver", f.yenum("SemverDriver", "git", "s3", "swift"));
+			for (AbstractType s : driverSpecificSources) {
+				for (YTypedProperty p : source.getProperties()) {
+					s.addProperty(p);
+				}
+			}
+
+			AbstractType get = f.ybean("SemverGetParams");
+			addProp(get, "bump", f.yenum("SemverBump", "major", "minor", "patch", "final"));
+			addProp(get, "pre", t_ne_string);
+
+			AbstractType put = f.ybean("SemverPutParams");
+			for (YTypedProperty p : get.getProperties()) {
+				put.addProperty(p);
+			}
+			addProp(put, "file", t_ne_string);
+
+			resourceTypes.def("semver", source, get, put);
+		}
+	}
+
+	private String getSemverDriverName(DynamicSchemaContext dc) {
+		String driver = getSiblingPropertyValue(dc, "driver");
+		return driver!=null ? driver : "s3";
 	}
 
 	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {
@@ -469,6 +537,17 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private String getParentPropertyValue(String propName, ConcourseModel models, DynamicSchemaContext dc) {
 		return NodeUtil.asScalar(getParentPropertyNode(propName, models, dc));
+	}
+
+	private String getSiblingPropertyValue(DynamicSchemaContext dc, String propName) {
+		YamlPath path = dc.getPath();
+		if (path!=null) {
+			YamlFileAST root = models.getSafeAst(dc.getDocument());
+			if (root!=null) {
+				return NodeUtil.asScalar(path.append(YamlPathSegment.valueAt(propName)).traverseToNode(root));
+			}
+		}
+		return null;
 	}
 
 	private Node getParentPropertyNode(String propName, ConcourseModel models, DynamicSchemaContext dc) {

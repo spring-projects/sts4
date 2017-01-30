@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
@@ -1601,6 +1602,293 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("add", "add a new lock to the pool in the unclaimed state");
 		editor.assertHoverContains("add_claimed", "in the *claimed* state");
 		editor.assertHoverContains("remove", "remove the given lock from the pool");
+	}
+
+	@Test public void semverResourceSourceReconcileAtomNotAllowed() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source: an-atom"
+		);
+		editor.assertProblems("an-atom|Expecting a 'Map'");
+	}
+
+	@Test public void semverResourceSourceReconcileRequiredProps() throws Exception {
+		Editor editor;
+
+		//required props for s3 driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: s3"
+		);
+		editor.assertProblems(
+				"driver: s3|[access_key_id, bucket, key, secret_access_key] are required"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source: {}"
+		);
+		editor.assertProblems(
+				"{}|[access_key_id, bucket, key, secret_access_key] are required"
+		);
+
+		// required props for git driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: git"
+		);
+		editor.assertProblems(
+				"driver: git|[branch, file, uri] are required"
+		);
+
+		//required props for swift driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: swift"
+		);
+		editor.assertProblems(
+				"driver: swift|'openstack' is required"
+		);
+	}
+
+	@Test public void semverResourceSourceBadDriver() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: bad-driver"
+		);
+		editor.assertProblems("bad-driver|'SemverDriver'");
+	}
+
+	@Test public void semverGitResourceSourceContentAssist() throws Exception {
+		String conText =
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"<*>";
+		assertContextualCompletions(conText,
+				"    driver: git\n" +
+				"    <*>"
+				, // ==>
+				"    driver: git\n" +
+				"    branch: <*>"
+				,
+				"    driver: git\n" +
+				"    file: <*>"
+				,
+				"    driver: git\n" +
+				"    git_user: <*>"
+				,
+				"    driver: git\n" +
+				"    initial_version: <*>"
+				,
+				"    driver: git\n" +
+				"    password: <*>"
+				,
+				"    driver: git\n" +
+				"    private_key: <*>"
+				,
+				"    driver: git\n" +
+				"    uri: <*>"
+				,
+				"    driver: git\n" +
+				"    username: <*>"
+				,
+				"    driver: git<*>"
+		);
+	}
+
+	@Test public void semverGitResourceSourceReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		// required props for git driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: not-a-version\n" + //TODO: should be marked as a error but isn't yet.
+				"    driver: git\n" +
+				"    uri: git@github.com:concourse/concourse.git\n" +
+				"    branch: version\n" +
+				"    file: version\n" +
+				"    private_key: {{concourse-repo-private-key}}\n" +
+				"    username: jsmith\n" +
+				"    password: s3cre$t\n" +
+				"    git_user: jsmith@mailhost.com\n" +
+				"    bogus: bad"
+		);
+		editor.assertProblems(
+				"bogus|Unknown property"
+		);
+
+		editor.assertHoverContains("initial_version", "version number to use when bootstrapping");
+		editor.assertHoverContains("driver", "The driver to use");
+		editor.assertHoverContains("uri", "The repository URL");
+		editor.assertHoverContains("branch", "The branch the file lives on");
+		editor.assertHoverContains("file", "The name of the file");
+		editor.assertHoverContains("private_key", "The SSH private key");
+		editor.assertHoverContains("username", "Username for HTTP(S) auth");
+		editor.assertHoverContains("password", "Password for HTTP(S) auth");
+		editor.assertHoverContains("git_user", "The git identity to use");
+	}
+
+	@Test public void semverS3ResourceSourceReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		//without explicit 'driver'... should assume s3 by default
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: 1.2.3\n" +
+				"    bucket: the-bucket\n" +
+				"    key: object-key\n" +
+				"    access_key_id: aws-access-key\n" +
+				"    secret_access_key: aws-access-key\n" +
+				"    region_name: bogus-region\n" +
+				"    endpoint: https://blah.com/blah\n" +
+				"    disable_ssl: no-use-ssl\n" +
+				"    bogus-prop: bad"
+		);
+		editor.assertProblems(
+				"bogus-region|'S3Region'",
+				"no-use-ssl|'boolean'",
+				"bogus-prop|Unknown property"
+		);
+
+		//with explicit 'driver: s3'
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: 1.2.3\n" +
+				"    driver: s3\n" +
+				"    bucket: the-bucket\n" +
+				"    key: object-key\n" +
+				"    access_key_id: aws-access-key\n" +
+				"    secret_access_key: aws-access-key\n" +
+				"    region_name: bogus-region\n" +
+				"    endpoint: https://blah.com/blah\n" +
+				"    disable_ssl: no-use-ssl\n" +
+				"    bogus-prop: bad"
+		);
+		editor.assertProblems(
+				"bogus-region|'S3Region'",
+				"no-use-ssl|'boolean'",
+				"bogus-prop|Unknown property"
+		);
+
+		editor.assertHoverContains("initial_version", "version number to use when bootstrapping");
+		editor.assertHoverContains("driver", "The driver to use");
+		editor.assertHoverContains("bucket", "The name of the bucket");
+		editor.assertHoverContains("key", "The key to use for the object");
+		editor.assertHoverContains("access_key_id", "The AWS access key to");
+		editor.assertHoverContains("secret_access_key", "The AWS secret key to");
+		editor.assertHoverContains("region_name", "The region the bucket is in");
+		editor.assertHoverContains("endpoint", "Custom endpoint for using S3");
+		editor.assertHoverContains("disable_ssl", "Disable SSL for the endpoint");
+	}
+
+	@Test public void semverSwiftResourceSourceReconcileAndHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: 1.2.3\n" +
+				"    driver: swift\n" +
+				"    openstack:\n" +
+				"       container: nice-container\n" +
+				"       item_name: flubber-blub\n" +
+				"       region_name: us-west-1\n"
+		);
+		editor.assertProblems(/*NONE*/);
+		editor.assertHoverContains("openstack", "All openstack configuration");
+	}
+
+	@Test public void semverResourceGetParamsReconcileAndHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: 1.2.3\n" +
+				"    driver: swift\n" +
+				"    openstack: whatever\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: version\n" +
+				"    params:\n" +
+				"      bump: what-to-bump\n" +
+				"      pre: beta\n" +
+				"      bogus: bad\n"
+		);
+		editor.assertProblems(
+				"what-to-bump|[final, major, minor, patch]",
+				"bogus|Unknown property"
+		);
+
+		editor.assertHoverContains("bump", "Bump the version number");
+		editor.assertHoverContains("pre", "bump to a prerelease");
+	}
+
+	@Test public void semverPutParamsReconcileAndHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    initial_version: 1.2.3\n" +
+				"    driver: swift\n" +
+				"    openstack: whatever\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: version\n" +
+				"    params:\n" +
+				"      file: version-file\n" +
+				"      bump: what-to-bump\n" +
+				"      pre: alpha\n" +
+				"      bogus-one: bad\n" +
+				"    get_params:\n" +
+				"      file: not-expected-here\n" +
+				"      bump: what-to-get-bump\n" +
+				"      pre: beta\n" +
+				"      bogus-two: bad\n"
+		);
+		editor.assertProblems(
+				"what-to-bump|[final, major, minor, patch]",
+				"bogus-one|Unknown property",
+				"file|Unknown property",
+				"what-to-get-bump|[final, major, minor, patch]",
+				"bogus-two|Unknown property"
+		);
+
+		editor.assertHoverContains("file", 1, "Path to a file containing the version number");
+		editor.assertHoverContains("bump", 1, "Bump the version number");
+		editor.assertHoverContains("bump", 2, "Bump the version number");
+		editor.assertHoverContains("pre", 1, "bump to a prerelease");
+		editor.assertHoverContains("pre", 2, "bump to a prerelease");
 	}
 
 	@Test public void reconcileExplicitResourceAttributeInPutStep() throws Exception {

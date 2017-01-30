@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -132,7 +133,13 @@ public class YTypeFactory {
 
 		@Override
 		public YType inferMoreSpecificType(YType type, DynamicSchemaContext schemaContext) {
-			return ((AbstractType)type).inferMoreSpecificType(schemaContext);
+			YType better = ((AbstractType)type).inferMoreSpecificType(schemaContext);
+			while (better!=null && better!=type) {
+				type = better;
+				better = ((AbstractType)type).inferMoreSpecificType(schemaContext);
+			}
+			//Can only get here if either 'better' is null or better==type
+			return type;
 		}
 
 		@Override
@@ -313,7 +320,10 @@ public class YTypeFactory {
 		private final SchemaContextAware<YType> typeGuesser;
 		private final String name;
 
-		boolean treatAsAtomic = false;
+		private boolean isAtomic = true;
+		private boolean isMap = true;
+		private boolean isBean = true;
+		private boolean isSeq = true;
 
 		public YContextSensitive(String name, SchemaContextAware<YType> typeGuesser) {
 			this.name = name;
@@ -333,17 +343,22 @@ public class YTypeFactory {
 
 		@Override
 		public boolean isAtomic() {
-			return true;
+			return isAtomic;
 		}
 
 		@Override
 		public boolean isSequenceable() {
-			return !treatAsAtomic;
+			return isSeq;
 		}
 
 		@Override
 		public boolean isMap() {
-			return !treatAsAtomic;
+			return isMap;
+		}
+
+		@Override
+		public boolean isBean() {
+			return isBean;
 		}
 
 		@Override
@@ -358,8 +373,19 @@ public class YTypeFactory {
 		 * If set to true, then it is treated as strictly atomic type instead (i.e it isn't valid to
 		 * use a map or sequence for its value).
 		 */
-		public YContextSensitive treatAsAtomic(boolean isAtomic) {
-			this.treatAsAtomic = isAtomic;
+		public AbstractType treatAsAtomic() {
+			this.isAtomic = true;
+			this.isMap = false;
+			this.isBean = false;
+			this.isSeq = false;
+			return this;
+		}
+
+		public AbstractType treatAsBean() {
+			this.isAtomic = false;
+			this.isMap = false;
+			this.isBean = true;
+			this.isSeq = false;
 			return this;
 		}
 
