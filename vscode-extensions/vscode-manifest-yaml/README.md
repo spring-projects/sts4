@@ -32,6 +32,6 @@ read its detailed documentation.
 ![Hover Docs Screenshot][hovers]
 
 
-[linting]: https://s29.postimg.org/67wu0d7yv/linting.png
-[ca]: https://s29.postimg.org/q52r9bqtz/content_assist.png
-[hovers]: https://s29.postimg.org/3rv0mipw7/hovers.png
+[linting]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png
+[ca]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png
+[hovers]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png
