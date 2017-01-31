@@ -29,7 +29,7 @@ npm run vsce-package
 # So we must instead rename the file ourself to add a qualifier
 if [ "$dist_type" == release ]; then
     vsix_file=`ls *.vsix`
-    release_name=`git describe --tags`
+    release_name=`git tag --points-at HEAD | grep ${extension_id}`
     echo "release_name=$release_name"
     if [ -z "$release_name" ]; then
         echo "Release Candidates must be tagged" >&2
