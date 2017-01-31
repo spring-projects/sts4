@@ -63,7 +63,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
-		logger.info("getCompletions(" + params +")");
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.get(params).copy();
 		if (doc!=null) {
