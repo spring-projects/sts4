@@ -28,9 +28,11 @@ public class CFTargetCache {
 	private final CloudFoundryClientFactory clientFactory;
 	private final ClientTimeouts timeouts;
 	private final LoadingCache<ClientParamsCacheKey, CFTarget> cache;
+	private final CFCallableContext callableContext;
 
 	public static final long SERVICES_EXPIRATION = 10;
 	public static final long TARGET_EXPIRATION = 1;
+	
 
 	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
@@ -39,6 +41,7 @@ public class CFTargetCache {
 		this.paramsProvider = paramsProvider;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
+		this.callableContext = new CFCallableContext(paramsProvider.getMessages());
 		CacheLoader<ClientParamsCacheKey, CFTarget> loader = new CacheLoader<ClientParamsCacheKey, CFTarget>() {
 
 			@Override
@@ -58,6 +61,10 @@ public class CFTargetCache {
 	 *             for any other error encountered
 	 */
 	public synchronized List<CFTarget> getOrCreate() throws NoTargetsException, Exception {
+		return callableContext.checkConnection(() -> doGetOrCreate());
+	}
+	
+	protected synchronized List<CFTarget> doGetOrCreate() throws NoTargetsException, Exception {
 
 		List<CFClientParams> allParams = paramsProvider.getParams();
 		List<CFTarget> targets = new ArrayList<>();
@@ -67,7 +74,7 @@ public class CFTargetCache {
 				CFTarget target = cache.get(key);
 				if (target != null) {
 					// If any CF errors occurred in the target, refresh once
-					if (target.hasCFFailure()) {
+					if (target.hasConnectionError()) {
 						 cache.refresh(key);
 						 target = cache.get(key);
 					}
@@ -80,7 +87,7 @@ public class CFTargetCache {
 	}
 
 	protected CFTarget create(CFClientParams params) throws Exception {
-		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts));
+		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts), callableContext);
 	}
 
 	protected static String getTargetName(CFClientParams params) {
