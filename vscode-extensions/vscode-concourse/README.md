@@ -22,22 +22,32 @@ See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview
 As you type the text is parsed and checked for basic syntactic and structural correctness. Hover over
 an error marker to see an explanation:
 
-**TODO: screenshot(s)**
+![Linting Screenshot][linting]
 
 ### Content assist
 
 Having trouble remembering all the names of the attributes, and their spelling? Or can't remember
-which resource properties to set in the `get` task params versus its `source` attributes? 
-Content assist to the rescue:
+which resource properties to set in the `get` task params versus its `source` attributes? Or
+don't remember what 'special' values are acceptable for a certain property? Content assist
+to the rescue:
 
-**TODO: screenshot(s)**
+![Content Assist Screenshot][ca1]
+
+![Content Assist Screenshot][ca2]
 
 ### Documentation Hovers
 
 Having trouble remembering exactly what the meaning of each attribute is? Hover over an attribute and 
 read its detailed documentation:
 
-**TODO: screenshot(s)**
+![Hover Docs Screenshot][hovers]
+
+### Goto/Peek Definition
+
+Use "Goto Defition" or "Peek Definition" to quickly go (or peek) from a a Job- or Resource name 
+to its corresponding definition.
+
+![Peek Definition Screenshot][peek]
 
 ## Limitations
 
@@ -50,7 +60,8 @@ The resource-types that are already defined in the schema are:
  - docker-image
  - s3
  - pool
- 
+ - semver
+
 For other resource-types content assist and checking is still very limited. We intend
 to grow this list and provide a similar level of support for all of the built-in resource types in
 the near future.
@@ -58,4 +69,10 @@ the near future.
 ## Issues and Feature Requests
 
 Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
+
+[linting]: https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/linting.png
+[ca1]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-1.png
+[ca2]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-2.png
+[hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/hover.png
+[peek]:    https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/peek.png
 
