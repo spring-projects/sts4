@@ -22,7 +22,6 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CloudFoundryClientCache.CFClientProvider;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -45,7 +44,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	private final ClientTimeouts timeouts;
 
 	public DefaultClientRequestsV2(CloudFoundryClientCache clients, CFClientParams params, ClientTimeouts timeouts) {
-		CFClientProvider provider = clients.getOrCreate(params);
+		CFClientProvider provider = getFromCache(clients, params);
 		this._client = provider.client;
 
 		this._operations = DefaultCloudFoundryOperations.builder()
@@ -59,6 +58,16 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 		
 		// timeouts must never be null
 		this.timeouts = timeouts != null ? timeouts : ClientTimeouts.DEFAULT_TIMEOUTS;
+	}
+
+	private CFClientProvider getFromCache(CloudFoundryClientCache clients, CFClientParams params) {
+		CFClientProvider provider = null;
+		try {
+			provider = clients.getOrCreate(params);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Failed to create a v2 CF Java client using params: " + params, e);
+		}
+		return provider;
 	}
 
 	@Override

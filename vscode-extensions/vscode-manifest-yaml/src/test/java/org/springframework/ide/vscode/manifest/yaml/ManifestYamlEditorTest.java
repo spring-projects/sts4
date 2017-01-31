@@ -12,29 +12,24 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-
-import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
 
 import com.google.common.collect.ImmutableList;
 
@@ -896,12 +891,67 @@ public class ManifestYamlEditorTest {
 		//query string should match the 'filter text' otherwise vscode will filter the item and it will be gone!
 		assertEquals("something", completion.getFilterText());
 	}
+	
+	@Test
+	public void serviceContentAssistEmptyServices() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+		assertDoesNotContainCompletions("services:\n" + "  - <*>", "mysql");
+	}
+	
+	@Test
+	public void serviceContentAssistDoesNotContainServices() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("mysql");
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
+		assertDoesNotContainCompletions("services:\n" + "  - <*>", "wrongsql");
+	}
+	
+	@Test
+	public void serviceContentAssist() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("mysql");
+		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
+	
+		assertContainsCompletions("services:\n" + "  - <*>", "mysql");
+	}
+	
+	@Test
+	public void buildpackContentAssist() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
+		when(buildPack.getName()).thenReturn("java_buildpack");
+		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
+		
+		assertContainsCompletions("buildpack: <*>", "buildpack: java_buildpack<*>");
+	}
+
+	@Test
+	public void buildpackContentAssistDoesNotContainCompletion() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
+		when(buildPack.getName()).thenReturn("java_buildpack");
+		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
+		assertDoesNotContainCompletions("buildpack: <*>", "buildpack: wrong_buildpack<*>");
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertCompletions(textAfter);
+	}
+	
+	private void assertDoesNotContainCompletions(String textBefore, String... notToBeFound) throws Exception {
+		Editor editor = harness.newEditor(textBefore);
+		editor.assertDoesNotContainCompletions(notToBeFound);
+	}
+	
+	private void assertContainsCompletions(String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(textBefore);
+		editor.assertContainsCompletions(textAfter);
 	}
 
 }
