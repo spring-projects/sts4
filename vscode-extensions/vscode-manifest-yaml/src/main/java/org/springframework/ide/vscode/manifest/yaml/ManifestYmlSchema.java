@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -27,6 +28,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -96,7 +98,19 @@ public class ManifestYmlSchema implements YamlSchema {
 		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application)));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
+//		YAtomicType t_test_hanging = f.yatomic("Hanging");
+//		t_test_hanging.addHintProvider(() -> {
+//			try {
+//				Thread.sleep(60_000);
+//			} catch (InterruptedException e) {
+//				LaunguageServerApp.LOG.info("test_hanging hint provider interrupted!");
+//				throw e;
+//			}
+//			return YTypeFactory.hints(ImmutableList.of("very", "slow", "hints"));
+//		});
+
 		YTypedPropertyImpl[] props = {
+//			f.yprop("test_hanging", t_test_hanging),
 			f.yprop("buildpack", t_buildpack),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),

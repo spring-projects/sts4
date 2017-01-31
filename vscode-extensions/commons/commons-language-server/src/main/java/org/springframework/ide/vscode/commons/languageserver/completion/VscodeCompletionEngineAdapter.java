@@ -48,7 +48,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
 
-
 	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
 		this.server = server;
 		this.engine = engine;
@@ -64,6 +63,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
+		logger.info("getCompletions(" + params +")");
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.get(params).copy();
 		if (doc!=null) {
@@ -95,7 +95,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				list.setItems(items);
 				return list;
 			})
-			.subscribeOn(Schedulers.single()); //!!! without this the mono will just be computed on the same thread that calls it.
+			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.
 		}
 		return Mono.just(SimpleTextDocumentService.NO_COMPLETIONS);
 	}

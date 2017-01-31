@@ -204,7 +204,7 @@ public abstract class LaunguageServerApp {
 		}
 	}
 
-	protected static final Logger LOG = Logger.getLogger("main");
+	public static final Logger LOG = Logger.getLogger("main");
 
 	/**
 	 * Listen for requests from the parent node process.
