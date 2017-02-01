@@ -60,7 +60,7 @@ public class CloudFoundryClientCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().initialCapacity(1).expireAfterAccess(EXPIRATION, TimeUnit.HOURS)
+		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(EXPIRATION, TimeUnit.HOURS)
 				.build(loader);
 
 	}

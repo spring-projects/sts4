@@ -24,7 +24,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
  */
 public class CFClientParams {
 
-    private static final Logger logger = Logger.getLogger(CFClientParams.class.getName());
+	private static final Logger logger = Logger.getLogger(CFClientParams.class.getName());
 
 	private final String apiUrl;
 	private final String username;
@@ -32,7 +32,7 @@ public class CFClientParams {
 	private final boolean skipSslValidation;
 
 	private String orgName; // optional
-	private String spaceName; //optional
+	private String spaceName; // optional
 
 	public CFClientParams(String apiUrl,
 			String username,
@@ -43,7 +43,7 @@ public class CFClientParams {
 	) {
 		Assert.isNotNull(apiUrl);
 		Assert.isNotNull(credentials);
-		if (credentials.getType()==CFCredentialType.PASSWORD) {
+		if (credentials.getType() == CFCredentialType.PASSWORD) {
 			Assert.isNotNull(username);
 		}
 		this.apiUrl = apiUrl;
@@ -53,7 +53,7 @@ public class CFClientParams {
 		this.orgName = orgName;
 		this.spaceName = spaceName;
 	}
-	
+
 	public CFClientParams(String apiUrl, String username, CFCredentials credentials, boolean skipSslValidation) {
 		this(apiUrl, username, credentials, null /* no org */,
 				null /* no space */, skipSslValidation);
@@ -70,8 +70,6 @@ public class CFClientParams {
 	public boolean skipSslValidation() {
 		return skipSslValidation;
 	}
-
-
 
 	public String getApiUrl() {
 		return apiUrl;
@@ -109,8 +107,9 @@ public class CFClientParams {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((apiUrl == null) ? 0 : apiUrl.hashCode());
-		result = prime * result + ((orgName == null) ? 0 : orgName.hashCode());
 		result = prime * result + ((credentials == null) ? 0 : credentials.hashCode());
+		result = prime * result + ((orgName == null) ? 0 : orgName.hashCode());
+		result = prime * result + (skipSslValidation ? 1231 : 1237);
 		result = prime * result + ((spaceName == null) ? 0 : spaceName.hashCode());
 		result = prime * result + ((username == null) ? 0 : username.hashCode());
 		return result;
@@ -130,15 +129,17 @@ public class CFClientParams {
 				return false;
 		} else if (!apiUrl.equals(other.apiUrl))
 			return false;
+		if (credentials == null) {
+			if (other.credentials != null)
+				return false;
+		} else if (!credentials.equals(other.credentials))
+			return false;
 		if (orgName == null) {
 			if (other.orgName != null)
 				return false;
 		} else if (!orgName.equals(other.orgName))
 			return false;
-		if (credentials == null) {
-			if (other.credentials != null)
-				return false;
-		} else if (!credentials.equals(other.credentials))
+		if (skipSslValidation != other.skipSslValidation)
 			return false;
 		if (spaceName == null) {
 			if (other.spaceName != null)
@@ -160,5 +161,4 @@ public class CFClientParams {
 				+ "]";
 	}
 
-	
 }

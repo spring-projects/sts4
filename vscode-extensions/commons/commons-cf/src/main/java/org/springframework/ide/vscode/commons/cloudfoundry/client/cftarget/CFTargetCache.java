@@ -50,7 +50,7 @@ public class CFTargetCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS).build(loader);
+		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS).build(loader);
 	}
 
 	/**
