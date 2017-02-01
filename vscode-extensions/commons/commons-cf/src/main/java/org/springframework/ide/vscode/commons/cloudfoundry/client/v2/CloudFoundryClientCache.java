@@ -66,7 +66,9 @@ public class CloudFoundryClientCache {
 	}
 
 	public synchronized CFClientProvider getOrCreate(CFClientParams params) throws Exception {
-		return cache.get(ClientParamsCacheKey.from(params));
+		return create(params);
+		// Disable cache as corrupted clients may be kept due to connection or auth errors
+//		return cache.get(ClientParamsCacheKey.from(params));
 	}
 
 	protected CFClientProvider create(CFClientParams params) {
