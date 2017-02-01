@@ -16,7 +16,6 @@ resources:
   source:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
-    username: kdvolder
     private_key: {{rsa_id}}
     paths:
     - concourse/docker
@@ -134,7 +133,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "@kdvolder"
+        channel: "@aboyko"
         text: |
           SUCCESS Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}!
           New snapshots available at http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
