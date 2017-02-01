@@ -18,8 +18,8 @@
 		<module>java-properties</module>
 		<module>commons-cf</module>
 		<module>commons-maven</module>
-		
-		
+
+
 	</modules>
 
 	<repositories>
@@ -35,32 +35,37 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>Sonatype Nexus Snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>http://repo.spring.io/milestone</url>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-	    <repository>
+		<repository>
 			<id>spring-releases</id>
 			<name>Spring Releases</name>
 			<url>http://repo.spring.io/release</url>
 			<snapshots>
-                <enabled>false</enabled>
-            </snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>http://repo.spring.io/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>http://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>sonatype-oss-snapshots</id>
+			<name>Sonatype OSS Snapshots</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<properties>
@@ -76,7 +81,7 @@
 		<!-- NOTE: Reactor version must match version used by the CF client -->
 		<reactor-version>3.0.5.BUILD-SNAPSHOT</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>
-	    <cloudfoundry-client-version>2.3.0.BUILD-SNAPSHOT</cloudfoundry-client-version>
+		<cloudfoundry-client-version>2.4.0.BUILD-SNAPSHOT</cloudfoundry-client-version>
 	</properties>
 
 	<build>
