@@ -19,10 +19,14 @@ import java.util.logging.Logger;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.UnauthorizedException;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+
+import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractCFHintsProvider implements Callable<Collection<YValueHint>> {
 
@@ -59,12 +63,12 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 			// resolving the error message. Instead, log the full error, and
 			// only throw a
 			// new exception with a "nicer" message
-			Throwable noTargetsError = ExceptionUtil.getThrowable(e, NoTargetsException.class);
-			if (noTargetsError != null) {
+			Throwable errorNoAppending = getErrorNoAppending(e);
+			if (errorNoAppending != null) {
 				// Do not log the no-targets exception as it may be encountered
 				// frequently
 				// if a user does not have a CF client installed
-				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(noTargetsError));
+				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(errorNoAppending));
 			} else {
 				// Log any other error
 				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
@@ -74,6 +78,17 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 		}
 	}
 
+	/**
+	 * 
+	 * @param e
+	 * @return an error that requires no additional information when showing its
+	 *         message, or null if no such error is found
+	 */
+	protected Throwable getErrorNoAppending(Throwable e) {
+		return ExceptionUtil.findThrowable(e,
+				ImmutableList.of(NoTargetsException.class, ConnectionException.class, UnauthorizedException.class));
+	}
+	
 	/**
 	 *
 	 * @return non-null list of hints. Return empty if no hints available

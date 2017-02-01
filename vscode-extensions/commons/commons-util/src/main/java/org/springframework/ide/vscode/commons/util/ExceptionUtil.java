@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
@@ -52,6 +53,22 @@ public class ExceptionUtil {
 			parent = cause.getCause();
 			if (toLookFor.isAssignableFrom(cause.getClass())) {
 				return cause;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Given an exception, find if any of the exception types to look for is contained in the given exception
+	 * @param e
+	 * @param toLookFor non-null list of exception types to look for
+	 * @return exception of specified type, if found, or null if not found
+	 */
+	public static Throwable findThrowable(Throwable e, List<Class<? extends Throwable>> toLookFor) {
+		for (Class<? extends Throwable> klass : toLookFor) {
+			Throwable found = getThrowable(e, klass);
+			if (found != null) {
+				return found;
 			}
 		}
 		return null;

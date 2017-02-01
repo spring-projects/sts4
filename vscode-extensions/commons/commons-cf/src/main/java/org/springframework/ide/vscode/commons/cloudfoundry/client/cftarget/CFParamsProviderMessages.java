@@ -10,18 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-public interface ClientParamsProvider {
-
-	/**
-	 * 
-	 * @return non-null list of VALID params to connect to Cloud Foundry
-	 * @throws NoTargetsException if failure to resolve any params for Cloud Foundry
-	 * @throws ExecutionException if failure occurs while resolving params
-	 */
-	List<CFClientParams> getParams() throws NoTargetsException, ExecutionException;
+/**
+ * Messages that are specific to a particular parameter provider
+ *
+ */
+public interface CFParamsProviderMessages {
 	
-	CFParamsProviderMessages getMessages();
+	
+	String noTargetsFound();
+	
+	String unauthorised();
+	
+	String noNetworkConnection();
+
 }

@@ -39,12 +39,13 @@ public class CFTarget {
 	 */
 	private final LoadingCache<String, List<CFBuildpack>> buildpacksCache;
 	private final LoadingCache<String, List<CFServiceInstance>> servicesCache;
-	private Throwable lastCFFailure;
+	private CFCallableContext callableContext;
 
-	public CFTarget(String targetName, CFClientParams params, ClientRequests requests) {
+	public CFTarget(String targetName, CFClientParams params, ClientRequests requests, CFCallableContext callableContext) {
 		this.params = params;
 		this.requests = requests;
 		this.targetName = targetName;
+		this.callableContext = callableContext;
 		CacheLoader<String, List<CFServiceInstance>> servicesLoader = new CacheLoader<String, List<CFServiceInstance>>() {
 
 			@Override
@@ -73,24 +74,11 @@ public class CFTarget {
 	}
 	
 	protected <T> T runAndCheckForFailure(Callable<T> callable) throws Exception {
-		this.lastCFFailure = null;
-		try {
-			return callable.call();
-		} catch (Exception e) {
-			if (isAcceptableCFFailure(e)) {
-				this.lastCFFailure = e;
-			}
-			throw e;
-		}
+		return callableContext.checkConnection(callable);
 	}
 	
-	public boolean hasCFFailure() {
-		return this.lastCFFailure != null;
-	}
-	
-	protected boolean isAcceptableCFFailure(Throwable e) {
-		// TODO: this is too broad. Be more specific: e.g. look for IOException, etc..
-		return e != null;
+	public boolean hasConnectionError() {
+		return callableContext.hasConnectionError();
 	}
 
 	public CFClientParams getParams() {

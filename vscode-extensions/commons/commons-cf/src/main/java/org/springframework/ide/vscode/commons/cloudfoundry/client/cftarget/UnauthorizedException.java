@@ -10,18 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-public interface ClientParamsProvider {
+public class UnauthorizedException extends Exception {
 
 	/**
 	 * 
-	 * @return non-null list of VALID params to connect to Cloud Foundry
-	 * @throws NoTargetsException if failure to resolve any params for Cloud Foundry
-	 * @throws ExecutionException if failure occurs while resolving params
 	 */
-	List<CFClientParams> getParams() throws NoTargetsException, ExecutionException;
-	
-	CFParamsProviderMessages getMessages();
+	private static final long serialVersionUID = 1L;
+
+	public UnauthorizedException(String message) {
+		super(message);
+	}
 }

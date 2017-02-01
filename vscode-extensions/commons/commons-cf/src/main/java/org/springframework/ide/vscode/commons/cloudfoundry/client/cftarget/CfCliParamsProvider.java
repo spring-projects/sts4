@@ -29,11 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
 
-	/*
-	 * Important: be sure to use ':' to separate the initial part of the message with a longer portion. The vscode
-	 * content assist will parse around the first ':' and the second segment will appear as a doc string that can be longer
-	 */
-	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "No Cloud Foundry targets found: Use CF CLI to login";
 	
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
@@ -41,6 +36,8 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	public static final String SPACE_FIELDS = "SpaceFields";
 	public static final String NAME = "Name";
 	public static final String SSL_DISABLED = "SSLDisabled";
+	private CfCliProviderMessages cfCliProviderMessages = new CfCliProviderMessages();
+
 
 	/*
 	 * (non-Javadoc)
@@ -79,8 +76,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		}
 
 		if (params.isEmpty()) {
-			throw new NoTargetsException(
-					NO_CLI_TARGETS_FOUND_MESSAGE);
+			throw new NoTargetsException(getMessages().noTargetsFound());
 		} else {
 			return params;
 		}
@@ -107,6 +103,11 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 
 	private String getHomeDir() throws IOException, InterruptedException {
 		return System.getProperty("user.home");
+	}
+
+	@Override
+	public CFParamsProviderMessages getMessages() {
+		return cfCliProviderMessages;
 	}
 
 }
