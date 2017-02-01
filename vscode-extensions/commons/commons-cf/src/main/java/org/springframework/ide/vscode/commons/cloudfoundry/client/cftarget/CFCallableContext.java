@@ -19,6 +19,11 @@ import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import reactor.ipc.netty.channel.AbortedException;
 
+/**
+ * This is a stateful callable context that is "aware" of CF errors, and is not
+ * suitable for reuse as it may cache errors
+ *
+ */
 public class CFCallableContext {
 
 	private final CFParamsProviderMessages paramsProviderMessages;

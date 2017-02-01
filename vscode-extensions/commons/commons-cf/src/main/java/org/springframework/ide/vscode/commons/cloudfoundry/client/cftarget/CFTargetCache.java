@@ -75,8 +75,8 @@ public class CFTargetCache {
 				if (target != null) {
 					// If any CF errors occurred in the target, refresh once
 					if (target.hasConnectionError()) {
-						 cache.refresh(key);
-						 target = cache.get(key);
+						cache.refresh(key);
+						target = cache.get(key);
 					}
 					targets.add(target);
 				}
@@ -87,6 +87,11 @@ public class CFTargetCache {
 	}
 
 	protected CFTarget create(CFClientParams params) throws Exception {
+		/*
+		 * Must pass a NEW callable context. Cannot be
+		 * the same as the target cache callable context, as
+		 * contexts may contain error state
+		 */
 		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts),
 				new CFCallableContext(paramsProvider.getMessages()));
 	}
