@@ -25,11 +25,12 @@ export interface ActivatorOptions {
     extensionId: string;
     clientOptions: LanguageClientOptions;
     fatJarFile: string;
+    jvmHeap?: string;
 }
-
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext) {
     let DEBUG = options.DEBUG;
+    let jvmHeap = options.jvmHeap;
     if (options.CONNECT_TO_LS) {
         connectToLS(context, options);
     } else {
@@ -87,6 +88,9 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-jar',
                                 fatJarFile,
                             ];
+                            if (jvmHeap) {
+                                args.unshift("-Xmx"+jvmHeap);
+                            }
                             if (DEBUG) {
                                 args.unshift(DEBUG_ARG);
                             }
