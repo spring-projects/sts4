@@ -78,7 +78,7 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 		File dataFile = bundle.getDataFile(languageServer);
 		if (!dataFile.exists()) {
 			try {
-				copyLanguageServerJAR();
+				copyLanguageServerJAR(languageServer);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -93,11 +93,11 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 		return System.getProperty("user.dir");
 	}
 	
-	protected void copyLanguageServerJAR() throws Exception {
+	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/vscode-boot-properties-0.0.1-SNAPSHOT.jar"), false );
+		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
 		
-		File dataFile = bundle.getDataFile("vscode-boot-properties-0.0.1-SNAPSHOT.jar");
+		File dataFile = bundle.getDataFile(languageServerJarName);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 
