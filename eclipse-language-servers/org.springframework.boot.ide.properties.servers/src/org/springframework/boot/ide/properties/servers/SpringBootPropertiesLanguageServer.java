@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,10 +23,12 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.NotificationMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
 import com.google.gson.JsonObject;
@@ -54,17 +56,33 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 			NotificationMessage notificationMessage = (NotificationMessage) message;
 			if ("sts/progress".equals(notificationMessage.getMethod())) {
 				JsonObject params = (JsonObject) notificationMessage.getParams();
-				if (params.has("statusMsg")) {
-					String status = params.get("statusMsg").getAsString();
-					System.out.println("STS4 Language Server Status Update: " + status);
-				}
-				else {
-					System.out.println("STS4 Language Server Status Update: DONE");
-				}
+				String status = params.has("statusMsg") ? params.get("statusMsg").getAsString() : "";
+				showStatusMessage(status);
 			}
 		}
 	}
 	
+	private void showStatusMessage(final String status) {
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IStatusLineManager statusLineManager = getStatusLineManager();
+				if (statusLineManager != null) {
+					statusLineManager.setMessage(status);
+				}
+			}
+		});
+	}
+	
+	private IStatusLineManager getStatusLineManager() {
+		try {
+			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getEditorSite().getActionBars().getStatusLineManager();
+		}
+		catch (NullPointerException e) {
+			return null;
+		}
+	}
+
 	protected String getJDKLocation() {
 		IVMInstall jdk = JavaRuntime.getDefaultVMInstall();
 		File javaExecutable = StandardVMType.findJavaExecutable(jdk.getInstallLocation());

@@ -11,7 +11,10 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.jface.text;bundle-version="3.11.100",
  org.eclipse.jdt.ui;bundle-version="3.13.0",
  org.eclipse.tm4e.core;bundle-version="1.0.0",
- org.eclipse.tm4e.ui;bundle-version="1.0.0"
+ org.eclipse.tm4e.ui;bundle-version="1.0.0",
+ org.eclipse.lsp4j,
+ org.eclipse.ui.workbench,
+ org.eclipse.jface
 Import-Package: com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
  org.eclipse.lsp4j.jsonrpc.messages;version="0.1.0.v20170117-0759",
