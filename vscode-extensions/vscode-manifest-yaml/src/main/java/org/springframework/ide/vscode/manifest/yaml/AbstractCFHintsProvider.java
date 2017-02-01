@@ -18,9 +18,8 @@ import java.util.logging.Logger;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.UnauthorizedException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
@@ -86,7 +85,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	 */
 	protected Throwable getErrorNoAppending(Throwable e) {
 		return ExceptionUtil.findThrowable(e,
-				ImmutableList.of(NoTargetsException.class, ConnectionException.class, UnauthorizedException.class));
+				ImmutableList.of(NoTargetsException.class, ConnectionException.class));
 	}
 	
 	/**

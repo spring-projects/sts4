@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
-import org.cloudfoundry.uaa.UaaException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFParamsProviderMessages;
@@ -27,10 +26,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliProviderMessages;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.UnauthorizedException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-
-import reactor.ipc.netty.channel.AbortedException;
 
 public class CFClientTest {
 
@@ -73,38 +69,6 @@ public class CFClientTest {
 		when(client.getBuildpacks()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
 		CFTarget target = targetCache.getOrCreate().get(0);
 		assertError(() -> target.getBuildpacks(), ConnectionException.class, expectedMessages.noNetworkConnection());
-	}
-
-	@Test
-	public void testAbortedExceptionServices() throws Exception {
-		ClientRequests client = cloudfoundry.client;
-		when(client.getServices()).thenThrow(new AbortedException("connection aborted"));
-		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getServices(), UnauthorizedException.class, expectedMessages.unauthorised());
-	}
-
-	@Test
-	public void testAbortedExceptionBuildpacks() throws Exception {
-		ClientRequests client = cloudfoundry.client;
-		when(client.getBuildpacks()).thenThrow(new AbortedException("connection aborted"));
-		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getBuildpacks(), UnauthorizedException.class, expectedMessages.unauthorised());
-	}
-
-	@Test
-	public void testUaaExceptionServices() throws Exception {
-		ClientRequests client = cloudfoundry.client;
-		when(client.getServices()).thenThrow(new UaaException(401, "unauthorized", "Bad credentials"));
-		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getServices(), UnauthorizedException.class, expectedMessages.unauthorised());
-	}
-
-	@Test
-	public void testUaaExceptionBuildpacks() throws Exception {
-		ClientRequests client = cloudfoundry.client;
-		when(client.getBuildpacks()).thenThrow(new UaaException(401, "unauthorized", "Bad credentials"));
-		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getBuildpacks(), UnauthorizedException.class, expectedMessages.unauthorised());
 	}
 
 	protected void assertError(Callable<?> callable, Class<? extends Throwable> expected, String expectedMessage)

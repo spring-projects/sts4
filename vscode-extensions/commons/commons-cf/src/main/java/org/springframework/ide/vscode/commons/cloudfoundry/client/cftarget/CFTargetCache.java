@@ -28,11 +28,10 @@ public class CFTargetCache {
 	private final CloudFoundryClientFactory clientFactory;
 	private final ClientTimeouts timeouts;
 	private final LoadingCache<ClientParamsCacheKey, CFTarget> cache;
-	private final CFCallableContext callableContext;
+	private final CFCallableContext cacheCallableContext;
 
 	public static final long SERVICES_EXPIRATION = 10;
 	public static final long TARGET_EXPIRATION = 1;
-	
 
 	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
@@ -41,7 +40,7 @@ public class CFTargetCache {
 		this.paramsProvider = paramsProvider;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
-		this.callableContext = new CFCallableContext(paramsProvider.getMessages());
+		this.cacheCallableContext = new CFCallableContext(paramsProvider.getMessages());
 		CacheLoader<ClientParamsCacheKey, CFTarget> loader = new CacheLoader<ClientParamsCacheKey, CFTarget>() {
 
 			@Override
@@ -50,7 +49,8 @@ public class CFTargetCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS).build(loader);
+		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS)
+				.build(loader);
 	}
 
 	/**
@@ -61,9 +61,9 @@ public class CFTargetCache {
 	 *             for any other error encountered
 	 */
 	public synchronized List<CFTarget> getOrCreate() throws NoTargetsException, Exception {
-		return callableContext.checkConnection(() -> doGetOrCreate());
+		return cacheCallableContext.checkConnection(() -> doGetOrCreate());
 	}
-	
+
 	protected synchronized List<CFTarget> doGetOrCreate() throws NoTargetsException, Exception {
 
 		List<CFClientParams> allParams = paramsProvider.getParams();
@@ -87,7 +87,8 @@ public class CFTargetCache {
 	}
 
 	protected CFTarget create(CFClientParams params) throws Exception {
-		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts), callableContext);
+		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts),
+				new CFCallableContext(paramsProvider.getMessages()));
 	}
 
 	protected static String getTargetName(CFClientParams params) {
@@ -103,6 +104,4 @@ public class CFTargetCache {
 			return cfApiUrl;
 		}
 	}
-
-
 }

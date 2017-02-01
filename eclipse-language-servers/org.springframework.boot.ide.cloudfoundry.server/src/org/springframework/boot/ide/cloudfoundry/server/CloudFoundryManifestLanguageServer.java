@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,6 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	}
 	
 	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
-		System.out.println("custom message arrived: " + message.toString());
 	}
 	
 	protected String getJDKLocation() {
@@ -57,13 +56,13 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "vscode-manifest-yaml-0.0.1-SNAPSHOT.jar";
+		String languageServer = "vscode-manifest-yaml-0.0.2-SNAPSHOT.jar";
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);
 		if (!dataFile.exists()) {
 			try {
-				copyLanguageServerJAR();
+				copyLanguageServerJAR(languageServer);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -78,11 +77,11 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		return System.getProperty("user.dir");
 	}
 	
-	protected void copyLanguageServerJAR() throws Exception {
+	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/vscode-manifest-yaml-0.0.1-SNAPSHOT.jar"), false );
+		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
 		
-		File dataFile = bundle.getDataFile("vscode-manifest-yaml-0.0.1-SNAPSHOT.jar");
+		File dataFile = bundle.getDataFile(languageServerJarName);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
@@ -20,10 +21,8 @@ import reactor.ipc.netty.channel.AbortedException;
 
 public class CFCallableContext {
 
-	public static final String UNAUTHORIZED_ERROR = "unauthorized";
-
 	private final CFParamsProviderMessages paramsProviderMessages;
-	private Throwable lastConnectionError;
+	private Exception lastConnectionError;
 
 	public CFCallableContext(CFParamsProviderMessages paramsProviderMessages) {
 		this.paramsProviderMessages = paramsProviderMessages;
@@ -38,29 +37,26 @@ public class CFCallableContext {
 		}
 	}
 
-	private Exception convertToCfVscodeError(Exception e) {
-		Throwable deepestCause = ExceptionUtil.getDeepestCause(e);
-		if (deepestCause instanceof UaaException) {
-			String error = ((UaaException) deepestCause).getError();
-			if (error != null && error.contains(UNAUTHORIZED_ERROR)) {
-				this.lastConnectionError = deepestCause;
-				return new UnauthorizedException(this.paramsProviderMessages.unauthorised());
-			}
-		} else if (deepestCause instanceof AbortedException) {
-			// This one is odd. It is thrown when a wrong token is specified, but
-			// instead of getting an expected UaaException, this AbortedException is thrown instead by reactor netty.
-			this.lastConnectionError = deepestCause;
-			return new UnauthorizedException(this.paramsProviderMessages.unauthorised());
-		} else if (deepestCause instanceof UnknownHostException) {
-			this.lastConnectionError = deepestCause;
-			String message = ExceptionUtil.getMessage(deepestCause);
-			return new ConnectionException(this.paramsProviderMessages.noNetworkConnection() + " " + message);
-		}
+	protected Exception convertToCfVscodeError(Exception e) {
+		this.lastConnectionError = getConnectionError(e);
+		// return the "converted" error if it is available
+		if (this.lastConnectionError != null) {
+			return this.lastConnectionError;
+		} 
 		return e;
+	}
+
+	protected Exception getConnectionError(Exception e) {
+		Throwable deepestCause = ExceptionUtil.getDeepestCause(e);
+
+		if (deepestCause instanceof UaaException || deepestCause instanceof AbortedException
+				|| deepestCause instanceof SocketException || deepestCause instanceof UnknownHostException) {
+			return new ConnectionException(this.paramsProviderMessages.noNetworkConnection());
+		}
+		return null;
 	}
 
 	public boolean hasConnectionError() {
 		return this.lastConnectionError != null;
 	}
-
 }

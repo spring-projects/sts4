@@ -19,8 +19,7 @@ public final class CfCliProviderMessages implements CFParamsProviderMessages {
 	 * longer
 	 */
 	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "No Cloud Foundry targets found: Use cf CLI to login";
-	public static final String UNAUTHORISED_MESSAGE = "Unauthorized access: Use cf CLI to login";
-	public static final String NO_NETWORK_CONNECTION = "Unable to connect to network: Verify network connection";
+	public static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry: Use cf CLI to login or verify network connection";
 
 	@Override
 	public String noTargetsFound() {
@@ -29,7 +28,7 @@ public final class CfCliProviderMessages implements CFParamsProviderMessages {
 
 	@Override
 	public String unauthorised() {
-		return UNAUTHORISED_MESSAGE;
+		return NO_NETWORK_CONNECTION;
 	}
 
 	@Override
