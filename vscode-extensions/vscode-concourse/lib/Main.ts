@@ -35,6 +35,7 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-concourse',
         fatJarFile: 'target/vscode-concourse-0.0.1-SNAPSHOT.jar',
+        jvmHeap: "48m",
         clientOptions: {
             documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ],
             synchronize: {
