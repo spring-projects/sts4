@@ -20,8 +20,8 @@ import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
 public class MavenBuilder {
-	
-		
+
+
 	private Path projectPath;
 
 	private List<String> targets;
@@ -39,35 +39,35 @@ public class MavenBuilder {
 		ExternalProcess process = new ExternalProcess(projectPath.toFile(),
 				new ExternalCommand(all.toArray(new String[all.size()])), true);
 		if (process.getExitValue() != 0) {
-			throw new RuntimeException("Failed to build test project! " + process.getErr());
+			throw new RuntimeException("Failed to build test project! " + process);
 		}
 	}
-		
+
 	public static MavenBuilder newBuilder(Path projectPath) {
 		return new MavenBuilder(projectPath);
 	}
-	
+
 	public MavenBuilder clean() {
 		targets.add("clean");
 		return this;
 	}
-	
+
 	public MavenBuilder pack() {
 		targets.add("package");
 		return this;
 	}
-	
+
 	public MavenBuilder skipTests() {
 		properties.add("-DskipTests");
 		return this;
 	}
-	
+
 	public MavenBuilder javadoc() {
 		properties.add("javadoc:javadoc");
 		properties.add("-Dshow=private");
 		return this;
 	}
-	
+
 	private MavenBuilder(Path projectPath) {
 		this.projectPath = projectPath;
 		this.targets = new ArrayList<>();
