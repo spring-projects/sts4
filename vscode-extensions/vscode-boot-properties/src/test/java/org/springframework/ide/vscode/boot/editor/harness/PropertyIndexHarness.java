@@ -37,20 +37,23 @@ public class PropertyIndexHarness {
 	private SpringPropertyIndex index = null;
 	private IJavaProject testProject = null;
 
-	protected SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
+	protected final SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
+		@Override
 		public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
-			if (index==null) {
-				IClasspath classpath = testProject == null ? null : testProject.getClasspath();
-				index =	new SpringPropertyIndex(valueProviders, classpath);
-				for (ConfigurationMetadataProperty propertyInfo : datas.values()) {
-					index.add(propertyInfo);
+			synchronized (PropertyIndexHarness.this) {
+				if (index==null) {
+					IClasspath classpath = testProject == null ? null : testProject.getClasspath();
+					index =	new SpringPropertyIndex(valueProviders, classpath);
+					for (ConfigurationMetadataProperty propertyInfo : datas.values()) {
+						index.add(propertyInfo);
+					}
 				}
+				return index;
 			}
-			return index;
 		}
 	};
 
-	public void useProject(IJavaProject p) throws Exception {
+	public synchronized void useProject(IJavaProject p) throws Exception {
 		index = null;
 		this.testProject = p;
 	}
@@ -96,7 +99,7 @@ public class PropertyIndexHarness {
 	}
 
 
-	public ItemConfigurer data(String id, String type, Object deflt, String description,
+	public synchronized ItemConfigurer data(String id, String type, Object deflt, String description,
 			String... source
 	) {
 		ConfigurationMetadataProperty item = new ConfigurationMetadataProperty();
@@ -109,7 +112,7 @@ public class PropertyIndexHarness {
 		return new ItemConfigurer(item);
 	}
 
-	public void keyHints(String id, String... hintValues) {
+	public synchronized void keyHints(String id, String... hintValues) {
 		index = null;
 		List<ValueHint> hints = datas.get(id).getHints().getKeyHints();
 		for (String value : hintValues) {
@@ -119,7 +122,7 @@ public class PropertyIndexHarness {
 		}
 	}
 
-	public void valueHints(String id, String... hintValues) {
+	public synchronized void valueHints(String id, String... hintValues) {
 		index = null;
 		List<ValueHint> hints = datas.get(id).getHints().getValueHints();
 		for (String value : hintValues) {
@@ -129,7 +132,7 @@ public class PropertyIndexHarness {
 		}
 	}
 
-	public void deprecate(String key, String replacedBy, String reason) {
+	public synchronized void deprecate(String key, String replacedBy, String reason) {
 		index = null;
 		ConfigurationMetadataProperty info = datas.get(key);
 		Deprecation d = new Deprecation();

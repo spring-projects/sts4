@@ -161,7 +161,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	protected void validateWith(TextDocument _doc, IReconcileEngine engine) {
 		TextDocument doc = _doc.copy();
 
-		this.busyReconcile = new CompletableFuture<Void>();
+		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
 
 		SimpleTextDocumentService documents = getTextDocumentService();
 		IProblemCollector problems = new IProblemCollector() {
@@ -216,7 +216,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			engine.reconcile(doc, problems);
 		})
 		.doOnTerminate((ignore1, ignore2) -> {
-			busyReconcile.complete(null);
+			reconcileSession.complete(null);
 		})
 		.subscribeOn(RECONCILER_SCHEDULER)
 		.subscribe();
