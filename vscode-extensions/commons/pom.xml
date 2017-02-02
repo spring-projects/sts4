@@ -77,7 +77,7 @@
 		<guava-version>19.0</guava-version>
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
-		<lsp4j-version>0.1.0-SNAPSHOT</lsp4j-version>
+		<lsp4j-version>0.1.0</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
 		<reactor-version>3.0.4.RELEASE</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>
