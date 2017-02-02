@@ -221,7 +221,7 @@ public class Editor {
 			: "";
 	}
 
-	private List<Diagnostic> reconcile() {
+	private List<Diagnostic> reconcile() throws Exception {
 		// We assume the language server works synchronously for now and it does an immediate reconcile
 		// when the document changes. In the future this is probably not going to be the case though and then this
 		// method will need to somehow ensure the linter is done working before retrieving the problems from the

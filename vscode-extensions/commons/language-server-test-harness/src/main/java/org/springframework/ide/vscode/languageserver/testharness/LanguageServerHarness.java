@@ -54,6 +54,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 public class LanguageServerHarness {
 
@@ -61,10 +62,10 @@ public class LanguageServerHarness {
 
 	private Random random = new Random();
 
-	private Callable<? extends LanguageServer> factory;
+	private Callable<? extends SimpleLanguageServer> factory;
 	private String defaultLanguageId;
 
-	private LanguageServer server;
+	private SimpleLanguageServer server;
 
 	private InitializeResult initResult;
 
@@ -72,12 +73,12 @@ public class LanguageServerHarness {
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 
 
-	public LanguageServerHarness(Callable<? extends LanguageServer> factory, String defaultLanguageId) {
+	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory, String defaultLanguageId) {
 		this.factory = factory;
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
-	public LanguageServerHarness(Callable<? extends LanguageServer> factory) throws Exception {
+	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory) throws Exception {
 		this(factory, LanguageIds.PLAINTEXT);
 	}
 
@@ -263,7 +264,8 @@ public class LanguageServerHarness {
 		return TextDocumentSyncKind.None;
 	}
 
-	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) {
+	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) throws Exception {
+		this.server.waitForReconcile();
 		return diagnostics.get(doc.getUri());
 	}
 

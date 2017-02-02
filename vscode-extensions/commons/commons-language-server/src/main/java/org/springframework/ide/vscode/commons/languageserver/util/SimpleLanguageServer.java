@@ -40,6 +40,10 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
  * the 'JavaLanguageServer' example which seem generally useful / reusable end up in
@@ -49,6 +53,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient {
 
     private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
+
+	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
     private Path workspaceRoot;
 
@@ -64,6 +70,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			client.progress(new ProgressParams(taskId, statusMsg));
 		}
 	};
+
+	private CompletableFuture<Void> busyReconcile = CompletableFuture.completedFuture(null);
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -150,7 +158,10 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
 	 */
-	protected void validateWith(TextDocument doc, IReconcileEngine engine) {
+	protected void validateWith(TextDocument _doc, IReconcileEngine engine) {
+		TextDocument doc = _doc.copy();
+
+		this.busyReconcile = new CompletableFuture<Void>();
 
 		SimpleTextDocumentService documents = getTextDocumentService();
 		IProblemCollector problems = new IProblemCollector() {
@@ -198,7 +209,23 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 				}
 			}
 		};
-		engine.reconcile(doc, problems);
+
+		// Avoid running in the same thread as lsp4j as it can result
+		// in long "hangs" for slow reconcile providers
+		Mono.fromRunnable(() -> {
+			engine.reconcile(doc, problems);
+		})
+		.doOnTerminate((ignore1, ignore2) -> {
+			busyReconcile.complete(null);
+		})
+		.subscribeOn(RECONCILER_SCHEDULER)
+		.subscribe();
+	}
+
+	public void waitForReconcile() throws Exception {
+		while (!this.busyReconcile.isDone()) {
+			this.busyReconcile.get();
+		}
 	}
 
 	public LanguageClient getClient() {
