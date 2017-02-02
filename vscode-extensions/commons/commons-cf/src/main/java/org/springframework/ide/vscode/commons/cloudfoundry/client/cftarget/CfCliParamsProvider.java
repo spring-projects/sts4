@@ -67,7 +67,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 							String orgName = (String) orgFields.get(NAME);
 							String spaceName = (String) spaceFields.get(NAME);
 							if (!StringUtil.hasText(orgName) || !StringUtil.hasText(spaceName)) {
-								throw new NoTargetsException("No org/space selected: Use CF CLI to login");
+								throw new NoTargetsException(getMessages().noOrgSpace());
 							}
 							params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
 						}

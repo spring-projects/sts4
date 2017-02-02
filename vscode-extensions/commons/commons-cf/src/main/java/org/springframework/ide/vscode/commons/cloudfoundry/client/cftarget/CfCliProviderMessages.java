@@ -20,6 +20,7 @@ public final class CfCliProviderMessages implements CFParamsProviderMessages {
 	 */
 	public static final String NO_CLI_TARGETS_FOUND_MESSAGE = "No Cloud Foundry targets found: Use cf CLI to login";
 	public static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry: Use cf CLI to login or verify network connection";
+	public static final String NO_ORG_SPACE = "No org/space selected: Use CF CLI to login";
 
 	@Override
 	public String noTargetsFound() {
@@ -34,5 +35,10 @@ public final class CfCliProviderMessages implements CFParamsProviderMessages {
 	@Override
 	public String noNetworkConnection() {
 		return NO_NETWORK_CONNECTION;
+	}
+
+	@Override
+	public String noOrgSpace() {
+		return NO_ORG_SPACE;
 	}
 }

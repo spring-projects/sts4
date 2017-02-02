@@ -15,12 +15,14 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
  *
  */
 public interface CFParamsProviderMessages {
-	
-	
+
+
 	String noTargetsFound();
-	
+
 	String unauthorised();
-	
+
 	String noNetworkConnection();
+
+	String noOrgSpace();
 
 }
