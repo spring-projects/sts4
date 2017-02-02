@@ -54,8 +54,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 				.organization(params.getOrgName())
 				.space(params.getSpaceName())
 				.build();
-	
-		
+
 		// timeouts must never be null
 		this.timeouts = timeouts != null ? timeouts : ClientTimeouts.DEFAULT_TIMEOUTS;
 	}
@@ -73,31 +72,31 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 	@Override
 	public List<CFServiceInstance> getServices() throws Exception {
 		return ReactorUtils.get(timeouts.getServicesTimeout(), CancelationTokens.NULL,
-				log("operations.services.listIntances",
+			log("operations.services.listIntances",
 				_operations
 				.services()
 				.listInstances()
 				.map(CFWrappingV2::wrap)
 				.collectList()
 				.map(ImmutableList::copyOf)
-				)
+			)
 		);
 	}
 
 	@Override
 	public List<CFBuildpack> getBuildpacks() throws Exception {
 		return ReactorUtils.get(timeouts.getBuildpacksTimeout(), CancelationTokens.NULL,
-				log("operations.buildpacks.list",
+			log("operations.buildpacks.list",
 				_operations
 				.buildpacks()
 				.list()
 				.map(CFWrappingV2::wrap)
 				.collectList()
 				.map(ImmutableList::copyOf)
-				)
+			)
 		);
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//// calls to client and operations with 'logging'.
 
