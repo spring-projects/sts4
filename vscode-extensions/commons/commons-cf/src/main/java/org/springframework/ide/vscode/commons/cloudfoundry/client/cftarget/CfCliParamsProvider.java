@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
 
-	
+
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
 	public static final String ORGANIZATION_FIELDS = "OrganizationFields";
@@ -66,6 +66,9 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 						if (target != null && orgFields != null && spaceFields != null) {
 							String orgName = (String) orgFields.get(NAME);
 							String spaceName = (String) spaceFields.get(NAME);
+							if (!StringUtil.hasText(orgName) || !StringUtil.hasText(spaceName)) {
+								throw new NoTargetsException("No org/space selected: Use CF CLI to login");
+							}
 							params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
 						}
 					}
