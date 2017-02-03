@@ -19,6 +19,12 @@ resources:
     private_key: {{rsa_id}}
     paths:
     - concourse/docker
+- name: sts4-out
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    private_key: {{rsa_id}}
 - name: sts4
   type: git
   source:
@@ -107,6 +113,23 @@ jobs:
         channel: "#eclipse-tools"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: trigger-manifest-yaml-rc-build
+  plan:
+  - get: sts4
+    passed:
+    - build-snapshot-website
+  - get: s3-manifest-yaml-vsix-snapshot
+    passed:
+    - build-snapshot-website
+  - task: trigger-manifest-yaml-rc-build
+    file: sts4/concourse/tasks/create-rc-build-tag.yml
+    params:
+      extension_id: vscode-manifest-yaml
+  - put: sts4-out
+    params:
+      repository: sts4
+      tag: out/tag
+      only_tag: true
 - name: build-snapshot-website
   plan:
   - aggregate:
