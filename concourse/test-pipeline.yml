@@ -37,7 +37,7 @@ jobs:
         source:
           repository: kdvolder/my-build-env
       run:
-        path: my-git/scripts/build-iy.sh
+        path: my-git/scripts/build-it.sh
   - put: my-bundle
     params:
       file: my-git/target/fancy-bundle-*.zip
