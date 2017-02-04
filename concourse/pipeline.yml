@@ -110,7 +110,7 @@ jobs:
     on_failure:
       put: slack-notification
       params:
-        channel: "#eclipse-tools"
+        channel: "#aboyko"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: trigger-manifest-yaml-rc-build
