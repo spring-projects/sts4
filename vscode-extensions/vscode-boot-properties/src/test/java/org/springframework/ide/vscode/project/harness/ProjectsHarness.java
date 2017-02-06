@@ -158,23 +158,7 @@ public class ProjectsHarness {
 //	}
 	
 	public MavenJavaProject mavenProject(String name) throws Exception {
-		try {
-			return (MavenJavaProject) project(ProjectType.MAVEN, name);
-		} catch (Exception e) {
-			// For maven, on concourse builds sometimes a handshake a
-			// Disable SNI
-			/// Possible SSL handshake issue when some server return "unrecognised name". 
-			//  Workaroud seems to disable SNI Extension before the project actually gets used
-			String message = ExceptionUtil.getMessage(e);
-			if (message != null && message.contains("unrecognized_name")) {
-				boolean enable = false;
-				enableSNIExtension(enable);
-				return (MavenJavaProject) project(ProjectType.MAVEN, name);
-			}
-			else {
-				throw e;
-			}
-		}
+		return (MavenJavaProject) project(ProjectType.MAVEN, name);
 	}
 
 	public IJavaProject javaProjectWithClasspathFile(String name) throws Exception {
