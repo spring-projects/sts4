@@ -24,4 +24,9 @@ public class CFEntities {
 		return new CFServiceInstanceImpl(name, service, plan, documentationUrl, description, dashboardUrl);
 	}
 
+	public static CFServiceInstance createServiceInstance(String name, String service, String plan) {
+		return new CFServiceInstanceImpl(name, service, plan, /* doc url */ null, /* description */ null,
+				/* dasboard Url */ null);
+	}
+
 }

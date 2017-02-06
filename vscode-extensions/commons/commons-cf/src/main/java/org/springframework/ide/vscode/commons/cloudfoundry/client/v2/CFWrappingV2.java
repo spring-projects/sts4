@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
 
 import org.cloudfoundry.operations.buildpacks.Buildpack;
 import org.cloudfoundry.operations.services.ServiceInstance;
+import org.cloudfoundry.operations.services.ServiceInstanceSummary;
 import org.cloudfoundry.operations.services.ServiceInstanceType;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFEntities;
@@ -31,15 +32,13 @@ public class CFWrappingV2 {
 		return CFEntities.createBuildpack(name);
 	}
 	
-	public static CFServiceInstance wrap(ServiceInstance serviceInstance) {
+	public static CFServiceInstance wrap(ServiceInstanceSummary serviceInstance) {
 		String name = serviceInstance.getName();
 		String plan = serviceInstance.getPlan();
-		String dashboardUrl = serviceInstance.getDashboardUrl();
 		String service = serviceInstance.getType() == ServiceInstanceType.USER_PROVIDED ? "user-provided"
 				: serviceInstance.getService();
-		String description = serviceInstance.getDescription();
-		String documentationUrl = serviceInstance.getDocumentationUrl();
-		return CFEntities.createServiceInstance(name, service, plan, documentationUrl, description, dashboardUrl);
+
+		return CFEntities.createServiceInstance(name, service, plan);
 	}
 
 }
