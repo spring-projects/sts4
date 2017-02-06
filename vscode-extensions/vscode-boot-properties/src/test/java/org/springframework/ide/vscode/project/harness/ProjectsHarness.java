@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -59,6 +60,11 @@ public class ProjectsHarness {
 				throw new IllegalStateException("Bug!!! Missing case");
 			}
 		});
+	}
+
+	protected void enableSNIExtension(boolean enable) {
+		String enableVal = Boolean.toString(enable);
+		System.setProperty("jsse.enableSNIExtension", enableVal);
 	}
 
 	protected Path getProjectPath(String name) throws URISyntaxException, IOException {
@@ -152,7 +158,23 @@ public class ProjectsHarness {
 //	}
 	
 	public MavenJavaProject mavenProject(String name) throws Exception {
-		return (MavenJavaProject) project(ProjectType.MAVEN, name);
+		try {
+			return (MavenJavaProject) project(ProjectType.MAVEN, name);
+		} catch (Exception e) {
+			// For maven, on concourse builds sometimes a handshake a
+			// Disable SNI
+			/// Possible SSL handshake issue when some server return "unrecognised name". 
+			//  Workaroud seems to disable SNI Extension before the project actually gets used
+			String message = ExceptionUtil.getMessage(e);
+			if (message != null && message.contains("unrecognized_name")) {
+				boolean enable = false;
+				enableSNIExtension(enable);
+				return (MavenJavaProject) project(ProjectType.MAVEN, name);
+			}
+			else {
+				throw e;
+			}
+		}
 	}
 
 	public IJavaProject javaProjectWithClasspathFile(String name) throws Exception {
