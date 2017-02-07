@@ -302,6 +302,7 @@ public class LanguageServerHarness {
 		TextDocumentPositionParams params = new TextDocumentPositionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
+		server.waitForReconcile();
 		return server.getTextDocumentService().completion(params).get();
 	}
 
