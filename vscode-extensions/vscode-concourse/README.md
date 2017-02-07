@@ -12,7 +12,7 @@ follows a certain pattern:
   - `**/tasks/*.yml` : activates support for editing tasks.
   
 You can also define your own patterns and map them to the language-ids `concourse-pipeline-yaml` 
-or `concourse-task-taml` by defining `files.associations` in workspace settings. 
+or `concourse-task-yaml` by defining `files.associations` in workspace settings. 
 See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
 
 ## Functionality
