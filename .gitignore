@@ -17,6 +17,7 @@
 hs_err_pid*
 
 target/
+bin/
 *.log
 
 # Mac OSX aux files

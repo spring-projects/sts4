@@ -12,15 +12,9 @@ package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
-
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
 
 /**
  * Java project that contains classpath text file 
@@ -36,42 +30,6 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 	public JavaProjectWithClasspathFile(File cpFile) {
 		this.cpFile = cpFile;
 		this.classpath = new FileClasspath(Paths.get(cpFile.toURI()));
-	}
-
-	@Override
-	public String getElementName() {
-		return cpFile.getParentFile().getName();
-	}
-
-	@Override
-	public IJavadoc getJavaDoc() {
-		return null;
-	}
-
-	@Override
-	public boolean exists() {
-		return cpFile.exists();
-	}
-
-	@Override
-	public IType findType(String fqName) {
-		//TODO: implement
-		return null;
-	}
-
-	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
-		return Flux.empty();
-	}
-
-	@Override
-	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		return Flux.empty();
-	}
-
-	@Override
-	public Flux<IType> allSubtypesOf(IType type) {
-		return Flux.empty();
 	}
 
 	@Override
