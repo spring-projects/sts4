@@ -15,6 +15,8 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaProjectFinder;
@@ -24,6 +26,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -35,7 +38,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class BootJavaLanguageServer extends SimpleLanguageServer {
 	
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
-			new MavenProjectFinderStrategy(),
+			new MavenProjectFinderStrategy(MavenCore.getDefault()),
+			new GradleProjectFinderStrategy(GradleCore.getDefault()),
 			new JavaProjectWithClasspathFileFinderStrategy()
 	});
 

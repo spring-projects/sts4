@@ -79,7 +79,7 @@ public class StsValueHint {
 		try {
 			IJavaProject jp = typeUtil.getJavaProject();
 			if (jp!=null) {
-				IType type = jp.findType(fqName);
+				IType type = jp.getClasspath().findType(fqName);
 				if (type!=null) {
 					return create(type);
 				}

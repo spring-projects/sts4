@@ -543,7 +543,7 @@ public class TypeUtil {
 	private IType findType(String typeName) {
 		try {
 			if (javaProject!=null) {
-				return javaProject.findType(typeName);
+				return javaProject.getClasspath().findType(typeName);
 			}
 		} catch (Exception e) {
 			Log.log(e);

@@ -45,7 +45,7 @@ public class JavaIndexTest {
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		}
 		
 	});
@@ -83,28 +83,28 @@ public class JavaIndexTest {
 	@Test
 	public void findClassInJar() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("org.springframework.test.web.client.ExpectedCount");
+		IType type = project.getClasspath().findType("org.springframework.test.web.client.ExpectedCount");
 		assertNotNull(type);
 	}
 	
 	@Test
 	public void findClassInOutputFolder() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("hello.Greeting");
+		IType type = project.getClasspath().findType("hello.Greeting");
 		assertNotNull(type);
 	}
 	
 	@Test
 	public void classNotFound() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("hello.NonExistentClass");
+		IType type = project.getClasspath().findType("hello.NonExistentClass");
 		assertNull(type);
 	}
 	
 	@Test
 	public void voidMethodNoParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getClasspath().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("clear", Stream.empty());
 		assertEquals("clear", m.getElementName());
@@ -115,7 +115,7 @@ public class JavaIndexTest {
 	@Test
 	public void voidConstructor() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getClasspath().findType("java.util.ArrayList");
 		assertNotNull(type);		
 		IMethod m = type.getMethod("<init>", Stream.empty());
 		assertEquals(type.getElementName(), m.getElementName());
@@ -126,7 +126,7 @@ public class JavaIndexTest {
 	@Test
 	public void constructorMethodWithParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getClasspath().findType("java.util.ArrayList");
 		assertNotNull(type);		
 		IMethod m = type.getMethod("<init>", Stream.of(IPrimitiveType.INT));
 		assertEquals(m.getDeclaringType().getElementName(), m.getElementName());

@@ -18,6 +18,8 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
+	
+	private static final FuzzyMap<PropertyInfo> EMPTY_INDEX = new SpringPropertyIndex(null, null);
 
 	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault());
@@ -34,7 +36,7 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 		if (jp!=null) {
 			return indexManager.get(jp, progressService);
 		}
-		return null;
+		return EMPTY_INDEX;
 	}
 
 	public void setProgressService(ProgressService progressService) {

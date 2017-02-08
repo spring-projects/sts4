@@ -19,12 +19,12 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
+import org.springframework.ide.vscode.commons.jandex.JandexClasspath.JavadocProviderTypes;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath.JavadocProviderTypes;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -34,9 +34,9 @@ public class SourceJavadocTest {
 	private static Supplier<MavenJavaProject> projectSupplier = Suppliers.memoize(() -> {
 		Path testProjectPath;
 		try {
-			MavenProjectClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
+			JandexClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 			testProjectPath = Paths.get(SourceJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
-			return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		} catch (Exception e) {
 			return null;
 		}
@@ -46,7 +46,7 @@ public class SourceJavadocTest {
 	public void parser_testClassJavadocForJar() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
+		IType type = project.getClasspath().findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener");
 		assertNotNull(type);
 		String expected = String.join("\n",
 				"/**",
@@ -54,7 +54,7 @@ public class SourceJavadocTest {
 			);
 		assertEquals(expected, type.getJavaDoc().raw().trim().substring(0, expected.length()));
 		
-		type = project.findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener$LiquibasePresent");
+		type = project.getClasspath().findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener$LiquibasePresent");
 		assertNotNull(type);
 		expected = String.join("\n",
 				"/**",
@@ -67,7 +67,7 @@ public class SourceJavadocTest {
 	@Test
 	public void parser_testClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		IType type = project.findType("hello.Greeting");
+		IType type = project.getClasspath().findType("hello.Greeting");
 		
 		assertNotNull(type);
 		String expected = String.join("\n", 
@@ -100,7 +100,7 @@ public class SourceJavadocTest {
 	public void parser_testFieldAndMethodJavadocForJar() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("org.springframework.boot.SpringApplication");
+		IType type = project.getClasspath().findType("org.springframework.boot.SpringApplication");
 		assertNotNull(type);
 		
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
@@ -124,7 +124,7 @@ public class SourceJavadocTest {
 	@Test
 	public void parser_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		IType type = project.findType("hello.Greeting$TestInnerClass");
+		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
 		assertEquals("/**\n     * Comment for inner class\n     */", type.getJavaDoc().raw().trim());
 	

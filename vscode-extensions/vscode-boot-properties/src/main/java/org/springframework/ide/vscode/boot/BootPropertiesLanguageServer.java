@@ -24,6 +24,8 @@ import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoP
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -36,6 +38,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -60,7 +63,8 @@ import com.google.common.collect.ImmutableList;
 public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
-			new MavenProjectFinderStrategy(),
+			new MavenProjectFinderStrategy(MavenCore.getDefault()),
+			new GradleProjectFinderStrategy(GradleCore.getDefault()),
 			new JavaProjectWithClasspathFileFinderStrategy()
 	});
 
