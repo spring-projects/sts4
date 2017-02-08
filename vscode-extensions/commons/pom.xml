@@ -72,7 +72,7 @@
 		<yaml-version>1.17</yaml-version>
 		<junit-version>4.11</junit-version>
 		<assertj-version>3.5.2</assertj-version>
-		<slf4j-version>1.7.21</slf4j-version>
+		<slf4j-version>1.7.22</slf4j-version>
 		<guava-version>19.0</guava-version>
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
