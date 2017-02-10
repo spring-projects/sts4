@@ -139,6 +139,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
+			f.yprop("routes", t_strings),
 			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),

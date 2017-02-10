@@ -1,0 +1,12 @@
+<p>Use the <code>routes</code>  attribute to provide multiple HTTP and TCP routes. Each route for this app is created if it does not already exist.</p>
+<p>This attribute is a combination of <code>push</code> options that include <code>--hostname</code>, <code>-d</code>, and <code>--route-path</code>.</p>
+<pre>
+---
+  ...
+  routes:
+  - route: example.com
+  - route: www.example.com/foo
+  - route: tcp-example.com:1234
+</pre>
+
+<p>The <code>routes</code> attribute cannot be used in conjunction with the following attributes: <code>host</code>, <code>hosts</code>, <code>domain</code>, <code>domains</code>, and <code>no-hostname</code>. An error will result.</p>

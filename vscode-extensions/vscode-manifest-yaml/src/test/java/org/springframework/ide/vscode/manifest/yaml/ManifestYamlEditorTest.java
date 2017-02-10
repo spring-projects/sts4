@@ -279,6 +279,9 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"random-route: <*>",
 				// ---------------
+				"routes:\n"+
+				"- <*>",
+				// ---------------
 				"services:\n"+
 				"- <*>",
 				// ---------------
@@ -352,6 +355,10 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"applications:\n" +
 				"- random-route: <*>",
+				// ---------------
+				"applications:\n" +
+				"- routes:\n"+
+				"  - <*>",
 				// ---------------
 				"applications:\n" +
 				"- services:\n"+
@@ -432,6 +439,8 @@ public class ManifestYamlEditorTest {
 			"  no-route: true\n" +
 			"  path: somepath/app.jar\n" +
 			"  random-route: true\n" +
+			"  routes:\n" +
+			"  - tcp-example.com:1234\n" +
 			"  services:\n" +
 			"  - instance_ABC\n" +
 			"  - instance_XYZ\n" +
@@ -457,6 +466,7 @@ public class ManifestYamlEditorTest {
 		editor.assertIsHoverRegion("no-route");
 		editor.assertIsHoverRegion("path");
 		editor.assertIsHoverRegion("random-route");
+		editor.assertIsHoverRegion("routes");
 		editor.assertIsHoverRegion("services");
 		editor.assertIsHoverRegion("stack");
 		editor.assertIsHoverRegion("timeout");
@@ -479,6 +489,7 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("no-route", "You can use the `no-route` attribute with a value of `true` to prevent a route from being created for your application");
 	    editor.assertHoverContains("path", "You can use the `path` attribute to tell Cloud Foundry where to find your application");
 	    editor.assertHoverContains("random-route", "Use the `random-route` attribute to create a URL that includes the app name and random words");
+	    editor.assertHoverContains("routes", "Each route for this app is created if it does not already exist");
 	    editor.assertHoverContains("services", "The `services` block consists of a heading, then one or more service instance names");
 	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
@@ -596,6 +607,10 @@ public class ManifestYamlEditorTest {
 				"- random-route: <*>",
 				// ---------------
 				"applications:\n" +
+				"- routes:\n"+
+				"  - <*>",
+				// ---------------
+				"applications:\n" +
 				"- services:\n"+
 				"  - <*>",
 				// ---------------
@@ -679,6 +694,11 @@ public class ManifestYamlEditorTest {
 				"- random-route: <*>\n" +
 				"- name: test"
 				, // ---------------------
+				"applications:\n" +
+				"- routes:\n" +
+				"  - <*>\n" +
+				"- name: test"
+				,// ---------------------
 				"applications:\n" +
 				"- services:\n" +
 				"  - <*>\n" +
