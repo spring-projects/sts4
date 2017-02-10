@@ -73,6 +73,14 @@ public class CFClientTest {
 		CFTarget target = targetCache.getOrCreate().get(0);
 		assertError(() -> target.getBuildpacks(), ConnectionException.class, expectedMessages.noNetworkConnection());
 	}
+	
+	@Test
+	public void testUnknownHostDomains() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+		when(client.getDomains()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertError(() -> target.getDomains(), ConnectionException.class, expectedMessages.noNetworkConnection());
+	}
 
 	@Test
 	public void testBuildpacksFromTarget() throws Exception {
