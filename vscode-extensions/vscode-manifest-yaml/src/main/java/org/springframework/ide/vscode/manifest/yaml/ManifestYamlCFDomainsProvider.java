@@ -38,7 +38,7 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 
 				for (CFDomain domain : domains) {
 					String name = domain.getName();
-					String label = getBuildpackLabel(cfTarget, domain);
+					String label = getLabel(cfTarget, domain);
 					YValueHint hint = new BasicYValueHint(name, label);
 					if (!hints.contains(hint)) {
 						hints.add(hint);
@@ -53,7 +53,7 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 		return !hints.isEmpty() ? hints : null;
 	}
 
-	protected String getBuildpackLabel(CFTarget target, CFDomain domain) {
+	protected String getLabel(CFTarget target, CFDomain domain) {
 		return domain.getName() + " (" + target.getName() + ")";
 	}
 
