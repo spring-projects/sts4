@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -38,11 +39,14 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class BootJavaCompletionEngine implements ICompletionEngine {
 	
 	private static final String SPRING_SCOPE = "org.springframework.context.annotation.Scope";
+	private static final String SPRING_VALUE = "org.springframework.beans.factory.annotation.Value";
 	
 	private JavaProjectFinder projectFinder;
+	private SpringPropertyIndexProvider indexProvider;
 
-	public BootJavaCompletionEngine(JavaProjectFinder projectFinder) {
+	public BootJavaCompletionEngine(JavaProjectFinder projectFinder, SpringPropertyIndexProvider indexProvider) {
 		this.projectFinder = projectFinder;
+		this.indexProvider = indexProvider;
 	}
 
 	@Override
@@ -104,6 +108,9 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 		
 		if (type.getQualifiedName().equals(SPRING_SCOPE)) {
 			new ScopeCompletionProcessor().collectCompletionsForScopeAnnotation(node, annotation, type, completions, offset, doc);
+		}
+		else if (type.getQualifiedName().equals(SPRING_VALUE)) {
+			new ValueCompletionProcessor(indexProvider.getIndex(doc)).collectCompletionsForValueAnnotation(node, annotation, type, completions, offset, doc);
 		}
 	}
 

@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
@@ -36,18 +37,21 @@ public class ScopeCompletionTest {
 	private final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
 
 	private LanguageServerHarness harness;
+	private PropertyIndexHarness indexHarness;
 	private IJavaProject testProject;
 
 	private Editor editor;
 
+
 	@Before
 	public void setup() throws Exception {
-		testProject = ProjectsHarness.INSTANCE.mavenProject("test-scope-annotation");
+		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
+		indexHarness = new PropertyIndexHarness();
 		
 		harness = new LanguageServerHarness(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder);
+				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexHarness.getIndexProvider());
 				return server;
 			}
 		}) {
@@ -155,7 +159,7 @@ public class ScopeCompletionTest {
 	}
 	
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
-		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-scope-annotation/src/main/java/org/test/TestScopeCompletion.java");
+		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestScopeCompletion.java");
 		String content = IOUtils.toString(resource);
 		
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);

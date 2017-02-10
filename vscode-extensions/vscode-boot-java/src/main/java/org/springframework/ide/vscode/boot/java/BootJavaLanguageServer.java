@@ -15,6 +15,7 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -46,7 +47,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final JavaProjectFinder javaProjectFinder;
 	private final VscodeCompletionEngineAdapter completionEngine;
 	
-	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder) {
+	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		this.javaProjectFinder = javaProjectFinder;
 		SimpleTextDocumentService documents = getTextDocumentService();
 
@@ -56,7 +57,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			validateWith(doc, reconcileEngine);
 		});
 		
-		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder);
+		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder, indexProvider);
 		completionEngine = new VscodeCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletionsNumber(100);
 		documents.onCompletion(completionEngine::getCompletions);

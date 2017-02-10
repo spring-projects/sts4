@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,6 @@ import com.google.common.cache.CacheBuilder;
  * Test projects harness
  * 
  * @author Alex Boyko
- *
  */
 public class ProjectsHarness {
 	
@@ -62,94 +61,13 @@ public class ProjectsHarness {
 	}
 
 	protected Path getProjectPath(String name) throws URISyntaxException, IOException {
-//		URI sourceLocation = ProjectsHarness.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-//		// file:/Users/aboyko/git/sts4/vscode-extensions/commons/project-test-harness/target/project-test-harness-0.0.1-SNAPSHOT.jar
-//		Path testProjectsPath = Paths.get(sourceLocation).getParent().getParent().resolve("test-projects").resolve(name);
-//		if (Files.exists(testProjectsPath)) {
-//			return testProjectsPath;
-//		} else {
-//			/*
-//			 * If "test-projects" folder is not found then extract test project
-//			 * from the jar's "test-projects" folder and copy it in the temp
-//			 * folder
-//			 */
-			return getProjectPathFromClasspath(name);
-//		}
+		return getProjectPathFromClasspath(name);
 	}
 	
 	private Path getProjectPathFromClasspath(String name) throws URISyntaxException, IOException {
 		URI resource = ProjectsHarness.class.getResource("/test-projects/" + name).toURI();
-//		if (resource.getScheme().equalsIgnoreCase("jar")) {
-//			return getProjectPathFromJar(resource);
-//		} else {
-			return Paths.get(resource);
-//		}
-	}
-	
-//	private Path getProjectPathFromJar(URI jar) throws IOException {
-//		final String[] array = jar.toString().split("!");
-//		URI firstHalf = URI.create(array[0]);
-//		Path tempFolderPath = Paths.get(new File(System.getProperty(MavenCore.JAVA_IO_TMPDIR)).toURI());
-//		FileSystem fs =  FileSystems.newFileSystem(firstHalf, Collections.emptyMap());
-//		try {
-//			Path path = fs.getPath(array[1]);
-//			Path projectCopyPath = tempFolderPath.resolve(path.getFileName().toString());
-//			if (Files.exists(projectCopyPath)) {
-//				recursiveDelete(projectCopyPath);
-//			}
-//			recursiveCopy(path, tempFolderPath, StandardCopyOption.REPLACE_EXISTING);
-//			System.out.println("Copied test project to: " + projectCopyPath);
-//			return projectCopyPath;
-//		} finally {
-//			fs.close();
-//		}
-//	}
-//	
-//	private static void recursiveCopy(Path source, Path target, CopyOption... options) throws IOException {
-//		Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-//			
-//			Path destination = target;
-//
-//			@Override
-//			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-//				destination = destination.resolve(dir.getFileName().toString());
-//				Files.copy(dir, destination, options);
-//				return super.preVisitDirectory(dir, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//				Path newFile = destination.resolve(file.getFileName().toString());
-//				Files.copy(file, newFile, options);
-//				return super.visitFile(file, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-//				destination = destination.getParent();
-//				return super.postVisitDirectory(dir, exc);
-//			}
-//			
-//		});
-//	}
-//	
-//	private static void recursiveDelete(Path path) throws IOException {
-//		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-//			
-//			@Override
-//			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//				Files.delete(file);
-//				return super.visitFile(file, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-//				Files.delete(dir);
-//				return super.postVisitDirectory(dir, exc);
-//			}
-//			
-//		});
-//	}
+		return Paths.get(resource);
+	}	
 	
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);

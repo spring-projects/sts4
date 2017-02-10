@@ -22,6 +22,10 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>project-repo</id>
+			<url>file://${project.basedir}/repo</url>
+		</repository>
 	</repositories>
 	
 	<distributionManagement>
@@ -33,6 +37,11 @@
 	</distributionManagement>
 	
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.ide.eclipse</groupId>
+			<artifactId>org.json</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-maven</artifactId>
