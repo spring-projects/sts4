@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+f * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -440,7 +440,7 @@ public class ManifestYamlEditorTest {
 			"  path: somepath/app.jar\n" +
 			"  random-route: true\n" +
 			"  routes:\n" +
-			"  - tcp-example.com:1234\n" +
+			"  - route: tcp-example.com:1234\n" +
 			"  services:\n" +
 			"  - instance_ABC\n" +
 			"  - instance_XYZ\n" +

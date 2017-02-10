@@ -93,6 +93,9 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
 
+		YType t_route = f.ymap(t_string, t_string);
+		YType t_routes = f.yseq(t_route);
+
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
@@ -139,7 +142,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
-			f.yprop("routes", t_strings),
+			f.yprop("routes", t_routes),
 			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),
