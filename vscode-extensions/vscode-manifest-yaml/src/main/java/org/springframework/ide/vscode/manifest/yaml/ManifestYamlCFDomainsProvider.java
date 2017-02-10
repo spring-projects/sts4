@@ -20,9 +20,9 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTar
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-public class ManifestYamlCFDomainProvider extends AbstractCFHintsProvider {
+public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 
-	public ManifestYamlCFDomainProvider(CFTargetCache cache) {
+	public ManifestYamlCFDomainsProvider(CFTargetCache cache) {
 		super(cache);
 	}
 

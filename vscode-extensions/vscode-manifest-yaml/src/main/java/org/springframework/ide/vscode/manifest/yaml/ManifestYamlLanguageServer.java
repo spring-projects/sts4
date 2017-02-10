@@ -137,7 +137,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	}
 	
 	private Callable<Collection<YValueHint>> getDomainsProvider() {
-		return new ManifestYamlCFDomainProvider(getCfTargetCache());
+		return new ManifestYamlCFDomainsProvider(getCfTargetCache());
 	}
 
 	@Override
