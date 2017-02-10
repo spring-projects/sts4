@@ -14,13 +14,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.manifest.yaml.ManifestYmlSchema;
@@ -81,7 +84,7 @@ public class ManifestYmlSchemaTest {
 			"timeout"
 	};
 
-	ManifestYmlSchema schema = new ManifestYmlSchema(null, null);
+	ManifestYmlSchema schema = new ManifestYmlSchema(EMPTY_PROVIDERS);
 
 	@Test
 	public void toplevelProperties() throws Exception {
@@ -150,5 +153,22 @@ public class ManifestYmlSchemaTest {
 		}
 		return builder.build();
 	}
-
+	
+	private static final ManifestYmlHintProviders EMPTY_PROVIDERS = new ManifestYmlHintProviders() {
+		
+		@Override
+		public Callable<Collection<YValueHint>> getServicesProvider() {
+			return null;
+		}
+		
+		@Override
+		public Callable<Collection<YValueHint>> getDomainsProvider() {
+			return null;
+		}
+		
+		@Override
+		public Callable<Collection<YValueHint>> getBuildpackProviders() {
+			return null;
+		}
+	};
 }

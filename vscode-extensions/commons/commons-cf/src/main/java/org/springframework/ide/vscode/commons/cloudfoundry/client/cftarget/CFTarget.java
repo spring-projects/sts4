@@ -15,6 +15,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 
@@ -37,15 +38,21 @@ public class CFTarget {
 	/*
 	 * Cached information
 	 */
-	private final LoadingCache<String, List<CFBuildpack>> buildpacksCache;
-	private final LoadingCache<String, List<CFServiceInstance>> servicesCache;
+	private LoadingCache<String, List<CFBuildpack>> buildpacksCache;
+	private LoadingCache<String, List<CFServiceInstance>> servicesCache;
+	private LoadingCache<String, List<CFDomain>> domainCache;
 	private CFCallableContext callableContext;
 
-	public CFTarget(String targetName, CFClientParams params, ClientRequests requests, CFCallableContext callableContext) {
+	public CFTarget(String targetName, CFClientParams params, ClientRequests requests,
+			CFCallableContext callableContext) {
 		this.params = params;
 		this.requests = requests;
 		this.targetName = targetName;
 		this.callableContext = callableContext;
+		initCache(requests);
+	}
+
+	private void initCache(ClientRequests requests) {
 		CacheLoader<String, List<CFServiceInstance>> servicesLoader = new CacheLoader<String, List<CFServiceInstance>>() {
 
 			@Override
@@ -71,12 +78,23 @@ public class CFTarget {
 		};
 		this.buildpacksCache = CacheBuilder.newBuilder()
 				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION, TimeUnit.HOURS).build(buildpacksLoader);
+
+		CacheLoader<String, List<CFDomain>> domainLoader = new CacheLoader<String, List<CFDomain>>() {
+
+			@Override
+			public List<CFDomain> load(String key) throws Exception {
+				return runAndCheckForFailure(() -> requests.getDomains());
+			}
+
+		};
+		this.domainCache = CacheBuilder.newBuilder()
+				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION, TimeUnit.HOURS).build(domainLoader);
 	}
-	
+
 	protected <T> T runAndCheckForFailure(Callable<T> callable) throws Exception {
 		return callableContext.checkConnection(callable);
 	}
-	
+
 	public boolean hasConnectionError() {
 		return callableContext.hasConnectionError();
 	}
@@ -101,6 +119,11 @@ public class CFTarget {
 		 */
 		String key = getName();
 		return this.servicesCache.get(key);
+	}
+	
+	public List<CFDomain> getDomains() throws Exception {
+		String key = getName();
+		return this.domainCache.get(key);
 	}
 
 	public ClientRequests getClientRequests() {

@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFParamsProviderMessages;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -27,6 +28,8 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCli
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+
+import com.google.common.collect.ImmutableList;
 
 public class CFClientTest {
 
@@ -69,6 +72,54 @@ public class CFClientTest {
 		when(client.getBuildpacks()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
 		CFTarget target = targetCache.getOrCreate().get(0);
 		assertError(() -> target.getBuildpacks(), ConnectionException.class, expectedMessages.noNetworkConnection());
+	}
+
+	@Test
+	public void testBuildpacksFromTarget() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+		CFBuildpack buildpack = Mockito.mock(CFBuildpack.class);
+		when(buildpack.getName()).thenReturn("java_buildpack");
+		when(client.getBuildpacks()).thenReturn(ImmutableList.of(buildpack));
+
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertEquals("java_buildpack", target.getBuildpacks().get(0).getName());
+	}
+
+	@Test
+	public void testDomainsFromTarget() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("cfapps.io");
+		when(client.getDomains()).thenReturn(ImmutableList.of(domain));
+
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertEquals("cfapps.io", target.getDomains().get(0).getName());
+	}
+
+	@Test
+	public void testServicesFromTarget() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
+		when(service.getName()).thenReturn("appdb");
+		when(service.getPlan()).thenReturn("spark");
+		when(service.getService()).thenReturn("cleardb");
+
+		when(client.getServices()).thenReturn(ImmutableList.of(service));
+
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertEquals("appdb", target.getServices().get(0).getName());
+		assertEquals("spark", target.getServices().get(0).getPlan());
+		assertEquals("cleardb", target.getServices().get(0).getService());
+	}
+
+	@Test
+	public void testNoServicesFromTarget() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+
+		when(client.getServices()).thenReturn(ImmutableList.of());
+
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertTrue(target.getServices().isEmpty());
 	}
 
 	protected void assertError(Callable<?> callable, Class<? extends Throwable> expected, String expectedMessage)

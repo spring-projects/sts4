@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Pivotal, Inc.
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,15 +8,19 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.cloudfoundry.client;
+package org.springframework.ide.vscode.manifest.yaml;
 
+import java.util.Collection;
+import java.util.concurrent.Callable;
 
-import java.util.List;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-public interface ClientRequests {
+public interface ManifestYmlHintProviders {
 
-	List<CFBuildpack> getBuildpacks() throws Exception;
-	List<CFServiceInstance> getServices() throws Exception;
-	List<CFDomain> getDomains() throws Exception;
-	
+	Callable<Collection<YValueHint>> getBuildpackProviders();
+
+	Callable<Collection<YValueHint>> getServicesProvider();
+
+	Callable<Collection<YValueHint>> getDomainsProvider();
+
 }

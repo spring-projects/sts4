@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
@@ -935,6 +936,44 @@ public class ManifestYamlEditorTest {
 		when(buildPack.getName()).thenReturn("java_buildpack");
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
 		assertDoesNotContainCompletions("buildpack: <*>", "buildpack: wrong_buildpack<*>");
+	}
+	
+	@Test
+	public void domainContentAssist() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("cfapps.io");
+		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
+		
+		assertContainsCompletions("domain: <*>", "domain: cfapps.io<*>");
+	}
+	
+	@Test
+	public void domainContentAssistDoesNotContainCompletion() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("cfapps.io");
+		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
+		assertDoesNotContainCompletions("domain: <*>", "domain: wrong.cfapps.io<*>");
+	}
+	
+	@Test
+	public void domainsContentAssist() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("cfapps.io");
+		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
+	
+		assertContainsCompletions("domains:\n" + "  - <*>", "cfapps.io");
+	}
+	
+	@Test
+	public void domainsContentAssistWrongDomain() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("cfapps.io");
+		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
+		assertDoesNotContainCompletions("domains:\n" + "  - <*>", "wrong.cfapps.io");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

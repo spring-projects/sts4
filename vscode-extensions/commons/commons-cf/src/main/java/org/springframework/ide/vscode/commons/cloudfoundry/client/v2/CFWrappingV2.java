@@ -11,10 +11,11 @@
 package org.springframework.ide.vscode.commons.cloudfoundry.client.v2;
 
 import org.cloudfoundry.operations.buildpacks.Buildpack;
-import org.cloudfoundry.operations.services.ServiceInstance;
+import org.cloudfoundry.operations.domains.Domain;
 import org.cloudfoundry.operations.services.ServiceInstanceSummary;
 import org.cloudfoundry.operations.services.ServiceInstanceType;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFEntities;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 
@@ -30,6 +31,11 @@ public class CFWrappingV2 {
 	public static CFBuildpack wrap(Buildpack buildpack) {
 		String name = buildpack.getName();
 		return CFEntities.createBuildpack(name);
+	}
+	
+	public static CFDomain wrap(Domain domain) {
+		String name = domain.getName();
+		return CFEntities.createDomain(name);
 	}
 	
 	public static CFServiceInstance wrap(ServiceInstanceSummary serviceInstance) {

@@ -63,10 +63,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 		YamlASTProvider parser = new YamlParser(yaml);
 
-		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
-		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
-
-		schema = new ManifestYmlSchema(buildPacksProvider, servicesProvider);
+		schema = new ManifestYmlSchema(getHintProviders());
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -98,6 +95,30 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine ::getHover);
 	}
 
+	protected ManifestYmlHintProviders getHintProviders() {
+		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
+		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
+		Callable<Collection<YValueHint>> domainsProvider = getDomainsProvider();
+		
+		return new ManifestYmlHintProviders() {
+			
+			@Override
+			public Callable<Collection<YValueHint>> getServicesProvider() {
+				return servicesProvider;
+			}
+			
+			@Override
+			public Callable<Collection<YValueHint>> getDomainsProvider() {
+				return domainsProvider;
+			}
+			
+			@Override
+			public Callable<Collection<YValueHint>> getBuildpackProviders() {
+				return buildPacksProvider;
+			}
+		};
+	}
+
 	private CFTargetCache getCfTargetCache() {
 		if (cfTargetCache == null) {
 			ClientParamsProvider paramsProvider = cfParamsProvider;
@@ -113,6 +134,10 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private Callable<Collection<YValueHint>> getServicesProvider() {
 		return new ManifestYamlCFServicesProvider(getCfTargetCache());
+	}
+	
+	private Callable<Collection<YValueHint>> getDomainsProvider() {
+		return new ManifestYamlCFDomainProvider(getCfTargetCache());
 	}
 
 	@Override
