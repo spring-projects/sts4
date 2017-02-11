@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.lsp4e.languageServer">
+      <server
+            class="org.springframework.boot.ide.java.servers.SpringBootJavaLanguageServer"
+            id="org.eclipse.languageserver.languages.springbootjava"
+            label="Spring Boot Java Language Server">
+      </server>
+      <contentTypeMapping
+            contentType="org.eclipse.jdt.core.javaSource"
+            id="org.eclipse.languageserver.languages.springbootjava">
+      </contentTypeMapping>
+   </extension>
+   
+   <extension
+         id="springbootjava-completion-computer"
+         point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
+      <javaCompletionProposalComputer
+            activate="true"
+            categoryId="org.eclipse.jdt.ui.defaultProposalCategory"
+            class="org.springframework.boot.ide.java.servers.SpringBootJavaCompletionProposalComputer"
+            needsSortingAfterFiltering="false">
+      </javaCompletionProposalComputer>
+   </extension>
+
+</plugin>
