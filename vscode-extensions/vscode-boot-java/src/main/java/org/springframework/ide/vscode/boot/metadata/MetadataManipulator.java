@@ -15,8 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 
-import org.springframework.ide.eclipse.org.json.JSONArray;
-import org.springframework.ide.eclipse.org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Helper class to manipulate data in a file presumed to contain
@@ -44,7 +44,12 @@ public class MetadataManipulator {
 		}
 
 		public String toString() {
-			return object.toString(indentFactor);
+			try {
+				return object.toString(indentFactor);
+			}
+			catch (Exception e) {
+				return null;
+			}
 		}
 
 		@Override

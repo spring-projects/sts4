@@ -84,7 +84,7 @@ public class PropertiesLoader {
 			InputStream is = null;
 			try {
 				is = Files.newInputStream(mdf);
-				loadFromInputStream(mdf, is);
+				loadFromInputStream(is);
 			} catch (Exception e) {
 				LOG.log(Level.SEVERE, "Error loading file '" + mdf + "'", e);
 			} finally {
@@ -127,7 +127,7 @@ public class PropertiesLoader {
 		InputStream is = null;
 		try {
 			is = jarFile.getInputStream(ze);
-			loadFromInputStream(jarFile.getName()+"["+ze.getName()+"]", is);
+			loadFromInputStream(is);
 		} catch (Throwable e) {
 			LOG.log(Level.SEVERE, "Error loading JAR file", e);
 		} finally {
@@ -140,8 +140,8 @@ public class PropertiesLoader {
 		}
 	}
 
-	private void loadFromInputStream(Object origin, InputStream is) throws IOException {
-		builder.withJsonResource(origin, is);
+	private void loadFromInputStream(InputStream is) throws IOException {
+		builder.withJsonResource(is);
 	}
 	
 }

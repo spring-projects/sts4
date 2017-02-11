@@ -4,14 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>vscode-boot-java</artifactId>
 	<packaging>jar</packaging>
-	
+
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
-	
+
 	<repositories>
 		<!-- Sonatype snapshots repository -->
 		<repository>
@@ -22,12 +22,8 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>project-repo</id>
-			<url>file://${project.basedir}/repo</url>
-		</repository>
 	</repositories>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>distribution-repository</id>
@@ -35,13 +31,8 @@
 			<url>file://${basedir}/dist</url>
 		</repository>
 	</distributionManagement>
-	
+
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.ide.eclipse</groupId>
-			<artifactId>org.json</artifactId>
-			<version>1.0</version>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-maven</artifactId>
@@ -57,7 +48,7 @@
 			<artifactId>commons-language-server</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
+
 		<!-- Eclipse JDT for parsing (at the moment) -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
@@ -71,6 +62,12 @@
 			<version>2.4</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-metadata</artifactId>
+			<version>1.5.1.RELEASE</version>
+		</dependency>
+
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -78,7 +75,7 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 	<build>
 		<plugins>
@@ -116,6 +113,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-      </plugins>
+		</plugins>
 	</build>
 </project>
