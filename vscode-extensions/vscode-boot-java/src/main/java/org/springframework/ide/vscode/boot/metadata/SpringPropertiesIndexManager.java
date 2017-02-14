@@ -13,9 +13,8 @@ package org.springframework.ide.vscode.boot.metadata;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.metadata.util.Listener;
-import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 
@@ -27,20 +26,19 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressService;
  *
  * @author Kris De Volder
  */
-public class SpringPropertiesIndexManager extends ListenerManager<Listener<SpringPropertiesIndexManager>> {
+public class SpringPropertiesIndexManager {
 
 	private Map<IJavaProject, SpringPropertyIndex> indexes = null;
-	private final ValueProviderRegistry valueProviders;
 	private static int progressIdCt = 0;
 
-	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders) {
-		this.valueProviders = valueProviders;
+	public SpringPropertiesIndexManager() {
 	}
 
-	public synchronized FuzzyMap<PropertyInfo> get(IJavaProject project, ProgressService progressService) {
+	public synchronized FuzzyMap<ConfigurationMetadataProperty> get(IJavaProject project, ProgressService progressService) {
 		if (indexes==null) {
 			indexes = new HashMap<>();
 		}
+
 		SpringPropertyIndex index = indexes.get(project);
 		if (index==null) {
 			String progressId = getProgressId();
@@ -48,7 +46,7 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 				progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
 			}
 			
-			index = new SpringPropertyIndex(valueProviders, project.getClasspath());
+			index = new SpringPropertyIndex(project.getClasspath());
 			indexes.put(project, index);
 			
 			if (progressService != null) {
@@ -56,15 +54,6 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 			}
 		}
 		return index;
-	}
-
-	public synchronized void clear() {
-		if (indexes!=null) {
-			indexes.clear();
-			for (Listener<SpringPropertiesIndexManager> l : getListeners()) {
-				l.changed(this);
-			}
-		}
 	}
 	
 	private static synchronized String getProgressId() {

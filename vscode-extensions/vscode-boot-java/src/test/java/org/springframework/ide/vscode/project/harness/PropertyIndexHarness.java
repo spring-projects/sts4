@@ -18,10 +18,8 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataPrope
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.boot.configurationmetadata.ValueHint;
 import org.springframework.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -33,17 +31,16 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class PropertyIndexHarness {
 
 	private Map<String, ConfigurationMetadataProperty> datas = new LinkedHashMap<>();
-	private ValueProviderRegistry valueProviders = ValueProviderRegistry.getDefault();
 	private SpringPropertyIndex index = null;
 	private IJavaProject testProject = null;
 
 	protected final SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
 		@Override
-		public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
+		public FuzzyMap<ConfigurationMetadataProperty> getIndex(IDocument doc) {
 			synchronized (PropertyIndexHarness.this) {
 				if (index==null) {
 					IClasspath classpath = testProject == null ? null : testProject.getClasspath();
-					index =	new SpringPropertyIndex(valueProviders, classpath);
+					index =	new SpringPropertyIndex(classpath);
 					for (ConfigurationMetadataProperty propertyInfo : datas.values()) {
 						index.add(propertyInfo);
 					}

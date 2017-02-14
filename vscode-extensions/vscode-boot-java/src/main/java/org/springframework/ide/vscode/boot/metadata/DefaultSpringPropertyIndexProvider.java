@@ -11,6 +11,7 @@
 
 package org.springframework.ide.vscode.boot.metadata;
 
+import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -19,10 +20,10 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
 	
-	private static final FuzzyMap<PropertyInfo> EMPTY_INDEX = new SpringPropertyIndex(null, null);
+	private static final FuzzyMap<ConfigurationMetadataProperty> EMPTY_INDEX = new SpringPropertyIndex(null);
 
 	private JavaProjectFinder javaProjectFinder;
-	private SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault());
+	private SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager();
 	
 	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
 	
@@ -31,7 +32,7 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	}
 	
 	@Override
-	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
+	public FuzzyMap<ConfigurationMetadataProperty> getIndex(IDocument doc) {
 		IJavaProject jp = javaProjectFinder.find(doc);
 		if (jp!=null) {
 			return indexManager.get(jp, progressService);

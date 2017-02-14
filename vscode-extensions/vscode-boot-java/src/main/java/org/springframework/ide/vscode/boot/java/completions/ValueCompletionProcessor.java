@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -31,9 +31,9 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class ValueCompletionProcessor {
 
-	private FuzzyMap<PropertyInfo> index;
+	private FuzzyMap<ConfigurationMetadataProperty> index;
 	
-	public ValueCompletionProcessor(FuzzyMap<PropertyInfo> index) {
+	public ValueCompletionProcessor(FuzzyMap<ConfigurationMetadataProperty> index) {
 		this.index = index;
 	}
 
@@ -43,9 +43,9 @@ public class ValueCompletionProcessor {
 		try {
 			// case: @Value(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
-				List<Match<PropertyInfo>> matches = findMatches("");
+				List<Match<ConfigurationMetadataProperty>> matches = findMatches("");
 				
-				for (Match<PropertyInfo> match : matches) {
+				for (Match<ConfigurationMetadataProperty> match : matches) {
 
 					DocumentEdits edits = new DocumentEdits(doc);
 					edits.replace(offset, offset, "\"${" + match.data.getId() + "}\"");
@@ -64,9 +64,9 @@ public class ValueCompletionProcessor {
 				String proposalPrefix = "\"";
 				String proposalPostfix = "\"";
 
-				List<Match<PropertyInfo>> matches = findMatches(prefix);
+				List<Match<ConfigurationMetadataProperty>> matches = findMatches(prefix);
 				
-				for (Match<PropertyInfo> match : matches) {
+				for (Match<ConfigurationMetadataProperty> match : matches) {
 
 					DocumentEdits edits = new DocumentEdits(doc);
 					edits.replace(startOffset, endOffset, proposalPrefix + "${" + match.data.getId() + "}" + proposalPostfix);
@@ -101,9 +101,9 @@ public class ValueCompletionProcessor {
 					String fullNodeContent = doc.get(node.getStartPosition(), node.getLength());
 					String postCompletion = isClosingBracketMissing(fullNodeContent + preCompletion) ? "}" : "";
 
-					List<Match<PropertyInfo>> matches = findMatches(prefix);
+					List<Match<ConfigurationMetadataProperty>> matches = findMatches(prefix);
 					
-					for (Match<PropertyInfo> match : matches) {
+					for (Match<ConfigurationMetadataProperty> match : matches) {
 
 						DocumentEdits edits = new DocumentEdits(doc);
 						edits.replace(startOffset, endOffset, preCompletion + match.data.getId() + postCompletion);
@@ -150,8 +150,8 @@ public class ValueCompletionProcessor {
 		return result;
 	}
 
-	private List<Match<PropertyInfo>> findMatches(String prefix) {
-		List<Match<PropertyInfo>> matches = index.find(camelCaseToHyphens(prefix));
+	private List<Match<ConfigurationMetadataProperty>> findMatches(String prefix) {
+		List<Match<ConfigurationMetadataProperty>> matches = index.find(camelCaseToHyphens(prefix));
 		return matches;
 	}
 
