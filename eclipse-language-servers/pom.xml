@@ -97,7 +97,7 @@
 				<repository>
 					<id>tm4e</id>
 					<layout>p2</layout>
-					<url>http://oss.opensagres.fr/textmate/1.0.0-SNAPSHOT/</url>
+					<url>http://oss.opensagres.fr/textmate/0.1.0-SNAPSHOT/</url>
 				</repository>
 			</repositories>
 		</profile>
