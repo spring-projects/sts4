@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.metadata.util;
+package org.springframework.ide.vscode.commons.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

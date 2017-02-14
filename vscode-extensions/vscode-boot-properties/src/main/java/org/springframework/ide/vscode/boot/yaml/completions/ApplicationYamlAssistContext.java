@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
@@ -34,8 +33,6 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IMember;
@@ -46,6 +43,8 @@ import org.springframework.ide.vscode.commons.languageserver.completion.LazyProp
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;

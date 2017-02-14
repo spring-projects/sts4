@@ -14,9 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties

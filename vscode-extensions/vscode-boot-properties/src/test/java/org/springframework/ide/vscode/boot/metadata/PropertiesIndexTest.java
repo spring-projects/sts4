@@ -15,12 +15,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertiesIndexManager;
-import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**

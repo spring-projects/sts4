@@ -18,7 +18,6 @@ import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
@@ -40,6 +39,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;

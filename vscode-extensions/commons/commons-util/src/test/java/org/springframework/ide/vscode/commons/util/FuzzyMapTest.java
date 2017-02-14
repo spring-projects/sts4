@@ -8,18 +8,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.metadata;
+package org.springframework.ide.vscode.commons.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap.Match;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 
 public class FuzzyMapTest {
 

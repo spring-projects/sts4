@@ -20,10 +20,10 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
