@@ -59,35 +59,6 @@ public class GradleCore {
 		this.configuration = configuration;
 	}
 	
-	public GradleCoreProject readProject(File projectDir) throws GradleException {
-		ProjectConnection connection = null;
-		try {
-			GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(projectDir);
-			configuration.configure(gradleConnector);
-			connection = gradleConnector.connect();;
-			final EclipseProject project = connection.getModel(EclipseProject.class);
-			final BuildEnvironment build = connection.getModel(BuildEnvironment.class);
-			return new GradleCoreProject() {
-				
-				@Override
-				public EclipseProject getProject() {
-					return project;
-				}
-				
-				@Override
-				public BuildEnvironment getBuildEnvironment() {
-					return build;
-				}
-			};
-		} catch (GradleConnectionException e) {
-			throw new GradleException(e);
-		} finally {
-			if (connection != null) {
-				connection.close();
-			}
-		}
-	}
-	
 	public <T> T getModel(File projectDir, Class<T> modelType) throws GradleException {
 		ProjectConnection connection = null;
 		try {
