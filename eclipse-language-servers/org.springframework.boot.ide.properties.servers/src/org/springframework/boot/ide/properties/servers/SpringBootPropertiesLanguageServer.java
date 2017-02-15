@@ -94,14 +94,14 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);
-		if (!dataFile.exists()) {
+//		if (!dataFile.exists()) {
 			try {
 				copyLanguageServerJAR(languageServer);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+//		}
 		
 		return dataFile.getAbsolutePath();
 	}
