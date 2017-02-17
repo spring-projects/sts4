@@ -96,6 +96,24 @@ public class ValueCompletionTest {
 	}
 
 	@Test
+	public void testEmptyBracketsCompletionWithParamName() throws Exception {
+		prepareCase("@Value(\"onField\")", "@Value(value=<*>)");
+		prepareDefaultIndexData();
+
+		assertAnnotationCompletions(
+				"@Value(value=\"${data.prop2}\"<*>)",
+				"@Value(value=\"${else.prop3}\"<*>)",
+				"@Value(value=\"${spring.prop1}\"<*>)");
+	}
+
+	@Test
+	public void testEmptyBracketsCompletionWithWrongParamName() throws Exception {
+		prepareCase("@Value(\"onField\")", "@Value(another=<*>)");
+		prepareDefaultIndexData();
+		assertAnnotationCompletions();
+	}
+
+	@Test
 	public void testOnlyDollarNoQoutesCompletion() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value($<*>)");
 		prepareDefaultIndexData();
@@ -104,6 +122,17 @@ public class ValueCompletionTest {
 				"@Value(\"${data.prop2}\"<*>)",
 				"@Value(\"${else.prop3}\"<*>)",
 				"@Value(\"${spring.prop1}\"<*>)");
+	}
+
+	@Test
+	public void testOnlyDollarNoQoutesWithParamCompletion() throws Exception {
+		prepareCase("@Value(\"onField\")", "@Value(value=$<*>)");
+		prepareDefaultIndexData();
+
+		assertAnnotationCompletions(
+				"@Value(value=\"${data.prop2}\"<*>)",
+				"@Value(value=\"${else.prop3}\"<*>)",
+				"@Value(value=\"${spring.prop1}\"<*>)");
 	}
 
 	@Test
@@ -118,6 +147,17 @@ public class ValueCompletionTest {
 	}
 
 	@Test
+	public void testOnlyDollarWithParamCompletion() throws Exception {
+		prepareCase("@Value(\"onField\")", "@Value(value=\"$<*>\")");
+		prepareDefaultIndexData();
+
+		assertAnnotationCompletions(
+				"@Value(value=\"${data.prop2}<*>\")",
+				"@Value(value=\"${else.prop3}<*>\")",
+				"@Value(value=\"${spring.prop1}<*>\")");
+	}
+
+	@Test
 	public void testDollarWithBracketsCompletion() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"${<*>}\")");
 		prepareDefaultIndexData();
@@ -126,6 +166,17 @@ public class ValueCompletionTest {
 				"@Value(\"${data.prop2<*>}\")",
 				"@Value(\"${else.prop3<*>}\")",
 				"@Value(\"${spring.prop1<*>}\")");
+	}
+
+	@Test
+	public void testDollarWithBracketsWithParamCompletion() throws Exception {
+		prepareCase("@Value(\"onField\")", "@Value(value=\"${<*>}\")");
+		prepareDefaultIndexData();
+
+		assertAnnotationCompletions(
+				"@Value(value=\"${data.prop2<*>}\")",
+				"@Value(value=\"${else.prop3<*>}\")",
+				"@Value(value=\"${spring.prop1<*>}\")");
 	}
 
 	@Test
