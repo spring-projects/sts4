@@ -54,7 +54,7 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 	}
 
 	protected String getLabel(CFTarget target, CFDomain domain) {
-		return domain.getName() + " (" + target.getName() + ")";
+		return domain.getName();
 	}
 
 	@Override
