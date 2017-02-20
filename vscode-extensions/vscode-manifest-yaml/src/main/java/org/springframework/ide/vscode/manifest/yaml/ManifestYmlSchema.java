@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -93,8 +94,12 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
 
-		YType t_route = f.ymap(t_string, t_string);
-		YType t_routes = f.yseq(t_route);
+		// "routes" has nested required property "route":
+		// routes:
+		// - route: someroute.io
+		
+		YBeanType route = f.ybean("Route");
+		route.addProperty(f.yprop("route", t_string).isRequired(true));
 
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
@@ -142,7 +147,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
-			f.yprop("routes", t_routes),
+			f.yprop("routes", f.yseq(route)),
 			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),
