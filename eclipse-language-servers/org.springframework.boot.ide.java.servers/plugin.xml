@@ -25,5 +25,14 @@
             needsSortingAfterFiltering="false">
       </javaCompletionProposalComputer>
    </extension>
+   <extension
+         id="springbootjava-hover-provider"
+         point="org.eclipse.jdt.ui.javaEditorTextHovers">
+      <hover
+            activate="true"
+            class="org.springframework.boot.ide.java.servers.SpringBootJavaHoverProvider"
+            id="org.springframework.boot.ide.java.servers.hoverprovider">
+      </hover>
+   </extension>
 
 </plugin>
