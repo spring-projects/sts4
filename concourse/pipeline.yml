@@ -39,6 +39,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/vscode-extensions/snapshots/vscode-boot-properties-(.*).vsix
+- name: s3-boot-java-vsix-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/vscode-extensions/snapshots/vscode-boot-java-(.*).vsix
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
@@ -103,6 +111,10 @@ jobs:
         params: 
           file: vsix-files/vscode-boot-properties-*.vsix
           acl: public-read
+      - put: s3-boot-java-vsix-snapshot
+        params: 
+          file: vsix-files/vscode-boot-java-*.vsix
+          acl: public-read
       - put: s3-concourse-vsix-snapshot
         params: 
           file: vsix-files/vscode-concourse-*.vsix
@@ -141,6 +153,10 @@ jobs:
       - build-vsix-snapshots
       trigger: true
     - get: s3-boot-properties-vsix-snapshot
+      passed:
+      - build-vsix-snapshots
+      trigger: true
+    - get: s3-boot-java-vsix-snapshot
       passed:
       - build-vsix-snapshots
       trigger: true
