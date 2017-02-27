@@ -44,11 +44,11 @@
 			<artifactId>jackson-datatype-jdk8</artifactId>
 			<version>${jackson-2-version}</version>
 		</dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-            <version>${reactor-version}</version>
-        </dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>${reactor-version}</version>
+		</dependency>
 
 	</dependencies>
 
