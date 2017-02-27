@@ -39,6 +39,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -48,9 +49,10 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
@@ -147,9 +149,9 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<Void> showMessageRequest(ShowMessageRequestParams requestParams) {
+				public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
 					// TODO Auto-generated method stub
-					return null;
+					return CompletableFuture.completedFuture(new MessageActionItem("Some Message Request Answer"));
 				}
 
 				@Override
@@ -256,9 +258,11 @@ public class LanguageServerHarness {
 
 	private TextDocumentSyncKind getDocumentSyncMode() {
 		if (initResult!=null) {
-			TextDocumentSyncKind mode = initResult.getCapabilities().getTextDocumentSync();
-			if (mode!=null) {
-				return mode;
+			Either<TextDocumentSyncKind, TextDocumentSyncOptions> mode = initResult.getCapabilities().getTextDocumentSync();
+			if (mode.isLeft()) {
+				return mode.getLeft();
+			} else {
+				throw new IllegalStateException("Harness doesn't support fancy Sync options yet!");
 			}
 		}
 		return TextDocumentSyncKind.None;
@@ -303,7 +307,13 @@ public class LanguageServerHarness {
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
 		server.waitForReconcile();
-		return server.getTextDocumentService().completion(params).get();
+		Either<List<CompletionItem>, CompletionList> completions = server.getTextDocumentService().completion(params).get();
+		if (completions.isLeft()) {
+			List<CompletionItem> list = completions.getLeft();
+			return new CompletionList(false, list);
+		} else /* sompletions.isRight() */ {
+			return completions.getRight();
+		}
 	}
 
 	public Hover getHover(TextDocumentInfo document, Position cursor) throws Exception {

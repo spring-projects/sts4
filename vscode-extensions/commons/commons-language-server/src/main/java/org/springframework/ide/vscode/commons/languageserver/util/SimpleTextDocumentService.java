@@ -51,6 +51,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
@@ -207,12 +208,13 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
 
 	@Override
-	public CompletableFuture<CompletionList> completion(TextDocumentPositionParams position) {
+	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
-			return completionHandler.handle(position);
+			return completionHandler.handle(position)
+			.thenApply(Either::forRight);
 		}
-		return CompletableFuture.completedFuture(NO_COMPLETIONS);
+		return CompletableFuture.completedFuture(Either.forRight(NO_COMPLETIONS));
 	}
 
 	@Override

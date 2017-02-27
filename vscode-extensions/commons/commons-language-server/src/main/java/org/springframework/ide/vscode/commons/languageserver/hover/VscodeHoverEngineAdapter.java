@@ -10,20 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
-import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple2;
 
@@ -71,9 +73,11 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 					IRegion region = hoverTuple.getT2();
 					Range range = doc.toRange(region.getOffset(), region.getLength());
 
-					Hover hover = new Hover(Collections.singletonList(render(hoverInfo, type)), range);
-
-					return Futures.of(hover);
+					String rendered = render(hoverInfo, type);
+					if (StringUtil.hasText(rendered)) {
+						Hover hover = new Hover(ImmutableList.of(Either.forLeft(rendered)), range);
+						return CompletableFuture.completedFuture(hover);
+					}
 				}
 			}
 		} catch (Exception e) {
