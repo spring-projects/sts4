@@ -30,6 +30,9 @@
 		<module>org.springframework.boot.ide.properties.servers</module>
 		<module>org.springframework.boot.ide.properties.servers.feature</module>
 
+		<module>org.springframework.boot.ide.java.servers</module>
+		<module>org.springframework.boot.ide.java.servers.feature</module>
+
 		<module>org.springframework.boot.ide.cloudfoundry.server</module>
 		<module>org.springframework.boot.ide.cloudfoundry.server.feature</module>
 
@@ -82,6 +85,11 @@
 					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20161205183421/repository/</url>
 				</repository>
 				<repository>
+					<id>lsp4j-snapshots</id>
+					<layout>p2</layout>
+					<url>http://services.typefox.io/open-source/jenkins/job/lsp4j/job/master/lastStableBuild/artifact/build/p2-repository/</url>
+				</repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
@@ -89,7 +97,7 @@
 				<repository>
 					<id>tm4e</id>
 					<layout>p2</layout>
-					<url>http://oss.opensagres.fr/textmate/1.0.0-SNAPSHOT/</url>
+					<url>http://oss.opensagres.fr/textmate/0.1.0-SNAPSHOT/</url>
 				</repository>
 			</repositories>
 		</profile>

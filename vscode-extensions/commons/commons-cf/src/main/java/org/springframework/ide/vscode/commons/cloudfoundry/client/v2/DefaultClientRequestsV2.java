@@ -18,6 +18,7 @@ import org.cloudfoundry.client.CloudFoundryClient;
 import org.cloudfoundry.operations.CloudFoundryOperations;
 import org.cloudfoundry.operations.DefaultCloudFoundryOperations;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
@@ -82,7 +83,22 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 			)
 		);
 	}
+	
+	@Override
+	public List<CFDomain> getDomains() throws Exception {
 
+		return ReactorUtils.get(timeouts.getBuildpacksTimeout(), CancelationTokens.NULL,
+				log("operations.domains.list",
+					_operations
+					.domains()
+					.list()
+					.map(CFWrappingV2::wrap)
+					.collectList()
+					.map(ImmutableList::copyOf)
+				)
+			);
+	}
+	
 	@Override
 	public List<CFBuildpack> getBuildpacks() throws Exception {
 		return ReactorUtils.get(timeouts.getBuildpacksTimeout(), CancelationTokens.NULL,

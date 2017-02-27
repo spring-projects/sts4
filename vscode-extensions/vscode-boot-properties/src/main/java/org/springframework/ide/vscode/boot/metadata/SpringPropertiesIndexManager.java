@@ -13,11 +13,11 @@ package org.springframework.ide.vscode.boot.metadata;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties

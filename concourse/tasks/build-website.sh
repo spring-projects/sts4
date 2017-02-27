@@ -15,6 +15,8 @@ export vscode_manifest_yaml=$(basename s3-manifest-yaml-vsix-${dist_type}/*.vsix
 echo "vscode_manifest_yaml=$vscode_manifest_yaml"
 export vscode_boot_properties=$(basename s3-boot-properties-vsix-${dist_type}/*.vsix)
 echo "vscode_boot_properties=$vscode_boot_properties"
+export vscode_boot_java=$(basename s3-boot-java-vsix-${dist_type}/*.vsix)
+echo "vscode_boot_java=$vscode_boot_java"
 export vscode_concourse=$(basename s3-concourse-vsix-${dist_type}/*.vsix)
 echo "vscode_concourse=$vscode_concourse"
 
@@ -22,6 +24,9 @@ envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Property Language Server: 
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_boot_properties}">${vscode_boot_properties}</a> 
+   </li>
+   <li>Spring Boot Java Language Server: 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_boot_java}">${vscode_boot_java}</a> 
    </li>
    <li>Cloud Foundry Manifest Language Server: 
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 

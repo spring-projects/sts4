@@ -11,7 +11,11 @@
 
 package org.springframework.ide.vscode.boot.properties.completions;
 
-import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.*;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.SPACES;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.findLongestValidProperty;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.getValueHints;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.getValueType;
+import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.isValuePrefixChar;
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 
 import java.util.ArrayList;
@@ -28,11 +32,9 @@ import org.springframework.ide.vscode.boot.metadata.hints.ValueHintHoverInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap.Match;
+import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigator;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -41,6 +43,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;

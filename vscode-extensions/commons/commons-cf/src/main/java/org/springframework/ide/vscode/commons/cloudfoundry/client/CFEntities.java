@@ -29,4 +29,7 @@ public class CFEntities {
 				/* dasboard Url */ null);
 	}
 
+	public static CFDomain createDomain(String name) {
+		return new CFDomainImpl(name);
+	}
 }

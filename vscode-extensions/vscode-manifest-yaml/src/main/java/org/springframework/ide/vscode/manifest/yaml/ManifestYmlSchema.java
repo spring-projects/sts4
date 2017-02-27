@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -47,8 +48,13 @@ public class ManifestYmlSchema implements YamlSchema {
 		return IntegerRange.exactly(1);
 	}
 
-	public ManifestYmlSchema(Callable<Collection<YValueHint>> buildpackProvider, Callable<Collection<YValueHint>> servicesProvider) {
-		this.buildpackProvider = buildpackProvider;
+
+	public ManifestYmlSchema(ManifestYmlHintProviders providers) {
+		this.buildpackProvider = providers.getBuildpackProviders();
+		Callable<Collection<YValueHint>> servicesProvider = providers.getServicesProvider();
+		Callable<Collection<YValueHint>> domainsProvider = providers.getDomainsProvider();
+
+		
 		YTypeFactory f = new YTypeFactory();
 		TYPE_UTIL = f.TYPE_UTIL;
 
@@ -63,7 +69,17 @@ public class ManifestYmlSchema implements YamlSchema {
 			t_buildpack.addHintProvider(this.buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
+		
+		YAtomicType t_domain = f.yatomic("Domain");
+		YAtomicType t_domains_string = f.yatomic("Domains");
 
+		if (domainsProvider != null) {
+			t_domain.addHintProvider(domainsProvider);
+			t_domains_string.addHintProvider(domainsProvider);
+		}
+
+		YType t_domains = f.yseq(t_domains_string);
+		
 		YAtomicType t_service_string = f.yatomic("Service");
 		if (servicesProvider != null) {
 			t_service_string.addHintProvider(servicesProvider);
@@ -77,6 +93,13 @@ public class ManifestYmlSchema implements YamlSchema {
 		t_ne_string.parseWith(ValueParsers.NE_STRING);
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
+
+		// "routes" has nested required property "route":
+		// routes:
+		// - route: someroute.io
+		
+		YBeanType route = f.ybean("Route");
+		route.addProperty(f.yprop("route", t_string).isRequired(true));
 
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
@@ -112,8 +135,8 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("buildpack", t_buildpack),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
-			f.yprop("domain", t_string),
-			f.yprop("domains", t_strings),
+			f.yprop("domain", t_domain),
+			f.yprop("domains", t_domains),
 			f.yprop("env", t_env),
 			f.yprop("host", t_string),
 			f.yprop("hosts", t_strings),
@@ -124,6 +147,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
+			f.yprop("routes", f.yseq(route)),
 			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),

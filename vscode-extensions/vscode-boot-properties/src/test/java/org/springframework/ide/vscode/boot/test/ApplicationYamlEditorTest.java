@@ -545,7 +545,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Test public void testReconcileBeanPropName() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 		useProject(p);
-		assertNotNull(p.findType("demo.Foo"));
+		assertNotNull(p.getClasspath().findType("demo.Foo"));
 		data("some-foo", "demo.Foo", null, "some Foo pojo property");
 		Editor editor = newEditor(
 				"some-foo:\n" +
@@ -577,7 +577,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Test public void testReconcilePojoArray() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 		useProject(p);
-		assertNotNull(p.findType("demo.Foo"));
+		assertNotNull(p.getClasspath().findType("demo.Foo"));
 
 		{
 			Editor editor = newEditor(
@@ -654,7 +654,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Test public void testEnumPropertyReconciling() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getClasspath().findType("demo.Color"));
 
 		data("foo.color", "demo.Color", null, "A foonky colour");
 		Editor editor = newEditor(
@@ -1846,7 +1846,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testEnumsInLowerCaseContentAssist() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 		useProject(p);
-		assertNotNull(p.findType("demo.ClothingSize"));
+		assertNotNull(p.getClasspath().findType("demo.ClothingSize"));
 
 		data("simple.pants.size", "demo.ClothingSize", null, "The simple pant's size");
 

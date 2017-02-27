@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,7 +37,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import reactor.core.publisher.Mono;
@@ -118,13 +117,13 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
     @Override
     public CompletableFuture<Object> shutdown() {
-    	return Futures.of(null);
+    	return CompletableFuture.completedFuture(new Object());
     }
 
     @Override
     public void exit() {
+    	System.exit(0);
     }
-
 
 	public Path getWorkspaceRoot() {
 		return workspaceRoot;

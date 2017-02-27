@@ -18,8 +18,7 @@
 		<module>java-properties</module>
 		<module>commons-cf</module>
 		<module>commons-maven</module>
-
-
+		<module>commons-gradle</module>
 	</modules>
 
 	<repositories>
@@ -73,13 +72,13 @@
 		<yaml-version>1.17</yaml-version>
 		<junit-version>4.11</junit-version>
 		<assertj-version>3.5.2</assertj-version>
-		<slf4j-version>1.7.21</slf4j-version>
+		<slf4j-version>1.7.22</slf4j-version>
 		<guava-version>19.0</guava-version>
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
 		<lsp4j-version>0.1.0</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
-		<reactor-version>3.0.4.RELEASE</reactor-version>
+		<reactor-version>3.0.5.RELEASE</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>
 		<cloudfoundry-client-version>2.4.0.BUILD-SNAPSHOT</cloudfoundry-client-version>
 	</properties>

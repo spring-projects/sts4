@@ -17,8 +17,8 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataGroup
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataSource;
-import org.springframework.ide.vscode.boot.metadata.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {

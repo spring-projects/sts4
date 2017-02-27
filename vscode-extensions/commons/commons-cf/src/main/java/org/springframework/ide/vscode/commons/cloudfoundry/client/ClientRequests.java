@@ -17,4 +17,6 @@ public interface ClientRequests {
 
 	List<CFBuildpack> getBuildpacks() throws Exception;
 	List<CFServiceInstance> getServices() throws Exception;
+	List<CFDomain> getDomains() throws Exception;
+	
 }

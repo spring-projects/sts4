@@ -19,17 +19,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
+import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
-import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
@@ -40,58 +37,30 @@ import org.springframework.ide.vscode.commons.util.Log;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
-
 /**
  * Classpath for a maven project
  * 
  * @author Alex Boyko
  *
  */
-public class MavenProjectClasspath implements IClasspath {
-	
-	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
-	
-	public enum JavadocProviderTypes {
-		JAVA_PARSER,
-//		ROASTER,
-		HTML
-	}
+public class MavenProjectClasspath extends JandexClasspath {
 	
 	private MavenCore maven;
 	private File pom;
 	private Supplier<MavenProject> projectSupplier;
-	private Supplier<JandexIndex> javaIndex;
 	
-	public MavenProjectClasspath(File pom) {
-		this(pom, MavenCore.getDefault());
-	}
-
-	MavenProjectClasspath(File pom, MavenCore maven) {
+	MavenProjectClasspath(MavenCore maven, File pom) {
+		super();
 		this.maven = maven;
 		this.pom = pom;
 		this.projectSupplier = Suppliers.memoize(() -> createMavenProject());
-		this.javaIndex = Suppliers.memoize(() -> {
-			Stream<Path> classpathEntries = Stream.empty();
-			try {
-				classpathEntries = getClasspathEntries();
-			} catch (Exception e) {
-				Log.log(e);
-			}
-			return new JandexIndex(classpathEntries.map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
-				switch (providerType) {
-				case JAVA_PARSER:
-					return createParserJavadocProvider(classpathResource);
-//				case ROASTER:
-//					return createRoasterJavadocProvider(classpathResource);
-				default:
-					return createHtmlJavdocProvider(classpathResource);
-				}
-			}, maven.getJavaIndexForJreLibs());
-		});
 	}
 	
+	@Override
+	protected JandexIndex[] getBaseIndices() {
+		return new JandexIndex[] { maven.getJavaIndexForJreLibs() };
+	}
+
 	private final MavenProject createMavenProject() {
 		try {
 			// Read with resolved dependencies
@@ -139,29 +108,9 @@ public class MavenProjectClasspath implements IClasspath {
 		}
 	}
 	
-	public String getOutputFolder() {
+	public Path getOutputFolder() {
 		MavenProject project = projectSupplier.get();
-		return project == null ? null : project.getBuild().getOutputDirectory();
-	}
-	
-	public IType findType(String fqName) {
-		return javaIndex.get().findType(fqName);
-	}
-	
-	public Flux<Tuple2<IType, Double>> fuzzySearchType(String searchTerm, Predicate<IType> typeFilter) {
-		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
-	}
-	
-	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		return javaIndex.get().fuzzySearchPackages(searchTerm);
-	}
-
-	public Flux<IType> allSubtypesOf(IType type) {
-		return javaIndex.get().allSubtypesOf(type);
-	}
-
-	private File findIndexFile(File jarFile) {
-		return new File(maven.getIndexFolder().toString(), jarFile.getName() + "-" + jarFile.lastModified() + ".jdx");
+		return project == null ? null : new File(project.getBuild().getOutputDirectory()).toPath();
 	}
 	
 	private Optional<Artifact> getArtifactFromJarFile(File file) throws MavenException {
@@ -226,7 +175,7 @@ public class MavenProjectClasspath implements IClasspath {
 //		}
 //	}
 
-	private IJavadocProvider createParserJavadocProvider(File classpathResource) {
+	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
 		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return null;
@@ -263,7 +212,7 @@ public class MavenProjectClasspath implements IClasspath {
 		}
 	}
 	
-	private IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
+	protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
 		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return null;

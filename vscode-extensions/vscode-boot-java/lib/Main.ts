@@ -19,7 +19,7 @@ export function activate(context: VSCode.ExtensionContext) {
 
     let options: commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: true,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-java',
         fatJarFile: 'target/vscode-boot-java-0.0.1-SNAPSHOT.jar',
         clientOptions: {

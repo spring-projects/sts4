@@ -76,7 +76,6 @@ public class MavenCore {
 	private static final String CLASSIFIER_TESTS = "tests";
 	private static final String CLASSIFIER_TESTSOURCES = "test-sources";
 	  
-	public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 	private static final String JAVA_HOME = "java.home";
 	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
 	private static final String JAVA_BOOT_CLASS_PATH = "sun.boot.class.path";
@@ -336,18 +335,11 @@ public class MavenCore {
 		} catch (MavenException e) {
 			Log.log(e);
 		}
-		return new File(getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
+		return new File(JandexIndex.getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
 	}
 	
 	public JandexIndex getJavaIndexForJreLibs() {
 		return javaCoreIndex.get();
 	}
 	
-	public File getIndexFolder() {
-		File folder = new File(System.getProperty(JAVA_IO_TMPDIR), "jandex");
-		if (!folder.isDirectory()) {
-			folder.mkdirs();
-		}
-		return folder;
-	}
 }

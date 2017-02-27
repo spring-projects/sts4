@@ -21,13 +21,13 @@ import java.util.stream.Stream;
 
 import org.junit.Assume;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
+import org.springframework.ide.vscode.commons.jandex.JandexClasspath.JavadocProviderTypes;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectClasspath.JavadocProviderTypes;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -37,10 +37,10 @@ public class HtmlJavadocTest {
 	private static Supplier<MavenJavaProject> projectSupplier = Suppliers.memoize(() -> {
 		Path testProjectPath;
 		try {
-			MavenProjectClasspath.providerType = JavadocProviderTypes.HTML;
+			JandexClasspath.providerType = JavadocProviderTypes.HTML;
 			testProjectPath = Paths.get(HtmlJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		} catch (Exception e) {
 			return null;
 		}
@@ -52,7 +52,7 @@ public class HtmlJavadocTest {
 	
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("java.util.Map");
+		IType type = project.getClasspath().findType("java.util.Map");
 		assertNotNull(type);
 		String expected = String.join("\n",
 				"<div class=\"block\">An object that maps keys to values.  A map cannot contain duplicate keys;",
@@ -68,7 +68,7 @@ public class HtmlJavadocTest {
 		Assume.assumeTrue(javaVersionHigherThan(6));		
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getClasspath().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("<init>", Stream.empty());
 		assertNotNull(method);
@@ -86,7 +86,7 @@ public class HtmlJavadocTest {
 	public void html_testEmptyJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("hello.Application");
+		IType type = project.getClasspath().findType("hello.Application");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
 	}
@@ -95,7 +95,7 @@ public class HtmlJavadocTest {
 	public void html_testFieldAndMethodJavadocForJar() throws Exception {	
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("org.springframework.boot.SpringApplication");
+		IType type = project.getClasspath().findType("org.springframework.boot.SpringApplication");
 		assertNotNull(type);
 		
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
@@ -135,7 +135,7 @@ public class HtmlJavadocTest {
 	public void html_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("hello.Greeting$TestInnerClass");
+		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
@@ -168,7 +168,7 @@ public class HtmlJavadocTest {
 	public void html_testInnerClassLevel2_JavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
+		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
@@ -200,7 +200,7 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testJavadocOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		IType type = project.findType("hello.Greeting");
+		IType type = project.getClasspath().findType("hello.Greeting");
 		
 		assertNotNull(type);
 		String expected = "<div class=\"block\">Comment for Greeting class</div>";
@@ -237,7 +237,7 @@ public class HtmlJavadocTest {
 	
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getClasspath().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("size", Stream.empty());
 		assertNotNull(method);
@@ -258,7 +258,7 @@ public class HtmlJavadocTest {
 	
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("java.util.Map$Entry");
+		IType type = project.getClasspath().findType("java.util.Map$Entry");
 		assertNotNull(type);
 		String expected = String.join("\n",
 				"<div class=\"block\">A map entry (key-value pair).  The <tt>Map.entrySet</tt> method returns",
@@ -272,7 +272,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();;
 		
-		IType type = project.findType("hello.GreetingController");
+		IType type = project.getClasspath().findType("hello.GreetingController");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
 	}
@@ -281,7 +281,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocField() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("hello.GreetingController");
+		IType type = project.getClasspath().findType("hello.GreetingController");
 		assertNotNull(type);
 		IField field = type.getField("template");
 		assertNotNull(field);
@@ -302,7 +302,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocMethod() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		
-		IType type = project.findType("hello.Application");
+		IType type = project.getClasspath().findType("hello.Application");
 		assertNotNull(type);
 		IMethod method = type.getMethod("corsConfigurer", Stream.empty());
 		assertNotNull(method);

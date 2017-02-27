@@ -32,7 +32,13 @@ import com.google.common.cache.CacheBuilder;
  */
 public class MavenProjectFinderStrategy implements IJavaProjectFinderStrategy {
 
-	public Cache<File, MavenJavaProject> cache = CacheBuilder.newBuilder().build();
+	private Cache<File, MavenJavaProject> cache = CacheBuilder.newBuilder().build();
+	
+	private MavenCore maven;
+	
+	public MavenProjectFinderStrategy(MavenCore maven) {
+		this.maven = maven;
+	}
 
 	@Override
 	public MavenJavaProject find(IDocument d) throws ExecutionException, URISyntaxException {
@@ -46,7 +52,7 @@ public class MavenProjectFinderStrategy implements IJavaProjectFinderStrategy {
 				File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
 				if (pomFile != null) {
 					return cache.get(pomFile, () -> {
-						return new MavenJavaProject(pomFile);
+						return new MavenJavaProject(maven, pomFile);
 					});
 				}
 			}
