@@ -41,38 +41,38 @@ public class ManifestYamlLanguageServerTest {
 		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
-	
+
 //	@Test public void completions() throws Exception {
 //		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
-//		
+//
 //		File workspaceRoot = getTestResource("/workspace/");
 //		assertExpectedInitResult(harness.intialize(workspaceRoot));
 //
 //		TextDocumentInfo doc = harness.openDocument(getTestResource("/workspace/testfile.yml"));
-//		
+//
 //		CompletionList completions = harness.getCompletions(doc, doc.positionOf("foo"));
 //		assertThat(completions.isIncomplete()).isFalse();
 //		assertThat(completions.getItems())
 //			.extracting(CompletionItem::getLabel)
 //			.containsExactly("TypeScript", "JavaScript");
-//		
+//
 //		List<CompletionItem> resolved = harness.resolveCompletions(completions);
 //		assertThat(resolved)
 //			.extracting(CompletionItem::getLabel)
 //			.containsExactly("TypeScript", "JavaScript");
-//		
+//
 //		assertThat(resolved)
 //			.extracting(CompletionItem::getDetail)
 //			.containsExactly("TypeScript details", "JavaScript details");
-//		
+//
 //		assertThat(resolved)
 //			.extracting(CompletionItem::getDocumentation)
 //			.containsExactly("TypeScript docs", "JavaScript docs");
 //	}
-	
+
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isFalse();
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Incremental);
+		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
 }
