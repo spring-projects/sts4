@@ -25,7 +25,9 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -37,7 +39,7 @@ public class ValueHoverProvider {
 
 	public CompletableFuture<Hover> provideHoverForValueAnnotation(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {
-		
+
 		try {
 			// case: @Value("prefix<*>")
 			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
@@ -56,12 +58,12 @@ public class ValueHoverProvider {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
 	private CompletableFuture<Hover> provideHover(String value, int offset, int nodeStartOffset, TextDocument doc) {
-		
+
 		try {
 			LocalRange range = getPropertyRange(value, offset);
 			if (range != null) {
@@ -73,23 +75,23 @@ public class ValueHoverProvider {
 					while (keys.hasNext()) {
 						String key = (String) keys.next();
 						JSONObject props = properties.getJSONObject(key);
-						
+
 						if (props.has(propertyKey)) {
 							String propertyValue = props.getString(propertyKey);
-							
+
 							Range hoverRange = doc.toRange(nodeStartOffset + range.getStart(), range.getEnd() - range.getStart());
-							
+
 							Hover hover = new Hover();
-							List<String> hoverContent = new ArrayList<>();
-							
-							hoverContent.add("property value for " + propertyKey);
-							hoverContent.add(propertyValue);
-							hoverContent.add("coming from:");
-							hoverContent.add(key);
-							
+							List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
+
+							hoverContent.add(Either.forLeft("property value for " + propertyKey));
+							hoverContent.add(Either.forLeft(propertyValue));
+							hoverContent.add(Either.forLeft("coming from:"));
+							hoverContent.add(Either.forLeft(key));
+
 							hover.setContents(hoverContent);
 							hover.setRange(hoverRange);
-							
+
 							return CompletableFuture.completedFuture(hover);
 						}
 					}
@@ -99,32 +101,32 @@ public class ValueHoverProvider {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
 	public JSONObject getPropertiesFromProcess() {
 		try {
 			URL url = new URL("http://localhost:8080/env");
-			
+
 			URLConnection con = url.openConnection();
 			InputStream in = con.getInputStream();
 			String encoding = con.getContentEncoding();
 			encoding = encoding == null ? "UTF-8" : encoding;
 			String body = IOUtils.toString(in, encoding);
-			
+
 			JSONTokener tokener = new JSONTokener(body);
 			JSONObject jsonData = new JSONObject(tokener);
-			
+
 			return jsonData;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
-	
+
 	public String getPropertyKey(String value, int offset) {
 		LocalRange range = getPropertyRange(value, offset);
 		if (range != null) {
@@ -146,7 +148,7 @@ public class ValueHoverProvider {
 				break;
 			}
 		}
-		
+
 		for(int i = offset; i < value.length(); i++) {
 			if (value.charAt(i) == '{' || value.charAt(i) == '$') {
 				break;
@@ -156,31 +158,31 @@ public class ValueHoverProvider {
 				break;
 			}
 		}
-		
+
 		if (start > 0 && start < value.length() && end > 0 && end <= value.length() && start < end) {
 			return new LocalRange(start, end);
 		}
-		
+
 		return null;
 	}
-	
+
 	public static class LocalRange {
 		private int start;
 		private int end;
-		
+
 		public LocalRange(int start, int end) {
 			this.start = start;
 			this.end = end;
 		}
-		
+
 		public int getStart() {
 			return start;
 		}
-		
+
 		public int getEnd() {
 			return end;
 		}
-		
+
 	}
 
 }
