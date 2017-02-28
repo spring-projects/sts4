@@ -42,10 +42,10 @@ public class ConcourseLanguageServerTest {
 		LanguageServerHarness harness = new LanguageServerHarness(ConcourseLanguageServer::new);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
-	
+
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isFalse();
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Incremental);
+		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
 }
