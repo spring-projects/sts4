@@ -40,26 +40,26 @@ import com.google.common.io.Files;
 
 /**
  * Boot App Properties Editor tests
- * 
+ *
  * @author Alex Boyko
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
-	
+
 	@Test
 	public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
 		editor.assertProblems("key|extraneous input");
 	}
-	
+
 	public void linterRunsOnDocumentOpenAndChange() throws Exception {
 		Editor editor = newEditor("key");
 
 		editor.assertProblems("key|mismatched input");
-		
+
 		editor.setText(
 				"problem\n" +
 				"key=value\n" +
-				"another"		
+				"another"
 		);
 
 		editor.assertProblems("problem|extraneous input", "another|mismatched input");
@@ -255,7 +255,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Ignore @Test public void testHyperlinkTargetsLoggingLevel() throws Exception {
 		System.out.println(">>> testHyperlinkTargetsLoggingLevel");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
-		
+
 		useProject(p);
 
 		Editor editor = newEditor(
@@ -286,7 +286,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testReconcilePojoArray() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Foo"));
 
@@ -311,7 +311,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testPojoArrayCompletions() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Foo"));
 
@@ -460,7 +460,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumPropertyCompletionInsideCommaSeparateList() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
@@ -483,7 +483,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumPropertyCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
@@ -502,7 +502,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testEnumPropertyReconciling() throws Exception {
 
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
@@ -516,7 +516,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.ignoreProblem(PROP_DUPLICATE_KEY); //ignore deliberate abuse of dups
-		
+
 		editor.assertProblems(
 				".bad|Can't use '.' navigation",
 				"Bogus|Color"
@@ -525,7 +525,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumMapValueCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
@@ -542,7 +542,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumMapValueReconciling() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		data("foo.name-colors", "java.util.Map<java.lang.String,demo.Color>", null, "Map with colors in its values");
 
@@ -561,7 +561,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumMapKeyCompletion() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		data("foo.color-names", "java.util.Map<demo.Color,java.lang.String>", null, "Map with colors in its keys");
 		data("foo.color-data", "java.util.Map<demo.Color,demo.ColorData>", null, "Map with colors in its keys, and pojo in values");
@@ -603,7 +603,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumMapKeyReconciling() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 		assertNotNull(p.getClasspath().findType("demo.ColorData"));
@@ -623,14 +623,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testPojoCompletions() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 		assertNotNull(p.getClasspath().findType("demo.ColorData"));
 
 		assertCompletion("foo.dat<*>", "foo.data.<*>");
 
-		assertCompletionsDisplayStringAndDetail("foo.data.", 
+		assertCompletionsDisplayStringAndDetail("foo.data.",
 				new String[] {"children", "List<demo.ColorData>"},
 				new String[] {"color-children", "Map<demo.Color[BLUE, GREEN, RED], demo.ColorData>"},
 				new String[] {"funky", "boolean"},
@@ -658,7 +658,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testPojoReconciling() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 		assertNotNull(p.getClasspath().findType("demo.ColorData"));
@@ -693,7 +693,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		//is a simple type got which '.' navigation is invalid then the '.' is 'eaten' by the key.
 
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 		assertNotNull(p.getClasspath().findType("demo.ColorData"));
@@ -733,7 +733,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		// directly but via a pojo property
 
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 		assertNotNull(p.getClasspath().findType("demo.ColorData"));
@@ -759,7 +759,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumsInLowerCaseReconciling() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.ClothingSize"));
 
@@ -803,7 +803,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testEnumsInLowerCaseContentAssist() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.ClothingSize"));
 
@@ -846,7 +846,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testNavigationProposalAfterRelaxedPropertyName() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 
 		assertCompletionsVariations("foo.colorData.b<*>", "foo.colorData.blue.<*>");
@@ -855,7 +855,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testValueProposalAssignedToRelaxedPropertyName() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 
 		data("relaxed-color", "demo.Color", null, "A soothing color");
@@ -1398,7 +1398,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testCommaListReconcile() throws Exception {
 		Editor editor;
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
-		
+
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
@@ -1580,9 +1580,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		Editor editor = newEditor(
 				"debug=something\n"
 		);
-		editor.assertHoverExactText("debug", "[**debug**  \n[java.lang.String](null)]");
+		editor.assertHoverExactText("debug", "**debug**  \n[java.lang.String](null)");
 	}
-	
+
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
@@ -1607,7 +1607,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		//Variation 4: property assignment before and after
 		assertCompletions("foo=bar\n"+textBefore+"\nnol=brol", wrap("foo=bar\n", expectTextAfter, "\nnol=brol"));
 	}
-	
+
 	private String[] wrap(String before, String[] middle, String after) {
 		//"\n"+expectTextAfter+"\n\n"
 		String[] result = new String[middle.length];
@@ -1621,5 +1621,5 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	protected String getFileExtension() {
 		return ".properties";
 	}
-	
+
 }

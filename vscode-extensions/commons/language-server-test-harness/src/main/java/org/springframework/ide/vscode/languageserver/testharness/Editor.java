@@ -32,12 +32,14 @@ import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
 
 import reactor.core.publisher.Flux;
@@ -375,7 +377,28 @@ public class Editor {
 	public void assertHoverContains(String hoverOver, int occurrence, String snippet) throws Exception {
 		int hoverPosition = getHoverPosition(hoverOver, occurrence);
 		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
-		assertContains(snippet, hover.getContents().toString());
+		assertContains(snippet, hoverString(hover));
+	}
+
+	protected String hoverString(Hover hover) {
+		StringBuilder buf = new StringBuilder();
+		boolean first = true;
+		for (Either<String, MarkedString> block : hover.getContents()) {
+			if (!first) {
+				buf.append("\n\n");
+			}
+			if (block.isLeft()) {
+				String s = block.getLeft();
+				buf.append(s);
+			} else if (block.isRight()) {
+				MarkedString ms = block.getRight();
+				buf.append("```"+ms.getLanguage()+"\n");
+				buf.append(ms.getValue());
+				buf.append("\n```");
+			}
+			first = false;
+		}
+		return buf.toString();
 	}
 
 	private int getHoverPosition(String hoverOver, int occurrence) throws Exception {
@@ -407,7 +430,7 @@ public class Editor {
 	public void assertHoverContains(String hoverOver, String snippet) throws Exception {
 		int hoverPosition = getHoverPosition(hoverOver,1);
 		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
-		assertContains(snippet, hover.getContents().toString());
+		assertContains(snippet, hoverString(hover));
 	}
 
 	public void assertNoHover(String hoverOver) throws Exception {
@@ -427,7 +450,7 @@ public class Editor {
 			pos += afterString.length();
 		}
 		Hover hover = harness.getHover(document, document.toPosition(pos));
-		assertContains(expectSnippet, hover.getContents().toString());
+		assertContains(expectSnippet, hoverString(hover));
 	}
 
 	/**
@@ -441,7 +464,7 @@ public class Editor {
 			pos += afterString.length();
 		}
 		Hover hover = harness.getHover(document, document.toPosition(pos));
-		assertEquals(expectedHover, hover.getContents().toString());
+		assertEquals(expectedHover, hoverString(hover));
 	}
 
 	public CompletionItem assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
