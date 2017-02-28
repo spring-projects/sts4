@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 
 /**
  * Boot app properties file language server tests
- * 
+ *
  * @author Alex Boyko
  *
  */
@@ -41,7 +41,7 @@ public class BootPropertiesLanguageServerTest {
 		Callable<? extends SimpleLanguageServer> f = () -> new BootPropertiesLanguageServer((d) -> null, (d) -> null, (d) -> null);
 		return new LanguageServerHarness(f);
 	}
-	
+
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
 		LanguageServerHarness harness = newHarness();
@@ -55,9 +55,9 @@ public class BootPropertiesLanguageServerTest {
 		LanguageServerHarness harness = newHarness();
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
-	
+
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getTextDocumentSync()).isEqualTo(TextDocumentSyncKind.Incremental);
+		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
 }
