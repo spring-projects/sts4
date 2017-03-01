@@ -11,10 +11,12 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.gradle.tooling.GradleConnectionException;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -63,6 +65,12 @@ public class GradleCore {
 		ProjectConnection connection = null;
 		try {
 			GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(projectDir);
+			/*
+			 * Shut down Gradle daemons right away. Necessary project data is
+			 * queried once and then cached, hence no need need to have the
+			 * daemon running
+			 */
+			((DefaultGradleConnector) gradleConnector).daemonMaxIdleTime(1, TimeUnit.SECONDS);
 			configuration.configure(gradleConnector);
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
