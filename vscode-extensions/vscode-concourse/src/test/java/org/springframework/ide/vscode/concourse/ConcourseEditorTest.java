@@ -11,13 +11,14 @@
 package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
@@ -534,6 +535,48 @@ public class ConcourseEditorTest {
 				"slack-notification|Duplicate resource-type name",
 				"slack-notification|Duplicate resource-type name"
 		);
+	}
+
+	@Test
+	public void violatedPropertyConstraintsAreWarnings() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: blah"
+		);
+		editor.assertProblems("name: blah|'plan' is required");
+		assertEquals(DiagnosticSeverity.Warning,  editor.assertProblem("name: blah").getSeverity());
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - task: foo"
+		);
+		editor.assertProblems("task: foo|One of [config, file] is required");
+		assertEquals(DiagnosticSeverity.Warning,  editor.assertProblem("task: foo").getSeverity());
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - task: foo\n" +
+				"    config: {}\n" +
+				"    file: path/to/file"
+		);
+		{
+			List<Diagnostic> problems = editor.assertProblems(
+				"config|Only one of [config, file]",
+				"{}|[inputs, platform, run] are required",
+				"{}|One of [image_resource, image]",
+				"file|Only one of [config, file]"
+			);
+			//All of the problems in this example are property contraint violations! So all should be warnings.
+			for (Diagnostic diagnostic : problems) {
+				assertEquals(DiagnosticSeverity.Warning, diagnostic.getSeverity());
+			}
+		}
 	}
 
 	@Test

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import java.util.Set;
+
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
@@ -18,6 +20,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.yaml.snakeyaml.nodes.Node;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Methods for creating reconciler problems for Schema based reconciler implementation.
@@ -29,6 +33,12 @@ public class YamlSchemaProblems {
 	public static final ProblemType SYNTAX_PROBLEM = problemType("YamlSyntaxProblem");
 	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem");
 	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING);
+	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR);
+	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR);
+
+	public static final Set<ProblemType> PROPERTY_CONSTRAINT = ImmutableSet.of(
+			MISSING_PROPERTY, EXTRA_PROPERTY
+	);
 
 	public static ProblemType problemType(final String typeName, ProblemSeverity defaultSeverity) {
 

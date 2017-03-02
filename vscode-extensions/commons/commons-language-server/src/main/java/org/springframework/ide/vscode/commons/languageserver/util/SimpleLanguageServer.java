@@ -193,20 +193,6 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 					LOG.log(Level.WARNING, "Invalid reconcile problem ignored", e);
 				}
 			}
-
-			private DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
-				ProblemSeverity severity = problem.getType().getDefaultSeverity();
-				switch (severity) {
-				case ERROR:
-					return DiagnosticSeverity.Error;
-				case WARNING:
-					return DiagnosticSeverity.Warning;
-				case IGNORE:
-					return null;
-				default:
-					throw new IllegalStateException("Bug! Missing switch case?");
-				}
-			}
 		};
 
 		// Avoid running in the same thread as lsp4j as it can result
@@ -219,6 +205,20 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		})
 		.subscribeOn(RECONCILER_SCHEDULER)
 		.subscribe();
+	}
+
+	protected DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
+		ProblemSeverity severity = problem.getType().getDefaultSeverity();
+		switch (severity) {
+		case ERROR:
+			return DiagnosticSeverity.Error;
+		case WARNING:
+			return DiagnosticSeverity.Warning;
+		case IGNORE:
+			return null;
+		default:
+			throw new IllegalStateException("Bug! Missing switch case?");
+		}
 	}
 
 	public void waitForReconcile() throws Exception {

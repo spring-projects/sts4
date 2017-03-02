@@ -14,24 +14,26 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 
@@ -46,13 +48,11 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 
 	private class SchemaSpecificPieces {
 
-		final YamlSchema schema;
 		final VscodeCompletionEngine completionEngine;
 		final VscodeHoverEngineAdapter hoverEngine;
 		final YamlSchemaBasedReconcileEngine reconcileEngine;
 
 		SchemaSpecificPieces(YamlSchema schema) {
-			this.schema = schema;
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
 			this.completionEngine = new VscodeCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
@@ -126,6 +126,14 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		documents.onDefinition(definitionFinder);
 	}
 
+	@Override
+	protected DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
+		ProblemType type = problem.getType();
+		if (YamlSchemaProblems.PROPERTY_CONSTRAINT.contains(type)) {
+			return DiagnosticSeverity.Warning;
+		}
+		return super.getDiagnosticSeverity(problem);
+	}
 
 	@Override
 	protected ServerCapabilities getServerCapabilities() {

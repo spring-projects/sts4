@@ -235,7 +235,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				} else {
 					message = "Properties "+missingProps+" are required for '"+type+"'";
 				}
-				problem(map, message);
+				problem(map, message, YamlSchemaProblems.MISSING_PROPERTY);
 			}
 
 			//Check for missing/extra 'one-of' constrained properties
@@ -245,13 +245,13 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					.filter(foundProps::contains)
 					.count();
 				if (foundPropsCount==0) {
-					problem(map, "One of "+requiredProps+" is required for '"+type+"'");
+					problem(map, "One of "+requiredProps+" is required for '"+type+"'", YamlSchemaProblems.MISSING_PROPERTY);
 				} else if (foundPropsCount>1) {
 					//Mark each of the found keys as a violation:
 					for (NodeTuple entry : map.getValue()) {
 						String key = NodeUtil.asScalar(entry.getKeyNode());
 						if (key!=null && requiredProps.contains(key)) {
-							problem(entry.getKeyNode(), "Only one of "+requiredProps+" should be defined for '"+type+"'");
+							problem(entry.getKeyNode(), "Only one of "+requiredProps+" should be defined for '"+type+"'", YamlSchemaProblems.EXTRA_PROPERTY);
 						}
 					}
 				}

@@ -42,6 +42,9 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import reactor.core.publisher.Flux;
 
 public class Editor {
@@ -120,7 +123,7 @@ public class Editor {
 	 * @param expectedProblems
 	 * @throws BadLocationException
 	 */
-	public void assertProblems(String... expectedProblems) throws Exception {
+	public List<Diagnostic> assertProblems(String... expectedProblems) throws Exception {
 		Editor editor = this;
 		List<Diagnostic> actualProblems = new ArrayList<>(editor.reconcile().stream().filter(d -> {
 			return !ignoredTypes.contains(d.getCode());
@@ -140,6 +143,7 @@ public class Editor {
 		if (bad!=null) {
 			fail(bad+problemSumary(editor, actualProblems));
 		}
+		return ImmutableList.copyOf(actualProblems);
 	}
 
 	private String problemSumary(Editor editor, List<Diagnostic> actualProblems) throws Exception {
