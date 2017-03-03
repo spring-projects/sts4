@@ -207,7 +207,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "platform", t_platform).isRequired(true);
 		addProp(task, "image_resource", t_image_resource);
 		addProp(task, "image", t_ne_string);
-		addProp(task, "inputs", f.yseq(t_input)).isRequired(true);
+		addProp(task, "inputs", f.yseq(t_input));
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);

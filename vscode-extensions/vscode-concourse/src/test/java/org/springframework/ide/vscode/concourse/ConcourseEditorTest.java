@@ -568,7 +568,7 @@ public class ConcourseEditorTest {
 		{
 			List<Diagnostic> problems = editor.assertProblems(
 				"config|Only one of [config, file]",
-				"{}|[inputs, platform, run] are required",
+				"{}|[platform, run] are required",
 				"{}|One of [image_resource, image]",
 				"file|Only one of [config, file]"
 			);
@@ -2242,7 +2242,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"image: some-image"
 		);
-		editor.assertProblems("image: some-image|[inputs, platform, run] are required");
+		editor.assertProblems("image: some-image|[platform, run] are required");
 
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"platform: a-platform\n" +
