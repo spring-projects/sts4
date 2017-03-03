@@ -36,7 +36,7 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
  * @author Kris De Volder
  */
 public class YamlCompletionEngine implements ICompletionEngine {
-	
+
 	final static Logger logger = LoggerFactory.getLogger(YamlCompletionEngine.class);
 
 
@@ -142,9 +142,8 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			}
 		} else if (node.getNodeType()==SNodeType.DOC) {
 			return node;
-		} else {
-			throw new IllegalStateException("Missing case");
 		}
+		return null;
 	}
 
 	protected YamlPath getContextPath(YamlDocument doc, SNode node, int offset) throws Exception {

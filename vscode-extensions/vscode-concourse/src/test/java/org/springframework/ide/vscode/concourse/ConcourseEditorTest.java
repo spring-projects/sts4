@@ -2474,6 +2474,22 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void PT_141050891_language_server_crashes_on_CA_before_first_document_marker() throws Exception {
+		Editor editor = harness.newEditor(
+				"%Y<*>\n" +
+				"#leading comment\n" +
+						"---\n" +
+						"resources:\n" +
+						"- name: my-repo\n" +
+						"  type: git\n" +
+						"  source:\n" +
+						"    uri: https://github.com/spring-projects/sts4.git\n" +
+						"    <*>"
+		);
+		//We don't expect completions, but this should at least not crash!
+		editor.assertCompletions(/*NONE*/);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
