@@ -32,6 +32,51 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 
 public class YamlStructureParserTest {
 
+	@Test public void ignoreLeadingYamlCruftBeforeLeadingDocumentSeparator() throws Exception {
+		String[] stuffToIgnore = {
+				"#comment",
+				"   # comment with leading spaces",
+				"%directive"
+		};
+
+		for (String stuff : stuffToIgnore) {
+			System.out.println(stuff);
+			MockYamlEditor editor = new MockYamlEditor(
+					stuff+"\n" +
+					"---\n" +
+					"hello:\n"+
+					"  world:\n" +
+					"    message\n"
+			);
+			assertParseOneDoc(editor,
+					"DOC(0): ---",
+					"  KEY(0): hello:",
+					"    KEY(2): world:",
+					"      RAW(4): message",
+					"      RAW(-1): "
+			);
+
+		}
+
+	}
+
+	@Test public void testLeadingDocumentSeparator() throws Exception {
+		MockYamlEditor editor = new MockYamlEditor(
+				"---\n" +
+				"hello:\n"+
+				"  world:\n" +
+				"    message\n"
+		);
+
+		assertParseOneDoc(editor,
+				"DOC(0): ---",
+				"  KEY(0): hello:",
+				"    KEY(2): world:",
+				"      RAW(4): message",
+				"      RAW(-1): "
+		);
+	}
+
 	@Test public void testSimple() throws Exception {
 		MockYamlEditor editor = new MockYamlEditor(
 				"hello:\n"+
@@ -76,7 +121,7 @@ public class YamlStructureParserTest {
 		);
 		assertParseOneDoc(editor,
 				"DOC(0): ",
-				"  RAW(-1): #A comment",
+//				"  RAW(-1): #A comment",
 				"  KEY(0): hello:",
 				"    RAW(-1):   #Another comment",
 				"    KEY(2): world:",

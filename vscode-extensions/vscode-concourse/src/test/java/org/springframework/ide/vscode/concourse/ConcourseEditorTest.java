@@ -2429,15 +2429,64 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("path", 2, "The path to a directory where the output will be taken from");
 	}
 
+	@Test public void PT_140711495_triple_dash_at_start_of_file_disrupts_content_assist() throws Exception {
+		assertContextualCompletions(
+				"#leading comment\n" +
+				"---\n" +
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/spring-projects/sts4.git\n" +
+				"    <*>"
+				, // ==================
+				"bra<*>"
+				, // ==>
+				"branch: <*>"
+		);
+
+		assertContextualCompletions(
+				"---\n" +
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/spring-projects/sts4.git\n" +
+				"    <*>"
+				, // ==================
+				"bra<*>"
+				, // ==>
+				"branch: <*>"
+		);
+
+		assertContextualCompletions(
+//				"---\n" +
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/spring-projects/sts4.git\n" +
+				"    <*>"
+				, // ==================
+				"bra<*>"
+				, // ==>
+				"branch: <*>"
+		);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(conText);
+		editor.reconcile(); //this ensures the conText is parsed and its AST is cached (will be used for
+		                    //dynamic CA when the conText + textBefore is not parsable.
 		assertContains(CURSOR, conText);
 		textBefore = conText.replace(CURSOR, textBefore);
 		textAfter = Arrays.stream(textAfter)
 				.map((String t) -> conText.replace(CURSOR, t))
 				.collect(Collectors.toList()).toArray(new String[0]);
-		assertCompletions(textBefore, textAfter);
+		editor.setText(textBefore);
+		editor.assertCompletions(textAfter);
 	}
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {

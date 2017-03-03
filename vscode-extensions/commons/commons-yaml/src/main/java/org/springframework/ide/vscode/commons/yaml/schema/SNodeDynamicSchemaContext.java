@@ -69,5 +69,9 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 		return contextPath;
 	}
 
+	@Override
+	public String toString() {
+		return "SNodeDynamicSchemaContext("+contextPath+")";
+	}
 
 }

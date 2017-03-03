@@ -16,9 +16,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -32,7 +30,6 @@ import org.springframework.ide.vscode.commons.yaml.path.KeyAliases;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
@@ -41,9 +38,6 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 /**
  * A robust, coarse-grained parser that guesses the structure of a
@@ -97,12 +91,19 @@ public class YamlStructureParser {
 	//   either "..." or "---" at the start of a line
 	//   followed by arbitrary amount of whitepsace
 	//   optionally followed by a "#" end of line comment.
-
 	//Note: "..." isn't a document separator but document terminator. Treating it as a separator is
 	// technically not correct. As the structure parser is meant to be 'robust' and do something
 	// sensible with incorrect input this makes sense here. The effect it will have is that user
 	// can type after a document terminator and get content assist as if they are in a new document.
 	// (They will also receive a syntax error message from the more formal and precise SnakeYaml parser)
+
+
+	/**
+	 * Stuff to ignore at the beginning of a yaml file (before the start of the first document):
+	 */
+	private static final Pattern SKIP_AT_START_OF_DOC = Pattern.compile(
+			"^((\\s*\\#)|(\\%)).*"
+	);
 
 //	public static final Pattern SEQ_LINE = Pattern.compile(
 //			"^( *)- .*");
@@ -153,8 +154,12 @@ public class YamlStructureParser {
 		public int getStart() {
 			return start;
 		}
+		public boolean matches(Pattern pat, boolean stripiIndentation) throws Exception {
+			CharSequence text = stripiIndentation ? getTextWithoutIndent():getText();
+			return pat.matcher(text).matches();
+		}
 		public boolean matches(Pattern pat) throws Exception {
-			return pat.matcher(getTextWithoutIndent()).matches();
+			return matches(pat, true);
 		}
 		public String getTextWithoutIndent() throws Exception {
 			return doc.textBetween(getStart()+getIndent(), getEnd());
@@ -190,6 +195,13 @@ public class YamlStructureParser {
 
 		public YamlLineReader(YamlDocument doc) {
 			this.doc = doc;
+		}
+
+		public YamlLine peek() throws Exception {
+			if (nextLine < doc.getDocument().getNumberOfLines()) {
+				return YamlLine.atLineNumber(doc, nextLine);
+			}
+			return null; //means EOF
 		}
 
 		public YamlLine read() throws Exception {
@@ -272,7 +284,7 @@ public class YamlStructureParser {
 		public IDocument getDocument() {
 			return doc.getDocument();
 		}
-		
+
 		public String getText() throws Exception {
 			return doc.textBetween(start, end);
 		}
@@ -281,6 +293,7 @@ public class YamlStructureParser {
 		 * Default implementation, doesn't support any type of traversal operation.
 		 * Subclasses must override and implement where appropriate.
 		 */
+		@Override
 		public Stream<SNode> traverseAmbiguously(YamlPathSegment s) {
 			return Stream.empty();
 		}
@@ -290,6 +303,7 @@ public class YamlStructureParser {
 		 * the interface. This is only here to prevent subclasses from implementing
 		 * this. They should implement traverseAmbiguously instead.
 		 */
+		@Override
 		public SNode traverse(YamlPathSegment s) {
 			return traverseAmbiguously(s).findFirst().orElse(null);
 		}
@@ -308,7 +322,7 @@ public class YamlStructureParser {
 				nodes.add(node);
 			}
 		}
-		
+
 		public YamlPath getPath() throws Exception {
 			List<YamlPathSegment> path = new ArrayList<>();
 			for (SNode node : getPathNodes()) {
@@ -321,7 +335,7 @@ public class YamlStructureParser {
 		}
 
 		/**
-		 * Determine a YamlPathSegment that corresponds to given node. This may be 
+		 * Determine a YamlPathSegment that corresponds to given node. This may be
 		 * null because not all SNodes can be interpreted as 'step' in the yml
 		 * structure (e.g. raw nodes will return null, as will the 'root' node).
 		 */
@@ -528,7 +542,7 @@ public class YamlStructureParser {
 			}
 			return Stream.empty();
 		}
-		
+
 		public SKeyNode getChildWithKey(String key) {
 			return (SKeyNode)getChildrenWithKey(key).findFirst().orElse(null);
 		}
@@ -612,9 +626,16 @@ public class YamlStructureParser {
 
 	public SRootNode parse() throws Exception {
 		SRootNode root = new SRootNode(input.getDocument());
-		SDocNode doc = new SDocNode(root,0,0);
-		SChildBearingNode parent = doc;
-		YamlLine line;
+		SChildBearingNode parent = root;
+		YamlLine line = input.peek();
+		while (line!=null && line.matches(SKIP_AT_START_OF_DOC, false)) {
+			input.read();
+			line = input.peek();
+		}
+		if (line!=null && !line.matches(DOCUMENT_SEPERATOR)) {
+			//document separator missing, create document implicitly
+			parent = new SDocNode(root,0,0);
+		}
 		while (null!=(line=input.read())) {
 			int indent = line.getIndent();
 			if (indent==-1) {

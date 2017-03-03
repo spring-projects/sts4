@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.util.ExceptionUtil.getSimpleError;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +27,6 @@ import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
