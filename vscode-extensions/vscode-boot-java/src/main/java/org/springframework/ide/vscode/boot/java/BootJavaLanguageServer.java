@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.hover.BootJavaHoverProvider;
+import org.springframework.ide.vscode.boot.java.references.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
@@ -26,6 +27,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFi
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
@@ -65,6 +67,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		HoverHandler hoverInfoProvider = new BootJavaHoverProvider(this, javaProjectFinder);
 		documents.onHover(hoverInfoProvider);
+		
+		ReferencesHandler referencesHandler = new BootJavaReferencesHandler(this, javaProjectFinder);
+		documents.onRefeences(referencesHandler);
 	}
 
 	public void setMaxCompletionsNumber(int number) {
@@ -80,6 +85,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		completionProvider.setResolveProvider(false);
 		c.setCompletionProvider(completionProvider);
 		c.setHoverProvider(true);
+		c.setReferencesProvider(true);
 		
 		return c;
 	}
