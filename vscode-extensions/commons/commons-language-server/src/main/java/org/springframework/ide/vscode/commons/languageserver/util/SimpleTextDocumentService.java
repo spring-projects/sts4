@@ -74,6 +74,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private HoverHandler hoverHandler = null;
 
 	private DefinitionHandler definitionHandler;
+	private ReferencesHandler referencesHandler;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
@@ -97,6 +98,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onDefinition(DefinitionHandler h) {
 		Assert.isNull("A defintion handler is already set, multiple handlers not supported yet", definitionHandler);
 		this.definitionHandler = h;
+	}
+
+	public synchronized void onRefeences(ReferencesHandler h) {
+		Assert.isNull("A references handler is already set, multiple handlers not supported yet", referencesHandler);
+		this.referencesHandler = h;
 	}
 
 	/**
@@ -204,8 +210,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	public final static CompletionList NO_COMPLETIONS = new CompletionList(false, Collections.emptyList());
-
 	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
+	public final static CompletableFuture<List<? extends Location>> NO_REFERENCES = CompletableFuture.completedFuture(ImmutableList.of());
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
@@ -253,6 +259,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+		ReferencesHandler h = this.referencesHandler;
+		if (h != null) {
+			return h.handle(params);
+		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
