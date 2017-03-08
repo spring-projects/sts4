@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -2488,6 +2489,40 @@ public class ConcourseEditorTest {
 		);
 		//We don't expect completions, but this should at least not crash!
 		editor.assertCompletions(/*NONE*/);
+	}
+
+	@Ignore @Test public void relaxedIndentContextMoreSpaces() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"  <*>"
+		);
+		editor.assertCompletionLabels(
+				//For the 'exact' context:
+				"check_every",
+				"name",
+				"source",
+				"type",
+				//For the nested context:
+				"branch",
+				"commit_verification_key_ids",
+				"commit_verification_keys",
+				"disable_ci_skip",
+				"git_config",
+				"gpg_keyserver",
+				"ignore_paths",
+				"password",
+				"paths",
+				"private_key",
+				"skip_ssl_verification",
+				"tag_filter",
+				"uri",
+				"username"
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

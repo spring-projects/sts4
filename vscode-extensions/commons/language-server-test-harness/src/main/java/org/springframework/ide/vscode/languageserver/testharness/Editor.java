@@ -252,6 +252,21 @@ public class Editor {
 		assertEquals(expect.toString(), actual.toString());
 	}
 
+	public void assertCompletionLabels(String... expectedLabels) throws Exception {
+		StringBuilder expect = new StringBuilder();
+		StringBuilder actual = new StringBuilder();
+		for (String label : expectedLabels) {
+			expect.append(label);
+			expect.append("\n");
+		}
+
+		for (CompletionItem completion : getCompletions()) {
+			actual.append(completion.getLabel());
+			actual.append("\n");
+		}
+		assertEquals(expect.toString(), actual.toString());
+	}
+
 	public void assertContainsCompletions(String... expectTextAfter) throws Exception {
 		StringBuilder actual = new StringBuilder();
 
