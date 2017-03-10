@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.references.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -28,13 +30,79 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 public class PropertyReferenceFinderTest {
 	
 	@Test
-	public void testFindReferences() throws Exception {
+	public void testFindReferenceAtBeginning() throws Exception {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
-		CompletableFuture<List<? extends Location>> locations = provider.findReferencesFromPropertyFiles(root, "test.property");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "test.property");
 		
-		assertNotNull(locations);
+		assertNotNull(resultFuture);
+		List<? extends Location> locations = resultFuture.get();
+		assertEquals(1, locations.size());
+		Location location = locations.get(0);
+		
+		URI docURI = Paths.get(root.toString(), "application.properties").toUri();
+		assertEquals(docURI.toString(), location.getUri());
+		assertEquals(0, location.getRange().getStart().getLine());
+		assertEquals(0, location.getRange().getStart().getCharacter());
+		assertEquals(0, location.getRange().getEnd().getLine());
+		assertEquals(13, location.getRange().getEnd().getCharacter());
+	}
+
+	@Test
+	public void testFindReferenceWithinTheDocument() throws Exception {
+		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
+
+		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "server.port");
+		
+		assertNotNull(resultFuture);
+		List<? extends Location> locations = resultFuture.get();
+		assertEquals(1, locations.size());
+		Location location = locations.get(0);
+		
+		URI docURI = Paths.get(root.toString(), "application.properties").toUri();
+		assertEquals(docURI.toString(), location.getUri());
+		assertEquals(2, location.getRange().getStart().getLine());
+		assertEquals(0, location.getRange().getStart().getCharacter());
+		assertEquals(2, location.getRange().getEnd().getLine());
+		assertEquals(11, location.getRange().getEnd().getCharacter());
+	}
+
+	@Test
+	public void testFindReferenceWithinMultipleFiles() throws Exception {
+		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
+
+		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/multiple-files/").toURI());
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "appl1.prop");
+		
+		assertNotNull(resultFuture);
+		List<? extends Location> locations = resultFuture.get();
+		assertEquals(3, locations.size());
+
+		Location location = locations.get(0);
+		URI docURI = Paths.get(root.toString(), "application-dev.properties").toUri();
+		assertEquals(docURI.toString(), location.getUri());
+		assertEquals(1, location.getRange().getStart().getLine());
+		assertEquals(0, location.getRange().getStart().getCharacter());
+		assertEquals(1, location.getRange().getEnd().getLine());
+		assertEquals(10, location.getRange().getEnd().getCharacter());
+
+		location = locations.get(1);
+		docURI = Paths.get(root.toString(), "application.properties").toUri();
+		assertEquals(docURI.toString(), location.getUri());
+		assertEquals(1, location.getRange().getStart().getLine());
+		assertEquals(0, location.getRange().getStart().getCharacter());
+		assertEquals(1, location.getRange().getEnd().getLine());
+		assertEquals(10, location.getRange().getEnd().getCharacter());
+
+		location = locations.get(2);
+		docURI = Paths.get(root.toString(), "prod-application.properties").toUri();
+		assertEquals(docURI.toString(), location.getUri());
+		assertEquals(1, location.getRange().getStart().getLine());
+		assertEquals(0, location.getRange().getStart().getCharacter());
+		assertEquals(1, location.getRange().getEnd().getLine());
+		assertEquals(10, location.getRange().getEnd().getCharacter());
 	}
 
 }

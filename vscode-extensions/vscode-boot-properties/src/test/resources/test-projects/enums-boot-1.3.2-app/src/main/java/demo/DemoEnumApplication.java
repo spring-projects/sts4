@@ -3,6 +3,7 @@ package demo;
 import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,6 +19,7 @@ public class DemoEnumApplication implements CommandLineRunner {
 
     
     @Autowired
+	@Value("${server.port}")
     FooProperties foo; 
     
     @Override

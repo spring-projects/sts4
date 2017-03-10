@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.references;
 
+import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,14 +22,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
+import org.springframework.ide.vscode.java.properties.parser.ParseResults;
+import org.springframework.ide.vscode.java.properties.parser.Parser;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
 
 /**
  * @author Martin Lippert
@@ -89,7 +100,7 @@ public class ValuePropertyReferencesProvider {
 			List<Location> locations = walk
 					.filter(path -> isPropertiesFile(path))
 					.filter(path -> path.toFile().isFile())
-					.map(path -> findReferences(path))
+					.map(path -> findReferences(path, propertyKey))
 					.flatMap(Collection::stream)
 					.collect(Collectors.toList());
 			
@@ -103,18 +114,74 @@ public class ValuePropertyReferencesProvider {
 	}
 
 	private boolean isPropertiesFile(Path path) {
-		return path.toString().endsWith("application.properties");
+		Path fileName = path.getFileName();
+		
+		if (fileName.toString().endsWith(".properties") || path.toString().endsWith(".yml")) {
+			return fileName.toString().contains("application");
+		}
+		else {
+			return false;
+		}
 	}
 
-	private List<Location> findReferences(Path path) {
+	private List<Location> findReferences(Path path, String propertyKey) {
 		String filePath = path.toString();
 		if (filePath.endsWith(".properties")) {
-			// do the real work
+			return findReferencesInPropertiesFile(filePath, propertyKey);
 		}
 		else if (filePath.endsWith(".yml")) {
 			// do the real work
 		}
 		return new ArrayList<Location>();
+	}
+
+	private List<Location> findReferencesInPropertiesFile(String filePath, String propertyKey) {
+		List<Location> foundLocations = new ArrayList<>();
+		
+		try {
+			String fileContent = FileUtils.readFileToString(new File(filePath));
+
+			Parser parser = new AntlrParser();
+			ParseResults parseResults = parser.parse(fileContent);
+			
+			if (parseResults != null && parseResults.ast != null) {
+				parseResults.ast.getNodes(KeyValuePair.class).forEach(pair -> {
+					if (pair.getKey() != null && pair.getKey().decode().equals(propertyKey)) {
+						URI docURI = Paths.get(filePath).toUri();
+						TextDocument doc = new TextDocument(docURI.toString(), null);
+						doc.setText(fileContent);
+
+						try {
+							int line = doc.getLineOfOffset(pair.getKey().getOffset());
+							int startInLine = pair.getKey().getOffset() - doc.getLineOffset(line);
+							int endInLine = startInLine + (pair.getKey().getLength());
+
+							Position start = new Position();
+							start.setLine(line);
+							start.setCharacter(startInLine);
+
+							Position end = new Position();
+							end.setLine(line);
+							end.setCharacter(endInLine);
+
+							Range range = new Range();
+							range.setStart(start);
+							range.setEnd(end);
+
+							Location location = new Location(docURI.toString(), range);
+							foundLocations.add(location);
+
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return foundLocations;
 	}
 
 	public LocalRange getPropertyRange(String value, int offset) {
