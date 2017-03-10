@@ -130,9 +130,14 @@ public class ValuePropertyReferencesProvider {
 			return findReferencesInPropertiesFile(filePath, propertyKey);
 		}
 		else if (filePath.endsWith(".yml")) {
-			// do the real work
+			return findReferencesInYMLFile(filePath, propertyKey);
 		}
 		return new ArrayList<Location>();
+	}
+
+	private List<Location> findReferencesInYMLFile(String filePath, String propertyKey) {
+		List<Location> foundLocations = new ArrayList<>();
+		return foundLocations;
 	}
 
 	private List<Location> findReferencesInPropertiesFile(String filePath, String propertyKey) {
