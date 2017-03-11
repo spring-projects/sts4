@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.references;
 
+import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
+
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
@@ -34,10 +36,18 @@ import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.Parser;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeId;
+import org.yaml.snakeyaml.nodes.NodeTuple;
 
 /**
  * @author Martin Lippert
@@ -137,7 +147,71 @@ public class ValuePropertyReferencesProvider {
 
 	private List<Location> findReferencesInYMLFile(String filePath, String propertyKey) {
 		List<Location> foundLocations = new ArrayList<>();
+		
+		try {
+			String fileContent = FileUtils.readFileToString(new File(filePath));
+	
+			Yaml yaml = new Yaml();
+			YamlASTProvider parser = new YamlParser(yaml);
+			
+			URI docURI = Paths.get(filePath).toUri();
+			TextDocument doc = new TextDocument(docURI.toString(), null);
+			doc.setText(fileContent);
+			YamlFileAST ast = parser.getAST(doc);
+			
+			List<Node> nodes = ast.getNodes();
+			if (nodes != null && !nodes.isEmpty()) {
+				for (Node node : nodes) {
+					Node foundNode = findNode(node, "", propertyKey);
+					if (foundNode != null) {
+						
+						Position start = new Position();
+						start.setLine(foundNode.getStartMark().getLine());
+						start.setCharacter(foundNode.getStartMark().getColumn());
+
+						Position end = new Position();
+						end.setLine(foundNode.getEndMark().getLine());
+						end.setCharacter(foundNode.getEndMark().getColumn());
+
+						Range range = new Range();
+						range.setStart(start);
+						range.setEnd(end);
+
+						Location location = new Location(docURI.toString(), range);
+						foundLocations.add(location);
+					}
+				}
+			}
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return foundLocations;
+	}
+	
+	protected Node findNode(Node node, String prefix, String propertyKey) {
+		if (node.getNodeId().equals(NodeId.mapping)) {
+			for (NodeTuple entry : ((MappingNode)node).getValue()) {
+				Node keyNode = entry.getKeyNode();
+				String key = asScalar(keyNode);
+				
+				String combinedKey = prefix.length() > 0 ? prefix + "." + key : key;
+				
+				if (combinedKey != null && combinedKey.equals(propertyKey)) {
+					return keyNode;
+				}
+				else {
+					Node recursive = findNode(entry.getValueNode(), combinedKey, propertyKey);
+					if (recursive != null) {
+						return recursive;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	private List<Location> findReferencesInPropertiesFile(String filePath, String propertyKey) {
