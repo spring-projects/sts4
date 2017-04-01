@@ -30,6 +30,8 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -143,8 +145,8 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public List<String[]> getOneOfConstraints(YType type) {
-			return ((AbstractType)type).getOneOfConstraints();
+		public List<SchemaContextAware<Constraint>> getConstraints(YType type) {
+			return ((AbstractType)type).getConstraints();
 		}
 	};
 
@@ -161,7 +163,7 @@ public class YTypeFactory {
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
 
-		private List<String[]> oneOfConstraints = new ArrayList<>(1);
+		private List<SchemaContextAware<Constraint>> constraints = new ArrayList<>(2);
 
 		public boolean isSequenceable() {
 			return false;
@@ -224,8 +226,8 @@ public class YTypeFactory {
 			return ImmutableList.of();
 		}
 
-		public List<String[]> getOneOfConstraints() {
-			return ImmutableList.copyOf(oneOfConstraints);
+		public List<SchemaContextAware<Constraint>> getConstraints() {
+			return ImmutableList.copyOf(constraints);
 		}
 
 		public List<YTypedProperty> getProperties() {
@@ -299,9 +301,12 @@ public class YTypeFactory {
 			return parser == null ? null : parser.withContext(dc);
 		}
 
+		public void require(SchemaContextAware<Constraint> dynamicConstraint) {
+			this.constraints.add(dynamicConstraint);
+		}
+
 		public void requireOneOf(String... properties) {
-			Assert.isLegal(properties.length>1);
-			this.oneOfConstraints.add(properties);
+			this.constraints.add(SchemaContextAware.just(Constraints.requireOneOf(properties)));
 		}
 
 		public String[] getPropertyNames() {

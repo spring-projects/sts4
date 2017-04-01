@@ -2491,6 +2491,80 @@ public class ConcourseEditorTest {
 		editor.assertCompletions(/*NONE*/);
 	}
 
+	@Test public void resourceInEmbeddedTaskConfigNotRequiredIfSpecifiedInTask() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: docker-image\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    username: {{docker_hub_username}}\n" +
+				"    password: {{docker_hub_password}}\n" +
+				"    repository: kdvolder/sts3-build-env\n" +
+				"jobs:\n" +
+				"- name: build-commons-update-site\n" +
+				"  plan:\n" +
+				"  - task: hello-world\n" +
+				"    image: docker-image\n" + //Given here! So not required in config!
+				"    config:\n" +
+				"      inputs:\n" +
+				"      - name: commons-git\n" +
+				"      platform: linux\n" +
+				"      run:\n" +
+				"        path: which\n" +
+				"        args:\n" +
+				"        - mvn"
+		);
+		editor.assertProblems(/*none*/);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: docker-image\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    username: {{docker_hub_username}}\n" +
+				"    password: {{docker_hub_password}}\n" +
+				"    repository: kdvolder/sts3-build-env\n" +
+				"jobs:\n" +
+				"- name: build-commons-update-site\n" +
+				"  plan:\n" +
+				"  - task: hello-world\n" +
+				"    config:\n" +
+				"      inputs:\n" +
+				"      - name: commons-git\n" +
+				"      platform: linux\n" +
+				"      run:\n" +
+				"        path: which\n" +
+				"        args:\n" +
+				"        - mvn"
+		);
+
+		Diagnostic problem = editor.assertProblem(
+				"inputs:\n" +
+				"      - name: commons-git\n" +
+				"      platform: linux\n" +
+				"      run:\n" +
+				"        path: which\n" +
+				"        args:\n" +
+				"        - mvn"
+		);
+		assertContains("One of [image_resource, image] is required", problem.getMessage());
+	}
+
+	@Test public void resourceInTaskConfigFileNotRequired() throws Exception {
+		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+				"inputs:\n" +
+				"- name: commons-git\n" +
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: which\n" +
+				"  args:\n" +
+				"  - mvn"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
 	@Ignore @Test public void relaxedIndentContextMoreSpaces() throws Exception {
 		Editor editor;
 

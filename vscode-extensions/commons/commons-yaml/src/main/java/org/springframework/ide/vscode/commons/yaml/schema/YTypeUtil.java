@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 
 /**
  * An implementation of YTypeUtil provides implementations of various
@@ -45,5 +46,5 @@ public interface YTypeUtil {
 	 * should be returned.
 	 */
 	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);
-	List<String[]> getOneOfConstraints(YType type);
+	List<SchemaContextAware<Constraint>> getConstraints(YType type);
 }

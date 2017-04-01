@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.concourse;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -22,6 +23,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -29,6 +31,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicTy
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -211,7 +215,20 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);
-		task.requireOneOf("image_resource", "image");
+		task.require((dc) -> {
+			String languageId = dc.getDocument().getLanguageId();
+			if (languageId==LanguageIds.CONCOURSE_PIPELINE) {
+				Node parentImageDef = getParentPropertyNode("image", models, dc);
+				if (parentImageDef==null) {
+					return Constraints.requireOneOf("image_resource", "image");
+				} else {
+					// TODO: something like this: return Constraints.deprecated("image_resource", "image");
+					return null;
+				}
+			} else {
+				return Constraints.requireAtMostOneOf("image_resource", "image");
+			}
+		});
 
 		AbstractType t_put_get_name = f.contextAware("Name", (dc) -> {
 			if (getParentPropertyNode("resource", models, dc)!=null) {

@@ -1,0 +1,40 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.commons.yaml.schema.constraints;
+
+import java.util.Set;
+
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.yaml.schema.YType;
+import org.yaml.snakeyaml.nodes.MappingNode;
+
+/**
+ * An implementations of this interface represents some 'programatic' constraint attached to a schema type.
+ * Essentially, it encapsulates a verification procedure to be called upon to validate something when
+ * visiting a node in the YamlAST that has been deterimed to be of that type.
+ */
+@FunctionalInterface
+public interface Constraint {
+
+	/**
+	 * Implemetors gain access to various bits of context information passed as parameters and
+	 * are supposed to use this information in whatever way they like to check if the
+	 * constraint is satisfied. When the constrain is not satisfied they should report any
+	 * violations by adding problems to the provide {@link IProblemCollector}.
+	 *
+	 * @param map    The node being validated
+	 * @param type   The inferred type of the node.
+	 * @param foundProps The properties this node defines.
+	 * @param problems  Problem collector where to which the constraint should add the validation problems it finds.
+	 */
+	void verify(MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems);
+
+}

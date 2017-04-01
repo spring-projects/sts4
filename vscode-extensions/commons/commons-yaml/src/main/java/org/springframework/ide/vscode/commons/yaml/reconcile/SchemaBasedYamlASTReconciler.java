@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypeProvider;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
@@ -42,18 +41,18 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
-
-import com.google.gson.internal.Streams;
 
 public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
@@ -136,7 +135,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					}
 				} else if (typeUtil.isBean(type)) {
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type);
-					checkRequiredProperties(map, type, beanProperties);
+					checkRequiredProperties(map, type, beanProperties, schemaContext);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
 						String key = NodeUtil.asScalar(keyNode);
@@ -215,7 +214,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		return e instanceof ProblemTypeProvider ? ((ProblemTypeProvider) e).getProblemType() : YamlSchemaProblems.SCHEMA_PROBLEM;
 	}
 
-	private void checkRequiredProperties(MappingNode map, YType type, Map<String, YTypedProperty> beanProperties) {
+	private void checkRequiredProperties(MappingNode map, YType type, Map<String, YTypedProperty> beanProperties, DynamicSchemaContext dc) {
 		Set<String> foundProps = NodeUtil.getScalarKeys(map);
 		boolean allPropertiesKnown = beanProperties.keySet().containsAll(foundProps);
 		//Don't check for missing properties if some properties look like they might be spelled incorrectly.
@@ -238,22 +237,11 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				problem(map, message, YamlSchemaProblems.MISSING_PROPERTY);
 			}
 
-			//Check for missing/extra 'one-of' constrained properties
-			for (String[] _requiredProps : typeUtil.getOneOfConstraints(type)) {
-				List<String> requiredProps = Arrays.asList(_requiredProps);
-				long foundPropsCount = requiredProps.stream()
-					.filter(foundProps::contains)
-					.count();
-				if (foundPropsCount==0) {
-					problem(map, "One of "+requiredProps+" is required for '"+type+"'", YamlSchemaProblems.MISSING_PROPERTY);
-				} else if (foundPropsCount>1) {
-					//Mark each of the found keys as a violation:
-					for (NodeTuple entry : map.getValue()) {
-						String key = NodeUtil.asScalar(entry.getKeyNode());
-						if (key!=null && requiredProps.contains(key)) {
-							problem(entry.getKeyNode(), "Only one of "+requiredProps+" should be defined for '"+type+"'", YamlSchemaProblems.EXTRA_PROPERTY);
-						}
-					}
+			//Check for other constraints attached to the type
+			for (SchemaContextAware<Constraint> _constraint : typeUtil.getConstraints(type)) {
+				Constraint constraint = _constraint.withContext(dc);
+				if (constraint!=null) {
+					constraint.verify(map, type, foundProps, problems);
 				}
 			}
 		}
