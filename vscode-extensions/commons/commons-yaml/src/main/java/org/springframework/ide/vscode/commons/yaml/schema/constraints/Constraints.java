@@ -17,13 +17,18 @@ import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaPr
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Various static methods for constructing/composing {@link Constraint}s.
@@ -77,5 +82,18 @@ public class Constraints {
 				}
 			}
 		}
+	}
+
+	public static Constraint deprecated(Function<String, String> messageFormatter, String... _deprecatedNames) {
+		Set<String> deprecatedNames = ImmutableSet.copyOf(_deprecatedNames);
+		return (MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
+			for (NodeTuple prop : map.getValue()) {
+				Node keyNode = prop.getKeyNode();
+				String name = NodeUtil.asScalar(keyNode);
+				if (deprecatedNames.contains(name)) {
+					problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
+				}
+			}
+		};
 	}
 }

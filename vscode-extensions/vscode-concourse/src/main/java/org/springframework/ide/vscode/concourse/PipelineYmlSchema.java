@@ -222,8 +222,11 @@ public class PipelineYmlSchema implements YamlSchema {
 				if (parentImageDef==null) {
 					return Constraints.requireOneOf("image_resource", "image");
 				} else {
-					// TODO: something like this: return Constraints.deprecated("image_resource", "image");
-					return null;
+					return Constraints.deprecated((name) ->
+								"Deprecated: This attribute in the task config will be ignored! "+
+								"The 'image' attribute on the task itself takes precedence.",
+							"image_resource", "image"
+					);
 				}
 			} else {
 				return Constraints.requireAtMostOneOf("image_resource", "image");

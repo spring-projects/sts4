@@ -76,8 +76,12 @@ public class YamlSchemaProblems {
 		return new ReconcileProblemImpl(SCHEMA_PROBLEM, msg, node.getStart(), node.getLength());
 	}
 
+	public static ReconcileProblem deprecatedProperty(String msg, Node node) {
+		return problem(DEPRECATED_PROPERTY, msg, node);
+	}
+
 	public static ReconcileProblem deprecatedProperty(Node node, YType bean, YTypedProperty property) {
-		return problem(DEPRECATED_PROPERTY, "Property '"+property.getName()+"' of '"+bean+"' is Deprecated", node);
+		return deprecatedProperty("Property '"+property.getName()+"' of '"+bean+"' is Deprecated", node);
 	}
 
 	public static ReconcileProblem problem(ProblemType problemType, String msg, Node node) {
@@ -85,4 +89,5 @@ public class YamlSchemaProblems {
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
 	}
+
 }

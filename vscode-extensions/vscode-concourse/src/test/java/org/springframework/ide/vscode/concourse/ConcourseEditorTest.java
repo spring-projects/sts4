@@ -2565,6 +2565,38 @@ public class ConcourseEditorTest {
 		editor.assertProblems(/*NONE*/);
 	}
 
+	@Test public void resourceInEmbeddedTaskConfigDeprecated() throws Exception {
+		Editor editor = harness.newEditor(
+			"resources:\n" +
+			"- name: docker-image\n" +
+			"  type: docker-image\n" +
+			"  source:\n" +
+			"    username: {{docker_hub_username}}\n" +
+			"    password: {{docker_hub_password}}\n" +
+			"    repository: kdvolder/sts3-build-env\n" +
+			"jobs:\n" +
+			"- name: build-commons-update-site\n" +
+			"  plan:\n" +
+			"  - task: hello-world\n" +
+			"    image: docker-image\n" +
+			"    config:\n" +
+			"      image: blah\n" +
+			"      image_resource:\n" +
+			"        type: docker-image\n" +
+			"      inputs:\n" +
+			"      - name: commons-git\n" +
+			"      platform: linux\n" +
+			"      run:\n" +
+			"        path: which\n" +
+			"        args:\n" +
+			"        - mvn"
+		);
+		editor.assertProblems(
+				"image|Deprecated",
+				"image_resource|Deprecated"
+		);
+	}
+
 	@Ignore @Test public void relaxedIndentContextMoreSpaces() throws Exception {
 		Editor editor;
 
