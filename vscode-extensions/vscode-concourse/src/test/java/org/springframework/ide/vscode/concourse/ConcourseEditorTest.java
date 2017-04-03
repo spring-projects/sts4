@@ -2591,10 +2591,13 @@ public class ConcourseEditorTest {
 			"        args:\n" +
 			"        - mvn"
 		);
-		editor.assertProblems(
+		List<Diagnostic> problems = editor.assertProblems(
 				"image|Deprecated",
 				"image_resource|Deprecated"
 		);
+		for (Diagnostic d : problems) {
+			assertEquals(DiagnosticSeverity.Warning, d.getSeverity());
+		}
 	}
 
 	@Ignore @Test public void relaxedIndentContextMoreSpaces() throws Exception {
