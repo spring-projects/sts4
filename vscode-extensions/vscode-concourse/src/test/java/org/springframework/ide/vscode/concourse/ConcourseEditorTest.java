@@ -487,6 +487,7 @@ public class ConcourseEditorTest {
 				"  - get: sts4\n" +
 				"  - get: bogus-get\n" +
 				"  - task: do-stuff\n" +
+				"    image: bogus-image\n" +
 				"    file: some-file.yml\n" +
 				"    input_mapping:\n" +
 				"      task-input: bogus-input\n" +
@@ -495,12 +496,14 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"bogus-get|resource does not exist",
+				"bogus-image|resource does not exist",
 				"bogus-input|resource does not exist",
 				"bogus-put|resource does not exist"
 		);
 
 		editor.assertProblems(
 				"bogus-get|[sts4]",
+				"bogus-image|[sts4]",
 				"bogus-input|[sts4]",
 				"bogus-put|[sts4]"
 		);
@@ -2568,7 +2571,7 @@ public class ConcourseEditorTest {
 	@Test public void resourceInEmbeddedTaskConfigDeprecated() throws Exception {
 		Editor editor = harness.newEditor(
 			"resources:\n" +
-			"- name: docker-image\n" +
+			"- name: my-docker-image\n" +
 			"  type: docker-image\n" +
 			"  source:\n" +
 			"    username: {{docker_hub_username}}\n" +
@@ -2578,7 +2581,7 @@ public class ConcourseEditorTest {
 			"- name: build-commons-update-site\n" +
 			"  plan:\n" +
 			"  - task: hello-world\n" +
-			"    image: docker-image\n" +
+			"    image: my-docker-image\n" +
 			"    config:\n" +
 			"      image: blah\n" +
 			"      image_resource:\n" +

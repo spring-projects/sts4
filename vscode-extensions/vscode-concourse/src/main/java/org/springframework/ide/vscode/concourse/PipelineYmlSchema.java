@@ -268,7 +268,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(taskStep, "config", task);
 		addProp(taskStep, "privileged", t_boolean);
 		addProp(taskStep, "params", t_params);
-		addProp(taskStep, "image", t_ne_string);
+		addProp(taskStep, "image", t_resource_name);
 		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, t_resource_name));
 		addProp(taskStep, "output_mapping", t_string_params);
 		taskStep.requireOneOf("config", "file");
