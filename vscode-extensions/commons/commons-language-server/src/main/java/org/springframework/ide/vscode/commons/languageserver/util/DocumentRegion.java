@@ -287,7 +287,8 @@ public class DocumentRegion implements CharSequence {
 	 * Create a document region of lenght 0 at the every end of the document.
 	 */
 	public static DocumentRegion endOf(IDocument doc) {
-		return new DocumentRegion(doc, doc.getLength(), doc.getLength());
+		DocumentRegion trimmedDoc = new DocumentRegion(doc).trimEnd();
+		return new DocumentRegion(doc, trimmedDoc.getLength(), doc.getLength());
 	}
 
 }
