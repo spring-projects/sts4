@@ -23,7 +23,6 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
-import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -31,12 +30,11 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicTy
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
-import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
-import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.yaml.snakeyaml.nodes.Node;
 
 import reactor.core.publisher.Flux;

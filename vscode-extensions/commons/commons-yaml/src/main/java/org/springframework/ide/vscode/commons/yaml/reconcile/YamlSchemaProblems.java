@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableSet;
@@ -88,6 +89,10 @@ public class YamlSchemaProblems {
 		int start = node.getStartMark().getIndex();
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
+	}
+
+	public static ReconcileProblem missingProperty(String msg, MappingNode map) {
+		return problem(MISSING_PROPERTY, msg, map);
 	}
 
 }

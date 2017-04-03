@@ -584,6 +584,28 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void underlineParentPropertyForMissingNode() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/140709005
+
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: hello-world\n" +
+				"  plan:\n" +
+				"  - task: say-hello\n" +
+				"    config:\n" +
+				"      image_resource:\n" +
+				"        type: docker-image\n" +
+				"        source: {repository: ubuntu}\n" +
+				"      run:\n" +
+				"        path: echo\n" +
+				"        args: [\"Hello, world!\"]"
+		);
+		editor.assertProblems(
+				"config|something"
+		);
+	}
+
+	@Test
 	public void reconcileDuplicateJobNames() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +

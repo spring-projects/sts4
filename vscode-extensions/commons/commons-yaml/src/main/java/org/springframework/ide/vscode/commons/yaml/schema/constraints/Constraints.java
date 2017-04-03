@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.EXTRA_PROPERTY;
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.MISSING_PROPERTY;
+import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.missingProperty;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
 import java.util.Arrays;
@@ -68,7 +68,7 @@ public class Constraints {
 				.count();
 			if (foundPropsCount==0) {
 				if (!allowFewer) {
-					problems.accept(problem(MISSING_PROPERTY,
+					problems.accept(missingProperty(
 							"One of "+requiredProps+" is required for '"+type+"'", map));
 				}
 			} else if (foundPropsCount>1) {
