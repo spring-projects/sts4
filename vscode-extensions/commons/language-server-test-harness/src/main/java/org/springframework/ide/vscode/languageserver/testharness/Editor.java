@@ -112,9 +112,13 @@ public class Editor {
 
 	/**
 	 * Check that a 'expectedProblems' are found by the reconciler. Expected problems are
-	 * specified by string of the form "${badSnippet}|${messageSnippet}". The badSnippet
-	 * is the text expected to be covered by the marker's region and the message snippet must
+	 * specified by string of the form "${badSnippet}|${messageSnippet}" or
+	 * "${badSnippet}^${followSnippet}|${messageSnippet}"
+	 * <p>
+	 * The badSnippet is the text expected to be covered by the marker's region and the message snippet must
 	 * be found in the error marker's message.
+	 * <p>
+	 * In addition, if followSnippet is specified, the text that comes right after the error marker must match it.
 	 * <p>
 	 * The expected problems are matched one-to-one in the order given (so markers in the
 	 * editor must appear in the expected order for the assert to pass).
@@ -206,6 +210,12 @@ public class Editor {
 		String[] parts = expect.split("\\|");
 		assertEquals(2, parts.length);
 		String badSnippet = parts[0];
+		String snippetFollow = null;
+		int carretOffset = badSnippet.indexOf('^');
+		if (carretOffset>=0) {
+			snippetFollow = badSnippet.substring(carretOffset+1);
+			badSnippet = badSnippet.substring(0, carretOffset);
+		}
 		String messageSnippet = parts[1];
 		boolean spaceSensitive = badSnippet.trim().length()<badSnippet.length();
 		boolean emptyRange = problem.getRange().getStart().equals(problem.getRange().getEnd());
@@ -216,7 +226,15 @@ public class Editor {
 			actualBadSnippet = actualBadSnippet.trim();
 		}
 		return actualBadSnippet.equals(badSnippet)
+				&& ( snippetFollow==null ||
+					snippetFollow.equals(getText(problem.getRange().getEnd(), snippetFollow.length())))
 				&& problem.getMessage().contains(messageSnippet);
+	}
+
+	private String getText(Position start, int length) {
+		int offset = document.toOffset(start);
+		String text = document.getText();
+		return text.substring(offset, offset+length);
 	}
 
 	private String getCharAt(Position start) {

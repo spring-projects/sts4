@@ -117,7 +117,7 @@ public class ConcourseEditorTest {
 				"    tags: a-single-string\n"
 		);
 		editor.assertProblems(
-				"task: a-task\n    tags: a-single-string|One of [config, file] is required",
+				"-^ task|One of [config, file] is required",
 				"a-single-string|Expecting a 'Sequence'"
 		);
 
@@ -549,8 +549,8 @@ public class ConcourseEditorTest {
 				"jobs:\n" +
 				"- name: blah"
 		);
-		editor.assertProblems("name: blah|'plan' is required");
-		assertEquals(DiagnosticSeverity.Warning,  editor.assertProblem("name: blah").getSeverity());
+		Diagnostic problem = editor.assertProblems("-^ name: blah|'plan' is required").get(0);
+		assertEquals(DiagnosticSeverity.Warning,  problem.getSeverity());
 
 		editor = harness.newEditor(
 				"jobs:\n" +
@@ -558,8 +558,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - task: foo"
 		);
-		editor.assertProblems("task: foo|One of [config, file] is required");
-		assertEquals(DiagnosticSeverity.Warning,  editor.assertProblem("task: foo").getSeverity());
+		problem = editor.assertProblems("-^ task: foo|One of [config, file] is required").get(0);
+		assertEquals(DiagnosticSeverity.Warning,  problem.getSeverity());
 
 		editor = harness.newEditor(
 				"jobs:\n" +
@@ -614,10 +614,10 @@ public class ConcourseEditorTest {
 				"- name: job-1\n"
 		);
 		editor.assertProblems(
-				"name: job-1|'plan' is required",
+				"-^ name: job-1|'plan' is required",
 				"job-1|Duplicate job name",
-				"name: utils|'plan' is required",
-				"name: job-1|'plan' is required",
+				"-^ name: utils|'plan' is required",
+				"-^ name: job-1|'plan' is required",
 				"job-1|Duplicate job name"
 		);
 	}
@@ -1143,49 +1143,49 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- type: git"
 		);
-		editor.assertProblems("type: git|'name' is required");
+		editor.assertProblems("-^ type: git|'name' is required");
 
 		//addProp(resource, "type", t_resource_type_name).isRequired(true);
 		editor = harness.newEditor(
 				"resources:\n" +
 				"- name: foo"
 		);
-		editor.assertProblems("name: foo|'type' is required");
+		editor.assertProblems("-^ name: foo|'type' is required");
 
 		//Both name and type missing:
 		editor = harness.newEditor(
 				"resources:\n" +
 				"- source: {}"
 		);
-		editor.assertProblems("source: {}|[name, type] are required");
+		editor.assertProblems("-^ source:|[name, type] are required");
 
 		//addProp(job, "name", jobNameDef).isRequired(true);
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- name: foo"
 		);
-		editor.assertProblems("name: foo|'plan' is required");
+		editor.assertProblems("-^ name: foo|'plan' is required");
 
 		//addProp(job, "plan", f.yseq(step)).isRequired(true);
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- plan: []"
 		);
-		editor.assertProblems("plan: []|'name' is required");
+		editor.assertProblems("-^ plan: []|'name' is required");
 
 		//addProp(resourceType, "name", t_ne_string).isRequired(true);
 		editor = harness.newEditor(
 				"resource_types:\n" +
 				"- type: docker-image"
 		);
-		editor.assertProblems("type: docker-image|'name' is required");
+		editor.assertProblems("-^ type: docker-image|'name' is required");
 
 		//addProp(resourceType, "type", t_image_type).isRequired(true);
 		editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: foo"
 		);
-		editor.assertProblems("name: foo|'type' is required");
+		editor.assertProblems("-^ name: foo|'type' is required");
 
 		//addProp(gitSource, "uri", t_string).isRequired(true);
 		editor = harness.newEditor(
@@ -1212,7 +1212,7 @@ public class ConcourseEditorTest {
 				"groups:\n" +
 				"- jobs: []"
 		);
-		editor.assertProblems("jobs: []|'name' is required");
+		editor.assertProblems("-^ jobs: []|'name' is required");
 	}
 
 
@@ -2293,8 +2293,8 @@ public class ConcourseEditorTest {
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
 				"image|Only one of [image_resource, image] should be defined",
-				"path: path/to/input|'name' is required",
-				"path: path/to/output|'name' is required",
+				"-^ path: path/to/input|'name' is required",
+				"-^ path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
 		);
 	}
@@ -2388,8 +2388,8 @@ public class ConcourseEditorTest {
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
 				"image|Only one of [image_resource, image] should be defined",
-				"path: path/to/input|'name' is required",
-				"path: path/to/output|'name' is required",
+				"-^ path: path/to/input|'name' is required",
+				"-^ path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
 		);
 	}

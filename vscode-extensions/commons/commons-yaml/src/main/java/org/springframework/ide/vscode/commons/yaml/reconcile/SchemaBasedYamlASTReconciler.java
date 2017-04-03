@@ -234,14 +234,14 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				} else {
 					message = "Properties "+missingProps+" are required for '"+type+"'";
 				}
-				problems.accept(YamlSchemaProblems.missingProperty(message, parent, map));
+				problems.accept(YamlSchemaProblems.missingProperty(message, dc.getDocument(), parent, map));
 			}
 
 			//Check for other constraints attached to the type
 			for (SchemaContextAware<Constraint> _constraint : typeUtil.getConstraints(type)) {
 				Constraint constraint = _constraint.withContext(dc);
 				if (constraint!=null) {
-					constraint.verify(parent, map, type, foundProps, problems);
+					constraint.verify(dc.getDocument(), parent, map, type, foundProps, problems);
 				}
 			}
 		}

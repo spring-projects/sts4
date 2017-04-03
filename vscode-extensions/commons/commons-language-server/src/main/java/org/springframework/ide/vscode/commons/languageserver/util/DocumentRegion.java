@@ -266,7 +266,21 @@ public class DocumentRegion implements CharSequence {
 	}
 
 	public int getLength() {
-		return getEnd() - getStart();
+		return length();
+	}
+
+	public boolean endsWith(CharSequence string) {
+		int myLen = length();
+		int strLen = string.length();
+		if (myLen>=strLen) {
+			for (int i = 0; i < strLen; i++) {
+				if (charAt(myLen-strLen+i)!=string.charAt(i)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 }

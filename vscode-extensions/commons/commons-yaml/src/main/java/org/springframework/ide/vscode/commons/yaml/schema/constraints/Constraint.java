@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -36,6 +37,7 @@ public interface Constraint {
 	 * @param foundProps The properties this node defines.
 	 * @param problems  Problem collector where to which the constraint should add the validation problems it finds.
 	 */
-	void verify(Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems);
+	void verify(IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps,
+			IProblemCollector problems);
 
 }

@@ -17,15 +17,18 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.SequenceNode;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -90,17 +93,34 @@ public class YamlSchemaProblems {
 		return deprecatedProperty("Property '"+property.getName()+"' of '"+bean+"' is Deprecated", node);
 	}
 
+	public static ReconcileProblem problem(ProblemType problemType, String msg, DocumentRegion node) {
+		int start = node.getStart();
+		int end = node.getEnd();
+		return new ReconcileProblemImpl(problemType, msg, start, end-start);
+	}
+
 	public static ReconcileProblem problem(ProblemType problemType, String msg, Node node) {
 		int start = node.getStartMark().getIndex();
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
 	}
 
-	public static ReconcileProblem missingProperty(String msg, Node parent, MappingNode map) {
+	public static ReconcileProblem missingProperty(String msg, IDocument doc, Node parent, MappingNode map) {
 		if (parent instanceof MappingNode) {
 			for (NodeTuple prop : ((MappingNode) parent).getValue()) {
 				if (prop.getValueNode()==map) {
 					return problem(MISSING_PROPERTY, msg, prop.getKeyNode());
+				}
+			}
+		} else if (parent instanceof SequenceNode) {
+			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle();
+			if (flowStyle!=null && !flowStyle) {
+				Mark nodeStart = map.getStartMark();
+				DocumentRegion underline = new DocumentRegion(doc, 0, nodeStart.getIndex());
+				underline = underline.trimEnd();
+				if (underline.endsWith("-")) {
+					underline = underline.subSequence(underline.length()-1, underline.length());
+					return problem(MISSING_PROPERTY, msg, underline);
 				}
 			}
 		}
