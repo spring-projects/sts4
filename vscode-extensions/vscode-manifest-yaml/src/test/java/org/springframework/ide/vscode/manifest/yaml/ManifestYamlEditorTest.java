@@ -777,7 +777,7 @@ public class ManifestYamlEditorTest {
 				"- name:\n"
 		);
 		editor.assertProblems(
-				"memory: 1G|Property 'name' is required",
+				"-^ memory: 1G|Property 'name' is required",
 				"|should not be empty"
 		);
 	}
@@ -912,14 +912,14 @@ public class ManifestYamlEditorTest {
 		//query string should match the 'filter text' otherwise vscode will filter the item and it will be gone!
 		assertEquals("something", completion.getFilterText());
 	}
-	
+
 	@Test
 	public void serviceContentAssistEmptyServices() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		when(cfClient.getServices()).thenReturn(ImmutableList.of());
 		assertDoesNotContainCompletions("services:\n" + "  - <*>", "mysql");
 	}
-	
+
 	@Test
 	public void serviceContentAssistDoesNotContainServices() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
@@ -928,24 +928,24 @@ public class ManifestYamlEditorTest {
 		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
 		assertDoesNotContainCompletions("services:\n" + "  - <*>", "wrongsql");
 	}
-	
+
 	@Test
 	public void serviceContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("mysql");
 		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
-	
+
 		assertContainsCompletions("services:\n" + "  - <*>", "mysql");
 	}
-	
+
 	@Test
 	public void buildpackContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
 		when(buildPack.getName()).thenReturn("java_buildpack");
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
-		
+
 		assertContainsCompletions("buildpack: <*>", "buildpack: java_buildpack<*>");
 	}
 
@@ -957,17 +957,17 @@ public class ManifestYamlEditorTest {
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
 		assertDoesNotContainCompletions("buildpack: <*>", "buildpack: wrong_buildpack<*>");
 	}
-	
+
 	@Test
 	public void domainContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFDomain domain = Mockito.mock(CFDomain.class);
 		when(domain.getName()).thenReturn("cfapps.io");
 		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
-		
+
 		assertContainsCompletions("domain: <*>", "domain: cfapps.io<*>");
 	}
-	
+
 	@Test
 	public void domainContentAssistDoesNotContainCompletion() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
@@ -976,17 +976,17 @@ public class ManifestYamlEditorTest {
 		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
 		assertDoesNotContainCompletions("domain: <*>", "domain: wrong.cfapps.io<*>");
 	}
-	
+
 	@Test
 	public void domainsContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFDomain domain = Mockito.mock(CFDomain.class);
 		when(domain.getName()).thenReturn("cfapps.io");
 		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
-	
+
 		assertContainsCompletions("domains:\n" + "  - <*>", "cfapps.io");
 	}
-	
+
 	@Test
 	public void domainsContentAssistWrongDomain() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
@@ -1002,12 +1002,12 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertCompletions(textAfter);
 	}
-	
+
 	private void assertDoesNotContainCompletions(String textBefore, String... notToBeFound) throws Exception {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertDoesNotContainCompletions(notToBeFound);
 	}
-	
+
 	private void assertContainsCompletions(String textBefore, String... textAfter) throws Exception {
 		Editor editor = harness.newEditor(textBefore);
 		editor.assertContainsCompletions(textAfter);
