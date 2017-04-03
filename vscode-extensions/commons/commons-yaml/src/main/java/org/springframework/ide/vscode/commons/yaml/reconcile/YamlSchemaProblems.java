@@ -123,6 +123,8 @@ public class YamlSchemaProblems {
 					return problem(MISSING_PROPERTY, msg, underline);
 				}
 			}
+		} else if (parent==null) {
+			return problem(MISSING_PROPERTY, msg, DocumentRegion.endOf(doc));
 		}
 		return problem(MISSING_PROPERTY, msg, map);
 	}

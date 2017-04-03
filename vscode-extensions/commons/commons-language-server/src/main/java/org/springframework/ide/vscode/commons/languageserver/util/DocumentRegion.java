@@ -283,4 +283,11 @@ public class DocumentRegion implements CharSequence {
 		return false;
 	}
 
+	/**
+	 * Create a document region of lenght 0 at the every end of the document.
+	 */
+	public static DocumentRegion endOf(IDocument doc) {
+		return new DocumentRegion(doc, doc.getLength(), doc.getLength());
+	}
+
 }
