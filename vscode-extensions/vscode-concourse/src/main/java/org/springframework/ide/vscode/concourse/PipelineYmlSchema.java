@@ -217,7 +217,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "params", t_string_params);
 		task.require((dc) -> {
 			String languageId = dc.getDocument().getLanguageId();
-			if (languageId==LanguageIds.CONCOURSE_PIPELINE) {
+			if (LanguageIds.CONCOURSE_PIPELINE.equals(languageId)) {
 				Node parentImageDef = getParentPropertyNode("image", models, dc);
 				if (parentImageDef==null) {
 					return Constraints.requireOneOf("image_resource", "image");

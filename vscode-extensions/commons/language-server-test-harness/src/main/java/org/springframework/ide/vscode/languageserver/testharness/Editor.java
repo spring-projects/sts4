@@ -102,9 +102,9 @@ public class Editor {
 
 	public Editor(LanguageServerHarness harness, String contents, String languageId) throws Exception {
 		this.harness = harness;
-		this.languageId = languageId;
+		this.languageId = new String(languageId); // So we can catch bugs that use == for langauge id comparison.
 		EditorState state = new EditorState(contents);
-		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents, languageId));
+		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents, this.languageId));
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
