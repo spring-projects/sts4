@@ -618,16 +618,4 @@ public class Editor {
 	public String getLanguageId() {
 		return languageId;
 	}
-
-	/**
-	 * Verifies that a given Range corresponds with the end of the document in the editor.
-	 */
-	public void assertIsEndOfFile(Range range) {
-		int documentLen = document.getText().length();
-		int start = document.toOffset(range.getStart());
-		int end = document.toOffset(range.getEnd());
-		assertEquals(documentLen, start);
-		assertEquals(documentLen, end);
-	}
-
 }

@@ -2268,10 +2268,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"image: some-image"
 		);
-		List<Diagnostic> problems = editor.assertProblems("|[platform, run] are required");
-		for (Diagnostic p : problems) {
-			editor.assertIsEndOfFile(p.getRange());
-		}
+		editor.assertProblems("image: some-image|[platform, run] are required");
 
 		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
 				"platform: a-platform\n" +
