@@ -17,10 +17,15 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeTuple;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -91,7 +96,14 @@ public class YamlSchemaProblems {
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
 	}
 
-	public static ReconcileProblem missingProperty(String msg, MappingNode map) {
+	public static ReconcileProblem missingProperty(String msg, Node parent, MappingNode map) {
+		if (parent instanceof MappingNode) {
+			for (NodeTuple prop : ((MappingNode) parent).getValue()) {
+				if (prop.getValueNode()==map) {
+					return problem(MISSING_PROPERTY, msg, prop.getKeyNode());
+				}
+			}
+		}
 		return problem(MISSING_PROPERTY, msg, map);
 	}
 

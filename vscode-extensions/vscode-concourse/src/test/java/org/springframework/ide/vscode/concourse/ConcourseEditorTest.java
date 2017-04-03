@@ -572,8 +572,8 @@ public class ConcourseEditorTest {
 		{
 			List<Diagnostic> problems = editor.assertProblems(
 				"config|Only one of [config, file]",
-				"{}|[platform, run] are required",
-				"{}|One of [image_resource, image]",
+				"config|[platform, run] are required",
+				"config|One of [image_resource, image]",
 				"file|Only one of [config, file]"
 			);
 			//All of the problems in this example are property contraint violations! So all should be warnings.
@@ -601,7 +601,7 @@ public class ConcourseEditorTest {
 				"        args: [\"Hello, world!\"]"
 		);
 		editor.assertProblems(
-				"config|something"
+				"config|'platform' is required"
 		);
 	}
 
@@ -1007,7 +1007,7 @@ public class ConcourseEditorTest {
 				"  - put: my-git\n" +
 				"    params: {}\n"
 		);
-		editor.assertProblems("{}|'repository' is required");
+		editor.assertProblems("params|'repository' is required");
 
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -1195,7 +1195,7 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    branch: master"
 		);
-		editor.assertProblems("branch: master|'uri' is required");
+		editor.assertProblems("source|'uri' is required");
 
 		//addProp(gitSource, "branch", t_string).isRequired(true);
 		editor = harness.newEditor(
@@ -1205,7 +1205,7 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    uri: https://yada"
 		);
-		editor.assertProblems("uri: https://yada|'branch' is required");
+		editor.assertProblems("source|'branch' is required");
 
 		//addProp(group, "name", t_ne_string).isRequired(true);
 		editor = harness.newEditor(
@@ -1226,7 +1226,7 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    tag: latest\n"
 		);
-		editor.assertProblems("tag: latest|'repository' is required");
+		editor.assertProblems("source|'repository' is required");
 
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -1389,8 +1389,8 @@ public class ConcourseEditorTest {
 				"    access_key_id: the-key"
 		);
 		editor.assertProblems(
-				"access_key_id: the-key|'bucket' is required",
-				"access_key_id: the-key|One of [regexp, versioned_file] is required"
+				"source|'bucket' is required",
+				"source|One of [regexp, versioned_file] is required"
 		);
 
 		editor = harness.newEditor(
@@ -1502,7 +1502,7 @@ public class ConcourseEditorTest {
 				"      no-params-expected: bad"
 		);
 		editor.assertProblems(
-				"acl: public-read|'file' is required",
+				"params|'file' is required",
 				"no-params-expected|Unknown property"
 		);
 
@@ -1580,7 +1580,7 @@ public class ConcourseEditorTest {
 				"    private_key: stuff"
 		);
 		editor.assertProblems(
-				"private_key: stuff|[branch, pool, uri] are required"
+				"source|[branch, pool, uri] are required"
 		);
 
 		editor = harness.newEditor(
@@ -1695,7 +1695,7 @@ public class ConcourseEditorTest {
 				"    driver: s3"
 		);
 		editor.assertProblems(
-				"driver: s3|[access_key_id, bucket, key, secret_access_key] are required"
+				"source|[access_key_id, bucket, key, secret_access_key] are required"
 		);
 
 		editor = harness.newEditor(
@@ -1705,7 +1705,7 @@ public class ConcourseEditorTest {
 				"  source: {}"
 		);
 		editor.assertProblems(
-				"{}|[access_key_id, bucket, key, secret_access_key] are required"
+				"source|[access_key_id, bucket, key, secret_access_key] are required"
 		);
 
 		// required props for git driver
@@ -1717,7 +1717,7 @@ public class ConcourseEditorTest {
 				"    driver: git"
 		);
 		editor.assertProblems(
-				"driver: git|[branch, file, uri] are required"
+				"source|[branch, file, uri] are required"
 		);
 
 		//required props for swift driver
@@ -1729,7 +1729,7 @@ public class ConcourseEditorTest {
 				"    driver: swift"
 		);
 		editor.assertProblems(
-				"driver: swift|'openstack' is required"
+				"source|'openstack' is required"
 		);
 	}
 
@@ -2437,7 +2437,7 @@ public class ConcourseEditorTest {
 				"run:\n" +
 				"  user: admin\n"
 		);
-		editor.assertProblems("user: admin|'path' is required");
+		editor.assertProblems("run|'path' is required");
 	}
 
 	@Test public void nameAndPathHoversInTaskInputsAndOutputs() throws Exception {
@@ -2565,16 +2565,9 @@ public class ConcourseEditorTest {
 				"        - mvn"
 		);
 
-		Diagnostic problem = editor.assertProblem(
-				"inputs:\n" +
-				"      - name: commons-git\n" +
-				"      platform: linux\n" +
-				"      run:\n" +
-				"        path: which\n" +
-				"        args:\n" +
-				"        - mvn"
+		editor.assertProblems(
+				"config|One of [image_resource, image] is required"
 		);
-		assertContains("One of [image_resource, image] is required", problem.getMessage());
 	}
 
 	@Test public void resourceInTaskConfigFileNotRequired() throws Exception {

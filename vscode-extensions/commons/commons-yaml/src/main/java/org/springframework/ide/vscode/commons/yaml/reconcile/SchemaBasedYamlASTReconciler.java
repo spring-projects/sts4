@@ -90,7 +90,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			if (nodes!=null && !nodes.isEmpty()) {
 				for (int i = 0; i < nodes.size(); i++) {
 					Node node = nodes.get(i);
-					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), node, schema.getTopLevelType());
+					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), /*parent*/null, node, schema.getTopLevelType());
 				}
 			}
 		} finally {
@@ -116,7 +116,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		return allOf(ast, node);
 	}
 
-	private void reconcile(IDocument doc, YamlPath path, Node node, YType type) {
+	private void reconcile(IDocument doc, YamlPath path, Node parent, Node node, YType type) {
 		if (type!=null) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, path, node);
 			type = typeUtil.inferMoreSpecificType(type, schemaContext);
@@ -130,12 +130,12 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
 						String key = NodeUtil.asScalar(entry.getKeyNode());
-						reconcile(doc, keyAt(path, key), entry.getKeyNode(), typeUtil.getKeyType(type));
-						reconcile(doc, valueAt(path, key), entry.getValueNode(), typeUtil.getDomainType(type));
+						reconcile(doc, keyAt(path, key), map, entry.getKeyNode(), typeUtil.getKeyType(type));
+						reconcile(doc, valueAt(path, key), map, entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type);
-					checkRequiredProperties(map, type, beanProperties, schemaContext);
+					checkRequiredProperties(parent, map, type, beanProperties, schemaContext);
 					for (NodeTuple entry : map.getValue()) {
 						Node keyNode = entry.getKeyNode();
 						String key = NodeUtil.asScalar(keyNode);
@@ -149,7 +149,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 								if (prop.isDeprecated()) {
 									problems.accept(YamlSchemaProblems.deprecatedProperty(keyNode, type, prop));
 								}
-								reconcile(doc, valueAt(path, key), entry.getValueNode(), prop.getType());
+								reconcile(doc, valueAt(path, key), map, entry.getValueNode(), prop.getType());
 							}
 						}
 					}
@@ -162,7 +162,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isSequencable(type)) {
 					for (int i = 0; i < seq.getValue().size(); i++) {
 						Node el = seq.getValue().get(i);
-						reconcile(doc, valueAt(path, i), el, typeUtil.getDomainType(type));
+						reconcile(doc, valueAt(path, i), seq, el, typeUtil.getDomainType(type));
 					}
 				} else {
 					expectTypeButFoundSequence(type, node);
@@ -214,7 +214,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		return e instanceof ProblemTypeProvider ? ((ProblemTypeProvider) e).getProblemType() : YamlSchemaProblems.SCHEMA_PROBLEM;
 	}
 
-	private void checkRequiredProperties(MappingNode map, YType type, Map<String, YTypedProperty> beanProperties, DynamicSchemaContext dc) {
+	private void checkRequiredProperties(Node parent, MappingNode map, YType type, Map<String, YTypedProperty> beanProperties, DynamicSchemaContext dc) {
 		Set<String> foundProps = NodeUtil.getScalarKeys(map);
 		boolean allPropertiesKnown = beanProperties.keySet().containsAll(foundProps);
 		//Don't check for missing properties if some properties look like they might be spelled incorrectly.
@@ -234,14 +234,14 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				} else {
 					message = "Properties "+missingProps+" are required for '"+type+"'";
 				}
-				problems.accept(YamlSchemaProblems.missingProperty(message, map));
+				problems.accept(YamlSchemaProblems.missingProperty(message, parent, map));
 			}
 
 			//Check for other constraints attached to the type
 			for (SchemaContextAware<Constraint> _constraint : typeUtil.getConstraints(type)) {
 				Constraint constraint = _constraint.withContext(dc);
 				if (constraint!=null) {
-					constraint.verify(map, type, foundProps, problems);
+					constraint.verify(parent, map, type, foundProps, problems);
 				}
 			}
 		}

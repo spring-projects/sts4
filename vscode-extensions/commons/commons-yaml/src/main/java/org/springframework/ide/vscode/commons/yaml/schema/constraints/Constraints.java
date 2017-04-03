@@ -61,7 +61,7 @@ public class Constraints {
 		}
 
 		@Override
-		public void verify(MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) {
+		public void verify(Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) {
 			List<String> requiredProps = Arrays.asList(_requiredProps);
 			long foundPropsCount = requiredProps.stream()
 				.filter(foundProps::contains)
@@ -69,7 +69,7 @@ public class Constraints {
 			if (foundPropsCount==0) {
 				if (!allowFewer) {
 					problems.accept(missingProperty(
-							"One of "+requiredProps+" is required for '"+type+"'", map));
+							"One of "+requiredProps+" is required for '"+type+"'", parent, map));
 				}
 			} else if (foundPropsCount>1) {
 				//Mark each of the found keys as a violation:
@@ -86,7 +86,7 @@ public class Constraints {
 
 	public static Constraint deprecated(Function<String, String> messageFormatter, String... _deprecatedNames) {
 		Set<String> deprecatedNames = ImmutableSet.copyOf(_deprecatedNames);
-		return (MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
+		return (Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
 			for (NodeTuple prop : map.getValue()) {
 				Node keyNode = prop.getKeyNode();
 				String name = NodeUtil.asScalar(keyNode);
