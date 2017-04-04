@@ -185,6 +185,7 @@ jobs:
       trigger: true
       passed:
       - build-vsix-snapshots
+      - build-consourse-vsix-snapshot
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
       - build-vsix-snapshots
@@ -199,6 +200,7 @@ jobs:
       passed:
       - build-consourse-vsix-snapshot
   - task: build-website
+    image: 
     file: sts4/concourse/tasks/build-website.yml
   - put: snapshot-website
     params:
