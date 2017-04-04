@@ -1,0 +1,8 @@
+platform: linux
+inputs:
+- name: sts4
+outputs:
+- name: out
+run:
+  path: sts4/concourse/tasks/build-mvn-cache.sh
+  

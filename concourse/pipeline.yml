@@ -83,6 +83,14 @@ resources:
     username: {{docker_hub_username}}
     password: {{docker_hub_password}}
     repository: kdvolder/sts4-build-env
+- name: maven-cache
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: mvn-caches/sts4-(.*).tar.gz
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -95,6 +103,15 @@ jobs:
       build: docker-git/concourse/docker
     get_params: 
       skip_download: true
+- name: build-mvn-cache
+  plan:
+  - get: sts4
+    trigger: true
+  - task: build-mvn-cache
+    file: sts4/concourse/tasks/build-mvn-cache.yml
+  - put: maven-cache
+    params:
+      file: out/mvn-cache-*.tar.gz
 - name: build-vsix-snapshots
   plan:
   - get: sts4
