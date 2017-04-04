@@ -4,7 +4,7 @@ workdir=`pwd`
 
 #if [ -d "maven-cache" ]; then
     echo "Prepopulating maven cache"
-    tar xzvf maven-cache/*.tar.gz -C ${HOME}
+    tar xzf maven-cache/*.tar.gz -C ${HOME}
 #else
 #    echo "!!!No stored maven cache found!!! "
 #    echo "!!!This may slow down the build!!!"
