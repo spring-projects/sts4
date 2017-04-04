@@ -135,12 +135,12 @@ jobs:
         params: 
           file: vsix-files/vscode-boot-java-*.vsix
           acl: public-read
-    on_failure:
-      put: slack-notification
-      params:
-        channel: "@aboyko"
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+    # on_failure:
+    #   put: slack-notification
+    #   params:
+    #     channel: "@aboyko"
+    #     text: |
+    #        Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-consourse-vsix-snapshot
   plan:
   - aggregate:
@@ -203,10 +203,10 @@ jobs:
   - put: snapshot-website
     params:
       path: website
-    on_success:
-      put: slack-notification
-      params:
-        channel: "@aboyko"
-        text: |
-          SUCCESS Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}!
-          New snapshots available at http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
+    # on_success:
+    #   put: slack-notification
+    #   params:
+    #     channel: "@aboyko"
+    #     text: |
+    #       SUCCESS Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}!
+    #       New snapshots available at http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
