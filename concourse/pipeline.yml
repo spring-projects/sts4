@@ -115,8 +115,10 @@ jobs:
       file: out/*.tar.gz
 - name: build-vsix-snapshots
   plan:
-  - get: sts4
-    trigger: true
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
   - task: build-vscode-extensions
     file: sts4/concourse/tasks/build-vscode-extensions.yml
     on_success:
