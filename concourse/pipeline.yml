@@ -135,16 +135,32 @@ jobs:
         params: 
           file: vsix-files/vscode-boot-java-*.vsix
           acl: public-read
-      - put: s3-concourse-vsix-snapshot
-        params: 
-          file: vsix-files/vscode-concourse-*.vsix
-          acl: public-read
     on_failure:
       put: slack-notification
       params:
         channel: "@aboyko"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-consourse-vsix-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-consourse-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-concourse
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdevolder"
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-concourse-vsix-snapshot
+    params: 
+      file: out/vscode-concourse-*.vsix
+      acl: public-read
 - name: trigger-manifest-yaml-rc-build
   plan:
   - get: sts4
@@ -166,24 +182,21 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
+      trigger: true
       passed:
       - build-vsix-snapshots
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
       - build-vsix-snapshots
-      trigger: true
     - get: s3-boot-properties-vsix-snapshot
       passed:
       - build-vsix-snapshots
-      trigger: true
     - get: s3-boot-java-vsix-snapshot
       passed:
       - build-vsix-snapshots
-      trigger: true
     - get: s3-concourse-vsix-snapshot
       passed:
-      - build-vsix-snapshots
-      trigger: true
+      - build-consourse-vsix-snapshot
   - task: build-website
     file: sts4/concourse/tasks/build-website.yml
   - put: snapshot-website
