@@ -28,16 +28,6 @@
 			<artifactId>cloudfoundry-operations</artifactId>
 			<version>${cloudfoundry-client-version}</version>
 		</dependency>
-		<dependency>
-			<groupId>io.projectreactor</groupId>
-			<artifactId>reactor-core</artifactId>
-			<version>${reactor-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.projectreactor.ipc</groupId>
-			<artifactId>reactor-netty</artifactId>
-			<version>${reactor-netty}</version>
-		</dependency>
 				<!-- Test harness -->
 		<dependency>
 			<groupId>org.mockito</groupId>
