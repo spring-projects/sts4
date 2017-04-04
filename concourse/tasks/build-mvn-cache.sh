@@ -8,4 +8,4 @@ cd sts4/vscode-extensions
 
 timestamp=`date +%s`
 tarfile=${workdir}/out/sts4-mvn-cache-${timestamp}.tar.gz
-tar -czvf ${tarfile} ${HOME}/.m2/repository
+tar -czvf ${tarfile} -C ${HOME} .m2/repository
