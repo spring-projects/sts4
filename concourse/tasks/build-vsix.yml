@@ -1,5 +1,6 @@
 inputs:
 - name: sts4
+- name: maven-cache
 outputs:
 - name: out
 platform: linux
