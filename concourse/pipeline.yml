@@ -104,6 +104,7 @@ jobs:
     get_params: 
       skip_download: true
 - name: build-mvn-cache
+  serial: true
   plan:
   - get: sts4
     trigger: true
