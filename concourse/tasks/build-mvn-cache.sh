@@ -3,9 +3,8 @@ set -e
 workdir=`pwd`
 sources=$workdir/sts4/vscode-extensions/$extension_id
 
-cd sts4
-mvn -Dtest.skip clean package
-cd ${HOME}/.m2/repository
+cd sts4/vscode-extensions
+./mvnw -Dtest.skip clean package
 
 timestamp=`date +%s`
 tarfile=${workdir}/out/mnn-cache-${timestamp}.tar.gz
