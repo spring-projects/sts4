@@ -111,7 +111,7 @@ jobs:
     file: sts4/concourse/tasks/build-mvn-cache.yml
   - put: maven-cache
     params:
-      file: out/mvn-cache-*.tar.gz
+      file: out/*.tar.gz
 - name: build-vsix-snapshots
   plan:
   - get: sts4

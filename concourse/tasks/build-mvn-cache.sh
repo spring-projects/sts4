@@ -7,5 +7,5 @@ cd sts4/vscode-extensions
 ./mvnw -DskipTests package
 
 timestamp=`date +%s`
-tarfile=${workdir}/out/mvn-cache-${timestamp}.tar.gz
+tarfile=${workdir}/out/sts4-mvn-cache-${timestamp}.tar.gz
 tar -czvf ${tarfile} ${HOME}/.m2/repository
