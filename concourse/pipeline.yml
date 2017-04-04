@@ -195,6 +195,7 @@ jobs:
       passed:
       - build-vsix-snapshots
     - get: s3-concourse-vsix-snapshot
+      trigger: true
       passed:
       - build-consourse-vsix-snapshot
   - task: build-website
