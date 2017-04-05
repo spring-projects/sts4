@@ -83,6 +83,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		if (!completions.isEmpty()) {
 			List<ICompletionProposal> transformed = new ArrayList<>();
 			for (ICompletionProposal p : completions) {
+				System.out.println(p.getLabel());
 				transformed.add(indented(p));
 			}
 			return transformed;
@@ -137,14 +138,21 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	}
 
 	private Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode preciseContextNode, SNode currentNode) throws Exception {
-		if (preciseContextNode!=null) {
-			SNode contextNode = getRelaxedContextNode(preciseContextNode, currentNode);
+		SNode contextNode = getContextNode(doc, currentNode, offset, YamlIndentUtil.INDENT_BY);
+		if (preciseContextNode!=contextNode && isRelaxable(contextNode)) {
 			YamlAssistContext context = getContext(doc, contextNode);
 			if (context!=null) {
 				return context.getCompletions(doc, currentNode, offset);
 			}
 		}
 		return Collections.emptyList();
+	}
+
+	private boolean isRelaxable(SNode contextNode) throws Exception {
+		return contextNode!=null && (
+				isBarrenKey(contextNode) ||
+				contextNode.getNodeType()==SNodeType.SEQ
+		);
 	}
 
 	private boolean isBarrenKey(SNode node) throws Exception {
@@ -154,20 +162,6 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			return value.trim().isEmpty();
 		}
 		return false;
-	}
-
-	private SNode getRelaxedContextNode(SNode preciseContextNode, SNode currentNode) throws Exception {
-		while (currentNode!=null) {
-			if (currentNode.getParent()==preciseContextNode) {
-				if (isBarrenKey(currentNode)) {
-					return currentNode;
-				} else {
-					return null;
-				}
-			}
-			currentNode = currentNode.getParent();
-		}
-		return currentNode;
 	}
 
 	protected Collection<ICompletionProposal> getPreciseCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode)
@@ -211,7 +205,8 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-	protected SNode getContextNode(YamlDocument doc, SNode node, int offset) throws Exception {
+	protected SNode getContextNode(YamlDocument doc, SNode node, int offset, int adjustIndent) throws Exception {
+		Assert.isLegal(adjustIndent>=0); //The code doesn't handle negative indents yet.
 		if (node==null) {
 			return null;
 		} else if (node.getNodeType()==SNodeType.KEY) {
@@ -232,11 +227,12 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			// the correct context depends on text the user has not typed yet.(which will change the
 			// indentation level of the current line. So we must use the cursorIndentation
 			// rather than the structure-tree to determine the 'context' node.
-			int cursorIndent = doc.getColumn(offset);
-			int nodeIndent = node.getIndent();
+			int cursorIndent = YamlIndentUtil.add(doc.getColumn(offset), adjustIndent);
+			int nodeIndent = YamlIndentUtil.add(node.getIndent(), adjustIndent);
 			int currentIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
-			while (node.getIndent()==-1 || (node.getIndent()>=currentIndent && node.getNodeType()!=SNodeType.DOC)) {
+			while (nodeIndent==-1 || (nodeIndent>=currentIndent && node.getNodeType()!=SNodeType.DOC)) {
 				node = node.getParent();
+				nodeIndent = node.getIndent();
 			}
 			return node;
 		} else if (node.getNodeType()==SNodeType.SEQ) {
@@ -250,6 +246,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			return node;
 		}
 		return null;
+	}
+
+	protected SNode getContextNode(YamlDocument doc, SNode node, int offset) throws Exception {
+		return getContextNode(doc, node, offset, 0);
 	}
 
 	protected YamlPath getContextPath(YamlDocument doc, SNode node, int offset) throws Exception {

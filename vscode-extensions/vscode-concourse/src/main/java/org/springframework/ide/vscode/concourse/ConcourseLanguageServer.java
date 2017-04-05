@@ -45,10 +45,12 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 	SimpleTextDocumentService documents = getTextDocumentService();
 	ConcourseModel models = new ConcourseModel(documents);
 	YamlASTProvider currentAsts = models.getAstProvider(false);
+	private SchemaSpecificPieces forPipelines;
+	private SchemaSpecificPieces forTasks;
 
 	private class SchemaSpecificPieces {
 
-		final VscodeCompletionEngine completionEngine;
+		final VscodeCompletionEngineAdapter completionEngine;
 		final VscodeHoverEngineAdapter hoverEngine;
 		final YamlSchemaBasedReconcileEngine reconcileEngine;
 
@@ -64,13 +66,16 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			reconcileEngine.setTypeCollector(models.getAstTypeCache());
 		}
 
+		public void setMaxCompletions(int max) {
+			completionEngine.setMaxCompletionsNumber(max);
+		}
 	}
 
 	public ConcourseLanguageServer() {
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
 
-		SchemaSpecificPieces forPipelines = new SchemaSpecificPieces(pipelineSchema);
-		SchemaSpecificPieces forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema());
+		this.forPipelines = new SchemaSpecificPieces(pipelineSchema);
+		this.forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema());
 		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, pipelineSchema);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
@@ -134,6 +139,11 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		}
 		return super.getDiagnosticSeverity(problem);
 	}
+	public SimpleLanguageServer setMaxCompletions(int max) {
+		forPipelines.setMaxCompletions(max);
+		forTasks.setMaxCompletions(max);
+		return this;
+	}
 
 	@Override
 	protected ServerCapabilities getServerCapabilities() {
@@ -150,4 +160,5 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 
 		return c;
 	}
+
 }

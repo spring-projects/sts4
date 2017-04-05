@@ -34,7 +34,12 @@ public class ConcourseEditorTest {
 	LanguageServerHarness harness;
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(ConcourseLanguageServer::new, LanguageIds.CONCOURSE_PIPELINE);
+		harness = new LanguageServerHarness(() -> {
+				return new ConcourseLanguageServer()
+						.setMaxCompletions(100);
+			},
+			LanguageIds.CONCOURSE_PIPELINE
+		);
 		harness.intialize(null);
 	}
 
@@ -2703,6 +2708,46 @@ public class ConcourseEditorTest {
 				"    - <*>"
 		);
 	}
+
+	@Test public void relaxedIndentContextMoreSpaces3() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: job-hello-world\n" +
+				"  public: true\n" +
+				"  plan:\n" +
+				"  - get: resource-tutorial\n" +
+				"  - task: hello-world\n" +
+				"  <*>"
+		);
+
+		editor.assertCompletionLabels(
+				//completions for current (i.e Job) context:
+				"build_logs_to_retain",
+                "disable_manual_trigger",
+                "max_in_flight",
+                "serial",
+                "serial_groups",
+                "name",
+                "plan",
+                "public",
+                //Completions for nested context (i.e. task step)
+				"➔ attempts",
+				"➔ config",
+				"➔ ensure",
+				"➔ file",
+				"➔ image",
+				"➔ input_mapping",
+				"➔ on_failure",
+				"➔ on_success",
+				"➔ output_mapping",
+				"➔ params",
+				"➔ privileged",
+				"➔ tags",
+				"➔ task",
+				"➔ timeout"
+		);
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 

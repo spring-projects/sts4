@@ -22,6 +22,7 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 		 * A sorter suitable for sorting ScoreableProposals based on their score.
 		 */
 		public static final Comparator<ICompletionProposal> COMPARATOR = new Comparator<ICompletionProposal>() {
+			@Override
 			public int compare(ICompletionProposal p1, ICompletionProposal p2) {
 				if (p1 instanceof ScoreableProposal && p2 instanceof ScoreableProposal) {
 					double s1 = ((ScoreableProposal)p1).getScore();
@@ -41,6 +42,7 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 		public final double getScore() {
 			return getBaseScore() - deemphasizedBy;
 		}
+		@Override
 		public ScoreableProposal deemphasize() {
 			deemphasizedBy+= DEEMP_VALUE;
 			return this;
@@ -112,5 +114,10 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 //		public int getPrefixCompletionStart(IDocument document, int completionOffset) {
 //			return completionOffset;
 //		}
+
+		@Override
+		public String toString() {
+			return getLabel();
+		}
 
 	}

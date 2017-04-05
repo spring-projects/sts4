@@ -35,7 +35,7 @@ public class YamlIndentUtil {
 	 * for the current document).
 	 */
 	public final String NEWLINE;
-	
+
 	public YamlIndentUtil(String newline) {
 		this.NEWLINE = newline;
 		Assert.isNotNull(NEWLINE);
@@ -98,6 +98,18 @@ public class YamlIndentUtil {
 			return offset;
 		}
 		return offset + indent;
+	}
+
+	/**
+	 * Add given offset to an indent, correctly handling the case
+	 * were the indent is -1 (unknown)
+	 */
+	public static int add(int indent, int adjustment) {
+		if (indent==-1) {
+			return indent; //indent remains unknown
+		}
+		indent += adjustment;
+		return indent>=0 ? indent : 0;
 	}
 
 }
