@@ -757,6 +757,10 @@ public class YamlStructureParser {
 			return doc.textBetween(getStart(), getColonOffset());
 		}
 
+		public String getSimpleValue() {
+			return doc.textBetween(getColonOffset()+1, getNodeEnd());
+		}
+
 		/**
 		 * Get the offset of the ':' character that separates the 'key' from the 'value' area.
 		 * @return Absolute offset (from beginning of document).
@@ -788,6 +792,7 @@ public class YamlStructureParser {
 			}
 			return indentedText;
 		}
+
 
 	}
 

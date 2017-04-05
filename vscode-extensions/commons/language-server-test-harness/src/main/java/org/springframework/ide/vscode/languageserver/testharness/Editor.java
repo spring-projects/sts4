@@ -518,6 +518,14 @@ public class Editor {
 				.get();
 	}
 
+	public void assertCompletionWithLabel(String expectLabel, String expectedResult) throws Exception {
+		CompletionItem completion = assertCompletionWithLabel(expectLabel);
+		String saveText = getText();
+		apply(completion);
+		assertEquals(expectedResult, getText());
+		setText(saveText);
+	}
+
 
 	public void setSelection(int start, int end) {
 		Assert.assertTrue(start>=0);
@@ -618,4 +626,5 @@ public class Editor {
 	public String getLanguageId() {
 		return languageId;
 	}
+
 }

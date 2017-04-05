@@ -27,7 +27,7 @@ public abstract class YamlPathSegment {
 	}
 
 	public static class AnyChild extends YamlPathSegment {
-		
+
 		private static AnyChild INSTANCE = new AnyChild();
 
 		private AnyChild() {}
@@ -61,10 +61,12 @@ public abstract class YamlPathSegment {
 			this.index = index;
 		}
 
+		@Override
 		public String toNavString() {
 			return "["+index+"]";
 		}
 
+		@Override
 		public String toPropString() {
 			return "["+index+"]";
 		}
@@ -175,6 +177,7 @@ public abstract class YamlPathSegment {
 
 	}
 
+	@Override
 	public String toString() {
 		return toNavString();
 	}
@@ -194,7 +197,7 @@ public abstract class YamlPathSegment {
 	public static YamlPathSegment keyAt(String key) {
 		return new KeyAtKey(key);
 	}
-	
+
 	public static YamlPathSegment anyChild() {
 		return AnyChild.INSTANCE;
 	}

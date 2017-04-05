@@ -2618,7 +2618,7 @@ public class ConcourseEditorTest {
 		}
 	}
 
-	@Ignore @Test public void relaxedIndentContextMoreSpaces() throws Exception {
+	@Test public void relaxedIndentContextMoreSpaces() throws Exception {
 		Editor editor;
 
 		editor = harness.newEditor(
@@ -2635,20 +2635,72 @@ public class ConcourseEditorTest {
 				"source",
 				"type",
 				//For the nested context:
-				"branch",
-				"commit_verification_key_ids",
-				"commit_verification_keys",
-				"disable_ci_skip",
-				"git_config",
-				"gpg_keyserver",
-				"ignore_paths",
-				"password",
-				"paths",
-				"private_key",
-				"skip_ssl_verification",
-				"tag_filter",
-				"uri",
-				"username"
+				"➔ branch",
+				"➔ commit_verification_key_ids",
+				"➔ commit_verification_keys",
+				"➔ disable_ci_skip",
+				"➔ git_config",
+				"➔ gpg_keyserver",
+				"➔ ignore_paths",
+				"➔ password",
+				"➔ paths",
+				"➔ private_key",
+				"➔ skip_ssl_verification",
+				"➔ tag_filter",
+				"➔ uri",
+				"➔ username"
+		);
+
+		editor.assertCompletionWithLabel("check_every",
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"  check_every: <*>"
+		);
+
+		editor.assertCompletionWithLabel("➔ branch",
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    branch: <*>"
+		);
+		editor.assertCompletionWithLabel("➔ commit_verification_key_ids",
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    commit_verification_key_ids:\n" +
+				"    - <*>"
+		);
+	}
+
+	@Test public void relaxedIndentContextMoreSpaces2() throws Exception {
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"  <*>"
+				, // =========
+				"bra<*>"
+				, //=>
+				"  branch: <*>"
+		);
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"  <*>"
+				, // =========
+				"comverids<*>"
+				, //=>
+				"  commit_verification_key_ids:\n" +
+				"    - <*>"
 		);
 	}
 

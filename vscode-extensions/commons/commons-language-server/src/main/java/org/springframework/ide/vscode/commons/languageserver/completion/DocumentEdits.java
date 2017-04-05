@@ -404,4 +404,15 @@ public class DocumentEdits implements ProposalApplier {
 		insert(start, newText);
 	}
 
+	/**
+	 * Adds extra indentation at the position of the first edit in this {@link DocumentEdits}
+	 */
+	public void indentFirstEdit(String indentString) {
+		if (edits.size()>0) {
+			Edit firstEdit = edits.get(0);
+			int offset = firstEdit.getStart();
+			edits.add(0, new Insertion(offset, indentString));
+		}
+	}
+
 }

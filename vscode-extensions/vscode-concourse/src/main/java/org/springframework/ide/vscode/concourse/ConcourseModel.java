@@ -46,7 +46,6 @@ import com.google.common.collect.Multiset;
  * and completion engine).
  */
 public class ConcourseModel {
-
 	public static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		anyChild(),
 		valueAt("jobs"),

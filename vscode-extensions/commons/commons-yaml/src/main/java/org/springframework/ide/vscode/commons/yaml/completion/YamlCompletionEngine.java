@@ -10,14 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
@@ -65,16 +71,116 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			SRootNode root = doc.getStructure();
 			SNode current = root.find(offset);
 			SNode contextNode = getContextNode(doc, current, offset);
-			if (contextNode!=null) {
-				YamlAssistContext context = getContext(doc, contextNode);
-				if (context==null && isDubiousKey(contextNode, offset)) {
-					current = current.getParent();
-					contextNode = contextNode.getParent();
-					context = getContext(doc, contextNode);
+			List<ICompletionProposal> all = new ArrayList<>(getPreciseCompletions(offset, doc, current, contextNode));
+			all.addAll(addIndentations(getRelaxedCompletions(offset, doc, contextNode, current)));
+			return all;
+		}
+		return Collections.emptyList();
+	}
+
+	private Collection<? extends ICompletionProposal> addIndentations(
+			Collection<? extends ICompletionProposal> completions) {
+		if (!completions.isEmpty()) {
+			List<ICompletionProposal> transformed = new ArrayList<>();
+			for (ICompletionProposal p : completions) {
+				transformed.add(indented(p));
+			}
+			return transformed;
+		}
+		return Collections.emptyList();
+	}
+
+	public ICompletionProposal indented(ICompletionProposal proposal) {
+		ScoreableProposal transformed = new ScoreableProposal() {
+
+			DocumentEdits indentedEdit = null;
+
+			@Override
+			public synchronized DocumentEdits getTextEdit() {
+				if (indentedEdit==null) {
+					indentedEdit = proposal.getTextEdit();
+					indentedEdit.indentFirstEdit(YamlIndentUtil.INDENT_STR);
 				}
-				if (context!=null) {
-					return context.getCompletions(doc, current, offset);
+				return indentedEdit;
+			}
+
+			@Override
+			public String getLabel() {
+				return "➔ "+proposal.getLabel();
+			}
+
+			@Override
+			public CompletionItemKind getKind() {
+				return proposal.getKind();
+			}
+
+			@Override
+			public Renderable getDocumentation() {
+				return proposal.getDocumentation();
+			}
+
+			@Override
+			public String getDetail() {
+				return proposal.getDetail();
+			}
+
+			@Override
+			public double getBaseScore() {
+				if (proposal instanceof ScoreableProposal) {
+					return ((ScoreableProposal) proposal).getBaseScore();
 				}
+				return 0;
+			}
+		};
+		transformed.deemphasize();
+		return transformed;
+	}
+
+	private Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode preciseContextNode, SNode currentNode) throws Exception {
+		if (preciseContextNode!=null) {
+			SNode contextNode = getRelaxedContextNode(preciseContextNode, currentNode);
+			YamlAssistContext context = getContext(doc, contextNode);
+			if (context!=null) {
+				return context.getCompletions(doc, currentNode, offset);
+			}
+		}
+		return Collections.emptyList();
+	}
+
+	private boolean isBarrenKey(SNode node) throws Exception {
+		if (node.getNodeType()==SNodeType.KEY) {
+			SKeyNode keyNode = (SKeyNode) node;
+			String value = keyNode.getSimpleValue();
+			return value.trim().isEmpty();
+		}
+		return false;
+	}
+
+	private SNode getRelaxedContextNode(SNode preciseContextNode, SNode currentNode) throws Exception {
+		while (currentNode!=null) {
+			if (currentNode.getParent()==preciseContextNode) {
+				if (isBarrenKey(currentNode)) {
+					return currentNode;
+				} else {
+					return null;
+				}
+			}
+			currentNode = currentNode.getParent();
+		}
+		return currentNode;
+	}
+
+	protected Collection<ICompletionProposal> getPreciseCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode)
+			throws Exception {
+		if (contextNode!=null) {
+			YamlAssistContext context = getContext(doc, contextNode);
+			if (context==null && isDubiousKey(contextNode, offset)) {
+				current = current.getParent();
+				contextNode = contextNode.getParent();
+				context = getContext(doc, contextNode);
+			}
+			if (context!=null) {
+				return context.getCompletions(doc, current, offset);
 			}
 		}
 		return Collections.emptyList();
