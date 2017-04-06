@@ -744,6 +744,20 @@ public class ConcourseEditorTest {
 
 	@Test public void timeResourceCompletions() throws Exception {
 		assertContextualCompletions(
+				"resources:\n" +
+				"- name: every5minutes\n" +
+				"  type: time\n" +
+				"  source:\n" +
+				"    location: <*>"
+				, // ======================
+				"Van<*>"
+				, // =>
+				"America/Vancouver<*>",
+				"Asia/Vientiane<*>",
+				"Europe/Vatican<*>"
+		);
+
+		assertContextualCompletions(
 			"resources:\n" +
 			"- name: every5minutes\n" +
 			"  type: time\n" +
@@ -779,16 +793,6 @@ public class ConcourseEditorTest {
 			"Wednesday<*>"
 		);
 
-		assertContextualCompletions(
-				"resources:\n" +
-				"- name: every5minutes\n" +
-				"  type: time\n" +
-				"  location: <*>"
-				, // ======================
-				"Van<*>"
-				, // =>
-				"America/Vancouver"
-		);
 	}
 
 	@Test public void timeResourceSourceReconcile() throws Exception {
