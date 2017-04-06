@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,11 +18,14 @@ import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
@@ -106,6 +110,20 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ConcourseValueParsers.DURATION);
 	public final YType t_time_of_day = f.yatomic("TimeOfDay")
 			.parseWith(ConcourseValueParsers.TIME_OF_DAY);
+	public final YType t_location = f.yatomic("Location")
+			//Note: we could have used f.yenum here too. But it saves memory if we don't keep the large set of ValueHints in memory.
+			// That's why we attach custom hint provider and parser here that do essentially the same thing.
+			.addHintProvider(() -> {
+				return ZoneId.getAvailableZoneIds().stream()
+				.map(BasicYValueHint::new)
+				.collect(Collectors.toList());
+			})
+			.parseWith(ValueParser.of((zoneId) -> {
+				if (!ZoneId.getAvailableZoneIds().contains(zoneId)) {
+					throw new ValueParseException("Unknown 'Location'. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones");
+				}
+				return zoneId;
+			}));
 
 	public final AbstractType task;
 
@@ -542,7 +560,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		{
 			AbstractType source = f.ybean("TimeSource");
 			addProp(source, "interval", t_duration);
-			addProp(source, "location", t_ne_string);
+			addProp(source, "location", t_location);
 			addProp(source, "start", t_time_of_day);
 			addProp(source, "stop", t_time_of_day);
 			addProp(source, "days", f.yseq(t_day));

@@ -185,8 +185,9 @@ public class YTypeFactory {
 			return null;
 		}
 
-		public void addHintProvider(Callable<Collection<YValueHint>> hintProvider) {
+		public AbstractType addHintProvider(Callable<Collection<YValueHint>> hintProvider) {
 			addHintProvider((DynamicSchemaContext dc) -> hintProvider);
+			return this;
 		}
 
 		public AbstractType addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {

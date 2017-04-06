@@ -778,6 +778,17 @@ public class ConcourseEditorTest {
 			"Tuesday<*>",
 			"Wednesday<*>"
 		);
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: every5minutes\n" +
+				"  type: time\n" +
+				"  location: <*>"
+				, // ======================
+				"Van<*>"
+				, // =>
+				"America/Vancouver"
+		);
 	}
 
 	@Test public void timeResourceSourceReconcile() throws Exception {
@@ -788,7 +799,7 @@ public class ConcourseEditorTest {
 				"- name: every5minutes\n" +
 				"  type: time\n" +
 				"  source:\n" +
-				"    location: PST\n" +
+				"    location: PST8PDT\n" +
 				"    start: 7AM\n" +
 				"    stop: 8AM\n" +
 				"    interval: 5m\n" +
@@ -802,6 +813,7 @@ public class ConcourseEditorTest {
 				"- name: every5minutes\n" +
 				"  type: time\n" +
 				"  source:\n" +
+				"    location: some-location\n" +
 				"    start: the-start-time\n" +
 				"    stop: the-stop-time\n" +
 				"    interval: the-interval\n" +
@@ -810,6 +822,7 @@ public class ConcourseEditorTest {
 				"    - Someday\n"
 		);
 		editor.assertProblems(
+				"some-location|Unknown 'Location'",
 				"the-start-time|not a valid 'Time'",
 				"the-stop-time|not a valid 'Time'",
 				"the-interval|not a valid 'Duration'",
