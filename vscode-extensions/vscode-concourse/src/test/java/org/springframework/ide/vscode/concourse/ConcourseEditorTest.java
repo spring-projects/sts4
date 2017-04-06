@@ -780,6 +780,43 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void timeResourceSourceReconcile() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: every5minutes\n" +
+				"  type: time\n" +
+				"  source:\n" +
+				"    location: PST\n" +
+				"    start: 7AM\n" +
+				"    stop: 8AM\n" +
+				"    interval: 5m\n" +
+				"    days:\n" +
+				"    - Thursday\n"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: every5minutes\n" +
+				"  type: time\n" +
+				"  source:\n" +
+				"    start: the-start-time\n" +
+				"    stop: the-stop-time\n" +
+				"    interval: the-interval\n" +
+				"    days:\n" +
+				"    - Monday\n" +
+				"    - Someday\n"
+		);
+		editor.assertProblems(
+				"the-start-time|not a valid 'Time'",
+				"the-stop-time|not a valid 'Time'",
+				"the-interval|not a valid 'Duration'",
+				"Someday|unknown 'Day'"
+		);
+	}
+
 	@Test public void timeResourceSourceHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
