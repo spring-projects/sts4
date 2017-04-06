@@ -15,16 +15,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -39,6 +42,9 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
+import org.springframework.ide.vscode.concourse.ConcourseModel.ResourceModel;
+import org.springframework.ide.vscode.concourse.ConcourseModel.StepModel;
+import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
 import reactor.core.publisher.Flux;
@@ -200,14 +206,14 @@ public class PipelineYmlSchema implements YamlSchema {
 			resourceTypes.getSourceType(getResourceTypeTag(models, dc))
 		);
 
-		AbstractType resource = f.ybean("Resource");
-		addProp(resource, "name", resourceNameDef).isRequired(true);
-		addProp(resource, "type", t_resource_type_name).isRequired(true);
-		addProp(resource, "source", resourceSource);
-		addProp(resource, "check_every", t_duration);
+		AbstractType t_resource = f.ybean("Resource");
+		addProp(t_resource, "name", resourceNameDef).isRequired(true);
+		addProp(t_resource, "type", t_resource_type_name).isRequired(true);
+		addProp(t_resource, "source", resourceSource);
+		addProp(t_resource, "check_every", t_duration);
 
 		AbstractType t_image_resource = f.ybean("ImageResource");
-		for (YTypedProperty p : resource.getProperties()) {
+		for (YTypedProperty p : t_resource.getProperties()) {
 			if (!"name".equals(p.getName())) {
 				t_image_resource.addProperty(p);
 			}
@@ -285,6 +291,21 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(putStep, "get_params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("put", models, dc))
 		));
+		putStep.require((dc) -> (IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
+			StepModel step = models.newStep("put", map);
+			String resourceName = step.getResourceName();
+			if (resourceName!=null) {
+				ResourceModel resource = models.getResource(doc, resourceName);
+				if (resource!=null) {
+					if ("git".equals(resource.getType()) && !resource.hasSourceProperty("branch")) {
+						problems.accept(YamlSchemaProblems.schemaProblem(
+								"Resource of type 'git' is used in a 'put' step, so it should define 'branch' attribute in its 'source', but it doesn't.",
+								step.getResourceNameNode()
+						));
+					}
+				}
+			}
+		});
 		YBeanType taskStep = f.ybean("TaskStep");
 		addProp(taskStep, "task", t_ne_string);
 		addProp(taskStep, "file", t_string);
@@ -343,7 +364,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
 
-		addProp(TOPLEVEL_TYPE, "resources", f.yseq(resource));
+		addProp(TOPLEVEL_TYPE, "resources", f.yseq(t_resource));
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
@@ -360,7 +381,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		{
 			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_string).isRequired(true);
-			addProp(source, "branch", t_string).isRequired(true);
+			addProp(source, "branch", t_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
 			addProp(source, "private_key", t_ne_string);
 			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_string);
@@ -581,11 +602,21 @@ public class PipelineYmlSchema implements YamlSchema {
 		return driver!=null ? driver : "s3";
 	}
 
-	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {
-		String resourceName = getParentPropertyValue("resource", models, dc);
+	private Node getResourceNameNode(String resourceNameProp, DynamicSchemaContext dc) {
+		Node resourceName = getParentPropertyNode("resource", models, dc);
 		if (resourceName==null) {
-			resourceName = getParentPropertyValue(resourceNameProp, models, dc);
+			resourceName = getParentPropertyNode(resourceNameProp, models, dc);
 		}
+		return resourceName;
+	}
+
+	private String getResourceName(String resourceNameProp, DynamicSchemaContext dc) {
+		Node resourceName = getResourceNameNode(resourceNameProp, dc);
+		return NodeUtil.asScalar(resourceName);
+	}
+
+	private String getResourceType(String resourceNameProp, ConcourseModel models, DynamicSchemaContext dc) {
+		String resourceName = getResourceName(resourceNameProp, dc);
 		if (resourceName!=null) {
 			return models.getResourceType(dc.getDocument(), resourceName);
 		}

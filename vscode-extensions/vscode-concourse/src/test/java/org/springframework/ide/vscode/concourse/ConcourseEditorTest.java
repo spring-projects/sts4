@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -709,7 +708,10 @@ public class ConcourseEditorTest {
 				"    - build\n"
 		);
 
-		editor.assertProblems("not-a-job|does not exist");
+		editor.assertProblems(
+				"build-artefact|should define 'branch'",
+				"not-a-job|does not exist"
+		);
 	}
 
 	@Test
@@ -726,7 +728,7 @@ public class ConcourseEditorTest {
 				"  - get: git-repo\n" +
 				"  - task: run-build\n" +
 				"    file: tasks/some-task.yml\n" +
-				"  - put: build-artefact\n" +
+				"  - put: build-artefact # <- bad\n" +
 				"- name: test\n" +
 				"  plan:\n" +
 				"  - get: git-repo\n" +
@@ -737,6 +739,7 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertProblems(
+				"build-artefact^ # <- bad|should define 'branch'",
 				"bogus-job|does not exist",
 				"not-a-resource|does not exist"
 		);
@@ -1117,6 +1120,9 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- name: my-git\n" +
 				"  type: git\n" +
+				"  source:\n" +
+				"    uri: some-uri\n" +
+				"    branch: master\n" +
 				"jobs:\n" +
 				"- name: do-stuff\n" +
 				"  plan:\n" +
@@ -1129,6 +1135,9 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- name: my-git\n" +
 				"  type: git\n" +
+				"  source:\n" +
+				"    uri: some-uri\n" +
+				"    branch: master\n" +
 				"jobs:\n" +
 				"- name: do-stuff\n" +
 				"  plan:\n" +
@@ -1313,16 +1322,6 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems("source|'uri' is required");
 
-		//addProp(gitSource, "branch", t_string).isRequired(true);
-		editor = harness.newEditor(
-				"resources:\n" +
-				"- name: foo\n" +
-				"  type: git\n" +
-				"  source:\n" +
-				"    uri: https://yada"
-		);
-		editor.assertProblems("source|'branch' is required");
-
 		//addProp(group, "name", t_ne_string).isRequired(true);
 		editor = harness.newEditor(
 				"groups:\n" +
@@ -1331,6 +1330,42 @@ public class ConcourseEditorTest {
 		editor.assertProblems("-^ jobs: []|'name' is required");
 	}
 
+	@Test public void gitBranchRequiredInPutStep() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com/johny-coder/test-repo\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: repo\n" +
+				"  - put: repo # <- bad\n"
+		);
+		editor.assertProblems(
+				"repo^ # <- bad|should define 'branch'"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com/johny-coder/test-repo\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: repo\n" +
+				"  - put: blah\n" +
+				"    resource: repo # <- bad\n"
+		);
+		editor.assertProblems(
+				"repo^ # <- bad|should define 'branch'"
+		);
+	}
 
 	@Test public void dockerImageResourceSourceReconcileAndHovers() throws Exception {
 		Editor editor;

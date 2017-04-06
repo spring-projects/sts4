@@ -28,12 +28,14 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
+import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableMultiset;
@@ -46,6 +48,50 @@ import com.google.common.collect.Multiset;
  * and completion engine).
  */
 public class ConcourseModel {
+
+	/**
+	 * Wraps around a Node in the AST that represents a 'step' and
+	 * provides methods for accessing information from the node.
+	 */
+	public static class StepModel {
+
+		private final String stepType;
+		private final MappingNode step;
+
+		public StepModel(String stepType, MappingNode step) {
+			this.stepType = stepType;
+			this.step = step;
+		}
+
+		public Node getResourceNameNode() {
+			Node node = NodeUtil.getProperty(step, "resource");
+			return node!=null ? node : NodeUtil.getProperty(step, stepType);
+		}
+
+		public String getResourceName() {
+			return NodeUtil.asScalar(getResourceNameNode());
+		}
+	}
+
+	public static class ResourceModel {
+
+		private final Node resource;
+
+		public ResourceModel(Node resource) {
+			this.resource = resource;
+		}
+
+		public String getType() {
+			return NodeUtil.getScalarProperty(resource, "type");
+		}
+
+		public boolean hasSourceProperty(String propName) {
+			YamlPath path = new YamlPath(YamlPathSegment.valueAt("source"), YamlPathSegment.keyAt(propName));
+			return path.traverseAmbiguously(resource).findFirst().isPresent();
+		}
+
+	}
+
 	public static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		anyChild(),
 		valueAt("jobs"),
@@ -113,16 +159,25 @@ public class ConcourseModel {
 	 * was never successfully parsed.
 	 */
 	public String getResourceType(IDocument doc, String resourceName) {
+		ResourceModel resource = getResource(doc, resourceName);
+		if (resource!=null) {
+			return resource.getType();
+		}
+		return null;
+	}
+
+	public ResourceModel getResource(IDocument doc, String resourceName) {
 		return getFromAst(doc, (ast) -> {
 			Node resource = RESOURCES_PATH.traverseAmbiguously(new ASTRootCursor(ast))
 			.map((cursor) -> ((NodeCursor)cursor).getNode())
 			.filter((resourceNode) -> resourceName.equals(NodeUtil.getScalarProperty(resourceNode, "name")))
 			.findFirst().orElse(null);
 			if (resource!=null) {
-				return NodeUtil.getScalarProperty(resource, "type");
+				return new ResourceModel(resource);
 			}
 			return null;
 		});
+
 	}
 
 	/**
@@ -218,6 +273,10 @@ public class ConcourseModel {
 
 	public ASTTypeCache getAstTypeCache() {
 		return astTypes;
+	}
+
+	public StepModel newStep(String stepType, MappingNode stepNode) {
+		return new StepModel(stepType, stepNode);
 	}
 
 }
