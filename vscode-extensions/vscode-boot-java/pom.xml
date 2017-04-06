@@ -9,7 +9,7 @@
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../commons/pom.xml</relativePath>
+		<relativePath>../../headless-services/commons/pom.xml</relativePath>
 	</parent>
 
 	<repositories>

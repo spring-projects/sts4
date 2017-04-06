@@ -4,15 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.ide.vscode</groupId>
-	<artifactId>aggregator</artifactId>
+	<artifactId>headless-services-aggregator</artifactId>
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>aggregator</name>
 
-	<modules>
-		<module>../headless-services/commons</module>
-		<module>vscode-boot-properties</module>
-		<module>vscode-boot-java</module>
-		<module>vscode-manifest-yaml</module>
+    <modules>
+		<module>commons</module>
+		<module>concourse-language-server</module>
 	</modules>
+
 </project>

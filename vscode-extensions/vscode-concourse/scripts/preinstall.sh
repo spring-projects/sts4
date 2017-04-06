@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+
+workdir=`pwd`
+
 # Download yaml TextMate grammar
 curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YAML.tmLanguage > yaml-support/yaml.tmLanguage
 
@@ -8,4 +11,9 @@ curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YA
 npm install ../commons-vscode
 
 # Use maven to build fat jar of the language server
-../mvnw -U -f ../pom.xml -pl vscode-concourse -am clean install
+cd ../../headless-services/concourse-language-server
+./build.sh
+
+mkdir -p ${workdir}/jars
+cp target/*.jar ${workdir}/jars/language-server.jar
+

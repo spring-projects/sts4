@@ -2,31 +2,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>vscode-boot-properties</artifactId>
+	<artifactId>concourse-language-server</artifactId>
 	<packaging>jar</packaging>
 	
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../../headless-services/commons/pom.xml</relativePath>
+		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
+	<version>0.0.2-SNAPSHOT</version>
 	
-	<repositories>
-		<!-- Sonatype snapshots repository -->
-		<repository>
-			<id>oss-sonatype</id>
-			<name>oss-sonatype</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>project-repo</id>
-			<url>file://${project.basedir}/repo</url>
-		</repository>
-	</repositories>
+	<properties>
+		<dependencies.version>0.0.1-SNAPSHOT</dependencies.version>
+	</properties>
 	
 	<distributionManagement>
 		<repository>
@@ -35,48 +24,27 @@
 			<url>file://${basedir}/dist</url>
 		</repository>
 	</distributionManagement>
-	
+
 	<dependencies>
-		<!-- Local modified JSON lib packaged to support order in maps -->
-		<dependency>
-			<groupId>org.springframework.ide.eclipse</groupId>
-			<artifactId>org.json</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>java-properties</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-maven</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-gradle</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		<!-- Language Servers -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
+		<!-- Yaml -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-yaml</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
-	
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>language-server-test-harness</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
 	</dependencies>
 	<build>
 		<plugins>
@@ -103,17 +71,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Ignore test classes from test projects -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<configuration>
-					<excludes>
-						<exclude>test-projects/**</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-      </plugins>
+		</plugins>
 	</build>
 </project>
