@@ -381,7 +381,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		{
 			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_string).isRequired(true);
-			addProp(source, "branch", t_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
+			addProp(source, "branch", t_ne_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
 			addProp(source, "private_key", t_ne_string);
 			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_string);
