@@ -742,6 +742,63 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void timeResourceCompletions() throws Exception {
+		assertContextualCompletions(
+			"resources:\n" +
+			"- name: every5minutes\n" +
+			"  type: time\n" +
+			"  source:\n" +
+			"    <*>"
+			, // ======================
+			"<*>"
+			, // =>
+			"days:\n"+
+			"    - <*>",
+			"interval: <*>",
+			"location: <*>",
+			"start: <*>",
+			"stop: <*>"
+		);
+
+		assertContextualCompletions(
+			"resources:\n" +
+			"- name: every5minutes\n" +
+			"  type: time\n" +
+			"  source:\n" +
+			"    days:\n" +
+			"    - <*>"
+			, // ======================
+			"<*>"
+			, // =>
+			"Friday<*>",
+			"Monday<*>",
+			"Saturday<*>",
+			"Sunday<*>",
+			"Thursday<*>",
+			"Tuesday<*>",
+			"Wednesday<*>"
+		);
+	}
+
+	@Test public void timeResourceSourceHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: timed-trigger\n" +
+				"  type: time\n" +
+				"  source:\n" +
+				"    interval: 5m\n" +
+				"    location: UTC\n" +
+				"    start: 8:00PM\n" +
+				"    stop: 9:00PM\n" +
+				"    days: [Monday, Wednesday, Friday]"
+		);
+		editor.assertHoverContains("interval", "interval on which to report new versions");
+		editor.assertHoverContains("location", "*Optional. Default `UTC`");
+		editor.assertHoverContains("start", "The supported time formats are");
+		editor.assertHoverContains("stop", "The supported time formats are");
+		editor.assertHoverContains("days", "Run only on these day(s)");
+	}
+
 	@Test public void gitResourceSourceReconcile() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +

@@ -74,4 +74,24 @@ public class ConcourseValueParsers {
 					+ " '2h45m'. Valid time units are 'ns', 'us' (or 'µs'), 'ms', 's', "
 			+ "'m', 'h'."
 	);
+
+	public static final ValueParser TIME_OF_DAY = new RegexpParser(
+			createTimeRegexp(),
+			"Time",
+			"Supported time formats are: 3:04 PM, 3PM, 3 PM, 15:04, and 1504. "
+			+ "Deprecation: an offset may be appended, e.g. +0700 or -0400, but "
+			+ "you should use location instead."
+	);
+
+	private static String createTimeRegexp() {
+		String hours = "([0-2]?[0-9])";
+		String minutes = "([0-6][0-9])";
+		String time = hours+"((:"+minutes+")|"+minutes+")?";
+		String pm = "(\\s?[AP]M)?";
+		String zone = "(\\s(\\+|\\-)[0-9][0-9][0-9][0-9])?";
+
+		return time + pm + zone;
+	}
+
+
 }

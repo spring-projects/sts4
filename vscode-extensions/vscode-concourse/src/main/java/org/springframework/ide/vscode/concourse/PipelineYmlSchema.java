@@ -70,6 +70,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.collect(Collectors.toSet())
 			.block();
 
+
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
@@ -103,6 +104,8 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	public final YType t_duration = f.yatomic("Duration")
 			.parseWith(ConcourseValueParsers.DURATION);
+	public final YType t_time_of_day = f.yatomic("TimeOfDay")
+			.parseWith(ConcourseValueParsers.TIME_OF_DAY);
 
 	public final AbstractType task;
 
@@ -123,6 +126,10 @@ public class PipelineYmlSchema implements YamlSchema {
 			 "us-east-2"
 	);
 
+	public final YType t_day = f.yenum("Day",
+			//See https://github.com/concourse/time-resource#source-configuration
+			"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+	);
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		this.models = models;
@@ -530,6 +537,24 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "file", t_ne_string);
 
 			resourceTypes.def("semver", source, get, put);
+		}
+		//time:
+		{
+			AbstractType source = f.ybean("TimeSource");
+			addProp(source, "interval", t_duration);
+			addProp(source, "location", t_ne_string);
+			addProp(source, "start", t_time_of_day);
+			addProp(source, "stop", t_time_of_day);
+			addProp(source, "days", f.yseq(t_day));
+
+			AbstractType get = f.ybean("TimeGetParams");
+			//get params deliberately left empty
+
+			AbstractType put = f.ybean("TimePutParams");
+			//put params deliberately left empty
+
+			resourceTypes.def("time", source, get, put);
+
 		}
 	}
 
