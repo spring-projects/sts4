@@ -9,7 +9,7 @@ cd ${base_dir}/commons-vscode
 npm install
 
 cd $base_dir
-for i in vscode-boot-properties vscode-manifest-yaml vscode-boot-java; do
+for i in vscode-boot-properties vscode-boot-java; do
     cd ${base_dir}/${i}
     echo "***************************************************************************************"
     echo "***************************************************************************************"

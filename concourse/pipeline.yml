@@ -123,10 +123,6 @@ jobs:
     file: sts4/concourse/tasks/build-vscode-extensions.yml
     on_success:
       aggregate:
-      - put: s3-manifest-yaml-vsix-snapshot
-        params: 
-          file: vsix-files/vscode-manifest-yaml-*.vsix
-          acl: public-read
       - put: s3-boot-properties-vsix-snapshot
         params: 
           file: vsix-files/vscode-boot-properties-*.vsix
@@ -154,12 +150,32 @@ jobs:
     on_failure:
       put: slack-notification
       params:
-        channel: "@kdevolder"
+        channel: "@kdvolder"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
   - put: s3-concourse-vsix-snapshot
     params: 
       file: out/vscode-concourse-*.vsix
+      acl: public-read
+- name: build-manifest-yaml-vsix-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-manifest-yaml-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-manifest-yaml
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-manifest-yaml-vsix-snapshot
+    params: 
+      file: out/vscode-manifest-yaml-*.vsix
       acl: public-read
 - name: trigger-manifest-yaml-rc-build
   plan:
@@ -187,7 +203,7 @@ jobs:
       - build-vsix-snapshots
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
-      - build-vsix-snapshots
+      - build-manifest-yaml-vsix-snapshot
     - get: s3-boot-properties-vsix-snapshot
       passed:
       - build-vsix-snapshots
