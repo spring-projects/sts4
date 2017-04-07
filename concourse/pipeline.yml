@@ -19,12 +19,12 @@ resources:
     private_key: {{rsa_id}}
     paths:
     - concourse/docker
-- name: sts4-out
-  type: git
-  source:
-    uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+# - name: sts4-out
+#   type: git
+#   source:
+#     uri: git@github.com:spring-projects/sts4.git
+#     branch: {{branch}}
+#     private_key: {{rsa_id}}
 - name: sts4
   type: git
   source:
@@ -120,29 +120,44 @@ jobs:
   - put: maven-cache
     params:
       file: out/*.tar.gz
-- name: build-vsix-snapshots
+- name: build-boot-properties-vsix-snapshot
   plan:
   - aggregate:
     - get: sts4
       trigger: true
     - get: maven-cache
-  - task: build-vscode-extensions
-    file: sts4/concourse/tasks/build-vscode-extensions.yml
-    on_success:
-      aggregate:
-      - put: s3-boot-properties-vsix-snapshot
-        params: 
-          file: vsix-files/vscode-boot-properties-*.vsix
-          acl: public-read
-      - put: s3-boot-java-vsix-snapshot
-        params: 
-          file: vsix-files/vscode-boot-java-*.vsix
-          acl: public-read
+  - task: build-boot-properties-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-boot-properties
     on_failure:
       put: slack-notification
       params:
         text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-boot-properties-vsix-snapshot
+    params: 
+      file: out/vscode-boot-properties-*.vsix
+      acl: public-read
+- name: build-boot-java-vsix-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-boot-java-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-boot-java
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-boot-java-vsix-snapshot
+    params: 
+      file: out/vscode-boot-java-*.vsix
+      acl: public-read
 - name: build-consourse-vsix-snapshot
   plan:
   - aggregate:
@@ -181,41 +196,43 @@ jobs:
     params: 
       file: out/vscode-manifest-yaml-*.vsix
       acl: public-read
-- name: trigger-manifest-yaml-rc-build
-  plan:
-  - get: sts4
-    passed:
-    - build-snapshot-website
-  - get: s3-manifest-yaml-vsix-snapshot
-    passed:
-    - build-snapshot-website
-  - task: trigger-manifest-yaml-rc-build
-    file: sts4/concourse/tasks/create-rc-build-tag.yml
-    params:
-      extension_id: vscode-manifest-yaml
-  - put: sts4-out
-    params:
-      repository: sts4
-      tag: out/tag
-      only_tag: true
+#### Disabled, release process needs work and the stuff below is untrusworthy after a
+#### Bunch of changes to the pipeline.
+# - name: trigger-manifest-yaml-rc-build
+#   plan:
+#   - get: sts4
+#     passed:
+#     - build-snapshot-website
+#   - get: s3-manifest-yaml-vsix-snapshot
+#     passed:
+#     - build-snapshot-website
+#   - task: trigger-manifest-yaml-rc-build
+#     file: sts4/concourse/tasks/create-rc-build-tag.yml
+#     params:
+#       extension_id: vscode-manifest-yaml
+#   - put: sts4-out
+#     params:
+#       repository: sts4
+#       tag: out/tag
+#       only_tag: true
 - name: build-snapshot-website
   serial: true
   plan:
   - aggregate:
     - get: sts4
       trigger: true
-      passed:
-      - build-vsix-snapshots
     - get: s3-manifest-yaml-vsix-snapshot
       trigger: true
       passed:
       - build-manifest-yaml-vsix-snapshot
     - get: s3-boot-properties-vsix-snapshot
+      trigger: true
       passed:
-      - build-vsix-snapshots
+      - build-boot-properties-vsix-snapshot
     - get: s3-boot-java-vsix-snapshot
+      trigger: true
       passed:
-      - build-vsix-snapshots
+      - build-boot-java-vsix-snapshot
     - get: s3-concourse-vsix-snapshot
       trigger: true
       passed:
