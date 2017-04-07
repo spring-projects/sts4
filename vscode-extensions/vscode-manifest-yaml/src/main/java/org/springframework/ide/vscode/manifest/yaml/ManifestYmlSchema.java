@@ -99,7 +99,9 @@ public class ManifestYmlSchema implements YamlSchema {
 		// - route: someroute.io
 		
 		YBeanType route = f.ybean("Route");
-		route.addProperty(f.yprop("route", t_string).isRequired(true));
+		YAtomicType t_route_string = f.yatomic("route");
+		route.addProperty(f.yprop("route", t_route_string).isRequired(true));
+		t_route_string.parseWith(new RouteValueParser(YTypeFactory.valuesFromHintProvider(domainsProvider)));
 
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
