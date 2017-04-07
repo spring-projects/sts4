@@ -6,15 +6,18 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFRoute;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 
 public class RouteValueParser extends RegexpParser {
 	
-	private static final String ROUTE_REGEX = "^([\\da-z\\.-]+)(:\\d{1,4})?((\\/[\\dA-Za-z\\.-]+)*\\/?)?$";
+	private static final String ROUTE_REGEX = "^([\\da-z\\.-]+)(:\\d{1,5})?((\\/[\\dA-Za-z\\.-]+)*\\/?)?$";
 	private static final String ROUTE_TYPE_NAME = "Route";
 	private static final String ROUTE_DESCRIPTION = "HTTP or TCP application root route";
+	private static final int MAX_PORT_NUMBER = 65535;
 	
 	private Callable<Collection<String>> domains;
 
@@ -22,12 +25,24 @@ public class RouteValueParser extends RegexpParser {
 		super(ROUTE_REGEX, ROUTE_TYPE_NAME, ROUTE_DESCRIPTION);
 		this.domains = domains;
 	}
-
-	@Override
-	public Object parse(String str) throws Exception {
-		Matcher matcher = (Matcher) super.parse(str);
-		if (matcher != null) {
-			Collection<String> cloudDomains = domains == null ? Collections.emptyList() : domains.call();
+	
+	private Matcher staticValidation(String str) throws Exception {
+		return (Matcher) super.parse(str);
+	}
+	
+	private Object dynamicValidation(String str, Matcher matcher) throws Exception {
+		try {
+			Collection<String> cloudDomains = Collections.emptyList();
+			try {
+				cloudDomains = domains == null ? Collections.emptyList() : domains.call();
+			} catch (ValueParseException e) {
+				/*
+				 * If domains hint provider throws exception it is
+				 * ValueParserException not NoTargetsException. This means no
+				 * communication with CF -> abort dyncamic validation
+				 */
+				return matcher;
+			}
 			// Ensure cloud domains is empty list instead of null
 			if (cloudDomains == null) {
 				cloudDomains = Collections.emptyList();
@@ -40,11 +55,28 @@ public class RouteValueParser extends RegexpParser {
 				throw new ValueParseException(
 						"Unable to determine type of route. HTTP port may have a path but no port. TCP route may have port but no path.");
 			}
+			if (route.getPort() > MAX_PORT_NUMBER) {
+				String portAndColumn = matcher.group(2);
+				int start = str.indexOf(portAndColumn) + 1;
+				int end = start + portAndColumn.length() - 1;
+				throw new ValueParseException("Invalid port number. Port range must be between 1 and " + MAX_PORT_NUMBER, start, end);
+			}
 			if (!cloudDomains.contains(route.getDomain())) {
 				String hostDomain = matcher.group(1);
 				throw new ReconcileException("Unknown domain", ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM, hostDomain.lastIndexOf(route.getDomain()), hostDomain.length());
 			}
 			return route;
+		} catch (ConnectionException | NoTargetsException e) {
+			// No connection to CF? Abort dynamic validation
+			return matcher;
+		}
+	}
+	
+	@Override
+	public Object parse(String str) throws Exception {
+		Matcher matcher = staticValidation(str);
+		if (matcher != null) {
+			return dynamicValidation(str, matcher);
 		}
 		return null;
 	}
