@@ -93,7 +93,7 @@ public class PropertyReferenceFinderTest {
 		assertEquals(11, location.getRange().getEnd().getCharacter());
 	}
 
-	@Test @Ignore
+	@Test
 	public void testFindReferenceWithinMultipleFiles() throws Exception {
 		// TODO: There's something wrong with this test, it fails for me (Kris).
 		//   The 'locations' are not arriving in the expected order.
@@ -132,7 +132,7 @@ public class PropertyReferenceFinderTest {
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 	}
 
-	@Test @Ignore
+	@Test
 	public void testFindReferenceWithinMultipleMixedFiles() throws Exception {
 		// TODO: There's something wrong with this test, it fails for me (Kris).
 		//   The 'locations' are not arriving in the expected order.
