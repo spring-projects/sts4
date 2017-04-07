@@ -220,7 +220,6 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
-      trigger: true
     - get: s3-manifest-yaml-vsix-snapshot
       trigger: true
       passed:
