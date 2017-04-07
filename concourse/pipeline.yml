@@ -138,12 +138,11 @@ jobs:
         params: 
           file: vsix-files/vscode-boot-java-*.vsix
           acl: public-read
-    # on_failure:
-    #   put: slack-notification
-    #   params:
-    #     channel: "@aboyko"
-    #     text: |
-    #        Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-consourse-vsix-snapshot
   plan:
   - aggregate:
