@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 workdir=`pwd`
-sources=$workdir/sts4/vscode-extensions/$extension_id
-
-cd sts4/vscode-extensions
-./mvnw -DskipTests package
 
 cd ${workdir}/sts4/headless-services
 ./mvnw -DskipTests package
