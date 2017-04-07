@@ -21,7 +21,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG: false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-java',
-        fatJarFile: 'target/vscode-boot-java-0.0.1-SNAPSHOT.jar',
+        fatJarFile: 'jars/language-server.jar',
         clientOptions: {
             documentSelector: ['java'],
             synchronize: {

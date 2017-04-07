@@ -1,5 +1,16 @@
 #!/bin/bash
 set -e
+
+workdir=`pwd`
+
+# Preinstall commons-vscode package
 (cd ../commons-vscode ; npm install)
 npm install ../commons-vscode
-../mvnw -U -f ../pom.xml -pl vscode-boot-java -am clean install
+
+# Use maven to build fat jar of the language server
+cd ../../headless-services/boot-java-language-server
+./build.sh
+
+mkdir -p ${workdir}/jars
+cp target/*.jar ${workdir}/jars/language-server.jar
+

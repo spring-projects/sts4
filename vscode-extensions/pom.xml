@@ -11,7 +11,6 @@
 
 	<modules>
 		<module>../headless-services/commons</module>
-		<module>vscode-boot-java</module>
 		<module>vscode-manifest-yaml</module>
 	</modules>
 </project>

@@ -23,7 +23,6 @@ scripts/**
 # Compiler output
 out/test/**
 target/**
-!target/vscode-boot-java-*.jar
 
 # Extensions
 .gitignore

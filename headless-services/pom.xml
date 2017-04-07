@@ -13,6 +13,7 @@
 		<module>commons</module>
 		<module>concourse-language-server</module>
 		<module>boot-properties-language-server</module>
+		<module>boot-java-language-server</module>
 	</modules>
 
 </project>

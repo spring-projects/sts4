@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>vscode-boot-java</artifactId>
+	<artifactId>boot-java-language-server</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../../headless-services/commons/pom.xml</relativePath>
+		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
 
 	<repositories>
