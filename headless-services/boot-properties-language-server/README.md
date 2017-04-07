@@ -1,0 +1,3 @@
+# Language Server for Spring Boot Application Properties
+
+Yada yada...

@@ -12,6 +12,7 @@
     <modules>
 		<module>commons</module>
 		<module>concourse-language-server</module>
+		<module>boot-properties-language-server</module>
 	</modules>
 
 </project>

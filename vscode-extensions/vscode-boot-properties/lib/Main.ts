@@ -18,7 +18,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG: false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-properties',
-        fatJarFile: 'target/vscode-boot-properties-0.0.1-SNAPSHOT.jar',
+        fatJarFile: 'jars/language-server.jar',
         clientOptions: {
             // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead
             // Reasons:
