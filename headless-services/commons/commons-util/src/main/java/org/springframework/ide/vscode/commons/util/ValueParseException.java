@@ -18,6 +18,9 @@ package org.springframework.ide.vscode.commons.util;
  */
 public class ValueParseException extends Exception {
 
+	private int startIndex = -1;
+	private int endIndex = -1;
+	
 	/**
 	 * 
 	 */
@@ -25,6 +28,20 @@ public class ValueParseException extends Exception {
 	
 	public ValueParseException(String message) {
 		super(message);
+	}
+	
+	public ValueParseException(String message, int startIndex, int endIndex) {
+		this(message);
+		this.startIndex = startIndex;
+		this.endIndex = endIndex;
+	}
+
+	public int getStartIndex() {
+		return startIndex;
+	}
+
+	public int getEndIndex() {
+		return endIndex;
 	}
 
 }

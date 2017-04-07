@@ -28,6 +28,11 @@ public class ReconcileException extends ValueParseException implements ProblemTy
 		this.problemType = problemType;
 	}
 
+	public ReconcileException(String message, ProblemType problemType, int start, int end) {
+		super(message, start, end);
+		this.problemType = problemType;
+	}
+
 	@Override
 	public ProblemType getProblemType() {
 		return problemType;

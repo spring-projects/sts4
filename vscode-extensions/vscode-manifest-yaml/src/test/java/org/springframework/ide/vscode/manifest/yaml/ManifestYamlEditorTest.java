@@ -1013,4 +1013,91 @@ public class ManifestYamlEditorTest {
 		editor.assertContainsCompletions(textAfter);
 	}
 
+	@Test
+	public void reconcileRouteFormat() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: http://springsource.org\n");
+		editor.assertProblems("http://springsource.org|is not a valid 'Route'");
+
+		Diagnostic problem = editor.assertProblem("http://springsource.org");
+
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: spring source.org\n");
+		editor.assertProblems("spring source.org|is not a valid 'Route'");
+
+		problem = editor.assertProblem("spring source.org");
+
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: springsource.org:kuku\n");
+		editor.assertProblems("springsource.org:kuku|is not a valid 'Route'");
+
+		problem = editor.assertProblem("springsource.org:kuku");
+
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+	
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: springsource.org/kuku?p=23\n");
+		editor.assertProblems("springsource.org/kuku?p=23|is not a valid 'Route'");
+
+		problem = editor.assertProblem("springsource.org/kuku?p=23");
+
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+	}
+
+	@Test
+	public void reconcileRoute_Advanced() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: springsource.org:8765/path\n");
+		editor.assertProblems("springsource.org:8765/path|Unable to determine type of route");
+
+		Diagnostic problem = editor.assertProblem("springsource.org:8765/path");
+
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: host.springsource.org\n");
+		editor.assertProblems("springsource.org|Unknown domain");
+
+		problem = editor.assertProblem("springsource.org");
+
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
+	@Test
+	public void reconcileRouteValidDomain() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+		CFDomain domain = Mockito.mock(CFDomain.class);
+		when(domain.getName()).thenReturn("springsource.org");
+		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n" +
+				"  - route: host.springsource.org\n");
+		editor.assertProblems();
+	}
+	
 }

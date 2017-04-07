@@ -179,8 +179,21 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 							}
 						} catch (Exception e) {
 							ProblemType problemType = getProblemType(e);
+							DocumentRegion region = new DocumentRegion(doc, node.getStartMark().getIndex(), node.getEndMark().getIndex());
+							if (e instanceof ValueParseException) {
+								ValueParseException parseException = (ValueParseException) e;
+								int start = parseException.getStartIndex() >= 0
+										? Math.min(node.getStartMark().getIndex() + parseException.getStartIndex(),
+												node.getEndMark().getIndex())
+										: node.getStartMark().getIndex();
+								int end = parseException.getEndIndex() >= 0
+										? Math.min(node.getStartMark().getIndex() + parseException.getEndIndex(),
+												node.getEndMark().getIndex())
+										: node.getEndMark().getIndex();
+								region = new DocumentRegion(doc, start, end);
+							}
 							String msg = getMessage(e);
-							valueParseError(type, node, msg, problemType);
+							valueParseError(type, region, msg, problemType);
 						}
 					}
 				} else {
@@ -192,7 +205,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 		}
 	}
-
+	
 	private String getMessage(Exception _e) {
 		Throwable e = ExceptionUtil.getDeepestCause(_e);
 
@@ -328,6 +341,13 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		problem(node, parseErrorMsg, problemType);
 	}
 
+	private void valueParseError(YType type, DocumentRegion region, String parseErrorMsg, ProblemType problemType) {
+		if (!StringUtil.hasText(parseErrorMsg)) {
+			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
+		}
+		problem(region, parseErrorMsg, problemType);
+	}
+	
 	private void unknownBeanProperty(Node keyNode, YType type, String name) {
 		problem(keyNode, "Unknown property '"+name+"' for type '"+typeUtil.niceTypeName(type)+"'");
 	}
@@ -385,6 +405,10 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		problems.accept(YamlSchemaProblems.problem(problemType, msg, node));
 	}
 
+	private void problem(DocumentRegion region, String msg, ProblemType problemType) {
+		problems.accept(YamlSchemaProblems.problem(problemType, msg, region));
+	}
+	
 	private void problem(DocumentRegion region, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, region));
 	}

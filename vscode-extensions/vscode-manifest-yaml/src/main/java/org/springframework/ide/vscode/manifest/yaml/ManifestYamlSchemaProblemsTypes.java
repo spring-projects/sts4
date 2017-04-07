@@ -23,5 +23,7 @@ public class ManifestYamlSchemaProblemsTypes {
 	public static final ProblemType UNKNOWN_SERVICES_PROBLEM = problemType("UnknownServicesProblem",
 			ProblemSeverity.WARNING);
 
-
+	public static final ProblemType UNKNOWN_DOMAIN_PROBLEM = problemType("UnknownDomainProblem",
+			ProblemSeverity.WARNING);
+	
 }
