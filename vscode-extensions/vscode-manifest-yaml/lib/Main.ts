@@ -31,7 +31,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG : false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-manifest-yaml',
-        fatJarFile: 'target/vscode-manifest-yaml-0.0.3-SNAPSHOT.jar',
+        fatJarFile: 'jars/language-server.jar',
         jvmHeap: '64m',
         clientOptions: {
             // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead

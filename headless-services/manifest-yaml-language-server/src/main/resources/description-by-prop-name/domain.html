@@ -1,0 +1,27 @@
+<p>Every <code>cf push</code> deploys applications to one particular Cloud Foundry instance.
+Every Cloud Foundry instance may have a shared domain set by an admin.
+Unless you specify a domain, Cloud Foundry incorporates that shared domain in the route to your application.</p>
+
+<p>You can use the <code>domain</code> attribute when you want your application to be served from a domain other than the default shared domain.</p>
+
+<pre>
+---
+  ...
+  domain: unique-example.com
+</pre>
+
+<p>The command line option that overrides this attribute is <code>-d</code>.</p>
+
+<h3><a id='domains'></a>The domains attribute</h3>
+
+<p>Use the <code>domains</code> attribute to provide multiple domains. If you define both <code>domain</code> and <code>domains</code> attributes, Cloud Foundry creates routes for domains defined in both of these fields.</p>
+
+<pre>
+---
+  ...
+  domains:
+  - domain-example1.com
+  - domain-example2.org
+</pre>
+
+<p>The command line option that overrides this attribute is <code>-d</code>.</p>

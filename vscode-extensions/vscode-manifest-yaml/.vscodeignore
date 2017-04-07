@@ -24,8 +24,6 @@ developer-notes.md
 
 # Compiler output
 out/test/**
-target/**
-!target/vscode-manifest-yaml-*.jar
 
 # Extensions
 .gitignore
