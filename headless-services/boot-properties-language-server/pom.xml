@@ -23,7 +23,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>project-repo</id>
+			<id>${project.name}-repo</id>
 			<url>file://${project.basedir}/repo</url>
 		</repository>
 	</repositories>
@@ -37,8 +37,8 @@
 	</distributionManagement>
 	
 	<dependencies>
-		<!-- Local modified JSON lib packaged to support order in maps -->
 		<dependency>
+    		<!-- Local modified JSON lib packaged to support order in maps -->
 			<groupId>org.springframework.ide.eclipse</groupId>
 			<artifactId>org.json</artifactId>
 			<version>1.0</version>
