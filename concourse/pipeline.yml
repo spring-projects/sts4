@@ -19,12 +19,6 @@ resources:
     private_key: {{rsa_id}}
     paths:
     - concourse/docker
-# - name: sts4-out
-#   type: git
-#   source:
-#     uri: git@github.com:spring-projects/sts4.git
-#     branch: {{branch}}
-#     private_key: {{rsa_id}}
 - name: sts4
   type: git
   source:
@@ -93,13 +87,6 @@ resources:
     regexp: mvn-caches/sts4-(.*).tar.gz
 ########################################################################################
 jobs:
-# - name: slack-test
-#   plan:
-#   - get: sts4
-#     trigger: true
-#   - put: slack-notification
-#     params:
-#       text: This is a slack test. Please ignore!
 - name: build-docker-image
   serial: true
   plan:
@@ -196,8 +183,8 @@ jobs:
     params: 
       file: out/vscode-manifest-yaml-*.vsix
       acl: public-read
-#### Disabled, release process needs work and the stuff below is untrusworthy after a
-#### Bunch of changes to the pipeline.
+#### Disabled, release process needs be reworked and the stuff below is untrustworthy after a
+#### bunch of changes were made to the pipeline.
 # - name: trigger-manifest-yaml-rc-build
 #   plan:
 #   - get: sts4
