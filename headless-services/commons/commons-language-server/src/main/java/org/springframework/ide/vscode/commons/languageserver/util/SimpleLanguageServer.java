@@ -64,7 +64,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
-	private final String EXTENSION_ID;
+	public final String EXTENSION_ID;
 
     private Path workspaceRoot;
 

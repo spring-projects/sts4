@@ -439,18 +439,20 @@ public class LanguageServerHarness {
 	ObjectMapper mapper = new ObjectMapper();
 
 	public void perform(Command command) throws Exception {
-		switch (command.getCommand()) {
-		case "sts.quickfix":
+		if (getQuickfixCommandId().equals(command.getCommand())) {
 			List<Object> args = command.getArguments();
 			assertEquals(2, args.size());
 			//Note convert the value to a 'typeless' Object becaus that is more representative on how it will be
 			// received when we get it in a real client/server setting (i.e. parsed from json).
 			Object untypedParams = mapper.convertValue(args.get(1), Object.class);
 			perform(server.quickfixResolve(new QuickfixResolveParams((String)args.get(0), untypedParams)).get());
-			return;
-		default:
+		} else {
 			throw new IllegalArgumentException("Unknown command: "+command);
 		}
+	}
+
+	private String getQuickfixCommandId() {
+		return "sts.quickfix."+server.EXTENSION_ID;
 	}
 
 	private void perform(WorkspaceEdit workspaceEdit) throws Exception {
