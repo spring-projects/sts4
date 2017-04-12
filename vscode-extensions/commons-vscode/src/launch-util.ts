@@ -10,9 +10,11 @@ import * as FS from 'fs';
 import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
+import { RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
 import { TextDocument, OutputChannel, Disposable, window } from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
+import * as p2c from 'vscode-languageclient/lib/protocolConverter';
+import {WorkspaceEdit} from 'vscode-languageserver-types';
 
 PortFinder.basePort = 45556;
 
@@ -28,7 +30,33 @@ export interface ActivatorOptions {
     jvmHeap?: string;
 }
 
+interface QuickfixRequest {
+    type: string;
+    params: any;
+}
+
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
+    let clientPromise = _activate(options, context);
+    let commands = VSCode.commands
+    commands.registerCommand("sts.quickfix", (fixType, fixParams) => {
+        return clientPromise.then(client => {
+            let type : RequestType<QuickfixRequest, WorkspaceEdit, void> = {method : "sts/quickfix"};
+            let params : QuickfixRequest = {type: fixType, params: fixParams};
+            return client.sendRequest(type, params)
+            .then(
+                (edit) => { 
+                    return VSCode.workspace.applyEdit(p2c.asWorkspaceEdit(edit)) 
+                },
+                (error) => { 
+                    return VSCode.window.showErrorMessage(""+error) 
+                }
+            );
+        })
+    });
+    return clientPromise;
+}
+
+function _activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = options.jvmHeap;
     if (options.CONNECT_TO_LS) {

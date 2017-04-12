@@ -8,10 +8,8 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import {LanguageClient, RequestType, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
+import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
-import {WorkspaceEdit} from 'vscode-languageserver-types';
-import * as p2c from 'vscode-languageclient/lib/protocolConverter';
 
 var log_output : OutputChannel = null;
 
@@ -30,14 +28,8 @@ function error(msg : string) {
     }
 }
 
-interface QuickfixRequest {
-    type: string;
-    params: any;
-}
-
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
-    let commands = VSCode.commands
     let options : commons.ActivatorOptions = {
         DEBUG : false,
         CONNECT_TO_LS: false,
@@ -56,20 +48,5 @@ export function activate(context: VSCode.ExtensionContext) {
         }
     };
     let clientPromise = commons.activate(options, context);
-    commands.registerCommand("sts.quickfix", (fixType, fixParams) => {
-        return clientPromise.then(client => {
-            let type : RequestType<QuickfixRequest, WorkspaceEdit, void> = {method : "sts/quickfix"};
-            let params : QuickfixRequest = {type: fixType, params: fixParams};
-            return client.sendRequest(type, params)
-            .then(
-                (edit) => { 
-                    return VSCode.workspace.applyEdit(p2c.asWorkspaceEdit(edit)) 
-                },
-                (error) => { 
-                    return VSCode.window.showErrorMessage(""+error) 
-                }
-            );
-        })
-    });
 }
 
