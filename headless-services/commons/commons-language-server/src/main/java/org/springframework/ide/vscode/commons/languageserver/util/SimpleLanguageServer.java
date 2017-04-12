@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.InitializeParams;
@@ -26,6 +27,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -129,17 +131,52 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 	}
 
-	protected abstract ServerCapabilities getServerCapabilities();
+	protected final ServerCapabilities getServerCapabilities() {
+		ServerCapabilities c = new ServerCapabilities();
 
-    @Override
-    public CompletableFuture<Object> shutdown() {
-    	return CompletableFuture.completedFuture(new Object());
-    }
+		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
+		c.setHoverProvider(true);
 
-    @Override
-    public void exit() {
-    	System.exit(0);
-    }
+		CompletionOptions completionProvider = new CompletionOptions();
+		completionProvider.setResolveProvider(false);
+		c.setCompletionProvider(completionProvider);
+
+		if (hasQuickFixes()) {
+			c.setCodeActionProvider(true);
+		}
+
+		if (hasDefinitionHandler()) {
+			c.setDefinitionProvider(true);
+		}
+
+		if (hasReferencesHandler()) {
+			c.setReferencesProvider(true);
+		}
+
+		return c;
+	}
+
+	private boolean hasReferencesHandler() {
+		return getTextDocumentService().hasReferencesHandler();
+	}
+
+	private boolean hasDefinitionHandler() {
+		return getTextDocumentService().hasDefinitionHandler();
+	}
+
+	private boolean hasQuickFixes() {
+		return quickfixRegistry!=null && quickfixRegistry.hasFixes();
+	}
+
+	@Override
+	public CompletableFuture<Object> shutdown() {
+		return CompletableFuture.completedFuture(new Object());
+	}
+
+	@Override
+	public void exit() {
+		System.exit(0);
+	}
 
 	public Path getWorkspaceRoot() {
 		return workspaceRoot;

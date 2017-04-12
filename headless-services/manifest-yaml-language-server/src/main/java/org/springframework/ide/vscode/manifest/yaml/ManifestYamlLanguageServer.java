@@ -13,9 +13,6 @@ package org.springframework.ide.vscode.manifest.yaml;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
-import org.eclipse.lsp4j.CompletionOptions;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -45,7 +42,6 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.yaml.snakeyaml.Yaml;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
-
 
 	private Yaml yaml = new Yaml();
 	private YamlSchema schema;
@@ -142,17 +138,4 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		return new ManifestYamlCFDomainsProvider(getCfTargetCache());
 	}
 
-	@Override
-	protected ServerCapabilities getServerCapabilities() {
-		ServerCapabilities c = new ServerCapabilities();
-
-		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
-		c.setHoverProvider(true);
-
-		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(false);
-		c.setCompletionProvider(completionProvider);
-
-		return c;
-	}
 }

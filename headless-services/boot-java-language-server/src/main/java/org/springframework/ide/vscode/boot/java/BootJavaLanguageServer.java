@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
-import org.eclipse.lsp4j.CompletionOptions;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.hover.BootJavaHoverProvider;
@@ -37,11 +34,11 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * Language Server for Spring Boot Application Properties files
- * 
+ *
  * @author Martin Lippert
  */
 public class BootJavaLanguageServer extends SimpleLanguageServer {
-	
+
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
 			new MavenProjectFinderStrategy(MavenCore.getDefault()),
 			new GradleProjectFinderStrategy(GradleCore.getDefault()),
@@ -49,7 +46,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	});
 
 	private final VscodeCompletionEngineAdapter completionEngine;
-	
+
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		SimpleTextDocumentService documents = getTextDocumentService();
 
@@ -58,7 +55,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			TextDocument doc = params.getDocument();
 			validateWith(doc, reconcileEngine);
 		});
-		
+
 		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder, indexProvider);
 		completionEngine = new VscodeCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletionsNumber(100);
@@ -67,7 +64,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		HoverHandler hoverInfoProvider = new BootJavaHoverProvider(this, javaProjectFinder);
 		documents.onHover(hoverInfoProvider);
-		
+
 		ReferencesHandler referencesHandler = new BootJavaReferencesHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 	}
@@ -75,19 +72,5 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	public void setMaxCompletionsNumber(int number) {
 		completionEngine.setMaxCompletionsNumber(number);
 	}
-	
-	@Override
-	protected ServerCapabilities getServerCapabilities() {
-		ServerCapabilities c = new ServerCapabilities();
-		
-		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
-		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(false);
-		c.setCompletionProvider(completionProvider);
-		c.setHoverProvider(true);
-		c.setReferencesProvider(true);
-		
-		return c;
-	}
-	
+
 }

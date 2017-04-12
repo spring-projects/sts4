@@ -147,22 +147,4 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		return this;
 	}
 
-	@Override
-	protected ServerCapabilities getServerCapabilities() {
-		ServerCapabilities c = new ServerCapabilities();
-
-		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
-		c.setHoverProvider(true);
-
-		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(false);
-		c.setCompletionProvider(completionProvider);
-
-		c.setDefinitionProvider(true);
-
-		c.setCodeActionProvider(true);
-
-		return c;
-	}
-
 }

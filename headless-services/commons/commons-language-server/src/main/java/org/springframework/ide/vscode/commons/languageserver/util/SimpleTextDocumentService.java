@@ -352,4 +352,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
+	public boolean hasDefinitionHandler() {
+		return definitionHandler!=null;
+	}
+
+	public boolean hasReferencesHandler() {
+		return this.referencesHandler!=null;
+	}
+
 }

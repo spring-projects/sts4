@@ -10,17 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Sets;
 
 /**

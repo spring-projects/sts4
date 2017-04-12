@@ -59,5 +59,7 @@ public class QuickfixRegistry {
 		}).toFuture();
 	}
 
-
+	public boolean hasFixes() {
+		return !registry.isEmpty();
+	}
 }

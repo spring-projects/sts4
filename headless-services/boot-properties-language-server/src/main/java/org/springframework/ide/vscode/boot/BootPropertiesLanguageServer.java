@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot;
 
-import org.eclipse.lsp4j.CompletionOptions;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -56,12 +53,12 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Language Server for Spring Boot Application Properties files
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class BootPropertiesLanguageServer extends SimpleLanguageServer {
-	
+
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
 			new MavenProjectFinderStrategy(MavenCore.getDefault()),
 			new GradleProjectFinderStrategy(GradleCore.getDefault()),
@@ -77,7 +74,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final VscodeHoverEngineAdapter hoverEngine;
 	private final RelaxedNameConfig relaxedNameConfig = RelaxedNameConfig.COMPLETION_DEFAULTS;
-	
+
 	private final PropertyCompletionFactory completionFactory;
 
 	// For yaml
@@ -85,7 +82,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private final YamlASTProvider parser = new YamlParser(yaml);
 	private final YamlStructureProvider yamlStructureProvider= YamlStructureProvider.DEFAULT;
 	private YamlAssistContextProvider yamlAssistContextProvider;
-	
+
 	public BootPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
@@ -107,13 +104,13 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 			TextDocument doc = params.getDocument();
 			validateWith(doc, reconcileEngine);
 		});
-		
+
 		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();
 		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
 		completionEngine.setMaxCompletionsNumber(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
-		
+
 		HoverInfoProvider hoverInfoProvider = getHoverProvider();
 		hoverEngine = new VscodeHoverEngineAdapter(this, hoverInfoProvider);
 		documents.onHover(hoverEngine::getHover);
@@ -138,7 +135,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	protected HoverInfoProvider getHoverProvider() {
 		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
 		HoverInfoProvider ymlHovers = new YamlHoverInfoProvider(parser, yamlStructureProvider, yamlAssistContextProvider);
-		
+
 		return (IDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {
@@ -151,33 +148,19 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 			return null;
 		};
 	}
-	
+
 	public void setMaxCompletionsNumber(int number) {
 		completionEngine.setMaxCompletionsNumber(number);
 	}
-	
+
 	public void setHoverType(HoverType type) {
 		hoverEngine.setHoverType(type);
 	}
-	
-	@Override
-	protected ServerCapabilities getServerCapabilities() {
-		ServerCapabilities c = new ServerCapabilities();
-		
-		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
-		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(false);
-		c.setCompletionProvider(completionProvider);
-		
-		c.setHoverProvider(true);
-		
-		return c;
-	}
-	
+
 	protected IReconcileEngine getReconcileEngine() {
 		IReconcileEngine propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider, typeUtilProvider);
 		IReconcileEngine ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider);
-		
+
 		return (doc, problemCollector) -> {
 			String uri = doc.getUri();
 			if (uri!=null) {
