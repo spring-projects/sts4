@@ -64,6 +64,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
+	private final String EXTENSION_ID;
+
     private Path workspaceRoot;
 
 	private SimpleTextDocumentService tds;
@@ -93,6 +95,10 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			quickfixRegistry = new QuickfixRegistry();
 		}
 		return quickfixRegistry;
+	}
+
+	public SimpleLanguageServer(String extensionId) {
+		this.EXTENSION_ID = extensionId;
 	}
 
     @Override
@@ -246,7 +252,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 						List<QuickfixData<?>> fixes = problem.getQuickfixes();
 						if (CollectionUtil.hasElements(fixes)) {
 							for (QuickfixData<?> fix : fixes) {
-								quickfixes.add(new Quickfix<>(rng, fix));
+								quickfixes.add(new Quickfix<>(EXTENSION_ID, rng, fix));
 							}
 						}
 						diagnostics.add(d);

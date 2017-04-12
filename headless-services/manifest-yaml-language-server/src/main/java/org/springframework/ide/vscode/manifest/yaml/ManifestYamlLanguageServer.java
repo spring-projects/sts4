@@ -54,6 +54,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	}
 
 	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider cfParamsProvider) {
+		super("vscode-manifest-yaml");
 		this.cfClientFactory = cfClientFactory;
 		this.cfParamsProvider=cfParamsProvider;
 		SimpleTextDocumentService documents = getTextDocumentService();

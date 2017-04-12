@@ -48,6 +48,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final VscodeCompletionEngineAdapter completionEngine;
 
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
+		super("vscode-boot-java");
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		IReconcileEngine reconcileEngine = new BootJavaReconcileEngine();

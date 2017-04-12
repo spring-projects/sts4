@@ -84,6 +84,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private YamlAssistContextProvider yamlAssistContextProvider;
 
 	public BootPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
+		super("vscode-boot-properties");
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
 		this.javaProjectFinder = javaProjectFinder;

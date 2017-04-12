@@ -30,11 +30,14 @@ public class Quickfix<T> {
 		}
 	}
 
+	private final String QUICKFIX_COMMAND_ID;
+
 	private final Range range;
 	private final QuickfixData<T> data;
 
-	public Quickfix(Range range, QuickfixData<T> data) {
+	public Quickfix(String EXTENSION_ID, Range range, QuickfixData<T> data) {
 		super();
+		this.QUICKFIX_COMMAND_ID = "sts.quickfix."+EXTENSION_ID;
 		this.range = range;
 		this.data = data;
 	}
@@ -46,7 +49,7 @@ public class Quickfix<T> {
 	public Command getCodeAction() {
 		return new Command(
 				data.title,
-				"sts.quickfix",
+				QUICKFIX_COMMAND_ID,
 				ImmutableList.of(data.type.getId(), data.params)
 		);
 	}

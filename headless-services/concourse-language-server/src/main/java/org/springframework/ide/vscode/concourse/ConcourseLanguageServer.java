@@ -73,6 +73,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 	}
 
 	public ConcourseLanguageServer() {
+		super("vscode-concourse");
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
 		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
 
