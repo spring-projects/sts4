@@ -407,8 +407,10 @@ public class ManifestYamlEditorTest {
 		);
 
 		assertCompletions("health-check-type: <*>",
+				"health-check-type: http<*>",
 				"health-check-type: none<*>",
-				"health-check-type: port<*>"
+				"health-check-type: port<*>",
+				"health-check-type: process<*>"
 		);
 	}
 
@@ -1023,7 +1025,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("http://springsource.org|is not a valid 'Route'");
 		Diagnostic problem = editor.assertProblem("http://springsource.org");
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
-		
+
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1042,7 +1044,7 @@ public class ManifestYamlEditorTest {
 		problem = editor.assertProblem("springsource.org:kuku");
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
 
-	
+
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1072,7 +1074,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("springsource.org:8765/path|Unable to determine type of route");
 		Diagnostic problem = editor.assertProblem("springsource.org:8765/path");
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
-		
+
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1081,7 +1083,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("66000|Invalid port");
 		problem = editor.assertProblem("66000");
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
-		
+
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1105,5 +1107,5 @@ public class ManifestYamlEditorTest {
 				"  - route: host.springsource.org\n");
 		editor.assertProblems();
 	}
-	
+
 }

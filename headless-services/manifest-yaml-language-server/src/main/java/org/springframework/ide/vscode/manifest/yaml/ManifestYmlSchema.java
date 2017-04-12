@@ -54,7 +54,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		Callable<Collection<YValueHint>> servicesProvider = providers.getServicesProvider();
 		Callable<Collection<YValueHint>> domainsProvider = providers.getDomainsProvider();
 
-		
+
 		YTypeFactory f = new YTypeFactory();
 		TYPE_UTIL = f.TYPE_UTIL;
 
@@ -69,7 +69,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			t_buildpack.addHintProvider(this.buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
-		
+
 		YAtomicType t_domain = f.yatomic("Domain");
 		YAtomicType t_domains_string = f.yatomic("Domains");
 
@@ -79,7 +79,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YType t_domains = f.yseq(t_domains_string);
-		
+
 		YAtomicType t_service_string = f.yatomic("Service");
 		if (servicesProvider != null) {
 			t_service_string.addHintProvider(servicesProvider);
@@ -97,7 +97,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		// "routes" has nested required property "route":
 		// routes:
 		// - route: someroute.io
-		
+
 		YBeanType route = f.ybean("Route");
 		YAtomicType t_route_string = f.yatomic("route");
 		route.addProperty(f.yprop("route", t_route_string).isRequired(true));
@@ -107,7 +107,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
 
-		YAtomicType t_health_check_type = f.yenum("Health Check Type", "none", "port");
+		YAtomicType t_health_check_type = f.yenum("Health Check Type", "none", "process", "port", "http");
 
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
 		t_strictly_pos_integer.parseWith(ManifestYmlValueParsers.integerAtLeast(1));
