@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
@@ -42,6 +43,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -625,6 +627,24 @@ public class Editor {
 
 	public String getLanguageId() {
 		return languageId;
+	}
+
+	public List<CodeAction> getCodeActions(Diagnostic problem) throws Exception {
+		return harness.getCodeActions(document, problem);
+	}
+
+	public CodeAction assertCodeAction(Diagnostic problem) throws Exception {
+		List<CodeAction> actions = getCodeActions(problem);
+		assertEquals("Number of codeActions", 1, actions.size());
+		return actions.get(0);
+	}
+
+	public String getUri() {
+		return document.getUri();
+	}
+
+	public void assertRawText(String expectedText) throws Exception {
+		assertEquals(expectedText, getRawText());
 	}
 
 }

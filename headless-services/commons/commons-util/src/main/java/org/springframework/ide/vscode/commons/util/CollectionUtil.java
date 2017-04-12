@@ -18,6 +18,21 @@ import java.util.Collection;
  */
 public class CollectionUtil {
 
+	/**
+	 * Get some element of the collection (will be the first one
+	 * found by its iterator, or null if the collection is empty).
+	 * <p>
+	 * Note that unless the collection is ordered, or has at most
+	 * one element, then it may be unpredictable which element
+	 * you will get.
+	 */
+	public static <E> E getAny(Collection<E> elements) {
+		for (E e : elements) {
+			return e;
+		}
+		return null;
+	}
+
 	public static <E> boolean hasElements(Collection<E> c) {
 		return c!=null && !c.isEmpty();
 	}

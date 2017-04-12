@@ -16,6 +16,15 @@ public class QuickfixResolveParams {
 	private Object params;
 
 
+	public QuickfixResolveParams(String type, Object params) {
+		super();
+		this.type = type;
+		this.params = params;
+	}
+
+	public QuickfixResolveParams() {
+	}
+
 	public String getType() {
 		return type;
 	}

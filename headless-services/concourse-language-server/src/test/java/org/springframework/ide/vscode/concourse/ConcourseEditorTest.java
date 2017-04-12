@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -40,6 +41,54 @@ public class ConcourseEditorTest {
 			LanguageIds.CONCOURSE_PIPELINE
 		);
 		harness.intialize(null);
+	}
+
+	@Test public void addSingleRequiredPropertiesQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  source:\n" +
+				"    username: someone\n" +
+				"# Confuse"
+		);
+		Diagnostic problem = editor.assertProblems("-|'type' is required").get(0);
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Add property 'type'", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertRawText(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  source:\n" +
+				"    username: someone\n" +
+				"  type: \n" +
+				"# Confuse"
+		);
+	}
+
+	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n"
+		);
+		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertRawText(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n" +
+				"    branch: \n" +
+				"    pool: \n" +
+				"    uri: \n"
+		);
 	}
 
 	@Test public void testReconcileCatchesParseError() throws Exception {

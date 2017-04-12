@@ -18,17 +18,23 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
@@ -50,13 +56,25 @@ import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
+import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 public class LanguageServerHarness {
 
@@ -73,6 +91,7 @@ public class LanguageServerHarness {
 
 	private Map<String,TextDocumentInfo> documents = new HashMap<>();
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
+	private List<Editor> activeEditors = new ArrayList<>();
 
 
 	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory, String defaultLanguageId) {
@@ -340,11 +359,13 @@ public class LanguageServerHarness {
 	}
 
 	public Editor newEditor(String contents) throws Exception {
-		return new Editor(this, contents, getDefaultLanguageId());
+		return newEditor(getDefaultLanguageId(), contents);
 	}
 
-	public Editor newEditor(String languageId, String contents) throws Exception {
-		return new Editor(this, contents, languageId);
+	public synchronized Editor newEditor(String languageId, String contents) throws Exception {
+		Editor editor = new Editor(this, contents, languageId);
+		activeEditors.add(editor);
+		return editor;
 	}
 
 	public synchronized TextDocumentInfo createWorkingCopy(String contents, String languageId) throws Exception {
@@ -405,5 +426,72 @@ public class LanguageServerHarness {
 		server.waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
 		return server.getTextDocumentService().definition(params).get();
 	}
+
+	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Diagnostic problem) throws Exception {
+		CodeActionContext context = new CodeActionContext(ImmutableList.of(problem));
+		List<? extends Command> actions =
+				server.getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), problem.getRange(), context)).get();
+		return actions.stream()
+				.map((command) -> new CodeAction(this, command))
+				.collect(Collectors.toList());
+	}
+
+	ObjectMapper mapper = new ObjectMapper();
+
+	public void perform(Command command) throws Exception {
+		switch (command.getCommand()) {
+		case "sts.quickfix":
+			List<Object> args = command.getArguments();
+			assertEquals(2, args.size());
+			//Note convert the value to a 'typeless' Object becaus that is more representative on how it will be
+			// received when we get it in a real client/server setting (i.e. parsed from json).
+			Object untypedParams = mapper.convertValue(args.get(1), Object.class);
+			perform(server.quickfixResolve(new QuickfixResolveParams((String)args.get(0), untypedParams)).get());
+			return;
+		default:
+			throw new IllegalArgumentException("Unknown command: "+command);
+		}
+	}
+
+	private void perform(WorkspaceEdit workspaceEdit) throws Exception {
+		Assert.isNull("Versioned WorkspaceEdits not supported", workspaceEdit.getDocumentChanges());
+		for (Entry<String, List<TextEdit>> entry : workspaceEdit.getChanges().entrySet()) {
+			String uri = entry.getKey();
+			TextDocumentInfo document = documents.get(uri);
+			assertNotNull("Can't apply edits to non-existing document: "+uri, document);
+
+			TextDocument workingDocument = new TextDocument(uri, document.getLanguageId());
+			workingDocument.setText(document.getText());
+			DocumentEdits edits = new DocumentEdits(workingDocument);
+			for (TextEdit edit : entry.getValue()) {
+				Range range = edit.getRange();
+				edits.replace(document.toOffset(range.getStart()), document.toOffset(range.getEnd()), edit.getNewText());
+			}
+			edits.apply(workingDocument);
+			Editor editor = getOpenEditor(uri);
+			if (editor!=null) {
+				editor.setRawText(workingDocument.get());
+			} else {
+				changeDocument(uri, workingDocument.get());
+			}
+		}
+	}
+
+	private Editor getOpenEditor(String uri) {
+		List<Editor> editors = getOpenEditors(uri);
+		if (editors.isEmpty()) {
+			return null;
+		} else if (editors.size()>1) {
+			throw new IllegalStateException("Multiple active editors on the same uri. The harness doesn't handle that yet!");
+		}
+		return editors.get(0);
+	}
+
+	private synchronized List<Editor> getOpenEditors(String uri) {
+		return activeEditors.stream()
+				.filter((editor) -> uri.equals(editor.getUri()))
+				.collect(Collectors.toList());
+	}
+
 
 }

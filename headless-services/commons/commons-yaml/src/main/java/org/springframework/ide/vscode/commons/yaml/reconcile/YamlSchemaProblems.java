@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -140,6 +141,9 @@ public class YamlSchemaProblems {
 				.map(YamlPathSegment::encode)
 				.collect(Collectors.toList());
 
+		String fixTitle = missingProps.size()==1
+				? "Add property '"+CollectionUtil.getAny(missingProps)+"'"
+				: "Add properties: "+missingProps;
 		QuickfixData<MissingPropertiesData> fix = new QuickfixData<MissingPropertiesData>(
 				quickfixType,
 				new MissingPropertiesData(
@@ -147,7 +151,7 @@ public class YamlSchemaProblems {
 						segments,
 						ImmutableList.copyOf(missingProps)
 				),
-				"Add properties: "+missingProps
+				fixTitle
 		);
 
 		return missingProperty(msg, dc.getDocument(), parent, map)

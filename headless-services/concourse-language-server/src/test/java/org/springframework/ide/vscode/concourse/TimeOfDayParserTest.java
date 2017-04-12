@@ -69,7 +69,6 @@ public class TimeOfDayParserTest {
 			"2359"
 		};
 		for (String string : examples) {
-			System.out.println(string);
 			parser.parse(string);
 		}
 	}
@@ -78,6 +77,8 @@ public class TimeOfDayParserTest {
 	public void badExamples() {
 		does_not_parse("arbirary garbage");
 		does_not_parse("3:04 PM -0700 extra");
+		does_not_parse("extra 3:04 PM -0700 extra");
+		does_not_parse("extra 3:04 PM -0700");
 	}
 
 	private void does_not_parse(String string) {
