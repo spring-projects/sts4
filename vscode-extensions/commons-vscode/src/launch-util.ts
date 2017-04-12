@@ -38,7 +38,7 @@ interface QuickfixRequest {
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let clientPromise = _activate(options, context);
     let commands = VSCode.commands
-    commands.registerCommand("sts.quickfix", (fixType, fixParams) => {
+    commands.registerCommand("sts.quickfix."+options.extensionId, (fixType, fixParams) => {
         return clientPromise.then(client => {
             let type : RequestType<QuickfixRequest, WorkspaceEdit, void> = {method : "sts/quickfix"};
             let params : QuickfixRequest = {type: fixType, params: fixParams};
