@@ -705,7 +705,7 @@ public class YTypeFactory {
 		t.addHintProvider((dc) -> () -> values.withContext(dc));
 		t.parseWith((DynamicSchemaContext dc) -> {
 			Collection<String> strings = YTypeFactory.values(values.withContext(dc));
-			return new EnumValueParser("blah", strings) {
+			return new EnumValueParser(name, strings) {
 				@Override
 				protected String createErrorMessage(String parseString, Collection<String> values) {
 					return errorMessageFormatter.apply(parseString, values);

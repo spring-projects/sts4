@@ -11,7 +11,6 @@
 
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
@@ -55,6 +55,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -62,12 +63,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.publisher.Flux;
+
 public class SimpleTextDocumentService implements TextDocumentService {
 
 	private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
 
 	final private SimpleLanguageServer server;
-	private Map<String, TextDocument> documents = new HashMap<>();
+	private Map<String, TrackedDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
@@ -100,7 +103,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		this.definitionHandler = h;
 	}
 
-	public synchronized void onRefeences(ReferencesHandler h) {
+	public synchronized void onReferences(ReferencesHandler h) {
 		Assert.isNull("A references handler is already set, multiple handlers not supported yet", referencesHandler);
 		this.referencesHandler = h;
 	}
@@ -110,7 +113,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	 * and not yet closed.
 	 */
 	public synchronized Collection<TextDocument> getAll() {
-		return new ArrayList<>(documents.values());
+		return documents.values().stream()
+				.map((td) -> td.getDocument())
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -151,7 +156,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		String languageId = params.getTextDocument().getLanguageId();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
-			TextDocument doc = createDocument(url, languageId);
+			TextDocument doc = createDocument(url, languageId).getDocument();
 			doc.setText(text);
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
@@ -191,20 +196,20 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		documentChangeListeners.add(l);
 	}
 
-	private synchronized TextDocument getDocument(String url) {
-		TextDocument doc = documents.get(url);
+	public synchronized TextDocument getDocument(String url) {
+		TrackedDocument doc = documents.get(url);
 		if (doc==null) {
 			LOG.warning("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
 			doc = createDocument(url, LanguageIds.PLAINTEXT);
 		}
-		return doc;
+		return doc.getDocument();
 	}
 
-	private synchronized TextDocument createDocument(String url, String languageId) {
+	private synchronized TrackedDocument createDocument(String url, String languageId) {
 		if (documents.get(url)!=null) {
 			LOG.warning("Creating document ["+url+"] but it already exists. Existing document discarded!");
 		}
-		TextDocument doc = new TextDocument(url, languageId);
+		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId));
 		documents.put(url, doc);
 		return doc;
 	}
@@ -273,7 +278,17 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
+		if (doc!=null) {
+			return Flux.fromIterable(doc.getQuickfixes())
+					.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
+					.map(Quickfix::getCodeAction)
+					.collectList()
+					.toFuture()
+					.thenApply(l -> (List<? extends Command>) l);
+		} else {
+			return CompletableFuture.completedFuture(ImmutableList.of());
+		}
 	}
 
 	@Override
@@ -320,12 +335,21 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		}
 	}
 
+	public void setQuickfixes(TextDocument doc, List<Quickfix> quickfixes) {
+		TrackedDocument td = documents.get(doc.getUri());
+		if (td!=null) {
+			td.setQuickfixes(quickfixes);
+		}
+	}
+
 	public synchronized TextDocument get(TextDocumentPositionParams params) {
-		return documents.get(params.getTextDocument().getUri());
+		TrackedDocument td = documents.get(params.getTextDocument().getUri());
+		return td == null ? null : td.getDocument();
 	}
 
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
+
 }

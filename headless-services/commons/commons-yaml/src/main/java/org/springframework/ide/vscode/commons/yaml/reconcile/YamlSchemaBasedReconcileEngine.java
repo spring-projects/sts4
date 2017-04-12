@@ -29,9 +29,12 @@ public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 	 */
 	private ITypeCollector typeCollector;
 
-	public YamlSchemaBasedReconcileEngine(YamlASTProvider parser, YamlSchema schema) {
+	private YamlQuickfixes quickfixes;
+
+	public YamlSchemaBasedReconcileEngine(YamlASTProvider parser, YamlSchema schema, YamlQuickfixes quickfixes) {
 		super(parser);
 		this.schema = schema;
+		this.quickfixes = quickfixes;
 	}
 
 	@Override
@@ -41,7 +44,7 @@ public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 
 	@Override
 	protected YamlASTReconciler getASTReconciler(IDocument doc, IProblemCollector problems) {
-		return new SchemaBasedYamlASTReconciler(problems, schema, typeCollector);
+		return new SchemaBasedYamlASTReconciler(problems, schema, typeCollector, quickfixes);
 	}
 
 	public ITypeCollector getTypeCollector() {

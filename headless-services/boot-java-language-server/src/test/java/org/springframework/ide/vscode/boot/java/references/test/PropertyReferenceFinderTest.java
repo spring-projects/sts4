@@ -20,13 +20,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.references.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @author Martin Lippert

@@ -12,14 +12,13 @@
 package org.springframework.ide.vscode.boot.yaml.reconcile;
 
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
 public class SpringPropertyProblem extends ReconcileProblemImpl {
 
 	private PropertyInfo property = null;
-	private ProblemFixer fixer;
+//	private ProblemFixer fixer;
 	private String propertyName;
 
 	public SpringPropertyProblem(ProblemType type, String msg, int offset, int len) {
@@ -34,9 +33,9 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 		this.property = property;
 	}
 
-	public void setProblemFixer(ProblemFixer fixer) {
-		this.fixer = fixer;
-	}
+//	public void setProblemFixer(ProblemFixer fixer) {
+//		this.fixer = fixer;
+//	}
 
 	public void setPropertyName(String name) {
 		propertyName = name;

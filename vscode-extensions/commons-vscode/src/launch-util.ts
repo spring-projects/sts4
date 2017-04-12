@@ -28,11 +28,11 @@ export interface ActivatorOptions {
     jvmHeap?: string;
 }
 
-export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext) {
+export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = options.jvmHeap;
     if (options.CONNECT_TO_LS) {
-        connectToLS(context, options);
+        return connectToLS(context, options);
     } else {
         let clientOptions = options.clientOptions;
         let fatJarFile = Path.resolve(context.extensionPath, options.fatJarFile);
@@ -61,7 +61,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
         log("Found java exe: " + javaExecutablePath);
 
 
-        isJava8(javaExecutablePath).then(eight => {
+        return isJava8(javaExecutablePath).then(eight => {
             if (!eight) {
                 VSCode.window.showErrorMessage('Java-based Language Server requires Java 8 (using ' + javaExecutablePath + ')');
                 return;
@@ -109,12 +109,12 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                 });
             }
 
-            setupLanguageClient(context, createServer, options);
+            return Promise.resolve(setupLanguageClient(context, createServer, options));
         });
     }
 }
 
-function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions) {
+function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions): Promise<LanguageClient> {
     let connectionInfo = {
         port: 5007
     };
@@ -128,10 +128,10 @@ function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions
         return Promise.resolve(result);
     };
 
-    setupLanguageClient(context, serverOptions, options);
+    return Promise.resolve(setupLanguageClient(context, serverOptions, options));
 }
 
-function setupLanguageClient(context: VSCode.ExtensionContext, createServer: ServerOptions, options: ActivatorOptions) {
+function setupLanguageClient(context: VSCode.ExtensionContext, createServer: ServerOptions, options: ActivatorOptions): LanguageClient {
     // Create the language client and start the client.
     let client = new LanguageClient(options.extensionId, options.extensionId,
         createServer, options.clientOptions
@@ -150,6 +150,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     // client can be deactivated on extension deactivation
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
+    return client
 }
 
 

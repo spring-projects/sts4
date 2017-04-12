@@ -24,6 +24,8 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
 import org.yaml.snakeyaml.nodes.Node;
 
+import reactor.core.publisher.Flux;
+
 /**
  * @author Kris De Volder
  */
@@ -299,6 +301,14 @@ public class YamlPath {
 			}
 		}
 		return new YamlPath(common);
+	}
+
+	public static YamlPath decode(List<String> encodedSegments) {
+		return Flux.fromIterable(encodedSegments)
+				.map(YamlPathSegment::decode)
+				.collectList()
+				.map(YamlPath::new)
+				.block();
 	}
 
 }

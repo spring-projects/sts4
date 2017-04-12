@@ -21,31 +21,30 @@ import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
  * Test projects harness
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class ProjectsHarness {
-	
-	public static final ProjectsHarness INSTANCE = new ProjectsHarness();; 
-	
+
+	public static final ProjectsHarness INSTANCE = new ProjectsHarness();;
+
 	public Cache<String, IJavaProject> cache = CacheBuilder.newBuilder().concurrencyLevel(1).build();
-	
+
 	private enum ProjectType {
 		MAVEN,
 		CLASSPATH_TXT
 	}
-	
+
 	private ProjectsHarness() {
 	}
-	
+
 	public IJavaProject project(ProjectType type, String name) throws Exception {
 		return cache.get(type + "/" + name, () -> {
 			Path testProjectPath = getProjectPath(name);
@@ -82,7 +81,7 @@ public class ProjectsHarness {
 			return getProjectPathFromClasspath(name);
 //		}
 	}
-	
+
 	private Path getProjectPathFromClasspath(String name) throws URISyntaxException, IOException {
 		URI resource = ProjectsHarness.class.getResource("/test-projects/" + name).toURI();
 //		if (resource.getScheme().equalsIgnoreCase("jar")) {
@@ -91,7 +90,7 @@ public class ProjectsHarness {
 			return Paths.get(resource);
 //		}
 	}
-	
+
 //	private Path getProjectPathFromJar(URI jar) throws IOException {
 //		final String[] array = jar.toString().split("!");
 //		URI firstHalf = URI.create(array[0]);
@@ -110,10 +109,10 @@ public class ProjectsHarness {
 //			fs.close();
 //		}
 //	}
-//	
+//
 //	private static void recursiveCopy(Path source, Path target, CopyOption... options) throws IOException {
 //		Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-//			
+//
 //			Path destination = target;
 //
 //			@Override
@@ -135,13 +134,13 @@ public class ProjectsHarness {
 //				destination = destination.getParent();
 //				return super.postVisitDirectory(dir, exc);
 //			}
-//			
+//
 //		});
 //	}
-//	
+//
 //	private static void recursiveDelete(Path path) throws IOException {
 //		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-//			
+//
 //			@Override
 //			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 //				Files.delete(file);
@@ -153,10 +152,10 @@ public class ProjectsHarness {
 //				Files.delete(dir);
 //				return super.postVisitDirectory(dir, exc);
 //			}
-//			
+//
 //		});
 //	}
-	
+
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);
 	}

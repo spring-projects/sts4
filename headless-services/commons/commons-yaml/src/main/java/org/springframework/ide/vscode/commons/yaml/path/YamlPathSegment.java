@@ -19,6 +19,21 @@ package org.springframework.ide.vscode.commons.yaml.path;
  */
 public abstract class YamlPathSegment {
 
+	public static YamlPathSegment decode(String code) {
+		switch (code.charAt(0)) {
+		case '*':
+			return anyChild();
+		case '.':
+			return valueAt(code.substring(1));
+		case '&':
+			return keyAt(code.substring(1));
+		case '[':
+			return valueAt(Integer.parseInt(code.substring(1)));
+		default:
+			throw new IllegalArgumentException("Can't decode YamlPathSegment from '"+code+"'");
+		}
+	}
+
 	public static enum YamlPathSegmentType {
 		VAL_AT_KEY, //Go to value associate with given key in a map.
 		KEY_AT_KEY, //Go to the key node associated with a given key in a map.
@@ -50,7 +65,17 @@ public abstract class YamlPathSegment {
 		@Override
 		public YamlPathSegmentType getType() {
 			return YamlPathSegmentType.ANY_CHILD;
+		}
+
+		@Override
+		protected char getTypeCode() {
+			return '*';
 		};
+
+		@Override
+		protected String getValueCode() {
+			return "";
+		}
 	}
 
 	public static class AtIndex extends YamlPathSegment {
@@ -101,6 +126,16 @@ public abstract class YamlPathSegment {
 			if (index != other.index)
 				return false;
 			return true;
+		}
+
+		@Override
+		protected char getTypeCode() {
+			return '[';
+		}
+
+		@Override
+		protected String getValueCode() {
+			return ""+index;
 		}
 	}
 
@@ -161,6 +196,16 @@ public abstract class YamlPathSegment {
 				return false;
 			return true;
 		}
+
+		@Override
+		protected char getTypeCode() {
+			return '.';
+		}
+
+		@Override
+		protected String getValueCode() {
+			return key;
+		}
 	}
 
 	public static class KeyAtKey extends ValAtKey {
@@ -174,6 +219,10 @@ public abstract class YamlPathSegment {
 			return YamlPathSegmentType.KEY_AT_KEY;
 		}
 
+		@Override
+		protected char getTypeCode() {
+			return '&';
+		}
 
 	}
 
@@ -202,4 +251,11 @@ public abstract class YamlPathSegment {
 		return AnyChild.INSTANCE;
 	}
 
+	public String encode() {
+		return getTypeCode() + getValueCode();
+	}
+
+	protected abstract String getValueCode();
+
+	protected abstract char getTypeCode();
 }

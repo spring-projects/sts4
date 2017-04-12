@@ -18,7 +18,6 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -32,6 +31,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
@@ -47,6 +47,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 	YamlASTProvider currentAsts = models.getAstProvider(false);
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
+	private final YamlQuickfixes yamlQuickfixes;
 
 	private class SchemaSpecificPieces {
 
@@ -62,7 +63,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 			this.hoverEngine = new VscodeHoverEngineAdapter(ConcourseLanguageServer.this, infoProvider);
 
-			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema);
+			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema, yamlQuickfixes);
 			reconcileEngine.setTypeCollector(models.getAstTypeCache());
 		}
 
@@ -73,6 +74,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 
 	public ConcourseLanguageServer() {
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
+		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
 
 		this.forPipelines = new SchemaSpecificPieces(pipelineSchema);
 		this.forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema());
@@ -157,6 +159,8 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		c.setCompletionProvider(completionProvider);
 
 		c.setDefinitionProvider(true);
+
+		c.setCodeActionProvider(true);
 
 		return c;
 	}

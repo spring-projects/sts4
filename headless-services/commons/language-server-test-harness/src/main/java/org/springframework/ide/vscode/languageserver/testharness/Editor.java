@@ -14,7 +14,8 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.*;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +44,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Flux;
 

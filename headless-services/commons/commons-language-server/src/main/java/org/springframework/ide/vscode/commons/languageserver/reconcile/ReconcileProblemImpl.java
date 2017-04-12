@@ -11,6 +11,10 @@
 
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 
 /**
@@ -24,6 +28,7 @@ public class ReconcileProblemImpl implements ReconcileProblem {
 	final private String msg;
 	final private int offset;
 	final private int len;
+	private List<QuickfixData<?>> fixes = new ArrayList<>();
 
 	public ReconcileProblemImpl(ProblemType type, String msg, int offset, int len) {
 		super();
@@ -76,6 +81,16 @@ public class ReconcileProblemImpl implements ReconcileProblem {
 
 	private static boolean canUnderline(char c) {
 		return c!='\n'&&c!='\r';
+	}
+
+	@Override
+	public List<QuickfixData<?>> getQuickfixes() {
+		return fixes;
+	}
+
+	public ReconcileProblemImpl addQuickfix(QuickfixData<?> command) {
+		fixes.add(command);
+		return this;
 	}
 
 }

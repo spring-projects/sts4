@@ -14,6 +14,8 @@ package org.springframework.ide.vscode.commons.yaml.ast;
 import java.util.Collections;
 import java.util.Set;
 
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
@@ -123,6 +125,10 @@ public class NodeUtil {
 			}
 		}
 		return null;
+	}
+
+	public static DocumentRegion region(IDocument doc, Node node) {
+		return new DocumentRegion(doc, node.getStartMark().getIndex(), node.getEndMark().getIndex());
 	}
 
 }

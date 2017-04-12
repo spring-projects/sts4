@@ -13,13 +13,12 @@ package org.springframework.ide.vscode.boot.yaml.quickfix;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 
-	public static ProblemFixer FIXER = (context, problem, proposals) -> {
-		throw new UnsupportedOperationException("Not yet implemented");
+//	public static ProblemFixer FIXER = (context, problem, proposals) -> {
+//		throw new UnsupportedOperationException("Not yet implemented");
 //		PropertyInfo metadata = problem.getMetadata();
 //		if (metadata!=null) {
 //			String replacement = metadata.getDeprecationReplacement();
@@ -28,7 +27,7 @@ public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 //				proposals.add(new ReplaceDeprecatedYamlQuickfix(context, problem));
 //			}
 //		}
-	};
+//	};
 
 	@Override
 	public ICompletionProposal deemphasize() {
@@ -57,7 +56,7 @@ public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 
 //	private final QuickfixContext context;
 //	private final SpringPropertyProblem problem;
-//	
+//
 //	private LazyProposalApplier applier = new LazyProposalApplier() {
 //		protected ProposalApplier create() throws Exception {
 //			String newName = problem.getMetadata().getDeprecationReplacement();

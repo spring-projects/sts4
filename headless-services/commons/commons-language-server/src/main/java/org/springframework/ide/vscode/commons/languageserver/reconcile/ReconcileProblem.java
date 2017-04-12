@@ -11,6 +11,10 @@
 
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
+import java.util.List;
+
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+
 /**
  * Minamal interface that objects representing a reconciler problem must
  * implement.
@@ -23,4 +27,5 @@ public interface ReconcileProblem {
 	int getOffset();
 	int getLength();
 	String getCode();
+	List<QuickfixData<?>> getQuickfixes();
 }

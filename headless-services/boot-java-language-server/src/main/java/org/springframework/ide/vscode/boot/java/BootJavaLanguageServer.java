@@ -69,7 +69,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverInfoProvider);
 		
 		ReferencesHandler referencesHandler = new BootJavaReferencesHandler(this, javaProjectFinder);
-		documents.onRefeences(referencesHandler);
+		documents.onReferences(referencesHandler);
 	}
 
 	public void setMaxCompletionsNumber(int number) {

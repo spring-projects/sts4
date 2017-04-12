@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.nio.file.Path;
@@ -25,18 +24,26 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import reactor.core.publisher.Mono;
@@ -72,9 +79,18 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private CompletableFuture<Void> busyReconcile = CompletableFuture.completedFuture(null);
 
+	private QuickfixRegistry quickfixRegistry;
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
+	}
+
+	protected synchronized QuickfixRegistry getQuickfixRegistry() {
+		if (quickfixRegistry==null) {
+			quickfixRegistry = new QuickfixRegistry();
+		}
+		return quickfixRegistry;
 	}
 
     @Override
@@ -166,9 +182,11 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		IProblemCollector problems = new IProblemCollector() {
 
 			private List<Diagnostic> diagnostics = new ArrayList<>();
+			private List<Quickfix> quickfixes = new ArrayList<>();
 
 			@Override
 			public void endCollecting() {
+				documents.setQuickfixes(doc, quickfixes);
 				documents.publishDiagnostics(doc, diagnostics);
 			}
 
@@ -185,8 +203,15 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 						Diagnostic d = new Diagnostic();
 						d.setCode(problem.getCode());
 						d.setMessage(problem.getMessage());
-						d.setRange(doc.toRange(problem.getOffset(), problem.getLength()));
+						Range rng = doc.toRange(problem.getOffset(), problem.getLength());
+						d.setRange(rng);
 						d.setSeverity(severity);
+						List<QuickfixData<?>> fixes = problem.getQuickfixes();
+						if (CollectionUtil.hasElements(fixes)) {
+							for (QuickfixData<?> fix : fixes) {
+								quickfixes.add(new Quickfix<>(rng, fix));
+							}
+						}
 						diagnostics.add(d);
 					}
 				} catch (BadLocationException e) {
@@ -234,5 +259,12 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public ProgressService getProgressService() {
 		return progressService;
 	}
+
+	@JsonRequest("sts/quickfix")
+	public CompletableFuture<WorkspaceEdit> quickfixResolve(QuickfixResolveParams params) {
+		QuickfixRegistry quickfixes = getQuickfixRegistry();
+		return quickfixes.handle(params);
+	}
+
 
 }

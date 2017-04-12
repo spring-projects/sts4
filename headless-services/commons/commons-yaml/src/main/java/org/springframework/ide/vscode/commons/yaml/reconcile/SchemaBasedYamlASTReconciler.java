@@ -15,7 +15,6 @@ import static org.springframework.ide.vscode.commons.util.ExceptionUtil.getSimpl
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,13 +59,16 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private final YamlSchema schema;
 	private final YTypeUtil typeUtil;
 	private final ITypeCollector typeCollector;
+	private final YamlQuickfixes quickfixes;
 
-	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema, ITypeCollector typeCollector) {
+	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema, ITypeCollector typeCollector, YamlQuickfixes quickfixes) {
 		this.problems = problems;
 		this.schema = schema;
 		this.typeCollector = typeCollector;
 		this.typeUtil = schema.getTypeUtil();
+		this.quickfixes = quickfixes;
 	}
+
 
 	@Override
 	public void reconcile(YamlFileAST ast) {
@@ -205,7 +207,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 		}
 	}
-	
+
 	private String getMessage(Exception _e) {
 		Throwable e = ExceptionUtil.getDeepestCause(_e);
 
@@ -247,7 +249,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				} else {
 					message = "Properties "+missingProps+" are required for '"+type+"'";
 				}
-				problems.accept(YamlSchemaProblems.missingProperty(message, dc.getDocument(), parent, map));
+				problems.accept(YamlSchemaProblems.missingProperties(message, dc, missingProps, parent, map, quickfixes.MISSING_PROP_FIX));
 			}
 
 			//Check for other constraints attached to the type
@@ -347,7 +349,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		}
 		problem(region, parseErrorMsg, problemType);
 	}
-	
+
 	private void unknownBeanProperty(Node keyNode, YType type, String name) {
 		problem(keyNode, "Unknown property '"+name+"' for type '"+typeUtil.niceTypeName(type)+"'");
 	}
@@ -408,7 +410,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private void problem(DocumentRegion region, String msg, ProblemType problemType) {
 		problems.accept(YamlSchemaProblems.problem(problemType, msg, region));
 	}
-	
+
 	private void problem(DocumentRegion region, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, region));
 	}

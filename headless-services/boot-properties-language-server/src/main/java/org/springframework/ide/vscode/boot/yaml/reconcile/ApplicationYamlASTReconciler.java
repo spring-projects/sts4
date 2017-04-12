@@ -26,18 +26,17 @@ import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
-import org.springframework.ide.vscode.boot.yaml.quickfix.ReplaceDeprecatedYamlQuickfix;
+import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
-import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.Kind;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -350,7 +349,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		SpringPropertyProblem problem = deprecatedPropertyProblem(property.getId(), null, keyNode,
 				property.getDeprecationReplacement(), property.getDeprecationReason());
 		problem.setMetadata(property);
-		problem.setProblemFixer(ReplaceDeprecatedYamlQuickfix.FIXER);
+		//problem.setProblemFixer(ReplaceDeprecatedYamlQuickfix.FIXER);
 		problems.accept(problem);
 	}
 

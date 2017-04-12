@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -18,9 +17,6 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeTuple;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Adapts a SnakeYaml ast node as a {@link DynamicSchemaContext} (so it

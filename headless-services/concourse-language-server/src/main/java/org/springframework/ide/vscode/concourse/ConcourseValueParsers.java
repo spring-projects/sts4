@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.concourse;
 import java.util.function.Function;
 
 import org.springframework.ide.vscode.commons.util.RegexpParser;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
@@ -54,12 +56,23 @@ public class ConcourseValueParsers {
 			Function<IDocument, Multiset<String>> getDefinedNameCounts,
 			String typeName
 	) {
+		return acceptOnlyUniqueNames(getDefinedNameCounts, typeName, false);
+	}
+
+	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
+			Function<IDocument, Multiset<String>> getDefinedNameCounts,
+			String typeName,
+			boolean allowEmptyName
+	) {
 		return (dc) -> {
-			Multiset<String> resourceNames = getDefinedNameCounts.apply(dc.getDocument());
 			return (String input) -> {
+				if (!allowEmptyName && !StringUtil.hasText(input)) {
+					throw new ValueParseException("'"+typeName +"' should not be blank");
+				}
+				Multiset<String> resourceNames = getDefinedNameCounts.apply(dc.getDocument());
 				if (resourceNames.count(input)<=1) {
 					//okay
-					return resourceNames;
+					return input;
 				}
 				throw new IllegalArgumentException("Duplicate "+typeName+" '"+input+"'");
 			};

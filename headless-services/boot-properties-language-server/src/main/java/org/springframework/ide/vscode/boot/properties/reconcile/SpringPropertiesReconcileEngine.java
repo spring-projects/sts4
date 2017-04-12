@@ -25,7 +25,6 @@ import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.boot.properties.quickfix.ReplaceDeprecatedPropertyQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
@@ -72,26 +71,27 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		this.fIndexProvider = provider;
 		this.typeUtilProvider = typeUtilProvider;
 	}
-	
+
+	@Override
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
 		FuzzyMap<PropertyInfo> index = fIndexProvider.getIndex(doc);
 		problemCollector.beginCollecting();
 		try {
 			ParseResults results = parser.parse(doc.get());
 			DuplicateNameChecker duplicateNameChecker = new DuplicateNameChecker(problemCollector);
-			
+
 			results.syntaxErrors.forEach(syntaxError -> {
 				problemCollector.accept(problem(PROP_SYNTAX_ERROR, syntaxError.getMessage(), syntaxError.getOffset(),
 						syntaxError.getLength()));
 			});
-			
+
 			if (index==null || index.isEmpty()) {
 				//don't report errors when index is empty, simply don't check (otherwise we will just reprot
 				// all properties as errors, but this not really useful information since the cause is
 				// some problem putting information about properties into the index.
 				return;
 			}
-			
+
 			results.ast.getNodes(KeyValuePair.class).forEach(pair -> {
 				try {
 					DocumentRegion propertyNameRegion = createRegion(doc, pair.getKey());
@@ -127,7 +127,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			problemCollector.endCollecting();
 		}
 	}
-	
+
 	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property) {
 		SpringPropertyProblem p = problem(PROP_DEPRECATED,
 				TypeUtil.deprecatedPropertyMessage(
@@ -139,7 +139,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		);
 		p.setPropertyName(property.getId());
 		p.setMetadata(property);
-		p.setProblemFixer(ReplaceDeprecatedPropertyQuickfix.FIXER);
+//		p.setProblemFixer(ReplaceDeprecatedPropertyQuickfix.FIXER);
 		return p;
 	}
 
@@ -167,10 +167,10 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 			length = doc.get(value.getOffset(), value.getLength()).length();
 		} catch (BadLocationException e) {
 			// ignore
-		} 
+		}
 		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + length);
 	}
-	
+
 	private void reconcileType(DocumentRegion region, Type expectType, IProblemCollector problems) {
 		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(region.getDocument());
 		ValueParser parser = typeUtil.getValueParser(expectType);

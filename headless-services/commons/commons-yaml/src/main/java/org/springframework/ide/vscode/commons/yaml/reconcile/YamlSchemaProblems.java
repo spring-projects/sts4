@@ -10,8 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
@@ -19,9 +24,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.yaml.snakeyaml.error.Mark;
@@ -30,6 +35,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -44,6 +50,7 @@ public class YamlSchemaProblems {
 	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING);
 	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR);
 	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR);
+
 
 	public static final Set<ProblemType> PROPERTY_CONSTRAINT = ImmutableSet.of(
 			MISSING_PROPERTY, EXTRA_PROPERTY
@@ -93,7 +100,7 @@ public class YamlSchemaProblems {
 		return deprecatedProperty("Property '"+property.getName()+"' of '"+bean+"' is Deprecated", node);
 	}
 
-	public static ReconcileProblem problem(ProblemType problemType, String msg, DocumentRegion node) {
+	public static ReconcileProblemImpl problem(ProblemType problemType, String msg, DocumentRegion node) {
 		int start = node.getStart();
 		int end = node.getEnd();
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
@@ -105,26 +112,46 @@ public class YamlSchemaProblems {
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
 	}
 
-	public static ReconcileProblem missingProperty(String msg, IDocument doc, Node parent, MappingNode map) {
+	public static ReconcileProblemImpl missingProperty(String msg, IDocument doc, Node parent, MappingNode map) {
+		DocumentRegion underline = NodeUtil.region(doc, map);
 		if (parent instanceof MappingNode) {
 			for (NodeTuple prop : ((MappingNode) parent).getValue()) {
 				if (prop.getValueNode()==map) {
-					return problem(MISSING_PROPERTY, msg, prop.getKeyNode());
+					underline = NodeUtil.region(doc, prop.getKeyNode());
 				}
 			}
 		} else if (parent instanceof SequenceNode) {
 			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle();
 			if (flowStyle!=null && !flowStyle) {
 				Mark nodeStart = map.getStartMark();
-				DocumentRegion underline = new DocumentRegion(doc, 0, nodeStart.getIndex());
+				underline = new DocumentRegion(doc, 0, nodeStart.getIndex());
 				underline = underline.trimEnd();
 				if (underline.endsWith("-")) {
 					underline = underline.subSequence(underline.length()-1, underline.length());
-					return problem(MISSING_PROPERTY, msg, underline);
 				}
 			}
 		}
-		return problem(MISSING_PROPERTY, msg, map);
+		return problem(MISSING_PROPERTY, msg, underline);
+	}
+
+	public static ReconcileProblem missingProperties(String msg, DynamicSchemaContext dc, Set<String> missingProps, Node parent, MappingNode map, QuickfixType quickfixType) {
+		YamlPath contextPath = dc.getPath();
+		List<String> segments = Stream.of(contextPath.getSegments())
+				.map(YamlPathSegment::encode)
+				.collect(Collectors.toList());
+
+		QuickfixData<MissingPropertiesData> fix = new QuickfixData<MissingPropertiesData>(
+				quickfixType,
+				new MissingPropertiesData(
+						dc.getDocument().getUri(),
+						segments,
+						ImmutableList.copyOf(missingProps)
+				),
+				"Add properties: "+missingProps
+		);
+
+		return missingProperty(msg, dc.getDocument(), parent, map)
+				.addQuickfix(fix);
 	}
 
 }

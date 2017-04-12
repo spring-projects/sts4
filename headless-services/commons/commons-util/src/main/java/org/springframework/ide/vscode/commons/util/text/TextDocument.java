@@ -252,8 +252,13 @@ public class TextDocument implements IDocument {
 		}
 	}
 
+	@Override
 	public String getLanguageId() {
 		return languageId;
+	}
+
+	public Range toRange(IRegion region) throws BadLocationException {
+		return toRange(region.getOffset(), region.getLength());
 	}
 
 }

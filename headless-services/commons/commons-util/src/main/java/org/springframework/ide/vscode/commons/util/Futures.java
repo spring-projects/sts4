@@ -11,6 +11,7 @@
 
 package org.springframework.ide.vscode.commons.util;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public class Futures {
@@ -22,5 +23,17 @@ public class Futures {
 	public static <T> CompletableFuture<T> of(T value) {
 		return CompletableFuture.completedFuture(value);
 	}
-	
+
+	public static <T> CompletableFuture<T> error(String message) {
+		CompletableFuture<T> f = new CompletableFuture<T>();
+		f.completeExceptionally(new IOException(message));
+		return f;
+	}
+
+	public static <T> CompletableFuture<T> error(Throwable e) {
+		CompletableFuture<T> f = new CompletableFuture<T>();
+		f.completeExceptionally(e);
+		return f;
+	}
+
 }
