@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAss
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
@@ -71,7 +72,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema);
+		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
+		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
@@ -99,19 +101,19 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
 		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
 		Callable<Collection<YValueHint>> domainsProvider = getDomainsProvider();
-		
+
 		return new ManifestYmlHintProviders() {
-			
+
 			@Override
 			public Callable<Collection<YValueHint>> getServicesProvider() {
 				return servicesProvider;
 			}
-			
+
 			@Override
 			public Callable<Collection<YValueHint>> getDomainsProvider() {
 				return domainsProvider;
 			}
-			
+
 			@Override
 			public Callable<Collection<YValueHint>> getBuildpackProviders() {
 				return buildPacksProvider;
@@ -135,7 +137,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private Callable<Collection<YValueHint>> getServicesProvider() {
 		return new ManifestYamlCFServicesProvider(getCfTargetCache());
 	}
-	
+
 	private Callable<Collection<YValueHint>> getDomainsProvider() {
 		return new ManifestYamlCFDomainsProvider(getCfTargetCache());
 	}
