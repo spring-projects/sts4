@@ -278,16 +278,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
-		System.out.println("codeAction "+params+" ...");
 		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
 		if (doc!=null) {
 			return Flux.fromIterable(doc.getQuickfixes())
 					.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
 					.map(Quickfix::getCodeAction)
 					.collectList()
-					.doOnNext((fixes) -> {
-						System.out.println("codeAction "+params+" => "+fixes);
-					})
 					.toFuture()
 					.thenApply(l -> (List<? extends Command>) l);
 		} else {
