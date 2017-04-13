@@ -294,6 +294,15 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 	}
 
+	/**
+	 * If reconciler is in progress, waits for it.
+	 * <p>
+	 * WARNING: this is quick and dirty hack, its good enough for test harness, if used
+	 * with care, but probably not good enough to avoid all race conditions caused by
+	 * stuff using old infos cached by the reconciler after underlying document has changed
+	 * (because there could be a short delay between the moment the reconcile becomes 'busy' and the moment
+	 * when the document change was processed.
+	 */
 	public void waitForReconcile() throws Exception {
 		while (!this.busyReconcile.isDone()) {
 			this.busyReconcile.get();
