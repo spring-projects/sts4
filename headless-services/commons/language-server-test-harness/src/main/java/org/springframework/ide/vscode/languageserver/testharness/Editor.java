@@ -18,6 +18,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.TestAsse
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -38,12 +39,14 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -645,6 +648,33 @@ public class Editor {
 
 	public void assertRawText(String expectedText) throws Exception {
 		assertEquals(expectedText, getRawText());
+	}
+
+	public void assertDocumentSymbols(String... symbolsAndContainers) throws Exception {
+		Arrays.sort(symbolsAndContainers);
+		StringBuilder expected = new StringBuilder();
+		for (String string : symbolsAndContainers) {
+			expected.append(string+"\n");
+		}
+
+		List<? extends SymbolInformation> actualSymbols = getDocumentSymbols();
+		List<String> actuals = new ArrayList<>();
+		for (SymbolInformation actualSymbol : actualSymbols) {
+			assertEquals(document.getUri(), actualSymbol.getLocation().getUri());
+			String coveredText = getText(actualSymbol.getLocation().getRange());
+			assertEquals(actualSymbol.getName(), coveredText);
+			actuals.add(coveredText + "|" + actualSymbol.getContainerName());
+		}
+		Collections.sort(actuals);
+		StringBuilder actual = new StringBuilder();
+		for (String string : actuals) {
+			actual.append(string+"\n");
+		}
+		assertEquals(expected.toString(), actual.toString());
+	}
+
+	private List<? extends SymbolInformation> getDocumentSymbols() throws Exception {
+		return harness.getDocumentSymbols(this.document);
 	}
 
 }

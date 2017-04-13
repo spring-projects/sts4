@@ -41,6 +41,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -51,7 +52,9 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
@@ -495,5 +498,9 @@ public class LanguageServerHarness {
 				.collect(Collectors.toList());
 	}
 
-
+	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
+		server.waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
+		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
+		return server.getTextDocumentService().documentSymbol(params).get();
+	}
 }

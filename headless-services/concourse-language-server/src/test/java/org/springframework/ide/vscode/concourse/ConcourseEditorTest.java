@@ -2964,6 +2964,26 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void gotoSymbolInPipeline() throws Exception {
+		Editor editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: some-resource-type\n" +
+				"resources:\n" +
+				"- name: foo-resource\n" +
+				"- name: bar-resource\n" +
+				"jobs:\n" +
+				"- name: do-some-stuff\n" +
+				"- name: do-more-stuff\n"
+		);
+
+		editor.assertDocumentSymbols(
+				"some-resource-type|ResourceType",
+				"foo-resource|Resource",
+				"bar-resource|Resource",
+				"do-some-stuff|Job",
+				"do-more-stuff|Job"
+		);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 

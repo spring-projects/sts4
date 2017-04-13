@@ -69,7 +69,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		this.quickfixes = quickfixes;
 	}
 
-
 	@Override
 	public void reconcile(YamlFileAST ast) {
 		if (typeCollector!=null) typeCollector.beginCollecting(ast);
