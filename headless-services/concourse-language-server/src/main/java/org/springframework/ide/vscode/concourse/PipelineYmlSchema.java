@@ -165,9 +165,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest", "every");
 
-		YAtomicType t_image_type = f.yatomic("ImageType");
-		t_image_type.addHints("docker_image");
-
 		t_resource_type_name = f.yenumFromHints("ResourceType Name",
 				(parseString, validValues) ->  {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
@@ -356,7 +353,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		AbstractType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", resourceTypeNameDef).isRequired(true);
-		addProp(resourceType, "type", t_image_type).isRequired(true);
+		addProp(resourceType, "type", t_resource_type_name).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 
 		AbstractType group = f.ybean("Group");

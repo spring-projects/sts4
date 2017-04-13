@@ -66,6 +66,27 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void reconcileResourceTypeType() throws Exception {
+		Editor editor;
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: s3-multi\n" +
+				"  type: # <- bad\n"
+		);
+		editor.assertProblems(
+				"^ # <- bad|cannot be blank"
+		);
+
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: s3-multi\n" +
+				"  type: garbage\n"
+		);
+		editor.assertProblems(
+				"garbage|Resource Type does not exist"
+		);
+	}
+
 	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
