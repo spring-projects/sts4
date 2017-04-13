@@ -605,9 +605,9 @@ public class ConcourseEditorTest {
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: slack-notification\n" +
-				"  type: docker_image\n" +
+				"  type: docker-image\n" +
 				"- name: slack-notification\n" +
-				"  type: docker_image"
+				"  type: docker-image"
 		);
 		editor.assertProblems(
 				"slack-notification|Duplicate resource-type name",
@@ -2386,7 +2386,7 @@ public class ConcourseEditorTest {
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: slack-notification\n" +
-				"  type: docker_image\n" +
+				"  type: docker-image\n" +
 				"resources:\n" +
 				"- name: zazazee\n" +
 				"  type: slack-notification\n"
