@@ -17,6 +17,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
@@ -408,7 +409,7 @@ public class ManifestYamlEditorTest {
 
 		assertCompletions("health-check-type: <*>",
 				"health-check-type: http<*>",
-				"health-check-type: none<*>",
+//				"health-check-type: none<*>", Still valid, but not suggested because its deprecated
 				"health-check-type: port<*>",
 				"health-check-type: process<*>"
 		);
@@ -496,6 +497,17 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
 	    editor.assertHoverContains("health-check-type", "Use the `health-check-type` attribute to");
+	}
+
+	@Test
+	public void deprecatedHealthCheckTypeNone() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: none"
+		);
+		Diagnostic problem = editor.assertProblems("none|'none' is deprecated in favor of 'process'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
 	@Test

@@ -107,7 +107,9 @@ public class ManifestYmlSchema implements YamlSchema {
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
 
-		YAtomicType t_health_check_type = f.yenum("Health Check Type", "none", "process", "port", "http");
+		YAtomicType t_health_check_type = f.yenumBuilder("Health Check Type", "none", "process", "port", "http")
+				.deprecate("none", "The value 'none' is deprecated in favor of 'process'")
+				.build();
 
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
 		t_strictly_pos_integer.parseWith(ManifestYmlValueParsers.integerAtLeast(1));

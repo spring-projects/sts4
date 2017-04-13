@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -24,12 +25,16 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.EnumTypeBuilder;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
@@ -37,6 +42,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import reactor.core.publisher.Flux;
 
 /**
  * Static utility method for creating YType objects representing either
@@ -46,6 +53,56 @@ import com.google.common.collect.ImmutableSet;
  * @author Kris De Volder
  */
 public class YTypeFactory {
+
+	public class EnumTypeBuilder {
+
+		private String name;
+		private String[] values;
+
+		private Map<String, String> deprecationMsgs = new HashMap<>();
+
+		public EnumTypeBuilder(String name, String[] values) {
+			this.name = name;
+			this.values = values;
+		}
+
+		public YAtomicType build() {
+			EnumValueParser basicParser = new EnumValueParser(name, values);
+			YAtomicType t = yatomic(name);
+			t.addHints(getNonDeprecatedValues());
+			if (deprecationMsgs.isEmpty()) {
+				t.parseWith(basicParser);
+			} else {
+				t.parseWith(ValueParser.of((String value) -> {
+					basicParser.parse(value);
+					if (deprecationMsgs.containsKey(value)) {
+						String msg = deprecationMsgs.get(value);
+						if (!StringUtil.hasText(msg)) {
+							msg = "'"+value+"' is deprecated";
+						}
+						throw new ReconcileException(msg, YamlSchemaProblems.DEPRECATED_PROPERTY);
+					}
+					return value;
+				}));
+			}
+			return t;
+		}
+
+		public EnumTypeBuilder deprecate(String value, String msg) {
+			Assert.isLegal(ImmutableSet.copyOf(values).contains(value));
+			deprecationMsgs.put(value, msg);
+			return this;
+		}
+
+		private String[] getNonDeprecatedValues() {
+			return Flux.fromArray(values)
+				.filter((value) -> !deprecationMsgs.containsKey(value))
+				.collectList()
+				.map(l -> l.toArray(new String[l.size()]))
+				.block();
+		}
+
+	}
 
 	public YContextSensitive contextAware(String name, SchemaContextAware<YType> guessType) {
 		return new YContextSensitive(name, guessType);
@@ -715,6 +772,10 @@ public class YTypeFactory {
 		return t;
 	}
 
+	public EnumTypeBuilder yenumBuilder(String name, String... values) {
+		return new EnumTypeBuilder(name, values);
+	}
+
 	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
 		t.addHintProvider((dc) -> {
@@ -742,10 +803,7 @@ public class YTypeFactory {
 	}
 
 	public YAtomicType yenum(String name, String... values) {
-		YAtomicType t = yatomic(name);
-		t.addHints(values);
-		t.parseWith(new EnumValueParser(name, values));
-		return t;
+		return new EnumTypeBuilder(name, values).build();
 	}
 
 	public static Callable<Collection<String>> valuesFromHintProvider(Callable<Collection<YValueHint>> hintProvider) {
