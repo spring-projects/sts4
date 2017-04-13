@@ -53,7 +53,7 @@ public class ASTTypeCache implements ITypeCollector {
 	}
 
 	@Override
-	public void endCollecting(YamlFileAST ast) {
+	public synchronized void endCollecting(YamlFileAST ast) {
 		Assert.isLegal(currentAst==ast);
 		String uri = ast.getDocument().getUri();
 		typeIndex.put(uri, currentTypes.build());
@@ -68,7 +68,7 @@ public class ASTTypeCache implements ITypeCollector {
 		}
 	}
 
-	public YType getType(YamlFileAST ast, Node node) {
+	public synchronized YType getType(YamlFileAST ast, Node node) {
 		ImmutableMap<Node, YType> types = typeIndex.get(ast.getDocument().getUri());
 		if (types!=null) {
 			return types.get(node);
@@ -82,6 +82,10 @@ public class ASTTypeCache implements ITypeCollector {
 	 */
 	public void addInterestingType(YType type) {
 		this.interestingTypes.add(type);
+	}
+
+	public synchronized ImmutableMap<Node, YType> getNodes(String uri) {
+		return typeIndex.get(uri);
 	}
 
 

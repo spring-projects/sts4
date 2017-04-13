@@ -79,6 +79,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private DefinitionHandler definitionHandler;
 	private ReferencesHandler referencesHandler;
 
+	private DocumentSymbolHandler documentSymbolHandler;
+
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
 	}
@@ -86,6 +88,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onHover(HoverHandler h) {
 		Assert.isNull("A hover handler is already set, multiple handlers not supported yet", hoverHandler);
 		this.hoverHandler = h;
+	}
+
+	public synchronized void onDocumentSymbol(DocumentSymbolHandler h) {
+		Assert.isNull("A DocumentSymbolHandler is already set, multiple handlers not supported yet", documentSymbolHandler);
+		this.documentSymbolHandler = h;
 	}
 
 	 public synchronized void onCompletion(CompletionHandler h) {
@@ -273,6 +280,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
+		if (documentSymbolHandler!=null) {
+			return documentSymbolHandler.handle(params);
+		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
@@ -358,6 +368,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public boolean hasReferencesHandler() {
 		return this.referencesHandler!=null;
+	}
+
+	public boolean hasDocumentSymbolHandler() {
+		return this.documentSymbolHandler!=null;
 	}
 
 }

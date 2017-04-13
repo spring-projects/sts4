@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.concourse;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +48,8 @@ import org.springframework.ide.vscode.concourse.ConcourseModel.ResourceModel;
 import org.springframework.ide.vscode.concourse.ConcourseModel.StepModel;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 
@@ -154,6 +158,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			//See https://github.com/concourse/time-resource#source-configuration
 			"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 	);
+
+	private List<YType> definitionTypes = new ArrayList<>();
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		this.models = models;
@@ -365,6 +371,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
 		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
+
+		definitionTypes = ImmutableList.of(
+				jobNameDef,
+				resourceTypeNameDef,
+				resourceNameDef
+		);
 
 		initializeDefaultResourceTypes();
 	}
@@ -699,5 +711,9 @@ public class PipelineYmlSchema implements YamlSchema {
 				return "TaskYamlSchema";
 			}
 		};
+	}
+
+	public List<YType> getDefinitionTypes() {
+		return definitionTypes;
 	}
 }

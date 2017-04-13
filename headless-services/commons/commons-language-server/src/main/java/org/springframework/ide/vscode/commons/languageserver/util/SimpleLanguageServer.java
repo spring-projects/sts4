@@ -150,16 +150,21 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		if (hasQuickFixes()) {
 			c.setCodeActionProvider(true);
 		}
-
 		if (hasDefinitionHandler()) {
 			c.setDefinitionProvider(true);
 		}
-
 		if (hasReferencesHandler()) {
 			c.setReferencesProvider(true);
 		}
+		if (hasDocumentSymbolHandler()) {
+			c.setDocumentSymbolProvider(true);
+		}
 
 		return c;
+	}
+
+	private boolean hasDocumentSymbolHandler() {
+		return getTextDocumentService().hasDocumentSymbolHandler();
 	}
 
 	private boolean hasReferencesHandler() {
