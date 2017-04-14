@@ -27,6 +27,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
@@ -46,6 +47,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import reactor.core.publisher.Mono;
@@ -221,60 +223,67 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
 	 */
-	protected void validateWith(TextDocument _doc, IReconcileEngine engine) {
-		TextDocument doc = _doc.copy();
-
+	protected void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
+		Log.debug("Reconciling BUSY");
 
 		SimpleTextDocumentService documents = getTextDocumentService();
-		IProblemCollector problems = new IProblemCollector() {
-
-			private List<Diagnostic> diagnostics = new ArrayList<>();
-			private List<Quickfix> quickfixes = new ArrayList<>();
-
-			@Override
-			public void endCollecting() {
-				documents.setQuickfixes(doc, quickfixes);
-				documents.publishDiagnostics(doc, diagnostics);
-			}
-
-			@Override
-			public void beginCollecting() {
-				diagnostics.clear();
-			}
-
-			@Override
-			public void accept(ReconcileProblem problem) {
-				try {
-					DiagnosticSeverity severity = getDiagnosticSeverity(problem);
-					if (severity!=null) {
-						Diagnostic d = new Diagnostic();
-						d.setCode(problem.getCode());
-						d.setMessage(problem.getMessage());
-						Range rng = doc.toRange(problem.getOffset(), problem.getLength());
-						d.setRange(rng);
-						d.setSeverity(severity);
-						List<QuickfixData<?>> fixes = problem.getQuickfixes();
-						if (CollectionUtil.hasElements(fixes)) {
-							for (QuickfixData<?> fix : fixes) {
-								quickfixes.add(new Quickfix<>(EXTENSION_ID, rng, fix));
-							}
-						}
-						diagnostics.add(d);
-					}
-				} catch (BadLocationException e) {
-					LOG.log(Level.WARNING, "Invalid reconcile problem ignored", e);
-				}
-			}
-		};
 
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono.fromRunnable(() -> {
+			TextDocument doc = documents.getDocument(docId.getUri()).copy();
+			IProblemCollector problems = new IProblemCollector() {
+
+				private List<Diagnostic> diagnostics = new ArrayList<>();
+				private List<Quickfix> quickfixes = new ArrayList<>();
+
+				@Override
+				public void endCollecting() {
+					documents.setQuickfixes(docId, quickfixes);
+					documents.publishDiagnostics(docId, diagnostics);
+				}
+
+				@Override
+				public void beginCollecting() {
+					diagnostics.clear();
+				}
+
+				@Override
+				public void accept(ReconcileProblem problem) {
+					try {
+						DiagnosticSeverity severity = getDiagnosticSeverity(problem);
+						if (severity!=null) {
+							Diagnostic d = new Diagnostic();
+							d.setCode(problem.getCode());
+							d.setMessage(problem.getMessage());
+							Range rng = doc.toRange(problem.getOffset(), problem.getLength());
+							d.setRange(rng);
+							d.setSeverity(severity);
+							List<QuickfixData<?>> fixes = problem.getQuickfixes();
+							if (CollectionUtil.hasElements(fixes)) {
+								for (QuickfixData<?> fix : fixes) {
+									quickfixes.add(new Quickfix<>(EXTENSION_ID, rng, fix));
+								}
+							}
+							diagnostics.add(d);
+						}
+					} catch (BadLocationException e) {
+						LOG.log(Level.WARNING, "Invalid reconcile problem ignored", e);
+					}
+				}
+			};
+
+//			try {
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//			}
+			Log.debug("Reconciling: "+doc);
 			engine.reconcile(doc, problems);
 		})
 		.doOnTerminate((ignore1, ignore2) -> {
 			reconcileSession.complete(null);
+			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
 		})
 		.subscribeOn(RECONCILER_SCHEDULER)
 		.subscribe();
@@ -295,13 +304,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	}
 
 	/**
-	 * If reconciler is in progress, waits for it.
-	 * <p>
-	 * WARNING: this is quick and dirty hack, its good enough for test harness, if used
-	 * with care, but probably not good enough to avoid all race conditions caused by
-	 * stuff using old infos cached by the reconciler after underlying document has changed
-	 * (because there could be a short delay between the moment the reconcile becomes 'busy' and the moment
-	 * when the document change was processed.
+	 * If reconciling is in progress, waits until reconciling has caught up to
+	 * all the document changes.
 	 */
 	public void waitForReconcile() throws Exception {
 		while (!this.busyReconcile.isDone()) {

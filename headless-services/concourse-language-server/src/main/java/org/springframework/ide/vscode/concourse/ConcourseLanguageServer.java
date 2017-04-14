@@ -91,11 +91,11 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-				validateWith(doc, forPipelines.reconcileEngine);
+				validateWith(doc.getId(), forPipelines.reconcileEngine);
 			} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-				validateWith(doc, forTasks.reconcileEngine);
+				validateWith(doc.getId(), forTasks.reconcileEngine);
 			} else {
-				validateWith(doc, IReconcileEngine.NULL);
+				validateWith(doc.getId(), IReconcileEngine.NULL);
 			}
 		});
 

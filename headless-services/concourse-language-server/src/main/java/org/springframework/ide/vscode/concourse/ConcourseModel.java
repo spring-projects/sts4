@@ -131,6 +131,7 @@ public class ConcourseModel {
 	private void documentChanged(TextDocumentContentChange changeEvent) {
 		String uri = changeEvent.getDocument().getUri();
 		if (uri!=null) {
+			Log.debug("Clear AST cache: "+uri);
 			asts.invalidate(uri);
 		}
 	}

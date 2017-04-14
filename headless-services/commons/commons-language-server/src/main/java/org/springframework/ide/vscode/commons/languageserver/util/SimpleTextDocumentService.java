@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeActionParams;
@@ -47,6 +45,8 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
@@ -58,16 +58,15 @@ import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class SimpleTextDocumentService implements TextDocumentService {
-
-	private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
 
 	final private SimpleLanguageServer server;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
@@ -130,40 +129,29 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		try {
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
-			//LOG.info("didChange: "+url);
+			Log.debug("didChange: "+url);
 			if (url!=null) {
 				TextDocument doc = getDocument(url);
 				for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
 					doc.apply(change);
 					didChangeContent(doc, change);
 				}
+				doc.setVersion(docId.getVersion());
 			}
 		} catch (BadLocationException e) {
-			LOG.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
+			Log.log(e);
 		}
 	}
 
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params) {
-		//LOG.info("didOpen: "+params.getUri());
-		//Example message:
-		//{
-		//   "jsonrpc":"2.0",
-		//   "method":"textDocument/didOpen",
-		//   "params":{
-		//      "textDocument":{
-		//         "uri":"file:///home/kdvolder/tmp/hello-java/hello.txt",
-		//         "languageId":"plaintext",
-		//         "version":1,
-		//         "text":"This is some text ya-all o\nsss typescript\n"
-		//      }
-		//   }
-		//}
-		String url = params.getTextDocument().getUri();
-		String languageId = params.getTextDocument().getLanguageId();
+		TextDocumentItem docId = params.getTextDocument();
+		String url = docId.getUri();
+		String languageId = docId.getLanguageId();
+		int version = docId.getVersion();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
-			TextDocument doc = createDocument(url, languageId).getDocument();
+			TextDocument doc = createDocument(url, languageId, version).getDocument();
 			doc.setText(text);
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
@@ -206,17 +194,17 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized TextDocument getDocument(String url) {
 		TrackedDocument doc = documents.get(url);
 		if (doc==null) {
-			LOG.warning("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
-			doc = createDocument(url, LanguageIds.PLAINTEXT);
+			Log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
+			doc = createDocument(url, LanguageIds.PLAINTEXT, 0);
 		}
 		return doc.getDocument();
 	}
 
-	private synchronized TrackedDocument createDocument(String url, String languageId) {
+	private synchronized TrackedDocument createDocument(String url, String languageId, int version) {
 		if (documents.get(url)!=null) {
-			LOG.warning("Creating document ["+url+"] but it already exists. Existing document discarded!");
+			Log.warn("Creating document ["+url+"] but it already exists. Existing document discarded!");
 		}
-		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId));
+		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version));
 		documents.put(url, doc);
 		return doc;
 	}
@@ -280,10 +268,18 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
-		if (documentSymbolHandler!=null) {
-			return documentSymbolHandler.handle(params);
+		DocumentSymbolHandler documentSymbolHandler = this.documentSymbolHandler;
+		if (documentSymbolHandler==null) {
+			return CompletableFuture.completedFuture(ImmutableList.of());
 		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		return Mono.fromCallable(() -> {
+			Log.debug("documentSymbol request waiting for reconcile: "+params.getTextDocument());
+			server.waitForReconcile();
+			Log.info("documentSymbol request proceeding: "+params.getTextDocument());
+			return documentSymbolHandler.handle(params);
+		})
+		.toFuture()
+		.thenApply(l -> (List<? extends SymbolInformation>)l);
 	}
 
 	@Override
@@ -335,18 +331,19 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public void didSave(DidSaveTextDocumentParams params) {
 	}
 
-	public void publishDiagnostics(TextDocument doc, List<Diagnostic> diagnostics) {
+	public void publishDiagnostics(TextDocumentIdentifier docId, List<Diagnostic> diagnostics) {
 		LanguageClient client = server.getClient();
 		if (client!=null && diagnostics!=null) {
 			PublishDiagnosticsParams params = new PublishDiagnosticsParams();
-			params.setUri(doc.getUri());
+			params.setUri(docId.getUri());
 			params.setDiagnostics(diagnostics);
 			client.publishDiagnostics(params);
+			//Log.info("publishDiagnostics: "+params);
 		}
 	}
 
-	public void setQuickfixes(TextDocument doc, List<Quickfix> quickfixes) {
-		TrackedDocument td = documents.get(doc.getUri());
+	public void setQuickfixes(TextDocumentIdentifier docId, List<Quickfix> quickfixes) {
+		TrackedDocument td = documents.get(docId.getUri());
 		if (td!=null) {
 			td.setQuickfixes(quickfixes);
 		}

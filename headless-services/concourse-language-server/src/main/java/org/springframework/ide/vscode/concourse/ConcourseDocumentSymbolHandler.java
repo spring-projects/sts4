@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
@@ -59,7 +58,7 @@ public class ConcourseDocumentSymbolHandler implements DocumentSymbolHandler {
 	}
 
 	@Override
-	public CompletableFuture<List<? extends SymbolInformation>> handle(DocumentSymbolParams params) {
+	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
 		Builder<SymbolInformation> builder = ImmutableList.builder();
 		TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
 		for (Entry<Node, YType> entry : astTypeCache.getNodes(params.getTextDocument().getUri()).entrySet()) {
@@ -71,7 +70,7 @@ public class ConcourseDocumentSymbolHandler implements DocumentSymbolHandler {
 				}
 			}
 		}
-		return CompletableFuture.completedFuture(builder.build());
+		return builder.build();
 	}
 
 	protected SymbolInformation createSymbol(TextDocument doc, Node node, YType type) throws BadLocationException {

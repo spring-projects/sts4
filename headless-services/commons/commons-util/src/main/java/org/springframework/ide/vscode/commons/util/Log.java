@@ -34,4 +34,19 @@ public class Log {
 		logger.error(message);
 	}
 
+	public static void info(String info) {
+		logger.info(info);
+	}
+
+	public static void warn(String string) {
+		logger.warn(string);
+	}
+
+	/**
+	 * Note: to enable debug output set this in launchconfig: -Dorg.slf4j.simpleLogger.log.org.springframework.ide.vscode.commons.util.Log=debug
+	 */
+	public static void debug(String string) {
+		logger.debug(string);
+	}
+
 }

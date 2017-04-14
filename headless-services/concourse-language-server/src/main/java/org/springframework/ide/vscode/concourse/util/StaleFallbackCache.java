@@ -23,16 +23,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 /**
- * Simple cache implementation that falls back on 'stale' cache entry if
- * a new entry can not be computed. The api is loosely modeled after 
- * guava's Cache interface (but only the subset we use is implemented to reduce the
- * complexity of its implementation).
+ * A simple cache implementation that provides an option for lookups to fallback
+ * to a 'stale' cache entry when computing a current one fails.
  */
 public class StaleFallbackCache<K, V>{
 
 	Map<K, V> staleEntries = new HashMap<>();
 	Cache<K, CompletableFuture<V>> validEntries = CacheBuilder.newBuilder().build();
-
 
 	public synchronized V get(K key, boolean allowStaleEntries, Callable<? extends V> valueLoader) throws Exception {
 		CompletableFuture<V> valid = validEntries.get(key, () -> load(valueLoader));
@@ -48,7 +45,7 @@ public class StaleFallbackCache<K, V>{
 			return future_get(valid);
 		}
 	}
-	
+
 	public synchronized void invalidate(K key) {
 		CompletableFuture<V> staleEntry = validEntries.getIfPresent(key);
 		if (staleEntry!=null) {

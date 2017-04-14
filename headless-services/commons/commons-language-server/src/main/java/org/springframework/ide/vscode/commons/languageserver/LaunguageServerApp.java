@@ -161,7 +161,7 @@ public abstract class LaunguageServerApp {
 
 		SimpleLanguageServer languageServer = createServer();
 		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
-				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), Executors.newCachedThreadPool(), wrapper);
+				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), createServerThreads(), wrapper);
 
 		languageServer.connect(launcher.getRemoteProxy());
 		Future<?> future = launcher.startListening();
@@ -170,7 +170,15 @@ public abstract class LaunguageServerApp {
 		}
 	}
 
-    private <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress, ExecutorService executorService, Function<MessageConsumer, MessageConsumer> wrapper) throws IOException {
+	/**
+	 * Creates the thread pool / executor passed to lsp4j server intialization. From the looks of things,
+	 * @return
+	 */
+    protected ExecutorService createServerThreads() {
+		return Executors.newSingleThreadExecutor();
+	}
+
+	private <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress, ExecutorService executorService, Function<MessageConsumer, MessageConsumer> wrapper) throws IOException {
         AsynchronousServerSocketChannel serverSocket = AsynchronousServerSocketChannel.open().bind(socketAddress);
         AsynchronousSocketChannel socketChannel;
         try {
@@ -215,7 +223,7 @@ public abstract class LaunguageServerApp {
 	 */
 	protected void run(Connection connection) throws InterruptedException, ExecutionException {
 		LanguageServer server = createServer();
-		ExecutorService executor = Executors.newCachedThreadPool();
+		ExecutorService executor = createServerThreads();
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
 				try {

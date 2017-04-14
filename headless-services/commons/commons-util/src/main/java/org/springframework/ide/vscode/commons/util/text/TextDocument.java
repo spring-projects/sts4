@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 import org.springframework.ide.vscode.commons.util.text.linetracker.ILineTracker;
@@ -31,10 +32,10 @@ public class TextDocument implements IDocument {
 	private final String languageId;
 	private final String uri;
 	private Text text = new Text("");
+	private int version;
 
 	public TextDocument(String uri, String languageId) {
-		this.uri = uri;
-		this.languageId = languageId;
+		this(uri, languageId, 0);
 	}
 
 	private TextDocument(TextDocument other) {
@@ -42,6 +43,13 @@ public class TextDocument implements IDocument {
 		this.languageId = other.getLanguageId();
 		this.text = other.text;
 		this.lineTracker.set(text.toString());
+		this.version = other.version;
+	}
+
+	public TextDocument(String uri, String languageId, int version) {
+		this.uri = uri;
+		this.languageId = languageId;
+		this.version = version;
 	}
 
 	@Override
@@ -259,6 +267,17 @@ public class TextDocument implements IDocument {
 
 	public Range toRange(IRegion region) throws BadLocationException {
 		return toRange(region.getOffset(), region.getLength());
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	public TextDocumentIdentifier getId() {
+		if (uri!=null) {
+			return new TextDocumentIdentifier(uri);
+		}
+		return null;
 	}
 
 }

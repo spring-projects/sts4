@@ -103,7 +103,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 		IReconcileEngine reconcileEngine = getReconcileEngine();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc, reconcileEngine);
+			validateWith(doc.getId(), reconcileEngine);
 		});
 
 		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();

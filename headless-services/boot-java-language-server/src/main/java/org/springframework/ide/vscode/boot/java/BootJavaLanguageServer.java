@@ -54,7 +54,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		IReconcileEngine reconcileEngine = new BootJavaReconcileEngine();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc, reconcileEngine);
+			validateWith(doc.getId(), reconcileEngine);
 		});
 
 		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder, indexProvider);

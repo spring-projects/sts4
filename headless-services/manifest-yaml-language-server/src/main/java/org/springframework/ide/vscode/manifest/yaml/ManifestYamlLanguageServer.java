@@ -75,7 +75,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc, engine);
+			validateWith(doc.getId(), engine);
 		});
 
 //		workspace.onDidChangeConfiguraton(settings -> {

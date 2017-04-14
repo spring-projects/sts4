@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -21,8 +20,8 @@ import com.google.common.collect.ImmutableList;
 @FunctionalInterface
 public interface DocumentSymbolHandler {
 
-	DocumentSymbolHandler NO_SYMBOLS = (params) -> CompletableFuture.completedFuture(ImmutableList.of());
+	DocumentSymbolHandler NO_SYMBOLS = (params) -> ImmutableList.of();
 
-	CompletableFuture<List<? extends SymbolInformation>> handle(DocumentSymbolParams params);
+	List<? extends SymbolInformation> handle(DocumentSymbolParams params);
 
 }
