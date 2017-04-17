@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,22 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.java.properties.parser;
+package org.springframework.ide.vscode.commons.languageserver.util;
 
 /**
- * Basic Parser interface
+ * A listener used only for testing purposes. It can be attached to a {@link SimpleLanguageServer}
+ * to allow tests to receive callbacks for certain 'interesting' points in the language server's
+ * processing.
  *
- * @author Alex Boyko
- *
+ * @author Kris De Volder
  */
-public interface Parser {
-
-	/**
-	 * Parses passed in text based on Java Properties format
-	 *
-	 * @param text Text to parse
-	 * @return Results of the parsing. See {@link ParseResults}
-	 */
-	ParseResults parse(String text);
-
+public interface LanguageServerTestListener {
+	void reconcileStarted(String uri, int version);
 }

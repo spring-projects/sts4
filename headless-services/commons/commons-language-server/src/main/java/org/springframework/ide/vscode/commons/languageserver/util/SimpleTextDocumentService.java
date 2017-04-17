@@ -129,14 +129,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		try {
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
-			Log.debug("didChange: "+url);
+//			Log.debug("didChange: "+url);
 			if (url!=null) {
 				TextDocument doc = getDocument(url);
-				for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
-					doc.apply(change);
-					didChangeContent(doc, change);
-				}
-				doc.setVersion(docId.getVersion());
+				List<TextDocumentContentChangeEvent> changes = params.getContentChanges();
+				doc.apply(params);
+				didChangeContent(doc, changes);
 			}
 		} catch (BadLocationException e) {
 			Log.log(e);
@@ -151,8 +149,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		int version = docId.getVersion();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
-			TextDocument doc = createDocument(url, languageId, version).getDocument();
-			doc.setText(text);
+			TextDocument doc = createDocument(url, languageId, version, text).getDocument();
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
 				public Range getRange() {
@@ -169,7 +166,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 					return text;
 				}
 			};
-			TextDocumentContentChange evt = new TextDocumentContentChange(doc, change);
+			TextDocumentContentChange evt = new TextDocumentContentChange(doc, ImmutableList.of(change));
 			documentChangeListeners.fire(evt);
 		}
 	}
@@ -183,8 +180,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		}
 	}
 
-	void didChangeContent(TextDocument doc, TextDocumentContentChangeEvent change) {
-		documentChangeListeners.fire(new TextDocumentContentChange(doc, change));
+	void didChangeContent(TextDocument doc, List<TextDocumentContentChangeEvent> changes) {
+		documentChangeListeners.fire(new TextDocumentContentChange(doc, changes));
 	}
 
 	public void onDidChangeContent(Consumer<TextDocumentContentChange> l) {
@@ -195,16 +192,16 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		TrackedDocument doc = documents.get(url);
 		if (doc==null) {
 			Log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
-			doc = createDocument(url, LanguageIds.PLAINTEXT, 0);
+			doc = createDocument(url, LanguageIds.PLAINTEXT, 0, "");
 		}
 		return doc.getDocument();
 	}
 
-	private synchronized TrackedDocument createDocument(String url, String languageId, int version) {
+	private synchronized TrackedDocument createDocument(String url, String languageId, int version, String text) {
 		if (documents.get(url)!=null) {
 			Log.warn("Creating document ["+url+"] but it already exists. Existing document discarded!");
 		}
-		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version));
+		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version, text));
 		documents.put(url, doc);
 		return doc;
 	}
@@ -273,9 +270,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			return CompletableFuture.completedFuture(ImmutableList.of());
 		}
 		return Mono.fromCallable(() -> {
-			Log.debug("documentSymbol request waiting for reconcile: "+params.getTextDocument());
 			server.waitForReconcile();
-			Log.info("documentSymbol request proceeding: "+params.getTextDocument());
 			return documentSymbolHandler.handle(params);
 		})
 		.toFuture()
@@ -338,7 +333,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			params.setUri(docId.getUri());
 			params.setDiagnostics(diagnostics);
 			client.publishDiagnostics(params);
-			//Log.info("publishDiagnostics: "+params);
 		}
 	}
 

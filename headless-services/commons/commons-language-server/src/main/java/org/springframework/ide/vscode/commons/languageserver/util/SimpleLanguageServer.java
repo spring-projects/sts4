@@ -45,6 +45,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -86,6 +87,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	private CompletableFuture<Void> busyReconcile = CompletableFuture.completedFuture(null);
 
 	private QuickfixRegistry quickfixRegistry;
+
+	private LanguageServerTestListener testListener;
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -225,14 +228,23 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	 */
 	protected void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
-		Log.debug("Reconciling BUSY");
+//		Log.debug("Reconciling BUSY");
 
 		SimpleTextDocumentService documents = getTextDocumentService();
+
+		int requestedVersion = documents.getDocument(docId.getUri()).getVersion();
 
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono.fromRunnable(() -> {
 			TextDocument doc = documents.getDocument(docId.getUri()).copy();
+			if (requestedVersion!=doc.getVersion()) {
+				//Do not bother reconciling if document contents is already stale.
+				return;
+			}
+			if (testListener!=null) {
+				testListener.reconcileStarted(docId.getUri(), doc.getVersion());
+			}
 			IProblemCollector problems = new IProblemCollector() {
 
 				private List<Diagnostic> diagnostics = new ArrayList<>();
@@ -278,12 +290,15 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 //				Thread.sleep(2000);
 //			} catch (InterruptedException e) {
 //			}
-			Log.debug("Reconciling: "+doc);
 			engine.reconcile(doc, problems);
 		})
-		.doOnTerminate((ignore1, ignore2) -> {
+		.otherwise(error -> {
+			Log.log(error);
+			return Mono.empty();
+		})
+		.doFinally(ignore -> {
 			reconcileSession.complete(null);
-			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
+//			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
 		})
 		.subscribeOn(RECONCILER_SCHEDULER)
 		.subscribe();
@@ -325,6 +340,11 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public CompletableFuture<WorkspaceEdit> quickfixResolve(QuickfixResolveParams params) {
 		QuickfixRegistry quickfixes = getQuickfixRegistry();
 		return quickfixes.handle(params);
+	}
+
+	public void setTestListener(LanguageServerTestListener languageServerTestListener) {
+		Assert.isLegal(this.testListener==null);
+		testListener = languageServerTestListener;
 	}
 
 

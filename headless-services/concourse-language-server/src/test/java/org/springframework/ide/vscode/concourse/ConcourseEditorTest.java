@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
 
 public class ConcourseEditorTest {
 
@@ -2984,6 +2985,32 @@ public class ConcourseEditorTest {
 				"do-more-stuff|Job"
 		);
 	}
+
+	@Test public void reconcilerRaceCondition() throws Exception {
+		SynchronizationPoint reconcilerThreadStart = harness.reconcilerThreadStart();
+		Editor editor = harness.newEditor("garbage");
+
+		reconcilerThreadStart.reached(); // Blocks until the reconciler thread is reached.
+		try {
+			String editorContents = editor.getRawText();
+			for (int i = 0; i < 4; i++) {
+				editorContents = "\n" +editorContents;
+				editor.setText(editorContents);
+			}
+		} finally {
+			reconcilerThreadStart.unblock();
+		}
+
+		editor.assertRawText(
+				"\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"garbage"
+		);
+		editor.assertProblems("garbage|Expecting a 'Map'");
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 

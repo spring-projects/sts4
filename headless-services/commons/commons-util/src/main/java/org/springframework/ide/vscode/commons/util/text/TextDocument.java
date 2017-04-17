@@ -11,13 +11,16 @@
 
 package org.springframework.ide.vscode.commons.util.text;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 import org.springframework.ide.vscode.commons.util.text.linetracker.ILineTracker;
@@ -35,7 +38,7 @@ public class TextDocument implements IDocument {
 	private int version;
 
 	public TextDocument(String uri, String languageId) {
-		this(uri, languageId, 0);
+		this(uri, languageId, 0, "");
 	}
 
 	private TextDocument(TextDocument other) {
@@ -46,10 +49,11 @@ public class TextDocument implements IDocument {
 		this.version = other.version;
 	}
 
-	public TextDocument(String uri, String languageId, int version) {
+	public TextDocument(String uri, String languageId, int version, String text) {
 		this.uri = uri;
 		this.languageId = languageId;
 		this.version = version;
+		setText(text);
 	}
 
 	@Override
@@ -71,7 +75,7 @@ public class TextDocument implements IDocument {
 		this.lineTracker.set(text);
 	}
 
-	public void apply(TextDocumentContentChangeEvent change) throws BadLocationException {
+	private void apply(TextDocumentContentChangeEvent change) throws BadLocationException {
 		Range rng = change.getRange();
 		if (rng==null) {
 			//full sync mode
@@ -81,6 +85,15 @@ public class TextDocument implements IDocument {
 			int end = toOffset(rng.getEnd());
 			replace(start, end-start, change.getText());
 		}
+	}
+
+	public synchronized void apply(DidChangeTextDocumentParams params) throws BadLocationException {
+		int newVersion = params.getTextDocument().getVersion();
+		Assert.isLegal(version<newVersion);
+		for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
+			apply(change);
+		}
+		this.version = newVersion;
 	}
 
 	/**
@@ -214,7 +227,7 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public String toString() {
-		return "TextDocument(uri="+uri+",\n"+this.text+"\n)";
+		return "TextDocument(uri="+uri+"["+version+"],\n"+this.text+"\n)";
 	}
 
 	/**
@@ -269,8 +282,8 @@ public class TextDocument implements IDocument {
 		return toRange(region.getOffset(), region.getLength());
 	}
 
-	public void setVersion(int version) {
-		this.version = version;
+	public int getVersion() {
+		return version;
 	}
 
 	public TextDocumentIdentifier getId() {

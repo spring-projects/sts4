@@ -11,25 +11,27 @@
 
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.List;
+
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class TextDocumentContentChange {
 
 	private final TextDocument document;
-	private final TextDocumentContentChangeEvent change;
+	private final List<TextDocumentContentChangeEvent> changes;
 
-	public TextDocumentContentChange(TextDocument doc, TextDocumentContentChangeEvent change) {
+	public TextDocumentContentChange(TextDocument doc, List<TextDocumentContentChangeEvent> changes) {
 		this.document = doc;
-		this.change = change;
+		this.changes = changes;
 	}
 
 	public TextDocument getDocument() {
 		return document;
 	}
 
-	public TextDocumentContentChangeEvent getChange() {
-		return change;
+	public List<TextDocumentContentChangeEvent> getChanges() {
+		return changes;
 	}
 
 }

@@ -121,19 +121,9 @@ public class ConcourseModel {
 
 	private final ASTTypeCache astTypes = new ASTTypeCache();
 
-
 	public ConcourseModel(SimpleTextDocumentService documents) {
 		Yaml yaml = new Yaml();
 		this.parser = new YamlParser(yaml);
-		documents.onDidChangeContent(this::documentChanged);
-	}
-
-	private void documentChanged(TextDocumentContentChange changeEvent) {
-		String uri = changeEvent.getDocument().getUri();
-		if (uri!=null) {
-			Log.debug("Clear AST cache: "+uri);
-			asts.invalidate(uri);
-		}
 	}
 
 	/**
@@ -253,7 +243,7 @@ public class ConcourseModel {
 		return (IDocument doc) -> {
 			String uri = doc.getUri();
 			if (uri!=null) {
-				return asts.get(uri, allowStaleAsts, () -> {
+				return asts.get(uri, doc.getVersion(), allowStaleAsts, () -> {
 					return parser.getAST(doc);
 				});
 			}

@@ -28,6 +28,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -70,8 +71,10 @@ import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -502,5 +505,30 @@ public class LanguageServerHarness {
 		server.waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
 		return server.getTextDocumentService().documentSymbol(params).get();
+	}
+
+	/**
+	 * Blocks the reconciler thread until a specific point in time explicitly controlled by the test.
+	 */
+	public SynchronizationPoint reconcilerThreadStart() {
+		CompletableFuture<Void> blocker = new CompletableFuture<>();
+		server.setTestListener(new LanguageServerTestListener() {
+			@Override
+			public void reconcileStarted(String uri, int version) {
+				try {
+					blocker.get();
+				} catch (Exception e) {
+					throw ExceptionUtil.unchecked(e);
+				}
+			}
+		});
+		return new SynchronizationPoint() {
+			@Override public void unblock() {
+				blocker.complete(null);
+			}
+			@Override public Future<Void> reached() {
+				return blocker;
+			}
+		};
 	}
 }

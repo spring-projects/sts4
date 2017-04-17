@@ -29,5 +29,6 @@ public interface IDocument {
 	void replace(int start, int len, String text) throws BadLocationException;
 	String textBetween(int start, int end) throws BadLocationException;
 	String getLanguageId();
+	int getVersion();
 
 }

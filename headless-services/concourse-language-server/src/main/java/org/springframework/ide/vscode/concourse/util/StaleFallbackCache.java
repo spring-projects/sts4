@@ -28,40 +28,87 @@ import com.google.common.cache.CacheBuilder;
  */
 public class StaleFallbackCache<K, V>{
 
-	Map<K, V> staleEntries = new HashMap<>();
-	Cache<K, CompletableFuture<V>> validEntries = CacheBuilder.newBuilder().build();
+	private static class Versioned<T> {
+		int version;
+		T it;
+		public Versioned(int version, T it) {
+			super();
+			this.version = version;
+			this.it = it;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((it == null) ? 0 : it.hashCode());
+			result = prime * result + version;
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Versioned other = (Versioned) obj;
+			if (it == null) {
+				if (other.it != null)
+					return false;
+			} else if (!it.equals(other.it))
+				return false;
+			if (version != other.version)
+				return false;
+			return true;
+		}
+		@Override
+		public String toString() {
+			return "Versioned [version=" + version + ", it=" + it + "]";
+		}
+	}
 
-	public synchronized V get(K key, boolean allowStaleEntries, Callable<? extends V> valueLoader) throws Exception {
-		CompletableFuture<V> valid = validEntries.get(key, () -> load(valueLoader));
+	Map<K, V> staleEntries = new HashMap<>();
+	Cache<K, Versioned<CompletableFuture<V>>> latestEntries = CacheBuilder.newBuilder().build();
+
+	public synchronized V get(K key, int version, boolean allowStaleEntries, Callable<? extends V> valueLoader) throws Exception {
+		Versioned<CompletableFuture<V>> latest = latestEntries.get(key, () -> new Versioned<>(version, load(valueLoader)));
+		if (latest.version!=version) {
+			latestEntries.invalidate(key);
+			keepStaleBackup(key, latest);
+			latest = latestEntries.get(key, () -> new Versioned<>(version, load(valueLoader)));
+		}
 		if (!allowStaleEntries) {
-			return future_get(valid);
+			return future_get(version, latest);
 		} else {
-			if (valid.isCompletedExceptionally()) {
+			if (latest.it.isCompletedExceptionally()) {
 				V staleValue = staleEntries.get(key);
 				if (staleValue!=null) {
 					return staleValue;
 				}
 			}
-			return future_get(valid);
+			return future_get(latest.it);
 		}
 	}
 
-	public synchronized void invalidate(K key) {
-		CompletableFuture<V> staleEntry = validEntries.getIfPresent(key);
-		if (staleEntry!=null) {
-			validEntries.invalidate(key);
-			try {
-				staleEntries.put(key, future_get(staleEntry));
-			} catch (Exception e) {
-				//ignore. Don't overwrite stale entry if current entry represents an error.
-				// We only keep 'good quality' stale entries not failed attempts to compute a value.
-				// as it is kind of the point to fall back on a 'good' old entry when the current
-				// entry is unavailable because of a problem (e.g. problems parsing the AST).
-			}
+	/**
+	 * Called when a stale entry is found in the 'latest' map. This method is
+	 * responsible for determining if the entry should be kept as a staleBackup,
+	 * and store it.
+	 */
+	private void keepStaleBackup(K key, Versioned<CompletableFuture<V>> latest) {
+		try {
+			staleEntries.put(key, latest.it.get());
+		} catch (InterruptedException | ExecutionException e) {
+			//ignore: This means its a 'bad' entry and so we don't want to keep it
+			// as a 'stale backup'.
 		}
 	}
 
-
+	private V future_get(int wantedVersion, Versioned<CompletableFuture<V>> versioned) throws Exception {
+		Assert.isLegal(wantedVersion==versioned.version);
+		return future_get(versioned.it);
+	}
 
 	private V future_get(CompletableFuture<V> f) throws Exception {
 		try {
