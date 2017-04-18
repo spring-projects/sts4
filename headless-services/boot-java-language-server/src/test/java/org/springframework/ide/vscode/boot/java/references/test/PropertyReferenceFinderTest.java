@@ -91,9 +91,6 @@ public class PropertyReferenceFinderTest {
 
 	@Test
 	public void testFindReferenceWithinMultipleFiles() throws Exception {
-		// TODO: There's something wrong with this test, it fails for me (Kris).
-		//   The 'locations' are not arriving in the expected order.
-
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/multiple-files/").toURI());
@@ -103,35 +100,40 @@ public class PropertyReferenceFinderTest {
 		List<? extends Location> locations = resultFuture.get();
 		assertEquals(3, locations.size());
 
-		Location location = locations.get(0);
-		URI docURI = Paths.get(root.toString(), "application-dev.properties").toUri();
-		assertEquals(docURI.toString(), location.getUri());
+		Location location = getLocation(locations, Paths.get(root.toString(), "application-dev.properties").toUri());
+		assertNotNull(location);
 		assertEquals(1, location.getRange().getStart().getLine());
 		assertEquals(0, location.getRange().getStart().getCharacter());
 		assertEquals(1, location.getRange().getEnd().getLine());
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 
-		location = locations.get(1);
-		docURI = Paths.get(root.toString(), "application.properties").toUri();
-		assertEquals(docURI.toString(), location.getUri());
+		location = getLocation(locations, Paths.get(root.toString(), "application.properties").toUri());
+		assertNotNull(location);
 		assertEquals(1, location.getRange().getStart().getLine());
 		assertEquals(0, location.getRange().getStart().getCharacter());
 		assertEquals(1, location.getRange().getEnd().getLine());
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 
-		location = locations.get(2);
-		docURI = Paths.get(root.toString(), "prod-application.properties").toUri();
-		assertEquals(docURI.toString(), location.getUri());
+		location = getLocation(locations, Paths.get(root.toString(), "prod-application.properties").toUri());
+		assertNotNull(location);
 		assertEquals(1, location.getRange().getStart().getLine());
 		assertEquals(0, location.getRange().getStart().getCharacter());
 		assertEquals(1, location.getRange().getEnd().getLine());
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 	}
+	
+	private Location getLocation(List<? extends Location> locations, URI docURI) {
+		for (Location location : locations) {
+			if (docURI.toString().equals(location.getUri())) {
+				return location;
+			}
+		}
+		
+		return null;
+	}
 
 	@Test
 	public void testFindReferenceWithinMultipleMixedFiles() throws Exception {
-		// TODO: There's something wrong with this test, it fails for me (Kris).
-		//   The 'locations' are not arriving in the expected order.
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/mixed-multiple-files/").toURI());
@@ -141,17 +143,15 @@ public class PropertyReferenceFinderTest {
 		List<? extends Location> locations = resultFuture.get();
 		assertEquals(2, locations.size());
 
-		Location location = locations.get(0);
-		URI docURI = Paths.get(root.toString(), "application-dev.properties").toUri();
-		assertEquals(docURI.toString(), location.getUri());
+		Location location = getLocation(locations, Paths.get(root.toString(), "application-dev.properties").toUri());
+		assertNotNull(location);
 		assertEquals(1, location.getRange().getStart().getLine());
 		assertEquals(0, location.getRange().getStart().getCharacter());
 		assertEquals(1, location.getRange().getEnd().getLine());
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 
-		location = locations.get(1);
-		docURI = Paths.get(root.toString(), "application.yml").toUri();
-		assertEquals(docURI.toString(), location.getUri());
+		location = getLocation(locations, Paths.get(root.toString(), "application.yml").toUri());
+		assertNotNull(locations);
 		assertEquals(3, location.getRange().getStart().getLine());
 		assertEquals(2, location.getRange().getStart().getCharacter());
 		assertEquals(3, location.getRange().getEnd().getLine());
