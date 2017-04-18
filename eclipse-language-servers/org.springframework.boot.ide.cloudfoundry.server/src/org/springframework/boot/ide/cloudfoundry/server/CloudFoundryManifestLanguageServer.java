@@ -56,7 +56,7 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "vscode-manifest-yaml-0.0.3-SNAPSHOT.jar";
+		String languageServer = "manifest-yaml-language-server-0.0.3-SNAPSHOT.jar";
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);

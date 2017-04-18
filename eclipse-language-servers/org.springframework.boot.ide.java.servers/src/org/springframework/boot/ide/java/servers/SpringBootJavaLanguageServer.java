@@ -94,7 +94,7 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "vscode-boot-java-0.0.1-SNAPSHOT.jar";
+		String languageServer = "boot-java-language-server-0.0.1-SNAPSHOT.jar";
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);

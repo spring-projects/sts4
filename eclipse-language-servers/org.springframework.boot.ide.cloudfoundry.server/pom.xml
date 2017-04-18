@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>vscode-manifest-yaml</artifactId>
+			<artifactId>manifest-yaml-language-server</artifactId>
 			<version>0.0.3-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
@@ -39,7 +39,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.springframework.ide.vscode</groupId>
-									<artifactId>vscode-manifest-yaml</artifactId>
+									<artifactId>manifest-yaml-language-server</artifactId>
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
 								</artifactItem>

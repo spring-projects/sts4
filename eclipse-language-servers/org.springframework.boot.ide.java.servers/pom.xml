@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>vscode-boot-java</artifactId>
+			<artifactId>boot-java-language-server</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
@@ -39,7 +39,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.springframework.ide.vscode</groupId>
-									<artifactId>vscode-boot-java</artifactId>
+									<artifactId>boot-java-language-server</artifactId>
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
 								</artifactItem>
