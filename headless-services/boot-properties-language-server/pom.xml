@@ -22,10 +22,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>${project.name}-repo</id>
-			<url>file://${project.basedir}/repo</url>
-		</repository>
 	</repositories>
 	
 	<distributionManagement>
