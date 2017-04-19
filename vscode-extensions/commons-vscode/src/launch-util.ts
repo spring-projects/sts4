@@ -12,9 +12,11 @@ import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import { RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
 import { TextDocument, OutputChannel, Disposable, window } from 'vscode';
-import { Trace } from 'vscode-jsonrpc';
-import * as p2c from 'vscode-languageclient/lib/protocolConverter';
+import { Trace, NotificationType } from 'vscode-jsonrpc';
+import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {WorkspaceEdit} from 'vscode-languageserver-types';
+
+let p2c = P2C.createConverter();
 
 PortFinder.basePort = 45556;
 
@@ -37,10 +39,10 @@ interface QuickfixRequest {
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let clientPromise = _activate(options, context);
-    let commands = VSCode.commands
+    let commands = VSCode.commands;
     commands.registerCommand("sts.quickfix."+options.extensionId, (fixType, fixParams) => {
         return clientPromise.then(client => {
-            let type : RequestType<QuickfixRequest, WorkspaceEdit, void> = {method : "sts/quickfix"};
+            let type = new RequestType<QuickfixRequest, WorkspaceEdit, any, void>("sts/quickfix");
             let params : QuickfixRequest = {type: fixType, params: fixParams};
             return client.sendRequest(type, params)
             .then(
@@ -137,7 +139,7 @@ function _activate(options: ActivatorOptions, context: VSCode.ExtensionContext):
                 });
             }
 
-            return Promise.resolve(setupLanguageClient(context, createServer, options));
+            return setupLanguageClient(context, createServer, options);
         });
     }
 }
@@ -156,10 +158,10 @@ function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions
         return Promise.resolve(result);
     };
 
-    return Promise.resolve(setupLanguageClient(context, serverOptions, options));
+    return setupLanguageClient(context, serverOptions, options);
 }
 
-function setupLanguageClient(context: VSCode.ExtensionContext, createServer: ServerOptions, options: ActivatorOptions): LanguageClient {
+function setupLanguageClient(context: VSCode.ExtensionContext, createServer: ServerOptions, options: ActivatorOptions): Promise<LanguageClient> {
     // Create the language client and start the client.
     let client = new LanguageClient(options.extensionId, options.extensionId,
         createServer, options.clientOptions
@@ -168,19 +170,20 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         client.trace = Trace.Verbose;
     }
 
-    let progressService = new ProgressService();
-    client.onNotification({ method: "sts/progress" }, (params: ProgressParams) => {
-        progressService.handle(params);
-    });
+    let progressNotification = new NotificationType<ProgressParams,void>("sts/progress");
+
     let disposable = client.start();
 
-    // Push the disposable to the context's subscriptions so that the 
-    // client can be deactivated on extension deactivation
+    let progressService = new ProgressService();
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
-    return client
+    return  client.onReady().then(() => {
+        client.onNotification(progressNotification, (params: ProgressParams) => {
+            progressService.handle(params);
+        });
+        return client;
+    });
 }
-
 
 function isJava8(javaExecutablePath: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -255,5 +258,4 @@ class ProgressService {
         }
         this.status = null;
     }
-
 }

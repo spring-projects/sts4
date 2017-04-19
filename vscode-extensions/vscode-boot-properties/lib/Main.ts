@@ -36,13 +36,7 @@ export function activate(context: VSCode.ExtensionContext) {
                  // for application.yml files
                  <any> {language: 'yaml', pattern: '**/application*.yml'}
                  
-            ],
-            synchronize: {
-                // TODO: Remove textDocumentFilter property ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-                textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    return  /^(.*\/)?application[^\s\\/]*.(yml|properties)$/i.test(textDocument.fileName);
-                }
-            }
+            ]
         }
     };
     commons.activate(options, context);

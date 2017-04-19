@@ -49,4 +49,8 @@ public class Log {
 		logger.debug(string);
 	}
 
+	public static void warn(String msg, Throwable e) {
+		logger.warn(msg, e);
+	}
+
 }
