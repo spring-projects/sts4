@@ -19,6 +19,12 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>manifest-yaml-language-server</artifactId>
 			<version>0.0.3-SNAPSHOT</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>
 		</dependency>
 	</dependencies>
 
