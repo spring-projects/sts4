@@ -65,7 +65,7 @@ public class SourceJavadocTest {
 		assertEquals(expected, type.getJavaDoc().raw().trim());
 	}
 
-	@Test @Ignore //TODO: why is this sometimes failing in CI build?
+	@Test //TODO: why is this sometimes failing in CI build?
 	public void parser_testClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.getClasspath().findType("hello.Greeting");
@@ -122,7 +122,7 @@ public class SourceJavadocTest {
 		assertEquals(expected, method.getJavaDoc().raw().trim().substring(0, expected.length()));
 	}
 
-	@Test @Ignore //TODO: why is this sometimes failing in CI build?
+	@Test //TODO: why is this sometimes failing in CI build?
 	public void parser_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass");
