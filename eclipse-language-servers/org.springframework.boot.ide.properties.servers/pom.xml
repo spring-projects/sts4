@@ -21,8 +21,8 @@
 			<version>0.0.1-SNAPSHOT</version>
 		    <exclusions>
 		        <exclusion>
-		            <groupId>*</groupId>
-		            <artifactId>*</artifactId>
+		            <groupId>org.springframework.ide.eclipse</groupId>
+		            <artifactId>org.json</artifactId>
 		        </exclusion>
 		    </exclusions>
 		</dependency>

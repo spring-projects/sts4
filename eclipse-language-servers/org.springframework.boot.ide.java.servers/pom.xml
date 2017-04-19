@@ -19,12 +19,6 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>boot-java-language-server</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		    <exclusions>
-		        <exclusion>
-		            <groupId>*</groupId>
-		            <artifactId>*</artifactId>
-		        </exclusion>
-		    </exclusions>
 		</dependency>
 	</dependencies>
 
