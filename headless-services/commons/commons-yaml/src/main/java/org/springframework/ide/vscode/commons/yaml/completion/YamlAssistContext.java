@@ -24,7 +24,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
  * @author Kris De Volder
  */
 public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
-	Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception;
+	Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode current, int offset) throws Exception;
 
 	//TODO: conceptually... the right thing would be to only implement the second of these
 	// two methods and get rid of the first one.

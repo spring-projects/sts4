@@ -51,8 +51,6 @@ import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Flux;
-
 /**
  * @author Kris De Volder
  */
@@ -78,12 +76,6 @@ public class PipelineYmlSchema implements YamlSchema {
 			hint("bosh-deployment", "The bosh-deployment resource can deploy BOSH stemcells and releases."),
 			hint("vagrant-cloud", "The vagrant-cloud resource can fetch and publish Vagrant boxes to Atlas.")
 	};
-
-	public static final Set<String> BUILT_IN_RESOURCE_TYPE_NAMES = Flux.fromArray(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES)
-			.map(YValueHint::getValue)
-			.collect(Collectors.toSet())
-			.block();
-
 
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
@@ -163,6 +155,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	public PipelineYmlSchema(ConcourseModel models) {
 		this.models = models;
+		models.setResourceTypeRegistry(resourceTypes);
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		// define schema types
@@ -176,7 +169,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return models.getResourceTypeNameHints(dc.getDocument());
+					return models.getResourceTypeNameHints(dc);
 				}
 		);
 
@@ -185,7 +178,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return "The '"+parseString+"' resource does not exist. Existing resources: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return (models.getResourceNames(dc.getDocument()));
+					return (models.getResourceNames(dc));
 				}
 		);
 
@@ -194,7 +187,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return "The '"+parseString+"' Job does not exist. Existing jobs: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return models.getJobNames(dc.getDocument());
+					return models.getJobNames(dc);
 				}
 		);
 
@@ -250,7 +243,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		task.require((dc) -> {
 			String languageId = dc.getDocument().getLanguageId();
 			if (LanguageIds.CONCOURSE_PIPELINE.equals(languageId)) {
-				Node parentImageDef = getParentPropertyNode("image", models, dc);
+				Node parentImageDef = models.getParentPropertyNode("image", dc);
 				if (parentImageDef==null) {
 					return Constraints.requireOneOf("image_resource", "image");
 				} else {
@@ -266,7 +259,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		});
 
 		AbstractType t_put_get_name = f.contextAware("Name", (dc) -> {
-			if (getParentPropertyNode("resource", models, dc)!=null) {
+			if (models.getParentPropertyNode("resource", dc)!=null) {
 				return null;
 			} else {
 				return t_resource_name;
@@ -612,9 +605,9 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private Node getResourceNameNode(String resourceNameProp, DynamicSchemaContext dc) {
-		Node resourceName = getParentPropertyNode("resource", models, dc);
+		Node resourceName = models.getParentPropertyNode("resource", dc);
 		if (resourceName==null) {
-			resourceName = getParentPropertyNode(resourceNameProp, models, dc);
+			resourceName = models.getParentPropertyNode(resourceNameProp, dc);
 		}
 		return resourceName;
 	}
@@ -637,7 +630,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	private String getParentPropertyValue(String propName, ConcourseModel models, DynamicSchemaContext dc) {
-		return NodeUtil.asScalar(getParentPropertyNode(propName, models, dc));
+		return NodeUtil.asScalar(models.getParentPropertyNode(propName, dc));
 	}
 
 	private String getSiblingPropertyValue(DynamicSchemaContext dc, String propName) {
@@ -646,17 +639,6 @@ public class PipelineYmlSchema implements YamlSchema {
 			YamlFileAST root = models.getSafeAst(dc.getDocument());
 			if (root!=null) {
 				return NodeUtil.asScalar(path.append(YamlPathSegment.valueAt(propName)).traverseToNode(root));
-			}
-		}
-		return null;
-	}
-
-	private Node getParentPropertyNode(String propName, ConcourseModel models, DynamicSchemaContext dc) {
-		YamlPath path = dc.getPath();
-		if (path!=null) {
-			YamlFileAST root = models.getSafeAst(dc.getDocument());
-			if (root!=null) {
-				return path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root);
 			}
 		}
 		return null;

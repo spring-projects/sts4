@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -473,10 +474,11 @@ public class ConcourseEditorTest {
 	@Test
 	public void valueCompletions() throws Exception {
 		String [] builtInResourceTypes = {
-				"git", "hg", "time", "s3",
-				"archive", "semver", "github-release",
-				"docker-image", "tracker", "pool", "cf", "bosh-io-release",
-				"bosh-io-stemcell", "bosh-deployment", "vagrant-cloud"
+				"git", "hg", "time", "s3", "archive",
+				"semver", "github-release", "docker-image", "tracker",
+				"pool", "cf",
+				"bosh-io-release", "bosh-io-stemcell", "bosh-deployment",
+				"vagrant-cloud"
 		};
 		Arrays.sort(builtInResourceTypes);
 
@@ -484,12 +486,14 @@ public class ConcourseEditorTest {
 		for (int i = 0; i < expectedCompletions.length; i++) {
 			expectedCompletions[i] =
 					"resources:\n" +
-					"- type: "+builtInResourceTypes[i]+"<*>";
+					"- type: "+builtInResourceTypes[i]+"<*>\n" +
+					"  source:";
 		}
 
 		assertCompletions(
 				"resources:\n" +
-				"- type: <*>"
+				"- type: <*>\n" +
+				"  source:"
 				, //=>
 				expectedCompletions
 		);
@@ -2469,7 +2473,8 @@ public class ConcourseEditorTest {
 				"    repository: cfcommunity/slack-notification-resource\n" +
 				"    tag: latest\n" +
 				"resources:\n" +
-				"- type: <*>";
+				"- type: <*>\n" +
+				"  source:\n";
 
 		//All the good names are accepted:
 		String[] expectedCompletions = new String[goodNames.length];
@@ -2940,14 +2945,14 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//completions for current (i.e Job) context:
 				"build_logs_to_retain",
-                "disable_manual_trigger",
-                "max_in_flight",
-                "serial",
-                "serial_groups",
-                "name",
-                "plan",
-                "public",
-                //Completions for nested context (i.e. task step)
+				"disable_manual_trigger",
+				"max_in_flight",
+				"serial",
+				"serial_groups",
+				"name",
+				"plan",
+				"public",
+				//Completions for nested context (i.e. task step)
 				"➔ attempts",
 				"➔ config",
 				"➔ ensure",
@@ -2962,7 +2967,7 @@ public class ConcourseEditorTest {
 				"➔ tags",
 				"➔ task",
 				"➔ timeout"
-		);
+				);
 	}
 
 	@Test public void gotoSymbolInPipeline() throws Exception {
@@ -3011,6 +3016,88 @@ public class ConcourseEditorTest {
 		editor.assertProblems("garbage|Expecting a 'Map'");
 	}
 
+	@Test public void noAutoInsertRequiredSourcePropertiesIfPresent() throws Exception {
+		Editor editor;
+
+		//Most common case
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: <*>\n"+
+				"  source:"
+		);
+		editor.assertCompletionWithLabel((l) -> l.startsWith("pool"),
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: pool<*>\n" +
+				"  source:"
+		);
+
+	}
+
+	@Test public void autoInsertRequiredSourceProperties() throws Exception {
+		Editor editor;
+
+		//Most common case
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: <*>"
+		);
+		editor.assertCompletionWithLabel((l) -> l.startsWith("pool"),
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    uri: {{1:}}\n" +
+				"    branch: {{2:}}\n" +
+				"    pool: {{3:}}<*>"
+		);
+
+		// What if we use somewhat different indentation style?
+		editor = harness.newEditor(
+				"resources:\n" +
+				"  - name: source-repo\n" +
+				"    type: <*>"
+		);
+		editor.assertCompletionWithLabel((l) -> l.startsWith("pool"),
+				"resources:\n" +
+				"  - name: source-repo\n" +
+				"    type: pool\n" +
+				"    source:\n" +
+				"      uri: {{1:}}\n" +
+				"      branch: {{2:}}\n" +
+				"      pool: {{3:}}<*>"
+		);
+	}
+
+	@Ignore
+	@Test public void autoInsertRequiredSourceProperties3() throws Exception {
+		//This case can not be implemented correctly because of the magic indentations that vscode
+		// automatically applies. The magic indents will allways indent the extra lines we insert after
+		// the value to be indented to the level of that value. So it is impossible to create an edit
+		// where the text on the lines following it is indented *less* than that value, which is what
+		// is required to implement this case correctly.
+
+		//What if the type was on a new line (this is odd, but anyhow)
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: \n" +
+				"    <*>"
+		);
+		System.out.println(editor.getText());
+		editor.assertCompletionWithLabel((l) -> l.startsWith("pool"),
+				"resources:\n" +
+				"- name: source-repo\n" +
+				"  type: \n" +
+				"    pool\n" +
+				"  source:\n" +
+				"    uri: {{1:}}\n" +
+				"    branch: {{2:}}\n" +
+				"    pool: {{3:}}<*>"
+		);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 

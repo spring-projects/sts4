@@ -78,13 +78,15 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc!=null) {
 				YamlFileAST ast = models.getSafeAst(doc, false);
-				Node refNode = ast.findNode(doc.toOffset(params.getPosition()));
-				if (refNode!=null) {
-					YType type = astTypes.getType(ast, refNode);
-					if (type!=null) {
-						Handler handler = handlers.get(type);
-						if (handler!=null) {
-							return handler.handle(refNode, doc, ast);
+				if (ast!=null) {
+					Node refNode = ast.findNode(doc.toOffset(params.getPosition()));
+					if (refNode!=null) {
+						YType type = astTypes.getType(ast, refNode);
+						if (type!=null) {
+							Handler handler = handlers.get(type);
+							if (handler!=null) {
+								return handler.handle(refNode, doc, ast);
+							}
 						}
 					}
 				}

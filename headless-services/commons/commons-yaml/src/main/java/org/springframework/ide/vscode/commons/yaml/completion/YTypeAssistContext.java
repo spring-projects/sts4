@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
@@ -70,7 +71,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	@Override
 	public Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception {
 		String query = getPrefix(doc, node, offset);
-		List<ICompletionProposal> valueCompletions = getValueCompletions(doc, offset, query);
+		List<ICompletionProposal> valueCompletions = getValueCompletions(doc, node, offset, query);
 		if (!valueCompletions.isEmpty()) {
 			return valueCompletions;
 		}
@@ -150,7 +151,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		}
 	}
 
-	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, int offset, String query) {
+	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, SNode node, int offset, String query) {
 		YValueHint[] values=null;
 		try {
 			values = typeUtil.getHintValues(type, getSchemaContext());
@@ -159,6 +160,15 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		}
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
+			YamlIndentUtil indenter = new YamlIndentUtil(doc);
+			int referenceIndent;
+			try {
+				referenceIndent = getContextNode().getIndent();
+			} catch (Exception e) {
+				//Getting it from the node isn't always correct, but more often than not it is.
+				//So this fallback is better than nothing.
+				referenceIndent = node.getIndent();
+			}
 			for (YValueHint value : values) {
 				double score = FuzzyMatcher.matchScore(query, value.getValue());
 				if (score!=0 && !value.equals(query)) {
@@ -169,6 +179,10 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						edits.insert(offset, " ");
 					}
 					edits.insert(offset, value.getValue());
+					String extraInsertion = value.getExtraInsertion();
+					if (extraInsertion!=null) {
+						edits.insert(offset, indenter.applyIndentation(extraInsertion, referenceIndent));
+					}
 					completions.add(completionFactory().valueProposal(value.getValue(), query, value.getLabel(), type, score, edits, typeUtil));
 				}
 			}

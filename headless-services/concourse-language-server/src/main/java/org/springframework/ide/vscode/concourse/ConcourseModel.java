@@ -15,10 +15,14 @@ import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.v
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
+import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
@@ -29,7 +33,11 @@ import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
@@ -38,6 +46,7 @@ import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableMultiset.Builder;
 import com.google.common.collect.Multiset;
@@ -121,9 +130,14 @@ public class ConcourseModel {
 
 	private final ASTTypeCache astTypes = new ASTTypeCache();
 
-	public ConcourseModel(SimpleTextDocumentService documents) {
+	private ResourceTypeRegistry resourceTypes;
+
+	private final Supplier<SnippetBuilder> snippetBuilderFactory;
+
+	public ConcourseModel(SimpleLanguageServer languageServer) {
 		Yaml yaml = new Yaml();
 		this.parser = new YamlParser(yaml);
+		this.snippetBuilderFactory = languageServer::createSnippetBuilder;
 	}
 
 	/**
@@ -135,8 +149,8 @@ public class ConcourseModel {
 	 * names (e.g. because there hasn't been a successful parse yet and current document contents
 	 * can not be parsed).
 	 */
-	public Multiset<String> getResourceNames(IDocument doc) {
-		return getStringsFromAst(doc, RESOURCE_NAMES_PATH);
+	public Multiset<String> getResourceNames(DynamicSchemaContext dc) {
+		return getStringsFromAst(dc.getDocument(), RESOURCE_NAMES_PATH);
 	}
 
 	/**
@@ -180,8 +194,8 @@ public class ConcourseModel {
 	 * names (e.g. because there hasn't been a successful parse yet and current document contents
 	 * can not be parsed).
 	 */
-	public Multiset<String> getJobNames(IDocument doc) {
-		return getStringsFromAst(doc, JOB_NAMES_PATH);
+	public Multiset<String> getJobNames(DynamicSchemaContext dc) {
+		return getStringsFromAst(dc.getDocument(), JOB_NAMES_PATH);
 	}
 
 	private Multiset<String> getStringsFromAst(IDocument doc, YamlPath path) {
@@ -194,23 +208,59 @@ public class ConcourseModel {
 		});
 	}
 
-	public Multiset<String> getResourceTypeNames(IDocument doc) {
-		Collection<YValueHint> hints = getResourceTypeNameHints(doc);
+	public Multiset<String> getResourceTypeNames(DynamicSchemaContext dc) {
+		Collection<YValueHint> hints = getResourceTypeNameHints(dc);
 		if (hints!=null) {
 			return ImmutableMultiset.copyOf(YTypeFactory.values(hints));
 		}
 		return null;
 	}
 
-	public Collection<YValueHint> getResourceTypeNameHints(IDocument doc) {
+	public Collection<YValueHint> getResourceTypeNameHints(DynamicSchemaContext dc) {
+		IDocument doc = dc.getDocument();
 		Multiset<String> userDefined = getStringsFromAst(doc, RESOURCE_TYPE_NAMES_PATH);
 		if (userDefined!=null) {
 			Builder<YValueHint> builder = ImmutableMultiset.builder();
 			builder.addAll(YTypeFactory.hints(userDefined));
-			builder.addAll(Arrays.asList(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES));
+			builder.addAll(
+					Arrays.stream(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES)
+					.map(h -> addExtraInsertion(h, dc))
+					.collect(Collectors.toList())
+			);
 			return builder.build();
 		}
 		return null;
+	}
+
+	public Node getParentPropertyNode(String propName, DynamicSchemaContext dc) {
+		YamlPath path = dc.getPath();
+		if (path!=null) {
+			YamlFileAST root = this.getSafeAst(dc.getDocument());
+			if (root!=null) {
+				return path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root);
+			}
+		}
+		return null;
+	}
+
+	private YValueHint addExtraInsertion(YValueHint h, DynamicSchemaContext dc) {
+		return new BasicYValueHint(h.getValue(), h.getLabel()).setExtraInsertion(() -> {
+			String resourceTypeName = h.getValue();
+			AbstractType sourceType = (AbstractType) resourceTypes.getSourceType(resourceTypeName);
+			if (sourceType!=null && getParentPropertyNode("source", dc)==null) { //don't auto insert what's already there!
+				List<YTypedProperty> requiredProps = sourceType.getProperties().stream().filter(p -> p.isRequired()).collect(Collectors.toList());
+				if (!requiredProps.isEmpty()) {
+					SnippetBuilder snippet = snippetBuilderFactory.get();
+					snippet.text("\nsource:");
+					for (YTypedProperty p : requiredProps) {
+						snippet.text("\n  "+p.getName()+": ");
+						snippet.placeHolder();
+					}
+					return snippet.toString();
+				}
+			}
+			return null;
+		});
 	}
 
 
@@ -268,6 +318,10 @@ public class ConcourseModel {
 
 	public StepModel newStep(String stepType, MappingNode stepNode) {
 		return new StepModel(stepType, stepNode);
+	}
+
+	public void setResourceTypeRegistry(ResourceTypeRegistry resourceTypes) {
+		this.resourceTypes = resourceTypes;
 	}
 
 }

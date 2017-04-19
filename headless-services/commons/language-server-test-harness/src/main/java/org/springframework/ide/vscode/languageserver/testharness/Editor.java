@@ -24,8 +24,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
@@ -45,8 +46,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
-import org.springframework.ide.vscode.commons.util.CollectionUtil;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -516,11 +515,28 @@ public class Editor {
 		return it;
 	}
 
+	protected CompletionItem assertCompletionWithLabel(Predicate<String> expectLabel) throws Exception {
+		List<CompletionItem> completions = getCompletions();
+		Optional<CompletionItem> completion = completions.stream()
+				.filter((item) -> expectLabel.test(item.getLabel()))
+				.findFirst();
+		if (completion.isPresent()) {
+			return completion.get();
+		}
+		fail("Not found in "+ completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
+		return null; //unreachable but compiler doesn't know.
+	}
+
 	protected CompletionItem assertCompletionWithLabel(String expectLabel) throws Exception {
-		return getCompletions().stream()
+		List<CompletionItem> completions = getCompletions();
+		Optional<CompletionItem> completion = completions.stream()
 				.filter((item) -> item.getLabel().equals(expectLabel))
-				.findFirst()
-				.get();
+				.findFirst();
+		if (completion.isPresent()) {
+			return completion.get();
+		}
+		fail("Not found '"+expectLabel+"' in "+ completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
+		return null; //unreachable but compiler doesn't know.
 	}
 
 	public void assertCompletionWithLabel(String expectLabel, String expectedResult) throws Exception {
@@ -531,6 +547,13 @@ public class Editor {
 		setText(saveText);
 	}
 
+	public void assertCompletionWithLabel(Predicate<String> expectLabel, String expectedResult) throws Exception {
+		CompletionItem completion = assertCompletionWithLabel(expectLabel);
+		String saveText = getText();
+		apply(completion);
+		assertEquals(expectedResult, getText());
+		setText(saveText);
+	}
 
 	public void setSelection(int start, int end) {
 		Assert.assertTrue(start>=0);

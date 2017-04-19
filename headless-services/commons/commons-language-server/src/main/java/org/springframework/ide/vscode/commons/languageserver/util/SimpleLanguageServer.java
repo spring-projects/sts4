@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +91,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private LanguageServerTestListener testListener;
 
+	private boolean hasCompletionSnippetSupport;
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
@@ -102,28 +105,56 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		return quickfixRegistry;
 	}
 
+	public SnippetBuilder createSnippetBuilder() {
+		//TODO: create a snippet builder adapted to client capabilities.
+		// There are 3 different cases to consider here:
+		// (1) the client capabilities indicates that client has snippet support
+		// (2) the client capabilities indicates that client has no snippet support
+		// (3) special case for vscode (undocumented snippet support using '{{}}' variables).
+
+		//At the moment default implementation is suited only for case (3)
+		return new SnippetBuilder();
+	}
+
 	public SimpleLanguageServer(String extensionId) {
 		this.EXTENSION_ID = extensionId;
 	}
 
-    @Override
-    public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-//    	LOG.info("Initializing");
-    	String rootPath = params.getRootPath();
-    	if (rootPath==null) {
-//	        LOG.warning("workspaceRoot NOT SET");
-    	} else {
-	        this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
-//	        LOG.info("workspaceRoot = "+workspaceRoot);
-    	}
+	@Override
+	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+    	LOG.info("Initializing");
+		String rootPath = params.getRootPath();
+		if (rootPath==null) {
+			LOG.warning("workspaceRoot NOT SET");
+		} else {
+			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
+			this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
+			LOG.info("workspaceRoot = "+workspaceRoot);
+			LOG.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
+		}
 
-        InitializeResult result = new InitializeResult();
+		InitializeResult result = new InitializeResult();
 
-        ServerCapabilities cap = getServerCapabilities();
-        result.setCapabilities(cap);
+		ServerCapabilities cap = getServerCapabilities();
+		result.setCapabilities(cap);
 
-        return CompletableFuture.completedFuture(result);
-    }
+		return CompletableFuture.completedFuture(result);
+	}
+
+    /**
+     * Get some info safely. If there's any kind of exception, ignore it
+     * and retutn default value instead.
+     */
+	private static <T> T safeGet(T deflt, Callable<T> getter) {
+		try {
+			T x = getter.call();
+			if (x!=null) {
+				return x;
+			}
+		} catch (Exception e) {
+		}
+		return deflt;
+	}
 
 	public void onError(String message, Throwable error) {
 		LanguageClient cl = this.client;

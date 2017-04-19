@@ -10,10 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import org.springframework.ide.vscode.commons.util.Assert;
+
+import com.google.common.base.Supplier;
+
 public class BasicYValueHint implements YValueHint {
 
 	private final String value;
 	private String label;
+	private Supplier<String> extraInsertion = null;
 
 	public BasicYValueHint(String value, String label) {
 		this.value = value;
@@ -75,5 +80,17 @@ public class BasicYValueHint implements YValueHint {
 	@Override
 	public String toString() {
 		return "BasicYValueHint [value=" + value + ", label=" + label + "]";
+	}
+
+	@Override
+	public String getExtraInsertion() {
+		Supplier<String> ei = this.extraInsertion;
+		return ei==null ? null : ei.get();
+	}
+
+	public BasicYValueHint setExtraInsertion(Supplier<String> insertions) {
+		Assert.isLegal(this.extraInsertion==null);
+		this.extraInsertion = insertions;
+		return this;
 	}
 }

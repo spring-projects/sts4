@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
@@ -131,6 +132,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
 			//TODO: cursor offset within newText? for now we assume its always at the end.
 			item.setTextEdit(vscodeEdit);
+			item.setInsertTextFormat(InsertTextFormat.Snippet);
 		}
 	}
 

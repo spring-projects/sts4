@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 
 import com.google.common.collect.Multiset;
@@ -53,14 +54,14 @@ public class ConcourseValueParsers {
 	}
 
 	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
-			Function<IDocument, Multiset<String>> getDefinedNameCounts,
+			Function<DynamicSchemaContext, Multiset<String>> getDefinedNameCounts,
 			String typeName
 	) {
 		return acceptOnlyUniqueNames(getDefinedNameCounts, typeName, false);
 	}
 
 	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
-			Function<IDocument, Multiset<String>> getDefinedNameCounts,
+			Function<DynamicSchemaContext, Multiset<String>> getDefinedNameCounts,
 			String typeName,
 			boolean allowEmptyName
 	) {
@@ -69,7 +70,7 @@ public class ConcourseValueParsers {
 				if (!allowEmptyName && !StringUtil.hasText(input)) {
 					throw new ValueParseException("'"+typeName +"' should not be blank");
 				}
-				Multiset<String> resourceNames = getDefinedNameCounts.apply(dc.getDocument());
+				Multiset<String> resourceNames = getDefinedNameCounts.apply(dc);
 				if (resourceNames.count(input)<=1) {
 					//okay
 					return input;
