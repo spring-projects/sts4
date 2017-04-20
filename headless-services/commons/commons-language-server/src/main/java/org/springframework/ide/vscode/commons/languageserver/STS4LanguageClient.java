@@ -35,7 +35,8 @@ public interface STS4LanguageClient extends LanguageClient {
 	 * A client opts in via the ClientCapabilities.dynamicRegistration property
 	 * <p>
 	 * WARNING: This method doesn't formally exist in the LSP. It is actually
-	 * called client/registerCapability. Unfortunately
+	 * called client/registerCapability. The reason we added it here is because
+	 * of this: https://github.com/Microsoft/vscode-languageserver-node/issues/199
 	 */
 	@JsonRequest("client/registerFeature")
 	CompletableFuture<Void> registerFeature(RegistrationParams params);
