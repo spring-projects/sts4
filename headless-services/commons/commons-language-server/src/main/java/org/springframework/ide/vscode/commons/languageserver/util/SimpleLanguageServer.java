@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
@@ -63,8 +61,6 @@ import reactor.core.scheduler.Schedulers;
  * what its really doing and not the 'wiring and plumbing'.
  */
 public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient {
-
-    private static final Logger LOG = Logger.getLogger(SimpleLanguageServer.class.getName());
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
@@ -122,15 +118,15 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-    	LOG.info("Initializing");
+    	Log.debug("Initializing: "+params);
 		String rootPath = params.getRootPath();
 		if (rootPath==null) {
-			LOG.warning("workspaceRoot NOT SET");
+			Log.warn("workspaceRoot NOT SET");
 		} else {
 			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
 			this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
-			LOG.info("workspaceRoot = "+workspaceRoot);
-			LOG.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
+			Log.info("workspaceRoot = "+workspaceRoot);
+			Log.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		}
 
 		InitializeResult result = new InitializeResult();
@@ -162,7 +158,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			if (error instanceof ShowMessageException)
 				client.showMessage(((ShowMessageException) error).message);
 			else {
-				LOG.log(Level.SEVERE, message, error);
+				Log.log(message, error);
 
 				MessageParams m = new MessageParams();
 
@@ -312,7 +308,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 							diagnostics.add(d);
 						}
 					} catch (BadLocationException e) {
-						LOG.log(Level.WARNING, "Invalid reconcile problem ignored", e);
+						Log.warn("Invalid reconcile problem ignored", e);
 					}
 				}
 			};

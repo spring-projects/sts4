@@ -42,15 +42,7 @@ export function activate(context: VSCode.ExtensionContext) {
             // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
 
             // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-            documentSelector: ["manifest-yaml"],
-//            documentSelector: [ <any> {language: 'yaml', pattern: '**/manifest*.yml'}],
-            synchronize: {
-                // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-                textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    let result : boolean =  /^(.*\/)?manifest[^\s\\/]*.yml$/i.test(textDocument.fileName);
-                    return result;
-                }
-            }
+            documentSelector: ["manifest-yaml"]
         }
     };
     commons.activate(options, context);

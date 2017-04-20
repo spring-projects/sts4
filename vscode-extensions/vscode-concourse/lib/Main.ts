@@ -37,14 +37,7 @@ export function activate(context: VSCode.ExtensionContext) {
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: "48m",
         clientOptions: {
-            documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ],
-            synchronize: {
-                // TODO: Remove textDocumentFilter property once https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-                textDocumentFilter: function(textDocument : TextDocument) : boolean {
-                    let languageId = textDocument.languageId;
-                    return  PIPELINE_LANGUAGE_ID===languageId || TASK_LANGUAGE_ID===languageId;
-                }
-            }
+            documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ]
         }
     };
     let clientPromise = commons.activate(options, context);

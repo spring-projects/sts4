@@ -8,7 +8,7 @@
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
     "node": ">=4.0.0",
-    "vscode": "^1.5.0"
+    "vscode": "^1.6.0"
   },
   "keywords": [
     ""
@@ -27,9 +27,9 @@
     "portfinder": "^0.4.0"
   },
   "devDependencies": {
-    "typescript": "2.0.x",
-    "@types/node": "6.0.40",
-    "vscode": "^1.0.0",
-    "vscode-languageclient": "^2.6.2"
+    "typescript": "^2.3.0",
+    "@types/node": "^6.0.68",
+    "vscode": "^1.1.0",
+    "vscode-languageclient": "^3.2.0"
   }
 }

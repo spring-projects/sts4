@@ -3049,9 +3049,9 @@ public class ConcourseEditorTest {
 				"- name: source-repo\n" +
 				"  type: pool\n" +
 				"  source:\n" +
-				"    uri: {{1:}}\n" +
-				"    branch: {{2:}}\n" +
-				"    pool: {{3:}}<*>"
+				"    uri: $1\n" +
+				"    branch: $2\n" +
+				"    pool: $3<*>"
 		);
 
 		// What if we use somewhat different indentation style?
@@ -3065,9 +3065,9 @@ public class ConcourseEditorTest {
 				"  - name: source-repo\n" +
 				"    type: pool\n" +
 				"    source:\n" +
-				"      uri: {{1:}}\n" +
-				"      branch: {{2:}}\n" +
-				"      pool: {{3:}}<*>"
+				"      uri: $1\n" +
+				"      branch: $2\n" +
+				"      pool: $3<*>"
 		);
 	}
 
@@ -3093,9 +3093,9 @@ public class ConcourseEditorTest {
 				"  type: \n" +
 				"    pool\n" +
 				"  source:\n" +
-				"    uri: {{1:}}\n" +
-				"    branch: {{2:}}\n" +
-				"    pool: {{3:}}<*>"
+				"    uri: $1\n" +
+				"    branch: $2\n" +
+				"    pool: $3<*>"
 		);
 	}
 
