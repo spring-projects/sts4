@@ -32,33 +32,7 @@ export interface ActivatorOptions {
     jvmHeap?: string;
 }
 
-interface QuickfixRequest {
-    type: string;
-    params: any;
-}
-
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
-    let clientPromise = _activate(options, context);
-    let commands = VSCode.commands;
-    commands.registerCommand("sts.quickfix."+options.extensionId, (fixType, fixParams) => {
-        return clientPromise.then(client => {
-            let type = new RequestType<QuickfixRequest, WorkspaceEdit, any, void>("sts/quickfix");
-            let params : QuickfixRequest = {type: fixType, params: fixParams};
-            return client.sendRequest(type, params)
-            .then(
-                (edit) => { 
-                    return VSCode.workspace.applyEdit(p2c.asWorkspaceEdit(edit)) 
-                },
-                (error) => { 
-                    return VSCode.window.showErrorMessage(""+error) 
-                }
-            );
-        })
-    });
-    return clientPromise;
-}
-
-function _activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = options.jvmHeap;
     if (options.CONNECT_TO_LS) {

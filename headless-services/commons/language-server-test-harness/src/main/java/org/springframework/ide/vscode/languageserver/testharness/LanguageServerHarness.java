@@ -27,22 +27,27 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.ExecuteCommandCapabilites;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -52,16 +57,18 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceClientCapabilites;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -69,18 +76,16 @@ import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
-import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+
+import reactor.core.publisher.Mono;
 
 public class LanguageServerHarness {
 
@@ -163,6 +168,16 @@ public class LanguageServerHarness {
 		initParams.setRootPath(workspaceRoot== null?null:workspaceRoot.toString());
 		initParams.setProcessId(parentPid);
 		ClientCapabilities clientCap = new ClientCapabilities();
+		TextDocumentClientCapabilities textCap = new TextDocumentClientCapabilities();
+		CompletionCapabilities completionCap = new CompletionCapabilities(new CompletionItemCapabilities(true));
+		textCap.setCompletion(completionCap);
+		clientCap.setTextDocument(textCap);
+		WorkspaceClientCapabilites workspaceCap = new WorkspaceClientCapabilites();
+		workspaceCap.setApplyEdit(true);
+		ExecuteCommandCapabilites exeCap = new ExecuteCommandCapabilites();
+		exeCap.setDynamicRegistration(true);
+		workspaceCap.setExecuteCommand(exeCap);
+		clientCap.setWorkspace(workspaceCap);
 		initParams.setCapabilities(clientCap);
 		initResult = server.initialize(initParams).get();
 		if (server instanceof LanguageClientAware) {
@@ -197,13 +212,32 @@ public class LanguageServerHarness {
 				}
 
 				@Override
+				public CompletableFuture<ApplyWorkspaceEditResponse> applyEdit(ApplyWorkspaceEditParams params) {
+					return Mono.fromCallable(() -> {
+						perform(params.getEdit());
+						return new ApplyWorkspaceEditResponse(true);
+					}).toFuture();
+				}
+
+				@Override
+				public CompletableFuture<Void> registerCapability(RegistrationParams params) {
+					return CompletableFuture.completedFuture(null);
+				}
+
+				@Override
 				public void progress(ProgressParams progressEvent) {
 					// TODO Auto-generated method stub
 
 				}
+
+				@Override
+				public CompletableFuture<Void> registerFeature(RegistrationParams params) {
+					return CompletableFuture.completedFuture(null);
+				}
 			});
 
 		}
+		server.initialized();
 		return initResult;
 	}
 
@@ -444,21 +478,15 @@ public class LanguageServerHarness {
 
 	ObjectMapper mapper = new ObjectMapper();
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void perform(Command command) throws Exception {
-		if (getQuickfixCommandId().equals(command.getCommand())) {
-			List<Object> args = command.getArguments();
-			assertEquals(2, args.size());
-			//Note convert the value to a 'typeless' Object becaus that is more representative on how it will be
-			// received when we get it in a real client/server setting (i.e. parsed from json).
-			Object untypedParams = mapper.convertValue(args.get(1), Object.class);
-			perform(server.quickfixResolve(new QuickfixResolveParams((String)args.get(0), untypedParams)).get());
-		} else {
-			throw new IllegalArgumentException("Unknown command: "+command);
-		}
-	}
-
-	private String getQuickfixCommandId() {
-		return "sts.quickfix."+server.EXTENSION_ID;
+		List<Object> args = command.getArguments();
+		//Note convert the params to a 'typeless' Object because that is more representative on how it will be
+		// received when we get it in a real client/server setting (i.e. parsed from json).
+		List untypedParams = mapper.convertValue(args, List.class);
+		server.getWorkspaceService()
+			.executeCommand(new ExecuteCommandParams(command.getCommand(), untypedParams))
+			.get();
 	}
 
 	private void perform(WorkspaceEdit workspaceEdit) throws Exception {

@@ -17,18 +17,20 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
+import org.springframework.ide.vscode.commons.util.Assert;
 
 public class SimpleWorkspaceService implements WorkspaceService {
 
 	private ListenerList<Settings> configurationListeners = new ListenerList<>();
+	private ExecuteCommandHandler executeCommandHandler;
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -38,13 +40,22 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
+		if (this.executeCommandHandler!=null) {
+			return this.executeCommandHandler.handle(params);
+		}
+		throw new UnsupportedOperationException();
 	}
 
 	public void onDidChangeConfiguraton(Consumer<Settings> l) {
 		configurationListeners.add(l);
 	}
 
-
+	public void onExecuteCommand(ExecuteCommandHandler handler) {
+		Assert.isNull("A executeCommandHandler is already set, multiple handlers not supported yet", this.executeCommandHandler);
+		this.executeCommandHandler = handler;
+	}
 }

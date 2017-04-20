@@ -14,22 +14,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.ExecuteCommandOptions;
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -50,6 +55,8 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
+
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -65,6 +72,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
 	public final String EXTENSION_ID;
+	private final String CODE_ACTION_COMMAND_ID;
 
     private Path workspaceRoot;
 
@@ -89,6 +97,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private boolean hasCompletionSnippetSupport;
 
+	private boolean hasExecuteCommandSupport;
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
@@ -102,32 +112,73 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	}
 
 	public SnippetBuilder createSnippetBuilder() {
-		//TODO: create a snippet builder adapted to client capabilities.
-		// There are 3 different cases to consider here:
-		// (1) the client capabilities indicates that client has snippet support
-		// (2) the client capabilities indicates that client has no snippet support
-		// (3) special case for vscode (undocumented snippet support using '{{}}' variables).
-
-		//At the moment default implementation is suited only for case (3)
 		return new SnippetBuilder();
 	}
 
 	public SimpleLanguageServer(String extensionId) {
 		this.EXTENSION_ID = extensionId;
+		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
+	}
+
+	@Override
+	public void initialized() {
+		Log.info("Initialized!");
+		if (hasExecuteCommandSupport) {
+			RegistrationParams params = new RegistrationParams(ImmutableList.of(
+				new Registration(
+						UUID.randomUUID().toString(),
+						"workspace/executeCommand",
+						new ExecuteCommandOptions(ImmutableList.of(
+								CODE_ACTION_COMMAND_ID
+						))
+				)
+			));
+			getWorkspaceService().onExecuteCommand(this::executeCommand);
+			Log.info("Registering capabilitie: "+params);
+			Mono.fromFuture(client.registerCapability(params))
+				.otherwise((e) -> {
+					Log.warn("registerCapability failed, using non-standard 'registerFeature' instead.", e);
+					return Mono.fromFuture(client.registerFeature(params));
+				})
+				.doOnError(Log::log)
+				.subscribe();
+		}
+	}
+
+	protected CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
+		if (CODE_ACTION_COMMAND_ID.equals(params.getCommand())) {
+			Assert.isLegal(params.getArguments().size()==2);
+			QuickfixResolveParams quickfixParams = new QuickfixResolveParams(
+					(String)params.getArguments().get(0), params.getArguments().get(1)
+			);
+			return quickfixResolve(quickfixParams)
+					.then((WorkspaceEdit edit) -> Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit))))
+					.map(r -> (Object)r.getApplied())
+					.toFuture();
+		}
+		Log.warn("Unknown command ignored: "+params.getCommand());
+		return CompletableFuture.completedFuture(false);
+	}
+
+	public Mono<WorkspaceEdit> quickfixResolve(QuickfixResolveParams params) {
+		QuickfixRegistry quickfixes = getQuickfixRegistry();
+		return quickfixes.handle(params);
 	}
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-    	Log.debug("Initializing: "+params);
+		Log.debug("Initializing: "+params);
 		String rootPath = params.getRootPath();
 		if (rootPath==null) {
 			Log.warn("workspaceRoot NOT SET");
 		} else {
 			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
-			this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
-			Log.info("workspaceRoot = "+workspaceRoot);
-			Log.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		}
+		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
+		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand().getDynamicRegistration());
+		Log.info("workspaceRoot = "+workspaceRoot);
+		Log.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
+		Log.info("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
 		InitializeResult result = new InitializeResult();
 
@@ -302,7 +353,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 							List<QuickfixData<?>> fixes = problem.getQuickfixes();
 							if (CollectionUtil.hasElements(fixes)) {
 								for (QuickfixData<?> fix : fixes) {
-									quickfixes.add(new Quickfix<>(EXTENSION_ID, rng, fix));
+									quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, rng, fix));
 								}
 							}
 							diagnostics.add(d);
@@ -361,12 +412,6 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	public ProgressService getProgressService() {
 		return progressService;
-	}
-
-	@JsonRequest("sts/quickfix")
-	public CompletableFuture<WorkspaceEdit> quickfixResolve(QuickfixResolveParams params) {
-		QuickfixRegistry quickfixes = getQuickfixRegistry();
-		return quickfixes.handle(params);
 	}
 
 	public void setTestListener(LanguageServerTestListener languageServerTestListener) {

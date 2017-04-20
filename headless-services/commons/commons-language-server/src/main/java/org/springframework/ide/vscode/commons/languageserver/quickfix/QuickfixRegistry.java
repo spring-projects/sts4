@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.languageserver.quickfix;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -52,11 +51,11 @@ public class QuickfixRegistry {
 		};
 	}
 
-	public CompletableFuture<WorkspaceEdit> handle(QuickfixResolveParams params) {
+	public Mono<WorkspaceEdit> handle(QuickfixResolveParams params) {
 		QuickfixHandler handler = registry.get(params.getType());
 		return Mono.fromSupplier(() -> {
 			return handler.createEdits(params.getParams());
-		}).toFuture();
+		});
 	}
 
 	public boolean hasFixes() {
