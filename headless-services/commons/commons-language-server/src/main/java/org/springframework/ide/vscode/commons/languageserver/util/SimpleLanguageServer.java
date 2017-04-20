@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,8 +28,6 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.Registration;
-import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
@@ -120,31 +117,6 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
 	}
 
-	@Override
-	public void initialized() {
-		Log.info("Initialized!");
-		if (hasExecuteCommandSupport) {
-			RegistrationParams params = new RegistrationParams(ImmutableList.of(
-				new Registration(
-						UUID.randomUUID().toString(),
-						"workspace/executeCommand",
-						new ExecuteCommandOptions(ImmutableList.of(
-								CODE_ACTION_COMMAND_ID
-						))
-				)
-			));
-			getWorkspaceService().onExecuteCommand(this::executeCommand);
-			Log.info("Registering capabilitie: "+params);
-			Mono.fromFuture(client.registerCapability(params))
-				.otherwise((e) -> {
-					Log.warn("registerCapability failed, using non-standard 'registerFeature' instead.", e);
-					return Mono.fromFuture(client.registerFeature(params));
-				})
-				.doOnError(Log::log)
-				.subscribe();
-		}
-	}
-
 	protected CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
 		if (CODE_ACTION_COMMAND_ID.equals(params.getCommand())) {
 			Assert.isLegal(params.getArguments().size()==2);
@@ -175,23 +147,26 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
 		}
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
-		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand().getDynamicRegistration());
+		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
 		Log.info("workspaceRoot = "+workspaceRoot);
 		Log.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		Log.info("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
 		InitializeResult result = new InitializeResult();
 
+		if (hasExecuteCommandSupport) {
+			getWorkspaceService().onExecuteCommand(this::executeCommand);
+		}
 		ServerCapabilities cap = getServerCapabilities();
 		result.setCapabilities(cap);
 
 		return CompletableFuture.completedFuture(result);
 	}
 
-    /**
-     * Get some info safely. If there's any kind of exception, ignore it
-     * and retutn default value instead.
-     */
+	/**
+	 * Get some info safely. If there's any kind of exception, ignore it
+	 * and retutn default value instead.
+	 */
 	private static <T> T safeGet(T deflt, Callable<T> getter) {
 		try {
 			T x = getter.call();
@@ -241,6 +216,11 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 		if (hasDocumentSymbolHandler()) {
 			c.setDocumentSymbolProvider(true);
+		}
+		if (hasExecuteCommandSupport && quickfixRegistry.hasFixes()) {
+			c.setExecuteCommandProvider(new ExecuteCommandOptions(ImmutableList.of(
+					CODE_ACTION_COMMAND_ID
+			)));
 		}
 
 		return c;

@@ -229,11 +229,6 @@ public class LanguageServerHarness {
 					// TODO Auto-generated method stub
 
 				}
-
-				@Override
-				public CompletableFuture<Void> registerFeature(RegistrationParams params) {
-					return CompletableFuture.completedFuture(null);
-				}
 			});
 
 		}
