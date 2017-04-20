@@ -148,9 +148,9 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
-		Log.info("workspaceRoot = "+workspaceRoot);
-		Log.info("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
-		Log.info("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
+		Log.debug("workspaceRoot = "+workspaceRoot);
+		Log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
+		Log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
 		InitializeResult result = new InitializeResult();
 
@@ -217,7 +217,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		if (hasDocumentSymbolHandler()) {
 			c.setDocumentSymbolProvider(true);
 		}
-		if (hasExecuteCommandSupport && quickfixRegistry.hasFixes()) {
+		if (hasExecuteCommandSupport && hasQuickFixes()) {
 			c.setExecuteCommandProvider(new ExecuteCommandOptions(ImmutableList.of(
 					CODE_ACTION_COMMAND_ID
 			)));
