@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -97,7 +98,7 @@ public class Editor {
 	};
 
 	private LanguageServerHarness harness;
-	private TextDocumentInfo document;
+	private TextDocumentInfo doc;
 
 	private int selectionEnd;
 
@@ -109,7 +110,7 @@ public class Editor {
 		this.harness = harness;
 		this.languageId = LanguageId.of(languageId.getId()); // So we can catch bugs that use == for langauge id comparison.
 		EditorState state = new EditorState(contents);
-		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents, this.languageId));
+		this.doc = harness.openDocument(harness.createWorkingCopy(state.documentContents, this.languageId));
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
@@ -172,7 +173,7 @@ public class Editor {
 	 * after applying a proposal)
 	 */
 	public String getText() {
-		String text = document.getText();
+		String text = doc.getText();
 		text = text.substring(0, selectionEnd) + CURSOR + text.substring(selectionEnd);
 		if (selectionStart<selectionEnd) {
 			text = text.substring(0,selectionStart) + CURSOR + text.substring(selectionStart);
@@ -182,7 +183,7 @@ public class Editor {
 
 	public void setText(String content) throws Exception {
 		EditorState state = new EditorState(content);
-		document = harness.changeDocument(document.getUri(), state.documentContents);
+		doc = harness.changeDocument(doc.getUri(), state.documentContents);
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 	}
@@ -191,19 +192,19 @@ public class Editor {
 	 * @return The 'raw' text in the editor, i.e. without the cursor markers.
 	 */
 	public String getRawText() throws Exception {
-		return document.getText();
+		return doc.getText();
 	}
 
 	private void replaceText(int start, int end, String newText) {
-		document = harness.changeDocument(document.getUri(), start, end, newText);
+		doc = harness.changeDocument(doc.getUri(), start, end, newText);
 	}
 
 	public void setRawText(String newContent) throws Exception {
-		document = harness.changeDocument(document.getUri(), newContent);
+		doc = harness.changeDocument(doc.getUri(), newContent);
 	}
 
 	public String getText(Range range) {
-		return document.getText(range);
+		return doc.getText(range);
 	}
 
 	private String deWindowsify(String text) {
@@ -215,11 +216,22 @@ public class Editor {
 		String[] parts = expect.split("\\|");
 		assertEquals(2, parts.length);
 		String badSnippet = parts[0];
-		String snippetFollow = null;
-		int carretOffset = badSnippet.indexOf('^');
-		if (carretOffset>=0) {
-			snippetFollow = badSnippet.substring(carretOffset+1);
-			badSnippet = badSnippet.substring(0, carretOffset);
+		String snippetBefore;
+		String snippetAfter;
+		String[] badParts = badSnippet.split("\\^");
+		Assert.assertTrue(badParts.length<=3);
+		if (badParts.length == 1) {
+			snippetBefore = "";
+			snippetAfter = "";
+			badSnippet = badParts[0];
+		} else if (badParts.length == 2) {
+			snippetBefore = "";
+			badSnippet = badParts[0];
+			snippetAfter = badParts[1];
+		} else { // badParts.length == 3
+			snippetBefore = badParts[0];
+			badSnippet = badParts[1];
+			snippetAfter = badParts[2];
 		}
 		String messageSnippet = parts[1];
 		boolean spaceSensitive = badSnippet.trim().length()<badSnippet.length();
@@ -230,28 +242,32 @@ public class Editor {
 		if (!spaceSensitive) {
 			actualBadSnippet = actualBadSnippet.trim();
 		}
+
+		int start = doc.toOffset(problem.getRange().getStart());
+		int end = doc.toOffset(problem.getRange().getEnd());
+
 		return actualBadSnippet.equals(badSnippet)
-				&& ( snippetFollow==null ||
-					snippetFollow.equals(getText(problem.getRange().getEnd(), snippetFollow.length())))
+				&& snippetBefore.equals(doc.textBetween(start - snippetBefore.length(), start))
+				&& snippetAfter.equals(doc.textBetween(end, end+snippetAfter.length()))
 				&& problem.getMessage().contains(messageSnippet);
 	}
 
 	private String getText(Position start, int length) {
-		int offset = document.toOffset(start);
-		String text = document.getText();
+		int offset = doc.toOffset(start);
+		String text = doc.getText();
 		return text.substring(offset, offset+length);
 	}
 
 	private String getCharAt(Position start) {
-		String text = document.getText();
-		int offset = document.toOffset(start);
+		String text = doc.getText();
+		int offset = doc.toOffset(start);
 		return offset<text.length()
 			? text.substring(offset, offset+1)
 			: "";
 	}
 
 	public List<Diagnostic> reconcile() throws Exception {
-		PublishDiagnosticsParams diagnostics = harness.getDiagnostics(document);
+		PublishDiagnosticsParams diagnostics = harness.getDiagnostics(doc);
 		if (diagnostics!=null) {
 			return diagnostics.getDiagnostics();
 		}
@@ -324,14 +340,14 @@ public class Editor {
 
 	public void apply(CompletionItem completion) throws Exception {
 		TextEdit edit = completion.getTextEdit();
-		String docText = document.getText();
+		String docText = doc.getText();
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
 			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
 			// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
 			int referenceLine = edit.getRange().getStart().getLine();
 			int cursorOffset = edit.getRange().getStart().getCharacter();
-			String referenceIndent = document.getLineIndentString(referenceLine);
+			String referenceIndent = doc.getLineIndentString(referenceLine);
 			if (cursorOffset<referenceIndent.length()) {
 				referenceIndent = referenceIndent.substring(0, cursorOffset);
 			}
@@ -345,8 +361,8 @@ public class Editor {
 			}
 
 			Range rng = edit.getRange();
-			int start = document.toOffset(rng.getStart());
-			int end = document.toOffset(rng.getEnd());
+			int start = doc.toOffset(rng.getStart());
+			int end = doc.toOffset(rng.getEnd());
 			replaceText(start, end, replaceWith);
 			selectionStart = selectionEnd = start+cursorReplaceOffset;
 		} else {
@@ -378,7 +394,7 @@ public class Editor {
 	}
 
 	public List<CompletionItem> getCompletions() throws Exception {
-		CompletionList cl = harness.getCompletions(this.document, this.getCursor());
+		CompletionList cl = harness.getCompletions(this.doc, this.getCursor());
 		ArrayList<CompletionItem> items = new ArrayList<>(cl.getItems());
 		Collections.sort(items, new Comparator<CompletionItem>() {
 
@@ -403,18 +419,18 @@ public class Editor {
 	}
 
 	private Position getCursor() {
-		return document.toPosition(selectionStart);
+		return doc.toPosition(selectionStart);
 	}
 
 	public void assertIsHoverRegion(String string) throws Exception {
 		int hoverPosition = getHoverPosition(string, 1);
-		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertEquals(string, getText(hover.getRange()));
 	}
 
 	public void assertHoverContains(String hoverOver, int occurrence, String snippet) throws Exception {
 		int hoverPosition = getHoverPosition(hoverOver, occurrence);
-		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertContains(snippet, hoverString(hover));
 	}
 
@@ -467,13 +483,13 @@ public class Editor {
 
 	public void assertHoverContains(String hoverOver, String snippet) throws Exception {
 		int hoverPosition = getHoverPosition(hoverOver,1);
-		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertContains(snippet, hoverString(hover));
 	}
 
 	public void assertNoHover(String hoverOver) throws Exception {
 		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
-		Hover hover = harness.getHover(document, document.toPosition(hoverPosition));
+		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertTrue(hover.getContents().isEmpty());
 	}
 
@@ -487,7 +503,7 @@ public class Editor {
 		if (pos>=0) {
 			pos += afterString.length();
 		}
-		Hover hover = harness.getHover(document, document.toPosition(pos));
+		Hover hover = harness.getHover(doc, doc.toPosition(pos));
 		assertContains(expectSnippet, hoverString(hover));
 	}
 
@@ -501,7 +517,7 @@ public class Editor {
 		if (pos>=0) {
 			pos += afterString.length();
 		}
-		Hover hover = harness.getHover(document, document.toPosition(pos));
+		Hover hover = harness.getHover(doc, doc.toPosition(pos));
 		assertEquals(expectedHover, hoverString(hover));
 	}
 
@@ -559,7 +575,7 @@ public class Editor {
 	public void setSelection(int start, int end) {
 		Assert.assertTrue(start>=0);
 		Assert.assertTrue(end>=start);
-		Assert.assertTrue(end<=document.getText().length());
+		Assert.assertTrue(end<=doc.getText().length());
 		this.selectionStart = start;
 		this.selectionEnd = end;
 	}
@@ -614,7 +630,7 @@ public class Editor {
 	}
 
 	public void assertGotoDefinition(Position pos, Range expectedTarget) throws Exception {
-		TextDocumentIdentifier textDocumentId = document.getId();
+		TextDocumentIdentifier textDocumentId = doc.getId();
 		TextDocumentPositionParams params = new TextDocumentPositionParams(textDocumentId, textDocumentId.getUri(), pos);
 		List<? extends Location> defs = harness.getDefinitions(params);
 		assertEquals(1, defs.size());
@@ -649,7 +665,7 @@ public class Editor {
 		int contextStart = getRawText().indexOf(longSnippet);
 		Assert.assertTrue("'"+longSnippet+"' not found in editor", contextStart>=0);
 		int start = contextStart+relativeOffset;
-		return new Range(document.toPosition(start), document.toPosition(start+focusSnippet.length()));
+		return new Range(doc.toPosition(start), doc.toPosition(start+focusSnippet.length()));
 	}
 
 	public LanguageId getLanguageId() {
@@ -657,7 +673,7 @@ public class Editor {
 	}
 
 	public List<CodeAction> getCodeActions(Diagnostic problem) throws Exception {
-		return harness.getCodeActions(document, problem);
+		return harness.getCodeActions(doc, problem);
 	}
 
 	public CodeAction assertCodeAction(Diagnostic problem) throws Exception {
@@ -667,7 +683,7 @@ public class Editor {
 	}
 
 	public String getUri() {
-		return document.getUri();
+		return doc.getUri();
 	}
 
 	public void assertRawText(String expectedText) throws Exception {
@@ -684,7 +700,7 @@ public class Editor {
 		List<? extends SymbolInformation> actualSymbols = getDocumentSymbols();
 		List<String> actuals = new ArrayList<>();
 		for (SymbolInformation actualSymbol : actualSymbols) {
-			assertEquals(document.getUri(), actualSymbol.getLocation().getUri());
+			assertEquals(doc.getUri(), actualSymbol.getLocation().getUri());
 			String coveredText = getText(actualSymbol.getLocation().getRange());
 			assertEquals(actualSymbol.getName(), coveredText);
 			actuals.add(coveredText + "|" + actualSymbol.getContainerName());
@@ -698,7 +714,7 @@ public class Editor {
 	}
 
 	private List<? extends SymbolInformation> getDocumentSymbols() throws Exception {
-		return harness.getDocumentSymbols(this.document);
+		return harness.getDocumentSymbols(this.doc);
 	}
 
 }

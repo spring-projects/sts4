@@ -163,4 +163,8 @@ public class TextDocumentInfo {
 		return 0;
 	}
 
+	public String textBetween(int start, int end) {
+		return getText().substring(start, end);
+	}
+
 }
