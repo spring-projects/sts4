@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -33,7 +34,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  * @author Martin Lippert
  */
 public class ScopeCompletionTest {
-	
+
 	private final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
 
 	private LanguageServerHarness harness;
@@ -47,7 +48,7 @@ public class ScopeCompletionTest {
 	public void setup() throws Exception {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
-		
+
 		harness = new LanguageServerHarness(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
@@ -62,7 +63,7 @@ public class ScopeCompletionTest {
 		};
 		harness.intialize(null);
 	}
-	
+
 	private IJavaProject getTestProject() {
 		return testProject;
 	}
@@ -79,7 +80,7 @@ public class ScopeCompletionTest {
 				"@Scope(\"application\"<*>)",
 				"@Scope(\"websocket\"<*>)");
 	}
-	
+
 	@Test
 	public void testEmptyStringLiteralCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"<*>\")");
@@ -92,7 +93,7 @@ public class ScopeCompletionTest {
 				"@Scope(\"application\"<*>)",
 				"@Scope(\"websocket\"<*>)");
 	}
-	
+
 	@Test
 	public void testEmptyValueCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=<*>)");
@@ -105,7 +106,7 @@ public class ScopeCompletionTest {
 				"@Scope(value=\"application\"<*>)",
 				"@Scope(value=\"websocket\"<*>)");
 	}
-	
+
 	@Test
 	public void testEmptyValueStringLiteralCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=\"<*>\")");
@@ -118,54 +119,54 @@ public class ScopeCompletionTest {
 				"@Scope(value=\"application\"<*>)",
 				"@Scope(value=\"websocket\"<*>)");
 	}
-	
+
 	@Test
 	public void testPrefixWithClosingQuotesCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"pro<*>\")");
 		assertAnnotationCompletions(
 				"@Scope(\"prototype\"<*>)");
 	}
-	
+
 	@Test
 	public void testPrefixWithoutClosingQuotesCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"pro<*>)");
 		assertAnnotationCompletions();
 	}
-	
+
 	@Test
 	public void testValuePrefixWithClosingQuotesCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=\"pro<*>\")");
 		assertAnnotationCompletions(
 				"@Scope(value=\"prototype\"<*>)");
 	}
-	
+
 	@Test
 	public void testValuePrefixWithoutClosingQuotesCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=\"pro<*>)");
 		assertAnnotationCompletions();
 	}
-	
+
 	@Test
 	public void testPrefixReplaceRestCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"pro<*>something\")");
 		assertAnnotationCompletions(
 				"@Scope(\"prototype\"<*>)");
 	}
-	
+
 	@Test
 	public void testDifferentMemberNameCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(proxyName=\"<*>\")");
 		assertAnnotationCompletions();
 	}
-	
+
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestScopeCompletion.java");
 		String content = IOUtils.toString(resource);
-		
+
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
-		editor = new Editor(harness, content, "java");
+		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
-	
+
 	private void assertAnnotationCompletions(String... completedAnnotations) throws Exception {
 		List<CompletionItem> completions = editor.getCompletions();
 		int i = 0;
@@ -174,9 +175,9 @@ public class ScopeCompletionTest {
 			clonedEditor.apply(completions.get(i++));
 			assertTrue(clonedEditor.getText().contains(expectedCompleted));
 		}
-		
+
 		assertEquals(i, completions.size());
 	}
-	
+
 
 }

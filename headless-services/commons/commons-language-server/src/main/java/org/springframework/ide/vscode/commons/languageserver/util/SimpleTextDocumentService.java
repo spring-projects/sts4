@@ -54,11 +54,11 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
-import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -145,7 +145,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public void didOpen(DidOpenTextDocumentParams params) {
 		TextDocumentItem docId = params.getTextDocument();
 		String url = docId.getUri();
-		String languageId = docId.getLanguageId();
+		LanguageId languageId = LanguageId.of(docId.getLanguageId());
 		int version = docId.getVersion();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
@@ -192,12 +192,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		TrackedDocument doc = documents.get(url);
 		if (doc==null) {
 			Log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
-			doc = createDocument(url, LanguageIds.PLAINTEXT, 0, "");
+			doc = createDocument(url, LanguageId.PLAINTEXT, 0, "");
 		}
 		return doc.getDocument();
 	}
 
-	private synchronized TrackedDocument createDocument(String url, String languageId, int version, String text) {
+	private synchronized TrackedDocument createDocument(String url, LanguageId languageId, int version, String text) {
 		if (documents.get(url)!=null) {
 			Log.warn("Creating document ["+url+"] but it already exists. Existing document discarded!");
 		}

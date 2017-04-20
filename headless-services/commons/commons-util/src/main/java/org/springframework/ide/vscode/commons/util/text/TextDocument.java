@@ -32,12 +32,12 @@ public class TextDocument implements IDocument {
 	ILineTracker lineTracker = new DefaultLineTracker();
 	private static final Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
 
-	private final String languageId;
+	private final LanguageId languageId;
 	private final String uri;
 	private Text text = new Text("");
 	private int version;
 
-	public TextDocument(String uri, String languageId) {
+	public TextDocument(String uri, LanguageId languageId) {
 		this(uri, languageId, 0, "");
 	}
 
@@ -49,7 +49,7 @@ public class TextDocument implements IDocument {
 		this.version = other.version;
 	}
 
-	public TextDocument(String uri, String languageId, int version, String text) {
+	public TextDocument(String uri, LanguageId languageId, int version, String text) {
 		this.uri = uri;
 		this.languageId = languageId;
 		this.version = version;
@@ -274,7 +274,7 @@ public class TextDocument implements IDocument {
 	}
 
 	@Override
-	public String getLanguageId() {
+	public LanguageId getLanguageId() {
 		return languageId;
 	}
 
@@ -282,6 +282,7 @@ public class TextDocument implements IDocument {
 		return toRange(region.getOffset(), region.getLength());
 	}
 
+	@Override
 	public int getVersion() {
 		return version;
 	}

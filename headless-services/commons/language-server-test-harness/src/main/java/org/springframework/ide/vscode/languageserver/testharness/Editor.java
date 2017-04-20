@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
 
@@ -102,11 +103,11 @@ public class Editor {
 
 	private int selectionStart;
 	private Set<String> ignoredTypes;
-	private String languageId;
+	private LanguageId languageId;
 
-	public Editor(LanguageServerHarness harness, String contents, String languageId) throws Exception {
+	public Editor(LanguageServerHarness harness, String contents, LanguageId languageId) throws Exception {
 		this.harness = harness;
-		this.languageId = new String(languageId); // So we can catch bugs that use == for langauge id comparison.
+		this.languageId = LanguageId.of(languageId.getId()); // So we can catch bugs that use == for langauge id comparison.
 		EditorState state = new EditorState(contents);
 		this.document = harness.openDocument(harness.createWorkingCopy(state.documentContents, this.languageId));
 		this.selectionStart = state.selectionStart;
@@ -651,7 +652,7 @@ public class Editor {
 		return new Range(document.toPosition(start), document.toPosition(start+focusSnippet.length()));
 	}
 
-	public String getLanguageId() {
+	public LanguageId getLanguageId() {
 		return languageId;
 	}
 

@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.completions.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -281,7 +282,7 @@ public class ValueCompletionTest {
 		String content = IOUtils.toString(resource);
 		
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
-		editor = new Editor(harness, content, "java");
+		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 	
 	private void assertAnnotationCompletions(String... completedAnnotations) throws Exception {

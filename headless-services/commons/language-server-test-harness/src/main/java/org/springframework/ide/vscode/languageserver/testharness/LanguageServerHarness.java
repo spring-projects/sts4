@@ -72,7 +72,6 @@ import org.eclipse.lsp4j.WorkspaceClientCapabilites;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
-import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -80,6 +79,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.LanguageServer
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,7 +94,7 @@ public class LanguageServerHarness {
 	private Random random = new Random();
 
 	private Callable<? extends SimpleLanguageServer> factory;
-	private String defaultLanguageId;
+	private LanguageId defaultLanguageId;
 
 	private SimpleLanguageServer server;
 
@@ -105,13 +105,13 @@ public class LanguageServerHarness {
 	private List<Editor> activeEditors = new ArrayList<>();
 
 
-	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory, String defaultLanguageId) {
+	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory, LanguageId defaultLanguageId) {
 		this.factory = factory;
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
 	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory) throws Exception {
-		this(factory, LanguageIds.PLAINTEXT);
+		this(factory, LanguageId.PLAINTEXT);
 	}
 
 	public synchronized TextDocumentInfo getOrReadFile(File file, String languageId) throws Exception {
@@ -137,7 +137,7 @@ public class LanguageServerHarness {
 	private synchronized TextDocumentItem setDocumentContent(String uri, String newContent) {
 		TextDocumentInfo o = documents.get(uri);
 		TextDocumentItem n = new TextDocumentItem();
-		n.setLanguageId(o.getLanguageId());
+		n.setLanguageId(o.getLanguageId().getId());
 		n.setText(newContent);
 		n.setVersion(o.getVersion()+1);
 		n.setUri(o.getUri());
@@ -149,7 +149,7 @@ public class LanguageServerHarness {
 		return Charset.forName("utf8");
 	}
 
-	protected String getDefaultLanguageId() {
+	protected LanguageId getDefaultLanguageId() {
 		return defaultLanguageId;
 	}
 
@@ -397,15 +397,15 @@ public class LanguageServerHarness {
 		return newEditor(getDefaultLanguageId(), contents);
 	}
 
-	public synchronized Editor newEditor(String languageId, String contents) throws Exception {
+	public synchronized Editor newEditor(LanguageId languageId, String contents) throws Exception {
 		Editor editor = new Editor(this, contents, languageId);
 		activeEditors.add(editor);
 		return editor;
 	}
 
-	public synchronized TextDocumentInfo createWorkingCopy(String contents, String languageId) throws Exception {
+	public synchronized TextDocumentInfo createWorkingCopy(String contents, LanguageId languageId) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
-		doc.setLanguageId(languageId);
+		doc.setLanguageId(languageId.getId());
 		doc.setText(contents);
 		doc.setUri(createTempUri());
 		doc.setVersion(getFirstVersion());

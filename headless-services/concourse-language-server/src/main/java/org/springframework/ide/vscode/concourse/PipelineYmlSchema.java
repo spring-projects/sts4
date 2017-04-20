@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -25,6 +24,7 @@ import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -241,8 +241,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);
 		task.require((dc) -> {
-			String languageId = dc.getDocument().getLanguageId();
-			if (LanguageIds.CONCOURSE_PIPELINE.equals(languageId)) {
+			LanguageId languageId = dc.getDocument().getLanguageId();
+			if (LanguageId.CONCOURSE_PIPELINE.equals(languageId)) {
 				Node parentImageDef = models.getParentPropertyNode("image", dc);
 				if (parentImageDef==null) {
 					return Constraints.requireOneOf("image_resource", "image");

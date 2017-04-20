@@ -23,8 +23,8 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -40,7 +40,7 @@ public class ConcourseEditorTest {
 				return new ConcourseLanguageServer()
 						.setMaxCompletions(100);
 			},
-			LanguageIds.CONCOURSE_PIPELINE
+			LanguageId.CONCOURSE_PIPELINE
 		);
 		harness.intialize(null);
 	}
@@ -2492,12 +2492,12 @@ public class ConcourseEditorTest {
 	@Test public void reconcileTaskFileToplevelProperties() throws Exception {
 		Editor editor;
 
-		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"image: some-image"
 		);
 		editor.assertProblems("image: some-image|[platform, run] are required");
 
-		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"platform: a-platform\n" +
 				"image_resource:\n" +
 				"  name: should-not-be-here\n" +
@@ -2524,6 +2524,10 @@ public class ConcourseEditorTest {
 				"-^ path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
 		);
+	}
+
+	@Test public void reconcileTaskFileMissingToplevelProperties() throws Exception {
+
 	}
 
 	@Test public void contentAssistTaskFileToplevelProperties() throws Exception {
@@ -2560,7 +2564,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void hoversForTaskFileToplevelProperties() throws Exception {
-		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"image: some-image\n" +
 				"image_resource:\n" +
 				"  type: docker-image\n" +
@@ -2624,7 +2628,7 @@ public class ConcourseEditorTest {
 	@Test public void taskRunPropertiesValidationAndHovers() throws Exception {
 		Editor editor;
 
-		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"inputs:\n" +
 				"- name: sts4\n" +
 				"outputs:\n" +
@@ -2651,7 +2655,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("dir", "A directory, relative to the initial working directory, to set as the working directory");
 		editor.assertHoverContains("user", "Explicitly set the user to run as");
 
-		editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"inputs:\n" +
 				"- name: sts4\n" +
 				"outputs:\n" +
@@ -2668,7 +2672,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void nameAndPathHoversInTaskInputsAndOutputs() throws Exception {
-		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"inputs:\n" +
 				"- name: sts4\n" +
 				"  path: botk\n" +
@@ -2798,7 +2802,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void resourceInTaskConfigFileNotRequired() throws Exception {
-		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK,
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"inputs:\n" +
 				"- name: commons-git\n" +
 				"platform: linux\n" +
@@ -3120,7 +3124,7 @@ public class ConcourseEditorTest {
 	}
 
 	private void assertTaskCompletions(String textBefore, String... textAfter) throws Exception  {
-		Editor editor = harness.newEditor(LanguageIds.CONCOURSE_TASK, textBefore);
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK, textBefore);
 		editor.assertCompletions(textAfter);
 	}
 

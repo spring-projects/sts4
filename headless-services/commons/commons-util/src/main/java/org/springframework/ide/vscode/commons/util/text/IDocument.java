@@ -28,7 +28,7 @@ public interface IDocument {
 	int getLineOffset(int line) throws BadLocationException;
 	void replace(int start, int len, String text) throws BadLocationException;
 	String textBetween(int start, int end) throws BadLocationException;
-	String getLanguageId();
+	LanguageId getLanguageId();
 	int getVersion();
 
 }

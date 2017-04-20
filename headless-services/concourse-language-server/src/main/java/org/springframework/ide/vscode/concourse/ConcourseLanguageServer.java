@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.springframework.ide.vscode.commons.languageserver.LanguageIds;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -26,6 +25,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbol
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
@@ -90,9 +90,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+			if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 				validateWith(doc.getId(), forPipelines.reconcileEngine);
-			} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+			} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
 				validateWith(doc.getId(), forTasks.reconcileEngine);
 			} else {
 				validateWith(doc.getId(), IReconcileEngine.NULL);
@@ -113,9 +113,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(params -> {
 			TextDocument doc = documents.get(params);
 			if (doc!=null) {
-				if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 					return forPipelines.completionEngine.getCompletions(params);
-				} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
 					return forTasks.completionEngine.getCompletions(params);
 				}
 			}
@@ -129,9 +129,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		documents.onHover(params -> {
 			TextDocument doc = documents.get(params);
 			if (doc!=null) {
-				if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 					return forPipelines.hoverEngine.getHover(params);
-				} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
 					return forTasks.hoverEngine.getHover(params);
 				}
 			}
@@ -142,9 +142,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			DocumentSymbolHandler handler = DocumentSymbolHandler.NO_SYMBOLS;
 			TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
 			if (doc!=null) {
-				if (LanguageIds.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 					handler = forPipelines.symbolHandler;
-				} else if (LanguageIds.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
 					handler = forTasks.symbolHandler;
 				}
 			}

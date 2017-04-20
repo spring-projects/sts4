@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.yaml.structure;
 
 import static org.junit.Assert.assertTrue;
 
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -55,8 +56,8 @@ class MockYamlEditor {
 		return sp.getStructure(doc);
 	}
 
-	protected String getLanguageId() {
-		return "yaml";
+	protected LanguageId getLanguageId() {
+		return LanguageId.YAML;
 	}
 
 	public YamlFileAST parse() throws Exception {

@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 /**
  * Deprecated, we should get rid of this class and use {@link TextDocument}.
@@ -37,8 +38,8 @@ public class TextDocumentInfo {
 		this.document = document;
 	}
 
-	public String getLanguageId() {
-		return getDocument().getLanguageId();
+	public LanguageId getLanguageId() {
+		return LanguageId.of(getDocument().getLanguageId());
 	}
 
 	public int getVersion() {
