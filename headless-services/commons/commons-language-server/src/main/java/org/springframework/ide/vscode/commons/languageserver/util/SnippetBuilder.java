@@ -42,7 +42,6 @@ public class SnippetBuilder {
 	 * in the near future.
 	 */
 	protected String createPlaceHolder(int id) {
-		//Default implementation now only handes the undocumented snippet format that vscode supports.
 		return "$"+id;
 	}
 

@@ -2495,7 +2495,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"image: some-image"
 		);
-		editor.assertProblems("image: some-image|[platform, run] are required");
+		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
 
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"platform: a-platform\n" +
@@ -2526,7 +2526,20 @@ public class ConcourseEditorTest {
 		);
 	}
 
-	@Test public void reconcileTaskFileMissingToplevelProperties() throws Exception {
+	@Test public void taskFileMissingToplevelPropertiesUnderlinesLastNonWhitespaceChar() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"image: some-image"
+		);
+		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"image: some-image\n" +
+				"\n" +
+				"   \n"
+		);
+		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
 
 	}
 

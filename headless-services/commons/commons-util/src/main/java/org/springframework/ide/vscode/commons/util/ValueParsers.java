@@ -21,7 +21,7 @@ public class ValueParsers {
 		if (StringUtil.hasText(s)) {
 			return s;
 		} else {
-			throw new IllegalArgumentException("String should not be empty");
+			throw new ValueParseException("String should not be empty");
 		}
 	};
 

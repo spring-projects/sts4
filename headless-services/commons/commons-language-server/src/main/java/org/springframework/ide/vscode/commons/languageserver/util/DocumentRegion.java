@@ -282,4 +282,12 @@ public class DocumentRegion implements CharSequence {
 		}
 		return false;
 	}
+
+	/**
+	 * Take documentRegion at the end of
+	 */
+	public DocumentRegion textAtEnd(int numChars) {
+		numChars = Math.min(getLength(), numChars);
+		return new DocumentRegion(doc, end-numChars, end);
+	}
 }

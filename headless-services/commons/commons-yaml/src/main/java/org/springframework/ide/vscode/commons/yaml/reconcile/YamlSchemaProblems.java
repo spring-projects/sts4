@@ -131,6 +131,8 @@ public class YamlSchemaProblems {
 					underline = underline.subSequence(underline.length()-1, underline.length());
 				}
 			}
+		} else {
+			underline = underline.trimEnd().textAtEnd(1);
 		}
 		return problem(MISSING_PROPERTY, msg, underline);
 	}
