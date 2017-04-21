@@ -13,11 +13,8 @@ package org.springframework.ide.vscode.boot.common;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
-import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
-import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 
 public abstract class AbstractPropertyProposal extends ScoreableProposal {
 
@@ -94,12 +91,12 @@ public abstract class AbstractPropertyProposal extends ScoreableProposal {
 	public CompletionItemKind getKind() {
 		return CompletionItemKind.Field;
 	}
-	
+
 	@Override
 	public String toString() {
 		return getBaseDisplayString();
 	}
-	
+
 	@Override
 	public final DocumentEdits getTextEdit() {
 		return this.proposalApplier;

@@ -33,8 +33,6 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.EnumTypeBuilder;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 

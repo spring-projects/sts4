@@ -16,7 +16,6 @@ import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 

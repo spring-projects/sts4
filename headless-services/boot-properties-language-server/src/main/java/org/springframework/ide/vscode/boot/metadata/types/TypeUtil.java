@@ -50,7 +50,6 @@ import org.springframework.ide.vscode.commons.util.ArrayUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
-import org.springframework.ide.vscode.commons.util.HtmlSnippet;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
