@@ -200,7 +200,7 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public List<SchemaContextAware<Constraint>> getConstraints(YType type) {
+		public List<Constraint> getConstraints(YType type) {
 			return ((AbstractType)type).getConstraints();
 		}
 	};
@@ -218,7 +218,7 @@ public class YTypeFactory {
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
 
-		private List<SchemaContextAware<Constraint>> constraints = new ArrayList<>(2);
+		private List<Constraint> constraints = new ArrayList<>(2);
 
 		public boolean isSequenceable() {
 			return false;
@@ -282,7 +282,7 @@ public class YTypeFactory {
 			return ImmutableList.of();
 		}
 
-		public List<SchemaContextAware<Constraint>> getConstraints() {
+		public List<Constraint> getConstraints() {
 			return ImmutableList.copyOf(constraints);
 		}
 
@@ -357,12 +357,12 @@ public class YTypeFactory {
 			return parser == null ? null : parser.withContext(dc);
 		}
 
-		public void require(SchemaContextAware<Constraint> dynamicConstraint) {
+		public void require(Constraint dynamicConstraint) {
 			this.constraints.add(dynamicConstraint);
 		}
 
 		public void requireOneOf(String... properties) {
-			this.constraints.add(SchemaContextAware.just(Constraints.requireOneOf(properties)));
+			this.constraints.add(Constraints.requireOneOf(properties));
 		}
 
 		public String[] getPropertyNames() {

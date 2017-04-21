@@ -240,7 +240,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);
-		task.require((dc) -> {
+		task.require(Constraints.schemaContextAware((DynamicSchemaContext dc) -> {
 			LanguageId languageId = dc.getDocument().getLanguageId();
 			if (LanguageId.CONCOURSE_PIPELINE.equals(languageId)) {
 				Node parentImageDef = models.getParentPropertyNode("image", dc);
@@ -256,7 +256,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			} else {
 				return Constraints.requireAtMostOneOf("image_resource", "image");
 			}
-		});
+		}));
 
 		AbstractType t_put_get_name = f.contextAware("Name", (dc) -> {
 			if (models.getParentPropertyNode("resource", dc)!=null) {
@@ -287,17 +287,20 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(putStep, "get_params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("put", models, dc))
 		));
-		putStep.require((dc) -> (IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
-			StepModel step = models.newStep("put", map);
-			String resourceName = step.getResourceName();
-			if (resourceName!=null) {
-				ResourceModel resource = models.getResource(doc, resourceName);
-				if (resource!=null) {
-					if ("git".equals(resource.getType()) && !resource.hasSourceProperty("branch")) {
-						problems.accept(YamlSchemaProblems.schemaProblem(
-								"Resource of type 'git' is used in a 'put' step, so it should define 'branch' attribute in its 'source', but it doesn't.",
-								step.getResourceNameNode()
-						));
+		putStep.require((DynamicSchemaContext dc, Node parent, Node _map, YType type, IProblemCollector problems) -> {
+			if (_map instanceof MappingNode) {
+				MappingNode map = (MappingNode) _map;
+				StepModel step = models.newStep("put", map);
+				String resourceName = step.getResourceName();
+				if (resourceName!=null) {
+					ResourceModel resource = models.getResource(dc.getDocument(), resourceName);
+					if (resource!=null) {
+						if ("git".equals(resource.getType()) && !resource.hasSourceProperty("branch")) {
+							problems.accept(YamlSchemaProblems.schemaProblem(
+									"Resource of type 'git' is used in a 'put' step, so it should define 'branch' attribute in its 'source', but it doesn't.",
+									step.getResourceNameNode()
+							));
+						}
 					}
 				}
 			}

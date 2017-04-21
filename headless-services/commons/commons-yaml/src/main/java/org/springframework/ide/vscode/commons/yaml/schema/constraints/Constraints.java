@@ -24,6 +24,8 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -62,23 +64,28 @@ public class Constraints {
 		}
 
 		@Override
-		public void verify(IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) {
-			List<String> requiredProps = Arrays.asList(_requiredProps);
-			long foundPropsCount = requiredProps.stream()
-				.filter(foundProps::contains)
-				.count();
-			if (foundPropsCount==0) {
-				if (!allowFewer) {
-					problems.accept(missingProperty(
-							"One of "+requiredProps+" is required for '"+type+"'", doc, parent, map));
-				}
-			} else if (foundPropsCount>1) {
-				//Mark each of the found keys as a violation:
-				for (NodeTuple entry : map.getValue()) {
-					String key = NodeUtil.asScalar(entry.getKeyNode());
-					if (key!=null && requiredProps.contains(key)) {
-						problems.accept(problem(EXTRA_PROPERTY,
-								"Only one of "+requiredProps+" should be defined for '"+type+"'",  entry.getKeyNode()));
+		public void verify(DynamicSchemaContext dc, Node parent, Node _map, YType type, IProblemCollector problems) {
+			IDocument doc = dc.getDocument();
+			Set<String> foundProps = dc.getDefinedProperties();
+			if (_map instanceof MappingNode) {
+				MappingNode map = (MappingNode) _map;
+				List<String> requiredProps = Arrays.asList(_requiredProps);
+				long foundPropsCount = requiredProps.stream()
+					.filter(foundProps::contains)
+					.count();
+				if (foundPropsCount==0) {
+					if (!allowFewer) {
+						problems.accept(missingProperty(
+								"One of "+requiredProps+" is required for '"+type+"'", doc, parent, map));
+					}
+				} else if (foundPropsCount>1) {
+					//Mark each of the found keys as a violation:
+					for (NodeTuple entry : map.getValue()) {
+						String key = NodeUtil.asScalar(entry.getKeyNode());
+						if (key!=null && requiredProps.contains(key)) {
+							problems.accept(problem(EXTRA_PROPERTY,
+									"Only one of "+requiredProps+" should be defined for '"+type+"'",  entry.getKeyNode()));
+						}
 					}
 				}
 			}
@@ -87,14 +94,32 @@ public class Constraints {
 
 	public static Constraint deprecated(Function<String, String> messageFormatter, String... _deprecatedNames) {
 		Set<String> deprecatedNames = ImmutableSet.copyOf(_deprecatedNames);
-		return (IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps, IProblemCollector problems) -> {
-			for (NodeTuple prop : map.getValue()) {
-				Node keyNode = prop.getKeyNode();
-				String name = NodeUtil.asScalar(keyNode);
-				if (deprecatedNames.contains(name)) {
-					problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
+		return (DynamicSchemaContext dc, Node parent, Node _map, YType type, IProblemCollector problems) -> {
+			if (_map instanceof MappingNode) {
+				MappingNode map = (MappingNode) _map;
+				for (NodeTuple prop : map.getValue()) {
+					Node keyNode = prop.getKeyNode();
+					String name = NodeUtil.asScalar(keyNode);
+					if (deprecatedNames.contains(name)) {
+						problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
+					}
 				}
 			}
+		};
+	}
+
+	/**
+	 * Deprecated because you shouldn't need to use this method to create a {@link SchemaContextAware} Constraint.
+	 * A Constraint itself is already implicitly aware of the {@link DynamicSchemaContext} (i.e. it already receives
+	 * the {@link DynamicSchemaContext} as a parameter to its verify method.
+	 * <p>
+	 * So instead of using this method to get a hold of the {@link DynamicSchemaContext} simply use the context
+	 * passed to your constraint instead.
+	 */
+	@Deprecated
+	public static Constraint schemaContextAware(SchemaContextAware<Constraint> dispatcher) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			dispatcher.withContext(dc).verify(dc, parent, node, type, problems);
 		};
 	}
 }

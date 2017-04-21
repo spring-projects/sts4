@@ -252,10 +252,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			}
 
 			//Check for other constraints attached to the type
-			for (SchemaContextAware<Constraint> _constraint : typeUtil.getConstraints(type)) {
-				Constraint constraint = _constraint.withContext(dc);
+			for (Constraint constraint : typeUtil.getConstraints(type)) {
 				if (constraint!=null) {
-					constraint.verify(dc.getDocument(), parent, map, type, foundProps, problems);
+					constraint.verify(dc, parent, map, type, problems);
 				}
 			}
 		}

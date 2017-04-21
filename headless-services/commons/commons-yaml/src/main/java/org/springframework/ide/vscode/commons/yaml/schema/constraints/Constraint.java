@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -32,12 +33,11 @@ public interface Constraint {
 	 * constraint is satisfied. When the constrain is not satisfied they should report any
 	 * violations by adding problems to the provide {@link IProblemCollector}.
 	 *
-	 * @param map    The node being validated
+	 * @param node    The node being validated
 	 * @param type   The inferred type of the node.
 	 * @param foundProps The properties this node defines.
 	 * @param problems  Problem collector where to which the constraint should add the validation problems it finds.
 	 */
-	void verify(IDocument doc, Node parent, MappingNode map, YType type, Set<String> foundProps,
-			IProblemCollector problems);
+	void verify(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems);
 
 }

@@ -3116,6 +3116,108 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Ignore @Test public void reconcilerJobFromPassedAttributeMustInteractWithResource() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+			"resources:\n" +
+			"- name: version\n" +
+			"  type: semver\n" +
+			"- name: source-repo\n" +
+			"  type: git\n" +
+			"jobs:\n" +
+			"- name: build-it\n" +
+			"  plan:\n" +
+			"  - aggregate:\n" +
+			"    # - put: version\n" +
+			"    - get: source-repo\n" +
+			"- name: test-it\n" +
+			"  plan:\n" +
+			"  - get: source-repo\n" +
+			"    passed:\n" +
+			"    - build-it # <- good\n" +
+			"  - get: version\n" +
+			"    passed:\n" +
+			"    - build-it # <- bad\n"
+		);
+		editor.assertProblems(
+				"build-it^ # <- bad|Job 'build-it' doesn't interact with the resource 'version'"
+		);
+
+		editor = harness.newEditor(
+			"resources:\n" +
+			"- name: version\n" +
+			"  type: semver\n" +
+			"- name: source-repo\n" +
+			"  type: git\n" +
+			"jobs:\n" +
+			"- name: build-it\n" +
+			"  plan:\n" +
+			"  - aggregate:\n" +
+			"    - put: version\n" +
+			"    # - get: source-repo\n" +
+			"- name: test-it\n" +
+			"  plan:\n" +
+			"  - get: source-repo\n" +
+			"    passed:\n" +
+			"    - build-it # <- bad\n" +
+			"  - get: version\n" +
+			"    passed:\n" +
+			"    - build-it # <- good\n"
+		);
+		editor.assertProblems(
+				"build-it^ # <- bad|Job 'build-it' doesn't interact with the resource 'source-repo'"
+		);
+
+		//Check that we find interactions in steps that are at the top-level of the plan:
+		editor = harness.newEditor(
+			"resources:\n" +
+			"- name: version\n" +
+			"  type: semver\n" +
+			"- name: source-repo\n" +
+			"  type: git\n" +
+			"jobs:\n" +
+			"- name: build-it\n" +
+			"  plan:\n" +
+			"  - aggregate:\n" +
+			"    - put: version\n" +
+			"    - get: source-repo\n" +
+			"- name: test-it\n" +
+			"  plan:\n" +
+			"  - get: source-repo\n" +
+			"    passed:\n" +
+			"    - build-it\n" +
+			"  - get: version\n" +
+			"    passed:\n" +
+			"    - build-it\n"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		//Check that we find interactions in steps that are nested in other steps
+		editor = harness.newEditor(
+			"resources:\n" +
+			"- name: version\n" +
+			"  type: semver\n" +
+			"- name: source-repo\n" +
+			"  type: git\n" +
+			"jobs:\n" +
+			"- name: build-it\n" +
+			"  plan:\n" +
+			"  - put: version\n" +
+			"  - get: source-repo\n" +
+			"- name: test-it\n" +
+			"  plan:\n" +
+			"  - get: source-repo\n" +
+			"    passed:\n" +
+			"    - build-it\n" +
+			"  - get: version\n" +
+			"    passed:\n" +
+			"    - build-it\n"
+		);
+		editor.assertProblems(/*NONE*/);
+
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
