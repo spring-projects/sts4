@@ -17,8 +17,8 @@ import org.springframework.ide.vscode.commons.yaml.util.Streams;
 /**
  * Abstract superclass for implementing concrete {@link YamlTraversal}s.
  * <p>
- * Note that allthoigh this class provides a default implementation for both
- * `traverse` and `traverseAmbiguously`, at least one of these methods *must*
+ * Note that allthough this class provides a default implementation for both
+ * `traverse` and `traverseAmbiguously`, at least one of these methods <b>must<b>
  * be overridden by the subclass (otherwise the methods will just call eachother
  * in a infinite recursion loop).
  * <p>
