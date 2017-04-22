@@ -395,7 +395,7 @@ public class YamlStructureParser {
 			if (index!=null) {
 				List<SNode> cs = getChildren();
 				if (index>=0 && index<cs.size()) {
-					return Streams.of(cs.get(index));
+					return Streams.fromNullable(cs.get(index));
 				}
 			}
 			return Stream.empty();
@@ -502,7 +502,7 @@ public class YamlStructureParser {
 			case VAL_AT_KEY:
 				return this.getChildrenWithKey(s.toPropString());
 			case VAL_AT_INDEX:
-				return Streams.of(this.getSeqChildWithIndex(s.toIndex()));
+				return Streams.fromNullable(this.getSeqChildWithIndex(s.toIndex()));
 			default:
 				return Stream.empty();
 			}

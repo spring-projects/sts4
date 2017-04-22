@@ -11,11 +11,13 @@
 package org.springframework.ide.vscode.concourse;
 
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.anyChild;
+import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.keyAt;
 import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.valueAt;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
@@ -33,14 +36,17 @@ import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
+import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
@@ -60,13 +66,92 @@ import com.google.common.collect.Multiset;
  */
 public class ConcourseModel {
 
-//	/**
-//	 * Verification of contraint: a job used in the 'passed' attribute of a step
-//	 * must interact with the resource in question.
-//	 */
-//	public Constraint jobHasInteractionWithResource() {
-//		return (IDocument doc, Node parent, Node node, YType type, Set<String> foundProps, IProblemCollector problems) -> {
-//	}
+	/**
+	 * Verification of contraint: a job used in the 'passed' attribute of a step
+	 * must interact with the resource in question.
+	 */
+	public final void passedJobHasInteractionWithResource(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
+		YamlPath path = dc.getPath();
+		// Expecting a path like this: YamlPath([0], .jobs, [1], .plan, [0], .passed, [0])
+		path = path.dropLast();
+		if (YamlPathSegment.valueAt("passed").equals(path.getLastSegment())) {
+			String jobName = NodeUtil.asScalar(node);
+			JobModel job = getJob(dc.getDocument(), jobName);
+			if (job!=null) {
+				//Only check if the job exists. Otherwise the extra checks will show 'redundant' errors (e.g.
+				//  complaining that 'some-job' doesn't ineract with a resource (because the resource doesn't exist).
+				YamlFileAST root = this.getSafeAst(dc.getDocument());
+				if (root!=null) {
+					Node stepNode = path.dropLast().traverseToNode(root);
+					if (stepNode!=null) {
+						StepModel step = newStep(stepNode);
+						String resourceName = step.getResourceName();
+						if (resourceName!=null) {
+							Set<String> interactions = job.getInteractedResources();
+							if (interactions!=null && !interactions.contains(resourceName)) {
+								problems.accept(YamlSchemaProblems.schemaProblem("Job '"+jobName+"' does not interact with resource '"+resourceName+"'", node));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get the job with given name. If there is no such job, or if there is more than one, this will return null.
+	 */
+	private JobModel getJob(IDocument doc, String jobName) {
+		List<JobModel> jobs = getFromAst(doc, ast ->
+			JOBS_PATH.traverseAmbiguously(ast)
+			.filter(node -> jobName.equals(NodeUtil.getScalarProperty(node, "name")))
+			.map(JobModel::new)
+		)
+		.limit(2) //We only need 2 elements at most to determine if there is more than one
+		.collect(Collectors.toList());
+		return jobs.size()==1
+				? jobs.get(0)
+				: null;
+	}
+
+	public StepModel newStep(Node _node) {
+		MappingNode node = (MappingNode) _node;
+		Set<String> keys = NodeUtil.getScalarKeys(node);
+		for (Entry<String, AbstractType> primary : stepType.typesByPrimary().entrySet()) {
+			String stepType = primary.getKey();
+			if (keys.contains(primary.getKey())) {
+				return new StepModel(stepType, node);
+			}
+		}
+		throw new IllegalArgumentException("Node does not look like step node: "+node);
+	}
+
+	private static final YamlTraversal JobModel_GET_PUT_STEP_PATH = new YamlPath()
+			.then(valueAt("plan"))
+			.then(anyChild().repeatAtLeast(1))
+			.has(keyAt("get").or(keyAt("put")));
+
+	/**
+	 * Wraps around a Node in the AST that represents a 'job' and
+	 * provides methods for accessing information from the node.
+	 */
+	public class JobModel {
+
+		private Node node;
+
+		JobModel(Node node) {
+			this.node = node;
+		}
+
+		public Set<String> getInteractedResources() {
+			return JobModel_GET_PUT_STEP_PATH
+					.traverseAmbiguously(node)
+					.map(node -> newStep(node))
+					.flatMap(step -> Streams.fromNullable(step.getResourceName()))
+					.collect(Collectors.toSet());
+		}
+
+	}
 
 	/**
 	 * Wraps around a Node in the AST that represents a 'step' and
@@ -83,6 +168,7 @@ public class ConcourseModel {
 		}
 
 		public Node getResourceNameNode() {
+			Assert.isLegal("put".equals(stepType) || "get".equals(stepType));
 			Node node = NodeUtil.getProperty(step, "resource");
 			return node!=null ? node : NodeUtil.getProperty(step, stepType);
 		}
@@ -110,6 +196,12 @@ public class ConcourseModel {
 		}
 
 	}
+
+	public static final YamlPath JOBS_PATH = new YamlPath(
+			anyChild(),
+			valueAt("jobs"),
+			anyChild()
+	);
 
 	public static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		anyChild(),
@@ -143,6 +235,8 @@ public class ConcourseModel {
 	private ResourceTypeRegistry resourceTypes;
 
 	private final Supplier<SnippetBuilder> snippetBuilderFactory;
+
+	private YBeanUnionType stepType;
 
 	public ConcourseModel(SimpleLanguageServer languageServer) {
 		Yaml yaml = new Yaml();
@@ -326,12 +420,13 @@ public class ConcourseModel {
 		return astTypes;
 	}
 
-	public StepModel newStep(String stepType, MappingNode stepNode) {
-		return new StepModel(stepType, stepNode);
-	}
-
 	public void setResourceTypeRegistry(ResourceTypeRegistry resourceTypes) {
 		this.resourceTypes = resourceTypes;
+	}
+
+	public void setStepType(YBeanUnionType step) {
+		Assert.isNull("stepType already set", this.stepType);
+		this.stepType = step;
 	}
 
 }

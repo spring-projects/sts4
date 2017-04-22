@@ -651,8 +651,8 @@ public class ConcourseEditorTest {
 		{
 			List<Diagnostic> problems = editor.assertProblems(
 				"config|Only one of [config, file]",
-				"config|[platform, run] are required",
 				"config|One of [image_resource, image]",
+				"config|[platform, run] are required",
 				"file|Only one of [config, file]"
 			);
 			//All of the problems in this example are property contraint violations! So all should be warnings.
@@ -1615,8 +1615,8 @@ public class ConcourseEditorTest {
 				"    access_key_id: the-key"
 		);
 		editor.assertProblems(
-				"source|'bucket' is required",
-				"source|One of [regexp, versioned_file] is required"
+				"source|One of [regexp, versioned_file] is required",
+				"source|'bucket' is required"
 		);
 
 		editor = harness.newEditor(
@@ -3116,7 +3116,7 @@ public class ConcourseEditorTest {
 		);
 	}
 
-	@Ignore @Test public void reconcilerJobFromPassedAttributeMustInteractWithResource() throws Exception {
+	@Test public void reconcilerJobFromPassedAttributeMustInteractWithResource() throws Exception {
 		Editor editor;
 
 		editor = harness.newEditor(
@@ -3141,7 +3141,7 @@ public class ConcourseEditorTest {
 			"    - build-it # <- bad\n"
 		);
 		editor.assertProblems(
-				"build-it^ # <- bad|Job 'build-it' doesn't interact with the resource 'version'"
+				"build-it^ # <- bad|Job 'build-it' does not interact with resource 'version'"
 		);
 
 		editor = harness.newEditor(
@@ -3166,7 +3166,7 @@ public class ConcourseEditorTest {
 			"    - build-it # <- good\n"
 		);
 		editor.assertProblems(
-				"build-it^ # <- bad|Job 'build-it' doesn't interact with the resource 'source-repo'"
+				"build-it^ # <- bad|Job 'build-it' does not interact with resource 'source-repo'"
 		);
 
 		//Check that we find interactions in steps that are at the top-level of the plan:

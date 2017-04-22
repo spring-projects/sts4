@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.path;
 
+import java.util.stream.Stream;
+
 /**
  * A YamlPathSegment is a 'primitive' NodeNavigator operation.
  * More complex operations (i.e {@link YamlPath}) are composed as seqences
@@ -17,7 +19,7 @@ package org.springframework.ide.vscode.commons.yaml.path;
  *
  * @author Kris De Volder
  */
-public abstract class YamlPathSegment {
+public abstract class YamlPathSegment extends AbstractYamlTraversal {
 
 	public static YamlPathSegment decode(String code) {
 		switch (code.charAt(0)) {
@@ -34,6 +36,11 @@ public abstract class YamlPathSegment {
 		}
 	}
 
+	@Override
+	public <T extends YamlNavigable<T>> Stream<T> traverseAmbiguously(T start) {
+		return start.traverseAmbiguously(this);
+	}
+
 	public static enum YamlPathSegmentType {
 		VAL_AT_KEY, //Go to value associate with given key in a map.
 		KEY_AT_KEY, //Go to the key node associated with a given key in a map.
@@ -43,7 +50,7 @@ public abstract class YamlPathSegment {
 
 	public static class AnyChild extends YamlPathSegment {
 
-		private static AnyChild INSTANCE = new AnyChild();
+		static AnyChild INSTANCE = new AnyChild();
 
 		private AnyChild() {}
 
@@ -76,6 +83,7 @@ public abstract class YamlPathSegment {
 		protected String getValueCode() {
 			return "";
 		}
+
 	}
 
 	public static class AtIndex extends YamlPathSegment {
@@ -227,6 +235,12 @@ public abstract class YamlPathSegment {
 	}
 
 	@Override
+	public boolean canEmpty() {
+		//All path segments implement a real 'one step' movement,
+		return false;
+	}
+
+	@Override
 	public String toString() {
 		return toNavString();
 	}
@@ -255,7 +269,23 @@ public abstract class YamlPathSegment {
 		return getTypeCode() + getValueCode();
 	}
 
+
 	protected abstract String getValueCode();
 
 	protected abstract char getTypeCode();
+
+	@Override
+	public YamlTraversal then(YamlTraversal other) {
+		//Overriding the `then` method to try to compress sequences of segments into YamlPath instead of deeply nested
+		if (other.isEmpty()) {
+			return this;
+		} else if (other instanceof YamlPathSegment) {
+			return new YamlPath(this, (YamlPathSegment)other);
+		} else if (other instanceof YamlPath) {
+			return ((YamlPath) other).prepend(this);
+		} else {
+			return new SequencingYamlTraversal(this, other);
+		}
+	}
+
 }

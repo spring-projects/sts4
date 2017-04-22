@@ -102,7 +102,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.integerAtLeast(1));
 
 	public final YAtomicType t_resource_name;
-	public final YAtomicType t_job_name;
+	public final AbstractType t_job_name;
 	public final YAtomicType t_resource_type_name;
 	public final YType t_mime_type = f.yatomic("MimeType")
 			.parseWith(ValueParsers.NE_STRING)
@@ -189,7 +189,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				(DynamicSchemaContext dc) -> {
 					return models.getJobNames(dc);
 				}
-		);
+		).require(models::passedJobHasInteractionWithResource);
 
 		YAtomicType resourceNameDef = f.yatomic("Resource Name");
 		resourceNameDef.parseWith(ConcourseValueParsers.resourceNameDef(models));
@@ -290,7 +290,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		putStep.require((DynamicSchemaContext dc, Node parent, Node _map, YType type, IProblemCollector problems) -> {
 			if (_map instanceof MappingNode) {
 				MappingNode map = (MappingNode) _map;
-				StepModel step = models.newStep("put", map);
+				StepModel step = models.newStep(map);
 				String resourceName = step.getResourceName();
 				if (resourceName!=null) {
 					ResourceModel resource = models.getResource(dc.getDocument(), resourceName);
@@ -342,6 +342,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "tags", t_strings);
 			addProp(step, subStep, "timeout", t_duration);
 		}
+		models.setStepType(step);
 
 		AbstractType job = f.ybean("Job");
 		addProp(job, "name", jobNameDef).isRequired(true);

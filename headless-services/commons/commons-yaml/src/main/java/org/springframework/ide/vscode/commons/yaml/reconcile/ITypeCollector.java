@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
 /**
- * A type collector can optionally be added to a {@link YamlASTReconciler}.
+ * A type collector can optionally be added to a {@link SchemaBasedYamlASTReconciler}.
  * It is notified of the types the reconciler infers for
  * any AST nodes it visits during reconciling.
  *

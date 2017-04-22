@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
@@ -214,10 +215,9 @@ public class YTypeFactory {
 
 		private SchemaContextAware<ValueParser> parser;
 		private List<YTypedProperty> propertyList = new ArrayList<>();
-		private final List<YValueHint> hints = new ArrayList<>();
+		private List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
-
 		private List<Constraint> constraints = new ArrayList<>(2);
 
 		public boolean isSequenceable() {
@@ -357,8 +357,9 @@ public class YTypeFactory {
 			return parser == null ? null : parser.withContext(dc);
 		}
 
-		public void require(Constraint dynamicConstraint) {
+		public AbstractType require(Constraint dynamicConstraint) {
 			this.constraints.add(dynamicConstraint);
+			return this;
 		}
 
 		public void requireOneOf(String... properties) {
@@ -645,7 +646,7 @@ public class YTypeFactory {
 			return getPrimaryProps();
 		}
 
-		private synchronized Map<String, AbstractType> typesByPrimary() {
+		public synchronized Map<String, AbstractType> typesByPrimary() {
 			if (typesByPrimary==null) {
 				//To ensure that the map of 'typesByPrimary' is never stale, make the list of
 				// types immutable at this point. The assumption here is that union can be

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
@@ -29,7 +30,7 @@ import reactor.core.publisher.Flux;
 /**
  * @author Kris De Volder
  */
-public class YamlPath {
+public class YamlPath extends AbstractYamlTraversal {
 
 	public static final YamlPath EMPTY = new YamlPath();
 	private final YamlPathSegment[] segments;
@@ -132,34 +133,7 @@ public class YamlPath {
 		return new YamlPath(newPath);
 	}
 
-	public Node traverseToNode(YamlFileAST root) {
-		ASTCursor cursor = traverse(new ASTRootCursor(root));
-		if (cursor instanceof NodeCursor) {
-			return ((NodeCursor)cursor).getNode();
-		}
-		return null;
-	}
-
-	public <T extends YamlNavigable<T>> T traverse(T startNode) {
-		return traverseAmbiguously(startNode).findFirst().orElse(null);
-	}
-
-	public Stream<Node> traverseAmbiguously(YamlFileAST ast) {
-		if (ast!=null) {
-			return traverseAmbiguously(new ASTRootCursor(ast))
-			.map((ASTCursor cursor) -> (Node)cursor.getNode());
-		}
-		return Stream.empty();
-	}
-
-	public Stream<Node> traverseAmbiguously(Node startNode) {
-		if (startNode!=null) {
-			return traverseAmbiguously(new NodeCursor(startNode))
-			.map((ASTCursor cursor) -> (Node)cursor.getNode());
-		}
-		return Stream.empty();
-	}
-
+	@Override
 	public <T extends YamlNavigable<T>> Stream<T> traverseAmbiguously(T startNode) {
 		if (startNode!=null) {
 			Stream<T> result = Stream.of(startNode);
@@ -206,6 +180,7 @@ public class YamlPath {
 	}
 
 
+	@Override
 	public boolean isEmpty() {
 		return segments.length==0;
 	}
@@ -309,6 +284,33 @@ public class YamlPath {
 				.collectList()
 				.map(YamlPath::new)
 				.block();
+	}
+
+	@Override
+	public YamlTraversal then(YamlTraversal _other) {
+		if (isEmpty()) {
+			return _other;
+		} else if (_other.isEmpty()) {
+			return this;
+		} else if (_other instanceof YamlPathSegment) {
+			return this.append((YamlPathSegment) _other);
+		} else if (_other instanceof YamlPath) {
+			YamlPath other = (YamlPath) _other;
+			return new YamlPath(
+				Stream.concat(
+					Arrays.stream(this.segments),
+					Arrays.stream(other.segments)
+				).toArray(sz -> new YamlPathSegment[sz])
+			);
+		} else {
+			return new SequencingYamlTraversal(this, _other);
+		}
+	}
+
+	@Override
+	public boolean canEmpty() {
+		//The empty path is the only one that 'canEmpty' since any step in path moves the cursor.
+		return isEmpty();
 	}
 
 }

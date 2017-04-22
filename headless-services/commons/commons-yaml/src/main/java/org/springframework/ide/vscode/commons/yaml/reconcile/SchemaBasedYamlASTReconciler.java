@@ -124,6 +124,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			if (typeCollector!=null) {
 				typeCollector.accept(node, type);
 			}
+			checkConstraints(parent, node, type, schemaContext);
 			switch (getNodeId(node)) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
@@ -250,12 +251,14 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				}
 				problems.accept(YamlSchemaProblems.missingProperties(message, dc, missingProps, parent, map, quickfixes.MISSING_PROP_FIX));
 			}
+		}
+	}
 
-			//Check for other constraints attached to the type
-			for (Constraint constraint : typeUtil.getConstraints(type)) {
-				if (constraint!=null) {
-					constraint.verify(dc, parent, map, type, problems);
-				}
+	protected void checkConstraints(Node parent, Node node, YType type, DynamicSchemaContext dc) {
+		//Check for other constraints attached to the type
+		for (Constraint constraint : typeUtil.getConstraints(type)) {
+			if (constraint!=null) {
+				constraint.verify(dc, parent, node, type, problems);
 			}
 		}
 	}
