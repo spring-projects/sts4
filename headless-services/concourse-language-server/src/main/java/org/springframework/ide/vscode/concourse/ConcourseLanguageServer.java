@@ -31,7 +31,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
-import org.springframework.ide.vscode.commons.yaml.reconcile.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;

@@ -11,7 +11,6 @@
 
 package org.springframework.ide.vscode.commons.util.text;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -278,6 +277,7 @@ public class TextDocument implements IDocument {
 		return languageId;
 	}
 
+	@Override
 	public Range toRange(IRegion region) throws BadLocationException {
 		return toRange(region.getOffset(), region.getLength());
 	}

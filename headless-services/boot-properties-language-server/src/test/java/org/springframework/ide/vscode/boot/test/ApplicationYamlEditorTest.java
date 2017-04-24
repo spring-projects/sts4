@@ -32,15 +32,15 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 
 /**
  * This class is a placeholder where we will attempt to copy and port
- * as many tests a possible from 
+ * as many tests a possible from
  * org.springframework.ide.eclipse.boot.properties.editor.test.YamlEditorTests
- * 
+ *
  * @author Kris De Volder
  */
 public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
-		
+
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
 		Editor editor = newEditor(
 				"somemap: val\n"+
@@ -50,7 +50,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems(
 				"-|expected <block end>"
 		);
-		
+
 		editor.setText(
 				"- sequence\n" +
 				"zomemap: val"
@@ -60,9 +60,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"z|expected <block end>"
 		);
 	}
-	
+
 	///////////////////// ported tests from old STS code base ////////////////////////////////////////////////
-	
+
 	@Test public void testHovers() throws Exception {
 		defaultTestData();
 		Editor editor = newEditor(
@@ -212,7 +212,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.assertHoverContains("data", "Pojo"); // description from json metadata
-		
+
 		// NOTE: This may be failing because javadoc may not be obtained from a private member
 		editor.assertHoverContains("wavelen", "JavaDoc from field"); // javadoc from field
 		editor.assertHoverContains("name", "Set the name"); // javadoc from setter
@@ -224,7 +224,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Ignore @Test public void testHyperlinkTargets() throws Exception {
-		System.out.println(">>> testHyperlinkTargets");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
@@ -248,7 +247,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 		editor.assertLinkTargets("init-sql",
 				"org.springframework.boot.autoconfigure.flyway.FlywayProperties.setInitSqls(List<String>)");
-		System.out.println("<<< testHyperlinkTargets");
 	}
 
 	@Test public void testReconcile() throws Exception {
@@ -679,7 +677,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"bad: BLUE|Expecting a 'demo.Color",
 				"Bogus|Expecting a 'demo.Color"
 		);
-		
+
 		/*
 		 * TODO: if enums are not sorted by the 3rd party java indexing lib then
 		 * perform the commented out test rather than the above
@@ -2360,11 +2358,11 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	 */
 	@Test public void testDeprecatedReconcileProperty() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
-		
+
 		String contents = "# a comment\n"+
 				"error:\n"+
 				"  path: foo\n";
-		
+
 		Editor editor = newEditor(
 				contents
 		);
@@ -3156,7 +3154,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	/**
-	 * TODO: Delete this tempotary test. 
+	 * TODO: Delete this tempotary test.
 	 * This test is just one piece copied from another test to do more focussed debugging. If you find this test
 	 * in the git repo, then it was committed by accident. So feel free to delete it.
 	 */
@@ -3167,7 +3165,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 		data("my.nice.resource", "org.springframework.core.io.Resource", null, "A very nice resource.");
 		data("my.nice.list", "java.util.List<org.springframework.core.io.Resource>", null, "A nice list of resources.");
-		
+
 		assertCompletionWithLabel(
 				"my:\n" +
 				"  nice:\n" +
@@ -3298,24 +3296,24 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      classpath:stuff/wordlist.txt<*>\n"
 		);
 	}
-	
+
 	@Test public void testCompletionsInContextWithDuplicateKey() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/135708013
 		defaultTestData();
-		
+
 		assertCompletions(
-				"spring:\n" + 
-				"  application:\n" + 
-				"    name: my-app\n" + 
-				"spring:\n" + 
-				"  activemq:\n" + 
+				"spring:\n" +
+				"  application:\n" +
+				"    name: my-app\n" +
+				"spring:\n" +
+				"  activemq:\n" +
 				"    broker-u<*>"
 				, // ==>
-				"spring:\n" + 
-				"  application:\n" + 
-				"    name: my-app\n" + 
-				"spring:\n" + 
-				"  activemq:\n" + 
+				"spring:\n" +
+				"  application:\n" +
+				"    name: my-app\n" +
+				"spring:\n" +
+				"  activemq:\n" +
 				"    broker-url: <*>"
 		);
 	}
@@ -3596,7 +3594,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Test public void PT_137299017_extra_space_wth_bean_property_value_completion() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("color", "demo.ColorData", null, "colorful stuff");
-		
+
 		assertCompletions(
 				"color:\n" +
 				"  next:<*>"
@@ -3615,17 +3613,17 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	@Test public void PT_137299017_extra_space_wth_index_property_value_completion() throws Exception {
 		defaultTestData();
 		assertCompletions(
-				"flyway:\n"+ 
+				"flyway:\n"+
 				"  enabled:<*>"
 				, // ==>
-				"flyway:\n"+ 
+				"flyway:\n"+
 				"  enabled: false<*>"
 				, // ==
-				"flyway:\n"+ 
+				"flyway:\n"+
 				"  enabled: true<*>"
 		);
 	}
-	
+
 	///////////////// cruft ////////////////////////////////////////////////////////
 
 	private void generateNestedProperties(int levels, String[] names, String prefix) {
@@ -3656,5 +3654,5 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	protected String getFileExtension() {
 		return ".yml";
 	}
-	
+
 }

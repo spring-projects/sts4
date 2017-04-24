@@ -11,6 +11,7 @@
 
 package org.springframework.ide.vscode.commons.util.text;
 
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 
 public interface IDocument {
@@ -30,5 +31,6 @@ public interface IDocument {
 	String textBetween(int start, int end) throws BadLocationException;
 	LanguageId getLanguageId();
 	int getVersion();
+	Range toRange(IRegion asRegion) throws BadLocationException;
 
 }

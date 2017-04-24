@@ -49,6 +49,7 @@ public class YamlSchemaProblems {
 	public static final ProblemType SYNTAX_PROBLEM = problemType("YamlSyntaxProblem");
 	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem");
 	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING);
+	public static final ProblemType DEPRECATED_VALUE = problemType("DeprecatedValue", ProblemSeverity.WARNING);
 	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR);
 	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR);
 

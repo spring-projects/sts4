@@ -15,6 +15,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 
 /**

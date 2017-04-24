@@ -26,14 +26,13 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
@@ -53,12 +52,25 @@ import reactor.core.publisher.Flux;
  */
 public class YTypeFactory {
 
+	private static class Deprecation {
+		final String errorMsg;
+		final String replacement;
+		final String quickfixMsg;
+		public Deprecation(String errorMsg, String replacement, String quickfixMsg) {
+			super();
+			this.errorMsg = errorMsg;
+			this.replacement = replacement;
+			this.quickfixMsg = quickfixMsg;
+		}
+
+	}
+
 	public class EnumTypeBuilder {
 
 		private String name;
 		private String[] values;
 
-		private Map<String, String> deprecationMsgs = new HashMap<>();
+		private Map<String, Deprecation> deprecations = new HashMap<>();
 
 		public EnumTypeBuilder(String name, String[] values) {
 			this.name = name;
@@ -69,17 +81,15 @@ public class YTypeFactory {
 			EnumValueParser basicParser = new EnumValueParser(name, values);
 			YAtomicType t = yatomic(name);
 			t.addHints(getNonDeprecatedValues());
-			if (deprecationMsgs.isEmpty()) {
+			if (deprecations.isEmpty()) {
 				t.parseWith(basicParser);
 			} else {
 				t.parseWith(ValueParser.of((String value) -> {
 					basicParser.parse(value);
-					if (deprecationMsgs.containsKey(value)) {
-						String msg = deprecationMsgs.get(value);
-						if (!StringUtil.hasText(msg)) {
-							msg = "'"+value+"' is deprecated";
-						}
-						throw new ReconcileException(msg, YamlSchemaProblems.DEPRECATED_PROPERTY);
+					Deprecation d = deprecations.get(value);
+					if (d!=null) {
+						throw new ReconcileException(d.errorMsg, YamlSchemaProblems.DEPRECATED_VALUE)
+									.fixWith(new ReplacementQuickfix(d.quickfixMsg, d.replacement));
 					}
 					return value;
 				}));
@@ -89,13 +99,23 @@ public class YTypeFactory {
 
 		public EnumTypeBuilder deprecate(String value, String msg) {
 			Assert.isLegal(ImmutableSet.copyOf(values).contains(value));
-			deprecationMsgs.put(value, msg);
+			deprecations.put(value, new Deprecation(msg, null, null));
+			return this;
+		}
+
+		public EnumTypeBuilder deprecateWithReplacement(String value, String replacement) {
+			Assert.isLegal(ImmutableSet.copyOf(values).contains(value));
+			deprecations.put(value, new Deprecation(
+				"The value '"+value+"' is deprecated in favor of '"+replacement+"'",
+				replacement,
+				"Replace deprecated value '"+value+"' by '"+replacement+"'"
+			));
 			return this;
 		}
 
 		private String[] getNonDeprecatedValues() {
 			return Flux.fromArray(values)
-				.filter((value) -> !deprecationMsgs.containsKey(value))
+				.filter((value) -> !deprecations.containsKey(value))
 				.collectList()
 				.map(l -> l.toArray(new String[l.size()]))
 				.block();

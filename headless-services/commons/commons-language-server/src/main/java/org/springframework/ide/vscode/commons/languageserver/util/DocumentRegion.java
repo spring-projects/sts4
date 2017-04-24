@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -289,5 +290,9 @@ public class DocumentRegion implements CharSequence {
 	public DocumentRegion textAtEnd(int numChars) {
 		numChars = Math.min(getLength(), numChars);
 		return new DocumentRegion(doc, end-numChars, end);
+	}
+
+	public Range asRange() throws BadLocationException {
+		return doc.toRange(asRegion());
 	}
 }

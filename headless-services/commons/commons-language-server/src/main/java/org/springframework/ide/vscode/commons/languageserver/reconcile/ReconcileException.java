@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 
 /**
@@ -22,6 +24,8 @@ public class ReconcileException extends ValueParseException implements ProblemTy
 
 	private static final long serialVersionUID = 1L;
 	private final ProblemType problemType;
+
+	private ReplacementQuickfix replacement = null; //Optional info to create a 'replacement quickfix' for the value
 
 	public ReconcileException(String message, ProblemType problemType) {
 		super(message);
@@ -36,5 +40,18 @@ public class ReconcileException extends ValueParseException implements ProblemTy
 	@Override
 	public ProblemType getProblemType() {
 		return problemType;
+	}
+
+	public ReconcileException fixWith(ReplacementQuickfix replacement) {
+		//Silently ignore if the fix is either null or doesn't provide a proper replacement text.
+		if (replacement!=null && StringUtil.hasText(replacement.replacement)) {
+			Assert.isLegal(this.replacement==null, "Multiple fixes not yet supported");
+			this.replacement = replacement;
+		}
+		return this;
+	}
+
+	public ReplacementQuickfix getReplacement() {
+		return replacement;
 	}
 }

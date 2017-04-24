@@ -23,9 +23,13 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypeProvider;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
@@ -38,9 +42,9 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
-import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -181,21 +185,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 							}
 						} catch (Exception e) {
 							ProblemType problemType = getProblemType(e);
-							DocumentRegion region = new DocumentRegion(doc, node.getStartMark().getIndex(), node.getEndMark().getIndex());
-							if (e instanceof ValueParseException) {
-								ValueParseException parseException = (ValueParseException) e;
-								int start = parseException.getStartIndex() >= 0
-										? Math.min(node.getStartMark().getIndex() + parseException.getStartIndex(),
-												node.getEndMark().getIndex())
-										: node.getStartMark().getIndex();
-								int end = parseException.getEndIndex() >= 0
-										? Math.min(node.getStartMark().getIndex() + parseException.getEndIndex(),
-												node.getEndMark().getIndex())
-										: node.getEndMark().getIndex();
-								region = new DocumentRegion(doc, start, end);
-							}
+							DocumentRegion region = getRegion(e, doc, node);
 							String msg = getMessage(e);
-							valueParseError(type, region, msg, problemType);
+							valueParseError(type, region, msg, problemType, getValueReplacement(e));
 						}
 					}
 				} else {
@@ -206,6 +198,31 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
+	}
+
+	protected ReplacementQuickfix getValueReplacement(Exception _e) {
+		if (_e instanceof ReconcileException) {
+			ReconcileException e = (ReconcileException) _e;
+			return e.getReplacement();
+		}
+		return null;
+	}
+
+	protected DocumentRegion getRegion(Exception e, IDocument doc, Node node) {
+		DocumentRegion region = new DocumentRegion(doc, node.getStartMark().getIndex(), node.getEndMark().getIndex());
+		if (e instanceof ValueParseException) {
+			ValueParseException parseException = (ValueParseException) e;
+			int start = parseException.getStartIndex() >= 0
+					? Math.min(node.getStartMark().getIndex() + parseException.getStartIndex(),
+							node.getEndMark().getIndex())
+					: node.getStartMark().getIndex();
+			int end = parseException.getEndIndex() >= 0
+					? Math.min(node.getStartMark().getIndex() + parseException.getEndIndex(),
+							node.getEndMark().getIndex())
+					: node.getEndMark().getIndex();
+			region = new DocumentRegion(doc, start, end);
+		}
+		return region;
 	}
 
 	private String getMessage(Exception _e) {
@@ -337,18 +354,24 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		}
 	}
 
-	private void valueParseError(YType type, Node node, String parseErrorMsg, ProblemType problemType) {
+	private void valueParseError(YType type, DocumentRegion region, String parseErrorMsg, ProblemType problemType, ReplacementQuickfix fix) {
 		if (!StringUtil.hasText(parseErrorMsg)) {
 			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
 		}
-		problem(node, parseErrorMsg, problemType);
-	}
-
-	private void valueParseError(YType type, DocumentRegion region, String parseErrorMsg, ProblemType problemType) {
-		if (!StringUtil.hasText(parseErrorMsg)) {
-			parseErrorMsg= "Couldn't parse as '"+describe(type)+"'";
+		ReconcileProblemImpl problem = YamlSchemaProblems.problem(problemType, parseErrorMsg, region);
+		if (fix!=null && StringUtil.hasText(fix.replacement)) {
+			try {
+				problem.addQuickfix(
+					new QuickfixData<>(quickfixes.SIMPLE_TEXT_EDIT,
+						new ReplaceStringData(region, fix.replacement),
+						fix.msg
+					)
+				);
+			} catch (Exception e) {
+				Log.log(e);
+			}
 		}
-		problem(region, parseErrorMsg, problemType);
+		problems.accept(problem);
 	}
 
 	private void unknownBeanProperty(Node keyNode, YType type, String name) {
@@ -402,14 +425,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	private void problem(Node node, String msg) {
 		problems.accept(YamlSchemaProblems.schemaProblem(msg, node));
-	}
-
-	private void problem(Node node, String msg, ProblemType problemType) {
-		problems.accept(YamlSchemaProblems.problem(problemType, msg, node));
-	}
-
-	private void problem(DocumentRegion region, String msg, ProblemType problemType) {
-		problems.accept(YamlSchemaProblems.problem(problemType, msg, region));
 	}
 
 	private void problem(DocumentRegion region, String msg) {

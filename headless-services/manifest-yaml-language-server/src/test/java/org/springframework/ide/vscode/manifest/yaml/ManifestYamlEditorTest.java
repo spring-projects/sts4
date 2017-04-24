@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -443,12 +444,6 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
-				"  health-check-type: none"
-		);
-
-		editor = harness.newEditor(
-				"applications:\n" +
-				"- name: foo\n" +
 				"  health-check-type: port"
 		);
 		editor.assertProblems(/*NONE*/);
@@ -459,6 +454,25 @@ public class ManifestYamlEditorTest {
 				"  health-check-type: process"
 		);
 		editor.assertProblems(/*NONE*/);
+	}
+
+	@Test public void deprecatedHealthCheckTypeQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: none"
+		);
+		Diagnostic problem = editor.assertProblems("none|'none' is deprecated in favor of 'process'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Replace deprecated value 'none' by 'process'", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertRawText(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: process"
+		);
 	}
 
 	@Test
@@ -1146,6 +1160,7 @@ public class ManifestYamlEditorTest {
 				"  - route: host.springsource.org\n");
 		editor.assertProblems();
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////////
 
