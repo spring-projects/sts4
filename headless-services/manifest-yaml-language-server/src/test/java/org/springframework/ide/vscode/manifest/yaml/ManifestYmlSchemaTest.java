@@ -44,6 +44,7 @@ public class ManifestYmlSchemaTest {
 			"domain",
 			"domains",
 			"env",
+			"health-check-http-endpoint",
 			"health-check-type",
 			"host",
 			"hosts",
@@ -69,6 +70,7 @@ public class ManifestYmlSchemaTest {
 			"domain",
 			"domains",
 			"env",
+			"health-check-http-endpoint",
 			"health-check-type",
 //			"host",
 //			"hosts",
@@ -155,19 +157,19 @@ public class ManifestYmlSchemaTest {
 		}
 		return builder.build();
 	}
-	
+
 	private static final ManifestYmlHintProviders EMPTY_PROVIDERS = new ManifestYmlHintProviders() {
-		
+
 		@Override
 		public Callable<Collection<YValueHint>> getServicesProvider() {
 			return null;
 		}
-		
+
 		@Override
 		public Callable<Collection<YValueHint>> getDomainsProvider() {
 			return null;
 		}
-		
+
 		@Override
 		public Callable<Collection<YValueHint>> getBuildpackProviders() {
 			return null;
