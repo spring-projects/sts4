@@ -142,7 +142,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		Log.debug("Initializing: "+params);
 		String rootPath = params.getRootPath();
 		if (rootPath==null) {
-			Log.warn("workspaceRoot NOT SET");
+			Log.debug("workspaceRoot NOT SET");
 		} else {
 			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
 		}

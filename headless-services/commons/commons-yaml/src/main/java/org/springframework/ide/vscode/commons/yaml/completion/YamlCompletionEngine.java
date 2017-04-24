@@ -83,7 +83,6 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		if (!completions.isEmpty()) {
 			List<ICompletionProposal> transformed = new ArrayList<>();
 			for (ICompletionProposal p : completions) {
-				System.out.println(p.getLabel());
 				transformed.add(indented(p));
 			}
 			return transformed;

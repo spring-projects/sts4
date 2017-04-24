@@ -1827,7 +1827,6 @@ public class ConcourseEditorTest {
 				"    password: his-password\n" +
 				"    retry_delay: retry-after\n"
 		);
-		System.out.println(editor.getRawText());
 		editor.assertProblems(
 				"retry-after|'Duration'"
 		);
@@ -3103,7 +3102,6 @@ public class ConcourseEditorTest {
 				"  type: \n" +
 				"    <*>"
 		);
-		System.out.println(editor.getText());
 		editor.assertCompletionWithLabel((l) -> l.startsWith("pool"),
 				"resources:\n" +
 				"- name: source-repo\n" +
