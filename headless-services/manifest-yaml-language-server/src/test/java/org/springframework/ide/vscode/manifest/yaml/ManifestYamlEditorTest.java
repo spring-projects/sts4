@@ -257,6 +257,8 @@ public class ManifestYamlEditorTest {
 				"env:\n"+
 				"  <*>",
 				// ---------------
+				"health-check-http-endpoint: <*>",
+				// ---------------
 				"health-check-type: <*>",
 				// ---------------
 //				"host: <*>",
@@ -325,6 +327,9 @@ public class ManifestYamlEditorTest {
 				"applications:\n" +
 				"- env:\n"+
 				"    <*>",
+				// ---------------
+				"applications:\n" +
+				"- health-check-http-endpoint: <*>",
 				// ---------------
 				"applications:\n" +
 				"- health-check-type: <*>",
@@ -416,6 +421,48 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
+	public void reconcileHealthCheckType() throws Exception {
+		Editor editor;
+		Diagnostic problem;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: none"
+		);
+		problem = editor.assertProblems("none|'none' is deprecated in favor of 'process'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: none"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: port"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  health-check-type: process"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
+	@Test
 	public void hoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
 			"memory: 1G\n" +
@@ -449,7 +496,8 @@ public class ManifestYamlEditorTest {
 			"  - instance_XYZ\n" +
 			"  stack: cflinuxfs2\n" +
 			"  timeout: 80\n" +
-			"  health-check-type: none\n"
+			"  health-check-type: none\n" +
+			"  health-check-http-endpoint: /health\n"
 		);
 
 		editor.assertIsHoverRegion("memory");
@@ -497,17 +545,7 @@ public class ManifestYamlEditorTest {
 	    editor.assertHoverContains("stack", "Use the `stack` attribute to specify which stack to deploy your application to.");
 	    editor.assertHoverContains("timeout", "The `timeout` attribute defines the number of seconds Cloud Foundry allocates for starting your application");
 	    editor.assertHoverContains("health-check-type", "Use the `health-check-type` attribute to");
-	}
-
-	@Test
-	public void deprecatedHealthCheckTypeNone() throws Exception {
-		Editor editor = harness.newEditor(
-				"applications:\n" +
-				"- name: foo\n" +
-				"  health-check-type: none"
-		);
-		Diagnostic problem = editor.assertProblems("none|'none' is deprecated in favor of 'process'").get(0);
-		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	    editor.assertHoverContains("health-check-http-endpoint", "customize the endpoint for the `http`");
 	}
 
 	@Test
@@ -590,6 +628,9 @@ public class ManifestYamlEditorTest {
 				"    <*>",
 				// ---------------
 				"applications:\n" +
+				"- health-check-http-endpoint: <*>",
+				// ---------------
+				"applications:\n" +
 				"- health-check-type: <*>",
 				// ---------------
 				"applications:\n" +
@@ -665,6 +706,10 @@ public class ManifestYamlEditorTest {
 				"applications:\n" +
 				"- env:\n" +
 				"    <*>\n" +
+				"- name: test"
+				, // ---------------------
+				"applications:\n" +
+				"- health-check-http-endpoint: <*>\n" +
 				"- name: test"
 				, // ---------------------
 				"applications:\n" +
@@ -1010,23 +1055,6 @@ public class ManifestYamlEditorTest {
 		assertDoesNotContainCompletions("domains:\n" + "  - <*>", "wrong.cfapps.io");
 	}
 
-	//////////////////////////////////////////////////////////////////////////////
-
-	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
-		Editor editor = harness.newEditor(textBefore);
-		editor.assertCompletions(textAfter);
-	}
-
-	private void assertDoesNotContainCompletions(String textBefore, String... notToBeFound) throws Exception {
-		Editor editor = harness.newEditor(textBefore);
-		editor.assertDoesNotContainCompletions(notToBeFound);
-	}
-
-	private void assertContainsCompletions(String textBefore, String... textAfter) throws Exception {
-		Editor editor = harness.newEditor(textBefore);
-		editor.assertContainsCompletions(textAfter);
-	}
-
 	@Test
 	public void reconcileRouteFormat() throws Exception {
 		Editor editor = harness.newEditor(
@@ -1118,6 +1146,23 @@ public class ManifestYamlEditorTest {
 				"  routes:\n" +
 				"  - route: host.springsource.org\n");
 		editor.assertProblems();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+
+	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(textBefore);
+		editor.assertCompletions(textAfter);
+	}
+
+	private void assertDoesNotContainCompletions(String textBefore, String... notToBeFound) throws Exception {
+		Editor editor = harness.newEditor(textBefore);
+		editor.assertDoesNotContainCompletions(notToBeFound);
+	}
+
+	private void assertContainsCompletions(String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(textBefore);
+		editor.assertContainsCompletions(textAfter);
 	}
 
 }

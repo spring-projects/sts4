@@ -123,19 +123,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application)));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
-//		YAtomicType t_test_hanging = f.yatomic("Hanging");
-//		t_test_hanging.addHintProvider(() -> {
-//			try {
-//				Thread.sleep(60_000);
-//			} catch (InterruptedException e) {
-//				LaunguageServerApp.LOG.info("test_hanging hint provider interrupted!");
-//				throw e;
-//			}
-//			return YTypeFactory.hints(ImmutableList.of("very", "slow", "hints"));
-//		});
-
 		YTypedPropertyImpl[] props = {
-//			f.yprop("test_hanging", t_test_hanging),
 			f.yprop("buildpack", t_buildpack),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
@@ -155,7 +143,8 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("services", t_services),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),
-			f.yprop("health-check-type", t_health_check_type)
+			f.yprop("health-check-type", t_health_check_type),
+			f.yprop("health-check-http-endpoint", t_ne_string)
 		};
 
 		for (YTypedPropertyImpl prop : props) {
