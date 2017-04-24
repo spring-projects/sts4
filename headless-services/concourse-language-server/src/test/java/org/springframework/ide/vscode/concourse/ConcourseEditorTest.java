@@ -3116,6 +3116,8 @@ public class ConcourseEditorTest {
 		);
 	}
 
+
+
 	@Test public void reconcilerJobFromPassedAttributeMustInteractWithResource() throws Exception {
 		Editor editor;
 
@@ -3216,6 +3218,33 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(/*NONE*/);
 
+	}
+
+	@Test public void reconcilerSkipInteractsWithChecckedForNonExistantResource() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/144217965
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"- name: source-repo\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: build-it\n" +
+				"  plan:\n" +
+				"  - aggregate:\n" +
+				"    - put: version\n" +
+				"    - get: source-repo\n" +
+				"- name: test-it\n" +
+				"  plan:\n" +
+				"  - get: source-repo\n" +
+				"    passed:\n" +
+				"    - build-it\n" +
+				"  - get: versi\n" +
+				"    passed:\n" +
+				"    - build-it"
+		);
+
+		editor.assertProblems("get: ^versi^|resource does not exist");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

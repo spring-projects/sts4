@@ -86,7 +86,7 @@ public class ConcourseModel {
 					if (stepNode!=null) {
 						StepModel step = newStep(stepNode);
 						String resourceName = step.getResourceName();
-						if (resourceName!=null) {
+						if (resourceName!=null && getResource(dc.getDocument(), resourceName)!=null) {
 							Set<String> interactions = job.getInteractedResources();
 							if (interactions!=null && !interactions.contains(resourceName)) {
 								problems.accept(YamlSchemaProblems.schemaProblem("Job '"+jobName+"' does not interact with resource '"+resourceName+"'", node));
