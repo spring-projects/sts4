@@ -71,22 +71,17 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
-		YAtomicType t_domains_string = f.yatomic("Domains");
 
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
-			t_domains_string.addHintProvider(domainsProvider);
 		}
 
-		YType t_domains = f.yseq(t_domains_string);
-
-		YAtomicType t_service_string = f.yatomic("Service");
+		YAtomicType t_service = f.yatomic("Service");
 		if (servicesProvider != null) {
-			t_service_string.addHintProvider(servicesProvider);
-			t_service_string.parseWith(new CFServicesValueParser(t_service_string.toString(),
+			t_service.addHintProvider(servicesProvider);
+			t_service.parseWith(new CFServicesValueParser(t_service.toString(),
 					YTypeFactory.valuesFromHintProvider(servicesProvider)));
 		}
-		YType t_services = f.yseq(t_service_string);
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_ne_string = f.yatomic("String");
@@ -128,7 +123,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
 			f.yprop("domain", t_domain),
-			f.yprop("domains", t_domains),
+			f.yprop("domains", f.yseq(t_domain)),
 			f.yprop("env", t_env),
 			f.yprop("host", t_string),
 			f.yprop("hosts", t_strings),
@@ -140,7 +135,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
 			f.yprop("routes", f.yseq(route)),
-			f.yprop("services", t_services),
+			f.yprop("services", f.yseq(t_service)),
 			f.yprop("stack", t_string),
 			f.yprop("timeout", t_pos_integer),
 			f.yprop("health-check-type", t_health_check_type),

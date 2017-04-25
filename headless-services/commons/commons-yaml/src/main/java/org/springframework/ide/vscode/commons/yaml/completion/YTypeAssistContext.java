@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
@@ -183,7 +182,10 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					if (extraInsertion!=null) {
 						edits.insert(offset, indenter.applyIndentation(extraInsertion, referenceIndent));
 					}
-					completions.add(completionFactory().valueProposal(value.getValue(), query, value.getLabel(), type, score, edits, typeUtil));
+					completions.add(completionFactory().valueProposal(
+							value.getValue(), query, value.getLabel(), type,
+							value.getDocumentation(), score, edits, typeUtil
+					));
 				}
 			}
 			return completions;

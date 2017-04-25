@@ -29,10 +29,10 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 	public static class BeanPropertyProposal extends ScoreableProposal {
 
-		private IDocument doc;
+//		private IDocument doc;
 		private String contextProperty;
 		private YType contextType;
-		private String query;
+//		private String query;
 		private YTypedProperty p;
 		private double baseScore;
 		private DocumentEdits edits;
@@ -40,10 +40,10 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		public BeanPropertyProposal(IDocument doc, String contextProperty, YType contextType, String query, YTypedProperty p, double score, DocumentEdits edits, YTypeUtil typeUtil) {
 			super();
-			this.doc = doc;
+	//		this.doc = doc;
 			this.contextProperty = contextProperty;
 			this.contextType = contextType;
-			this.query = query;
+	//		this.query = query;
 			this.p = p;
 			this.baseScore = score;
 			this.edits = edits;
@@ -84,18 +84,20 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	public class ValueProposal extends ScoreableProposal {
 
 		private String value;
-		private String query;
+		//private String query;
 		private String label;
 		private YType type;
 		private double baseScore;
 		private DocumentEdits edits;
 		private YTypeUtil typeUtil;
+		private Renderable docs;
 
-		public ValueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
+		public ValueProposal(String value, String query, String label, YType type, Renderable docs, double score, DocumentEdits edits, YTypeUtil typeUtil) {
 			this.value = value;
-			this.query = query;
+			//this.query = query;
 			this.label = label;
 			this.type = type;
+			this.docs = docs;
 			this.baseScore = score;
 			this.edits = edits;
 			this.typeUtil = typeUtil;
@@ -133,7 +135,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		@Override
 		public Renderable getDocumentation() {
-			return null;
+			return docs;
 		}
 	}
 
@@ -201,8 +203,11 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	}
 
 	@Override
-	public ICompletionProposal valueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil) {
-		return new ValueProposal(value, query, label, type, score, edits, typeUtil);
+	public ICompletionProposal valueProposal(
+			String value, String query, String label, YType type, Renderable doc,
+			double score, DocumentEdits edits, YTypeUtil typeUtil
+	) {
+		return new ValueProposal(value, query, label, type, doc, score, edits, typeUtil);
 	}
 
 	@Override

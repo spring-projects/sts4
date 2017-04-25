@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import org.springframework.ide.vscode.commons.util.Renderable;
+
 public interface YValueHint {
 	String getValue();
 	String getLabel();
@@ -21,4 +23,10 @@ public interface YValueHint {
 	 * the line where the value itself is being inserted.
 	 */
 	String getExtraInsertion();
+
+	/**
+	 * An optional documentation string (i.e. shown in javadoc side hover in Eclipse style
+	 * or in the line below a completion item in vscode style.
+	 */
+	Renderable getDocumentation();
 }

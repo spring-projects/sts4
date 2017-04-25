@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.schema;
 
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Renderable;
 
 import com.google.common.base.Supplier;
 
@@ -19,6 +20,7 @@ public class BasicYValueHint implements YValueHint {
 	private final String value;
 	private String label;
 	private Supplier<String> extraInsertion = null;
+	private Renderable documentation;
 
 	public BasicYValueHint(String value, String label) {
 		this.value = value;
@@ -92,5 +94,15 @@ public class BasicYValueHint implements YValueHint {
 		Assert.isLegal(this.extraInsertion==null);
 		this.extraInsertion = insertions;
 		return this;
+	}
+
+	public BasicYValueHint setDocumentation(Renderable docs) {
+		this.documentation = docs;
+		return this;
+	}
+
+	@Override
+	public Renderable getDocumentation() {
+		return documentation;
 	}
 }

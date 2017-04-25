@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.completion;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
@@ -22,8 +23,14 @@ public interface CompletionFactory {
 
 	CompletionFactory DEFAULT = new DefaultCompletionFactory();
 
-	ICompletionProposal beanProperty(IDocument doc, String contextProperty, YType contextType, String query, YTypedProperty p, double score, DocumentEdits edits, YTypeUtil typeUtil);
-	ICompletionProposal valueProposal(String value, String query, String label, YType type, double score, DocumentEdits edits, YTypeUtil typeUtil);
+	ICompletionProposal beanProperty(
+			IDocument doc, String contextProperty, YType contextType, String query,
+			YTypedProperty p, double score, DocumentEdits edits, YTypeUtil typeUtil
+	);
+	ICompletionProposal valueProposal(
+			String value, String query, String label, YType type, Renderable doc,
+			double score, DocumentEdits edits, YTypeUtil typeUtil
+	);
 
 	/**
 	 * Create a fake completion proposal that represents an error message. Such a proposal, when applied does nothing. Its main purpose is to

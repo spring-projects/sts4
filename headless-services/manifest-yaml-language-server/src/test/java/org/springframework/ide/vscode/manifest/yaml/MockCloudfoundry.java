@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 public class MockCloudfoundry {
 
 	public final CFClientParams DEFAULT_PARAMS = new CFClientParams("test.io", "testuser",
-			CFCredentials.fromRefreshToken("refreshtoken"), false);
+			CFCredentials.fromRefreshToken("refreshtoken"), "an-org", "a-space", false);
 
 	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
 	public final ClientRequests client = mock(ClientRequests.class);

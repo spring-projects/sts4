@@ -24,7 +24,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 /**
- * 
+ *
  * Wrapper around a {@link ClientRequests} that may contain cached information
  * like buildpacks
  *
@@ -115,12 +115,12 @@ public class CFTarget {
 	public List<CFServiceInstance> getServices() throws Exception {
 		/* services don't use keys, as they get wiped clean on each refresh
 		 * . That said, the cache doesn't allow a null key, so use the target name as the "key"
-		 * 
+		 *
 		 */
 		String key = getName();
 		return this.servicesCache.get(key);
 	}
-	
+
 	public List<CFDomain> getDomains() throws Exception {
 		String key = getName();
 		return this.domainCache.get(key);
@@ -137,5 +137,10 @@ public class CFTarget {
 	@Override
 	public String toString() {
 		return "CFClientTarget [params=" + params + ", targetName=" + targetName + "]";
+	}
+
+	public String getLabel() {
+//		%o : %s - [%a]
+		return params.getOrgName() + " : " + params.getSpaceName() + " ["+params.getApiUrl()+"]";
 	}
 }

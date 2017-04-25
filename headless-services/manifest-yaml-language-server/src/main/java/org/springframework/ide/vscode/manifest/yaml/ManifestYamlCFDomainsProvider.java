@@ -17,6 +17,7 @@ import java.util.List;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
@@ -39,7 +40,8 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 				for (CFDomain domain : domains) {
 					String name = domain.getName();
 					String label = getLabel(cfTarget, domain);
-					YValueHint hint = new BasicYValueHint(name, label);
+					YValueHint hint = new BasicYValueHint(name, label)
+							.setDocumentation(Renderables.text(cfTarget.getLabel()));
 					if (!hints.contains(hint)) {
 						hints.add(hint);
 					}

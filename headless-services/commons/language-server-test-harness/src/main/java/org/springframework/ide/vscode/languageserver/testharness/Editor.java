@@ -289,7 +289,7 @@ public class Editor {
 		return Collections.emptyList();
 	}
 
-	public void assertCompletions(String... expectTextAfter) throws Exception {
+	public List<CompletionItem> assertCompletions(String... expectTextAfter) throws Exception {
 		StringBuilder expect = new StringBuilder();
 		StringBuilder actual = new StringBuilder();
 		for (String after : expectTextAfter) {
@@ -297,13 +297,15 @@ public class Editor {
 			expect.append("\n-------------------\n");
 		}
 
-		for (CompletionItem completion : getCompletions()) {
+		List<CompletionItem> completions = getCompletions();
+		for (CompletionItem completion : completions) {
 			Editor editor = this.clone();
 			editor.apply(completion);
 			actual.append(editor.getText());
 			actual.append("\n-------------------\n");
 		}
 		assertEquals(expect.toString(), actual.toString());
+		return completions;
 	}
 
 	public void assertCompletionLabels(String... expectedLabels) throws Exception {
