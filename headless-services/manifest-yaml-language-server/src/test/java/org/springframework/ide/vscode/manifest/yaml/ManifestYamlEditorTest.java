@@ -1012,7 +1012,9 @@ public class ManifestYamlEditorTest {
 		when(buildPack.getName()).thenReturn("java_buildpack");
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
 
-		assertCompletions("buildpack: <*>", "buildpack: java_buildpack<*>");
+		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: java_buildpack<*>").get(0);
+		assertEquals("java_buildpack", completion.getLabel());
+		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
 	}
 
 	@Test

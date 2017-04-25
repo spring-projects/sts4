@@ -17,6 +17,8 @@ import java.util.List;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
@@ -34,12 +36,15 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 		for (CFTarget cfTarget : targets) {
 
 			List<CFBuildpack> buildpacks = cfTarget.getBuildpacks();
+			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
+
 			if (buildpacks != null && !buildpacks.isEmpty()) {
 
 				for (CFBuildpack buildpack : buildpacks) {
 					String name = buildpack.getName();
 					String label = getBuildpackLabel(cfTarget, buildpack);
-					YValueHint hint = new BasicYValueHint(name, label);
+					YValueHint hint = new BasicYValueHint(name, label)
+							.setDocumentation(targetLabel);
 					if (!hints.contains(hint)) {
 						hints.add(hint);
 					}
@@ -56,7 +61,7 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 	}
 
 	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {
-		return buildpack.getName() + " (" + target.getName() + ")";
+		return buildpack.getName();
 	}
 
 	@Override
