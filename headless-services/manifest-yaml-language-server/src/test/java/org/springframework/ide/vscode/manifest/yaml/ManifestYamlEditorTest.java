@@ -991,15 +991,18 @@ public class ManifestYamlEditorTest {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFServiceInstance service = Mockito.mock(CFServiceInstance.class);
 		when(service.getName()).thenReturn("mysql");
+		when(service.getPlan()).thenReturn("medium");
 		when(cfClient.getServices()).thenReturn(ImmutableList.of(service));
 
-		assertCompletions(
+		CompletionItem completion = assertCompletions(
 				"services:\n" +
 				"  - <*>"
 				, // ==>
 				"services:\n" +
 				"  - mysql<*>"
-		);
+		).get(0);
+		assertEquals("mysql - medium", completion.getLabel());
+		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
 	}
 
 	@Test

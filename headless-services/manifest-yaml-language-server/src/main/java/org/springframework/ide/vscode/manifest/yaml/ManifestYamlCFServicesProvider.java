@@ -17,6 +17,8 @@ import java.util.List;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
@@ -38,12 +40,14 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 
 		for (CFTarget cfTarget : targets) {
 			List<CFServiceInstance> services = cfTarget.getServices();
+			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
 			if (services != null && !services.isEmpty()) {
 
 				for (CFServiceInstance service : services) {
 					String name = service.getName();
 					String label = getServiceLabel(cfTarget, service);
-					YValueHint hint = new BasicYValueHint(name, label);
+					YValueHint hint = new BasicYValueHint(name, label)
+							.setDocumentation(targetLabel);
 					if (!hints.contains(hint)) {
 						hints.add(hint);
 					}
@@ -56,8 +60,7 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 	}
 
 	private String getServiceLabel(CFTarget cfClientTarget, CFServiceInstance service) {
-		return service.getName() + " - " + service.getPlan() + " (" + cfClientTarget.getParams().getOrgName() + " - "
-				+ cfClientTarget.getParams().getSpaceName() + ")";
+		return service.getName() + " - " + service.getPlan();
 	}
 
 	@Override
