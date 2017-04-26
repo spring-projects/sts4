@@ -43,6 +43,9 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
+import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
+
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
@@ -56,8 +59,8 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	final private YamlAssistContext parent;
 
 	/**
-	 * Create a 'relaxed' {@link YTypeAssistContext} that pretends the type expectedin this context
-	 * is something else than what the schema sugests.
+	 * Create a 'relaxed' {@link YTypeAssistContext} that pretends the type expected in this context
+	 * is actually something else than the schema sugests.
 	 */
 	public YTypeAssistContext(YTypeAssistContext relaxationTarget, YType relaxedType) {
 		super(relaxationTarget.getDocument(), relaxationTarget.documentSelector, relaxationTarget.contextPath);
@@ -316,7 +319,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						@Override
 						public Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception {
 							Collection<ICompletionProposal> basicCompletions = super.getCompletions(doc, node, offset);
-							return addDashes(basicCompletions);
+							return addDashes(basicCompletions, doc, node);
 						}
 					};
 				}
@@ -327,7 +330,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return super.relax();
 	}
 
-	private Collection<ICompletionProposal> addDashes(Collection<ICompletionProposal> basicCompletions) {
+	private Collection<ICompletionProposal> addDashes(Collection<ICompletionProposal> basicCompletions, YamlDocument doc, SNode node) {
 		if (!basicCompletions.isEmpty()) {
 			List<ICompletionProposal> dashedCompletions = new ArrayList<>(basicCompletions.size());
 			for (ICompletionProposal c : basicCompletions) {
@@ -335,17 +338,37 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					new TransformedCompletion(c) {
 						@Override
 						protected DocumentEdits transformEdit(DocumentEdits textEdit) {
-							textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
-								if (offset > 2) {
-									String prefix = insertText.substring(offset-2, offset);
-									if ("  ".equals(prefix)) {
-										//special case don't add the "- " in front, but replace the inserted spaces instead.
-										return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
+							if (needNewline(textEdit)) {
+								textEdit.indentFirstEdit("\n"+Strings.repeat(" ", node.getIndent())+"- ");
+							} else {
+								textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+									if (offset > 2) {
+										String prefix = insertText.substring(offset-2, offset);
+										if ("  ".equals(prefix)) {
+											//special case don't add the "- " in front, but replace the inserted spaces instead.
+											return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
+										}
+									}
+									return insertText.substring(0, offset) + "- "+insertText.substring(offset);
+								});
+							}
+							return textEdit;
+						}
+
+						private boolean needNewline(DocumentEdits textEdit) {
+							//value proposals which are inserted right after a key will not automatically include a newline, as
+							// its not required for them. So we should add it along with the dash.
+							try {
+								if (original instanceof ValueProposal) {
+									Integer insertAt = textEdit.getFirstEditStart();
+									if (insertAt!=null) {
+										return !"".equals(doc.getLineTextBefore(insertAt).trim());
 									}
 								}
-								return insertText.substring(0, offset) + "- "+insertText.substring(offset);
-							});
-							return textEdit;
+							} catch (Exception e) {
+								Log.log(e);
+							}
+							return false;
 						}
 
 						@Override

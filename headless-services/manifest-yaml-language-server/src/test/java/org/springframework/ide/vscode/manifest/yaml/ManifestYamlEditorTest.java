@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -1140,6 +1141,53 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems();
 	}
 
+	@Test public void dashedContentAssistForServices() throws Exception {
+		Editor editor;
+		CFServiceInstance service = mock(CFServiceInstance.class);
+		when(cloudfoundry.client.getServices()).thenReturn(ImmutableList.of(service));
+		when(service.getName()).thenReturn("my-service");
+		when(service.getPlan()).thenReturn("cheap-plan");
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: <*>\n"
+		);
+		editor.assertCompletionLabels("- my-service - cheap-plan");
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: \n" +
+				"  - my-service<*>\n"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: ser<*>\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: \n" +
+				"  - my-service<*>\n"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: \n" +
+				"  - blah\n" +
+				"  <*>\n"
+		);
+		editor.assertCompletionWithLabel((s) -> s.startsWith("- "),
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: \n" +
+				"  - blah\n" +
+				"  - my-service<*>\n"
+		);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 

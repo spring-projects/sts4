@@ -437,4 +437,11 @@ public class DocumentEdits implements ProposalApplier {
 		}
 	}
 
+	public Integer getFirstEditStart() {
+		for (Edit edit : edits) {
+			return edit.getStart();
+		}
+		return null;
+	}
+
 }
