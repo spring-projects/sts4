@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -579,7 +580,6 @@ public class YamlStructureParser {
 
 	public abstract class SLeafNode extends SNode {
 
-
 		public SLeafNode(SChildBearingNode parent, YamlDocument doc,
 				int indent, int start, int end) {
 			super(parent, doc, indent, start, end);
@@ -734,6 +734,15 @@ public class YamlStructureParser {
 			int dashLen = len==1 ? 1 : 2;
 			return offset>=getStart()+dashLen
 					&& offset <= getTreeEnd();
+		}
+
+		public String getTextWithoutChildren() {
+			int end = getNodeEnd();
+			Optional<SNode> child = getChildren().stream().findFirst();
+			if (child.isPresent()) {
+				end = Math.min(end, child.get().getStart());
+			}
+			return doc.textBetween(getStart(), end);
 		}
 	}
 

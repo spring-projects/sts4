@@ -1149,6 +1149,28 @@ public class ManifestYamlEditorTest {
 		when(service.getPlan()).thenReturn("cheap-plan");
 
 		editor = harness.newEditor(
+				"services:\n"+
+				"- blah\n"+
+				"ser<*>"
+		);
+		editor.assertCompletionWithLabel((s) -> s.startsWith("- "),
+				"services:\n"+
+				"- blah\n"+
+				"- my-service<*>"
+		);
+
+		editor = harness.newEditor(
+				"services:\n"+
+				"- blah\n"+
+				"<*>"
+		);
+		editor.assertCompletionWithLabel((s) -> s.startsWith("- "),
+				"services:\n"+
+				"- blah\n"+
+				"- my-service<*>"
+		);
+
+		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
 				"  services:<*>\n"
@@ -1198,6 +1220,26 @@ public class ManifestYamlEditorTest {
 				"  services: \n" +
 				"  - blah\n" +
 				"  - my-service<*>\n"
+		);
+	}
+
+	@Test public void noRelaxedValueCompletionsInListItemContexts() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/144393355
+
+		CFServiceInstance service = mock(CFServiceInstance.class);
+		when(cloudfoundry.client.getServices()).thenReturn(ImmutableList.of(service));
+		when(service.getName()).thenReturn("my-service");
+		when(service.getPlan()).thenReturn("cheap-plan");
+
+		Editor editor = harness.newEditor(
+				"services:\n" +
+				"- some-service\n" +
+				"<*>"
+		);
+		editor.assertCompletions((c) -> c.getLabel().contains("my-service"),
+				"services:\n" +
+				"- some-service\n" +
+				"- my-service<*>"
 		);
 	}
 

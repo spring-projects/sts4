@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_INDENTED_PROPOSAL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
@@ -33,8 +35,6 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SSeqNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
-
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
 
 /**
  * Implements {@link ICompletionEngine} for .yml file, based on a YamlAssistContextProvider
@@ -106,7 +106,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return transformed;
 	}
 
-	private Collection<? extends ICompletionProposal> getDashedCompletions(int offset, YamlDocument doc, SNode preciseContextNode, SNode currentNode) throws Exception {
+	private Collection<? extends ICompletionProposal> getDashedCompletions(
+			int offset, YamlDocument doc,
+			SNode preciseContextNode, SNode currentNode
+	) throws Exception {
 		SNode contextNode = getContextNode(doc, currentNode, offset, "- ");
 		if (preciseContextNode!=contextNode) {
 			return getBaseCompletions(offset, doc, currentNode, contextNode, true);
@@ -129,8 +132,21 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	private boolean isIndentRelaxable(SNode contextNode) throws Exception {
 		return contextNode!=null && (
 				isBarrenKey(contextNode) ||
-				contextNode.getNodeType()==SNodeType.SEQ
+				isBarrenSeq(contextNode)
 		);
+	}
+
+	private boolean isBarrenSeq(SNode node) {
+		try {
+			if (node.getNodeType()==SNodeType.SEQ) {
+				SSeqNode seqNode = (SSeqNode) node;
+				String value = seqNode.getTextWithoutChildren();
+				return "-".equals(value.trim());
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return false;
 	}
 
 	private boolean isBarrenKey(SNode node) throws Exception {
@@ -213,7 +229,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				while (node.getNodeType()!=SNodeType.DOC && (
 					nodeIndent==-1 ||
 					nodeIndent>currentIndent ||
-					nodeIndent==currentIndent && node.getNodeType()==SNodeType.SEQ
+					nodeIndent==currentIndent && (node.getNodeType()==SNodeType.SEQ || node.getNodeType() == SNodeType.RAW)
 				)) {
 					node = node.getParent();
 					nodeIndent = node.getIndent();

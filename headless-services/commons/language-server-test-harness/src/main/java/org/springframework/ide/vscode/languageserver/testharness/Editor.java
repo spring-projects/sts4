@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
@@ -290,6 +291,10 @@ public class Editor {
 	}
 
 	public List<CompletionItem> assertCompletions(String... expectTextAfter) throws Exception {
+		return assertCompletions((item) -> true, expectTextAfter);
+	}
+
+	public List<CompletionItem> assertCompletions(Predicate<CompletionItem> filter, String... expectTextAfter) throws Exception {
 		StringBuilder expect = new StringBuilder();
 		StringBuilder actual = new StringBuilder();
 		for (String after : expectTextAfter) {
@@ -299,10 +304,12 @@ public class Editor {
 
 		List<CompletionItem> completions = getCompletions();
 		for (CompletionItem completion : completions) {
-			Editor editor = this.clone();
-			editor.apply(completion);
-			actual.append(editor.getText());
-			actual.append("\n-------------------\n");
+			if (filter.test(completion)) {
+				Editor editor = this.clone();
+				editor.apply(completion);
+				actual.append(editor.getText());
+				actual.append("\n-------------------\n");
+			}
 		}
 		assertEquals(expect.toString(), actual.toString());
 		return completions;
