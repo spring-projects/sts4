@@ -338,20 +338,20 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					new TransformedCompletion(c) {
 						@Override
 						protected DocumentEdits transformEdit(DocumentEdits textEdit) {
-							if (needNewline(textEdit)) {
-								textEdit.indentFirstEdit("\n"+Strings.repeat(" ", node.getIndent())+"- ");
-							} else {
-								textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
-									if (offset > 2) {
-										String prefix = insertText.substring(offset-2, offset);
-										if ("  ".equals(prefix)) {
-											//special case don't add the "- " in front, but replace the inserted spaces instead.
-											return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
-										}
+							textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+								if (needNewline(textEdit)) {
+									return insertText.substring(0,  offset)
+											+ "\n" +Strings.repeat(" ", node.getIndent())+"- "
+											+ insertText.substring(offset);
+								} else if (offset > 2) {
+									String prefix = insertText.substring(offset-2, offset);
+									if ("  ".equals(prefix)) {
+										//special case don't add the "- " in front, but replace the inserted spaces instead.
+										return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
 									}
-									return insertText.substring(0, offset) + "- "+insertText.substring(offset);
-								});
-							}
+								}
+								return insertText.substring(0, offset) + "- "+insertText.substring(offset);
+							});
 							return textEdit;
 						}
 

@@ -1151,6 +1151,18 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
+				"  services:<*>\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services: \n"+
+				"  - my-service<*>\n"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
 				"  services: <*>\n"
 		);
 		editor.assertCompletionLabels("- my-service - cheap-plan");
