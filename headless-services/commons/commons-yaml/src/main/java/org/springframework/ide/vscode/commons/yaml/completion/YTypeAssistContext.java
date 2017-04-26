@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.assertj.core.api.Assertions.offset;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
