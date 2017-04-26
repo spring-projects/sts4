@@ -102,16 +102,13 @@ public class ConcourseModel {
 	 * Get the job with given name. If there is no such job, or if there is more than one, this will return null.
 	 */
 	private JobModel getJob(IDocument doc, String jobName) {
-		List<JobModel> jobs = getFromAst(doc, ast ->
-			JOBS_PATH.traverseAmbiguously(ast)
-			.filter(node -> jobName.equals(NodeUtil.getScalarProperty(node, "name")))
-			.map(JobModel::new)
-		)
-		.limit(2) //We only need 2 elements at most to determine if there is more than one
-		.collect(Collectors.toList());
-		return jobs.size()==1
-				? jobs.get(0)
-				: null;
+		return Streams.getSingle(
+			 getFromAst(doc, ast ->
+				JOBS_PATH.traverseAmbiguously(ast)
+				.filter(node -> jobName.equals(NodeUtil.getScalarProperty(node, "name")))
+				.map(JobModel::new)
+			)
+		);
 	}
 
 	public StepModel newStep(Node _node) {

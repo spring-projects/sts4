@@ -452,7 +452,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor(CURSOR);
 		editor.assertCompletions(
 				"groups:\n" +
-				"- <*>"
+				"- name: <*>"
 				, // --------------
 				"jobs:\n" +
 				"- <*>"
@@ -2552,10 +2552,10 @@ public class ConcourseEditorTest {
 				"  <*>"
 				,
 				"inputs:\n" +
-				"- <*>"
+				"- name: <*>"
 				,
 				"outputs:\n" +
-				"- <*>"
+				"- name: <*>"
 				,
 				"params:\n" +
 				"  <*>"

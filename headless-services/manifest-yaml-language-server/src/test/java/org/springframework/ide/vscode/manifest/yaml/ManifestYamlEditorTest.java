@@ -233,6 +233,12 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor("appl<*>");
 		editor.assertCompletions(
 				"applications:\n"+
+				"- name: <*>"
+		);
+
+		editor = harness.newEditor("serv<*>");
+		editor.assertCompletions(
+				"services:\n"+
 				"- <*>"
 		);
 	}
@@ -243,7 +249,7 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor("<*>");
 		editor.assertCompletions(
 				"applications:\n"+
-				"- <*>",
+				"- name: <*>",
 				// ---------------
 				"buildpack: <*>",
 				// ---------------
@@ -285,7 +291,7 @@ public class ManifestYamlEditorTest {
 				"random-route: <*>",
 				// ---------------
 				"routes:\n"+
-				"- <*>",
+				"- route: <*>",
 				// ---------------
 				"services:\n"+
 				"- <*>",
@@ -366,7 +372,7 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"applications:\n" +
 				"- routes:\n"+
-				"  - <*>",
+				"  - route: <*>",
 				// ---------------
 				"applications:\n" +
 				"- services:\n"+
@@ -678,7 +684,7 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"applications:\n" +
 				"- routes:\n"+
-				"  - <*>",
+				"  - route: <*>",
 				// ---------------
 				"applications:\n" +
 				"- services:\n"+
@@ -770,7 +776,7 @@ public class ManifestYamlEditorTest {
 				, // ---------------------
 				"applications:\n" +
 				"- routes:\n" +
-				"  - <*>\n" +
+				"  - route: <*>\n" +
 				"- name: test"
 				,// ---------------------
 				"applications:\n" +
@@ -1240,6 +1246,22 @@ public class ManifestYamlEditorTest {
 				"services:\n" +
 				"- some-service\n" +
 				"- my-service<*>"
+		);
+	}
+
+	@Test public void autoInsertRouteProperty() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  ro<*>"
+		);
+		editor.assertCompletions(c -> c.getLabel().contains("routes"),
+				"applications:\n" +
+				"- name: foo\n" +
+				"  routes:\n"+
+				"  - route: <*>"
 		);
 	}
 

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
@@ -140,30 +142,14 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return Collections.emptyList();
 	}
 
+
+
 	/**
 	 * Computes the text that should be appended at the end of a completion
 	 * proposal depending on what type of value is expected.
 	 */
 	protected String appendTextFor(YType type) {
-		//Note that proper indentation after each \n" is added automatically
-		//to align with the parent. The strings created here only need to contain
-		//indentation spaces to indent *more* than the parent node.
-		if (type==null) {
-			//Assume its some kind of pojo bean
-			return "\n"+YamlIndentUtil.INDENT_STR;
-		} else if (typeUtil.isMap(type)) {
-			//ready to enter nested map key on next line
-			return "\n"+YamlIndentUtil.INDENT_STR;
-		} if (typeUtil.isSequencable(type)) {
-			//ready to enter sequence element on next line
-			return "\n- ";
-		} else if (typeUtil.isAtomic(type)) {
-			//ready to enter whatever on the same line
-			return " ";
-		} else {
-			//Assume its some kind of pojo bean
-			return "\n"+YamlIndentUtil.INDENT_STR;
-		}
+		return new AppendTextBuilder(typeUtil).buildFor(type);
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, SNode node, int offset, String query) {
