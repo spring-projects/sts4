@@ -45,12 +45,6 @@
         "scopeName": "source.yaml",
         "path": "./yaml-support/yaml.tmLanguage"
       }
-    ],
-    "snippets": [
-      {
-        "language": "manifest-yaml",
-        "path": "./snippets.json"
-      }
     ]
   },
   "main": "./out/lib/Main",
