@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.completions;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -20,7 +21,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Martin Lippert
  */
 public class ScopeNameCompletionProposal implements ICompletionProposal {
-	
+
 	public static final ScopeNameCompletion[] COMPLETIONS = new ScopeNameCompletion[] {
 			new ScopeNameCompletion("\"prototype\"", "prototype", "prototype scope", null, CompletionItemKind.Value),
 			new ScopeNameCompletion("\"singleton\"", "singleton", "singleton scope (default)", null, CompletionItemKind.Value),
@@ -29,8 +30,8 @@ public class ScopeNameCompletionProposal implements ICompletionProposal {
 			new ScopeNameCompletion("\"globalSession\"", "globalSession", "globalSession scope", null, CompletionItemKind.Value),
 			new ScopeNameCompletion("\"application\"", "application", "application scope", null, CompletionItemKind.Value),
 			new ScopeNameCompletion("\"websocket\"", "websocket", "websocket scope", null, CompletionItemKind.Value)
-	}; 
-	
+	};
+
 	private final IDocument doc;
 	private final int startOffset;
 	private final int endOffset;
@@ -43,11 +44,6 @@ public class ScopeNameCompletionProposal implements ICompletionProposal {
 		this.startOffset = startOffset;
 		this.endOffset = endOffset;
 		this.prefix = prefix;
-	}
-
-	@Override
-	public ICompletionProposal deemphasize() {
-		return null;
 	}
 
 	@Override

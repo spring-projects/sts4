@@ -33,11 +33,6 @@ public class ValuePropertyKeyProposal implements ICompletionProposal {
 	}
 
 	@Override
-	public ICompletionProposal deemphasize() {
-		return null;
-	}
-
-	@Override
 	public String getLabel() {
 		return this.label;
 	}

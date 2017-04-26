@@ -77,8 +77,7 @@ public abstract class AbstractPropertyProposal extends ScoreableProposal {
 	}
 	public void deprecate() {
 		if (!isDeprecated()) {
-			deemphasize();
-			deemphasize();
+			deemphasize(DEEMP_DEPRECATION);
 			isDeprecated = true;
 		}
 	}

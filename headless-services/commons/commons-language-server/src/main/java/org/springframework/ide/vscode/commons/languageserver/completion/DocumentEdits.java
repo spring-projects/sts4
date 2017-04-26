@@ -11,6 +11,9 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
+import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.lsp4j.TextEdit;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -40,6 +43,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Kris De Volder
  */
 public class DocumentEdits implements ProposalApplier {
+
+	private static final Pattern NON_WS_CHAR = Pattern.compile("\\S");
 
 	// Note: for small number of edits this implementation is okay.
 	// for large number of edits it is potentially slow because of the
@@ -412,6 +417,23 @@ public class DocumentEdits implements ProposalApplier {
 			Edit firstEdit = edits.get(0);
 			int offset = firstEdit.getStart();
 			edits.add(0, new Insertion(offset, indentString));
+		}
+	}
+
+	/**
+	 * Find first non-whitepace insertion edit and transform its contents.
+	 * @param transformFun receives the insertion text of the target edit and the offset of the first non-whitespace character
+	 * 						as arguments. It should return a replacement text.
+	 */
+	public void transformFirstNonWhitespaceEdit(BiFunction<Integer, String, String> transformFun) {
+		for (Edit edit : edits) {
+			if (edit instanceof Insertion) {
+				Insertion insert = (Insertion) edit;
+				Matcher matcher = NON_WS_CHAR.matcher(insert.text);
+				if (matcher.find()) {
+					insert.text = transformFun.apply(matcher.start(), insert.text);
+				}
+			}
 		}
 	}
 

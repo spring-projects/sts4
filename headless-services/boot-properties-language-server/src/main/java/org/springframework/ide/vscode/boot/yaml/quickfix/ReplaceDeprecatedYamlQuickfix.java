@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.yaml.quickfix;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
@@ -29,10 +30,6 @@ public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 //		}
 //	};
 
-	@Override
-	public ICompletionProposal deemphasize() {
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
 	@Override
 	public String getLabel() {
 		throw new UnsupportedOperationException("Not yet implemented");
@@ -51,6 +48,10 @@ public class ReplaceDeprecatedYamlQuickfix implements ICompletionProposal {
 	}
 	@Override
 	public Renderable getDocumentation() {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+	@Override
+	public ScoreableProposal deemphasize(double howmuch) {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 

@@ -19,10 +19,6 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  */
 public interface ICompletionProposal {
 
-	/**
-	 * Transforms a proposal to make it standout less somehow.
-	 */
-	ICompletionProposal deemphasize();
 
 	String getLabel();
 	CompletionItemKind getKind();
@@ -31,5 +27,11 @@ public interface ICompletionProposal {
 	String getDetail();
 	Renderable getDocumentation();
 	default String getFilterText() { return getLabel(); }
+
+	/**
+	 * Transforms a proposal to make it standout less somehow.
+	 * @param howmuch A 'weight' for the deemphasis. Allowing to deempasize some proposals more than others.
+	 */
+	default ICompletionProposal deemphasize(double howmuch) { return this; }
 
 }

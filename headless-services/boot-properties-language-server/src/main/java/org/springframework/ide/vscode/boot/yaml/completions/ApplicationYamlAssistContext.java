@@ -66,6 +66,8 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
+
 /**
  * Represents a context insied a "application.yml" file relative to which we can provide
  * content assistance.
@@ -198,7 +200,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 								completionFactory.beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil)
-								.deemphasize() //deemphasize because it already exists
+								.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
 							);
 						}
 					}
@@ -399,7 +401,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 							doc.getDocument(), edits, match, typeUtil
 					);
 					if (getContextRoot(doc).exists(YamlPath.fromProperty(match.data.getId()))) {
-						completion.deemphasize();
+						completion.deemphasize(DEEMP_EXISTS);
 					}
 					completions.add(completion);
 				}
@@ -492,7 +494,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			}
 			return null;
 		}
-		
+
 		@Override
 		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 			// TODO Auto-generated method stub
@@ -506,6 +508,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 	}
 
+	@Override
 	public Renderable getHoverInfo(YamlPathSegment s) {
 		//ApplicationYamlAssistContext implements getHoverInfo directly. so this is not needed.
 		return null;
@@ -524,7 +527,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			}
 		};
 	}
-	
+
 	private static Deprecation getDeprecation(TypeUtil typeUtil, Type parentType, String propName) {
 		Map<String, TypedProperty> props = typeUtil.getPropertiesMap(parentType, EnumCaseMode.ALIASED, BeanPropertyNameMode.ALIASED);
 		if (props!=null) {
@@ -535,7 +538,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 		return null;
 	}
-	
+
 	private static Renderable getDescription(TypeUtil typeUtil, Type parentType, String propName) {
 		try {
 			List<IJavaElement> jes = getAllJavaElements(typeUtil, parentType, propName);
@@ -554,7 +557,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 		return Renderables.NO_DESCRIPTION;
 	}
-	
+
 	private static List<IJavaElement> getAllJavaElements(TypeUtil typeUtil, Type parentType, String propName) {
 		if (propName!=null) {
 			Type beanType = parentType;

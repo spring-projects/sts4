@@ -13,8 +13,17 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.Comparator;
 
+import org.springframework.ide.vscode.commons.util.Assert;
+
 public abstract class ScoreableProposal implements ICompletionProposal {
-		private static final double DEEMP_VALUE = 100000; // should be large enough to move deemphasized stuff to bottom of list.
+
+		public static final double DEEMP_EXISTS = 0.1;
+		public static final double DEEMP_DEPRECATION = 0.2;
+		public static final double DEEMP_DASH_PROPOSAL = 0.5;
+		public static final double DEEMP_INDENTED_PROPOSAL = 1.0;
+
+
+		private static final double DEEMP_VALUE = 10_000; // should be large enough to move deemphasized stuff to bottom of list.
 
 		private double deemphasizedBy = 0.0;
 
@@ -27,7 +36,7 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 				if (p1 instanceof ScoreableProposal && p2 instanceof ScoreableProposal) {
 					double s1 = ((ScoreableProposal)p1).getScore();
 					double s2 = ((ScoreableProposal)p2).getScore();
-					if (s1==s2) {
+					if (Math.abs(s1-s2)<1E-5) {
 						String name1 = ((ScoreableProposal)p1).getLabel();
 						String name2 = ((ScoreableProposal)p2).getLabel();
 						return name1.compareTo(name2);
@@ -43,8 +52,9 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 			return getBaseScore() - deemphasizedBy;
 		}
 		@Override
-		public ScoreableProposal deemphasize() {
-			deemphasizedBy+= DEEMP_VALUE;
+		public ScoreableProposal deemphasize(double howmuch) {
+			Assert.isLegal(howmuch>0.0);
+			deemphasizedBy+= howmuch*DEEMP_VALUE;
 			return this;
 		}
 		public boolean isDeemphasized() {

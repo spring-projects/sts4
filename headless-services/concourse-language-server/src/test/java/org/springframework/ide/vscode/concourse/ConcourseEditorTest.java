@@ -2968,6 +2968,13 @@ public class ConcourseEditorTest {
 				"name",
 				"plan",
 				"public",
+				//Completions with '-'
+				"- aggregate",
+				"- do",
+				"- get",
+				"- put",
+				"- task",
+				"- try",
 				//Completions for nested context (i.e. task step)
 				"➔ attempts",
 				"➔ config",
@@ -2981,9 +2988,9 @@ public class ConcourseEditorTest {
 				"➔ params",
 				"➔ privileged",
 				"➔ tags",
-				"➔ task",
-				"➔ timeout"
-				);
+				"➔ timeout",
+				"➔ task"
+			);
 	}
 
 	@Test public void gotoSymbolInPipeline() throws Exception {
@@ -3243,6 +3250,120 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertProblems("get: ^versi^|resource does not exist");
+	}
+
+	@Test public void relaxedContentAssistContextForListItem_sameLine() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  plan: <*>\n"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  plan: \n" +
+				"  - put: <*>\n"
+		);
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  plan: pu<*>\n"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  plan: \n" +
+				"  - put: <*>\n"
+		);
+	}
+
+	@Test public void relaxedContentAssistContextForListItem_indented() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"    - get: docker-git\n" +
+				"      trigger: true\n" +
+				"    <*>"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"    - get: docker-git\n" +
+				"      trigger: true\n" +
+				"    - put: <*>"
+		);
+	}
+	@Test public void relaxedContentAssistContextForListItem_not_indented() throws Exception {
+		Editor editor;
+
+		//Note: this is a tricky case because when <*> lines up with 'plan' it will not be considered
+		// to be a child of 'plan' but a child of the 'job' instead.
+		// However, for hypothetical '- ' completions we'd have to treat as a child of plan instead!
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  <*>"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  <*>"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - put: <*>"
+		);
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  pu<*>"
+		);
+		editor.assertCompletionWithLabel("- put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - put: <*>"
+		);
+
+
+		//TODO: cases were the CA query is not a empty string (on same line as key / on next line)
+//		assertContextualCompletions(conText, "<*>",
+//				"- put: <*>");
+//
+//		assertContextualCompletions(conText, "pu<*>", "- put: <*>");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -45,6 +45,7 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 
 
 	private static PrefixFinder prefixfinder = new PrefixFinder() {
+		@Override
 		protected boolean isPrefixChar(char c) {
 			return !Character.isWhitespace(c);
 		}
@@ -94,7 +95,7 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 	}
 
 	protected SNode getContextNode() throws Exception {
-		SNode root = (SNode)getContextRoot(getDocument());
+		SNode root = getContextRoot(getDocument());
 		return contextPath.traverse(root);
 	}
 
@@ -118,6 +119,5 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 		// as the assistContext the value is in. This is likely more interesting than showing nothing at all.
 		return getHoverInfo();
 	}
-
 
 }

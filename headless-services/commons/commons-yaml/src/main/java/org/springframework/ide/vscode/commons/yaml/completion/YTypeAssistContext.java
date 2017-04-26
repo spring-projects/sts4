@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.assertj.core.api.Assertions.offset;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +47,8 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
+
 public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	final static Logger logger = LoggerFactory.getLogger(YTypeAssistContext.class);
@@ -52,6 +56,17 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	final private YTypeUtil typeUtil;
 	final private YType type;
 	final private YamlAssistContext parent;
+
+	/**
+	 * Create a 'relaxed' {@link YTypeAssistContext} that pretends the type expectedin this context
+	 * is something else than what the schema sugests.
+	 */
+	public YTypeAssistContext(YTypeAssistContext relaxationTarget, YType relaxedType) {
+		super(relaxationTarget.getDocument(), relaxationTarget.documentSelector, relaxationTarget.contextPath);
+		this.parent = relaxationTarget.parent;
+		this.typeUtil = relaxationTarget.typeUtil;
+		this.type = relaxedType;
+	}
 
 	public YTypeAssistContext(YTypeAssistContext parent, YamlPath contextPath, YType YType, YTypeUtil typeUtil) {
 		super(parent.getDocument(), parent.documentSelector, contextPath);
@@ -62,9 +77,9 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	public YTypeAssistContext(TopLevelAssistContext parent, int documentSelector, YType type, YTypeUtil typeUtil) {
 		super(parent.getDocument(), documentSelector, YamlPath.EMPTY);
-		this.type = type;
-		this.typeUtil = typeUtil;
 		this.parent = parent;
+		this.typeUtil = typeUtil;
+		this.type = type;
 	}
 
 	@Override
@@ -114,7 +129,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							completionFactory().beanProperty(doc.getDocument(),
 								contextPath.toPropString(), getType(),
 								query, p, score, edits, typeUtil)
-							.deemphasize() //deemphasize because it already exists
+							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
 						);
 					}
 				}
@@ -243,7 +258,6 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return "TypeContext("+contextPath.toPropString()+"::"+type+")";
 	}
 
-
 	@Override
 	public Renderable getHoverInfo() {
 		if (parent!=null) {
@@ -293,4 +307,59 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	private YTypedProperty getProperty(String name) {
 		return typeUtil.getPropertiesMap(getType()).get(name);
 	}
+
+	@Override
+	public YamlAssistContext relax() {
+		try {
+			if (typeUtil.isSequencable(type)) {
+				YType itemType = typeUtil.getDomainType(type);
+				if (itemType!=null) {
+					return new YTypeAssistContext(this, itemType) {
+						@Override
+						public Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception {
+							Collection<ICompletionProposal> basicCompletions = super.getCompletions(doc, node, offset);
+							return addDashes(basicCompletions);
+						}
+					};
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return super.relax();
+	}
+
+	private Collection<ICompletionProposal> addDashes(Collection<ICompletionProposal> basicCompletions) {
+		if (!basicCompletions.isEmpty()) {
+			List<ICompletionProposal> dashedCompletions = new ArrayList<>(basicCompletions.size());
+			for (ICompletionProposal c : basicCompletions) {
+				dashedCompletions.add(
+					new TransformedCompletion(c) {
+						@Override
+						protected DocumentEdits transformEdit(DocumentEdits textEdit) {
+							textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+								if (offset > 2) {
+									String prefix = insertText.substring(offset-2, offset);
+									if ("  ".equals(prefix)) {
+										//special case don't add the "- " in front, but replace the inserted spaces instead.
+										return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
+									}
+								}
+								return insertText.substring(0, offset) + "- "+insertText.substring(offset);
+							});
+							return textEdit;
+						}
+
+						@Override
+						protected String tranformLabel(String originalLabel) {
+							return "- "+originalLabel;
+						}
+					}.deemphasize(0.5)
+				);
+			}
+			return dashedCompletions;
+		}
+		return basicCompletions;
+	}
+
 }
