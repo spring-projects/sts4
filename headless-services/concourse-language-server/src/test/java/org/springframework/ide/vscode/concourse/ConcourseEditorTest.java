@@ -3358,12 +3358,21 @@ public class ConcourseEditorTest {
 				"  - put: <*>"
 		);
 
-
-		//TODO: cases were the CA query is not a empty string (on same line as key / on next line)
-//		assertContextualCompletions(conText, "<*>",
-//				"- put: <*>");
-//
-//		assertContextualCompletions(conText, "pu<*>", "- put: <*>");
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  ag"
+		);
+		editor.assertCompletionWithLabel("- aggregate",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - aggregate:\n" +
+				"    - <*>"
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
