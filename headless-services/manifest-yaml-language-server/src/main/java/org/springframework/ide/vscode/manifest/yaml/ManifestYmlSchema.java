@@ -14,8 +14,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
-import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -73,18 +71,15 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YAtomicType t_stack = f.yatomic("Stack");
-		t_stack.addHintProvider(stacksProvider);
-		t_stack.parseWith(new EnumValueParser(t_stack.toString(), YTypeFactory.valuesFromHintProvider(stacksProvider)) {
-			@Override
-			protected Exception errorOnParse(String message) {
-				return new ReconcileException(message, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM);
-			}
-		});
+		if (stacksProvider!=null) {
+			t_stack.addHintProvider(stacksProvider);
+			t_stack.parseWith(ManifestYmlValueParsers.fromValueHints(stacksProvider, t_stack, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM));
+		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
-
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
+			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
 		}
 
 		YAtomicType t_service = f.yatomic("Service");

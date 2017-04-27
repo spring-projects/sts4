@@ -606,6 +606,28 @@ public class ManifestYamlEditorTest {
 		assertEquals("an-org : a-space [test.io]", c.getDocumentation());
 	}
 
+	
+	@Test public void domainReconcile() throws Exception {
+		List<CFDomain> domains = ImmutableList.of(mockDomain("one.com"), mockDomain("two.com"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
+		Editor editor;
+		Diagnostic p;
+		
+		editor = harness.newEditor(
+				"domain: bad.com"
+		);
+		p = editor.assertProblems("bad.com|unknown 'Domain'. Valid values are: [one.com, two.com]").get(0);
+		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+		
+		editor= harness.newEditor(
+				"domains:\n" +
+				"- one.com\n" +
+				"- bad.com\n" +
+				"- two.com"
+		);
+		editor.assertProblems("bad.com|unknown 'Domain'. Valid values are: [one.com, two.com]");
+	}
+
 	@Test public void stacksReconcile() throws Exception {
 		List<CFStack> stacks = ImmutableList.of(
 				mockStack("linux"), mockStack("windows")
@@ -637,6 +659,8 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void reconcileDuplicateKeys() throws Exception {
+		ImmutableList<CFDomain> domains = ImmutableList.of(mockDomain("pivotal.io"), mockDomain("otherdomain.org"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
 		Editor editor = harness.newEditor(
 				"#comment\n" +
 				"applications:\n" +
@@ -1153,6 +1177,8 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void reconcileRoute_Advanced() throws Exception {
+		ImmutableList<CFDomain> domains = ImmutableList.of(mockDomain("somedomain.com"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1176,9 +1202,15 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  routes:\n" +
 				"  - route: host.springsource.org\n");
-		editor.assertProblems("springsource.org|Unknown domain");
+		editor.assertProblems("springsource.org|Unknown 'Domain'. Valid domains are: [somedomain.com]");
 		problem = editor.assertProblem("springsource.org");
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
+	private CFDomain mockDomain(String name) {
+		CFDomain domain = mock(CFDomain.class);
+		when(domain.getName()).thenReturn(name);
+		return domain;
 	}
 
 	@Test
@@ -1194,7 +1226,7 @@ public class ManifestYamlEditorTest {
 				"  - route: host.springsource.org\n");
 		editor.assertProblems();
 	}
-
+	
 	@Test public void dashedContentAssistForServices() throws Exception {
 		Editor editor;
 		CFServiceInstance service = mock(CFServiceInstance.class);

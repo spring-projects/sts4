@@ -10,10 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -83,6 +91,15 @@ public class ManifestYmlValueParsers {
 					throw new NumberFormatException("Value must be at most "+upperBound);
 				}
 				return value;
+			}
+		};
+	}
+
+	public static EnumValueParser fromValueHints(Callable<Collection<YValueHint>> hintProvider, YAtomicType type, ProblemType problemType) {
+		return new EnumValueParser(type.toString(), YTypeFactory.valuesFromHintProvider(hintProvider)) {
+			@Override
+			protected Exception errorOnParse(String message) {
+				return new ReconcileException(message, problemType);
 			}
 		};
 	}
