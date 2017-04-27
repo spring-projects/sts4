@@ -17,13 +17,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public class ManifestYamlSchemaProblemsTypes {
 
-	public static final ProblemType UNKNOWN_SERVICES_PROBLEM = problemType("UnknownServicesProblem",
-			ProblemSeverity.WARNING);
-
-	public static final ProblemType UNKNOWN_DOMAIN_PROBLEM = problemType("UnknownDomainProblem",
-			ProblemSeverity.WARNING);
-
-	public static final ProblemType UNKNOWN_STACK_PROBLEM = problemType("UnknownStackProblem",
-			ProblemSeverity.WARNING);;
+	public static final ProblemType UNKNOWN_SERVICES_PROBLEM = problemType("UnknownServicesProblem", ProblemSeverity.WARNING);
+	public static final ProblemType UNKNOWN_DOMAIN_PROBLEM = problemType("UnknownDomainProblem", ProblemSeverity.WARNING);
+	public static final ProblemType UNKNOWN_STACK_PROBLEM = problemType("UnknownStackProblem", ProblemSeverity.WARNING);
+	public static final ProblemType IGNORED_PROPERTY = problemType("IgnoredProperty", ProblemSeverity.WARNING);
 
 }

@@ -14,10 +14,17 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -27,6 +34,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPro
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -35,6 +43,9 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ManifestYmlSchema implements YamlSchema {
 
+	private static final String HEALTH_CHECK_HTTP_ENDPOINT_PROP = "health-check-http-endpoint";
+	private static final String HEALTH_CHECK_TYPE_PROP = "health-check-type";
+	
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
@@ -47,6 +58,40 @@ public class ManifestYmlSchema implements YamlSchema {
 		return IntegerRange.exactly(1);
 	}
 
+	private void verify_heatth_check_http_end_point_constraint(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
+		YamlFileAST ast = dc.getAST();
+		if (ast!=null) {
+			Node markerNode = YamlPathSegment.keyAt(HEALTH_CHECK_HTTP_ENDPOINT_PROP).traverseNode(node);
+			if (markerNode != null) {
+				String healthCheckType = getEffectiveHealthCheckType(ast, dc.getPath(), node);
+				if (!"http".equals(healthCheckType)) {
+					problems.accept(YamlSchemaProblems.problem(ManifestYamlSchemaProblemsTypes.IGNORED_PROPERTY, 
+							"This has no effect unless `"+HEALTH_CHECK_TYPE_PROP+"` is `http` (but it is currently set to `"+healthCheckType+"`)", markerNode));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Determines the actual health-check-type that applies to a given node, taking into account
+	 * inheritance from parent node, and default value.
+	 */
+	private String getEffectiveHealthCheckType(YamlFileAST ast, YamlPath path, Node node) {
+		String explicit = NodeUtil.getScalarProperty(node, HEALTH_CHECK_TYPE_PROP);
+		if (explicit!=null) {
+			return explicit;
+		}
+		if (path.size()>2) {
+			//Must consider inherited props!
+			YamlPath parentPath = path.dropLast(2);
+			Node parent = parentPath.traverseToNode(ast);
+			String inherited = NodeUtil.getScalarProperty(parent, HEALTH_CHECK_TYPE_PROP);
+			if (inherited!=null) {
+				return inherited;
+			}
+		}
+		return "port";
+	}
 
 	public ManifestYmlSchema(ManifestYmlHintProviders providers) {
 		Callable<Collection<YValueHint>> buildpackProvider = providers.getBuildpackProviders();
@@ -60,8 +105,10 @@ public class ManifestYmlSchema implements YamlSchema {
 
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Cloudfoundry Manifest");
+		TOPLEVEL_TYPE.require(this::verify_heatth_check_http_end_point_constraint);
 
 		AbstractType application = f.ybean("Application");
+		application.require(this::verify_heatth_check_http_end_point_constraint);
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
@@ -144,8 +191,8 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("services", f.yseq(t_service)),
 			f.yprop("stack", t_stack),
 			f.yprop("timeout", t_pos_integer),
-			f.yprop("health-check-type", t_health_check_type),
-			f.yprop("health-check-http-endpoint", t_ne_string)
+			f.yprop(HEALTH_CHECK_TYPE_PROP, t_health_check_type),
+			f.yprop(HEALTH_CHECK_HTTP_ENDPOINT_PROP, t_ne_string)
 		};
 
 		for (YTypedPropertyImpl prop : props) {

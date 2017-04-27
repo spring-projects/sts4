@@ -43,6 +43,16 @@ public interface YamlTraversal {
 	 */
 	<T extends YamlNavigable<T>> T traverse(T startNode);
 
+	default Node traverseNode(Node root) {
+		if (root!=null) {
+			ASTCursor cursor = traverse(new NodeCursor(root));
+			if (cursor instanceof NodeCursor) {
+				return ((NodeCursor)cursor).getNode();
+			}
+		}
+		return null;
+	}
+
 	default Node traverseToNode(YamlFileAST root) {
 		ASTCursor cursor = traverse(new ASTRootCursor(root));
 		if (cursor instanceof NodeCursor) {

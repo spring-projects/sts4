@@ -429,8 +429,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test
-	public void reconcileHealthCheckType() throws Exception {
+	@Test public void reconcileHealthCheckType() throws Exception {
 		Editor editor;
 		Diagnostic problem;
 
@@ -463,6 +462,63 @@ public class ManifestYamlEditorTest {
 				"  health-check-type: process"
 		);
 		editor.assertProblems(/*NONE*/);
+	}
+	
+	@Test public void reconcileHealthHttpEndPointIgnoredWarning() throws Exception {
+		Editor editor;
+		Diagnostic problem;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: process\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
+
+		editor = harness.newEditor(
+				"health-check-type: http\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		problem = editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `port`)").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		editor = harness.newEditor(
+				"health-check-type: http\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: process\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
+		
+		editor = harness.newEditor(
+				"health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `port`)");
+		
+		editor = harness.newEditor(
+				"health-check-type: process\n" +
+				"health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
 	}
 
 	@Test public void deprecatedHealthCheckTypeQuickfix() throws Exception {
