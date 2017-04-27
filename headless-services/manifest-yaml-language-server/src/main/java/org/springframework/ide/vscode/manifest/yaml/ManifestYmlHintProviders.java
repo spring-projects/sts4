@@ -23,4 +23,6 @@ public interface ManifestYmlHintProviders {
 
 	Callable<Collection<YValueHint>> getDomainsProvider();
 
+	Callable<Collection<YValueHint>> getStacksProvider();
+
 }

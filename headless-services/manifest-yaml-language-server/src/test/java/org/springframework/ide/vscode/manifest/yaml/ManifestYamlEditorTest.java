@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
@@ -589,6 +590,51 @@ public class ManifestYamlEditorTest {
 		editor.assertNoHover("otherdomain.org");
 	}
 
+	@Test public void stacksCompletion() throws Exception {
+		List<CFStack> stacks = ImmutableList.of(
+				mockStack("linux"), mockStack("windows")
+		);
+		when(cloudfoundry.client.getStacks()).thenReturn(stacks);
+		Editor editor = harness.newEditor(
+				"stack: <*>"
+		);
+		CompletionItem c = editor.assertCompletions(
+				"stack: linux<*>",
+				"stack: windows<*>"
+		).get(0);
+
+		assertEquals("an-org : a-space [test.io]", c.getDocumentation());
+	}
+
+	@Test public void stacksReconcile() throws Exception {
+		List<CFStack> stacks = ImmutableList.of(
+				mockStack("linux"), mockStack("windows")
+		);
+		when(cloudfoundry.client.getStacks()).thenReturn(stacks);
+		{
+			Editor editor = harness.newEditor(
+					"stack: android<*>"
+			);
+			Diagnostic p = editor.assertProblems("android|'android' is an unknown 'Stack'. Valid values are: [linux, windows]").get(0);
+			assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+		}
+
+		{
+			Editor editor = harness.newEditor(
+					"stack: <*>"
+			);
+			Diagnostic p = editor.assertProblems("|'Stack' cannot be blank").get(0);
+			assertEquals(DiagnosticSeverity.Error, p.getSeverity());
+		}
+
+	}
+
+	private CFStack mockStack(String name) {
+		CFStack stack = Mockito.mock(CFStack.class);
+		when(stack.getName()).thenReturn(name);
+		return stack;
+	}
+
 	@Test
 	public void reconcileDuplicateKeys() throws Exception {
 		Editor editor = harness.newEditor(
@@ -882,10 +928,12 @@ public class ManifestYamlEditorTest {
 		ClientRequests cfClient = cloudfoundry.client;
 		when(cfClient.getBuildpacks()).thenThrow(new IOException("Can't get buildpacks"));
 		when(cfClient.getServices()).thenThrow(new IOException("Can't get services"));
+		when(cfClient.getStacks()).thenThrow(new IOException("Can't get stacks"));
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
 				"  buildpack: bad-buildpack\n" +
+				"  stack: bad-stack\n" +
 				"  services:\n" +
 				"  - bad-service\n" +
 				"  bogus: bad" //a token error to make sure reconciler is actually running!

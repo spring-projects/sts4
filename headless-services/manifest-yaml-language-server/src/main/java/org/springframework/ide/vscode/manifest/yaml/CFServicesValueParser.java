@@ -29,16 +29,13 @@ public class CFServicesValueParser extends EnumValueParser {
 	}
 
 	@Override
-	protected String createBlankTextErrorMessage() {
-		return "At least one service instance name must be specified";
-	}
-
 	protected Exception errorOnParse(String message) {
 		// Parse errors should be indicated differently than regular schema
 		// problems (e.g. unknown service may be a warning)
 		return new ReconcileException(message, ManifestYamlSchemaProblemsTypes.UNKNOWN_SERVICES_PROBLEM);
 	}
 
+	@Override
 	protected Exception errorOnBlank(String message) {
 		// Blank errors should be regular schema problems
 		return new ReconcileException(message, YamlSchemaProblems.SCHEMA_PROBLEM);

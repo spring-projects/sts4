@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,8 +31,8 @@ public class CFTargetCache {
 	private final LoadingCache<ClientParamsCacheKey, CFTarget> cache;
 	private final CFCallableContext cacheCallableContext;
 
-	public static final long SERVICES_EXPIRATION = 10;
-	public static final long TARGET_EXPIRATION = 1;
+	public static final Duration SERVICES_EXPIRATION = Duration.ofSeconds(10);
+	public static final Duration TARGET_EXPIRATION = Duration.ofHours(1);
 
 	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
@@ -49,7 +50,7 @@ public class CFTargetCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION, TimeUnit.HOURS)
+		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS)
 				.build(loader);
 	}
 

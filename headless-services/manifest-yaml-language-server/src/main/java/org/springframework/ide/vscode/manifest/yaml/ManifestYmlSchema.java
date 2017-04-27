@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -37,7 +39,6 @@ public class ManifestYmlSchema implements YamlSchema {
 
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
-	private final Callable<Collection<YValueHint>> buildpackProvider;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
 		"name", "host", "hosts"
@@ -50,9 +51,10 @@ public class ManifestYmlSchema implements YamlSchema {
 
 
 	public ManifestYmlSchema(ManifestYmlHintProviders providers) {
-		this.buildpackProvider = providers.getBuildpackProviders();
+		Callable<Collection<YValueHint>> buildpackProvider = providers.getBuildpackProviders();
 		Callable<Collection<YValueHint>> servicesProvider = providers.getServicesProvider();
 		Callable<Collection<YValueHint>> domainsProvider = providers.getDomainsProvider();
+		Callable<Collection<YValueHint>> stacksProvider = providers.getStacksProvider();
 
 
 		YTypeFactory f = new YTypeFactory();
@@ -65,10 +67,19 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
-		if (this.buildpackProvider != null) {
-			t_buildpack.addHintProvider(this.buildpackProvider);
+		if (buildpackProvider != null) {
+			t_buildpack.addHintProvider(buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
+
+		YAtomicType t_stack = f.yatomic("Stack");
+		t_stack.addHintProvider(stacksProvider);
+		t_stack.parseWith(new EnumValueParser(t_stack.toString(), YTypeFactory.valuesFromHintProvider(stacksProvider)) {
+			@Override
+			protected Exception errorOnParse(String message) {
+				return new ReconcileException(message, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM);
+			}
+		});
 
 		YAtomicType t_domain = f.yatomic("Domain");
 
@@ -136,7 +147,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("random-route", t_boolean),
 			f.yprop("routes", f.yseq(route)),
 			f.yprop("services", f.yseq(t_service)),
-			f.yprop("stack", t_string),
+			f.yprop("stack", t_stack),
 			f.yprop("timeout", t_pos_integer),
 			f.yprop("health-check-type", t_health_check_type),
 			f.yprop("health-check-http-endpoint", t_ne_string)

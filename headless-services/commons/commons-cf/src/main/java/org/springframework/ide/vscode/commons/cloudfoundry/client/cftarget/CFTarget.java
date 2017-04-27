@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 
 import com.google.common.cache.CacheBuilder;
@@ -41,6 +42,7 @@ public class CFTarget {
 	private LoadingCache<String, List<CFBuildpack>> buildpacksCache;
 	private LoadingCache<String, List<CFServiceInstance>> servicesCache;
 	private LoadingCache<String, List<CFDomain>> domainCache;
+	private LoadingCache<String, List<CFStack>> stacksCache;
 	private CFCallableContext callableContext;
 
 	public CFTarget(String targetName, CFClientParams params, ClientRequests requests,
@@ -53,6 +55,20 @@ public class CFTarget {
 	}
 
 	private void initCache(ClientRequests requests) {
+		CacheLoader<String, List<CFStack>> stacksLoader = new CacheLoader<String, List<CFStack>>() {
+
+			@Override
+			public List<CFStack> load(String key) throws Exception {
+				/* Cache of services does not use keys, as the whole cache
+				 * gets wiped clean on any new call to CF.
+				 */
+				return runAndCheckForFailure(() -> requests.getStacks());
+			}
+		};
+		this.stacksCache = CacheBuilder.newBuilder()
+				.expireAfterAccess(CFTargetCache.SERVICES_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(stacksLoader);
+
+
 		CacheLoader<String, List<CFServiceInstance>> servicesLoader = new CacheLoader<String, List<CFServiceInstance>>() {
 
 			@Override
@@ -64,7 +80,7 @@ public class CFTarget {
 			}
 		};
 		this.servicesCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.SERVICES_EXPIRATION, TimeUnit.SECONDS).build(servicesLoader);
+				.expireAfterAccess(CFTargetCache.SERVICES_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(servicesLoader);
 
 		CacheLoader<String, List<CFBuildpack>> buildpacksLoader = new CacheLoader<String, List<CFBuildpack>>() {
 
@@ -77,7 +93,7 @@ public class CFTarget {
 			}
 		};
 		this.buildpacksCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION, TimeUnit.HOURS).build(buildpacksLoader);
+				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(buildpacksLoader);
 
 		CacheLoader<String, List<CFDomain>> domainLoader = new CacheLoader<String, List<CFDomain>>() {
 
@@ -88,7 +104,7 @@ public class CFTarget {
 
 		};
 		this.domainCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION, TimeUnit.HOURS).build(domainLoader);
+				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(domainLoader);
 	}
 
 	protected <T> T runAndCheckForFailure(Callable<T> callable) throws Exception {
@@ -101,6 +117,15 @@ public class CFTarget {
 
 	public CFClientParams getParams() {
 		return params;
+	}
+
+	public List<CFStack> getStacks() throws Exception {
+		// Use the target name as the "key" , since Guava cache doesn't allow null keys
+		// However, the key is not really used when fetching buildpacks, as we are not caching
+		// buildpacks per target here. This class only represents ONE target, so it will only
+		// ever have one key
+		String key = getName();
+		return this.stacksCache.get(key);
 	}
 
 	public List<CFBuildpack> getBuildpacks() throws Exception {

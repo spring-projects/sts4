@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_EXISTS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
+import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
@@ -42,15 +44,10 @@ import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
-import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
-
-import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
 
 public class YTypeAssistContext extends AbstractYamlAssistContext {
 

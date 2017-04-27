@@ -14,10 +14,12 @@ import org.cloudfoundry.operations.buildpacks.Buildpack;
 import org.cloudfoundry.operations.domains.Domain;
 import org.cloudfoundry.operations.services.ServiceInstanceSummary;
 import org.cloudfoundry.operations.services.ServiceInstanceType;
+import org.cloudfoundry.operations.stacks.Stack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFEntities;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 
 /**
  * Various helper methods to 'wrap' objects returned by CF client into our own
@@ -27,17 +29,16 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
  */
 public class CFWrappingV2 {
 
-
 	public static CFBuildpack wrap(Buildpack buildpack) {
 		String name = buildpack.getName();
 		return CFEntities.createBuildpack(name);
 	}
-	
+
 	public static CFDomain wrap(Domain domain) {
 		String name = domain.getName();
 		return CFEntities.createDomain(name);
 	}
-	
+
 	public static CFServiceInstance wrap(ServiceInstanceSummary serviceInstance) {
 		String name = serviceInstance.getName();
 		String plan = serviceInstance.getPlan();
@@ -45,6 +46,24 @@ public class CFWrappingV2 {
 				: serviceInstance.getService();
 
 		return CFEntities.createServiceInstance(name, service, plan);
+	}
+
+	public static CFStack wrap(Stack stack) {
+		if (stack!=null) {
+			String name = stack.getName();
+			return new CFStack() {
+				@Override
+				public String getName() {
+					return name;
+				}
+
+				@Override
+				public String toString() {
+					return "CFStack("+name+")";
+				}
+			};
+		}
+		return null;
 	}
 
 }

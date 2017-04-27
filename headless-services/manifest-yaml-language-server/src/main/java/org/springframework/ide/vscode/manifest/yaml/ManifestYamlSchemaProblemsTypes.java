@@ -15,9 +15,6 @@ import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaPr
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
-/**
- * 
- */
 public class ManifestYamlSchemaProblemsTypes {
 
 	public static final ProblemType UNKNOWN_SERVICES_PROBLEM = problemType("UnknownServicesProblem",
@@ -25,5 +22,8 @@ public class ManifestYamlSchemaProblemsTypes {
 
 	public static final ProblemType UNKNOWN_DOMAIN_PROBLEM = problemType("UnknownDomainProblem",
 			ProblemSeverity.WARNING);
-	
+
+	public static final ProblemType UNKNOWN_STACK_PROBLEM = problemType("UnknownStackProblem",
+			ProblemSeverity.WARNING);;
+
 }
