@@ -463,7 +463,7 @@ public class ManifestYamlEditorTest {
 		);
 		editor.assertProblems(/*NONE*/);
 	}
-	
+
 	@Test public void reconcileHealthHttpEndPointIgnoredWarning() throws Exception {
 		Editor editor;
 		Diagnostic problem;
@@ -483,7 +483,7 @@ public class ManifestYamlEditorTest {
 				"  health-check-http-endpoint: /health"
 		);
 		editor.assertProblems(/*NONE*/);
-		
+
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: my-app\n" +
@@ -499,7 +499,7 @@ public class ManifestYamlEditorTest {
 				"  health-check-http-endpoint: /health"
 		);
 		editor.assertProblems(/*NONE*/);
-		
+
 		editor = harness.newEditor(
 				"health-check-type: http\n" +
 				"applications:\n" +
@@ -508,12 +508,12 @@ public class ManifestYamlEditorTest {
 				"  health-check-http-endpoint: /health"
 		);
 		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
-		
+
 		editor = harness.newEditor(
 				"health-check-http-endpoint: /health"
 		);
 		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `port`)");
-		
+
 		editor = harness.newEditor(
 				"health-check-type: process\n" +
 				"health-check-http-endpoint: /health"
@@ -662,19 +662,19 @@ public class ManifestYamlEditorTest {
 		assertEquals("an-org : a-space [test.io]", c.getDocumentation());
 	}
 
-	
+
 	@Test public void domainReconcile() throws Exception {
 		List<CFDomain> domains = ImmutableList.of(mockDomain("one.com"), mockDomain("two.com"));
 		when(cloudfoundry.client.getDomains()).thenReturn(domains);
 		Editor editor;
 		Diagnostic p;
-		
+
 		editor = harness.newEditor(
 				"domain: bad.com"
 		);
 		p = editor.assertProblems("bad.com|unknown 'Domain'. Valid values are: [one.com, two.com]").get(0);
 		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
-		
+
 		editor= harness.newEditor(
 				"domains:\n" +
 				"- one.com\n" +
@@ -1282,7 +1282,7 @@ public class ManifestYamlEditorTest {
 				"  - route: host.springsource.org\n");
 		editor.assertProblems();
 	}
-	
+
 	@Test public void dashedContentAssistForServices() throws Exception {
 		Editor editor;
 		CFServiceInstance service = mock(CFServiceInstance.class);
@@ -1400,6 +1400,183 @@ public class ManifestYamlEditorTest {
 				"  - route: <*>"
 		);
 	}
+
+	@Test public void contentAssistInsideRouteDomain() throws Exception {
+		Editor editor;
+
+		ImmutableList<CFDomain> domains = ImmutableList.of(
+				mockDomain("cfapps.io"),
+				mockDomain("dsyer.com")
+		);
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route:<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: <*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.cfapps.io<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.<*>"
+		);
+		CompletionItem c = editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>"
+		).get(0);
+		assertEquals("cfapps.io", c.getLabel());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.dsyer.com<*>"
+		);
+
+		/// no content assist inside of path or port section of route:
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com/<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com:<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com:7777/blah<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		// Martin's most fancy example:
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cf<*>pps.io/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cfapps.io<*>/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+		//Kris's variants of Martin's example:
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.ds<*>pps.io/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.ds<*>pps.io:8888/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>:8888/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+	}
+
+
 
 	//////////////////////////////////////////////////////////////////////////////
 

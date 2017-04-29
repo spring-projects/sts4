@@ -32,7 +32,9 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 		this.original = proposal;
 	}
 
-	protected abstract String tranformLabel(String originalLabel);
+	protected String tranformLabel(String originalLabel) {
+		return originalLabel;
+	}
 	protected abstract DocumentEdits transformEdit(DocumentEdits textEdit);
 
 	@Override

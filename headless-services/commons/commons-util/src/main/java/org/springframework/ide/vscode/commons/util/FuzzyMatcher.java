@@ -58,18 +58,17 @@ public class FuzzyMatcher {
 			//tend to favor matches at the end of the string over matches in the middle.
 			skips+=dlen-dpos; //but do count the extra chars at end => more extra = worse score
 		}
-		return score(gaps, skips);
+		return score(gaps, skips, pattern);
 	}
 
-	private static double score(int gaps, int skips) {
+	private static double score(int gaps, int skips, String pattern) {
 		if (gaps==0) {
 			//gaps == 0 means a prefix match, ignore 'skips' at end of String and just sort
 			// alphabetic (see STS-4049)
-			double badness = 0.1; // all scored equally, assumes using a 'stable' sorter.
-			return -badness; //higher is better
+			return 0.5+pattern.length(); //all scored equally, assumes using a 'stable' sorter.
 		} else {
-			double badness = 1+gaps + skips/10000.0; // higher is worse
-			return -badness; //higher is better
+			double badness = 1+gaps + skips/1000.0; // higher is worse
+			return 1.0/badness + pattern.length(); //higher is better
 		}
 	}
 

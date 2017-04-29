@@ -84,7 +84,6 @@ public class DefaultCompletionFactory implements CompletionFactory {
 	public class ValueProposal extends ScoreableProposal {
 
 		private String value;
-		//private String query;
 		private String label;
 		private YType type;
 		private double baseScore;
@@ -94,7 +93,6 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		public ValueProposal(String value, String query, String label, YType type, Renderable docs, double score, DocumentEdits edits, YTypeUtil typeUtil) {
 			this.value = value;
-			//this.query = query;
 			this.label = label;
 			this.type = type;
 			this.docs = docs;

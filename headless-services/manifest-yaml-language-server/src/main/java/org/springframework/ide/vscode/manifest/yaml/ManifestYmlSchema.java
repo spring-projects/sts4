@@ -45,9 +45,11 @@ public class ManifestYmlSchema implements YamlSchema {
 
 	private static final String HEALTH_CHECK_HTTP_ENDPOINT_PROP = "health-check-http-endpoint";
 	private static final String HEALTH_CHECK_TYPE_PROP = "health-check-type";
-	
+
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
+
+	public final AbstractType t_route_string;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
 		"name", "host", "hosts"
@@ -65,7 +67,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			if (markerNode != null) {
 				String healthCheckType = getEffectiveHealthCheckType(ast, dc.getPath(), node);
 				if (!"http".equals(healthCheckType)) {
-					problems.accept(YamlSchemaProblems.problem(ManifestYamlSchemaProblemsTypes.IGNORED_PROPERTY, 
+					problems.accept(YamlSchemaProblems.problem(ManifestYamlSchemaProblemsTypes.IGNORED_PROPERTY,
 							"This has no effect unless `"+HEALTH_CHECK_TYPE_PROP+"` is `http` (but it is currently set to `"+healthCheckType+"`)", markerNode));
 				}
 			}
@@ -142,14 +144,12 @@ public class ManifestYmlSchema implements YamlSchema {
 		YType t_string = f.yatomic("String");
 		YType t_strings = f.yseq(t_string);
 
-		// "routes" has nested required property "route":
-		// routes:
-		// - route: someroute.io
+		t_route_string = f.yatomic("RouteUri")
+			.parseWith(new RouteValueParser(YTypeFactory.valuesFromHintProvider(domainsProvider)))
+			.setCustomContentAssistant(new RouteContentAssistant(domainsProvider, this));
 
 		YBeanType route = f.ybean("Route");
-		YAtomicType t_route_string = f.yatomic("route");
 		route.addProperty(f.yprop("route", t_route_string).isRequired(true));
-		t_route_string.parseWith(new RouteValueParser(YTypeFactory.valuesFromHintProvider(domainsProvider)));
 
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");

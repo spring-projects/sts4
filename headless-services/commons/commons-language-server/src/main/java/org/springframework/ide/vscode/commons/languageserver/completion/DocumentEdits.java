@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -295,7 +296,7 @@ public class DocumentEdits implements ProposalApplier {
 		}
 	}
 
-	private ArrayList<Edit> edits = new ArrayList<Edit>();
+	private List<Edit> edits = new ArrayList<Edit>();
 	private IDocument doc;
 
 	public DocumentEdits(IDocument doc) {

@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.SNodeDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
@@ -84,6 +85,13 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	@Override
 	public Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception {
+		ISubCompletionEngine customContentAssistant = typeUtil.getCustomContentAssistant(type);
+		if (customContentAssistant!=null) {
+			DocumentRegion region = getCustomAssistRegion(doc, node, offset);
+			if (region!=null) {
+				return customContentAssistant.getCompletions(completionFactory(), region, region.toRelative(offset));
+			}
+		}
 		String query = getPrefix(doc, node, offset);
 		List<ICompletionProposal> valueCompletions = getValueCompletions(doc, node, offset, query);
 		if (!valueCompletions.isEmpty()) {
