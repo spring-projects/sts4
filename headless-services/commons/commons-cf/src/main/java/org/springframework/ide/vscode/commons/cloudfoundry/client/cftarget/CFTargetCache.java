@@ -33,6 +33,7 @@ public class CFTargetCache {
 
 	public static final Duration SERVICES_EXPIRATION = Duration.ofSeconds(10);
 	public static final Duration TARGET_EXPIRATION = Duration.ofHours(1);
+	public static final Duration ERROR_EXPIRATION = Duration.ofSeconds(10);
 
 	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
@@ -75,7 +76,7 @@ public class CFTargetCache {
 				CFTarget target = cache.get(key);
 				if (target != null) {
 					// If any CF errors occurred in the target, refresh once
-					if (target.hasConnectionError()) {
+					if (target.hasExpiredConnectionError()) {
 						cache.refresh(key);
 						target = cache.get(key);
 					}

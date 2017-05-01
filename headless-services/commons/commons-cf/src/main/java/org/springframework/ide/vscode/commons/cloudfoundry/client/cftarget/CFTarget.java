@@ -44,7 +44,6 @@ public class CFTarget {
 	private LoadingCache<String, List<CFDomain>> domainCache;
 	private LoadingCache<String, List<CFStack>> stacksCache;
 	private CFCallableContext callableContext;
-
 	public CFTarget(String targetName, CFClientParams params, ClientRequests requests,
 			CFCallableContext callableContext) {
 		this.params = params;
@@ -111,8 +110,8 @@ public class CFTarget {
 		return callableContext.checkConnection(callable);
 	}
 
-	public boolean hasConnectionError() {
-		return callableContext.hasConnectionError();
+	public boolean hasExpiredConnectionError() {
+		return callableContext.hasExpiredConnectionError();
 	}
 
 	public CFClientParams getParams() {
@@ -168,4 +167,5 @@ public class CFTarget {
 //		%o : %s - [%a]
 		return params.getOrgName() + " : " + params.getSpaceName() + " ["+params.getApiUrl()+"]";
 	}
+
 }
