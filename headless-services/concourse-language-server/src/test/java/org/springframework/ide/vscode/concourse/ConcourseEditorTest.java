@@ -3417,6 +3417,19 @@ public class ConcourseEditorTest {
 				"  - put: <*>"
 		);
 
+		//Should be de-indentation relaxation. These should not be
+		// allowed if they cause the context node to be split. So in this example
+		// de-indented completions shouldn't be suggested.
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    <*>\n" +
+				"    trigger: true\n"
+		);
+		editor.assertCompletions("blah");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
