@@ -20,8 +20,6 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * @author Kris De Volder
  */
@@ -36,14 +34,4 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 	Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
 
 	YamlDocument getDocument();
-
-	/**
-	 * The completion engine calls this instead of the more general `getCompletions` when it wants only completions
-	 * that are suitable as list item. I.e. they must start with a '- '. 
-	 * <p>
-	 * Implementors that don't support '- ' completions can just return an empty list.
-	 */
-	default Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
-		return ImmutableList.of();
-	}
 }

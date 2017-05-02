@@ -327,7 +327,7 @@ public class YamlStructureParser {
 		public YamlPath getPath() throws Exception {
 			List<YamlPathSegment> path = new ArrayList<>();
 			for (SNode node : getPathNodes()) {
-				YamlPathSegment segment = getSegment(node);
+				YamlPathSegment segment = node.getSegment();
 				if (segment!=null) {
 					path.add(segment);
 				}
@@ -340,19 +340,24 @@ public class YamlStructureParser {
 		 * null because not all SNodes can be interpreted as 'step' in the yml
 		 * structure (e.g. raw nodes will return null, as will the 'root' node).
 		 */
-		private YamlPathSegment getSegment(SNode node) throws Exception {
-			if (node!=null) {
-				SNodeType nodeType = node.getNodeType();
-				if (nodeType==SNodeType.KEY) {
-					String key = ((SKeyNode)node).getKey();
-					return YamlPathSegment.valueAt(key);
-				} else if (nodeType==SNodeType.SEQ) {
-					int index = ((SSeqNode)node).getIndex();
-					return YamlPathSegment.valueAt(index);
-				} else if (nodeType==SNodeType.DOC) {
-					int index = ((SDocNode)node).getIndex();
-					return YamlPathSegment.valueAt(index);
+		public YamlPathSegment getSegment() {
+			try {
+				SNode node = this;
+				if (node!=null) {
+					SNodeType nodeType = node.getNodeType();
+					if (nodeType==SNodeType.KEY) {
+						String key = ((SKeyNode)node).getKey();
+						return YamlPathSegment.valueAt(key);
+					} else if (nodeType==SNodeType.SEQ) {
+						int index = ((SSeqNode)node).getIndex();
+						return YamlPathSegment.valueAt(index);
+					} else if (nodeType==SNodeType.DOC) {
+						int index = ((SDocNode)node).getIndex();
+						return YamlPathSegment.valueAt(index);
+					}
 				}
+			} catch (Exception e) {
+				Log.log(e);
 			}
 			return null;
 		}

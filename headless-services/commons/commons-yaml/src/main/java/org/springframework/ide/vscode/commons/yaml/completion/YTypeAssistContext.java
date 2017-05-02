@@ -324,8 +324,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return null;
 	}
 	
-	@Override
-	public Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
+	protected Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
 		try {
 			YamlAssistContext relaxed = relaxForDashes();
 			if (relaxed!=null) {

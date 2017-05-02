@@ -44,13 +44,6 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 	private final YamlDocument doc;
 
 
-	private static PrefixFinder prefixfinder = new PrefixFinder() {
-		@Override
-		protected boolean isPrefixChar(char c) {
-			return !Character.isWhitespace(c);
-		}
-	};
-
 	@Override
 	public YamlDocument getDocument() {
 		return doc;
@@ -70,7 +63,14 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 					// as the need for it arises in real use-cases.
 	}
 	
-	protected final String getPrefix(YamlDocument doc, SNode node, int offset) {
+	private static PrefixFinder prefixfinder = new PrefixFinder() {
+		@Override
+		protected boolean isPrefixChar(char c) {
+			return !Character.isWhitespace(c);
+		}
+	};
+	
+	protected String getPrefix(YamlDocument doc, SNode node, int offset) {
 		//For value completions... in general we would like to determine the whole text
 		// corresponding to the value, so a simplistic backwards scan isn't good enough.
 		// instead we should use offset in current node / structure to determine the
