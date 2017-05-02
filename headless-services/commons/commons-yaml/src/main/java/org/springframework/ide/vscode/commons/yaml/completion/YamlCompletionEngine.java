@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
@@ -95,7 +96,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	public ICompletionProposal indented(ICompletionProposal proposal) {
 		ScoreableProposal transformed = new TransformedCompletion(proposal) {
 			@Override public String tranformLabel(String originalLabel) {
-				return "➔ " + originalLabel;
+				return Unicodes.RIGHT_ARROW+" " + originalLabel;
 			}
 			@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
 				originalEdit.indentFirstEdit(YamlIndentUtil.INDENT_STR);
@@ -168,12 +169,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			}
 			if (context!=null) {
 				Collection<ICompletionProposal> all = new ArrayList<>();
-				if (!onlyDashes) {
+				if (onlyDashes) {
+					all.addAll(context.getDashedCompletions(doc, current, offset));
+				} else {
 					all.addAll(context.getCompletions(doc, current, offset));
-				}
-				YamlAssistContext relaxedContext = context.relax();
-				if (relaxedContext!=null) {
-					all.addAll(relaxedContext.getCompletions(doc, current, offset));
 				}
 				return all;
 			}
@@ -220,7 +219,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			}
 		} else if (node.getNodeType()==SNodeType.RAW) {
 			if (adjustIndentStr.startsWith("- ")) {
-				// We are trying to determine context node for a completion that starts witjh a '- '.
+				// We are trying to determine context node for a completion that starts with a '- '.
 				// Yaml indentation rules means we have to treat this differently because '-' doesn't
 				// have to be indented to be considered as nested under a key node!
 				int cursorIndent = doc.getColumn(offset);

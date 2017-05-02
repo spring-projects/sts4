@@ -2878,20 +2878,20 @@ public class ConcourseEditorTest {
 				"source",
 				"type",
 				//For the nested context:
-				"➔ branch",
-				"➔ commit_verification_key_ids",
-				"➔ commit_verification_keys",
-				"➔ disable_ci_skip",
-				"➔ git_config",
-				"➔ gpg_keyserver",
-				"➔ ignore_paths",
-				"➔ password",
-				"➔ paths",
-				"➔ private_key",
-				"➔ skip_ssl_verification",
-				"➔ tag_filter",
-				"➔ uri",
-				"➔ username"
+				"→ branch",
+				"→ commit_verification_key_ids",
+				"→ commit_verification_keys",
+				"→ disable_ci_skip",
+				"→ git_config",
+				"→ gpg_keyserver",
+				"→ ignore_paths",
+				"→ password",
+				"→ paths",
+				"→ private_key",
+				"→ skip_ssl_verification",
+				"→ tag_filter",
+				"→ uri",
+				"→ username"
 		);
 
 		editor.assertCompletionWithLabel("check_every",
@@ -2902,14 +2902,14 @@ public class ConcourseEditorTest {
 				"  check_every: <*>"
 		);
 
-		editor.assertCompletionWithLabel("➔ branch",
+		editor.assertCompletionWithLabel("→ branch",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
 				"    branch: <*>"
 		);
-		editor.assertCompletionWithLabel("➔ commit_verification_key_ids",
+		editor.assertCompletionWithLabel("→ commit_verification_key_ids",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
@@ -2976,20 +2976,20 @@ public class ConcourseEditorTest {
 				"- task",
 				"- try",
 				//Completions for nested context (i.e. task step)
-				"➔ attempts",
-				"➔ config",
-				"➔ ensure",
-				"➔ file",
-				"➔ image",
-				"➔ input_mapping",
-				"➔ on_failure",
-				"➔ on_success",
-				"➔ output_mapping",
-				"➔ params",
-				"➔ privileged",
-				"➔ tags",
-				"➔ timeout",
-				"➔ task"
+				"→ attempts",
+				"→ config",
+				"→ ensure",
+				"→ file",
+				"→ image",
+				"→ input_mapping",
+				"→ on_failure",
+				"→ on_success",
+				"→ output_mapping",
+				"→ params",
+				"→ privileged",
+				"→ tags",
+				"→ timeout",
+				"→ task"
 			);
 	}
 
@@ -3373,6 +3373,50 @@ public class ConcourseEditorTest {
 				"  - aggregate:\n" +
 				"    - <*>"
 		);
+	}
+	
+	@Ignore // Doesn't work yet. Enable once implemented.
+	@Test public void relaxedContentAssistLessSpaces() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"    <*>"
+		);
+		editor.assertCompletionWithLabel("← - put", 
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"    pu<*>"
+		);
+		editor.assertCompletionWithLabel("← - put", 
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -20,6 +20,8 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * @author Kris De Volder
  */
@@ -36,11 +38,12 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 	YamlDocument getDocument();
 
 	/**
-	 * Allows a context to implement a 'relaxation' transformation. A relaxed context
-	 * should compute the same proposals as the original context but may also add
-	 * additional proposals. E.g. a {@link YTypeAssistContext} uses this to
-	 * relax contexts for sequence types to include proposals for the elements
-	 * of the sequence.
+	 * The completion engine calls this instead of the more general `getCompletions` when it wants only completions
+	 * that are suitable as list item. I.e. they must start with a '- '. 
+	 * <p>
+	 * Implementors that don't support '- ' completions can just return an empty list.
 	 */
-	default YamlAssistContext relax() { return null; }
+	default Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
+		return ImmutableList.of();
+	}
 }

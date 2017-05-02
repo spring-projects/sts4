@@ -93,11 +93,15 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			}
 		}
 		String query = getPrefix(doc, node, offset);
-		List<ICompletionProposal> valueCompletions = getValueCompletions(doc, node, offset, query);
-		if (!valueCompletions.isEmpty()) {
-			return valueCompletions;
+		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
+		if (completions.isEmpty()) {
+			completions = getKeyCompletions(doc, offset, query);
 		}
-		return getKeyCompletions(doc, offset, query);
+		if (typeUtil.isSequencable(type)) {
+			completions = new ArrayList<>(completions);
+			completions.addAll(getDashedCompletions(doc, node, offset));
+		}
+		return completions;
 	}
 
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
@@ -300,8 +304,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return typeUtil.getPropertiesMap(getType()).get(name);
 	}
 
-	@Override
-	public YamlAssistContext relax() {
+	protected YamlAssistContext relaxForDashes() {
 		try {
 			if (typeUtil.isSequencable(type)) {
 				YType itemType = typeUtil.getDomainType(type);
@@ -318,7 +321,20 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return super.relax();
+		return null;
+	}
+	
+	@Override
+	public Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
+		try {
+			YamlAssistContext relaxed = relaxForDashes();
+			if (relaxed!=null) {
+				return relaxed.getCompletions(doc, current, offset);
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return ImmutableList.of();
 	}
 
 	private Collection<ICompletionProposal> addDashes(Collection<ICompletionProposal> basicCompletions, YamlDocument doc, SNode node) {
