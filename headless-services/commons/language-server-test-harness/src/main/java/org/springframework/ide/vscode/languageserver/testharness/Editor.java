@@ -741,4 +741,8 @@ public class Editor {
 		return harness.getDocumentSymbols(this.doc);
 	}
 
+	public void setCursor(Position position) {
+		this.selectionStart = this.selectionEnd = doc.toOffset(position);
+	}
+
 }

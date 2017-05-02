@@ -58,13 +58,38 @@ public class ConcourseEditorTest {
 		assertEquals("Add property 'type'", quickfix.getLabel());
 		quickfix.perform();
 
-		editor.assertRawText(
+		editor.assertText(
 				"resources:\n" +
 				"- name: foo\n" +
 				"  source:\n" +
 				"    username: someone\n" +
-				"  type: \n" +
+				"  type: <*>\n" +
 				"# Confuse"
+		);
+	}
+
+	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n"
+		);
+		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertText(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n" +
+				"    branch: <*>\n" +
+				"    pool: \n" +
+				"    uri: \n"
 		);
 	}
 
@@ -86,31 +111,6 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"garbage|Resource Type does not exist"
-		);
-	}
-
-	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
-		Editor editor = harness.newEditor(
-				"resources:\n" +
-				"- name: foo\n" +
-				"  type: pool\n" +
-				"  source:\n" +
-				"    username: someone\n"
-		);
-		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
-		CodeAction quickfix = editor.assertCodeAction(problem);
-		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
-		quickfix.perform();
-
-		editor.assertRawText(
-				"resources:\n" +
-				"- name: foo\n" +
-				"  type: pool\n" +
-				"  source:\n" +
-				"    username: someone\n" +
-				"    branch: \n" +
-				"    pool: \n" +
-				"    uri: \n"
 		);
 	}
 
