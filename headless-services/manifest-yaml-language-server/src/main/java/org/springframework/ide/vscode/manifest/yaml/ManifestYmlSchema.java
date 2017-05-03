@@ -71,7 +71,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
-
+		t_domain.require(ManifestConstraints.mutuallyExclusive("routes"));
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
 		}

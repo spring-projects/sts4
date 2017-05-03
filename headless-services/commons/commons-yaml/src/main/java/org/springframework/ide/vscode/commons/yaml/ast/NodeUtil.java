@@ -86,8 +86,9 @@ public class NodeUtil {
 	 * Get the scalar values of all keys of the given {@link MappingNode} as Strings.
 	 * Any non-scalar keys are silently ignored.
 	 */
-	public static Set<String> getScalarKeys(MappingNode mapNode) {
-		if (mapNode!=null) {
+	public static Set<String> getScalarKeys(Node node) {
+		if (node instanceof MappingNode) {
+			MappingNode mapNode = (MappingNode) node;
 			ImmutableSet.Builder<String> builder = ImmutableSet.builder();
 			for (NodeTuple entry : mapNode.getValue()) {
 				String key = NodeUtil.asScalar(entry.getKeyNode());

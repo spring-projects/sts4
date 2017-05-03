@@ -26,4 +26,7 @@ public class ManifestYamlSchemaProblemsTypes {
 	public static final ProblemType UNKNOWN_DOMAIN_PROBLEM = problemType("UnknownDomainProblem",
 			ProblemSeverity.WARNING);
 	
+	public static final ProblemType MUTUALLY_EXCLUSIVE_PROPERTY_PROBLEM = problemType("MutuallyExclusiveProperty",
+			ProblemSeverity.ERROR);
+	
 }
