@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.commons.languageserver.quickfix;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.lsp4j.WorkspaceEdit;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 
@@ -40,7 +39,7 @@ public class QuickfixRegistry {
 		return new QuickfixType() {
 
 			@Override
-			public WorkspaceEdit createEdits(Object params) {
+			public QuickfixEdit createEdits(Object params) {
 				return handler.createEdits(params);
 			}
 
@@ -51,7 +50,7 @@ public class QuickfixRegistry {
 		};
 	}
 
-	public Mono<WorkspaceEdit> handle(QuickfixResolveParams params) {
+	public Mono<QuickfixEdit> handle(QuickfixResolveParams params) {
 		QuickfixHandler handler = registry.get(params.getType());
 		return Mono.fromSupplier(() -> {
 			return handler.createEdits(params.getParams());

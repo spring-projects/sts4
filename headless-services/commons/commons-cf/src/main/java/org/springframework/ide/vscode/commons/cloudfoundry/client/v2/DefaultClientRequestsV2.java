@@ -20,6 +20,7 @@ import org.cloudfoundry.operations.DefaultCloudFoundryOperations;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
@@ -83,7 +84,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 			)
 		);
 	}
-	
+
 	@Override
 	public List<CFDomain> getDomains() throws Exception {
 
@@ -98,7 +99,7 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 				)
 			);
 	}
-	
+
 	@Override
 	public List<CFBuildpack> getBuildpacks() throws Exception {
 		return ReactorUtils.get(timeouts.getBuildpacksTimeout(), CancelationTokens.NULL,
@@ -112,6 +113,18 @@ public class DefaultClientRequestsV2 implements ClientRequests {
 			)
 		);
 	}
+	@Override
+	public List<CFStack> getStacks() throws Exception {
+		return ReactorUtils.get(
+			log("operations.stacks().list()",
+				_operations.stacks()
+				.list()
+				.map(CFWrappingV2::wrap)
+				.collectList()
+			)
+		);
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//// calls to client and operations with 'logging'.

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 
@@ -47,4 +48,6 @@ public interface YTypeUtil {
 	 */
 	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);
 	List<Constraint> getConstraints(YType type);
+	
+	ISubCompletionEngine getCustomContentAssistant(YType type);
 }

@@ -46,7 +46,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
@@ -343,6 +342,16 @@ public class Editor {
 
 		for (String after : expectTextAfter) {
 			assertContains(after, actualText);
+		}
+	}
+
+	public void assertNoCompletionsWithLabel(Predicate<String> labelPredicate) throws Exception {
+		List<String> found = getCompletions().stream()
+			.map(c -> c.getLabel())
+			.filter(labelPredicate)
+			.collect(Collectors.toList());
+		if (!found.isEmpty()) {
+			fail("Found but not expected: "+found);
 		}
 	}
 
@@ -739,6 +748,10 @@ public class Editor {
 
 	private List<? extends SymbolInformation> getDocumentSymbols() throws Exception {
 		return harness.getDocumentSymbols(this.doc);
+	}
+
+	public void setCursor(Position position) {
+		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
 
 }

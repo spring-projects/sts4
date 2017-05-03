@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
@@ -428,8 +429,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test
-	public void reconcileHealthCheckType() throws Exception {
+	@Test public void reconcileHealthCheckType() throws Exception {
 		Editor editor;
 		Diagnostic problem;
 
@@ -462,6 +462,109 @@ public class ManifestYamlEditorTest {
 				"  health-check-type: process"
 		);
 		editor.assertProblems(/*NONE*/);
+	}
+
+	@Test public void reconcileHealthHttpEndPointIgnoredWarning() throws Exception {
+		Editor editor;
+		Diagnostic problem;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: process\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
+
+		editor = harness.newEditor(
+				"health-check-type: http\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		problem = editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `port`)").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"health-check-type: http\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: process\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
+
+		editor = harness.newEditor(
+				"health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `port`)");
+
+		editor = harness.newEditor(
+				"health-check-type: process\n" +
+				"health-check-http-endpoint: /health"
+		);
+		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
+	}
+
+	@Test public void reconcileRoutesWithNoHost() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  no-hostname: true\n" +
+				"  routes:\n" +
+				"  - route: myapp.org"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+
+		editor.assertProblems(
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with property 'no-hostname'"
+			);
+
+		editor = harness.newEditor(
+				"no-hostname: true\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  routes:\n" +
+				"  - route: myapp.org"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+
+		editor.assertProblems(
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with property 'no-hostname'"
+			);
+
+//		editor = harness.newEditor(
+//				"no-hostname: true\n" +
+//				"routes:\n" +
+//				"- route: myapp.org" +
+//				"applications:\n" +
+//				"- name: my-app\n"
+//		);
+//		editor.ignoreProblem("UnknownDomainProblem");
+//
+//		editor.assertProblems(
+//				"no-hostname|Property cannot co-exist with property 'routes'",
+//				"routes|Property cannot co-exist with property 'no-hostname'"
+//			);
 	}
 
 	@Test public void deprecatedHealthCheckTypeQuickfix() throws Exception {
@@ -589,8 +692,77 @@ public class ManifestYamlEditorTest {
 		editor.assertNoHover("otherdomain.org");
 	}
 
+	@Test public void stacksCompletion() throws Exception {
+		List<CFStack> stacks = ImmutableList.of(
+				mockStack("linux"), mockStack("windows")
+		);
+		when(cloudfoundry.client.getStacks()).thenReturn(stacks);
+		Editor editor = harness.newEditor(
+				"stack: <*>"
+		);
+		CompletionItem c = editor.assertCompletions(
+				"stack: linux<*>",
+				"stack: windows<*>"
+		).get(0);
+
+		assertEquals("an-org : a-space [test.io]", c.getDocumentation());
+	}
+
+
+	@Test public void domainReconcile() throws Exception {
+		List<CFDomain> domains = ImmutableList.of(mockDomain("one.com"), mockDomain("two.com"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
+		Editor editor;
+		Diagnostic p;
+
+		editor = harness.newEditor(
+				"domain: bad.com"
+		);
+		p = editor.assertProblems("bad.com|unknown 'Domain'. Valid values are: [one.com, two.com]").get(0);
+		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+
+		editor= harness.newEditor(
+				"domains:\n" +
+				"- one.com\n" +
+				"- bad.com\n" +
+				"- two.com"
+		);
+		editor.assertProblems("bad.com|unknown 'Domain'. Valid values are: [one.com, two.com]");
+	}
+
+	@Test public void stacksReconcile() throws Exception {
+		List<CFStack> stacks = ImmutableList.of(
+				mockStack("linux"), mockStack("windows")
+		);
+		when(cloudfoundry.client.getStacks()).thenReturn(stacks);
+		{
+			Editor editor = harness.newEditor(
+					"stack: android<*>"
+			);
+			Diagnostic p = editor.assertProblems("android|'android' is an unknown 'Stack'. Valid values are: [linux, windows]").get(0);
+			assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+		}
+
+		{
+			Editor editor = harness.newEditor(
+					"stack: <*>"
+			);
+			Diagnostic p = editor.assertProblems("|'Stack' cannot be blank").get(0);
+			assertEquals(DiagnosticSeverity.Error, p.getSeverity());
+		}
+
+	}
+
+	private CFStack mockStack(String name) {
+		CFStack stack = Mockito.mock(CFStack.class);
+		when(stack.getName()).thenReturn(name);
+		return stack;
+	}
+
 	@Test
 	public void reconcileDuplicateKeys() throws Exception {
+		ImmutableList<CFDomain> domains = ImmutableList.of(mockDomain("pivotal.io"), mockDomain("otherdomain.org"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
 		Editor editor = harness.newEditor(
 				"#comment\n" +
 				"applications:\n" +
@@ -882,10 +1054,12 @@ public class ManifestYamlEditorTest {
 		ClientRequests cfClient = cloudfoundry.client;
 		when(cfClient.getBuildpacks()).thenThrow(new IOException("Can't get buildpacks"));
 		when(cfClient.getServices()).thenThrow(new IOException("Can't get services"));
+		when(cfClient.getStacks()).thenThrow(new IOException("Can't get stacks"));
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
 				"  buildpack: bad-buildpack\n" +
+				"  stack: bad-stack\n" +
 				"  services:\n" +
 				"  - bad-service\n" +
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
@@ -1105,6 +1279,8 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void reconcileRoute_Advanced() throws Exception {
+		ImmutableList<CFDomain> domains = ImmutableList.of(mockDomain("somedomain.com"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
@@ -1128,9 +1304,15 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  routes:\n" +
 				"  - route: host.springsource.org\n");
-		editor.assertProblems("springsource.org|Unknown domain");
+		editor.assertProblems("springsource.org|Unknown 'Domain'. Valid domains are: [somedomain.com]");
 		problem = editor.assertProblem("springsource.org");
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
+	private CFDomain mockDomain(String name) {
+		CFDomain domain = mock(CFDomain.class);
+		when(domain.getName()).thenReturn(name);
+		return domain;
 	}
 
 	@Test
@@ -1257,13 +1439,190 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  ro<*>"
 		);
-		editor.assertCompletions(c -> c.getLabel().contains("routes"),
+		editor.assertCompletions(c -> c.getLabel().startsWith("routes"),
 				"applications:\n" +
 				"- name: foo\n" +
 				"  routes:\n"+
 				"  - route: <*>"
 		);
 	}
+
+	@Test public void contentAssistInsideRouteDomain() throws Exception {
+		Editor editor;
+
+		ImmutableList<CFDomain> domains = ImmutableList.of(
+				mockDomain("cfapps.io"),
+				mockDomain("dsyer.com")
+		);
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route:<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: <*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.com<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: dsyer.cfapps.io<*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.<*>"
+		);
+		CompletionItem c = editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>"
+		).get(0);
+		assertEquals("cfapps.io", c.getLabel());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.<*>"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.cfapps.io<*>"
+				, // ==============
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.dsyer.com<*>"
+		);
+
+		/// no content assist inside of path or port section of route:
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com/<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com:<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: foo.bar.com:7777/blah<*>"
+		);
+		editor.assertCompletions(/*NONE*/);
+
+		// Martin's most fancy example:
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cf<*>pps.io/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.cfapps.io<*>/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+		//Kris's variants of Martin's example:
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.ds<*>pps.io/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.ds<*>pps.io:8888/superpath\n" +
+				"  memory: 1024M\n"
+		);
+		editor.assertCompletions(
+				"applications:\n" +
+				"- name: test\n" +
+				"  routes:\n" +
+				"  - route: test.dsyer.com<*>:8888/superpath\n" +
+				"  memory: 1024M\n"
+		);
+
+	}
+
+
 
 	//////////////////////////////////////////////////////////////////////////////
 

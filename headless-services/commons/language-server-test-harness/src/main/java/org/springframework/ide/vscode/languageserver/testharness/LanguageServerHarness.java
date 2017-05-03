@@ -75,6 +75,7 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -228,6 +229,17 @@ public class LanguageServerHarness {
 				public void progress(ProgressParams progressEvent) {
 					// TODO Auto-generated method stub
 
+				}
+
+				@Override
+				public CompletableFuture<Object> moveCursor(CursorMovement cursorMovement) {
+					for (Editor editor : activeEditors) {
+						if (editor.getUri().equals(cursorMovement.getUri())) {
+							editor.setCursor(cursorMovement.getPosition());
+							return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(true));
+						}
+					}
+					return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
 				}
 			});
 

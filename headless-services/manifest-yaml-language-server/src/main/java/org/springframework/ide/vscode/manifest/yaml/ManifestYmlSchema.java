@@ -14,19 +14,28 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -35,9 +44,13 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ManifestYmlSchema implements YamlSchema {
 
+	private static final String HEALTH_CHECK_HTTP_ENDPOINT_PROP = "health-check-http-endpoint";
+	private static final String HEALTH_CHECK_TYPE_PROP = "health-check-type";
+
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
-	private final Callable<Collection<YValueHint>> buildpackProvider;
+
+	public final AbstractType t_route_string;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
 		"name", "host", "hosts"
@@ -48,11 +61,46 @@ public class ManifestYmlSchema implements YamlSchema {
 		return IntegerRange.exactly(1);
 	}
 
+	private void verify_heatth_check_http_end_point_constraint(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
+		YamlFileAST ast = dc.getAST();
+		if (ast!=null) {
+			Node markerNode = YamlPathSegment.keyAt(HEALTH_CHECK_HTTP_ENDPOINT_PROP).traverseNode(node);
+			if (markerNode != null) {
+				String healthCheckType = getEffectiveHealthCheckType(ast, dc.getPath(), node);
+				if (!"http".equals(healthCheckType)) {
+					problems.accept(YamlSchemaProblems.problem(ManifestYamlSchemaProblemsTypes.IGNORED_PROPERTY,
+							"This has no effect unless `"+HEALTH_CHECK_TYPE_PROP+"` is `http` (but it is currently set to `"+healthCheckType+"`)", markerNode));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Determines the actual health-check-type that applies to a given node, taking into account
+	 * inheritance from parent node, and default value.
+	 */
+	private String getEffectiveHealthCheckType(YamlFileAST ast, YamlPath path, Node node) {
+		String explicit = NodeUtil.getScalarProperty(node, HEALTH_CHECK_TYPE_PROP);
+		if (explicit!=null) {
+			return explicit;
+		}
+		if (path.size()>2) {
+			//Must consider inherited props!
+			YamlPath parentPath = path.dropLast(2);
+			Node parent = parentPath.traverseToNode(ast);
+			String inherited = NodeUtil.getScalarProperty(parent, HEALTH_CHECK_TYPE_PROP);
+			if (inherited!=null) {
+				return inherited;
+			}
+		}
+		return "port";
+	}
 
 	public ManifestYmlSchema(ManifestYmlHintProviders providers) {
-		this.buildpackProvider = providers.getBuildpackProviders();
+		Callable<Collection<YValueHint>> buildpackProvider = providers.getBuildpackProviders();
 		Callable<Collection<YValueHint>> servicesProvider = providers.getServicesProvider();
 		Callable<Collection<YValueHint>> domainsProvider = providers.getDomainsProvider();
+		Callable<Collection<YValueHint>> stacksProvider = providers.getStacksProvider();
 
 
 		YTypeFactory f = new YTypeFactory();
@@ -60,20 +108,29 @@ public class ManifestYmlSchema implements YamlSchema {
 
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Cloudfoundry Manifest");
+		TOPLEVEL_TYPE.require(this::verify_heatth_check_http_end_point_constraint);
 
 		AbstractType application = f.ybean("Application");
+		application.require(this::verify_heatth_check_http_end_point_constraint);
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
-		if (this.buildpackProvider != null) {
-			t_buildpack.addHintProvider(this.buildpackProvider);
+		if (buildpackProvider != null) {
+			t_buildpack.addHintProvider(buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
+		}
+
+		YAtomicType t_stack = f.yatomic("Stack");
+		if (stacksProvider!=null) {
+			t_stack.addHintProvider(stacksProvider);
+			t_stack.parseWith(ManifestYmlValueParsers.fromValueHints(stacksProvider, t_stack, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM));
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
 		t_domain.require(ManifestConstraints.mutuallyExclusive("routes"));
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
+			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
 		}
 
 		YAtomicType t_service = f.yatomic("Service");
@@ -87,16 +144,13 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_ne_string = f.yatomic("String");
 		t_ne_string.parseWith(ValueParsers.NE_STRING);
 		YType t_string = f.yatomic("String");
-		YType t_strings = f.yseq(t_string);
 
-		// "routes" has nested required property "route":
-		// routes:
-		// - route: someroute.io
+		t_route_string = f.yatomic("RouteUri")
+			.parseWith(new RouteValueParser(YTypeFactory.valuesFromHintProvider(domainsProvider)))
+			.setCustomContentAssistant(new RouteContentAssistant(domainsProvider, this));
 
 		YBeanType route = f.ybean("Route");
-		YAtomicType t_route_string = f.yatomic("route");
 		route.addProperty(f.yprop("route", t_route_string).isRequired(true));
-		t_route_string.parseWith(new RouteValueParser(YTypeFactory.valuesFromHintProvider(domainsProvider)));
 
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
@@ -118,28 +172,43 @@ public class ManifestYmlSchema implements YamlSchema {
 		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application)));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
+		YSeqType routesType = f.yseq(route);
+		routesType.require(ManifestConstraints.mutuallyExclusive("domain", "domains", "host", "hosts", "no-hostname"));
+
+		YSeqType domainsType = f.yseq(t_domain);
+		domainsType.require(ManifestConstraints.mutuallyExclusive("routes"));
+
+		YSeqType hostsType = f.yseq(t_string);
+		hostsType.require(ManifestConstraints.mutuallyExclusive("routes"));
+
+		YAtomicType hostType = f.yatomic("String");
+		hostType.require(ManifestConstraints.mutuallyExclusive("routes"));
+
+		YAtomicType noHostType = f.yenum("boolean", "true", "false");
+		noHostType.require(ManifestConstraints.mutuallyExclusive("routes"));
+
 		YTypedPropertyImpl[] props = {
 			f.yprop("buildpack", t_buildpack),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
 			f.yprop("domain", t_domain),
-			f.yprop("domains", f.yseq(t_domain)),
+			f.yprop("domains", domainsType),
 			f.yprop("env", t_env),
-			f.yprop("host", t_string),
-			f.yprop("hosts", t_strings),
+			f.yprop("host", hostType),
+			f.yprop("hosts", hostsType),
 			f.yprop("instances", t_strictly_pos_integer),
 			f.yprop("memory", t_memory),
 			f.yprop("name", t_ne_string).isRequired(true),
-			f.yprop("no-hostname", t_boolean),
+			f.yprop("no-hostname", noHostType),
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
-			f.yprop("routes", f.yseq(route)),
+			f.yprop("routes", routesType),
 			f.yprop("services", f.yseq(t_service)),
-			f.yprop("stack", t_string),
+			f.yprop("stack", t_stack),
 			f.yprop("timeout", t_pos_integer),
-			f.yprop("health-check-type", t_health_check_type),
-			f.yprop("health-check-http-endpoint", t_ne_string)
+			f.yprop(HEALTH_CHECK_TYPE_PROP, t_health_check_type),
+			f.yprop(HEALTH_CHECK_HTTP_ENDPOINT_PROP, t_ne_string)
 		};
 
 		for (YTypedPropertyImpl prop : props) {

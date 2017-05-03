@@ -16,6 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
@@ -78,7 +79,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	}
 
 	/**
-	 * 
+	 *
 	 * @param e
 	 * @return an error that requires no additional information when showing its
 	 *         message, or null if no such error is found
@@ -87,7 +88,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 		return ExceptionUtil.findThrowable(e,
 				ImmutableList.of(NoTargetsException.class, ConnectionException.class));
 	}
-	
+
 	/**
 	 *
 	 * @return non-null list of hints. Return empty if no hints available

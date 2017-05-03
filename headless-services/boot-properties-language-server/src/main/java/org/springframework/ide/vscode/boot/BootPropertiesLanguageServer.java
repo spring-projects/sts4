@@ -47,6 +47,7 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
@@ -119,7 +120,12 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	private ICompletionEngine getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
-		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider);
+		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider) {
+			@Override
+			protected boolean isLesserIndentRelaxable(SNode currentNode, SNode contextNode) {
+				return false;
+			}
+		};
 		return (IDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {

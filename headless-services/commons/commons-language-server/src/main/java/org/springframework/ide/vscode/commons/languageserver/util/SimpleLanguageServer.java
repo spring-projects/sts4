@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -31,7 +32,6 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -124,15 +125,20 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 					(String)params.getArguments().get(0), params.getArguments().get(1)
 			);
 			return quickfixResolve(quickfixParams)
-					.then((WorkspaceEdit edit) -> Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit))))
-					.map(r -> (Object)r.getApplied())
-					.toFuture();
+			.then((QuickfixEdit edit) -> {
+				Mono<ApplyWorkspaceEditResponse> applyEdit = Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit.workspaceEdit)));
+				Mono<Object> moveCursor = edit.cursorMovement==null
+						? Mono.just(new ApplyWorkspaceEditResponse(true))
+						: Mono.fromFuture(client.moveCursor(edit.cursorMovement));
+				return applyEdit.then(r -> r.getApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
+			})
+			.toFuture();
 		}
 		Log.warn("Unknown command ignored: "+params.getCommand());
 		return CompletableFuture.completedFuture(false);
 	}
 
-	public Mono<WorkspaceEdit> quickfixResolve(QuickfixResolveParams params) {
+	public Mono<QuickfixEdit> quickfixResolve(QuickfixResolveParams params) {
 		QuickfixRegistry quickfixes = getQuickfixRegistry();
 		return quickfixes.handle(params);
 	}

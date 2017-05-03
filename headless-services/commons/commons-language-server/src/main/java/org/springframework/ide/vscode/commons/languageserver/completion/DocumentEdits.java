@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -134,14 +135,15 @@ public class DocumentEdits implements ProposalApplier {
 		private int offset;
 		private String text;
 
-		public Insertion(int offset, String insert) {
+		public Insertion(boolean grabCursor, int offset, String insert) {
+			super(grabCursor);
 			this.offset = offset;
 			this.text = insert;
 		}
 
 		@Override
 		void apply(DocumentState doc) throws BadLocationException {
-			doc.insert(offset, text);
+			doc.insert(grabCursor, offset, text);
 		}
 
 		@Override
@@ -161,6 +163,10 @@ public class DocumentEdits implements ProposalApplier {
 	}
 
 	private abstract class Edit {
+		protected boolean grabCursor;
+		protected Edit(boolean grabCursor) {
+			this.grabCursor = grabCursor;
+		}
 		public abstract int getStart();
 		public abstract int getEnd();
 		abstract void apply(DocumentState doc) throws BadLocationException;
@@ -173,14 +179,15 @@ public class DocumentEdits implements ProposalApplier {
 		private int start;
 		private int end;
 
-		public Deletion(int start, int end) {
+		public Deletion(boolean grabCursor, int start, int end) {
+			super(grabCursor);
 			this.start = start;
 			this.end = end;
 		}
 
 		@Override
 		void apply(DocumentState doc) throws BadLocationException {
-			doc.delete(start, end);
+			doc.delete(grabCursor, start, end);
 		}
 
 		@Override
@@ -226,7 +233,7 @@ public class DocumentEdits implements ProposalApplier {
 			this.doc = doc;
 		}
 
-		public void insert(int start, final String text) throws BadLocationException {
+		public void insert(boolean grabCursor, int start, final String text) throws BadLocationException {
 			final int tStart = org2new.transform(start, Direction.AFTER);
 			if (!text.isEmpty()) {
 				if (doc!=null) {
@@ -251,10 +258,14 @@ public class DocumentEdits implements ProposalApplier {
 					}
 				};
 			}
-			selection = tStart+text.length();
+			if (grabCursor) {
+				selection = tStart+text.length();
+			} else if (selection > tStart) {
+				selection += text.length();
+			}
 		}
 
-		public void delete(final int start, final int end) throws BadLocationException {
+		public void delete(boolean grabCursor, final int start, final int end) throws BadLocationException {
 			final int tStart = org2new.transform(start, Direction.AFTER);
 			if (end>start) { // skip work for 'delete nothing' op
 				final int tEnd = org2new.transform(end, Direction.AFTER);
@@ -279,7 +290,14 @@ public class DocumentEdits implements ProposalApplier {
 					};
 				}
 			}
-			selection = tStart;
+			if (grabCursor) {
+				selection = tStart;
+			} else if (selection>tStart) {
+				int len = end - start;
+				if (len > 0) {
+					selection = Math.max(tStart, selection-len);
+				}
+			}
 		}
 
 		@Override
@@ -295,8 +313,17 @@ public class DocumentEdits implements ProposalApplier {
 		}
 	}
 
-	private ArrayList<Edit> edits = new ArrayList<Edit>();
+	private List<Edit> edits = new ArrayList<Edit>();
 	private IDocument doc;
+
+	/**
+	 * When this is true, the cursor is moved after each edit, to be positioned right after the
+	 * edit.
+	 * <p>
+	 * When it is false, the cursor only moves to remain in place relative to the surrounding text.
+	 * (I.e. if text is inserted/deleted before the cursor its shifted by the length of the inserted/deleted text).
+	 */
+	private boolean grabCursor = true;
 
 	public DocumentEdits(IDocument doc) {
 		this.doc = doc;
@@ -304,7 +331,7 @@ public class DocumentEdits implements ProposalApplier {
 
 	public void delete(int start, int end) {
 		Assert.isLegal(start<=end);
-		edits.add(new Deletion(start, end));
+		edits.add(new Deletion(grabCursor, start, end));
 	}
 
 	public void delete(int offset, String text) {
@@ -312,7 +339,7 @@ public class DocumentEdits implements ProposalApplier {
 	}
 
 	public void insert(int offset, String insert) {
-		edits.add(new Insertion(offset, insert));
+		edits.add(new Insertion(grabCursor, offset, insert));
 	}
 
 	@Override
@@ -416,8 +443,12 @@ public class DocumentEdits implements ProposalApplier {
 		if (edits.size()>0) {
 			Edit firstEdit = edits.get(0);
 			int offset = firstEdit.getStart();
-			edits.add(0, new Insertion(offset, indentString));
+			edits.add(0, new Insertion(grabCursor, offset, indentString));
 		}
+	}
+
+	public void firstDelete(int start, int end) {
+		edits.add(0, new Deletion(grabCursor, start, end));
 	}
 
 	/**
@@ -444,4 +475,11 @@ public class DocumentEdits implements ProposalApplier {
 		return null;
 	}
 
+	/**
+	 * Stop moving the cursor to the end of edits for successive edits. The cursor will still be
+	 * update to remain 'in place' relative to the surrounding text.
+	 */
+	public void freezeCursor() {
+		this.grabCursor = false;
+	}
 }

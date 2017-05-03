@@ -14,7 +14,7 @@ import { RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, Ser
 import { TextDocument, OutputChannel, Disposable, window } from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
-import {WorkspaceEdit} from 'vscode-languageserver-types';
+import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 
 let p2c = P2C.createConverter();
 
@@ -145,6 +145,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     }
 
     let progressNotification = new NotificationType<ProgressParams,void>("sts/progress");
+    let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void,void>("sts/moveCursor");
 
     let disposable = client.start();
 
@@ -154,6 +155,17 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     return  client.onReady().then(() => {
         client.onNotification(progressNotification, (params: ProgressParams) => {
             progressService.handle(params);
+        });
+        client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
+            let editors = VSCode.window.visibleTextEditors;
+            for (let editor of editors) {
+                if (editor.document.uri.toString() == params.uri) {
+                    let cursor = p2c.asPosition(params.position);
+                    let selection : VSCode.Selection = new VSCode.Selection(cursor, cursor);
+                    editor.selections = [ selection ];
+                }
+            }
+            return { applied: true};
         });
         return client;
     });
@@ -202,6 +214,15 @@ function correctBinname(binname: string) {
         return binname + '.exe';
     else
         return binname;
+}
+
+interface MoveCursorParams {
+    uri: string
+    position: Position
+}
+
+interface MoveCursorResponse {
+    applied: boolean
 }
 
 interface ProgressParams {

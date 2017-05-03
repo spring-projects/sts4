@@ -174,5 +174,10 @@ public class ManifestYmlSchemaTest {
 		public Callable<Collection<YValueHint>> getBuildpackProviders() {
 			return null;
 		}
+
+		@Override
+		public Callable<Collection<YValueHint>> getStacksProvider() {
+			return null;
+		}
 	};
 }

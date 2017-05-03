@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
-import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -154,6 +153,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//TODO: item is pre-resoved so we don't do anything, but we really should somehow defer some work, such as
 		// for example computing docs and edits to resolve time.
 		//The tricky part is that we have to probably remember infos about the unresolved elements somehow so we can resolve later.
-		return Futures.of(unresolved);
+		return CompletableFuture.completedFuture(unresolved);
 	}
 }

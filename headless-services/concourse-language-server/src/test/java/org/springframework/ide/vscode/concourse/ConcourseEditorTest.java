@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -58,13 +59,38 @@ public class ConcourseEditorTest {
 		assertEquals("Add property 'type'", quickfix.getLabel());
 		quickfix.perform();
 
-		editor.assertRawText(
+		editor.assertText(
 				"resources:\n" +
 				"- name: foo\n" +
 				"  source:\n" +
 				"    username: someone\n" +
-				"  type: \n" +
+				"  type: <*>\n" +
 				"# Confuse"
+		);
+	}
+
+	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n"
+		);
+		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertText(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    username: someone\n" +
+				"    branch: <*>\n" +
+				"    pool: \n" +
+				"    uri: \n"
 		);
 	}
 
@@ -86,31 +112,6 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"garbage|Resource Type does not exist"
-		);
-	}
-
-	@Test public void addMultipleRequiredPropertiesQuickfix() throws Exception {
-		Editor editor = harness.newEditor(
-				"resources:\n" +
-				"- name: foo\n" +
-				"  type: pool\n" +
-				"  source:\n" +
-				"    username: someone\n"
-		);
-		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
-		CodeAction quickfix = editor.assertCodeAction(problem);
-		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
-		quickfix.perform();
-
-		editor.assertRawText(
-				"resources:\n" +
-				"- name: foo\n" +
-				"  type: pool\n" +
-				"  source:\n" +
-				"    username: someone\n" +
-				"    branch: \n" +
-				"    pool: \n" +
-				"    uri: \n"
 		);
 	}
 
@@ -207,8 +208,6 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"a-resource|does not exist"
 		);
-
-		//TODO: Add more test cases for structural problem?
 	}
 
 	@Test
@@ -840,7 +839,8 @@ public class ConcourseEditorTest {
 			"- name: every5minutes\n" +
 			"  type: time\n" +
 			"  source:\n" +
-			"    <*>"
+			"    <*>\n" +
+			"    blah: blah"
 			, // ======================
 			"<*>"
 			, // =>
@@ -973,7 +973,8 @@ public class ConcourseEditorTest {
 				"- name: the-repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    <*>"
+				"    <*>\n" +
+				"    blah: blah"
 				, //================
 				"<*>"
 				, // ==>
@@ -1075,7 +1076,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - get: my-git\n" +
 				"    params:\n" +
-				"      <*>";
+				"      <*>\n" +
+				"      blah: blah";
 
 		assertContextualCompletions(context,
 				"<*>"
@@ -1149,7 +1151,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - put: my-git\n" +
 				"    params:\n" +
-				"      <*>";
+				"      <*>\n" +
+				"      blah: blah";
 
 		assertContextualCompletions(context,
 				"<*>"
@@ -1975,7 +1978,8 @@ public class ConcourseEditorTest {
 				"- name: version\n" +
 				"  type: semver\n" +
 				"  source:\n" +
-				"<*>";
+				"<*>\n" +
+				"    blah: blah";
 		assertContextualCompletions(conText,
 				"    driver: git\n" +
 				"    <*>"
@@ -2003,8 +2007,6 @@ public class ConcourseEditorTest {
 				,
 				"    driver: git\n" +
 				"    username: <*>"
-				,
-				"    driver: git<*>"
 		);
 	}
 
@@ -2874,24 +2876,33 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//For the 'exact' context:
 				"check_every",
-				"name",
-				"source",
-				"type",
+				//"name", exists
+				//"source", exists
+				//"type", exists
 				//For the nested context:
-				"➔ branch",
-				"➔ commit_verification_key_ids",
-				"➔ commit_verification_keys",
-				"➔ disable_ci_skip",
-				"➔ git_config",
-				"➔ gpg_keyserver",
-				"➔ ignore_paths",
-				"➔ password",
-				"➔ paths",
-				"➔ private_key",
-				"➔ skip_ssl_verification",
-				"➔ tag_filter",
-				"➔ uri",
-				"➔ username"
+				"→ branch",
+				"→ commit_verification_key_ids",
+				"→ commit_verification_keys",
+				"→ disable_ci_skip",
+				"→ git_config",
+				"→ gpg_keyserver",
+				"→ ignore_paths",
+				"→ password",
+				"→ paths",
+				"→ private_key",
+				"→ skip_ssl_verification",
+				"→ tag_filter",
+				"→ uri",
+				"→ username",
+				// For the top-level context:
+				"← groups",
+				"← jobs",
+				"← resource_types",
+				// For the 'next job' context:
+				"← - check_every",
+				"← - name",
+				"← - source",
+				"← - type"
 		);
 
 		editor.assertCompletionWithLabel("check_every",
@@ -2902,14 +2913,14 @@ public class ConcourseEditorTest {
 				"  check_every: <*>"
 		);
 
-		editor.assertCompletionWithLabel("➔ branch",
+		editor.assertCompletionWithLabel("→ branch",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
 				"    branch: <*>"
 		);
-		editor.assertCompletionWithLabel("➔ commit_verification_key_ids",
+		editor.assertCompletionWithLabel("→ commit_verification_key_ids",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
@@ -2965,9 +2976,9 @@ public class ConcourseEditorTest {
 				"max_in_flight",
 				"serial",
 				"serial_groups",
-				"name",
-				"plan",
-				"public",
+				//"name", exists 
+				//"plan", exists
+				//"public", exists
 				//Completions with '-'
 				"- aggregate",
 				"- do",
@@ -2976,20 +2987,31 @@ public class ConcourseEditorTest {
 				"- task",
 				"- try",
 				//Completions for nested context (i.e. task step)
-				"➔ attempts",
-				"➔ config",
-				"➔ ensure",
-				"➔ file",
-				"➔ image",
-				"➔ input_mapping",
-				"➔ on_failure",
-				"➔ on_success",
-				"➔ output_mapping",
-				"➔ params",
-				"➔ privileged",
-				"➔ tags",
-				"➔ timeout",
-				"➔ task"
+				"→ attempts",
+				"→ config",
+				"→ ensure",
+				"→ file",
+				"→ image",
+				"→ input_mapping",
+				"→ on_failure",
+				"→ on_success",
+				"→ output_mapping",
+				"→ params",
+				"→ privileged",
+				"→ tags",
+				"→ timeout",
+				//"→ task" exists
+				"← groups\n" + 
+				"← resource_types\n" + 
+				"← resources\n" + 
+				"← - build_logs_to_retain\n" + 
+				"← - disable_manual_trigger\n" + 
+				"← - max_in_flight\n" + 
+				"← - name\n" + 
+				"← - plan\n" + 
+				"← - public\n" + 
+				"← - serial\n" + 
+				"← - serial_groups"
 			);
 	}
 
@@ -3373,6 +3395,62 @@ public class ConcourseEditorTest {
 				"  - aggregate:\n" +
 				"    - <*>"
 		);
+	}
+	
+	@Test public void relaxedContentAssistLessSpaces() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"    <*>"
+		);
+		editor.assertCompletionWithLabel("← - put", 
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"    pu<*>"
+		);
+		editor.assertCompletionWithLabel("← - put", 
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+
+		//Should be de-indentation relaxation. These should not be
+		// allowed if they cause the context node to be split. So in this example
+		// de-indented completions shouldn't be suggested.
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    <*>\n" +
+				"    trigger: true\n"
+		);
+		editor.assertNoCompletionsWithLabel(label -> label.startsWith(Unicodes.LEFT_ARROW+" "));;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -95,9 +95,10 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	}
 
 	protected ManifestYmlHintProviders getHintProviders() {
-		Callable<Collection<YValueHint>> buildPacksProvider = getBuildpacksProvider();
-		Callable<Collection<YValueHint>> servicesProvider = getServicesProvider();
-		Callable<Collection<YValueHint>> domainsProvider = getDomainsProvider();
+		Callable<Collection<YValueHint>> buildPacksProvider = new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
+		Callable<Collection<YValueHint>> servicesProvider = new ManifestYamlCFServicesProvider(getCfTargetCache());
+		Callable<Collection<YValueHint>> domainsProvider = new ManifestYamlCFDomainsProvider(getCfTargetCache());
+		Callable<Collection<YValueHint>> stacksProvider = new ManifestYamlStacksProvider(getCfTargetCache());
 
 		return new ManifestYmlHintProviders() {
 
@@ -115,6 +116,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 			public Callable<Collection<YValueHint>> getBuildpackProviders() {
 				return buildPacksProvider;
 			}
+
+			@Override
+			public Callable<Collection<YValueHint>> getStacksProvider() {
+				return stacksProvider;
+			}
 		};
 	}
 
@@ -125,18 +131,6 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 			cfTargetCache = new CFTargetCache(paramsProvider, clientFactory, new ClientTimeouts());
 		}
 		return cfTargetCache;
-	}
-
-	private Callable<Collection<YValueHint>> getBuildpacksProvider() {
-		return new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
-	}
-
-	private Callable<Collection<YValueHint>> getServicesProvider() {
-		return new ManifestYamlCFServicesProvider(getCfTargetCache());
-	}
-
-	private Callable<Collection<YValueHint>> getDomainsProvider() {
-		return new ManifestYamlCFDomainsProvider(getCfTargetCache());
 	}
 
 }

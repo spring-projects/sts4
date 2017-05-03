@@ -21,13 +21,13 @@ import reactor.ipc.netty.channel.AbortedException;
 
 /**
  * This is a stateful callable context that is "aware" of CF errors, and is not
- * suitable for reuse as it may cache errors
- *
+ * suitable for reuse as it may cache errors.
  */
 public class CFCallableContext {
 
 	private final CFParamsProviderMessages paramsProviderMessages;
 	private Exception lastConnectionError;
+	private long lastErrorTime = 0;
 
 	public CFCallableContext(CFParamsProviderMessages paramsProviderMessages) {
 		this.paramsProviderMessages = paramsProviderMessages;
@@ -38,6 +38,7 @@ public class CFCallableContext {
 		try {
 			return callable.call();
 		} catch (Exception e) {
+			lastErrorTime = System.currentTimeMillis();
 			throw convertToCfVscodeError(e);
 		}
 	}
@@ -61,7 +62,7 @@ public class CFCallableContext {
 		return null;
 	}
 
-	public boolean hasConnectionError() {
-		return this.lastConnectionError != null;
+	public boolean hasExpiredConnectionError() {
+		return this.lastConnectionError != null && System.currentTimeMillis() - lastErrorTime > CFTargetCache.ERROR_EXPIRATION.toMillis();
 	}
 }

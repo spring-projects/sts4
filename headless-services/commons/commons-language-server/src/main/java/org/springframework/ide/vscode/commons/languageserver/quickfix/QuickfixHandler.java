@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.quickfix;
 
-import org.eclipse.lsp4j.WorkspaceEdit;
-
 @FunctionalInterface
 public interface QuickfixHandler {
-	WorkspaceEdit createEdits(Object params);
+	QuickfixEdit createEdits(Object params);
 }

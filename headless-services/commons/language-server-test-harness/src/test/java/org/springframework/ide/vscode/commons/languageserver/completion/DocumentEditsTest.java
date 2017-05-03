@@ -96,6 +96,10 @@ public class DocumentEditsTest {
 			edits.deleteLineBackward(0);
 		}
 
+		public void freezeCursor() {
+			edits.freezeCursor();
+		}
+
 	}
 
 	@Test public void testDeletes() throws Exception {
@@ -191,6 +195,42 @@ public class DocumentEditsTest {
 		it = new TestSubject("");
 		it.delLine(0);
 		it.expect("<*>");
+
+	}
+
+	@Test public void testCursorFreeze() throws Exception {
+		TestSubject it = new TestSubject(
+				"something:\n" +
+				"#end"
+		);
+//		it.insBefore("\n#end", "\n  foo: ");
+//		it.insBefore("\n#end", "\n  zoro: ");
+//		it.insBefore("\n#end", "\n  banana: ");
+//
+//		it.expect(
+//				"something:\n" +
+//				"  foo: \n" +
+//				"  zoro: \n" +
+//				"  banana: <*>\n" +
+//				"#end"
+//		);
+//
+//		it.reset();
+
+		it.insBefore("\n#end", "\n  foo: ");
+		it.freezeCursor();
+		it.insBefore("\n#end", "\n  zoro: ");
+		it.insBefore("\n#end", "\n  banana: ");
+		it.del("#end");
+		it.insBefore("something", "replc");
+		it.del("something");
+
+		it.expect(
+				"replc:\n" +
+				"  foo: <*>\n" +
+				"  zoro: \n" +
+				"  banana: \n"
+		);
 
 	}
 

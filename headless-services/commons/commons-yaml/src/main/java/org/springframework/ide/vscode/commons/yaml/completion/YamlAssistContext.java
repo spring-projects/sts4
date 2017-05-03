@@ -34,13 +34,4 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 	Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
 
 	YamlDocument getDocument();
-
-	/**
-	 * Allows a context to implement a 'relaxation' transformation. A relaxed context
-	 * should compute the same proposals as the original context but may also add
-	 * additional proposals. E.g. a {@link YTypeAssistContext} uses this to
-	 * relax contexts for sequence types to include proposals for the elements
-	 * of the sequence.
-	 */
-	default YamlAssistContext relax() { return null; }
 }

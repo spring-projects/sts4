@@ -63,7 +63,7 @@ public class RouteValueParser extends RegexpParser {
 			}
 			if (!cloudDomains.contains(route.getDomain())) {
 				String hostDomain = matcher.group(1);
-				throw new ReconcileException("Unknown domain", ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM, hostDomain.lastIndexOf(route.getDomain()), hostDomain.length());
+				throw new ReconcileException("Unknown 'Domain'. Valid domains are: "+cloudDomains, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM, hostDomain.lastIndexOf(route.getDomain()), hostDomain.length());
 			}
 			return route;
 		} catch (ConnectionException | NoTargetsException e) {

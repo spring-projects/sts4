@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -327,7 +328,7 @@ public class YamlStructureParser {
 		public YamlPath getPath() throws Exception {
 			List<YamlPathSegment> path = new ArrayList<>();
 			for (SNode node : getPathNodes()) {
-				YamlPathSegment segment = getSegment(node);
+				YamlPathSegment segment = node.getSegment();
 				if (segment!=null) {
 					path.add(segment);
 				}
@@ -340,19 +341,24 @@ public class YamlStructureParser {
 		 * null because not all SNodes can be interpreted as 'step' in the yml
 		 * structure (e.g. raw nodes will return null, as will the 'root' node).
 		 */
-		private YamlPathSegment getSegment(SNode node) throws Exception {
-			if (node!=null) {
-				SNodeType nodeType = node.getNodeType();
-				if (nodeType==SNodeType.KEY) {
-					String key = ((SKeyNode)node).getKey();
-					return YamlPathSegment.valueAt(key);
-				} else if (nodeType==SNodeType.SEQ) {
-					int index = ((SSeqNode)node).getIndex();
-					return YamlPathSegment.valueAt(index);
-				} else if (nodeType==SNodeType.DOC) {
-					int index = ((SDocNode)node).getIndex();
-					return YamlPathSegment.valueAt(index);
+		public YamlPathSegment getSegment() {
+			try {
+				SNode node = this;
+				if (node!=null) {
+					SNodeType nodeType = node.getNodeType();
+					if (nodeType==SNodeType.KEY) {
+						String key = ((SKeyNode)node).getKey();
+						return YamlPathSegment.valueAt(key);
+					} else if (nodeType==SNodeType.SEQ) {
+						int index = ((SSeqNode)node).getIndex();
+						return YamlPathSegment.valueAt(index);
+					} else if (nodeType==SNodeType.DOC) {
+						int index = ((SDocNode)node).getIndex();
+						return YamlPathSegment.valueAt(index);
+					}
 				}
+			} catch (Exception e) {
+				Log.log(e);
 			}
 			return null;
 		}
@@ -569,6 +575,15 @@ public class YamlStructureParser {
 
 		public SNode getFirstRealChild() {
 			for (SNode c : getChildren()) {
+				if (c.getIndent()>=0) {
+					return c;
+				}
+			}
+			return null;
+		}
+
+		public SNode getLastRealChild() {
+			for (SNode c : Lists.reverse(getChildren())) {
 				if (c.getIndent()>=0) {
 					return c;
 				}

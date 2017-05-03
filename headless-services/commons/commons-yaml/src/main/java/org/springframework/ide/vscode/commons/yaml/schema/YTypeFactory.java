@@ -131,7 +131,7 @@ public class YTypeFactory {
 		return new YAny(name);
 	}
 
-	public YType yseq(YType el) {
+	public YSeqType yseq(YType el) {
 		return new YSeqType(el);
 	}
 
@@ -224,6 +224,11 @@ public class YTypeFactory {
 		public List<Constraint> getConstraints(YType type) {
 			return ((AbstractType)type).getConstraints();
 		}
+
+		@Override
+		public ISubCompletionEngine getCustomContentAssistant(YType type) {
+			return ((AbstractType)type).getCustomContentAssistant();
+		}
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -239,9 +244,19 @@ public class YTypeFactory {
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
 		private List<Constraint> constraints = new ArrayList<>(2);
+		private ISubCompletionEngine customContentAssistant = null;
 
 		public boolean isSequenceable() {
 			return false;
+		}
+
+		public ISubCompletionEngine getCustomContentAssistant() {
+			return customContentAssistant;
+		}
+		
+		public AbstractType setCustomContentAssistant(ISubCompletionEngine customContentAssistant) {
+			this.customContentAssistant = customContentAssistant;
+			return this;
 		}
 
 		public YType inferMoreSpecificType(DynamicSchemaContext dc) {

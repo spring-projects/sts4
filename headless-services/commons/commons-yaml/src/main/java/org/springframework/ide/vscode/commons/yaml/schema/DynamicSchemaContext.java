@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 public interface DynamicSchemaContext {
 
 	DynamicSchemaContext NULL = new DynamicSchemaContext() {
+		
 		@Override
 		public Set<String> getDefinedProperties() {
 			return ImmutableSet.of();
@@ -47,6 +49,12 @@ public interface DynamicSchemaContext {
 		
 	};
 
+	/**
+	 * Returns the enitre AST of the current document. May be null if the AST is not
+	 * available (e.g. because of parsing errors)
+	 */
+	default YamlFileAST getAST() { return null; }
+	
 	/**
 	 * Returns the set of property names that are already defined in the current context.
 	 * <p>

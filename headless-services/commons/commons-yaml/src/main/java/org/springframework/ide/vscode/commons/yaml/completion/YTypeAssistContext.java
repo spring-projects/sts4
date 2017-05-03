@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,28 +28,24 @@ import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
+import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.SNodeDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
-import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
-
-import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
 
 public class YTypeAssistContext extends AbstractYamlAssistContext {
 
@@ -87,12 +82,23 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	@Override
 	public Collection<ICompletionProposal> getCompletions(YamlDocument doc, SNode node, int offset) throws Exception {
-		String query = getPrefix(doc, node, offset);
-		List<ICompletionProposal> valueCompletions = getValueCompletions(doc, node, offset, query);
-		if (!valueCompletions.isEmpty()) {
-			return valueCompletions;
+		ISubCompletionEngine customContentAssistant = typeUtil.getCustomContentAssistant(type);
+		if (customContentAssistant!=null) {
+			DocumentRegion region = getCustomAssistRegion(doc, node, offset);
+			if (region!=null) {
+				return customContentAssistant.getCompletions(completionFactory(), region, region.toRelative(offset));
+			}
 		}
-		return getKeyCompletions(doc, offset, query);
+		String query = getPrefix(doc, node, offset);
+		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
+		if (completions.isEmpty()) {
+			completions = getKeyCompletions(doc, offset, query);
+		}
+		if (typeUtil.isSequencable(type)) {
+			completions = new ArrayList<>(completions);
+			completions.addAll(getDashedCompletions(doc, node, offset));
+		}
+		return completions;
 	}
 
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
@@ -123,17 +129,18 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 								query, p, score, edits, typeUtil)
 						);
 					} else {
-						//property already defined
-						// instead of filtering, navigate to the place where its defined.
-						deleteQueryAndLine(doc, query, queryOffset, edits);
-						//Cast to SChildBearingNode cannot fail because otherwise definedProps would be the empty set.
-						edits.createPath((SChildBearingNode) contextNode, relativePath, "");
-						proposals.add(
-							completionFactory().beanProperty(doc.getDocument(),
-								contextPath.toPropString(), getType(),
-								query, p, score, edits, typeUtil)
-							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
-						);
+						// This piece below deactivated becuase moving cursor like this doesn't work in vscode
+//						//property already defined
+//						// instead of filtering, navigate to the place where its defined.
+//						deleteQueryAndLine(doc, query, queryOffset, edits);
+//						//Cast to SChildBearingNode cannot fail because otherwise definedProps would be the empty set.
+//						edits.createPath((SChildBearingNode) contextNode, relativePath, "");
+//						proposals.add(
+//							completionFactory().beanProperty(doc.getDocument(),
+//								contextPath.toPropString(), getType(),
+//								query, p, score, edits, typeUtil)
+//							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
+//						);
 					}
 				}
 			}
@@ -295,8 +302,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return typeUtil.getPropertiesMap(getType()).get(name);
 	}
 
-	@Override
-	public YamlAssistContext relax() {
+	protected YamlAssistContext relaxForDashes() {
 		try {
 			if (typeUtil.isSequencable(type)) {
 				YType itemType = typeUtil.getDomainType(type);
@@ -313,7 +319,19 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return super.relax();
+		return null;
+	}
+	
+	protected Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
+		try {
+			YamlAssistContext relaxed = relaxForDashes();
+			if (relaxed!=null) {
+				return relaxed.getCompletions(doc, current, offset);
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return ImmutableList.of();
 	}
 
 	private Collection<ICompletionProposal> addDashes(Collection<ICompletionProposal> basicCompletions, YamlDocument doc, SNode node) {

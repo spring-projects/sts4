@@ -95,7 +95,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			if (nodes!=null && !nodes.isEmpty()) {
 				for (int i = 0; i < nodes.size(); i++) {
 					Node node = nodes.get(i);
-					reconcile(ast.getDocument(), new YamlPath(YamlPathSegment.valueAt(i)), /*parent*/null, node, schema.getTopLevelType());
+					reconcile(ast, new YamlPath(YamlPathSegment.valueAt(i)), /*parent*/null, node, schema.getTopLevelType());
 				}
 			}
 		} finally {
@@ -121,9 +121,10 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		return allOf(ast, node);
 	}
 
-	private void reconcile(IDocument doc, YamlPath path, Node parent, Node node, YType type) {
+	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType type) {
+//		IDocument doc = ast.getDocument();
 		if (type!=null) {
-			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(doc, path, node);
+			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			type = typeUtil.inferMoreSpecificType(type, schemaContext);
 			if (typeCollector!=null) {
 				typeCollector.accept(node, type);
@@ -136,8 +137,8 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
 						String key = NodeUtil.asScalar(entry.getKeyNode());
-						reconcile(doc, keyAt(path, key), map, entry.getKeyNode(), typeUtil.getKeyType(type));
-						reconcile(doc, valueAt(path, key), map, entry.getValueNode(), typeUtil.getDomainType(type));
+						reconcile(ast, keyAt(path, key), map, entry.getKeyNode(), typeUtil.getKeyType(type));
+						reconcile(ast, valueAt(path, key), map, entry.getValueNode(), typeUtil.getDomainType(type));
 					}
 				} else if (typeUtil.isBean(type)) {
 					Map<String, YTypedProperty> beanProperties = typeUtil.getPropertiesMap(type);
@@ -155,7 +156,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 								if (prop.isDeprecated()) {
 									problems.accept(YamlSchemaProblems.deprecatedProperty(keyNode, type, prop));
 								}
-								reconcile(doc, valueAt(path, key), map, entry.getValueNode(), prop.getType());
+								reconcile(ast, valueAt(path, key), map, entry.getValueNode(), prop.getType());
 							}
 						}
 					}
@@ -168,7 +169,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isSequencable(type)) {
 					for (int i = 0; i < seq.getValue().size(); i++) {
 						Node el = seq.getValue().get(i);
-						reconcile(doc, valueAt(path, i), seq, el, typeUtil.getDomainType(type));
+						reconcile(ast, valueAt(path, i), seq, el, typeUtil.getDomainType(type));
 					}
 				} else {
 					expectTypeButFoundSequence(type, node);
@@ -185,7 +186,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 							}
 						} catch (Exception e) {
 							ProblemType problemType = getProblemType(e);
-							DocumentRegion region = getRegion(e, doc, node);
+							DocumentRegion region = getRegion(e, ast.getDocument(), node);
 							String msg = getMessage(e);
 							valueParseError(type, region, msg, problemType, getValueReplacement(e));
 						}

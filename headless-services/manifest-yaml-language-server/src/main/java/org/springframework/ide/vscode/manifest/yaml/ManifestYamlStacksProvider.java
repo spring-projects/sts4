@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -22,15 +22,19 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
-public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
+public class ManifestYamlStacksProvider extends AbstractCFHintsProvider {
 
-	public ManifestYamlCFServicesProvider(CFTargetCache cache) {
-		super(cache);
+	public ManifestYamlStacksProvider(CFTargetCache targetCache) {
+		super(targetCache);
 	}
 
 	@Override
-	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
+	protected String getTypeName() {
+		return "Stack";
+	}
 
+	@Override
+	protected Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
 		// NOTE: empty list of services is a VALID result. A CF target may have
 		// no service instances
 		// created, so if empty list is returned from the client, then RETURN empty list. don't
@@ -39,13 +43,12 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 		List<YValueHint> hints = new ArrayList<>();
 
 		for (CFTarget cfTarget : targets) {
-			List<CFServiceInstance> services = cfTarget.getServices();
+			List<CFStack> stacks = cfTarget.getStacks();
 			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
-			if (services != null && !services.isEmpty()) {
-
-				for (CFServiceInstance service : services) {
-					String name = service.getName();
-					String label = getServiceLabel(cfTarget, service);
+			if (stacks != null && !stacks.isEmpty()) {
+				for (CFStack s : stacks) {
+					String name = s.getName();
+					String label = name;
 					YValueHint hint = new BasicYValueHint(name, label)
 							.setDocumentation(targetLabel);
 					if (!hints.contains(hint)) {
@@ -59,12 +62,5 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 		return hints;
 	}
 
-	@Override
-	protected String getTypeName() {
-		return "Service";
-	}
 
-	protected final String getServiceLabel(CFTarget cfClientTarget, CFServiceInstance service) {
-		return service.getName() + " - " + service.getPlan();
-	}
 }

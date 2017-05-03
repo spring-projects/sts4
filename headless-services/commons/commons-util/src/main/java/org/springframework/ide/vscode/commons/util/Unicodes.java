@@ -8,21 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.manifest.yaml;
+package org.springframework.ide.vscode.commons.util;
 
-import java.util.Collection;
-import java.util.concurrent.Callable;
-
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
-
-public interface ManifestYmlHintProviders {
-
-	Callable<Collection<YValueHint>> getBuildpackProviders();
-
-	Callable<Collection<YValueHint>> getServicesProvider();
-
-	Callable<Collection<YValueHint>> getDomainsProvider();
-
-	Callable<Collection<YValueHint>> getStacksProvider();
+public class Unicodes {
+	
+	public static final char RIGHT_ARROW = '→';
+	public static final char LEFT_ARROW = '←';
 
 }
