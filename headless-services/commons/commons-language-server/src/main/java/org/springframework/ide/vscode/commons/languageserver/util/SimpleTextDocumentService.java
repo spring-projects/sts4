@@ -326,12 +326,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public void didSave(DidSaveTextDocumentParams params) {
 	}
 
-	public void publishDiagnostics(TextDocumentIdentifier docId, List<Diagnostic> diagnostics) {
+	public void publishDiagnostics(TextDocumentIdentifier docId, Collection<Diagnostic> diagnostics) {
 		LanguageClient client = server.getClient();
 		if (client!=null && diagnostics!=null) {
 			PublishDiagnosticsParams params = new PublishDiagnosticsParams();
 			params.setUri(docId.getUri());
-			params.setDiagnostics(diagnostics);
+			params.setDiagnostics(ImmutableList.copyOf(diagnostics));
 			client.publishDiagnostics(params);
 		}
 	}

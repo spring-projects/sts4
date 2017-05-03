@@ -10,16 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
+import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
-import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.SequenceNode;
+
 
 /**
  * Constraints for Manifest YAML structure
@@ -29,35 +33,38 @@ import org.yaml.snakeyaml.nodes.SequenceNode;
  */
 public class ManifestConstraints {
 
-	public static Constraint exclusiveWith(String... propertyIds) {
+	public static Constraint mutuallyExclusive(String target, String... propertyIds) {
 		return (dc, parent, node, type, problems) -> {
-			Set<String> keys = new HashSet<>();
-			Node root = dc.getAST().getNodes().get(0);
-			// First add keys from the root node
-			keys.addAll(NodeUtil.getScalarKeys(root));
-			if (root == parent) {
-				// Add keys from all applications
-				SequenceNode apps = NodeUtil.asSequence(NodeUtil.getProperty(root, "applications"));
-				if (apps != null) {
-					apps.getValue().forEach(n -> keys.addAll(NodeUtil.getScalarKeys(n)));
+			Node targetNode = YamlPathSegment.keyAt(target).traverseNode(node);
+			if (targetNode != null) {
+				YamlTraversal conflictingTraversal = getConflictingNodesTraversal(dc.getPath(), propertyIds);
+				List<Node> conflictingNodes = conflictingTraversal.traverseAmbiguously(dc.getAST()).collect(Collectors.toList());
+				if (!conflictingNodes.isEmpty()) {
+					Set<String> conflicts = conflictingNodes.stream().map(NodeUtil::asScalar).collect(Collectors.toCollection(TreeSet::new));
+					problems.accept(YamlSchemaProblems.problem(
+							ManifestYamlSchemaProblemsTypes.MUTUALLY_EXCLUSIVE_PROPERTY_PROBLEM,
+							"Property cannot co-exist with properties " + conflicts, targetNode));
+					for (Node cn : conflictingNodes) {
+						problems.accept(YamlSchemaProblems.problem(
+							ManifestYamlSchemaProblemsTypes.MUTUALLY_EXCLUSIVE_PROPERTY_PROBLEM,
+							"Property cannot co-exist with property '" + target + "'", cn));
+					}
 				}
-			} else {
-				// Now add keys from application node, thus application node keys would replace root node keys if they present in both nodes
-				keys.addAll(NodeUtil.getScalarKeys(parent));
 			}
-			Arrays.stream(propertyIds).filter(id -> keys.contains(id)).findFirst().ifPresent(propertyId -> {
-				// Find key node, because the node parameter is the value node
-				MappingNode mapNode = (MappingNode) parent;
-				mapNode.getValue().stream().filter(t -> t.getValueNode() == node).findFirst().ifPresent(t -> {
-					Node keyNode = t.getKeyNode();
-					int start = keyNode.getStartMark().getIndex();
-					int end = keyNode.getEndMark().getIndex();
-					problems.accept(
-							new ReconcileProblemImpl(ManifestYamlSchemaProblemsTypes.MUTUALLY_EXCLUSIVE_PROPERTY_PROBLEM,
-									"Property cannot co-exist with property '" + propertyId + "'", start, end - start));
-				});
-			});
 		};
+	}
+
+	private static YamlTraversal getConflictingNodesTraversal(YamlPath path, String[] propertyIds) {
+		Assert.isLegal(propertyIds.length > 0);
+		YamlTraversal properties = null;
+		for (String id : propertyIds) {
+			properties = properties == null ? YamlPathSegment.keyAt(id) : properties.or(YamlPathSegment.keyAt(id));
+		}
+		YamlTraversal traversal = path.then(properties);
+		if (path.size() > 2) {
+			traversal = traversal.or(path.dropLast(2).then(properties));
+		}
+		return traversal;
 	}
 
 }

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -311,7 +312,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			}
 			IProblemCollector problems = new IProblemCollector() {
 
-				private List<Diagnostic> diagnostics = new ArrayList<>();
+				private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();
 				private List<Quickfix> quickfixes = new ArrayList<>();
 
 				@Override

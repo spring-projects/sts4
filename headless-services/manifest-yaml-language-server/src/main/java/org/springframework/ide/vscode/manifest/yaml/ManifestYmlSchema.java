@@ -30,7 +30,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -112,6 +111,8 @@ public class ManifestYmlSchema implements YamlSchema {
 
 		AbstractType application = f.ybean("Application");
 		application.require(this::verify_heatth_check_http_end_point_constraint);
+		application.require(
+				ManifestConstraints.mutuallyExclusive("routes", "domain", "domains", "host", "hosts", "no-hostname"));
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
@@ -127,7 +128,6 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
-		t_domain.require(ManifestConstraints.exclusiveWith("routes"));
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
 			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
@@ -172,38 +172,25 @@ public class ManifestYmlSchema implements YamlSchema {
 		TOPLEVEL_TYPE.addProperty(f.yprop("applications", f.yseq(application)));
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
-		YSeqType routesType = f.yseq(route);
-		routesType.require(ManifestConstraints.exclusiveWith("domain", "domains", "host", "hosts", "no-hostname"));
-
-		YSeqType domainsType = f.yseq(t_domain);
-		domainsType.require(ManifestConstraints.exclusiveWith("routes"));
-
-		YSeqType hostsType = f.yseq(t_string);
-		hostsType.require(ManifestConstraints.exclusiveWith("routes"));
-
-		YAtomicType hostType = f.yatomic("String");
-		hostType.require(ManifestConstraints.exclusiveWith("routes"));
-
-		YAtomicType noHostType = f.yenum("boolean", "true", "false");
-		noHostType.require(ManifestConstraints.exclusiveWith("routes"));
+		AbstractType t_host = f.yatomic("Host").parseWith(ValueParsers.NE_STRING);
 
 		YTypedPropertyImpl[] props = {
 			f.yprop("buildpack", t_buildpack),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
 			f.yprop("domain", t_domain),
-			f.yprop("domains", domainsType),
+			f.yprop("domains", f.yseq(t_domain)),
 			f.yprop("env", t_env),
-			f.yprop("host", hostType),
-			f.yprop("hosts", hostsType),
+			f.yprop("host", t_ne_string),
+			f.yprop("hosts", f.yseq(t_host)),
 			f.yprop("instances", t_strictly_pos_integer),
 			f.yprop("memory", t_memory),
 			f.yprop("name", t_ne_string).isRequired(true),
-			f.yprop("no-hostname", noHostType),
+			f.yprop("no-hostname", t_boolean),
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
 			f.yprop("random-route", t_boolean),
-			f.yprop("routes", routesType),
+			f.yprop("routes", f.yseq(route)),
 			f.yprop("services", f.yseq(t_service)),
 			f.yprop("stack", t_stack),
 			f.yprop("timeout", t_pos_integer),

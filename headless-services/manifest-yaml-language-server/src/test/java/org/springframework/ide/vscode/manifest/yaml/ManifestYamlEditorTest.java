@@ -535,7 +535,7 @@ public class ManifestYamlEditorTest {
 
 		editor.assertProblems(
 				"no-hostname|Property cannot co-exist with property 'routes'",
-				"routes|Property cannot co-exist with property 'no-hostname'"
+				"routes|Property cannot co-exist with properties [no-hostname]"
 			);
 
 		editor = harness.newEditor(
@@ -549,23 +549,59 @@ public class ManifestYamlEditorTest {
 
 		editor.assertProblems(
 				"no-hostname|Property cannot co-exist with property 'routes'",
-				"routes|Property cannot co-exist with property 'no-hostname'"
+				"routes|Property cannot co-exist with properties [no-hostname]"
 			);
 
-//		editor = harness.newEditor(
-//				"no-hostname: true\n" +
-//				"routes:\n" +
-//				"- route: myapp.org" +
-//				"applications:\n" +
-//				"- name: my-app\n"
-//		);
-//		editor.ignoreProblem("UnknownDomainProblem");
-//
-//		editor.assertProblems(
-//				"no-hostname|Property cannot co-exist with property 'routes'",
-//				"routes|Property cannot co-exist with property 'no-hostname'"
-//			);
-	}
+		editor = harness.newEditor(
+				"no-hostname: true\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  no-hostname: true\n" +
+				"  routes:\n" +
+				"  - route: myapp.org"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+
+		editor.assertProblems(
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [no-hostname]"
+			);
+
+		editor = harness.newEditor(
+				"no-hostname: true\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  host: some-app\n" +
+				"  routes:\n" +
+				"  - route: myapp.org"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+
+		editor.assertProblems(
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"host|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [host, no-hostname]"
+			);
+
+		editor = harness.newEditor(
+				"no-hostname: true\n" +
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  routes:\n" +
+				"  - route: myapp.org\n" +
+				"- name: app2\n" +
+				"  routes:\n" +
+				"  - route: my-route.org"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+
+		editor.assertProblems(
+				"no-hostname|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [no-hostname]",
+				"routes|Property cannot co-exist with properties [no-hostname]"
+			);
+}
 
 	@Test public void deprecatedHealthCheckTypeQuickfix() throws Exception {
 		Editor editor = harness.newEditor(
