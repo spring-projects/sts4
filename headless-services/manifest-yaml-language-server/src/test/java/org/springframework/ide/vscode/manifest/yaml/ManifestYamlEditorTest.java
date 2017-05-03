@@ -1393,7 +1393,7 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"  ro<*>"
 		);
-		editor.assertCompletions(c -> c.getLabel().contains("routes"),
+		editor.assertCompletions(c -> c.getLabel().startsWith("routes"),
 				"applications:\n" +
 				"- name: foo\n" +
 				"  routes:\n"+
