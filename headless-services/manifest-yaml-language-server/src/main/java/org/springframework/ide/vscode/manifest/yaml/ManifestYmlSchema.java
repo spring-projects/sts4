@@ -127,7 +127,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
-		t_domain.require(ManifestConstraints.mutuallyExclusive("routes"));
+		t_domain.require(ManifestConstraints.exclusiveWith("routes"));
 		if (domainsProvider != null) {
 			t_domain.addHintProvider(domainsProvider);
 			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
@@ -173,19 +173,19 @@ public class ManifestYmlSchema implements YamlSchema {
 		TOPLEVEL_TYPE.addProperty("inherit", t_string, descriptionFor("inherit"));
 
 		YSeqType routesType = f.yseq(route);
-		routesType.require(ManifestConstraints.mutuallyExclusive("domain", "domains", "host", "hosts", "no-hostname"));
+		routesType.require(ManifestConstraints.exclusiveWith("domain", "domains", "host", "hosts", "no-hostname"));
 
 		YSeqType domainsType = f.yseq(t_domain);
-		domainsType.require(ManifestConstraints.mutuallyExclusive("routes"));
+		domainsType.require(ManifestConstraints.exclusiveWith("routes"));
 
 		YSeqType hostsType = f.yseq(t_string);
-		hostsType.require(ManifestConstraints.mutuallyExclusive("routes"));
+		hostsType.require(ManifestConstraints.exclusiveWith("routes"));
 
 		YAtomicType hostType = f.yatomic("String");
-		hostType.require(ManifestConstraints.mutuallyExclusive("routes"));
+		hostType.require(ManifestConstraints.exclusiveWith("routes"));
 
 		YAtomicType noHostType = f.yenum("boolean", "true", "false");
-		noHostType.require(ManifestConstraints.mutuallyExclusive("routes"));
+		noHostType.require(ManifestConstraints.exclusiveWith("routes"));
 
 		YTypedPropertyImpl[] props = {
 			f.yprop("buildpack", t_buildpack),

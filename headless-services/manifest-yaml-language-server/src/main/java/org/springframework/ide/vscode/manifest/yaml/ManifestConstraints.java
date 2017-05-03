@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
 import java.util.Arrays;
@@ -11,9 +21,15 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 
+/**
+ * Constraints for Manifest YAML structure
+ *
+ * @author Alex Boyko
+ *
+ */
 public class ManifestConstraints {
 
-	public static Constraint mutuallyExclusive(String... propertyIds) {
+	public static Constraint exclusiveWith(String... propertyIds) {
 		return (dc, parent, node, type, problems) -> {
 			Set<String> keys = new HashSet<>();
 			Node root = dc.getAST().getNodes().get(0);
