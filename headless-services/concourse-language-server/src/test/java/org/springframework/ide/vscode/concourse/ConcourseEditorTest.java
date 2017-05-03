@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -207,8 +208,6 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"a-resource|does not exist"
 		);
-
-		//TODO: Add more test cases for structural problem?
 	}
 
 	@Test
@@ -840,7 +839,8 @@ public class ConcourseEditorTest {
 			"- name: every5minutes\n" +
 			"  type: time\n" +
 			"  source:\n" +
-			"    <*>"
+			"    <*>\n" +
+			"    blah: blah"
 			, // ======================
 			"<*>"
 			, // =>
@@ -973,7 +973,8 @@ public class ConcourseEditorTest {
 				"- name: the-repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    <*>"
+				"    <*>\n" +
+				"    blah: blah"
 				, //================
 				"<*>"
 				, // ==>
@@ -1075,7 +1076,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - get: my-git\n" +
 				"    params:\n" +
-				"      <*>";
+				"      <*>\n" +
+				"      blah: blah";
 
 		assertContextualCompletions(context,
 				"<*>"
@@ -1149,7 +1151,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - put: my-git\n" +
 				"    params:\n" +
-				"      <*>";
+				"      <*>\n" +
+				"      blah: blah";
 
 		assertContextualCompletions(context,
 				"<*>"
@@ -1975,7 +1978,8 @@ public class ConcourseEditorTest {
 				"- name: version\n" +
 				"  type: semver\n" +
 				"  source:\n" +
-				"<*>";
+				"<*>\n" +
+				"    blah: blah";
 		assertContextualCompletions(conText,
 				"    driver: git\n" +
 				"    <*>"
@@ -2003,8 +2007,6 @@ public class ConcourseEditorTest {
 				,
 				"    driver: git\n" +
 				"    username: <*>"
-				,
-				"    driver: git<*>"
 		);
 	}
 
@@ -2874,9 +2876,9 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//For the 'exact' context:
 				"check_every",
-				"name",
-				"source",
-				"type",
+				//"name", exists
+				//"source", exists
+				//"type", exists
 				//For the nested context:
 				"→ branch",
 				"→ commit_verification_key_ids",
@@ -2891,7 +2893,16 @@ public class ConcourseEditorTest {
 				"→ skip_ssl_verification",
 				"→ tag_filter",
 				"→ uri",
-				"→ username"
+				"→ username",
+				// For the top-level context:
+				"← groups",
+				"← jobs",
+				"← resource_types",
+				// For the 'next job' context:
+				"← - check_every",
+				"← - name",
+				"← - source",
+				"← - type"
 		);
 
 		editor.assertCompletionWithLabel("check_every",
@@ -2965,9 +2976,9 @@ public class ConcourseEditorTest {
 				"max_in_flight",
 				"serial",
 				"serial_groups",
-				"name",
-				"plan",
-				"public",
+				//"name", exists 
+				//"plan", exists
+				//"public", exists
 				//Completions with '-'
 				"- aggregate",
 				"- do",
@@ -2989,7 +3000,18 @@ public class ConcourseEditorTest {
 				"→ privileged",
 				"→ tags",
 				"→ timeout",
-				"→ task"
+				//"→ task" exists
+				"← groups\n" + 
+				"← resource_types\n" + 
+				"← resources\n" + 
+				"← - build_logs_to_retain\n" + 
+				"← - disable_manual_trigger\n" + 
+				"← - max_in_flight\n" + 
+				"← - name\n" + 
+				"← - plan\n" + 
+				"← - public\n" + 
+				"← - serial\n" + 
+				"← - serial_groups"
 			);
 	}
 
@@ -3375,7 +3397,6 @@ public class ConcourseEditorTest {
 		);
 	}
 	
-	@Ignore // Doesn't work yet. Enable once implemented.
 	@Test public void relaxedContentAssistLessSpaces() throws Exception {
 		Editor editor;
 		
@@ -3429,7 +3450,7 @@ public class ConcourseEditorTest {
 				"    <*>\n" +
 				"    trigger: true\n"
 		);
-		editor.assertCompletions("blah");
+		editor.assertNoCompletionsWithLabel(label -> label.startsWith(Unicodes.LEFT_ARROW+" "));;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEDENTED_PROPOSAL;
 import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_INDENTED_PROPOSAL;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Unicodes;
@@ -49,6 +52,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class YamlCompletionEngine implements ICompletionEngine {
+	
+	Pattern SPACES = Pattern.compile("[ ]+");
 
 	final static Logger logger = LoggerFactory.getLogger(YamlCompletionEngine.class);
 
@@ -117,9 +122,9 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			for (ICompletionProposal p : completions) {
 				ICompletionProposal p_fixed = null;
 				if (p.getLabel().startsWith("- ")) {
-					p_fixed = indentFix(p, dashyIndent - baseIndent, contextNode);
+					p_fixed = indentFix(p, dashyIndent - baseIndent, currentNode, contextNode);
 				} else {
-					p_fixed = indentFix(p, plainIndent - baseIndent, contextNode);
+					p_fixed = indentFix(p, plainIndent - baseIndent, currentNode, contextNode);
 				}
 				if (p_fixed!=null) {
 					transformed.add(p_fixed);
@@ -130,14 +135,31 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
-	protected ICompletionProposal indentFix(ICompletionProposal p, int fixIndentBy, SNode contextNode) {
+	protected ICompletionProposal indentFix(ICompletionProposal p, int fixIndentBy, SNode currentNode, SNode contextNode) {
 		if (fixIndentBy==0) {
 			return p;
-		} else if (fixIndentBy>0 && isExtraIndentRelaxable(contextNode)) {
-			return indented(p, Strings.repeat(" ", fixIndentBy));
+		} else if (fixIndentBy>0) {
+			if (isExtraIndentRelaxable(contextNode)) {
+				return indented(p, Strings.repeat(" ", fixIndentBy));
+			}
 		} else { // fixIndentBy < 0 
-			return null;
+			if (isLesserIndentRelaxable(currentNode, contextNode)) {
+				return dedented(p, -fixIndentBy, contextNode.getDocument());
+			}
 		}
+		return null;
+	}
+
+	private boolean isLesserIndentRelaxable(final SNode currentNode, final SNode contextNode) {
+		SChildBearingNode parent = currentNode.getParent();
+		while (parent!=null && parent!=contextNode) {
+			SNode lastChild = parent.getLastRealChild();
+			if (lastChild!=null && lastChild.getStart()>=currentNode.getNodeEnd()) {
+				return false;
+			}
+			parent = parent.getParent();
+		}
+		return true;
 	}
 
 	/**
@@ -159,6 +181,39 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				? contextNode.getIndent() 
 				: contextNode.getIndent() + YamlIndentUtil.INDENT_BY;
 	}
+
+	public ICompletionProposal dedented(ICompletionProposal proposal, int numSpacesToRemove, IDocument doc) {
+		Assert.isLegal(numSpacesToRemove>0);
+		int spacesEnd = proposal.getTextEdit().getFirstEditStart();
+		int spacesStart = spacesEnd-numSpacesToRemove;
+		int numArrows = numSpacesToRemove / YamlIndentUtil.INDENT_BY;
+		String spaces = new DocumentRegion(doc, spacesStart, spacesEnd).toString();
+		if (spaces.length()==numSpacesToRemove && SPACES.matcher(spaces).matches()) {
+			ScoreableProposal transformed = new TransformedCompletion(proposal) {
+				@Override public String tranformLabel(String originalLabel) {
+					return Strings.repeat(Unicodes.LEFT_ARROW+" ", numArrows)  + originalLabel;
+				}
+				@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
+					originalEdit.firstDelete(spacesStart, spacesEnd);
+					return originalEdit;
+				}
+				@Override
+				public String getFilterText() {
+					//If we don't add the spaces, vscode won't show the completions.
+					// Presumably this is because it matches the filtter text to the text it thinks its going
+					// to replace. Since we are replacing these removed spaces, they must be part of the filtertext
+					return spaces + super.getFilterText();
+				}
+			};
+			transformed.deemphasize(DEEMP_DEDENTED_PROPOSAL*numArrows);
+			return transformed;
+		} 
+		// we can't dedent the proposal by the requested amount of space. So err on the safe
+		// side and ignore the proposal. (Otherwise me might end up deleting non-space chars
+		// in our attempt to de-dent.)
+		return null;
+	}
+
 
 	public ICompletionProposal indented(ICompletionProposal proposal, String indentStr) {
 		ScoreableProposal transformed = new TransformedCompletion(proposal) {

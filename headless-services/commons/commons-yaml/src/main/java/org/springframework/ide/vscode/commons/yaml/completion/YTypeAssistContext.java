@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_EXISTS;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +41,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
@@ -132,17 +129,18 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 								query, p, score, edits, typeUtil)
 						);
 					} else {
-						//property already defined
-						// instead of filtering, navigate to the place where its defined.
-						deleteQueryAndLine(doc, query, queryOffset, edits);
-						//Cast to SChildBearingNode cannot fail because otherwise definedProps would be the empty set.
-						edits.createPath((SChildBearingNode) contextNode, relativePath, "");
-						proposals.add(
-							completionFactory().beanProperty(doc.getDocument(),
-								contextPath.toPropString(), getType(),
-								query, p, score, edits, typeUtil)
-							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
-						);
+						// This piece below deactivated becuase moving cursor like this doesn't work in vscode
+//						//property already defined
+//						// instead of filtering, navigate to the place where its defined.
+//						deleteQueryAndLine(doc, query, queryOffset, edits);
+//						//Cast to SChildBearingNode cannot fail because otherwise definedProps would be the empty set.
+//						edits.createPath((SChildBearingNode) contextNode, relativePath, "");
+//						proposals.add(
+//							completionFactory().beanProperty(doc.getDocument(),
+//								contextPath.toPropString(), getType(),
+//								query, p, score, edits, typeUtil)
+//							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
+//						);
 					}
 				}
 			}

@@ -447,6 +447,10 @@ public class DocumentEdits implements ProposalApplier {
 		}
 	}
 
+	public void firstDelete(int start, int end) {
+		edits.add(0, new Deletion(grabCursor, start, end));
+	}
+
 	/**
 	 * Find first non-whitepace insertion edit and transform its contents.
 	 * @param transformFun receives the insertion text of the target edit and the offset of the first non-whitespace character
@@ -478,5 +482,4 @@ public class DocumentEdits implements ProposalApplier {
 	public void freezeCursor() {
 		this.grabCursor = false;
 	}
-
 }

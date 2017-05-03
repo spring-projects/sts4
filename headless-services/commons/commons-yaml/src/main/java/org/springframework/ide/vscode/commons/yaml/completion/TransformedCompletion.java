@@ -27,7 +27,7 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 	protected final ICompletionProposal original;
 
 	private DocumentEdits transformedEdit = null;
-
+	
 	public TransformedCompletion(ICompletionProposal proposal) {
 		this.original = proposal;
 	}
@@ -72,5 +72,10 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 			return ((ScoreableProposal) original).getScore();
 		}
 		return 0;
+	}
+	
+	@Override
+	public String getFilterText() {
+		return original.getFilterText();
 	}
 }

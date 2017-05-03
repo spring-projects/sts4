@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -574,6 +575,15 @@ public class YamlStructureParser {
 
 		public SNode getFirstRealChild() {
 			for (SNode c : getChildren()) {
+				if (c.getIndent()>=0) {
+					return c;
+				}
+			}
+			return null;
+		}
+
+		public SNode getLastRealChild() {
+			for (SNode c : Lists.reverse(getChildren())) {
 				if (c.getIndent()>=0) {
 					return c;
 				}
