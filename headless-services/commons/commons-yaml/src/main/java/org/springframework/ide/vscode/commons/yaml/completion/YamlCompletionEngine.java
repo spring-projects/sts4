@@ -150,7 +150,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-	private boolean isLesserIndentRelaxable(final SNode currentNode, final SNode contextNode) {
+	protected boolean isLesserIndentRelaxable(final SNode currentNode, final SNode contextNode) {
 		SChildBearingNode parent = currentNode.getParent();
 		while (parent!=null && parent!=contextNode) {
 			SNode lastChild = parent.getLastRealChild();
