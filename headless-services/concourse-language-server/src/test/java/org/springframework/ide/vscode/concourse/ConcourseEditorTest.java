@@ -3535,7 +3535,9 @@ public class ConcourseEditorTest {
 				"      resource: version\n" +
 				"    - put: source-repo\n"
 		);
-		editor.assertProblems(/*NONE*/);
+		editor.assertProblems(
+				"not-used|Unused 'Resource'"
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
