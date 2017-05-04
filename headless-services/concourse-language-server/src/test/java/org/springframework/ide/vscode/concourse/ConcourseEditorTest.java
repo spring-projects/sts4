@@ -2109,7 +2109,7 @@ public class ConcourseEditorTest {
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
-		
+
 
 		//with explicit 'driver: s3'
 		editor = harness.newEditor(
@@ -3024,7 +3024,7 @@ public class ConcourseEditorTest {
 				"max_in_flight",
 				"serial",
 				"serial_groups",
-				//"name", exists 
+				//"name", exists
 				//"plan", exists
 				//"public", exists
 				//Completions with '-'
@@ -3049,16 +3049,16 @@ public class ConcourseEditorTest {
 				"→ tags",
 				"→ timeout",
 				//"→ task" exists
-				"← groups\n" + 
-				"← resource_types\n" + 
-				"← resources\n" + 
-				"← - build_logs_to_retain\n" + 
-				"← - disable_manual_trigger\n" + 
-				"← - max_in_flight\n" + 
-				"← - name\n" + 
-				"← - plan\n" + 
-				"← - public\n" + 
-				"← - serial\n" + 
+				"← groups\n" +
+				"← resource_types\n" +
+				"← resources\n" +
+				"← - build_logs_to_retain\n" +
+				"← - disable_manual_trigger\n" +
+				"← - max_in_flight\n" +
+				"← - name\n" +
+				"← - plan\n" +
+				"← - public\n" +
+				"← - serial\n" +
 				"← - serial_groups"
 			);
 	}
@@ -3444,10 +3444,10 @@ public class ConcourseEditorTest {
 				"    - <*>"
 		);
 	}
-	
+
 	@Test public void relaxedContentAssistLessSpaces() throws Exception {
 		Editor editor;
-		
+
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- name: build-docker-image\n" +
@@ -3457,26 +3457,7 @@ public class ConcourseEditorTest {
 				"    trigger: true\n" +
 				"    <*>"
 		);
-		editor.assertCompletionWithLabel("← - put", 
-				"jobs:\n" +
-				"- name: build-docker-image\n" +
-				"  serial: true\n" +
-				"  plan:\n" +
-				"  - get: docker-git\n" +
-				"    trigger: true\n" +
-				"  - put: <*>"
-		);
-		
-		editor = harness.newEditor(
-				"jobs:\n" +
-				"- name: build-docker-image\n" +
-				"  serial: true\n" +
-				"  plan:\n" +
-				"  - get: docker-git\n" +
-				"    trigger: true\n" +
-				"    pu<*>"
-		);
-		editor.assertCompletionWithLabel("← - put", 
+		editor.assertCompletionWithLabel("← - put",
 				"jobs:\n" +
 				"- name: build-docker-image\n" +
 				"  serial: true\n" +
@@ -3486,7 +3467,26 @@ public class ConcourseEditorTest {
 				"  - put: <*>"
 		);
 
-		// De-indentation relaxation should not be allowed if they cause the context node to be split. 
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"    pu<*>"
+		);
+		editor.assertCompletionWithLabel("← - put",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - get: docker-git\n" +
+				"    trigger: true\n" +
+				"  - put: <*>"
+		);
+
+		// De-indentation relaxation should not be allowed if they cause the context node to be split.
 		// So in this example de-indented completions shouldn't be suggested.
 		editor = harness.newEditor(
 				"jobs:\n" +
@@ -3502,40 +3502,42 @@ public class ConcourseEditorTest {
 
 	@Test public void reconcileUnusedResources() throws Exception {
 		Editor editor;
-		
+
 		editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: version\n" + 
-				"  type: semver\n" + 
-				"- name: source-repo\n" + 
-				"  type: git\n" + 
-				"jobs:\n" + 
-				"- name: build-it\n" + 
-				"  plan:\n" + 
-				"  - get: version\n" 
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"- name: source-repo\n" +
+				"  type: git\n" +
+				"jobs:\n" +
+				"- name: build-it\n" +
+				"  plan:\n" +
+				"  - get: version\n"
 		);
 		editor.assertProblems("source-repo|Unused 'Resource'");
-		
+
 		editor = harness.newEditor(
-				"resources:\n" + 
-				"- name: version\n" + 
-				"  type: semver\n" + 
-				"- name: source-repo\n" + 
-				"  type: git\n" + 
-				"  source:\n" + 
-				"    branch: master\n" + 
-				"    uri: git@github.com/blah\n" + 
-				"jobs:\n" + 
-				"- name: build-it\n" + 
-				"  plan:\n" + 
-				"  - aggregate:\n" + 
-				"    - get: the-version\n" + 
-				"      resource: version\n" + 
-				"    - put: source-repo\n" 
+				"resources:\n" +
+				"- name: not-used\n" +
+				"  type: pool\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"- name: source-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    branch: master\n" +
+				"    uri: git@github.com/blah\n" +
+				"jobs:\n" +
+				"- name: build-it\n" +
+				"  plan:\n" +
+				"  - aggregate:\n" +
+				"    - get: not-used\n" +  // <-- This isn't a real use but looks like one!
+				"      resource: version\n" +
+				"    - put: source-repo\n"
 		);
 		editor.assertProblems(/*NONE*/);
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
