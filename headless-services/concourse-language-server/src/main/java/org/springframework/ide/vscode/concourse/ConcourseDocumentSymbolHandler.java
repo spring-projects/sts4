@@ -61,7 +61,7 @@ public class ConcourseDocumentSymbolHandler implements DocumentSymbolHandler {
 	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
 		Builder<SymbolInformation> builder = ImmutableList.builder();
 		TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
-		for (Entry<Node, YType> entry : astTypeCache.getNodes(params.getTextDocument().getUri()).entrySet()) {
+		for (Entry<Node, YType> entry : astTypeCache.getNodeTypes(params.getTextDocument().getUri()).getTypes().entrySet()) {
 			if (definitionTypes.contains(entry.getValue())) {
 				try {
 					builder.add(createSymbol(doc, entry.getKey(), entry.getValue()));

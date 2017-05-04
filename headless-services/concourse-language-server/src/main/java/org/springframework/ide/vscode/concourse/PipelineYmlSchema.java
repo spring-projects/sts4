@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.concourse;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -23,7 +22,6 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -101,7 +99,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
 			.parseWith(ValueParsers.integerAtLeast(1));
 
-	public final YAtomicType t_resource_name;
+	public final AbstractType t_resource_name;
 	public final AbstractType t_job_name;
 	public final YAtomicType t_resource_type_name;
 	public final YType t_mime_type = f.yatomic("MimeType")
@@ -191,8 +189,9 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		).require(models::passedJobHasInteractionWithResource);
 
-		YAtomicType resourceNameDef = f.yatomic("Resource Name");
-		resourceNameDef.parseWith(ConcourseValueParsers.resourceNameDef(models));
+		YAtomicType t_resource_name_def = f.yatomic("Resource Name");
+		t_resource_name_def.parseWith(ConcourseValueParsers.resourceNameDef(models));
+		t_resource_name_def.require(models.isUsed(t_resource_name, "Resource"));
 		YAtomicType jobNameDef = f.yatomic("Job Name");
 		jobNameDef.parseWith(ConcourseValueParsers.jobNameDef(models));
 		YAtomicType resourceTypeNameDef = f.yatomic("ResourceType Name");
@@ -203,7 +202,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		);
 
 		AbstractType t_resource = f.ybean("Resource");
-		addProp(t_resource, "name", resourceNameDef).isRequired(true);
+		addProp(t_resource, "name", t_resource_name_def).isRequired(true);
 		addProp(t_resource, "type", t_resource_type_name).isRequired(true);
 		addProp(t_resource, "source", resourceSource);
 		addProp(t_resource, "check_every", t_duration);
@@ -372,7 +371,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		definitionTypes = ImmutableList.of(
 				jobNameDef,
 				resourceTypeNameDef,
-				resourceNameDef
+				t_resource_name_def
 		);
 
 		initializeDefaultResourceTypes();

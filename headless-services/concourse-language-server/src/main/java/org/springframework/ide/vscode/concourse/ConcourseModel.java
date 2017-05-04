@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -44,9 +46,11 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.util.Streams;
+import org.springframework.ide.vscode.concourse.ASTTypeCache.NodeTypes;
 import org.springframework.ide.vscode.concourse.util.CollectorUtil;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
@@ -65,6 +69,33 @@ import com.google.common.collect.Multiset;
  * and completion engine).
  */
 public class ConcourseModel {
+
+	/**
+	 * Verification of a 'isUsed' contraint. Basically this consults the ast-type cache, (which should be
+	 * fully populated at the end reconciling) to see if the nodes of any nodes of a given type (representing
+	 * a 'use' of something, contain the value of the current node (which is supposed to be a definition of
+	 * that same type of something).
+	 */
+	public Constraint isUsed(YType refType, String entityTypeName) {
+		getAstTypeCache().addInterestingType(refType); //ensure the type is tracked in the type-cache
+		return new Constraint() {
+			@Override
+			public void verify(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
+				String defName = NodeUtil.asScalar(node);
+				if (StringUtil.hasText(defName)) { //Avoid silly 'not used' errors for empty names (will have an other error already).
+					NodeTypes nodeTypes = getAstTypeCache().getNodeTypes(dc.getDocument().getUri());
+					if (nodeTypes!=null) {
+						Optional<Node> reference = nodeTypes.getNodes(refType).stream()
+							.filter(refNode -> defName.equals(NodeUtil.asScalar(refNode)))
+							.findAny();
+						if (!reference.isPresent()) {
+							problems.accept(YamlSchemaProblems.schemaProblem("Unused '"+entityTypeName+"'", node));
+						}
+					}
+				}
+			}
+		};
+	}
 
 	/**
 	 * Verification of contraint: a job used in the 'passed' attribute of a step

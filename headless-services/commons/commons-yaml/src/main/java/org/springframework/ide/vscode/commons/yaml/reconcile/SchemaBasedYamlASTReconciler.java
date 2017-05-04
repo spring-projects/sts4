@@ -64,6 +64,12 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private final YTypeUtil typeUtil;
 	private final ITypeCollector typeCollector;
 	private final YamlQuickfixes quickfixes;
+	
+	private List<Runnable> delayedConstraints = new ArrayList<>(); 
+		// keeps track of dynamic constraints discovered during reconciler walk
+		// the constraints are validated at the end of the walk rather than during the walk.
+		// This facilitates constraints that depend on, for example, the contents of the ast type cache being
+		// populated prior to checking.
 
 	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema, ITypeCollector typeCollector, YamlQuickfixes quickfixes) {
 		this.problems = problems;
@@ -76,6 +82,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	@Override
 	public void reconcile(YamlFileAST ast) {
 		if (typeCollector!=null) typeCollector.beginCollecting(ast);
+		delayedConstraints.clear();
 		try {
 			List<Node> nodes = ast.getNodes();
 			IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
@@ -102,6 +109,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			if (typeCollector!=null) {
 				typeCollector.endCollecting(ast);
 			}
+			verifyDelayedConstraints();
 		}
 	}
 
@@ -276,11 +284,19 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		//Check for other constraints attached to the type
 		for (Constraint constraint : typeUtil.getConstraints(type)) {
 			if (constraint!=null) {
-				constraint.verify(dc, parent, node, type, problems);
+				delayedConstraints.add(() -> {
+					constraint.verify(dc, parent, node, type, problems);
+				});
 			}
 		}
 	}
 
+	private void verifyDelayedConstraints() {
+		for (Runnable runnable : delayedConstraints) {
+			runnable.run();
+		}
+		delayedConstraints.clear();
+	}
 
 	protected NodeId getNodeId(Node node) {
 		NodeId id = node.getNodeId();

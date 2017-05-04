@@ -54,7 +54,10 @@ public class ConcourseEditorTest {
 				"    username: someone\n" +
 				"# Confuse"
 		);
-		Diagnostic problem = editor.assertProblems("-|'type' is required").get(0);
+		Diagnostic problem = editor.assertProblems(
+				"-|'type' is required",
+				"foo|Unused"
+		).get(0);
 		CodeAction quickfix = editor.assertCodeAction(problem);
 		assertEquals("Add property 'type'", quickfix.getLabel());
 		quickfix.perform();
@@ -77,7 +80,9 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    username: someone\n"
 		);
-		Diagnostic problem = editor.assertProblems("source|[branch, pool, uri] are required").get(0);
+		Diagnostic problem = editor.assertProblems(
+				"foo|Unused",
+				"source|[branch, pool, uri] are required").get(1);
 		CodeAction quickfix = editor.assertCodeAction(problem);
 		assertEquals("Add properties: [branch, pool, uri]", quickfix.getLabel());
 		quickfix.perform();
@@ -600,7 +605,10 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"sts4|Duplicate resource name",
-				"sts4|Duplicate resource name"
+				"sts4|Unused",
+				"utils|Unused",
+				"sts4|Duplicate resource name",
+				"sts4|Unused"
 		);
 	}
 
@@ -649,9 +657,9 @@ public class ConcourseEditorTest {
 		);
 		{
 			List<Diagnostic> problems = editor.assertProblems(
+				"config|[platform, run] are required",
 				"config|Only one of [config, file]",
 				"config|One of [image_resource, image]",
-				"config|[platform, run] are required",
 				"file|Only one of [config, file]"
 			);
 			//All of the problems in this example are property contraint violations! So all should be warnings.
@@ -753,7 +761,9 @@ public class ConcourseEditorTest {
 
 		editor.assertProblems(
 				"resources|Duplicate key",
+				"my-repo|Unused 'Resource'",
 				"resources|Duplicate key",
+				"your-repo|Unused 'Resource'",
 				"type|Duplicate key",
 				"type|Duplicate key"
 		);
@@ -888,7 +898,9 @@ public class ConcourseEditorTest {
 				"    days:\n" +
 				"    - Thursday\n"
 		);
-		editor.assertProblems(/*NONE*/);
+		editor.assertProblems(
+				"every5minutes|Unused"
+		);
 
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -904,6 +916,7 @@ public class ConcourseEditorTest {
 				"    - Someday\n"
 		);
 		editor.assertProblems(
+				"every5minutes|Unused",
 				"some-location|Unknown 'Location'",
 				"the-start-time|not a valid 'Time'",
 				"the-stop-time|not a valid 'Time'",
@@ -956,6 +969,7 @@ public class ConcourseEditorTest {
 				"    gpg_keyserver: hkp://somekeyserver.net"
 		);
 		editor.assertProblems(
+				"sts4-out|Unused",
 				"bogus|Unknown property",
 				"not-a-list|Expecting a 'Sequence'",
 				"also-not-a-list|Expecting a 'Sequence'",
@@ -1353,7 +1367,10 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- name: foo"
 		);
-		editor.assertProblems("-^ name: foo|'type' is required");
+		editor.assertProblems(
+				"-^ name: foo|'type' is required",
+				"foo|Unused"
+		);
 
 		//Both name and type missing:
 		editor = harness.newEditor(
@@ -1398,7 +1415,10 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    branch: master"
 		);
-		editor.assertProblems("source|'uri' is required");
+		editor.assertProblems(
+				"foo|Unused",
+				"source|'uri' is required"
+		);
 
 		//addProp(group, "name", t_ne_string).isRequired(true);
 		editor = harness.newEditor(
@@ -1455,7 +1475,10 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    tag: latest\n"
 		);
-		editor.assertProblems("source|'repository' is required");
+		editor.assertProblems(
+			"my-docker-image|Unused 'Resource'",
+			"source|'repository' is required"
+		);
 
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -1490,6 +1513,7 @@ public class ConcourseEditorTest {
 				"      bogus_client_cert_prop: bad\n"
 		);
 		editor.assertProblems(
+				"my-docker-image|Unused 'Resource'",
 				"no-list|Expecting a 'Sequence'",
 				"bogus_ca_certs_prop|Unknown property", //ca_certs
 				"bogus_client_cert_prop|Unknown property" //client_certs
@@ -1618,8 +1642,9 @@ public class ConcourseEditorTest {
 				"    access_key_id: the-key"
 		);
 		editor.assertProblems(
-				"source|One of [regexp, versioned_file] is required",
-				"source|'bucket' is required"
+				"s3-snapshots|Unused 'Resource'",
+				"source|'bucket' is required",
+				"source|One of [regexp, versioned_file] is required"
 		);
 
 		editor = harness.newEditor(
@@ -1642,6 +1667,7 @@ public class ConcourseEditorTest {
 				"    versioned_file: path/to/file.tar.gz\n"
 		);
 		editor.assertProblems(
+				"s3-snapshots|Unused 'Resource'",
 				"bogus-region|unknown 'S3Region'",
 				"is-private|'boolean'",
 				"no_ssl_checking|'boolean'",
@@ -1809,6 +1835,7 @@ public class ConcourseEditorTest {
 				"    private_key: stuff"
 		);
 		editor.assertProblems(
+				"swimming-pool|Unused",
 				"source|[branch, pool, uri] are required"
 		);
 
@@ -1831,6 +1858,7 @@ public class ConcourseEditorTest {
 				"    retry_delay: retry-after\n"
 		);
 		editor.assertProblems(
+				"the--locks|Unused",
 				"retry-after|'Duration'"
 		);
 
@@ -1908,7 +1936,10 @@ public class ConcourseEditorTest {
 				"  type: semver\n" +
 				"  source: an-atom"
 		);
-		editor.assertProblems("an-atom|Expecting a 'Map'");
+		editor.assertProblems(
+				"version|Unused 'Resource'",
+				"an-atom|Expecting a 'Map'"
+		);
 	}
 
 	@Test public void semverResourceSourceReconcileRequiredProps() throws Exception {
@@ -1923,6 +1954,7 @@ public class ConcourseEditorTest {
 				"    driver: s3"
 		);
 		editor.assertProblems(
+				"version|Unused",
 				"source|[access_key_id, bucket, key, secret_access_key] are required"
 		);
 
@@ -1933,6 +1965,7 @@ public class ConcourseEditorTest {
 				"  source: {}"
 		);
 		editor.assertProblems(
+				"version|Unused",
 				"source|[access_key_id, bucket, key, secret_access_key] are required"
 		);
 
@@ -1945,6 +1978,7 @@ public class ConcourseEditorTest {
 				"    driver: git"
 		);
 		editor.assertProblems(
+				"version|Unused",
 				"source|[branch, file, uri] are required"
 		);
 
@@ -1957,6 +1991,7 @@ public class ConcourseEditorTest {
 				"    driver: swift"
 		);
 		editor.assertProblems(
+				"version|Unused",
 				"source|'openstack' is required"
 		);
 	}
@@ -1969,7 +2004,10 @@ public class ConcourseEditorTest {
 				"  source:\n" +
 				"    driver: bad-driver"
 		);
-		editor.assertProblems("bad-driver|'SemverDriver'");
+		editor.assertProblems(
+				"version|Unused",
+				"bad-driver|'SemverDriver'"
+		);
 	}
 
 	@Test public void semverGitResourceSourceContentAssist() throws Exception {
@@ -2031,6 +2069,7 @@ public class ConcourseEditorTest {
 				"    bogus: bad"
 		);
 		editor.assertProblems(
+				"version|Unused",
 				"bogus|Unknown property"
 		);
 
@@ -2065,10 +2104,12 @@ public class ConcourseEditorTest {
 				"    bogus-prop: bad"
 		);
 		editor.assertProblems(
+				"version|Unused 'Resource'",
 				"bogus-region|'S3Region'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
+		
 
 		//with explicit 'driver: s3'
 		editor = harness.newEditor(
@@ -2088,6 +2129,7 @@ public class ConcourseEditorTest {
 				"    bogus-prop: bad"
 		);
 		editor.assertProblems(
+				"version|Unused 'Resource'",
 				"bogus-region|'S3Region'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
@@ -2117,7 +2159,7 @@ public class ConcourseEditorTest {
 				"       item_name: flubber-blub\n" +
 				"       region_name: us-west-1\n"
 		);
-		editor.assertProblems(/*NONE*/);
+		editor.assertProblems("version|Unused 'Resource'");
 		editor.assertHoverContains("openstack", "All openstack configuration");
 	}
 
@@ -2435,7 +2477,10 @@ public class ConcourseEditorTest {
 					"- name: the-resource\n" +
 					"  type: "+badName
 			);
-			editor.assertProblems(badName+"|Resource Type does not exist");
+			editor.assertProblems(
+				"the-resource|Unused 'Resource'",
+				badName+"|Resource Type does not exist"
+			);
 		}
 
 		//All the good names are accepted:
@@ -2446,7 +2491,9 @@ public class ConcourseEditorTest {
 					"- name: the-resource\n" +
 					"  type: "+goodName
 			);
-			editor.assertProblems(/*None*/);
+			editor.assertProblems(/*None*/
+				"the-resource|Unused 'Resource'"
+			);
 		}
 	}
 
@@ -2811,6 +2858,7 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertProblems(
+				"docker-image|Unused",
 				"config|One of [image_resource, image] is required"
 		);
 	}
@@ -3438,9 +3486,8 @@ public class ConcourseEditorTest {
 				"  - put: <*>"
 		);
 
-		//Should be de-indentation relaxation. These should not be
-		// allowed if they cause the context node to be split. So in this example
-		// de-indented completions shouldn't be suggested.
+		// De-indentation relaxation should not be allowed if they cause the context node to be split. 
+		// So in this example de-indented completions shouldn't be suggested.
 		editor = harness.newEditor(
 				"jobs:\n" +
 				"- name: build-docker-image\n" +
@@ -3453,6 +3500,42 @@ public class ConcourseEditorTest {
 		editor.assertNoCompletionsWithLabel(label -> label.startsWith(Unicodes.LEFT_ARROW+" "));;
 	}
 
+	@Test public void reconcileUnusedResources() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: version\n" + 
+				"  type: semver\n" + 
+				"- name: source-repo\n" + 
+				"  type: git\n" + 
+				"jobs:\n" + 
+				"- name: build-it\n" + 
+				"  plan:\n" + 
+				"  - get: version\n" 
+		);
+		editor.assertProblems("source-repo|Unused 'Resource'");
+		
+		editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: version\n" + 
+				"  type: semver\n" + 
+				"- name: source-repo\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    branch: master\n" + 
+				"    uri: git@github.com/blah\n" + 
+				"jobs:\n" + 
+				"- name: build-it\n" + 
+				"  plan:\n" + 
+				"  - aggregate:\n" + 
+				"    - get: the-version\n" + 
+				"      resource: version\n" + 
+				"    - put: source-repo\n" 
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+	
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

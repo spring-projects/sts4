@@ -74,7 +74,7 @@ public class ConcourseValueParsers {
 					//okay
 					return input;
 				}
-				throw new IllegalArgumentException("Duplicate "+typeName+" '"+input+"'");
+				throw new ValueParseException("Duplicate "+typeName+" '"+input+"'");
 			};
 		};
 	};
