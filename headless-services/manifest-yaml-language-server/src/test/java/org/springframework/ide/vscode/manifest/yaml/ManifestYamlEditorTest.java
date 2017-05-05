@@ -1235,6 +1235,23 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
+	public void buildbackContentAssistNoTargets() throws Exception {
+		ClientRequests cfClient = cloudfoundry.client;
+
+		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
+		when(buildPack.getName()).thenReturn("java_buildpack");
+		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
+
+		String title = "No targets";
+		String description = "Use CLI to login";
+		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(title + ": " + description));
+
+		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: <*>").get(0);
+		assertEquals(title, completion.getLabel());
+		assertEquals(description, completion.getDocumentation());
+	}
+
+	@Test
 	public void domainContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFDomain domain = Mockito.mock(CFDomain.class);
