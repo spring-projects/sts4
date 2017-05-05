@@ -82,7 +82,7 @@ public class ManifestYmlSchemaTest {
 			"no-route",
 			"path",
 			"random-route",
-			"routes",
+//			"routes",
 			"services",
 			"stack",
 			"timeout"

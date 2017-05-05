@@ -52,7 +52,7 @@ public class ManifestYmlSchema implements YamlSchema {
 	public final AbstractType t_route_string;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
-		"name", "host", "hosts"
+		"name", "host", "hosts", "routes"
 	);
 
 	@Override

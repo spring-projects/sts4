@@ -291,8 +291,8 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"random-route: <*>",
 				// ---------------
-				"routes:\n"+
-				"- route: <*>",
+//				"routes:\n"+
+//				"- route: <*>",
 				// ---------------
 				"services:\n"+
 				"- <*>",
