@@ -207,7 +207,6 @@ public class YamlStructureParserTest {
 		);
 	}
 
-
 	@Test public void testSequenceBasic() throws Exception {
 		MockYamlEditor editor;
 
@@ -592,6 +591,41 @@ public class YamlStructureParserTest {
 		assertEquals(
 				"KEY(4): key: lol\n",
 				path.traverse((SNode)root).toString());
+	}
+
+	@Test public void testDedentedRawNode() throws Exception {
+		MockYamlEditor editor = new MockYamlEditor(
+				"world:\n" +
+				"  europe:\n" +
+				"    france:\n" +
+				"      cheese\n" +
+				"    belgium:\n" +
+				"  beer\n" + //De-dented raw node, doesn't obviously belong to any node, but we associate it with closest 'structural' node
+				"  canada:\n" +
+				"    montreal: poutine\n" +
+				"    vancouver:\n" +
+				"      salmon\n" +
+				"moon:\n" +
+				"  moonbase-alfa:\n" +
+				"    moonstone\n"
+		);
+		assertParseOneDoc(editor, ////////////////
+				"DOC(0): ", 
+				"  KEY(0): world:", 
+				"    KEY(2): europe:", 
+				"      KEY(4): france:", 
+				"        RAW(6): cheese", 
+				"      KEY(4): belgium:", 
+				"        RAW(2): beer", 
+				"    KEY(2): canada:", 
+				"      KEY(4): montreal: poutine", 
+				"      KEY(4): vancouver:", 
+				"        RAW(6): salmon", 
+				"  KEY(0): moon:", 
+				"    KEY(2): moonbase-alfa:", 
+				"      RAW(4): moonstone", 
+				"      RAW(-1):"
+		);
 	}
 
 	@Test public void testTreeEnd() throws Exception {

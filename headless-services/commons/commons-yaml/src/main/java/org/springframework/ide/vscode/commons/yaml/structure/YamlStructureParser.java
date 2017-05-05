@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -656,7 +657,6 @@ public class YamlStructureParser {
 			if (indent==-1) {
 				createRawNode(parent, line);
 			} else {
-				parent = dropTo(parent, indent);
 				parent = parseLine(parent, line, true);
 			}
 		}
@@ -668,19 +668,25 @@ public class YamlStructureParser {
 			parent = createDocNode(parent.getRoot(), line);
 		} else if (line.matches(SIMPLE_KEY_LINE)) {
 			int currentIndent = line.getIndent();
-			while (currentIndent==parent.getIndent() && parent.getNodeType()!=SNodeType.DOC) {
-				parent = parent.getParent();
-			}
+			parent = dropToLevel(parent, (node) -> node.getIndent()<currentIndent);
 			parent = createKeyNode(parent, line);
 		} else if (line.matches(SEQ_LINE)) {
 			int currentIndent = line.getIndent();
-			while (currentIndent==parent.getIndent() && parent.getNodeType()==SNodeType.SEQ) {
-				parent = parent.getParent();
-			}
+			parent = dropToLevel(parent, (node) -> {
+				int indent = node.getIndent();
+				return indent < currentIndent || node.getNodeType()!=SNodeType.SEQ && indent<=currentIndent;
+			});
 			parent = createSeqNode(parent, line);
 			parent = parseLine(parent, line.moveIndentMark(2), false); //parse from just after "- " for nested seq and key nodes
 		} else if (createRawNode) {
 			createRawNode(parent, line);
+		}
+		return parent;
+	}
+
+	private SChildBearingNode dropToLevel(SChildBearingNode parent, Predicate<SNode> level) {
+		while (parent.getNodeType()!=SNodeType.DOC && parent.getSegment()!=null && !level.test(parent)) {
+			parent = parent.getParent();
 		}
 		return parent;
 	}
@@ -712,13 +718,6 @@ public class YamlStructureParser {
 		return new SRawNode(parent, line.getDocument(), indent, start, end);
 	}
 
-
-	private SChildBearingNode dropTo(SChildBearingNode node, int indent) {
-		while (indent<node.getIndent()) {
-			node = node.getParent();
-		}
-		return node;
-	}
 
 	public class SSeqNode extends SChildBearingNode {
 

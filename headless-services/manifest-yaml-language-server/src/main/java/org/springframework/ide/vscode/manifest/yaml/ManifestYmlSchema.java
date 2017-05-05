@@ -194,6 +194,7 @@ public class ManifestYmlSchema implements YamlSchema {
 			f.yprop("services", f.yseq(t_service)),
 			f.yprop("stack", t_stack),
 			f.yprop("timeout", t_pos_integer),
+
 			f.yprop(HEALTH_CHECK_TYPE_PROP, t_health_check_type),
 			f.yprop(HEALTH_CHECK_HTTP_ENDPOINT_PROP, t_ne_string)
 		};

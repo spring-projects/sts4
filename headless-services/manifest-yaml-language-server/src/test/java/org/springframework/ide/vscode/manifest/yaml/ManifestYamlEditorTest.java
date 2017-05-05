@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -316,74 +317,101 @@ public class ManifestYamlEditorTest {
 				"- <*>"
 		);
 		editor.assertCompletions(
+				"applications:\n" +
+				"- name: <*>"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  <*>"
+		);
+		editor.assertCompletions((c) -> !(c.getLabel().startsWith("- ") || c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")),
 				// ---------------
 				"applications:\n" +
-				"- buildpack: <*>",
+				"- name: foo\n" +
+				"  buildpack: <*>",
 				// ---------------
 				"applications:\n" +
-				"- command: <*>",
+				"- name: foo\n" +
+				"  command: <*>",
 				// ---------------
 				"applications:\n" +
-				"- disk_quota: <*>",
+				"- name: foo\n" +
+				"  disk_quota: <*>",
 				// ---------------
 				"applications:\n" +
-				"- domain: <*>",
+				"- name: foo\n" +
+				"  domain: <*>",
 				// ---------------
 				"applications:\n" +
-				"- domains:\n"+
+				"- name: foo\n" +
+				"  domains:\n"+
 				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"- env:\n"+
+				"- name: foo\n" +
+				"  env:\n"+
 				"    <*>",
 				// ---------------
 				"applications:\n" +
-				"- health-check-http-endpoint: <*>",
+				"- name: foo\n" +
+				"  health-check-http-endpoint: <*>",
 				// ---------------
 				"applications:\n" +
-				"- health-check-type: <*>",
+				"- name: foo\n" +
+				"  health-check-type: <*>",
 				// ---------------
 				"applications:\n" +
-				"- host: <*>",
+				"- name: foo\n" +
+				"  host: <*>",
 				// ---------------
 				"applications:\n" +
-				"- hosts:\n"+
+				"- name: foo\n" +
+				"  hosts:\n"+
 				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"- instances: <*>",
+				"- name: foo\n" +
+				"  instances: <*>",
 				// ---------------
 				"applications:\n" +
-				"- memory: <*>",
+				"- name: foo\n" +
+				"  memory: <*>",
 				// ---------------
 				"applications:\n" +
-				"- name: <*>",
+				"- name: foo\n" +
+				"  no-hostname: <*>",
 				// ---------------
 				"applications:\n" +
-				"- no-hostname: <*>",
+				"- name: foo\n" +
+				"  no-route: <*>",
 				// ---------------
 				"applications:\n" +
-				"- no-route: <*>",
+				"- name: foo\n" +
+				"  path: <*>",
 				// ---------------
 				"applications:\n" +
-				"- path: <*>",
+				"- name: foo\n" +
+				"  random-route: <*>",
 				// ---------------
 				"applications:\n" +
-				"- random-route: <*>",
-				// ---------------
-				"applications:\n" +
-				"- routes:\n"+
+				"- name: foo\n" +
+				"  routes:\n"+
 				"  - route: <*>",
 				// ---------------
 				"applications:\n" +
-				"- services:\n"+
+				"- name: foo\n" +
+				"  services:\n"+
 				"  - <*>",
 				// ---------------
 				"applications:\n" +
-				"- stack: <*>",
+				"- name: foo\n" +
+				"  stack: <*>",
 				// ---------------
 				"applications:\n" +
-				"- timeout: <*>"
+				"- name: foo\n" +
+				"  timeout: <*>"
 		);
 	}
 
@@ -391,7 +419,8 @@ public class ManifestYamlEditorTest {
 	public void completionDetailsAndDocs() throws Exception {
 		Editor editor = harness.newEditor(
 				"applications:\n" +
-				"- build<*>"
+				"- name: foo\n" +
+				"  build<*>"
 		);
 		editor.assertCompletionDetails("buildpack", "Buildpack", "If your application requires a custom buildpack");
 	}
@@ -837,72 +866,7 @@ public class ManifestYamlEditorTest {
 				"-<*>",
 				// ===>
 				"applications:\n" +
-				"- buildpack: <*>",
-				// ---------------
-				"applications:\n" +
-				"- command: <*>",
-				// ---------------
-				"applications:\n" +
-				"- disk_quota: <*>",
-				// ---------------
-				"applications:\n" +
-				"- domain: <*>",
-				// ---------------
-				"applications:\n" +
-				"- domains:\n"+
-				"  - <*>",
-				// ---------------
-				"applications:\n" +
-				"- env:\n"+
-				"    <*>",
-				// ---------------
-				"applications:\n" +
-				"- health-check-http-endpoint: <*>",
-				// ---------------
-				"applications:\n" +
-				"- health-check-type: <*>",
-				// ---------------
-				"applications:\n" +
-				"- host: <*>",
-				// ---------------
-				"applications:\n" +
-				"- hosts:\n"+
-				"  - <*>",
-				// ---------------
-				"applications:\n" +
-				"- instances: <*>",
-				// ---------------
-				"applications:\n" +
-				"- memory: <*>",
-				// ---------------
-				"applications:\n" +
-				"- name: <*>",
-				// ---------------
-				"applications:\n" +
-				"- no-hostname: <*>",
-				// ---------------
-				"applications:\n" +
-				"- no-route: <*>",
-				// ---------------
-				"applications:\n" +
-				"- path: <*>",
-				// ---------------
-				"applications:\n" +
-				"- random-route: <*>",
-				// ---------------
-				"applications:\n" +
-				"- routes:\n"+
-				"  - route: <*>",
-				// ---------------
-				"applications:\n" +
-				"- services:\n"+
-				"  - <*>",
-				// ---------------
-				"applications:\n" +
-				"- stack: <*>",
-				// ---------------
-				"applications:\n" +
-				"- timeout: <*>"
+				"- name: <*>"
 		);
 
 		//Second example
@@ -912,92 +876,7 @@ public class ManifestYamlEditorTest {
 				"- name: test"
 				, // ==>
 				"applications:\n" +
-				"- buildpack: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- command: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- disk_quota: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- domain: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- domains:\n" +
-				"  - <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- env:\n" +
-				"    <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- health-check-http-endpoint: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- health-check-type: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- host: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- hosts:\n" +
-				"  - <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- instances: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- memory: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
 				"- name: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- no-hostname: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- no-route: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- path: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- random-route: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- routes:\n" +
-				"  - route: <*>\n" +
-				"- name: test"
-				,// ---------------------
-				"applications:\n" +
-				"- services:\n" +
-				"  - <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- stack: <*>\n" +
-				"- name: test"
-				, // ---------------------
-				"applications:\n" +
-				"- timeout: <*>\n" +
 				"- name: test"
 		);
 

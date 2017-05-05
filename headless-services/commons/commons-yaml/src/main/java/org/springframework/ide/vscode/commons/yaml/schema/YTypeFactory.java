@@ -464,11 +464,8 @@ public class YTypeFactory {
 		}
 
 		/**
-		 * If set to false (which is the default), then this type (when not yet inferred to a
-		 * more specific version of itself) will be treated as if it can be anything (i.e atomic, map or sequence)
-		 * <p>
-		 * If set to true, then it is treated as strictly atomic type instead (i.e it isn't valid to
-		 * use a map or sequence for its value).
+		 * Treat this type as an atomic type (i.e. it can't be a map or sequence), when not yet inferred to a
+		 * more specific version of itself).
 		 */
 		public AbstractType treatAsAtomic() {
 			this.isAtomic = true;
@@ -732,6 +729,7 @@ public class YTypeFactory {
 		private Renderable description = Renderables.NO_DESCRIPTION;
 		private boolean isRequired;
 		private boolean isDeprecated;
+		private boolean isPrimary;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -770,7 +768,7 @@ public class YTypeFactory {
 
 		@Override
 		public boolean isRequired() {
-			return isRequired;
+			return isRequired || isPrimary;
 		}
 
 		public void isDeprecated(boolean isDeprecated) {
@@ -780,6 +778,16 @@ public class YTypeFactory {
 		@Override
 		public boolean isDeprecated() {
 			return this.isDeprecated;
+		}
+
+		public YTypedPropertyImpl isPrimary(boolean b) {
+			this.isPrimary = b;
+			return this;
+		}
+		
+		@Override
+		public boolean isPrimary() {
+			return isPrimary;
 		}
 	}
 

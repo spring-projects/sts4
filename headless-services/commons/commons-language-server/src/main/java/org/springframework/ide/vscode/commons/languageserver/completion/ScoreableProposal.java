@@ -19,9 +19,10 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 
 	public static final double DEEMP_EXISTS = 0.1;
 	public static final double DEEMP_DEPRECATION = 0.2;
-	public static final double DEEMP_DASH_PROPOSAL = 0.5;
-	public static final double DEEMP_INDENTED_PROPOSAL = 1.0;
-	public static final double DEEMP_DEDENTED_PROPOSAL = 1.5;
+	public static final double DEEMP_NEXT_CONTEXT = 0.0;
+	public static final double DEEMP_INDENTED_PROPOSAL = 0.4;
+	public static final double DEEMP_DASH_PROPOSAL = 0.6;
+	public static final double DEEMP_DEDENTED_PROPOSAL = 0.8;
 
 	private static final double DEEMP_VALUE = 10_000; // should be large enough to move deemphasized stuff to bottom of list.
 
@@ -53,7 +54,7 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 	}
 	@Override
 	public ScoreableProposal deemphasize(double howmuch) {
-		Assert.isLegal(howmuch>0.0);
+		Assert.isLegal(howmuch>=0.0);
 		deemphasizedBy+= howmuch*DEEMP_VALUE;
 		return this;
 	}

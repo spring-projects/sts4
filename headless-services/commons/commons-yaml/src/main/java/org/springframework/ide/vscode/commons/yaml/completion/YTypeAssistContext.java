@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DASH_PROPOSAL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,51 +108,71 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		int queryOffset = offset - query.length();
 		SNode contextNode = getContextNode();
 		DynamicSchemaContext dynamicCtxt = getSchemaContext();
-		List<YTypedProperty> properties = typeUtil.getProperties(type);
-		if (CollectionUtil.hasElements(properties)) {
-			ArrayList<ICompletionProposal> proposals = new ArrayList<>(properties.size());
+		List<YTypedProperty> allProperties = typeUtil.getProperties(type);
+		if (CollectionUtil.hasElements(allProperties)) {
+			List<List<YTypedProperty>> tieredProperties = sortIntoTiers(allProperties);
 			Set<String> definedProps = dynamicCtxt.getDefinedProperties();
-			for (YTypedProperty p : properties) {
-				String name = p.getName();
-				double score = FuzzyMatcher.matchScore(query, name);
-				if (score!=0) {
-					YamlPath relativePath = YamlPath.fromSimpleProperty(name);
-					YamlPathEdits edits = new YamlPathEdits(doc);
-					if (!definedProps.contains(name)) {
-						//property not yet defined
-						YType YType = p.getType();
-						edits.delete(queryOffset, query);
-						if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
-							//See https://www.pivotaltracker.com/story/show/137722057
-							edits.insert(queryOffset, " ");
+			for (List<YTypedProperty> thisTier : tieredProperties) {
+				List<YTypedProperty> undefinedProps = thisTier.stream()
+						.filter(p -> !definedProps.contains(p.getName()))
+						.collect(Collectors.toList());
+				if (!undefinedProps.isEmpty()) {
+					List<ICompletionProposal> proposals = new ArrayList<>();
+					for (YTypedProperty p : undefinedProps) {
+						String name = p.getName();
+						double score = FuzzyMatcher.matchScore(query, name);
+						if (score!=0) {
+							YamlPath relativePath = YamlPath.fromSimpleProperty(name);
+							YamlPathEdits edits = new YamlPathEdits(doc);
+							YType YType = p.getType();
+							edits.delete(queryOffset, query);
+							if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
+								//See https://www.pivotaltracker.com/story/show/137722057
+								edits.insert(queryOffset, " ");
+							}
+							edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(YType));
+							proposals.add(completionFactory().beanProperty(doc.getDocument(),
+									contextPath.toPropString(), getType(),
+									query, p, score, edits, typeUtil)
+							);
 						}
-						edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(YType));
-						proposals.add(completionFactory().beanProperty(doc.getDocument(),
-								contextPath.toPropString(), getType(),
-								query, p, score, edits, typeUtil)
-						);
-					} else {
-						// This piece below deactivated becuase moving cursor like this doesn't work in vscode
-//						//property already defined
-//						// instead of filtering, navigate to the place where its defined.
-//						deleteQueryAndLine(doc, query, queryOffset, edits);
-//						//Cast to SChildBearingNode cannot fail because otherwise definedProps would be the empty set.
-//						edits.createPath((SChildBearingNode) contextNode, relativePath, "");
-//						proposals.add(
-//							completionFactory().beanProperty(doc.getDocument(),
-//								contextPath.toPropString(), getType(),
-//								query, p, score, edits, typeUtil)
-//							.deemphasize(DEEMP_EXISTS) //deemphasize because it already exists
-//						);
 					}
+					return proposals;
 				}
 			}
-			return proposals;
 		}
 		return Collections.emptyList();
 	}
 
-
+	/**
+	 * Divides a given list of properties into tiers of decreasing significance. Property tiering
+	 * is a mechanism to reduce 'noise' in content assist proposals. Only properties of the
+	 * first tier that some still undefined properties will be used to generate proposals.
+	 * <p>
+	 * This allows, for example, to only suggest a 'name' property when starting to define
+	 * a new named entity. This is what a sane user would probably want, even though
+	 * in theory they would be free to define the properties in any order they want.
+	 */
+	protected List<List<YTypedProperty>> sortIntoTiers(List<YTypedProperty> properties) {
+		if (properties.isEmpty()) {
+			//Nothing to sort
+			return ImmutableList.of();
+		} else {
+			ImmutableList.Builder<YTypedProperty> primary = ImmutableList.builder();
+			ImmutableList.Builder<YTypedProperty> required = ImmutableList.builder();
+			ImmutableList.Builder<YTypedProperty> other = ImmutableList.builder();
+			for (YTypedProperty p : properties) {
+				if (p.isPrimary()) {
+					primary.add(p);
+				} else if (p.isRequired()) {
+					required.add(p);
+				} else {
+					other.add(p);
+				}
+			}
+			return ImmutableList.of(primary.build(), required.build(), other.build());
+		}
+	}
 
 	/**
 	 * Computes the text that should be appended at the end of a completion
@@ -379,7 +402,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						protected String tranformLabel(String originalLabel) {
 							return "- "+originalLabel;
 						}
-					}.deemphasize(0.5)
+					}.deemphasize(DEEMP_DASH_PROPOSAL)
 				);
 			}
 			return dashedCompletions;

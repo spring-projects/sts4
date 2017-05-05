@@ -10,14 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
@@ -982,13 +984,25 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void gitResourceSourceCompletions() throws Exception {
-		assertContextualCompletions(
+		assertContextualCompletions(PLAIN_COMPLETION,
 				"resources:\n" +
 				"- name: the-repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    <*>\n" +
-				"    blah: blah"
+				"    <*>"
+				, //================
+				"<*>"
+				, // ==>
+				"uri: <*>"
+		);
+
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: the-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri:\n" +
+				"    <*>"
 				, //================
 				"<*>"
 				, // ==>
@@ -1020,8 +1034,6 @@ public class ConcourseEditorTest {
 				"skip_ssl_verification: <*>"
 				,
 				"tag_filter: <*>"
-				,
-				"uri: <*>"
 				,
 				"username: <*>"
 		);
@@ -1156,6 +1168,22 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void gitResourcePutParamsCompletions() throws Exception {
+		assertContextualCompletions(PLAIN_COMPLETION,
+			"resources:\n" +
+			"- name: my-git\n" +
+			"  type: git\n" +
+			"jobs:\n" +
+			"- name: do-stuff\n" +
+			"  plan:\n" +
+			"  - put: my-git\n" +
+			"    params:\n" +
+			"      <*>"
+			,
+			"<*>"
+			, // =>
+			"repository: <*>"
+		);
+
 		String context =
 				"resources:\n" +
 				"- name: my-git\n" +
@@ -1165,10 +1193,10 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - put: my-git\n" +
 				"    params:\n" +
-				"      <*>\n" +
-				"      blah: blah";
+				"      repository: blah\n" +
+				"      <*>";
 
-		assertContextualCompletions(context,
+		assertContextualCompletions(PLAIN_COMPLETION, context,
 				"<*>"
 				, // ===>
 				"annotate: <*>"
@@ -1178,8 +1206,6 @@ public class ConcourseEditorTest {
 				"only_tag: <*>"
 				,
 				"rebase: <*>"
-				,
-				"repository: <*>"
 				,
 				"tag: <*>"
 				,
@@ -2011,41 +2037,57 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void semverGitResourceSourceContentAssist() throws Exception {
-		String conText =
+		assertContextualCompletions(PLAIN_COMPLETION,
 				"resources:\n" +
 				"- name: version\n" +
 				"  type: semver\n" +
 				"  source:\n" +
-				"<*>\n" +
-				"    blah: blah";
-		assertContextualCompletions(conText,
 				"    driver: git\n" +
 				"    <*>"
+				, // ===========
+				"<*>"
 				, // ==>
+				"uri: <*>"
+		);
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
 				"    driver: git\n" +
+				"    uri: something\n" +
+				"<*>"
+				, // =============
+				"    <*>"
+				, // ==>
 				"    branch: <*>"
 				,
-				"    driver: git\n" +
 				"    file: <*>"
-				,
+		);
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
 				"    driver: git\n" +
+				"    uri: something\n" +
+				"    branch: master\n" +
+				"    file: somefile\n" +
+				"<*>"
+				, // =============
+				"    <*>"
+				, // ==>
 				"    git_user: <*>"
 				,
-				"    driver: git\n" +
 				"    initial_version: <*>"
 				,
-				"    driver: git\n" +
 				"    password: <*>"
 				,
-				"    driver: git\n" +
 				"    private_key: <*>"
 				,
-				"    driver: git\n" +
-				"    uri: <*>"
-				,
-				"    driver: git\n" +
 				"    username: <*>"
 		);
+
 	}
 
 	@Test public void semverGitResourceSourceReconcileAndHovers() throws Exception {
@@ -2595,6 +2637,19 @@ public class ConcourseEditorTest {
 		assertTaskCompletions(
 				"<*>"
 				, // ==>
+				"platform: <*>"
+				,
+				"run:\n" +
+				"  <*>"
+		);
+
+		assertContextualTaskCompletions(
+				"run: {}\n" +
+				"platform: linux\n" +
+				"<*>"
+				,
+				"<*>"
+				, // ==>
 				"image: <*>"
 				,
 				"image_resource:\n" +
@@ -2607,11 +2662,6 @@ public class ConcourseEditorTest {
 				"- name: <*>"
 				,
 				"params:\n" +
-				"  <*>"
-				,
-				"platform: <*>"
-				,
-				"run:\n" +
 				"  <*>"
 		);
 
@@ -2928,29 +2978,13 @@ public class ConcourseEditorTest {
 				//"source", exists
 				//"type", exists
 				//For the nested context:
-				"→ branch",
-				"→ commit_verification_key_ids",
-				"→ commit_verification_keys",
-				"→ disable_ci_skip",
-				"→ git_config",
-				"→ gpg_keyserver",
-				"→ ignore_paths",
-				"→ password",
-				"→ paths",
-				"→ private_key",
-				"→ skip_ssl_verification",
-				"→ tag_filter",
 				"→ uri",
-				"→ username",
 				// For the top-level context:
 				"← groups",
 				"← jobs",
 				"← resource_types",
 				// For the 'next job' context:
-				"← - check_every",
-				"← - name",
-				"← - source",
-				"← - type"
+				"← - name"
 		);
 
 		editor.assertCompletionWithLabel("check_every",
@@ -2961,33 +2995,55 @@ public class ConcourseEditorTest {
 				"  check_every: <*>"
 		);
 
-		editor.assertCompletionWithLabel("→ branch",
+		editor.assertCompletionWithLabel("→ uri",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    branch: <*>"
+				"    uri: <*>"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: blah\n" +
+				"  <*>"
 		);
 		editor.assertCompletionWithLabel("→ commit_verification_key_ids",
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
+				"    uri: blah\n" +
 				"    commit_verification_key_ids:\n" +
 				"    - <*>"
 		);
 	}
 
 	@Test public void relaxedIndentContextMoreSpaces2() throws Exception {
-
-		assertContextualCompletions(
+		assertContextualCompletions(INDENTED_COMPLETION,
 				"resources:\n" +
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
 				"  <*>"
 				, // =========
-				"bra<*>"
+				"ur"
+				, //=>
+				"  uri: <*>"
+		);
+
+		assertContextualCompletions(INDENTED_COMPLETION,
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: blah\n" +
+				"  <*>"
+				, // =========
+				"bra"
 				, //=>
 				"  branch: <*>"
 		);
@@ -2997,6 +3053,7 @@ public class ConcourseEditorTest {
 				"- name: foo\n" +
 				"  type: git\n" +
 				"  source:\n" +
+				"    uri: blah\n" +
 				"  <*>"
 				, // =========
 				"comverids<*>"
@@ -3027,13 +3084,6 @@ public class ConcourseEditorTest {
 				//"name", exists
 				//"plan", exists
 				//"public", exists
-				//Completions with '-'
-				"- aggregate",
-				"- do",
-				"- get",
-				"- put",
-				"- task",
-				"- try",
 				//Completions for nested context (i.e. task step)
 				"→ attempts",
 				"→ config",
@@ -3048,18 +3098,18 @@ public class ConcourseEditorTest {
 				"→ privileged",
 				"→ tags",
 				"→ timeout",
-				//"→ task" exists
-				"← groups\n" +
-				"← resource_types\n" +
-				"← resources\n" +
-				"← - build_logs_to_retain\n" +
-				"← - disable_manual_trigger\n" +
-				"← - max_in_flight\n" +
-				"← - name\n" +
-				"← - plan\n" +
-				"← - public\n" +
-				"← - serial\n" +
-				"← - serial_groups"
+				//Completions with '-'
+				"- aggregate",
+				"- do",
+				"- get",
+				"- put",
+				"- task",
+				"- try",
+				//Dedented completions
+				"← groups",
+				"← resource_types",
+				"← resources",
+				"← - name"
 			);
 	}
 
@@ -3445,6 +3495,24 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void relaxedContentAssist_primary_properties() throws Exception{
+		//See https://www.pivotaltracker.com/story/show/144584163
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: docker-git\n" +
+				"<*>"
+		);
+		editor.assertCompletionLabels(
+				"groups",
+				"jobs",
+				"resource_types",
+				"→ type",
+				"- name"
+		);
+	}
+
 	@Test public void relaxedContentAssistLessSpaces() throws Exception {
 		Editor editor;
 
@@ -3543,7 +3611,15 @@ public class ConcourseEditorTest {
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
-		Editor editor = harness.newEditor(conText);
+		assertContextualCompletions((c) -> true, conText, textBefore, textAfter);
+	}
+
+	private void assertContextualCompletions(Predicate<CompletionItem> isInteresting, String conText, String textBefore, String... textAfter) throws Exception {
+		assertContextualCompletions(LanguageId.CONCOURSE_PIPELINE, isInteresting, conText, textBefore, textAfter);
+	}
+
+	private void assertContextualCompletions(LanguageId language, Predicate<CompletionItem> isInteresting, String conText, String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(language, conText);
 		editor.reconcile(); //this ensures the conText is parsed and its AST is cached (will be used for
 		                    //dynamic CA when the conText + textBefore is not parsable.
 		assertContains(CURSOR, conText);
@@ -3552,7 +3628,7 @@ public class ConcourseEditorTest {
 				.map((String t) -> conText.replace(CURSOR, t))
 				.collect(Collectors.toList()).toArray(new String[0]);
 		editor.setText(textBefore);
-		editor.assertCompletions(textAfter);
+		editor.assertCompletions(isInteresting, textAfter);
 	}
 
 	private void assertCompletions(String textBefore, String... textAfter) throws Exception {
@@ -3565,5 +3641,18 @@ public class ConcourseEditorTest {
 		editor.assertCompletions(textAfter);
 	}
 
+	private void assertContextualTaskCompletions(String conText, String textBefore, String... textAfter) throws Exception {
+		assertContextualCompletions(LanguageId.CONCOURSE_TASK, c -> true, conText, textBefore, textAfter);
+	}
+
+	public static final Predicate<CompletionItem> RELAXED_COMPLETION
+	= c -> c.getLabel().startsWith("- ")
+		|| c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")
+		|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ")
+		;
+
+	public static final Predicate<CompletionItem> PLAIN_COMPLETION = c -> !RELAXED_COMPLETION.test(c);
+	public static final Predicate<CompletionItem> DEDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ");
+	public static final Predicate<CompletionItem> INDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ");
 
 }

@@ -19,6 +19,7 @@ public interface YTypedProperty {
 	String getName();
 	YType getType();
 	Renderable getDescription();
-	default boolean isRequired() { return false; }
+	default boolean isRequired() { return isPrimary() || false; }
 	default boolean isDeprecated() { return false; }
+	default boolean isPrimary() { return false; }
 }

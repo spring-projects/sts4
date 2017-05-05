@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEDENTED_PROPOSAL;
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_INDENTED_PROPOSAL;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,6 +41,8 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
 
 /**
  * Implements {@link ICompletionEngine} for .yml file, based on a YamlAssistContextProvider
@@ -82,15 +81,17 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		if (!doc.isCommented(offset)) {
 			SRootNode root = doc.getStructure();
 			SNode current = root.find(offset);
-			List<SNode> contextNodes = getContextNodes(doc, current, offset);
+			int cursorIndent = doc.getColumn(offset);
+			int nodeIndent = current.getIndent();
+			int baseIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
+			List<SNode> contextNodes = getContextNodes(doc, current, offset, baseIndent);
 			if (current.getNodeType()==SNodeType.RAW) {
 				//relaxed indentation
 				List<ICompletionProposal> completions = new ArrayList<>();
-				int cursorIndent = doc.getColumn(offset);
-				int nodeIndent = current.getIndent();
-				int baseIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
+				double deempasizeBy = 0.0;
 				for (SNode contextNode : contextNodes) {
-					completions.addAll(getRelaxedCompletions(offset, doc, current, contextNode, baseIndent));
+					completions.addAll(getRelaxedCompletions(offset, doc, current, contextNode, baseIndent, deempasizeBy));
+					deempasizeBy += ScoreableProposal.DEEMP_NEXT_CONTEXT;
 				}
 				return completions;
 			} else {
@@ -104,29 +105,27 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
-	protected Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode, int baseIndent) {
+	protected Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode, int baseIndent, double deempasizeBy) {
 		try {
 			return fixIndentations(getBaseCompletions(offset, doc, current, contextNode), 
-					current, contextNode, baseIndent);
+					current, contextNode, baseIndent, deempasizeBy);
 		} catch (Exception e) {
 			Log.log(e);
 		}
 		return ImmutableList.of();
 	}
 
-	protected Collection<? extends ICompletionProposal> fixIndentations(Collection<ICompletionProposal> completions, SNode currentNode, SNode contextNode, int baseIndent) {
+	protected Collection<? extends ICompletionProposal> fixIndentations(Collection<ICompletionProposal> completions, SNode currentNode, 
+			SNode contextNode, int baseIndent, double deempasizeBy) {
 		if (!completions.isEmpty()) {
 			int dashyIndent = getTargetIndent(contextNode, currentNode, true);
 			int plainIndent = getTargetIndent(contextNode, currentNode, false);
 			List<ICompletionProposal> transformed = new ArrayList<>();
 			for (ICompletionProposal p : completions) {
-				ICompletionProposal p_fixed = null;
-				if (p.getLabel().startsWith("- ")) {
-					p_fixed = indentFix(p, dashyIndent - baseIndent, currentNode, contextNode);
-				} else {
-					p_fixed = indentFix(p, plainIndent - baseIndent, currentNode, contextNode);
-				}
+				int targetIndent = p.getLabel().startsWith("- ") ? dashyIndent : plainIndent;
+				ScoreableProposal p_fixed = indentFix((ScoreableProposal)p, targetIndent - baseIndent, currentNode, contextNode);
 				if (p_fixed!=null) {
+					p_fixed.deemphasize(deempasizeBy);
 					transformed.add(p_fixed);
 				}
 			}
@@ -135,11 +134,11 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
-	protected ICompletionProposal indentFix(ICompletionProposal p, int fixIndentBy, SNode currentNode, SNode contextNode) {
+	protected ScoreableProposal indentFix(ScoreableProposal p, int fixIndentBy, SNode currentNode, SNode contextNode) {
 		if (fixIndentBy==0) {
 			return p;
 		} else if (fixIndentBy>0) {
-			if (isExtraIndentRelaxable(contextNode)) {
+			if (isExtraIndentRelaxable(contextNode, fixIndentBy)) {
 				return indented(p, Strings.repeat(" ", fixIndentBy));
 			}
 		} else { // fixIndentBy < 0 
@@ -182,7 +181,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				: contextNode.getIndent() + YamlIndentUtil.INDENT_BY;
 	}
 
-	public ICompletionProposal dedented(ICompletionProposal proposal, int numSpacesToRemove, IDocument doc) {
+	public ScoreableProposal dedented(ICompletionProposal proposal, int numSpacesToRemove, IDocument doc) {
 		Assert.isLegal(numSpacesToRemove>0);
 		int spacesEnd = proposal.getTextEdit().getFirstEditStart();
 		int spacesStart = spacesEnd-numSpacesToRemove;
@@ -214,23 +213,23 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-
-	public ICompletionProposal indented(ICompletionProposal proposal, String indentStr) {
+	public ScoreableProposal indented(ICompletionProposal proposal, String indentStr) {
+		int numArrows = (indentStr.length()+1)/2;
 		ScoreableProposal transformed = new TransformedCompletion(proposal) {
 			@Override public String tranformLabel(String originalLabel) {
-				return Unicodes.RIGHT_ARROW+" " + originalLabel;
+				return Strings.repeat(Unicodes.RIGHT_ARROW+" ", numArrows) + originalLabel;
 			}
 			@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
 				originalEdit.indentFirstEdit(indentStr);
 				return originalEdit;
 			}
 		};
-		transformed.deemphasize(DEEMP_INDENTED_PROPOSAL*indentStr.length()/2);
+		transformed.deemphasize(numArrows * DEEMP_INDENTED_PROPOSAL);
 		return transformed;
 	}
 
-	private boolean isExtraIndentRelaxable(SNode contextNode) {
-		return contextNode!=null && (
+	private boolean isExtraIndentRelaxable(SNode contextNode, int fixIndentBy) {
+		return contextNode!=null && /* fixIndentBy<=2 && */ (
 				isBarrenKey(contextNode) ||
 				isBarrenSeq(contextNode)
 		);
@@ -308,8 +307,9 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	 * To allow for the ambiguity in indentation a list of context nodes is returned instead of a 
 	 * single node. (Note we may still return a singleton list for cases where relaxed indentation
 	 * doesn't seem desirable).
+	 * @param baseIndent 
 	 */
-	protected List<SNode> getContextNodes(YamlDocument doc, SNode node, int offset) {
+	protected List<SNode> getContextNodes(YamlDocument doc, SNode node, int offset, int baseIndent) {
 		if (node==null) {
 			return null;
 		} else if (node.getNodeType()==SNodeType.KEY) {
@@ -334,8 +334,8 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			//This node has flexibility around indentation. So this is where me need to build a list of candidates!
 			ImmutableList.Builder<SNode> contextNodes = ImmutableList.builder();
 			while (node!=null ) {
-				//Any node that represents a 'step' between contexts must be kept. 
-				if (node.getSegment()!=null) {
+				//Any node that represents a 'step' between contexts and is not too deeply nested is kept. 
+				if (node.getSegment()!=null && node.getIndent()<=baseIndent) {
 					contextNodes.add(node);
 				}
 				node = node.getParent();

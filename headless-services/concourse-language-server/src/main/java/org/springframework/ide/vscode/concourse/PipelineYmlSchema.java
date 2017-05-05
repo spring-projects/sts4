@@ -202,7 +202,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		);
 
 		AbstractType t_resource = f.ybean("Resource");
-		addProp(t_resource, "name", t_resource_name_def).isRequired(true);
+		addProp(t_resource, "name", t_resource_name_def).isPrimary(true);
 		addProp(t_resource, "type", t_resource_type_name).isRequired(true);
 		addProp(t_resource, "source", resourceSource);
 		addProp(t_resource, "check_every", t_duration);
@@ -218,11 +218,11 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_platform.parseWith(ValueParsers.NE_STRING); //no errors because in theory platform are just strings.
 
 		AbstractType t_input = f.ybean("TaskInput");
-		addProp(t_input, "name", t_ne_string).isRequired(true);
+		addProp(t_input, "name", t_ne_string).isPrimary(true);
 		addProp(t_input, "path", t_ne_string);
 
 		AbstractType t_output = f.ybean("TaskOutput");
-		addProp(t_output, "name", t_ne_string).isRequired(true);
+		addProp(t_output, "name", t_ne_string).isPrimary(true);
 		addProp(t_output, "path", t_ne_string);
 
 		AbstractType t_command = f.ybean("Command");
@@ -344,7 +344,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		models.setStepType(step);
 
 		AbstractType job = f.ybean("Job");
-		addProp(job, "name", jobNameDef).isRequired(true);
+		addProp(job, "name", jobNameDef).isPrimary(true);
 		addProp(job, "plan", f.yseq(step)).isRequired(true);
 		addProp(job, "serial", t_boolean);
 		addProp(job, "build_logs_to_retain", t_pos_integer);
@@ -354,12 +354,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "disable_manual_trigger", t_boolean);
 
 		AbstractType resourceType = f.ybean("ResourceType");
-		addProp(resourceType, "name", resourceTypeNameDef).isRequired(true);
+		addProp(resourceType, "name", resourceTypeNameDef).isPrimary(true);
 		addProp(resourceType, "type", t_resource_type_name).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 
 		AbstractType group = f.ybean("Group");
-		addProp(group, "name", t_ne_string).isRequired(true);
+		addProp(group, "name", t_ne_string).isPrimary(true);
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
 
@@ -385,7 +385,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		// git :
 		{
 			AbstractType source = f.ybean("GitSource");
-			addProp(source, "uri", t_ne_string).isRequired(true);
+			addProp(source, "uri", t_ne_string).isPrimary(true);
 			addProp(source, "branch", t_ne_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
 			addProp(source, "private_key", t_ne_string);
 			addProp(source, "username", t_ne_string);
@@ -406,7 +406,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(get, "disable_git_lfs", t_boolean);
 
 			AbstractType put = f.ybean("GitPutParams");
-			addProp(put, "repository", t_ne_string).isRequired(true);
+			addProp(put, "repository", t_ne_string).isPrimary(true);
 			addProp(put, "rebase", t_boolean);
 			addProp(put, "tag", t_ne_string);
 			addProp(put, "only_tag", t_boolean);
@@ -419,7 +419,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		//docker-image:
 		{
 			AbstractType source = f.ybean("DockerImageSource");
-			addProp(source, "repository", t_ne_string).isRequired(true);
+			addProp(source, "repository", t_ne_string).isPrimary(true);
 			addProp(source, "tag", t_ne_string);
 			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_ne_string);
@@ -473,7 +473,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			);
 
 			AbstractType source = f.ybean("S3Source");
-			addProp(source, "bucket", t_ne_string).isRequired(true);
+			addProp(source, "bucket", t_ne_string).isPrimary(true);
 			addProp(source, "access_key_id", t_ne_string);
 			addProp(source, "secret_access_key", t_ne_string);
 			addProp(source, "region_name", t_s3_region);
@@ -492,7 +492,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			//Note: S3GetParams intentionally has no properties since no params are expected according to the docs.
 
 			AbstractType put = f.ybean("S3PutParams");
-			addProp(put, "file", t_ne_string).isRequired(true);
+			addProp(put, "file", t_ne_string).isPrimary(true);
 			addProp(put, "acl", t_canned_acl);
 			addProp(put, "content_type", t_mime_type);
 
@@ -526,7 +526,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		//semver
 		{
 			AbstractType git_source = f.ybean("GitSemverSource");
-			addProp(git_source, "uri", t_ne_string).isRequired(true);
+			addProp(git_source, "uri", t_ne_string).isPrimary(true);
 			addProp(git_source, "branch", t_ne_string).isRequired(true);
 			addProp(git_source, "file", t_ne_string).isRequired(true);
 			addProp(git_source, "private_key", t_ne_string);
@@ -535,7 +535,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(git_source, "git_user", t_ne_string);
 
 			AbstractType s3_source = f.ybean("S3SemverSource");
-			addProp(s3_source, "bucket", t_ne_string).isRequired(true);
+			addProp(s3_source, "bucket", t_ne_string).isPrimary(true);
 			addProp(s3_source, "key", t_ne_string).isRequired(true);
 			addProp(s3_source, "access_key_id", t_ne_string).isRequired(true);
 			addProp(s3_source, "secret_access_key", t_ne_string).isRequired(true);
@@ -544,7 +544,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(s3_source, "disable_ssl", t_boolean);
 
 			AbstractType swift_source = f.ybean("SwiftSemverSource");
-			addProp(swift_source, "openstack", t_any).isRequired(true);
+			addProp(swift_source, "openstack", t_any).isPrimary(true);
 
 			AbstractType[] driverSpecificSources = {
 					git_source, s3_source, swift_source
