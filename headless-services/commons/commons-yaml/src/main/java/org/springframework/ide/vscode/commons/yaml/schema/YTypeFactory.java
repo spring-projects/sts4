@@ -307,6 +307,10 @@ public class YTypeFactory {
 			}
 		}
 
+		public void sealHints() {
+			hints = ImmutableList.copyOf(hints);
+		}
+
 		private Collection<YValueHint> getProviderHints(DynamicSchemaContext dc) throws Exception {
 			if (hintProvider != null) {
 				Callable<Collection<YValueHint>> withContext = hintProvider.withContext(dc);

@@ -16,6 +16,7 @@ import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -155,6 +156,7 @@ public class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_memory = f.yatomic("Memory");
 		t_memory.addHints("256M", "512M", "1024M");
 		t_memory.parseWith(ManifestYmlValueParsers.MEMORY);
+		t_memory.sealHints();
 
 		YAtomicType t_health_check_type = f.yenumBuilder("Health Check Type", "none", "process", "port", "http")
 				.deprecateWithReplacement("none", "process")

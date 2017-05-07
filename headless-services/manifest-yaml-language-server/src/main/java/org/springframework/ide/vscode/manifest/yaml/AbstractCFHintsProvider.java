@@ -13,10 +13,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
@@ -32,8 +29,6 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 
 	public static final String EMPTY_VALUE = "";
 	protected final CFTargetCache targetCache;
-
-	private static final Logger logger = Logger.getLogger(AbstractCFHintsProvider.class.getName());
 
 	public AbstractCFHintsProvider(CFTargetCache targetCache) {
 		Assert.isNotNull(targetCache);
@@ -71,7 +66,7 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(errorNoAppending));
 			} else {
 				// Log any other error
-				logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
+				//logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
 				throw new ValueParseException(
 						"Failed to get "+getTypeName()+"s from Cloud Foundry: "+ExceptionUtil.getMessage(e));
 			}

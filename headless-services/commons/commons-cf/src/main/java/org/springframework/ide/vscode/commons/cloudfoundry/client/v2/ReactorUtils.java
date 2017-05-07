@@ -23,6 +23,8 @@ import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CancelationTokens.CancelationToken;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.Log;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -64,7 +66,6 @@ public class ReactorUtils {
 		try {
 			return mono.block(DEFAULT_TIMEOUT);
 		} catch (Exception e) {
-			dumpStacks();
 			throw new IOException(e);
 		}
 	}
@@ -86,17 +87,15 @@ public class ReactorUtils {
 //			.otherwise(errorFilter(cancelationToken))
 			.block(timeout);
 		} catch (Exception e) {
-			dumpStacks();
+			Log.log(e);
 			throw new IOException(e);
 		}
 	}
-
 
 	public static <T> List<T> get(Duration t, Mono<List<T>> m) throws IOException {
 		try {
 			return m.block(t);
 		} catch (Exception e) {
-			dumpStacks();
 			throw new IOException(e);
 		}
 	}
