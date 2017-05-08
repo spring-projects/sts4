@@ -29,7 +29,7 @@ function error(msg : string) {
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG : false,
-        CONNECT_TO_LS: true,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-manifest-yaml',
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: '64m',
