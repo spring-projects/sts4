@@ -76,11 +76,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-//			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())) {
+			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())) {
 				validateWith(doc.getId(), engine);
-//			} else {
-//				validateWith(doc.getId(), IReconcileEngine.NULL);
-//			}
+			} else {
+				validateWith(doc.getId(), IReconcileEngine.NULL);
+			}
 		});
 
 //		workspace.onDidChangeConfiguraton(settings -> {

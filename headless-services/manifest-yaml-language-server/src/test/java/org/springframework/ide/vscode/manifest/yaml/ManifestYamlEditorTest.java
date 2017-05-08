@@ -65,7 +65,7 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new, LanguageId.CF_MANIFEST);
 		harness.intialize(null);
 
 		Editor editor = harness.newEditor(
