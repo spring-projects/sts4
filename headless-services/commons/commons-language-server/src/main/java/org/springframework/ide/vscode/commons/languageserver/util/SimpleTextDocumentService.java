@@ -145,6 +145,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public void didOpen(DidOpenTextDocumentParams params) {
 		TextDocumentItem docId = params.getTextDocument();
 		String url = docId.getUri();
+		//Log.info("didOpen: "+params.getTextDocument().getUri());
 		LanguageId languageId = LanguageId.of(docId.getLanguageId());
 		int version = docId.getVersion();
 		if (url!=null) {
@@ -173,8 +174,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
-		//LOG.info("didClose: "+params.getTextDocument().getUri());
+		//Log.info("didClose: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
+		//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
+		// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
+		// document go 'out of scope'.
+		publishDiagnostics(params.getTextDocument(), ImmutableList.of());
 		if (url!=null) {
 			documents.remove(url);
 		}

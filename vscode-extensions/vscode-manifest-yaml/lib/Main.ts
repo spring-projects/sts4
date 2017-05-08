@@ -29,19 +29,11 @@ function error(msg : string) {
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG : false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-manifest-yaml',
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: '64m',
         clientOptions: {
-            // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead
-            // Reasons:
-            // 1. documentSelector is just passed over to functions like #registerHoverProvider(documentSelector, ...) that take documentSelector
-            // parameter in string | DocumentFilter | string[] | DocumentFilter[] format
-            // 2. Combination of non string|string[] documentSelector parameter and synchronize.textDocumentFilter function makes doc synchronization
-            // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
-
-            // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
             documentSelector: ["manifest-yaml"]
         }
     };

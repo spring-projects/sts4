@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEn
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
@@ -75,7 +76,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc.getId(), engine);
+			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())) {
+				validateWith(doc.getId(), engine);
+			} else {
+				validateWith(doc.getId(), IReconcileEngine.NULL);
+			}
 		});
 
 //		workspace.onDidChangeConfiguraton(settings -> {
