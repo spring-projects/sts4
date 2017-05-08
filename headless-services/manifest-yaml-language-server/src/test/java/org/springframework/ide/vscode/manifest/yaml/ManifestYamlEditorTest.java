@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.Unicodes;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -45,7 +46,10 @@ public class ManifestYamlEditorTest {
 	MockCloudfoundry cloudfoundry = new MockCloudfoundry();
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.paramsProvider));
+		harness = new LanguageServerHarness(
+				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.paramsProvider),
+				LanguageId.CF_MANIFEST
+		);
 		harness.intialize(null);
 	}
 
