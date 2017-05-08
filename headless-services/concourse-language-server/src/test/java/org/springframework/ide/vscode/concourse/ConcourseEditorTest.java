@@ -3582,7 +3582,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - get: version\n"
 		);
-		editor.assertProblems("source-repo|Unused 'Resource'");
+		Diagnostic p = editor.assertProblems("source-repo|Unused 'Resource'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
 
 		editor = harness.newEditor(
 				"resources:\n" +

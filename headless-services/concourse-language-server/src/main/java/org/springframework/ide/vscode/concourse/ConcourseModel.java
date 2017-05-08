@@ -89,7 +89,7 @@ public class ConcourseModel {
 							.filter(refNode -> defName.equals(NodeUtil.asScalar(refNode)))
 							.findAny();
 						if (!reference.isPresent()) {
-							problems.accept(YamlSchemaProblems.schemaProblem("Unused '"+entityTypeName+"'", node));
+							problems.accept(YamlSchemaProblems.problem(PipelineYmlSchemaProblems.UNUSED_RESOURCE, "Unused '"+entityTypeName+"'", node));
 						}
 					}
 				}
