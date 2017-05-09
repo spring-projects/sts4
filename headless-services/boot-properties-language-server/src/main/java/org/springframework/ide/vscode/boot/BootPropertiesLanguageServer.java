@@ -48,7 +48,6 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
