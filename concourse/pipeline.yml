@@ -210,7 +210,6 @@ jobs:
     - do:
       - get: version
         params:
-          bump: patch
           pre: RC
       - put: version
         params:
@@ -225,8 +224,6 @@ jobs:
   plan:
   - aggregate:
     - get: maven-cache
-      passed:
-      - build-manifest-yaml-vsix-snapshot
     - get: sts4
       passed: 
       - trigger-rc-build
