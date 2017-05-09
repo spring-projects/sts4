@@ -4,7 +4,7 @@ set -e
 workdir=`pwd`
 sources=$workdir/sts4/vscode-extensions/$extension_id
 
-version= `cat version/version`
+version=`cat version/version`
 echo "extension_id=${extension_id}"
 echo "version=${version}"
 
