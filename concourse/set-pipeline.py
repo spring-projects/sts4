@@ -11,9 +11,9 @@ def replace(infile, outfile, findword, replaceword):
 branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
 
 if branch == 'master':
-    os.system('''fly -t tools set-pipeline --load-vars-from ${HOME}/.sts4-concourse-credentials.yml
-                    --var "branch=${branch}"
-                    -p sts4-${branch} -c pipeline.yml''')
+    os.system('fly -t tools set-pipeline --load-vars-from ${HOME}/.sts4-concourse-credentials.yml '+
+              '      --var "branch=' + branch + '" ' +
+              '      -p sts4-'+ branch +' -c pipeline.yml')
 else:
     fname = "pipeline-"+branch+".yml"
     replace("pipeline.yml", "pipeline-"+branch+".yml", "snapshot", branch)

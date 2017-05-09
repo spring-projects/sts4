@@ -25,6 +25,12 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
+- name: sts4-out
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    private_key: {{rsa_id}}
 - name: s3-boot-properties-vsix-snapshot
   type: s3
   source:
@@ -85,6 +91,16 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: mvn-caches/sts4-(.*).tar.gz
+- name: version
+  type: semver
+  source:
+    driver: s3
+    bucket: {{s3_bucket}}
+    key: versions/vscode-extensions
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    initial_version: 0.0.3
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -183,25 +199,62 @@ jobs:
     params: 
       file: out/vscode-manifest-yaml-*.vsix
       acl: public-read
-#### Disabled, release process needs be reworked and the stuff below is untrustworthy after a
-#### bunch of changes were made to the pipeline.
-# - name: trigger-manifest-yaml-rc-build
-#   plan:
-#   - get: sts4
-#     passed:
-#     - build-snapshot-website
-#   - get: s3-manifest-yaml-vsix-snapshot
-#     passed:
-#     - build-snapshot-website
-#   - task: trigger-manifest-yaml-rc-build
-#     file: sts4/concourse/tasks/create-rc-build-tag.yml
-#     params:
-#       extension_id: vscode-manifest-yaml
-#   - put: sts4-out
-#     params:
-#       repository: sts4
-#       tag: out/tag
-#       only_tag: true
+- name: trigger-rc-build
+  serial: true
+  plan: 
+  - aggregate:
+    - get: sts4
+      passed:
+      - build-manifest-yaml-vsix-snapshot
+      - build-consourse-vsix-snapshot
+    - do:
+      - get: version
+        params:
+          bump: patch
+          pre: RC
+      - put: version
+        params:
+          file: version/version
+  - put: sts4-out
+    params:
+      repository: sts4
+      only_tag: true
+      tag_prefix: V_
+      tag: version/version
+- name: build-manifest-yaml-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-manifest-yaml-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-manifest-yaml-rc
+    file: sts4/concourse/tasks/versioned-build.yml
+    params:
+      extension_id: vscode-manifest-yaml
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-manifest-yaml-vsix-snapshot
+    params: 
+      file: out/vscode-manifest-yaml-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-vscode-manifest-yaml-vsix/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-snapshot-website
   serial: true
   plan:
@@ -228,9 +281,3 @@ jobs:
   - put: snapshot-website
     params:
       path: website
-    # on_success:
-    #   put: slack-notification
-    #   params:
-    #     text: |
-    #       SUCCESS Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME}!
-    #       New snapshots available at http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
