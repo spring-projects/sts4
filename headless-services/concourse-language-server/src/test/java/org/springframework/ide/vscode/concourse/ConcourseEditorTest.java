@@ -2126,6 +2126,115 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("git_user", "The git identity to use");
 	}
 
+	@Test public void semverResourceSourcePrimaryContentAssist() throws Exception {
+
+		//S3 completions
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				, // ==>
+				"bucket: <*>",
+				"driver: <*>"
+		);
+
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: s3\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				, // ==>
+				"bucket: <*>"
+		);
+
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: s3\n" +
+				"    bucket: some-bucket\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				,  // ==>
+				"access_key_id: <*>",
+				"key: <*>",
+				"secret_access_key: <*>"
+		);
+
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    bucket: some-bucket\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				,  // ==>
+				"access_key_id: <*>",
+				"driver: <*>",
+				"key: <*>",
+				"secret_access_key: <*>"
+		);
+
+		//git completions
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: git\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				, // ==>
+				"uri: <*>"
+		);
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: git\n" +
+				"    uri: blah\n" +
+				"    <*>"
+				, /////////////
+				"<*>"
+				, // ==>
+				"branch: <*>",
+				"file: <*>"
+		);
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: fff\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: git\n" +
+				"    uri: blah\n" +
+				"    branch: master\n" +
+				"    file: version-file\n"+
+				"    <*>"
+				, /////////////
+				"<*>"
+				, // ==>
+				"git_user: <*>",
+				"initial_version: <*>",
+				"password: <*>",
+				"private_key: <*>",
+				"username: <*>"
+		);
+	}
+
 	@Test public void semverS3ResourceSourceReconcileAndHovers() throws Exception {
 		Editor editor;
 

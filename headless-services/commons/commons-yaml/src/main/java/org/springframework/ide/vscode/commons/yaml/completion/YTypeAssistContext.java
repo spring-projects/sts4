@@ -112,12 +112,12 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		if (CollectionUtil.hasElements(allProperties)) {
 			List<List<YTypedProperty>> tieredProperties = sortIntoTiers(allProperties);
 			Set<String> definedProps = dynamicCtxt.getDefinedProperties();
+			List<ICompletionProposal> proposals = new ArrayList<>();
 			for (List<YTypedProperty> thisTier : tieredProperties) {
 				List<YTypedProperty> undefinedProps = thisTier.stream()
 						.filter(p -> !definedProps.contains(p.getName()))
 						.collect(Collectors.toList());
 				if (!undefinedProps.isEmpty()) {
-					List<ICompletionProposal> proposals = new ArrayList<>();
 					for (YTypedProperty p : undefinedProps) {
 						String name = p.getName();
 						double score = FuzzyMatcher.matchScore(query, name);
@@ -137,9 +137,13 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							);
 						}
 					}
-					return proposals;
+				}
+				//We should only move on to the next tier if all required properties in this tier are defined.
+				if (undefinedProps.stream().anyMatch(p -> p.isRequired())) {
+					return proposals; //stop here, take no more from next tier!
 				}
 			}
+			return proposals;
 		}
 		return Collections.emptyList();
 	}
@@ -147,7 +151,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	/**
 	 * Divides a given list of properties into tiers of decreasing significance. Property tiering
 	 * is a mechanism to reduce 'noise' in content assist proposals. Only properties of the
-	 * first tier that some still undefined properties will be used to generate proposals.
+	 * first X tiers will be used, until those tiers no longer have undefined required properties.
 	 * <p>
 	 * This allows, for example, to only suggest a 'name' property when starting to define
 	 * a new named entity. This is what a sane user would probably want, even though

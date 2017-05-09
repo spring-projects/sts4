@@ -772,7 +772,7 @@ public class YTypeFactory {
 
 		@Override
 		public boolean isRequired() {
-			return isRequired || isPrimary;
+			return isRequired;
 		}
 
 		public void isDeprecated(boolean isDeprecated) {
@@ -784,8 +784,16 @@ public class YTypeFactory {
 			return this.isDeprecated;
 		}
 
-		public YTypedPropertyImpl isPrimary(boolean b) {
-			this.isPrimary = b;
+		
+		public YTypedPropertyImpl isPrimary(boolean primary) {
+			this.isPrimary = primary;
+			this.isRequired = primary;
+			return this;
+		}
+
+		public YTypedPropertyImpl isPrimary(boolean primary, boolean required) {
+			this.isPrimary = primary;
+			this.isRequired = required;
 			return this;
 		}
 		

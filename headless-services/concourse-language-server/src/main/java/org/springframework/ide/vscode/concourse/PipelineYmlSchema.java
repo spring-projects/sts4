@@ -563,7 +563,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 			}).treatAsBean();
 			addProp(source, "initial_version", t_semver);
-			addProp(source, "driver", f.yenum("SemverDriver", "git", "s3", "swift"));
+			addProp(source, "driver", f.yenum("SemverDriver", "git", "s3", "swift")).isPrimary(true, false);
 			for (AbstractType s : driverSpecificSources) {
 				for (YTypedProperty p : source.getProperties()) {
 					s.addProperty(p);
