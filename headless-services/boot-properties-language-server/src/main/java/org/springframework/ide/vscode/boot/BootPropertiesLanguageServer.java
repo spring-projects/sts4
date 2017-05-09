@@ -44,6 +44,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
@@ -68,6 +69,10 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
+
+	private static final YamlCompletionEngineOptions COMPLETION_OPTIONS = new YamlCompletionEngineOptions() {
+		public boolean includeDeindentedProposals() { return false; };
+	};
 	// Shared:
 	private final JavaProjectFinder javaProjectFinder;
 	private final SpringPropertyIndexProvider indexProvider;
@@ -120,12 +125,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	private ICompletionEngine getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
-		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider) {
-			@Override
-			protected boolean isLesserIndentRelaxable(SNode currentNode, SNode contextNode) {
-				return false;
-			}
-		};
+		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
 		return (IDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {

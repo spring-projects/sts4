@@ -40,10 +40,9 @@ import reactor.core.scheduler.Schedulers;
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
-	private final static int MAX_COMPLETIONS = 50;
+	private final static int MAX_COMPLETIONS = 50; //TODO: move this to CompletionEngineOptions.
 	private int maxCompletions = MAX_COMPLETIONS;
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
-	public static final String VS_CODE_CURSOR_MARKER = "{{}}";
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;

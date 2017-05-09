@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -35,12 +36,14 @@ import org.springframework.ide.vscode.languageserver.testharness.Synchronization
 
 public class ConcourseEditorTest {
 
+	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.TEST_DEFAULT;
+
 	private static final String CURSOR = "<*>";
 	LanguageServerHarness harness;
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new ConcourseLanguageServer()
+				return new ConcourseLanguageServer(OPTIONS)
 						.setMaxCompletions(100);
 			},
 			LanguageId.CONCOURSE_PIPELINE

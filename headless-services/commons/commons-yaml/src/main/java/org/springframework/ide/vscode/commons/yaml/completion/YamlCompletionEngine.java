@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEDENTED_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_INDENTED_PROPOSAL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,8 +45,6 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
-
 /**
  * Implements {@link ICompletionEngine} for .yml file, based on a YamlAssistContextProvider
  * which has to to be injected into engine via its constructor.
@@ -59,8 +60,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 
 	private final YamlAssistContextProvider contextProvider;
 	protected final YamlStructureProvider structureProvider;
+	private YamlCompletionEngineOptions options;
 
-	public YamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider) {
+	public YamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider, YamlCompletionEngineOptions options) {
+		this.options = options;
 		Assert.isNotNull(structureProvider);
 		Assert.isNotNull(contextProvider);
 		this.structureProvider= structureProvider;
@@ -149,7 +152,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-	protected boolean isLesserIndentRelaxable(final SNode currentNode, final SNode contextNode) {
+	protected final boolean isLesserIndentRelaxable(final SNode currentNode, final SNode contextNode) {
+		if (!options.includeDeindentedProposals()) {
+			return false;
+		}
 		SChildBearingNode parent = currentNode.getParent();
 		while (parent!=null && parent!=contextNode) {
 			SNode lastChild = parent.getLastRealChild();

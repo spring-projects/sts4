@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
@@ -42,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
+	private final YamlCompletionEngineOptions COMPLETION_OPTIONS;
 	YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 	SimpleTextDocumentService documents = getTextDocumentService();
 	ConcourseModel models = new ConcourseModel(this);
@@ -59,7 +61,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 
 		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes) {
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
-			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider);
+			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, COMPLETION_OPTIONS);
 			this.completionEngine = new VscodeCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
 
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
@@ -78,8 +80,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		}
 	}
 
-	public ConcourseLanguageServer() {
+	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions) {
 		super("vscode-concourse");
+		this.COMPLETION_OPTIONS = completionOptions;
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
 		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
 
