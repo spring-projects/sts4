@@ -234,7 +234,7 @@ jobs:
       passed: 
       - trigger-rc-build
   - task: build-concourse-rc
-    file: sts4/concourse/tasks/versioned-build.yml
+    file: sts4/concourse/tasks/rc-build.yml
     params:
       extension_id: vscode-concourse
     on_failure:
