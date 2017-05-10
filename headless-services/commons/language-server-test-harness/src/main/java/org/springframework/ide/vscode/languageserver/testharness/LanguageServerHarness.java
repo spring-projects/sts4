@@ -391,12 +391,15 @@ public class LanguageServerHarness {
 	}
 
 
-	public CompletionItem resolveCompletionItem(CompletionItem unresolved) {
-		try {
-			return server.getTextDocumentService().resolveCompletionItem(unresolved).get();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+	public CompletionItem resolveCompletionItem(CompletionItem maybeUnresolved) {
+		if (server.hasLazyCompletionResolver()) {
+			try {
+				return server.getTextDocumentService().resolveCompletionItem(maybeUnresolved).get();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
+		return maybeUnresolved;
 	}
 
 	public List<CompletionItem> resolveCompletions(CompletionList completions) {

@@ -209,7 +209,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		c.setHoverProvider(true);
 
 		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(false);
+		completionProvider.setResolveProvider(hasLazyCompletionResolver());
 		c.setCompletionProvider(completionProvider);
 
 		if (hasQuickFixes()) {
@@ -231,6 +231,10 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 
 		return c;
+	}
+
+	public boolean hasLazyCompletionResolver() {
+		return false;
 	}
 
 	private boolean hasDocumentSymbolHandler() {

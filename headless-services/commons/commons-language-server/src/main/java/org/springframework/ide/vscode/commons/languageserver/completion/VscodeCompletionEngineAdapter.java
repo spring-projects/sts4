@@ -8,13 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
@@ -28,6 +30,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -40,16 +43,71 @@ import reactor.core.scheduler.Schedulers;
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
+	public static class LazyCompletionResolver {
+		private int nextId = 0; //Used to assign unique id to completion items.
+
+		private Map<String, Consumer<CompletionItem>> resolvers = new HashMap<>();
+
+		private String nextId() {
+			//Warning: it's tempting to return 'int' and use a Integer object as id but...
+			// Looks like that breaks things because the Integer becomes a Double after being
+			// serialized and deserialized to json.
+			return ""+(nextId++);
+		}
+
+		public synchronized String resolveLater(ICompletionProposal completion, TextDocument doc) {
+			String id = nextId();
+			resolvers.put(id, (unresolved) -> {
+				try {
+					resolveItem(doc, completion, unresolved);
+				} catch (Exception e) {
+					Log.log(e);
+				}
+			});
+			return id;
+		}
+
+		public synchronized void resolveNow(CompletionItem unresolved) {
+			Object id = unresolved.getData();
+			if (id!=null) {
+				Consumer<CompletionItem> resolver = resolvers.get(id);
+				if (resolver!=null) {
+					resolver.accept(unresolved);
+					unresolved.setData(null); //No longer needed after item is resolved.
+					Log.info("Resolved completion: "+unresolved);
+				} else {
+					Log.warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved);
+				}
+			}
+		}
+
+		public synchronized void clear() {
+			resolvers.clear();
+		}
+	}
+
 	private final static int DEFAULT_MAX_COMPLETIONS = 50;
 	private int maxCompletions = DEFAULT_MAX_COMPLETIONS; //TODO: move this to CompletionEngineOptions.
 	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
+	private LazyCompletionResolver resolver = null;
 
 	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
 		this.server = server;
 		this.engine = engine;
+	}
+
+	/**
+	 * By setting a non-null {@link LazyCompletionResolver} you can enable lazy completion resolution.
+	 * By default lazy resolution is not implemented.
+	 * <p>
+	 * The resolver is injected rather than created locally to allow sharing it between multiple
+	 * engines.
+	 */
+	public void setLazyCompletionResolver(LazyCompletionResolver resolver) {
+		this.resolver = resolver;
 	}
 
 	public void setMaxCompletionsNumber(int maxCompletions) {
@@ -66,6 +124,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		TextDocument doc = documents.get(params).copy();
 		if (doc!=null) {
 			return Mono.fromCallable(() -> {
+				if (resolver!=null) {
+					//Assumes we don't have more than one completion request in flight from the client.
+					// So when a new request arrives we can forget about the old unresolved items:
+					resolver.clear();
+				}
 				//TODO: This callable is a 'big lump of work' so can't be canceled in pieces.
 				// Should we push using of reactive streams down further and compose this all
 				// using reactive style? If not then this is overkill could just as well use
@@ -105,19 +168,27 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
 		item.setDetail(completion.getDetail());
-		item.setDocumentation(toMarkdown(completion.getDocumentation()));
-		adaptEdits(item, doc, completion.getTextEdit());
+		if (resolver!=null) {
+			item.setData(resolver.resolveLater(completion, doc));
+		} else {
+			resolveItem(doc, completion, item);
+		}
 		return item;
 	}
 
-	private String toMarkdown(Renderable r) {
+	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
+		item.setDocumentation(toMarkdown(completion.getDocumentation()));
+		adaptEdits(item, doc, completion.getTextEdit());
+	}
+
+	private static String toMarkdown(Renderable r) {
 		if (r!=null) {
 			return r.toMarkdown();
 		}
 		return null;
 	}
 
-	private void adaptEdits(CompletionItem item, TextDocument doc, DocumentEdits edits) throws Exception {
+	private static void adaptEdits(CompletionItem item, TextDocument doc, DocumentEdits edits) throws Exception {
 		TextReplace replaceEdit = edits.asReplacement(doc);
 		if (replaceEdit==null) {
 			//The original edit does nothing.
@@ -134,7 +205,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 	}
 
-	private String vscodeIndentFix(TextDocument doc, Position start, String newText) {
+	private static String vscodeIndentFix(TextDocument doc, Position start, String newText) {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
 		//See here: https://github.com/Microsoft/language-server-protocol/issues/83
@@ -149,9 +220,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletion(CompletionItem unresolved) {
-		//TODO: item is pre-resoved so we don't do anything, but we really should somehow defer some work, such as
-		// for example computing docs and edits to resolve time.
-		//The tricky part is that we have to probably remember infos about the unresolved elements somehow so we can resolve later.
+		resolver.resolveNow(unresolved);
 		return CompletableFuture.completedFuture(unresolved);
 	}
 }

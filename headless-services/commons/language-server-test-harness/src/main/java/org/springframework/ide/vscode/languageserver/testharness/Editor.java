@@ -372,6 +372,7 @@ public class Editor {
 	}
 
 	public void apply(CompletionItem completion) throws Exception {
+		completion = harness.resolveCompletionItem(completion);
 		TextEdit edit = completion.getTextEdit();
 		String docText = doc.getText();
 		if (edit!=null) {
