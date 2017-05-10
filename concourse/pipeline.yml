@@ -307,6 +307,8 @@ jobs:
         bump: final
   - task: publish-vsix-releases
     file: sts4/concourse/tasks/publish-vsix-releases.yml
+    params:
+      vsce_token: {{vsce_token}}
     on_failure:
       put: slack-notification
       params:
