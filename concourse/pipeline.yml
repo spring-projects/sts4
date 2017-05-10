@@ -288,6 +288,51 @@ jobs:
         text: |
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: publish-release
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: s3-concourse-vsix-snapshot
+      passed:
+      - build-concourse-rc
+    - get: s3-manifest-yaml-vsix-snapshot
+      passed:
+      - build-manifest-yaml-rc
+    - get: version
+      passed:
+      - build-concourse-rc
+      - build-manifest-yaml-rc
+      params:
+        bump: final
+  - task: publish-vsix-releases
+    file: sts4/concourse/tasks/publish-vsix-releases.yml
+    on_failure:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+    on_success:
+      put: slack-notification
+      params:
+        channel: "@kdvolder"
+        text_file: version/version
+        text: |
+          STS 4 VScode Extensions $TEXT_FILE_CONTENT released
+          Releases now available on Vscode Marketplace:
+          - [Cloudfoundry Manifest YML Support](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml)
+          - [Concourse CI Pipeline Editor](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse)
+  - aggregate:
+    - put: sts4-out
+      params:
+        repository: sts4
+        only_tag: true
+        tag: version/version
+        tag_prefix: V_
+    - put: version
+      params:
+        file: version/version
 - name: build-snapshot-website
   serial: true
   plan:
