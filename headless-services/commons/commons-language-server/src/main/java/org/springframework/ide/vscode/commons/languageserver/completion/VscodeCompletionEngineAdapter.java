@@ -74,9 +74,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				if (resolver!=null) {
 					resolver.accept(unresolved);
 					unresolved.setData(null); //No longer needed after item is resolved.
-					Log.info("Resolved completion: "+unresolved);
 				} else {
-					Log.warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved);
+					Log.warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved.getLabel());
 				}
 			}
 		}
