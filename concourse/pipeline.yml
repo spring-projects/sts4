@@ -268,7 +268,7 @@ jobs:
       passed: 
       - trigger-rc-build
   - task: build-manifest-yaml-rc
-    file: sts4/concourse/tasks/versioned-build.yml
+    file: sts4/concourse/tasks/rc-build.yml
     params:
       extension_id: vscode-manifest-yaml
     on_failure:
