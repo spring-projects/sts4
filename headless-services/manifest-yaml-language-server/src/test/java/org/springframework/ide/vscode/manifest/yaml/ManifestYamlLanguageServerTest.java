@@ -71,7 +71,7 @@ public class ManifestYamlLanguageServerTest {
 //	}
 
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isFalse();
+		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
 		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
