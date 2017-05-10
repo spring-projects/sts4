@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 workdir=`pwd`
-
 vsix_files=`ls ${workdir}/s3-*/*.vsix`
-
-echo "vsix_files=$vsix_files"
 
 for vsix_file in $vsix_files
 do
     echo vsix_file=${vsix_file}
+    echo "We should be runing the following command!"
+    echo "But this is just a practice run..."
+    echo "vsce publish -p $vsce_token --packagePath $vsix_file"
 done
 
 exit 99
