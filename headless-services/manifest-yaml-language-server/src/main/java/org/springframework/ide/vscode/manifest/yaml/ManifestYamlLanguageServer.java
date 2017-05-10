@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.Clien
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -50,6 +51,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private CFTargetCache cfTargetCache;
 	private final CloudFoundryClientFactory cfClientFactory;
 	private final ClientParamsProvider cfParamsProvider;
+	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 
 	public ManifestYamlLanguageServer() {
 		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, new CfCliParamsProvider());
@@ -68,7 +70,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
-		VscodeCompletionEngine completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
+		VscodeCompletionEngineAdapter completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
+		completionEngine.setLazyCompletionResolver(completionResolver);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
@@ -128,6 +131,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 				return stacksProvider;
 			}
 		};
+	}
+
+	@Override
+	public boolean hasLazyCompletionResolver() {
+		return completionResolver!=null;
 	}
 
 	private CFTargetCache getCfTargetCache() {
