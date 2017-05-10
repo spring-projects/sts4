@@ -220,10 +220,46 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
+- name: build-concourse-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-consourse-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-concourse-rc
+    file: sts4/concourse/tasks/versioned-build.yml
+    params:
+      extension_id: vscode-concourse
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-concourse-vsix-snapshot
+    params: 
+      file: out/vscode-concourse-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-concourse-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-manifest-yaml-rc
   plan:
   - aggregate:
     - get: maven-cache
+      passed:
+      - build-manifest-yaml-vsix-snapshot
     - get: sts4
       passed: 
       - trigger-rc-build
@@ -247,7 +283,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        text_file: s3-vscode-manifest-yaml-vsix/url
+        text_file: s3-manifest-yaml-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
