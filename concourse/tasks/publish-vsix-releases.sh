@@ -4,7 +4,12 @@ workdir=`pwd`
 
 vsix_files=`ls ${workdir}/s3-*/*.vsix`
 
-echo "vsix_files=$vsix_file"
+echo "vsix_files=$vsix_files"
+
+for vsix_file in $vsix_files
+do
+    echo vsix_file=${vsix_file}
+done
 
 exit 99
 
