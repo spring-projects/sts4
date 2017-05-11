@@ -1,4 +1,5 @@
 inputs:
+- name: version
 - name: sts4
 outputs:
 - name: sts4-out
