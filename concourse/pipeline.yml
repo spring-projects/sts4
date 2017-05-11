@@ -318,7 +318,9 @@ jobs:
       params:
         bump: final
   - task: publish-vsix-releases
-    file: sts4/concourse/tasks/publish-vsix-releases.yml
+    file: tasks/concourse/tasks/publish-vsix-releases.yml
+    input_mapping:
+      sts4: tasks
     params:
       vsce_token: {{vsce_token}}
     on_failure:
