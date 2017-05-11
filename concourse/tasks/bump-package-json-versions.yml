@@ -2,7 +2,7 @@ inputs:
 - name: version
 - name: sts4
 outputs:
-- name: sts4-out
+- name: out
 platform: linux
 image_resource:
   type: docker-image
