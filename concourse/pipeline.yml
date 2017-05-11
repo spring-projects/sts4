@@ -25,6 +25,14 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
+- name: tasks
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    paths:
+    - concourse/tasks
+    private_key: {{rsa_id}}
 - name: sts4-out
   type: git
   source:
@@ -100,7 +108,7 @@ resources:
     access_key_id: {{s3_accesskey}}
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
-    initial_version: 0.0.3
+    initial_version: 0.0.5-RC.6
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -292,7 +300,11 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: tasks
     - get: sts4
+      passed:
+      - build-manifest-yaml-rc
+      - build-concourse-rc
     - get: s3-concourse-vsix-snapshot
       passed:
       - build-concourse-rc
@@ -332,9 +344,9 @@ jobs:
         only_tag: true
         tag: version/version
         tag_prefix: V_
-    - put: version
-      params:
-        file: version/version
+    # - put: version
+    #   params:
+    #     file: version/version
 - name: build-snapshot-website
   serial: true
   plan:
