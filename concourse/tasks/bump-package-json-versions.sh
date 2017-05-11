@@ -7,7 +7,7 @@ sources=$workdir/sts4/vscode-extensions
 version=`cat version/version`
 echo "version=$version"
 
-for extension_id in (vscode-manifest-yaml vscode-concourse commons-vscode)
+for extension_id in vscode-manifest-yaml vscode-concourse commons-vscode
 do
     echo "Should update version of $extension_id to $version"
     echo "But this isn't implemented yet!"
