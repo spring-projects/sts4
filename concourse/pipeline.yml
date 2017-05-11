@@ -337,8 +337,8 @@ jobs:
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
           Releases now available on Vscode Marketplace:
-          - [Cloudfoundry Manifest YML Support](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml)
-          - [Concourse CI Pipeline Editor](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse)
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest YML Support>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
   - aggregate:
     - put: sts4-out
       params:
@@ -349,6 +349,21 @@ jobs:
     # - put: version
     #   params:
     #     file: version/version
+- name: post-release
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: version
+      trigger: true
+      passed:
+      - publish-release
+  - task: bump-package-json-versions
+    file: sts4/concourse/tasks/bump-package-json-versions.yml
+  # - put: sts4-out
+  #   params:
+  #     repository: out
+  #     rebase: true
 - name: build-snapshot-website
   serial: true
   plan:
