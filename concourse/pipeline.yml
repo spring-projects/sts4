@@ -39,6 +39,12 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
+- name: sts4-out-TEST
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: kdvolder-temp
+    private_key: {{rsa_id}}
 - name: s3-boot-properties-vsix-snapshot
   type: s3
   source:
@@ -360,10 +366,10 @@ jobs:
       - publish-release
   - task: bump-package-json-versions
     file: sts4/concourse/tasks/bump-package-json-versions.yml
-  # - put: sts4-out
-  #   params:
-  #     repository: out
-  #     rebase: true
+  - put: sts4-out-TEST
+    params:
+      repository: out
+      rebase: true
 - name: build-snapshot-website
   serial: true
   plan:
