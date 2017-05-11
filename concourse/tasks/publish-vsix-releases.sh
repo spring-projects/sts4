@@ -16,3 +16,5 @@ do
     echo "But this is just a practice run..."
     echo ""
 done
+
+exit 99 ## take this line out once the publishing code is functional and does something real.
