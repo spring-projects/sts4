@@ -12,6 +12,7 @@ do
     cd $sources/$extension_id
     echo "Should update version of $extension_id to $version"
     npm version $version
+    git add package.json
     echo ""
 done
 
