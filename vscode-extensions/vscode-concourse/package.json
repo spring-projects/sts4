@@ -3,7 +3,7 @@
   "displayName": "Concourse CI Pipeline Editor",
   "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
   "icon": "icon.png",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -65,15 +65,18 @@
         "configuration": "./yaml-support/language-configuration.json"
       }
     ],
-    "grammars": [{
-      "language": "concourse-pipeline-yaml",
-      "scopeName": "source.yaml",
-      "path": "./yaml-support/yaml.tmLanguage"
-    }, {
-      "language": "concourse-task-yaml",
-      "scopeName": "source.yaml",
-      "path": "./yaml-support/yaml.tmLanguage"
-    }]
+    "grammars": [
+      {
+        "language": "concourse-pipeline-yaml",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      },
+      {
+        "language": "concourse-task-yaml",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      }
+    ]
   },
   "main": "./out/lib/Main",
   "scripts": {
