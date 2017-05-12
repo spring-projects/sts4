@@ -1133,6 +1133,9 @@ public class ConcourseEditorTest {
 				,
 				"disable_git_lfs: <*>"
 				,
+				"fetch:\n" +
+				"      - <*>"
+				,
 				"submodules:\n"+
 				"        <*>"
 		);
@@ -3737,6 +3740,28 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"not-used|Unused 'Resource'"
 		);
+	}
+
+	@Test public void gitResourceFetchParameter() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"  - name: cf-networking-dev\n" +
+				"    type: git\n" +
+				"    source:\n" +
+				"      uri: git@github.com:cloudfoundry-incubator/cf-networking-release.git\n" +
+				"      branch: develop\n" +
+				"      ignore_paths:\n" +
+				"        - docs\n" +
+				"      private_key: {{cf-networking-deploy-key}}\n" +
+				"jobs:\n" +
+				"- name: foo\n" +
+				"  plan:\n" +
+				"  - get: cf-networking-dev\n" +
+				"    params:\n" +
+				"      fetch: [master]\n" +
+				"      submodules: none\n"
+		);
+		editor.assertProblems(/*NONE*/);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
