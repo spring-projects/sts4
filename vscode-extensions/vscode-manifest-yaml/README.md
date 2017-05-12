@@ -26,9 +26,11 @@ rescue:
 
 ### Dynamic Cloud Foundry Content Assist
 
-Would you like to see actual Cloud Foundry values for attributes like `services`, `buildpack`, `domain`, and `stack`? If you have [cf CLI](https://docs.cloudfoundry.org/cf-cli/) installed and connected to a Cloud Foundry target, the extension will automatically display values for certain manifest attributes.
+Would you like to see actual Cloud Foundry values for attributes like `services`, `buildpack`, `domain`, and `stack`? If you have [cf CLI](https://docs.cloudfoundry.org/cf-cli/) installed and connected to a Cloud target, the extension will automatically display values for certain manifest attributes.
 
-For example, if you are connected to a Cloud Foundry target that has services, and you invoke content assist in an entry under `services`, you will see the available service instances. In addition, service instances that do not exist in the Cloud target are highlighted with a warning.
+For example, if you are connected to a Cloud target that has services, and you invoke content assist in an entry under `services`, you will see the available service instances. In addition, service instances that do not exist in the Cloud target, like `redisserv` in the example below, are highlighted with a warning.
+
+The dynamic content assist also shows which Cloud target you are connected to.
 
 ![Dynamic Cloud Foundry Content Assist Screenshot][dcfca]
 
