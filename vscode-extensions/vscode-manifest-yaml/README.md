@@ -17,12 +17,20 @@ an error marker to see an explanation.
 
 ![Linting Screenshot][linting]
 
-### Content assist
+### Content Assist
 
 Having trouble remembering all the names of the attributes, and their spelling? Content assist to the
 rescue:
 
 ![Content Assist Screenshot][ca]
+
+### Dynamic Cloud Foundry Content Assist
+
+Would you like to see actual Cloud Foundry values for attributes like `services`, `buildpack`, `domain`, and `stack`? If you have [cf CLI](https://docs.cloudfoundry.org/cf-cli/) installed and connected to a Cloud Foundry target, the extension will automatically display values for certain manifest attributes.
+
+For example, if you are connected to a Cloud Foundry target that has services, and you invoke content assist in an entry under `services`, you will see the available service instances. In addition, service instances that do not exist in the Cloud target are highlighted with a warning.
+
+![Dynamic Cloud Foundry Content Assist Screenshot][dcfca]
 
 ### Documentation Hovers
 
@@ -34,4 +42,6 @@ read its detailed documentation.
 
 [linting]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png
 [ca]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png
+[dcfca]:
+readme-imgs/cf-dynamic-content-assist.png
 [hovers]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png
