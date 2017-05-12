@@ -19,6 +19,7 @@
 		<module>commons-cf</module>
 		<module>commons-maven</module>
 		<module>commons-gradle</module>
+		<module>commons-boot-app-cli</module>
 	</modules>
 
 	<repositories>
