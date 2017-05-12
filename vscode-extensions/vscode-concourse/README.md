@@ -42,6 +42,18 @@ read its detailed documentation:
 
 ![Hover Docs Screenshot][hovers]
 
+### Goto Symbol in File
+
+Is your Pipeline yaml file getting larger and is it becoming harder to find a particular Job, Resource or
+Resource Type declaration? The "Goto Symbol in File" command helps you quickly jump to a specific
+definition.
+
+Type `CTRL-SHIFT-O` to popup a list of all symbols in your current Pipeline file. Start typing a name 
+(or portion thereof) to narrow down the list. Select a symbol to jump directly to its location in the
+file.
+
+![Goto Symbol Screenshot][goto_symbol]
+
 ### Goto/Peek Definition
 
 Use "Goto Defition" or "Peek Definition" to quickly go (or peek) from a a Job- or Resource name 
@@ -75,4 +87,4 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 [ca2]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-2.png
 [hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/hover.png
 [peek]:    https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/peek.png
-
+[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/readme-imgs/goto-symbol.png
