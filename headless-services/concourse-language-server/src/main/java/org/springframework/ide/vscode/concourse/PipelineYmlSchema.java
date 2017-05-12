@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.concourse;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -30,6 +32,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -100,6 +103,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.integerAtLeast(1));
 
 	public final AbstractType t_resource_name;
+	public final YAtomicType t_maybe_resource_name;
 	public final AbstractType t_job_name;
 	public final YAtomicType t_resource_type_name;
 	public final YType t_mime_type = f.yatomic("MimeType")
@@ -151,6 +155,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private List<YType> definitionTypes = new ArrayList<>();
 
+
 	public PipelineYmlSchema(ConcourseModel models) {
 		this.models = models;
 		models.setResourceTypeRegistry(resourceTypes);
@@ -179,6 +184,14 @@ public class PipelineYmlSchema implements YamlSchema {
 					return (models.getResourceNames(dc));
 				}
 		);
+		t_maybe_resource_name = f.yatomic("ResourceName | TaskOutput");
+		t_maybe_resource_name.addHintProvider((DynamicSchemaContext dc) -> {
+			//Putting the Callable into a local variable is strange, but the compiler doesn't like it if
+			// we return it directly. Too much complexity for Java type-inference?
+			Callable<Collection<YValueHint>> callable = () -> YTypeFactory.hints(models.getResourceNames(dc));
+			return callable;
+		});
+		t_maybe_resource_name.parseWith(ValueParsers.NE_STRING);
 
 		t_job_name = f.yenum("Job Name",
 				(parseString, validValues) ->  {
@@ -311,7 +324,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(taskStep, "privileged", t_boolean);
 		addProp(taskStep, "params", t_params);
 		addProp(taskStep, "image", t_resource_name);
-		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, t_resource_name));
+		addProp(taskStep, "input_mapping",  f.ymap(t_ne_string, t_maybe_resource_name));
 		addProp(taskStep, "output_mapping", t_string_params);
 		taskStep.requireOneOf("config", "file");
 

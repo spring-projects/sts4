@@ -44,6 +44,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 		this.models = models;
 		this.astTypes = models.getAstTypeCache();
 		findByPath(schema.t_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);
+		findByPath(schema.t_maybe_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);
 		findByPath(schema.t_job_name, ConcourseModel.JOB_NAMES_PATH);
 		findByPath(schema.t_resource_type_name, ConcourseModel.RESOURCE_TYPE_NAMES_PATH);
 	}

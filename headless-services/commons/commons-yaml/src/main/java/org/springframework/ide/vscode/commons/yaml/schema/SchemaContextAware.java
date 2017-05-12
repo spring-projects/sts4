@@ -17,6 +17,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
  *
  * @author Kris De Volder
  */
+@FunctionalInterface
 public interface SchemaContextAware<T> {
 	T withContext(DynamicSchemaContext dc);
 

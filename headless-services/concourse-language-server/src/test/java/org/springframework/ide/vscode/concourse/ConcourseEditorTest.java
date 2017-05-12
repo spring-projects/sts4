@@ -585,14 +585,14 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"bogus-get|resource does not exist",
 				"bogus-image|resource does not exist",
-				"bogus-input|resource does not exist",
+//				"bogus-input|resource does not exist", //Not checked anymore. See: https://www.pivotaltracker.com/story/show/145024233
 				"bogus-put|resource does not exist"
 		);
 
 		editor.assertProblems(
 				"bogus-get|[sts4]",
 				"bogus-image|[sts4]",
-				"bogus-input|[sts4]",
+//				"bogus-input|[sts4]",  //Not checked anymore. See: https://www.pivotaltracker.com/story/show/145024233
 				"bogus-put|[sts4]"
 		);
 	}
@@ -744,6 +744,24 @@ public class ConcourseEditorTest {
 				, // =>
 				"repo-a<*>", "repo-b<*>"
 		);
+
+		assertContextualCompletions(
+				"resources:\n" +
+				"- name: sts4\n" +
+				"- name: repo-a\n" +
+				"- name: repo-b\n" +
+				"jobs:\n" +
+				"- name: job1\n" +
+				"  plan:\n" +
+				"  - task: do-it\n" +
+				"    input_mapping:\n" +
+				"      remapped: <*>\n"
+				, ////////////////////
+				"<*>"
+				, // =>
+				"repo-a<*>", "repo-b<*>", "sts4<*>"
+		);
+
 	}
 
 	@Test
@@ -3695,7 +3713,7 @@ public class ConcourseEditorTest {
 				"  - get: version\n"
 		);
 		Diagnostic p = editor.assertProblems("source-repo|Unused 'Resource'").get(0);
-		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+		assertEquals(DiagnosticSeverity.Error, p.getSeverity());
 
 		editor = harness.newEditor(
 				"resources:\n" +
