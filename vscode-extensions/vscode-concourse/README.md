@@ -73,6 +73,7 @@ The resource-types that are already defined in the schema are:
  - s3
  - pool
  - semver
+ - time
 
 For other resource-types content assist and checking is still very limited. We intend
 to grow this list and provide a similar level of support for all of the built-in resource types in
