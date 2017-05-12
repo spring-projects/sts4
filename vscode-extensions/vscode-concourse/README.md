@@ -87,4 +87,4 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 [ca2]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-2.png
 [hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/hover.png
 [peek]:    https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/peek.png
-[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/readme-imgs/goto-symbol.png
+[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/d095208cfb34b0f129e6b66d41d099955a712f81/vscode-extensions/vscode-concourse/readme-imgs/goto-symbol.png
