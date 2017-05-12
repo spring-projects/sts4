@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Application Properties Support",
   "description": "Provides validation and content assist for Spring Boot application.properties and application.yml file",
   "icon": "spring-boot-logo.png",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "vscode-languageclient": "^3.2.0",
-    "commons-vscode": "^0.0.1"
+    "commons-vscode": "^0.0.6"
   },
   "devDependencies": {
     "vsce": "^1.17.0",

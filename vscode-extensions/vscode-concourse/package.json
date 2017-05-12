@@ -3,7 +3,7 @@
   "displayName": "Concourse CI Pipeline Editor",
   "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
   "icon": "icon.png",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -89,7 +89,7 @@
   },
   "dependencies": {
     "vscode-languageclient": "^3.2.x",
-    "commons-vscode": "^0.0.1"
+    "commons-vscode": "^0.0.6"
   },
   "devDependencies": {
     "vsce": "^1.17.0",

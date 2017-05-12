@@ -3,7 +3,7 @@
   "displayName": "Java Properties files Support",
   "description": "Provides syntax highlighting for Java  Properties files",
   "icon": "icon.png",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "publisher": "pivotal",
   "repository": {
     "type": "git",
