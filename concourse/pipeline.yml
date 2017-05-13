@@ -361,6 +361,8 @@ jobs:
   - aggregate:
     - get: sts4
     - get: version
+      params:
+        bump: patch
       trigger: true
       passed:
       - publish-release
@@ -370,6 +372,9 @@ jobs:
     params:
       repository: out
       rebase: true
+  - put: version
+    params:
+      file: version/version    
 - name: build-snapshot-website
   serial: true
   plan:
@@ -396,3 +401,10 @@ jobs:
   - put: snapshot-website
     params:
       path: website
+- name: bump-patch-version
+  serial: true
+  plan:
+  - get: version
+  - put: version
+    params:
+      bump: patch
