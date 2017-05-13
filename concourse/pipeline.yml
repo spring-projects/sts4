@@ -332,13 +332,13 @@ jobs:
     on_failure:
       put: slack-notification
       params:
-#        channel: "@kdvolder"
+        channel: "@kdvolder"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
     on_success:
       put: slack-notification
       params:
-        channel: "@kdvolder"
+        channel: "#tooling-projects"
         text_file: version/version
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
