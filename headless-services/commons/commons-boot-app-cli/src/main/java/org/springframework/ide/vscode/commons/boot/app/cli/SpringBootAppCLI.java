@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.management.InstanceNotFoundException;
@@ -114,9 +115,14 @@ public class SpringBootAppCLI {
 		if (port != null) {
 			return port;
 		}
-		else {
-			return getPortViaActuator(connection);
+		
+		port = getPortViaActuator(connection);
+		if (port != null) {
+			return port;
 		}
+		
+		port = getPortViaTomcatBean(connection);
+		return port;
 	}
 	
 	private static String getPortViaAdmin(MBeanServerConnection connection) throws Exception {
@@ -135,7 +141,11 @@ public class SpringBootAppCLI {
 
 	private static String getPortViaActuator(MBeanServerConnection connection) throws Exception {
 		try {
-			String environment = getEnvironment(connection);
+			String DEFAULT_OBJECT_NAME = "org.springframework.boot:type=Endpoint,name=environmentEndpoint";
+			ObjectName objectName = new ObjectName(DEFAULT_OBJECT_NAME);
+
+			Object result = connection.getAttribute(objectName, "Data");
+			String environment = new ObjectMapper().writeValueAsString(result);
 			System.out.println("Environment: " + environment);
 			
 			JSONObject env = new JSONObject(environment);
@@ -153,12 +163,22 @@ public class SpringBootAppCLI {
 		return null;
 	}
 
-	private static String getEnvironment(MBeanServerConnection connection) throws Exception {
-		String DEFAULT_OBJECT_NAME = "org.springframework.boot:type=Endpoint,name=environmentEndpoint";
-		ObjectName objectName = new ObjectName(DEFAULT_OBJECT_NAME);
+	private static String getPortViaTomcatBean(MBeanServerConnection connection) throws Exception {
+		try {
+			Set<ObjectName> queryNames = connection.queryNames(null, null);
+			
+			for (ObjectName objectName : queryNames) {
+				if (objectName.toString().startsWith("Tomcat:type=Connector")) {
+					Object result = connection.getAttribute(objectName, "localPort");
+					System.out.println("localpost: " + result.toString());
+				}
+			}
+		}
+		catch (InstanceNotFoundException e) {
+			System.out.println("another bean not found");
+		}
 		
-		Object result = connection.getAttribute(objectName, "Data");
-		return new ObjectMapper().writeValueAsString(result);
+		return null;
 	}
 
 }
