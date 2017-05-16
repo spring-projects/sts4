@@ -219,6 +219,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(t_resource, "type", t_resource_type_name).isRequired(true);
 		addProp(t_resource, "source", resourceSource);
 		addProp(t_resource, "check_every", t_duration);
+		addProp(t_resource, "webhook_token", t_ne_string);
 
 		AbstractType t_image_resource = f.ybean("ImageResource");
 		for (YTypedProperty p : t_resource.getProperties()) {

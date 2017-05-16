@@ -1392,6 +1392,7 @@ public class ConcourseEditorTest {
 				"- name: sts4\n" +
 				"  type: git\n" +
 				"  check_every: 5m\n" +
+				"  webhook_token: bladayadayaaa\n" +
 				"  source:\n" +
 				"    repository: https://github.com/spring-projects/sts4\n"
 		);
@@ -1399,6 +1400,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("name", "The name of the resource");
 		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
 		editor.assertHoverContains("source", 2, "The location of the resource");
+		editor.assertHoverContains("webhook_token", "web hooks can be sent to trigger an immediate *check* of the resource");
 		editor.assertHoverContains("check_every", "The interval on which to check for new versions");
 	}
 
@@ -3107,6 +3109,7 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//For the 'exact' context:
 				"check_every",
+				"webhook_token",
 				//"name", exists
 				//"source", exists
 				//"type", exists
