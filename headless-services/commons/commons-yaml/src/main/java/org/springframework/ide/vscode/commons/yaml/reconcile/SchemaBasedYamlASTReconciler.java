@@ -162,7 +162,12 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 								unknownBeanProperty(keyNode, type, key);
 							} else {
 								if (prop.isDeprecated()) {
-									problems.accept(YamlSchemaProblems.deprecatedProperty(keyNode, type, prop));
+									String msg = prop.getDeprecationMessage();
+									if (StringUtil.hasText(msg)) {
+										problems.accept(YamlSchemaProblems.deprecatedProperty(msg, keyNode));
+									} else {
+										problems.accept(YamlSchemaProblems.deprecatedProperty(keyNode, type, prop));
+									}
 								}
 								reconcile(ast, valueAt(path, key), map, entry.getValueNode(), prop.getType());
 							}

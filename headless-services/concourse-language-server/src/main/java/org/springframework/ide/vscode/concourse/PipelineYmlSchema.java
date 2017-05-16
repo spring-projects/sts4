@@ -248,7 +248,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		task = f.ybean("TaskConfig");
 		addProp(task, "platform", t_platform).isRequired(true);
 		addProp(task, "image_resource", t_image_resource);
-		addProp(task, "image", t_ne_string);
+		addProp(task, "rootfs_uri", t_ne_string);
+		addProp(task, "image", t_ne_string).isDeprecated("The 'image' property in 'TaskConfig' is renamed to 'rootfs_uri' in Concourse 3.0");
 		addProp(task, "inputs", f.yseq(t_input));
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
@@ -258,16 +259,16 @@ public class PipelineYmlSchema implements YamlSchema {
 			if (LanguageId.CONCOURSE_PIPELINE.equals(languageId)) {
 				Node parentImageDef = models.getParentPropertyNode("image", dc);
 				if (parentImageDef==null) {
-					return Constraints.requireOneOf("image_resource", "image");
+					return Constraints.requireOneOf("image_resource", "rootfs_uri", "image");
 				} else {
 					return Constraints.deprecated((name) ->
 								"Deprecated: This attribute in the task config will be ignored! "+
 								"The 'image' attribute on the task itself takes precedence.",
-							"image_resource", "image"
+							"image_resource", "rootfs_uri", "image"
 					);
 				}
 			} else {
-				return Constraints.requireAtMostOneOf("image_resource", "image");
+				return Constraints.requireAtMostOneOf("image_resource", "rootfs_uri", "image");
 			}
 		}));
 

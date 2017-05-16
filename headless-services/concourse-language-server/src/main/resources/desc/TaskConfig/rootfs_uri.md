@@ -4,4 +4,4 @@ by your worker's Garden backend.
 You should only use this if you cannot use `image_resource` for some reason, 
 and you know what you're doing.
 
-WARNING: This property has been renamed to `rootfs_uri` in Concourse 3.0.
+Note: Prior to Concourse 3.0 this property was called `image`.

@@ -351,6 +351,26 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void concourse_3_0_rootfs_uri_prop() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"image: blah\n" +
+				"run:\n" +
+				"  path: demo-repo/ci/tasks/run-tests.sh"
+		);
+		Diagnostic p = editor.assertProblems("image|renamed to 'rootfs_uri'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"image: blah\n" +
+				"run:\n" +
+				"  path: demo-repo/ci/tasks/run-tests.sh"
+		);
+		editor.assertHoverContains("image", "renamed to `rootfs_uri`");
+	}
+
+	@Test
 	public void taskStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
@@ -664,7 +684,7 @@ public class ConcourseEditorTest {
 			List<Diagnostic> problems = editor.assertProblems(
 				"config|[platform, run] are required",
 				"config|Only one of [config, file]",
-				"config|One of [image_resource, image]",
+				"config|One of [image_resource, rootfs_uri, image]",
 				"file|Only one of [config, file]"
 			);
 			//All of the problems in this example are property contraint violations! So all should be warnings.
@@ -2718,9 +2738,9 @@ public class ConcourseEditorTest {
 		Editor editor;
 
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
-				"image: some-image"
+				"rootfs_uri: some-image"
 		);
-		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
+		editor.assertProblems("rootfs_uri: some-imag^e^|[platform, run] are required");
 
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
 				"platform: a-platform\n" +
@@ -2731,7 +2751,7 @@ public class ConcourseEditorTest {
 				"    bogus-source-prop: bad\n" +
 				"    repository: ruby\n" +
 				"    tag: '2.1'\n" +
-				"image: some-image\n" +
+				"rootfs_uri: some-image\n" +
 				"inputs:\n" +
 				"- path: path/to/input\n" +
 				"outputs:\n" +
@@ -2741,10 +2761,10 @@ public class ConcourseEditorTest {
 				"params: the-params\n"
 		);
 		editor.assertProblems(
-				"image_resource|Only one of [image_resource, image] should be defined",
+				"image_resource|Only one of [image_resource, rootfs_uri, image] should be defined",
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
-				"image|Only one of [image_resource, image] should be defined",
+				"rootfs_uri|Only one of [image_resource, rootfs_uri, image] should be defined",
 				"-^ path: path/to/input|'name' is required",
 				"-^ path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
@@ -2755,16 +2775,15 @@ public class ConcourseEditorTest {
 		Editor editor;
 
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
-				"image: some-image"
+				"rootfs_uri: some-image"
 		);
-		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
+		editor.assertProblems("rootfs_uri: some-imag^e^|[platform, run] are required");
 
 		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
-				"image: some-image\n" +
-				"\n" +
+				"rootfs_uri: some-image\n" +
 				"   \n"
 		);
-		editor.assertProblems("image: some-imag^e^|[platform, run] are required");
+		editor.assertProblems("rootfs_uri: some-imag^e^|[platform, run] are required");
 
 	}
 
@@ -2785,8 +2804,6 @@ public class ConcourseEditorTest {
 				,
 				"<*>"
 				, // ==>
-				"image: <*>"
-				,
 				"image_resource:\n" +
 				"  <*>"
 				,
@@ -2798,6 +2815,10 @@ public class ConcourseEditorTest {
 				,
 				"params:\n" +
 				"  <*>"
+				,
+				"rootfs_uri: <*>"
+				,
+				"image: <*>"
 		);
 
 		assertTaskCompletions(
@@ -2851,7 +2872,7 @@ public class ConcourseEditorTest {
 				"          bogus-source-prop: bad\n" +
 				"          repository: ruby\n" +
 				"          tag: '2.1'\n" +
-				"      image: some-image\n" +
+				"      rootfs_uri: some-image\n" +
 				"      inputs:\n" +
 				"      - path: path/to/input\n" +
 				"      outputs:\n" +
@@ -2861,10 +2882,10 @@ public class ConcourseEditorTest {
 				"      params: the-params"
 		);
 		editor.assertProblems(
-				"image_resource|Only one of [image_resource, image] should be defined",
+				"image_resource|Only one of [image_resource, rootfs_uri, image] should be defined",
 				"name|Unknown property",
 				"bogus-source-prop|Unknown property",
-				"image|Only one of [image_resource, image] should be defined",
+				"rootfs_uri|Only one of [image_resource, rootfs_uri, image] should be defined",
 				"-^ path: path/to/input|'name' is required",
 				"-^ path: path/to/output|'name' is required",
 				"the-params|Expecting a 'Map'"
@@ -3044,7 +3065,7 @@ public class ConcourseEditorTest {
 
 		editor.assertProblems(
 				"docker-image|Unused",
-				"config|One of [image_resource, image] is required"
+				"config|One of [image_resource, rootfs_uri, image] is required"
 		);
 	}
 
@@ -3076,7 +3097,7 @@ public class ConcourseEditorTest {
 			"  - task: hello-world\n" +
 			"    image: my-docker-image\n" +
 			"    config:\n" +
-			"      image: blah\n" +
+			"      rootfs_uri: blah\n" +
 			"      image_resource:\n" +
 			"        type: docker-image\n" +
 			"      inputs:\n" +
@@ -3088,7 +3109,7 @@ public class ConcourseEditorTest {
 			"        - mvn"
 		);
 		List<Diagnostic> problems = editor.assertProblems(
-				"image|Deprecated",
+				"rootfs_uri|Deprecated",
 				"image_resource|Deprecated"
 		);
 		for (Diagnostic d : problems) {

@@ -21,5 +21,6 @@ public interface YTypedProperty {
 	Renderable getDescription();
 	default boolean isRequired() { return false; }
 	default boolean isDeprecated() { return false; }
+	default String getDeprecationMessage() { return null; }
 	default boolean isPrimary() { return false; }
 }

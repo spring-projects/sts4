@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DASH_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -131,10 +132,13 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 								edits.insert(queryOffset, " ");
 							}
 							edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(YType));
-							proposals.add(completionFactory().beanProperty(doc.getDocument(),
+							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
-									query, p, score, edits, typeUtil)
-							);
+									query, p, score, edits, typeUtil);
+							if (p.isDeprecated() && completion instanceof ScoreableProposal) {
+								completion.deemphasize(DEEMP_DEPRECATION);
+							}
+							proposals.add(completion);
 						}
 					}
 				}

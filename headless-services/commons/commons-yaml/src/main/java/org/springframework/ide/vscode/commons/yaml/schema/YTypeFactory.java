@@ -734,6 +734,7 @@ public class YTypeFactory {
 		private boolean isRequired;
 		private boolean isDeprecated;
 		private boolean isPrimary;
+		private String deprecationMessage;
 
 		private YTypedPropertyImpl(String name, YType type) {
 			this.name = name;
@@ -778,6 +779,15 @@ public class YTypeFactory {
 		public void isDeprecated(boolean isDeprecated) {
 			this.isDeprecated = isDeprecated;
 		}
+		public void isDeprecated(String deprecationMessage) {
+			this.isDeprecated = deprecationMessage!=null;
+			this.deprecationMessage = deprecationMessage;
+		}
+		
+		@Override
+		public String getDeprecationMessage() {
+			return this.deprecationMessage;
+		}
 
 		@Override
 		public boolean isDeprecated() {
@@ -801,6 +811,7 @@ public class YTypeFactory {
 		public boolean isPrimary() {
 			return isPrimary;
 		}
+
 	}
 
 	public YAtomicType yatomic(String name) {
