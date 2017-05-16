@@ -40,9 +40,6 @@
         "aliases": [
           "Concourse Pipeline"
         ],
-        "extensions": [
-          ".yml"
-        ],
         "filenamePatterns": [
           "*pipeline*.yml"
         ],
@@ -53,9 +50,6 @@
         "id": "concourse-task-yaml",
         "aliases": [
           "Concourse Task"
-        ],
-        "extensions": [
-          ".yml"
         ],
         "filenamePatterns": [
           "*task*.yml",
