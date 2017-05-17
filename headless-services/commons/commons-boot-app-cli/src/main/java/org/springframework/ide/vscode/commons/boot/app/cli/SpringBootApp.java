@@ -73,6 +73,69 @@ public class SpringBootApp {
 			if (jmxConnector != null) jmxConnector.close();
 		}
 	}
+	
+	public String getEnvironment() throws Exception {
+		Object result = getActuatorData("org.springframework.boot:type=Endpoint,name=environmentEndpoint", "Data");
+		if (result != null) {
+			String environment = new ObjectMapper().writeValueAsString(result);
+			return environment;
+			
+		}
+		return null;
+	}
+	
+	public String getBeans() throws Exception {
+		Object result = getActuatorData("org.springframework.boot:type=Endpoint,name=beansEndpoint", "Data");
+		if (result != null) {
+			String beans = new ObjectMapper().writeValueAsString(result);
+			return beans;
+			
+		}
+		return null;
+	}
+	
+	public String getRequestMappings() throws Exception {
+		Object result = getActuatorData("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
+		if (result != null) {
+			String mappings = new ObjectMapper().writeValueAsString(result);
+			return mappings;
+			
+		}
+		return null;
+	}
+	
+	public String getAutoConfigReport() throws Exception {
+		Object result = getActuatorData("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
+		if (result != null) {
+			String report = new ObjectMapper().writeValueAsString(result);
+			return report;
+			
+		}
+		return null;
+	}
+	
+	protected Object getActuatorData(String actuatorID, String attribute) throws Exception {
+		String jmxConnect = this.vm.startLocalManagementAgent();
+
+		JMXConnector jmxConnector = null;
+		try {
+			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			
+			try {
+				ObjectName objectName = new ObjectName(actuatorID);
+				Object result = connection.getAttribute(objectName, "Data");
+				return result;
+			}
+			catch (InstanceNotFoundException e) {
+			}
+			return null;
+		}
+		finally {
+			if (jmxConnector != null) jmxConnector.close();
+		}
+	}
 
 	protected boolean contains(String[] cpElements, String element) {
 		for (String cpElement : cpElements) {
@@ -126,13 +189,8 @@ public class SpringBootApp {
 	}
 
 	protected String getPortViaActuator(MBeanServerConnection connection) throws Exception {
-		try {
-			String DEFAULT_OBJECT_NAME = "org.springframework.boot:type=Endpoint,name=environmentEndpoint";
-			ObjectName objectName = new ObjectName(DEFAULT_OBJECT_NAME);
-
-			Object result = connection.getAttribute(objectName, "Data");
-			String environment = new ObjectMapper().writeValueAsString(result);
-			
+		String environment = getEnvironment();
+		if (environment != null) {
 			JSONObject env = new JSONObject(environment);
 			if (env != null) {
 				JSONObject portsObject = env.getJSONObject("server.ports");
@@ -141,8 +199,6 @@ public class SpringBootApp {
 					return portValue;
 				}
 			}
-		}
-		catch (InstanceNotFoundException e) {
 		}
 		return null;
 	}
