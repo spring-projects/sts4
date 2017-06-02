@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,5 +16,6 @@ package org.springframework.boot.ide.properties.servers;
 public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.boot.ide.properties.servers";
+	public static final String LANGUAGE_SERVER_VERSION = "0.0.2";
 
 }

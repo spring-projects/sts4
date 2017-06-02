@@ -12,6 +12,12 @@
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
 	
+	<version>0.0.2-SNAPSHOT</version>
+
+	<properties>
+		<dependencies.version>0.0.1-SNAPSHOT</dependencies.version>
+	</properties>
+
 	<repositories>
 		<!-- Sonatype snapshots repository -->
 		<repository>
@@ -46,34 +52,34 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>java-properties</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-maven</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-gradle</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-yaml</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 		</dependency>
 	
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>language-server-test-harness</artifactId>
-			<version>${project.version}</version>
+			<version>${dependencies.version}</version>
 			<scope>test</scope>
 		</dependency>
 		

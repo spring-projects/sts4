@@ -16,5 +16,6 @@ package org.springframework.boot.ide.java.servers;
 public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.boot.ide.java.servers";
+	public static final String LANGUAGE_SERVER_VERSION = "0.0.2";
 
 }
