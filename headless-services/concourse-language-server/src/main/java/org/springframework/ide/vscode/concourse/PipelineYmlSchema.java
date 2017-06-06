@@ -367,6 +367,10 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "max_in_flight", t_pos_integer);
 		addProp(job, "public", t_boolean);
 		addProp(job, "disable_manual_trigger", t_boolean);
+		addProp(job, "interruptible",  t_boolean);
+		addProp(job, "ensure",  step);
+		addProp(job, "on_failure",  step);
+		addProp(job, "on_success",  step);
 
 		AbstractType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", resourceTypeNameDef).isPrimary(true);

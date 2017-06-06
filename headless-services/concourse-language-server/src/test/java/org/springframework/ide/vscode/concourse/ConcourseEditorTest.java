@@ -3220,6 +3220,46 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void jobPropertyHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"  - name: job\n" +
+				"    serial: true\n" +
+				"    build_logs_to_retain: 10\n" +
+				"    serial_groups: []\n" +
+				"    max_in_flight: 3\n" +
+				"    public: false\n" +
+				"    disable_manual_trigger: true\n" +
+				"    interruptible: true\n" +
+				"    plan:\n" +
+				"      - get: code\n" +
+				"    on_failure:\n" +
+				"      put: code\n" +
+				"    on_success:\n" +
+				"      put: code\n" +
+				"    ensure:\n" +
+				"      put: code\n" +
+				"resources:\n" +
+				"- name: code\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: blah\n" +
+				"    branch: master\n"
+		);
+		editor.assertProblems(/*NONE*/);
+		editor.assertHoverContains("name", "The name of the job");
+		editor.assertHoverContains("serial", "execute one-by-one");
+		editor.assertHoverContains("build_logs_to_retain", "only the last specified number of builds");
+		editor.assertHoverContains("serial_groups", "referencing the same tags will be serialized");
+		editor.assertHoverContains("max_in_flight", "maximum number of builds to run at a time");
+		editor.assertHoverContains("public", "build log of this job will be viewable");
+		editor.assertHoverContains("disable_manual_trigger", "manual triggering of the job");
+		editor.assertHoverContains("interruptible", "worker will not wait on the builds");
+		editor.assertHoverContains("on_success", "Step to execute when the job succeeds");
+		editor.assertHoverContains("on_failure", "Step to execute when the job fails");
+		editor.assertHoverContains("ensure", "Step to execute regardless");
+	}
+
 	@Test public void relaxedIndentContextMoreSpaces3() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
@@ -3235,7 +3275,11 @@ public class ConcourseEditorTest {
 				//completions for current (i.e Job) context:
 				"build_logs_to_retain",
 				"disable_manual_trigger",
+				"ensure",
+				"interruptible",
 				"max_in_flight",
+				"on_failure",
+				"on_success",
 				"serial",
 				"serial_groups",
 				//"name", exists
