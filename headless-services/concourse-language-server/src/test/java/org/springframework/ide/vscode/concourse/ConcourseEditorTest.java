@@ -3260,6 +3260,52 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("ensure", "Step to execute regardless");
 	}
 
+	@Test public void jobPropertyReconcile() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"  - name: job\n" +
+				"    serial: isSerial\n" +
+				"    build_logs_to_retain: retainers\n" +
+				"    serial_groups: no-list\n" +
+				"    max_in_flight: flying-number\n" +
+				"    public: publicize\n" +
+				"    disable_manual_trigger: nomanual\n" +
+				"    interruptible: nointerrupt\n" +
+				"    plan:\n" +
+				"      - get: a-resource\n" +
+				"    on_failure:\n" +
+				"      put: b-resource\n" +
+				"    on_success:\n" +
+				"      put: a-resource\n" +
+				"    ensure:\n" +
+				"      put: c-resource\n" +
+				"resources:\n" +
+				"- name: b-resource\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: blah\n" +
+				"- name: code\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: blah\n" +
+				"    branch: master\n"
+		);
+		editor.assertProblems(
+				"isSerial|boolean",
+				"retainers|Number",
+				"no-list|Expecting a 'Sequence'",
+				"flying-number|Number",
+				"publicize|boolean",
+				"nomanual|boolean",
+				"nointerrupt|boolean",
+				"a-resource|resource does not exist",
+				"b-resource|should define 'branch'",
+				"a-resource|resource does not exist",
+				"c-resource|resource does not exist",
+				"code|Unused"
+		);
+	}
+
 	@Test public void relaxedIndentContextMoreSpaces3() throws Exception {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
