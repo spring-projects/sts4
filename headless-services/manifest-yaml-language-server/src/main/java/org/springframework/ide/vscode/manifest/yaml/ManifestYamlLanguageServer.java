@@ -53,6 +53,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private final ClientParamsProvider cfParamsProvider;
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 
+	private final LanguageId FALLBACK_YML_ID = LanguageId.of("yml");
+
 	public ManifestYamlLanguageServer() {
 		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, new CfCliParamsProvider());
 	}
@@ -80,7 +82,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())) {
+			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())
+					|| FALLBACK_YML_ID.equals(doc.getLanguageId())) {
+				//
+				// this FALLBACK_YML_ID got introduced to workaround a limitation in LSP4E, which sets the file extension as language ID to the document
+				//
 				validateWith(doc.getId(), engine);
 			} else {
 				validateWith(doc.getId(), IReconcileEngine.NULL);
