@@ -302,9 +302,9 @@ jobs:
   - aggregate:
     - get: tasks
     - get: sts4
-      passed:
-      - build-manifest-yaml-rc
-      - build-concourse-rc
+      # passed:
+      # - build-manifest-yaml-rc
+      # - build-concourse-rc
     - get: s3-concourse-vsix-snapshot
       passed:
       - build-concourse-rc
@@ -395,10 +395,3 @@ jobs:
   - put: snapshot-website
     params:
       path: website
-- name: bump-patch-version
-  serial: true
-  plan:
-  - get: version
-  - put: version
-    params:
-      bump: patch
