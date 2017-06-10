@@ -47,7 +47,7 @@ public class ManifestYamlEditorTest {
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(
-				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.paramsProvider),
+				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.config),
 				LanguageId.CF_MANIFEST
 		);
 		harness.intialize(null);
@@ -1041,9 +1041,9 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn() throws Exception {
-		reset(cloudfoundry.paramsProvider);
+		reset(cloudfoundry.defaultParamsProvider);
 
-		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
 
 		String textBefore =
 				"applications:\n" +
@@ -1064,9 +1064,9 @@ public class ManifestYamlEditorTest {
 
 	@Test
 	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn_nonEmptyQueryString() throws Exception {
-		reset(cloudfoundry.paramsProvider);
+		reset(cloudfoundry.defaultParamsProvider);
 
-		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
 
 		String textBefore =
 				"applications:\n" +
@@ -1127,7 +1127,7 @@ public class ManifestYamlEditorTest {
 
 		String title = "No targets";
 		String description = "Use CLI to login";
-		when(cloudfoundry.paramsProvider.getParams()).thenThrow(new NoTargetsException(title + ": " + description));
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenThrow(new NoTargetsException(title + ": " + description));
 
 		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: <*>").get(0);
 		assertEquals(title, completion.getLabel());

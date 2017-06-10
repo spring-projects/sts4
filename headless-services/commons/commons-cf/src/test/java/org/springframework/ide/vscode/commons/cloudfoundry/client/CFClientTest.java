@@ -40,7 +40,7 @@ public class CFClientTest {
 
 	@Before
 	public void setup() throws Exception {
-		targetCache = new CFTargetCache(cloudfoundry.paramsProvider, cloudfoundry.factory, timeouts);
+		targetCache = new CFTargetCache(cloudfoundry.cfClientConfig, cloudfoundry.factory, timeouts);
 	}
 
 	@Test

@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CfCliParamsProvider implements ClientParamsProvider {
 
-
 	public static final String TARGET = "Target";
 	public static final String REFRESH_TOKEN = "RefreshToken";
 	public static final String ORGANIZATION_FIELDS = "OrganizationFields";
@@ -37,14 +36,27 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	public static final String NAME = "Name";
 	public static final String SSL_DISABLED = "SSLDisabled";
 	private CfCliProviderMessages cfCliProviderMessages = new CfCliProviderMessages();
+	
+	private static CfCliParamsProvider instance;
+	
+	public static final CfCliParamsProvider getInstance() {
+		if (instance == null) {
+			instance= new CfCliParamsProvider();
+		}
+		return instance;
+	}
 
-
+	private CfCliParamsProvider() {
+		
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 *
 	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
 	 * ClientParamsProvider#getParams()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
 		List<CFClientParams> params = new ArrayList<>();

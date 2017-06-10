@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
@@ -31,14 +32,17 @@ public class MockCloudfoundry {
 
 	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
 	public final ClientRequests client = mock(ClientRequests.class);
-	public final ClientParamsProvider paramsProvider = mock(ClientParamsProvider.class);
+	public final CfClientConfig config = CfClientConfig.DEFAULT;
+	public final ClientParamsProvider defaultParamsProvider = mock(ClientParamsProvider.class);
 
 	public MockCloudfoundry() {
+		config.setClientParamsProvider(defaultParamsProvider);
 		try {
+
 			//program some default behavior into mocks... most tests will use this.
 			//other tests should 'reset' the mocks and reprogram them as needed.
 			when(factory.getClient(any(), any())).thenReturn(client);
-			when(paramsProvider.getParams()).thenReturn(ImmutableList.of(DEFAULT_PARAMS));
+			when(defaultParamsProvider.getParams()).thenReturn(ImmutableList.of(DEFAULT_PARAMS));
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
 		}
@@ -51,7 +55,7 @@ public class MockCloudfoundry {
 	 * reset all of the mocks.
 	 */
 	public void reset() throws Exception {
-		Mockito.reset(factory, client, paramsProvider);
+		Mockito.reset(factory, client, defaultParamsProvider);
 	}
 
 }
