@@ -46,7 +46,12 @@
 	<category-def name="Spring Boot IDE Language Servers for Eclipse" label="Spring Boot IDE Language Servers for Eclipse"/>
 
 	<feature
-		id="org.springframework.boot.ide.cloudfoundry.server.feature" version="0.0.0">
+		id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0">
+		<category name="Spring Boot IDE Language Servers for Eclipse" />
+	</feature>
+
+	<feature
+		id="org.springframework.boot.ide.cloudfoundry.manifest.integration.feature" version="0.0.0">
 		<category name="Spring Boot IDE Language Servers for Eclipse" />
 	</feature>
 

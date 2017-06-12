@@ -191,7 +191,12 @@
 		<repository>
 			<id>spring-boot-language-servers</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
+			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server/${dist.springboot-language-servers-pathpostfix}</url>
+		</repository>
+		<repository>
+			<id>spring-boot-language-servers</id>
+			<layout>p2</layout>
+			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${dist.springboot-language-servers-pathpostfix}</url>
 		</repository>
 		<repository>
 			<id>springide</id>
