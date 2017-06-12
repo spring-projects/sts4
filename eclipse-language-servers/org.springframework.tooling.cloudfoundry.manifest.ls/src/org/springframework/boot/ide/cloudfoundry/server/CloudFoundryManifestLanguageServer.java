@@ -42,6 +42,9 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 
 		String workingDir = getWorkingDirLocation();
 
+//		commands.add("-Xdebug");
+//		commands.add("-agentlib:jdwp=transport=dt_socket,address=9999,server=y,suspend=n");
+
 		setCommands(commands);
 		setWorkingDirectory(workingDir);
 	}
