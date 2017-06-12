@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.lsp4e.languageServer">
       <server
-            class="org.springframework.boot.ide.cloudfoundry.server.CloudFoundryManifestLanguageServer"
+            class="org.springframework.tooling.cloudfoundry.manifest.ls.CloudFoundryManifestLanguageServer"
             id="org.eclipse.languageserver.languages.cloudfoundrymanifest"
             label="Cloud Foundry Manifest Language Server">
       </server>
@@ -18,7 +18,7 @@
    <extension
          point="org.eclipse.lsp4e.languageServer">
       <server
-            class="org.springframework.boot.ide.cloudfoundry.server.CloudFoundryManifestLanguageServer"
+            class="org.springframework.tooling.cloudfoundry.manifest.ls.CloudFoundryManifestLanguageServer"
             id="org.eclipse.languageserver.languages.cloudfoundrymanifest"
             label="Cloud Foundry Manifest Language Server">
       </server>

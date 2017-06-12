@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.boot.ide.cloudfoundry.server;
+package org.springframework.tooling.cloudfoundry.manifest.ls;
 
 /**
  * @author Martin Lippert

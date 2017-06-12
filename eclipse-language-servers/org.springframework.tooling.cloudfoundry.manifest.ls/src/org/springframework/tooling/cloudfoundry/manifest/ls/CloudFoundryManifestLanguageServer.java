@@ -8,10 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.boot.ide.cloudfoundry.server;
+package org.springframework.tooling.cloudfoundry.manifest.ls;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -24,7 +25,10 @@ import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
+import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
 
@@ -33,6 +37,12 @@ import org.osgi.framework.Bundle;
  */
 @SuppressWarnings("restriction")
 public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionProvider {
+	
+	private static Object cfTargetOptionSettings;
+
+	public static void setCfTargetLoginOptions(Object cfTargetOptions) {
+		cfTargetOptionSettings = cfTargetOptions;
+	}
 
 	public CloudFoundryManifestLanguageServer() {
 		List<String> commands = new ArrayList<>();
@@ -49,7 +59,23 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		setWorkingDirectory(workingDir);
 	}
 	
-	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
+	@Override
+	public void handleMessage(Message message, LanguageServer languageServer, URI rootPath) {
+		if (message instanceof ResponseMessage) {
+			ResponseMessage responseMessage = (ResponseMessage)message;
+			if (responseMessage.getResult() instanceof InitializeResult) {
+				System.out.println("LS INITIALIZED !!!!!!");
+				
+				// enable validation: so far, no better way found than changing conf after init.
+				DidChangeConfigurationParams params = new DidChangeConfigurationParams(getInitializationOptions(rootPath));
+				languageServer.getWorkspaceService().didChangeConfiguration(params);
+			}
+		}
+	}
+	
+	@Override
+	public Object getInitializationOptions(URI rootUri) {
+		return cfTargetOptionSettings;
 	}
 	
 	protected String getJDKLocation() {
