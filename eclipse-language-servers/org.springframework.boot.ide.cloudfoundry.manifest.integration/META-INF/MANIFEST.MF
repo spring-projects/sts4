@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Server
-Bundle-SymbolicName: org.springframework.boot.ide.cloudfoundry.server;singleton:=true
+Bundle-SymbolicName: org.springframework.boot.ide.cloudfoundry.manifest.integration;singleton:=true
 Bundle-Version: 4.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.jface.text;bundle-version="3.11.100",
  org.eclipse.jdt.ui;bundle-version="3.13.0",
  org.eclipse.tm4e.core;bundle-version="0.1.0",
- org.eclipse.tm4e.ui;bundle-version="0.1.0"
+ org.eclipse.tm4e.ui;bundle-version="0.1.0",
+ org.springframework.tooling.cloudfoundry.manifest.ls;bundle-version="0.0.9"
 Import-Package: org.eclipse.jface.preference,
  org.eclipse.lsp4j.jsonrpc.messages;version="0.1.0.v20170117-0759",
  org.eclipse.lsp4j.services;version="0.1.0.v20170117-0759",

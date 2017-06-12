@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-	<category-def name="Spring Boot IDE Language Servers for Eclipse" label="Spring Boot IDE Language Servers for Eclipse"/>
+	<category-def name="Spring Boot IDE Language Server Integrations for Eclipse" label="Spring Boot IDE Language Server Integrations for Eclipse"/>
 
 	<feature id="org.springframework.boot.ide.properties.servers.feature">
 		<category name="Spring Boot IDE Language Servers for Eclipse"/>
 	</feature>
 
-	<feature id="org.springframework.boot.ide.cloudfoundry.server.feature">
+	<feature id="org.springframework.boot.ide.java.servers.feature">
 		<category name="Spring Boot IDE Language Servers for Eclipse"/>
 	</feature>
 
-	<feature id="org.springframework.boot.ide.java.servers.feature">
+	<feature id="org.springframework.boot.ide.cloudfoundry.manifest.integration.feature">
 		<category name="Spring Boot IDE Language Servers for Eclipse"/>
 	</feature>
 

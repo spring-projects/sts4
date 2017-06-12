@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<category-def name="Spring Tooling Language Servers for Eclipse" label="Spring Tooling Language Servers for Eclipse"/>
+
+	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<category-def name="deps" label="Dependencies"/>
+
+	<bundle id="org.eclipse.lsp4e">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j.jsonrpc">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.xtext.xbase.lib">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="com.google.gson">
+		<category name="deps"/>
+	</bundle>
+
+</site>

@@ -29,14 +29,15 @@
 	<modules>
 		<module>org.springframework.boot.ide.properties.servers</module>
 		<module>org.springframework.boot.ide.properties.servers.feature</module>
-
 		<module>org.springframework.boot.ide.java.servers</module>
 		<module>org.springframework.boot.ide.java.servers.feature</module>
+		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration</module>
+		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration.feature</module>
+		<module>org.springframework.boot.ide.ls.integration.repository</module>
 
-		<module>org.springframework.boot.ide.cloudfoundry.server</module>
-		<module>org.springframework.boot.ide.cloudfoundry.server.feature</module>
-
-		<module>org.springframework.boot.ide.servers.repository</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>
+		<module>org.springframework.tooling.ls.repository</module>
 	</modules>
 
 	<properties>

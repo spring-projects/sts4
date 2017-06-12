@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.springframework.boot.ide.cloudfoundry.server</name>
+	<name>org.springframework.tooling.cloudfoundry.manifest.ls</name>
 	<comment></comment>
 	<projects>
 	</projects>

@@ -11,14 +11,15 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>org.springframework.boot.ide.cloudfoundry.server</artifactId>
+	<artifactId>org.springframework.tooling.cloudfoundry.manifest.ls</artifactId>
+	<version>0.0.9-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>manifest-yaml-language-server</artifactId>
-			<version>0.0.8-SNAPSHOT</version>
+			<version>0.0.9-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
