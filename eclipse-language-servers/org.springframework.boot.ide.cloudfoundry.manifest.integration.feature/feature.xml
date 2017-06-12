@@ -8,8 +8,9 @@
 	<requires>
 		<import plugin="org.eclipse.ui.genericeditor"/>
 		<import plugin="org.eclipse.lsp4e"/>
-		<import plugin="org.springframework.tooling.cloudfoundry.manifest.ls"/>
 	</requires>
+	
+	<includes id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0" optional="true"/>
 
 	<plugin
 		id="org.springframework.boot.ide.cloudfoundry.manifest.integration"

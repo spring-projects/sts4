@@ -85,7 +85,7 @@ openFile</programArgs>
       <feature id="org.springframework.boot.ide.java.servers.feature" installMode="root"/>
 
       <feature id="org.springframework.boot.ide.cloudfoundry.manifest.integration.feature" installMode="root"/>
-      <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/>
+<!--      <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/> -->
 
    </features>
 
