@@ -10,8 +10,6 @@
 		<import plugin="org.eclipse.lsp4e"/>
 	</requires>
 	
-	<includes id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0" optional="true"/>
-
 	<plugin
 		id="org.springframework.boot.ide.cloudfoundry.manifest.integration"
 		download-size="0"
