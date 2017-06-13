@@ -11,6 +11,7 @@
 package org.springframework.tooling.cloudfoundry.manifest.ls;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -22,8 +23,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.jdt.launching.IVMInstall;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -79,9 +78,19 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	}
 	
 	protected String getJDKLocation() {
-		IVMInstall jdk = JavaRuntime.getDefaultVMInstall();
-		File javaExecutable = StandardVMType.findJavaExecutable(jdk.getInstallLocation());
-		return javaExecutable.getAbsolutePath();
+		try {
+			File javaHome= new File(System.getProperty("java.home")).getCanonicalFile(); //$NON-NLS-1$
+			if (javaHome.exists()) {
+				File javaExecutable = StandardVMType.findJavaExecutable(javaHome);
+				if (javaExecutable != null && javaExecutable.exists()) {
+					return javaExecutable.getAbsolutePath();
+				}
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		
+		return null;
 	}
 	
 	protected String getLanguageServerJARLocation() {
