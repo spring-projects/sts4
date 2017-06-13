@@ -1,1 +1,0 @@
-instructions.configure=installFeature(feature:org.springframework.tooling.cloudfoundry.manifest.ls.feature.feature.group,featureId:default,version:default);
