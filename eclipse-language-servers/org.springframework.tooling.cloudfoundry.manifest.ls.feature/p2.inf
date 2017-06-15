@@ -1,0 +1,7 @@
+instructions.configure=\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-servers,name:Spring Tooling Language Servers for Eclipse);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-servers,name:Spring Tooling Language Servers for Eclipse);
+
+instructions.unconfigure=\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:0,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-servers);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:1,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-servers)

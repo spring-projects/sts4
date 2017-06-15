@@ -29,14 +29,15 @@
 	<modules>
 		<module>org.springframework.boot.ide.properties.servers</module>
 		<module>org.springframework.boot.ide.properties.servers.feature</module>
-
 		<module>org.springframework.boot.ide.java.servers</module>
 		<module>org.springframework.boot.ide.java.servers.feature</module>
+		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration</module>
+		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration.feature</module>
+		<module>org.springframework.boot.ide.ls.integration.repository</module>
 
-		<module>org.springframework.boot.ide.cloudfoundry.server</module>
-		<module>org.springframework.boot.ide.cloudfoundry.server.feature</module>
-
-		<module>org.springframework.boot.ide.servers.repository</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>
+		<module>org.springframework.tooling.ls.repository</module>
 	</modules>
 
 	<properties>
@@ -189,7 +190,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
-				<version>1.3</version>
+				<version>1.4</version>
 				<executions>
 					<execution>
 						<id>sign</id>
@@ -204,7 +205,7 @@
 					<keystore>${signing.keystore}</keystore>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-					<tsa>http://timestamp.digicert.com</tsa>
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
 				</configuration>
 			</plugin>
 			<plugin>

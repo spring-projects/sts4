@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryCl
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliProviderMessages;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
@@ -32,11 +33,13 @@ public class MockCfCli {
 
 	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
 	public final ClientRequests client = mock(ClientRequests.class);
+	public final CfClientConfig cfClientConfig = CfClientConfig.DEFAULT;
 	public final ClientParamsProvider paramsProvider = mock(ClientParamsProvider.class);
 	public final CfCliProviderMessages actualCfCliMessages = new CfCliProviderMessages();
 
 	public MockCfCli() {
 		try {
+			cfClientConfig.setClientParamsProvider(paramsProvider);
 			//program some default behavior into mocks... most tests will use this.
 			//other tests should 'reset' the mocks and reprogram them as needed.
 			when(factory.getClient(any(), any())).thenReturn(client);

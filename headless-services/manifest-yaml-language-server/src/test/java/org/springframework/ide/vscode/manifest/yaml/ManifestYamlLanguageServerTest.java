@@ -12,15 +12,22 @@
 package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Map;
 
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ManifestYamlLanguageServerTest {
 
@@ -74,5 +81,28 @@ public class ManifestYamlLanguageServerTest {
 		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
 		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
+
+	@Test public void cfClientParams1() throws Exception {
+		MockCloudfoundry cloudfoundry = new MockCloudfoundry();
+		ManifestYamlLanguageServer manifestYamlLanguageServer = new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.config);
+
+		LanguageServerHarness harness = new LanguageServerHarness(
+				() -> manifestYamlLanguageServer,
+				LanguageId.CF_MANIFEST
+		);
+		harness.intialize(null);
+
+
+		assertEquals(1, cloudfoundry.config.getClientParamsProvider().getParams().size());
+		assertEquals(Arrays.asList("test.io"), manifestYamlLanguageServer.getCfTargets());
+
+		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
+		params.setSettings(new ObjectMapper().readValue(getClass().getResourceAsStream("/cf-targets1.json"), Map.class));
+		manifestYamlLanguageServer.getWorkspaceService().didChangeConfiguration(params);
+		assertEquals(2, cloudfoundry.config.getClientParamsProvider().getParams().size());
+		assertEquals(Arrays.asList("api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());
+	}
+
+
 
 }

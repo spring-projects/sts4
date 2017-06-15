@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -25,24 +26,28 @@ import com.google.common.cache.LoadingCache;
 
 public class CFTargetCache {
 
-	private final ClientParamsProvider paramsProvider;
+	private final CfClientConfig cfClientConfig;
 	private final CloudFoundryClientFactory clientFactory;
 	private final ClientTimeouts timeouts;
-	private final LoadingCache<ClientParamsCacheKey, CFTarget> cache;
-	private final CFCallableContext cacheCallableContext;
+	private LoadingCache<ClientParamsCacheKey, CFTarget> cache;
+	private CFCallableContext cacheCallableContext;
 
 	public static final Duration SERVICES_EXPIRATION = Duration.ofSeconds(10);
 	public static final Duration TARGET_EXPIRATION = Duration.ofHours(1);
 	public static final Duration ERROR_EXPIRATION = Duration.ofSeconds(10);
 
-	public CFTargetCache(ClientParamsProvider paramsProvider, CloudFoundryClientFactory clientFactory,
+	public CFTargetCache(CfClientConfig cfClientConfig, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
-		Assert.isLegal(paramsProvider != null,
+		Assert.isLegal(cfClientConfig != null,
 				"A Cloud Foundry client parameters provider must be set when creating a target cache.");
-		this.paramsProvider = paramsProvider;
+		this.cfClientConfig = cfClientConfig;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
-		this.cacheCallableContext = new CFCallableContext(paramsProvider.getMessages());
+		cfClientConfig.addClientParamsProviderChangedListener((newProvider, oldProvider) -> initCache());
+		initCache();
+	}
+	
+	private void initCache() {
 		CacheLoader<ClientParamsCacheKey, CFTarget> loader = new CacheLoader<ClientParamsCacheKey, CFTarget>() {
 
 			@Override
@@ -53,6 +58,7 @@ public class CFTargetCache {
 		};
 		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS)
 				.build(loader);
+		this.cacheCallableContext = new CFCallableContext(cfClientConfig.getClientParamsProvider().getMessages());
 	}
 
 	/**
@@ -68,7 +74,7 @@ public class CFTargetCache {
 
 	protected synchronized List<CFTarget> doGetOrCreate() throws NoTargetsException, Exception {
 
-		List<CFClientParams> allParams = paramsProvider.getParams();
+		Collection<CFClientParams> allParams = cfClientConfig.getClientParamsProvider().getParams();
 		List<CFTarget> targets = new ArrayList<>();
 		if (allParams != null) {
 			for (CFClientParams params : allParams) {
@@ -84,10 +90,10 @@ public class CFTargetCache {
 				}
 			}
 		}
-
+		
 		return targets;
 	}
-
+	
 	protected CFTarget create(CFClientParams params) throws Exception {
 		/*
 		 * Must pass a NEW callable context. Cannot be
@@ -95,7 +101,7 @@ public class CFTargetCache {
 		 * contexts may contain error state
 		 */
 		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts),
-				new CFCallableContext(paramsProvider.getMessages()));
+				new CFCallableContext(cfClientConfig.getClientParamsProvider().getMessages()));
 	}
 
 	protected static String getTargetName(CFClientParams params) {

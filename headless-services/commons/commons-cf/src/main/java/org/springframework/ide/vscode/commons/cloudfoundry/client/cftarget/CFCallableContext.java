@@ -56,7 +56,8 @@ public class CFCallableContext {
 		Throwable deepestCause = ExceptionUtil.getDeepestCause(e);
 
 		if (deepestCause instanceof UaaException || deepestCause instanceof AbortedException
-				|| deepestCause instanceof SocketException || deepestCause instanceof UnknownHostException) {
+				|| deepestCause instanceof SocketException || deepestCause instanceof UnknownHostException 
+				&& this.paramsProviderMessages != null) {
 			return new ConnectionException(this.paramsProviderMessages.noNetworkConnection());
 		}
 		return null;

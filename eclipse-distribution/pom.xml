@@ -194,6 +194,11 @@
 			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
 		</repository>
 		<repository>
+			<id>spring-boot-language-server-integrations</id>
+			<layout>p2</layout>
+			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${dist.springboot-language-servers-pathpostfix}</url>
+		</repository>
+		<repository>
 			<id>springide</id>
 			<layout>p2</layout>
 			<url>http://dist.springframework.org/${dist.type}/IDE/${dist.springide-pathpostfix}</url>
@@ -279,7 +284,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
-				<version>1.3</version>
+				<version>1.4</version>
 				<executions>
 					<execution>
 						<id>sign</id>
@@ -294,7 +299,7 @@
 					<keystore>${signing.keystore}</keystore>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-					<tsa>http://timestamp.digicert.com</tsa>
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
 				</configuration>
 			</plugin>
 		</plugins>
