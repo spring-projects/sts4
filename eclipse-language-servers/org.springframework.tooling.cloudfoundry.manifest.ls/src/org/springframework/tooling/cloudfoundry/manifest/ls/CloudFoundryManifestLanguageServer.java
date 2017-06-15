@@ -94,13 +94,17 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "manifest-yaml-language-server-" + Constants.LANGUAGE_SERVER_VERSION + "-SNAPSHOT.jar";
+		String languageServer = "manifest-yaml-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		File dataFile = bundle.getDataFile(languageServer);
-		if (!dataFile.exists()) {
+		String bundleVersion = bundle.getVersion().toString();
+
+		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
+		
+		File dataFile = bundle.getDataFile(languageServerLocalCopy);
+		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
 			try {
-				copyLanguageServerJAR(languageServer);
+				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -115,11 +119,11 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		return System.getProperty("user.dir");
 	}
 	
-	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
+	protected void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
 		
-		File dataFile = bundle.getDataFile(languageServerJarName);
+		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 
