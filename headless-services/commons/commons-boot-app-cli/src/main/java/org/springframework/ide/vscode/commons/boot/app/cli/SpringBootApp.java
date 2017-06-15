@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -38,6 +40,20 @@ public class SpringBootApp {
 	
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
+	
+	/**
+	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
+	 */
+	public static Map<String, SpringBootApp> getAllRunningJavaApps() throws Exception {
+		Map<String, SpringBootApp> result = new HashMap<>();
+		List<VirtualMachineDescriptor> list = VirtualMachine.list();
+		for (VirtualMachineDescriptor vmd : list) {
+			SpringBootApp app = new SpringBootApp(vmd);
+			result.put(app.getProcessID(), app);
+		}
+		
+		return result;
+	}
 
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;

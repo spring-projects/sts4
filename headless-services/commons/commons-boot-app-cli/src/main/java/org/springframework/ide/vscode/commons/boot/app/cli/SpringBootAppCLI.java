@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
-import java.util.List;
-
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
+import java.util.Map;
 
 /**
  * @author Martin Lippert
@@ -22,9 +19,8 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 public class SpringBootAppCLI {
 
 	public static void main(String[] args) throws Exception {
-		List<VirtualMachineDescriptor> list = VirtualMachine.list();
-		for (VirtualMachineDescriptor vmd : list) {
-			SpringBootApp app = new SpringBootApp(vmd);
+		Map<String, SpringBootApp> allRunningJavaApps = SpringBootApp.getAllRunningJavaApps();
+		for (SpringBootApp app : allRunningJavaApps.values()) {
 			if (app.isSpringBootApp()) {
 				printBootAppDetails(app);
 			}
