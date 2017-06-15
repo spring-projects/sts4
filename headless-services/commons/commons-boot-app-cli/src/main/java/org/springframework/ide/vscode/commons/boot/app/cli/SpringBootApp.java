@@ -208,7 +208,7 @@ public class SpringBootApp {
 			Set<ObjectName> queryNames = connection.queryNames(null, null);
 			
 			for (ObjectName objectName : queryNames) {
-				if (objectName.toString().startsWith("Tomcat:type=Connector")) {
+				if (objectName.toString().startsWith("Tomcat") && objectName.toString().contains("type=Connector")) {
 					Object result = connection.getAttribute(objectName, "localPort");
 					if (result != null) {
 						return result.toString();
