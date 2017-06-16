@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -37,11 +38,11 @@ import org.osgi.framework.Bundle;
 @SuppressWarnings("restriction")
 public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionProvider {
 	
-	private static Object cfTargetOptionSettings;
+	private LanguageServer languageServer;
+	private URI rootPath;
 
-	public static void setCfTargetLoginOptions(Object cfTargetOptions) {
-		cfTargetOptionSettings = cfTargetOptions;
-	}
+	private static Object cfTargetOptionSettings = null;
+	private static List<CloudFoundryManifestLanguageServer> servers = new CopyOnWriteArrayList<>();
 
 	public CloudFoundryManifestLanguageServer() {
 		List<String> commands = new ArrayList<>();
@@ -63,13 +64,27 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		if (message instanceof ResponseMessage) {
 			ResponseMessage responseMessage = (ResponseMessage)message;
 			if (responseMessage.getResult() instanceof InitializeResult) {
-				System.out.println("LS INITIALIZED !!!!!!");
+				this.languageServer = languageServer;
+				this.rootPath = rootPath;
 				
-				// enable validation: so far, no better way found than changing conf after init.
-				DidChangeConfigurationParams params = new DidChangeConfigurationParams(getInitializationOptions(rootPath));
-				languageServer.getWorkspaceService().didChangeConfiguration(params);
+				updateLanguageServer();
+				addLanguageServer(this);
 			}
 		}
+	}
+	
+	public static void setCfTargetLoginOptions(Object cfTargetOptions) {
+		cfTargetOptionSettings = cfTargetOptions;
+		
+		for (CloudFoundryManifestLanguageServer server : servers) {
+			server.updateLanguageServer();
+		}
+	}
+
+	@Override
+	public void stop() {
+		removeLanguageServer(this);
+		super.stop();
 	}
 	
 	@Override
@@ -125,6 +140,19 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	}
+
+	protected void updateLanguageServer() {
+		DidChangeConfigurationParams params = new DidChangeConfigurationParams(getInitializationOptions(rootPath));
+		languageServer.getWorkspaceService().didChangeConfiguration(params);
+	}
+
+	private static void addLanguageServer(CloudFoundryManifestLanguageServer server) {
+		servers.add(server);
+	}
+
+	private static void removeLanguageServer(CloudFoundryManifestLanguageServer server) {
+		servers.remove(server);
 	}
 
 }
