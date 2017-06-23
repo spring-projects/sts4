@@ -79,6 +79,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private ReferencesHandler referencesHandler;
 
 	private DocumentSymbolHandler documentSymbolHandler;
+	private Consumer<TextDocumentSaveChange> documentSaveListener;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
@@ -191,6 +192,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public void onDidChangeContent(Consumer<TextDocumentContentChange> l) {
 		documentChangeListeners.add(l);
+	}
+
+	public void onDidSave(Consumer<TextDocumentSaveChange> l) {
+		documentSaveListener=l;
 	}
 
 	public synchronized TextDocument getDocument(String url) {
@@ -329,6 +334,21 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
+		// Workaround for PT 147263283, where error markers in STS are lost on document save.
+		// STS 3.9.0 does not use the LSP4E editor for edit manifest.yml, which correctly retains error markers after save.
+		// Instead, because the LSP4E editor is missing support for hovers and completions, STS 3.9.0 uses its own manifest editor
+		// which extends the YEdit editor. This YEdit editor has a problem, where on save, all error markers are deleted.
+		// When STS uses the LSP4E editor and no longer needs its own YEdit-based editor, the issue with error markers disappearing
+		// on save should not be a problem anymore, and the workaround below will no longer be needed.
+		if (documentSaveListener != null) {
+			TextDocumentIdentifier docId = params.getTextDocument();
+			String url = docId.getUri();
+			Log.debug("didSave: "+url);
+			if (url!=null) {
+				TextDocument doc = getDocument(url);
+				documentSaveListener.accept(new TextDocumentSaveChange(doc));
+			}
+		}
 	}
 
 	public void publishDiagnostics(TextDocumentIdentifier docId, Collection<Diagnostic> diagnostics) {
