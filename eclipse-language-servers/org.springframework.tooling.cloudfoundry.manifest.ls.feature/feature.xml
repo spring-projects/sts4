@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
 	id="org.springframework.tooling.cloudfoundry.manifest.ls.feature"
-	label="Cloud Foundry Manifest Language Server Feature"
+	label="%featureName"
 	version="0.0.9.qualifier"
-	provider-name="Pivotal, Inc.">
+	provider-name="%providerName">
+
+    <description>
+       %description
+    </description>
+
+    <copyright>
+       %copyright
+    </copyright>
+
+    <license url="%licenseUrl">
+       %license
+    </license>
 
 	<requires>
 		<import plugin="org.eclipse.lsp4e"/>
