@@ -13,6 +13,7 @@ package org.springframework.tooling.cloudfoundry.manifest.ls;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -37,6 +38,8 @@ import org.osgi.framework.Bundle;
  */
 @SuppressWarnings("restriction")
 public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionProvider {
+	
+	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 	
 	private LanguageServer languageServer;
 	private URI rootPath;
@@ -85,6 +88,7 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	public void stop() {
 		removeLanguageServer(this);
 		super.stop();
+		processReaper.removeProcess(this.getProcess());
 	}
 	
 	@Override
@@ -108,6 +112,25 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		return null;
 	}
 	
+	@Override
+	public void start() throws IOException {
+		super.start();
+		processReaper.addProcess(getProcess());
+	}
+	
+	private Process getProcess() {
+		try {
+			//The super class is doesn't provide a way to get at the process without using reflection...
+			// This method can be removed if / when the super-class provides a getProcess method we can call.
+			Field processField = ProcessStreamConnectionProvider.class.getDeclaredField("process");
+			processField.setAccessible(true);
+			Process process = (Process) processField.get(this);
+			return process;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			return null;
+		}
+	}
+
 	protected String getLanguageServerJARLocation() {
 		String languageServer = "manifest-yaml-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
