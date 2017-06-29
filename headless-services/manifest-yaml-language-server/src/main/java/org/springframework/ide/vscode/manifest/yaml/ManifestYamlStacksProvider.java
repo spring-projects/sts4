@@ -55,7 +55,6 @@ public class ManifestYamlStacksProvider extends AbstractCFHintsProvider {
 						hints.add(hint);
 					}
 				}
-				return hints;
 			}
 		}
 

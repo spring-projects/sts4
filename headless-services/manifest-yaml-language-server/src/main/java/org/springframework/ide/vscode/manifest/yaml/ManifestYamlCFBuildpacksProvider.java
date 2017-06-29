@@ -49,7 +49,6 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 						hints.add(hint);
 					}
 				}
-				return hints;
 			}
 		}
 		// Contract for the reconciler: return null if values cannot be

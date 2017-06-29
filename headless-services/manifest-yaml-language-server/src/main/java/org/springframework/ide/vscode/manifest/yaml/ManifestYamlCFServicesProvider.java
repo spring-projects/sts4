@@ -52,7 +52,6 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 						hints.add(hint);
 					}
 				}
-				return hints;
 			}
 		}
 
