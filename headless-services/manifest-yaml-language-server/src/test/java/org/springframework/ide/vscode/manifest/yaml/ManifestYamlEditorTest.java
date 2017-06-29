@@ -583,7 +583,7 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems(
 				"no-hostname|Property cannot co-exist with property 'routes'",
 				"routes|Property cannot co-exist with properties [no-hostname]"
-			);
+		);
 
 		editor = harness.newEditor(
 				"no-hostname: true\n" +
@@ -599,7 +599,7 @@ public class ManifestYamlEditorTest {
 				"no-hostname|Property cannot co-exist with property 'routes'",
 				"no-hostname|Property cannot co-exist with property 'routes'",
 				"routes|Property cannot co-exist with properties [no-hostname]"
-			);
+		);
 
 		editor = harness.newEditor(
 				"no-hostname: true\n" +
@@ -615,7 +615,7 @@ public class ManifestYamlEditorTest {
 				"no-hostname|Property cannot co-exist with property 'routes'",
 				"host|Property cannot co-exist with property 'routes'",
 				"routes|Property cannot co-exist with properties [host, no-hostname]"
-			);
+		);
 
 		editor = harness.newEditor(
 				"no-hostname: true\n" +
@@ -633,8 +633,52 @@ public class ManifestYamlEditorTest {
 				"no-hostname|Property cannot co-exist with property 'routes'",
 				"routes|Property cannot co-exist with properties [no-hostname]",
 				"routes|Property cannot co-exist with properties [no-hostname]"
-			);
-}
+		);
+	}
+
+	@Test public void randomRoutesWithRoutesValidation() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: moriarty-app\n" +
+				"  random-route: true\n" +
+				"  routes:\n" +
+				"  - route: tcp.local2.pcfdev.io:61001"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+		editor.assertProblems(
+				"random-route|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [random-route]"
+		);
+
+		editor = harness.newEditor(
+				"random-route: true\n" +
+				"applications:\n" +
+				"- name: moriarty-app\n" +
+				"  routes:\n" +
+				"  - route: tcp.local2.pcfdev.io:61001"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+		editor.assertProblems(
+				"random-route|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [random-route]"
+		);
+
+		editor = harness.newEditor(
+				"random-route: true\n" +
+				"applications:\n" +
+				"- name: moriarty-app\n" +
+				"  routes:\n" +
+				"  - route: tcp.local2.pcfdev.io:61001"
+		);
+		editor.ignoreProblem("UnknownDomainProblem");
+		editor.assertProblems(
+				"random-route|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [random-route]"
+		);
+
+	}
 
 	@Test public void deprecatedHealthCheckTypeQuickfix() throws Exception {
 		Editor editor = harness.newEditor(

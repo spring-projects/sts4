@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -86,16 +87,17 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
 
 		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())
-					|| FALLBACK_YML_ID.equals(doc.getLanguageId())) {
-				//
-				// this FALLBACK_YML_ID got introduced to workaround a limitation in LSP4E, which sets the file extension as language ID to the document
-				//
-				validateWith(doc.getId(), engine);
-			} else {
-				validateWith(doc.getId(), IReconcileEngine.NULL);
-			}
+			validateOnDocumentChange(engine, params.getDocument());
+		});
+
+		// Workaround for PT 147263283, where error markers in STS are lost on document save.
+		// STS 3.9.0 does not use the LSP4E editor for edit manifest.yml, which correctly retains error markers after save.
+		// Instead, because the LSP4E editor is missing support for hovers and completions, STS 3.9.0 uses its own manifest editor
+		// which extends the YEdit editor. This YEdit editor has a problem, where on save, all error markers are deleted.
+		// When STS uses the LSP4E editor and no longer needs its own YEdit-based editor, the issue with error markers disappearing
+		// on save should not be a problem anymore, and the workaround below will no longer be needed.
+		documents.onDidSave(params -> {
+			validateOnDocumentChange(engine, params.getDocument());
 		});
 
 //		workspace.onDidChangeConfiguraton(settings -> {
@@ -119,6 +121,18 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 				cfClientConfig.setClientParamsProvider(new CfJsonParamsProvider((List<?>) cfClientParamsObj));
 			}
 		});
+	}
+
+	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
+		if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())
+				|| FALLBACK_YML_ID.equals(doc.getLanguageId())) {
+			//
+			// this FALLBACK_YML_ID got introduced to workaround a limitation in LSP4E, which sets the file extension as language ID to the document
+			//
+			validateWith(doc.getId(), engine);
+		} else {
+			validateWith(doc.getId(), IReconcileEngine.NULL);
+		}
 	}
 
 	protected ManifestYmlHintProviders getHintProviders() {

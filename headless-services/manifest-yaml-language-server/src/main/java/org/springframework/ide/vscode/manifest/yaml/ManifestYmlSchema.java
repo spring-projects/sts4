@@ -113,7 +113,8 @@ public class ManifestYmlSchema implements YamlSchema {
 		AbstractType application = f.ybean("Application");
 		application.require(this::verify_heatth_check_http_end_point_constraint);
 		application.require(
-				ManifestConstraints.mutuallyExclusive("routes", "domain", "domains", "host", "hosts", "no-hostname"));
+				ManifestConstraints.mutuallyExclusive("routes", "domain", "domains", "host", "hosts", "no-hostname", "random-route"));
+
 		YAtomicType t_path = f.yatomic("Path");
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
