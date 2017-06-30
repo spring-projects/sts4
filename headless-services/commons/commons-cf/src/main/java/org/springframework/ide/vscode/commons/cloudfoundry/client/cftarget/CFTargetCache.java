@@ -43,6 +43,10 @@ public class CFTargetCache {
 		this.cfClientConfig = cfClientConfig;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
+		//TODO: I suspect that addClientParamsProviderChangedListener below is not necessary. 
+		// I think it results in unnessary refreshes of the cache, any time the providers are
+		// changed. The cached results doesn't really depend on the providers, only on the targets. So I think, 
+		// it shouldn't need to refresh when the providers are changed.
 		cfClientConfig.addClientParamsProviderChangedListener((newProvider, oldProvider) -> initCache());
 		initCache();
 	}
@@ -56,7 +60,7 @@ public class CFTargetCache {
 			}
 
 		};
-		cache = CacheBuilder.newBuilder().maximumSize(1).expireAfterAccess(TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS)
+		cache = CacheBuilder.newBuilder()./*maximumSize(1).*/expireAfterAccess(TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS)
 				.build(loader);
 		this.cacheCallableContext = new CFCallableContext(cfClientConfig.getClientParamsProvider().getMessages());
 	}

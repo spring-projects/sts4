@@ -65,7 +65,7 @@ public class CFTarget {
 			}
 		};
 		this.stacksCache = CacheBuilder.newBuilder()
-				.expireAfterAccess(CFTargetCache.SERVICES_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(stacksLoader);
+				.expireAfterAccess(CFTargetCache.TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS).build(stacksLoader);
 
 
 		CacheLoader<String, List<CFServiceInstance>> servicesLoader = new CacheLoader<String, List<CFServiceInstance>>() {
