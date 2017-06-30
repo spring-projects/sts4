@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
@@ -997,6 +998,33 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
+	@Test public void noReconcileErrorsWhenNoTargets() throws Exception {
+		Editor editor;
+		cloudfoundry.reset();
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenReturn(ImmutableList.of());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpack: bad-buildpack\n" +
+				"  stack: blah\n" +
+				"  domain: something-domain.com\n" +
+				"  services:\n" +
+				"  - bad-service\n" +
+				"  bogus: bad" //a token error to make sure reconciler is actually running!
+		);
+		editor.assertProblems("bogus|Unknown property");
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo-foo\n" +
+				"  buildpack: java_buildpack\n" +
+				"  routes:\n" +
+				"  - route: foo.blah/fooo\n"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
 	@Test
 	public void noReconcileErrorsWhenCFFactoryThrows() throws Exception {
 		reset(cloudfoundry.factory);
@@ -1010,6 +1038,15 @@ public class ManifestYamlEditorTest {
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
 		);
 		editor.assertProblems("bogus|Unknown property");
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo-foo\n" +
+				"  buildpack: java_buildpack\n" +
+				"  routes:\n" +
+				"  - route: foo.blah/fooo\n"
+		);
+		editor.assertProblems(/*NONE*/);
 	}
 
 	@Test

@@ -29,9 +29,12 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 
 	@Override
 	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-
+		if (targets==null || targets.isEmpty()) {
+			//no targets... means we don't know anything. Indicate this by returning null...
+			// this "don't know" value will suppress bogus warnings in the reconciler.
+			return null;
+		}
 		List<YValueHint> hints = new ArrayList<>();
-
 		for (CFTarget cfTarget : targets) {
 
 			List<CFDomain> domains = cfTarget.getDomains();
@@ -48,10 +51,7 @@ public class ManifestYamlCFDomainsProvider extends AbstractCFHintsProvider {
 				}
 			}
 		}
-		// Contract for the reconciler: return null if values cannot be
-		// resolved. Otherwise
-		// return non-empty list
-		return !hints.isEmpty() ? hints : null;
+		return hints;
 	}
 
 	protected String getLabel(CFTarget target, CFDomain domain) {
