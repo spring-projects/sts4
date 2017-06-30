@@ -30,9 +30,12 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 
 	@Override
 	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-
+		if (targets==null || targets.isEmpty()) {
+			//no targets... means we don't know anything. Indicate this by returning null...
+			// this "don't know" value will suppress bogus warnings in the reconciler.
+			return null;
+		}
 		List<YValueHint> hints = new ArrayList<>();
-
 		for (CFTarget cfTarget : targets) {
 
 			List<CFBuildpack> buildpacks = cfTarget.getBuildpacks();
@@ -51,12 +54,7 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 				}
 			}
 		}
-		// Contract for the reconciler: return null if values cannot be
-		// resolved. Otherwise
-		// return non-empty list of buildpacks. For CF targets, a non-empty list
-		// of buildpacks is
-		// typically expected.
-		return !hints.isEmpty() ? hints : null;
+		return hints;
 	}
 
 	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {

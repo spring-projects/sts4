@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
@@ -995,6 +996,22 @@ public class ManifestYamlEditorTest {
 				"-^ memory: 1G|Property 'name' is required",
 				"|should not be empty"
 		);
+	}
+
+	@Test public void noReconcileErrorsWhenNoTargets() throws Exception {
+		cloudfoundry.reset();
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenReturn(ImmutableList.of());
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpack: bad-buildpack\n" +
+				"  stack: blah\n" +
+				"  domain: something-domain.com\n" +
+				"  services:\n" +
+				"  - bad-service\n" +
+				"  bogus: bad" //a token error to make sure reconciler is actually running!
+		);
+		editor.assertProblems("bogus|Unknown property");
 	}
 
 	@Test
