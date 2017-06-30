@@ -999,9 +999,11 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test public void noReconcileErrorsWhenNoTargets() throws Exception {
+		Editor editor;
 		cloudfoundry.reset();
 		when(cloudfoundry.defaultParamsProvider.getParams()).thenReturn(ImmutableList.of());
-		Editor editor = harness.newEditor(
+
+		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
 				"  buildpack: bad-buildpack\n" +
@@ -1012,6 +1014,15 @@ public class ManifestYamlEditorTest {
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
 		);
 		editor.assertProblems("bogus|Unknown property");
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo-foo\n" +
+				"  buildpack: java_buildpack\n" +
+				"  routes:\n" +
+				"  - route: foo.blah/fooo\n"
+		);
+		editor.assertProblems(/*NONE*/);
 	}
 
 	@Test
@@ -1027,6 +1038,15 @@ public class ManifestYamlEditorTest {
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
 		);
 		editor.assertProblems("bogus|Unknown property");
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo-foo\n" +
+				"  buildpack: java_buildpack\n" +
+				"  routes:\n" +
+				"  - route: foo.blah/fooo\n"
+		);
+		editor.assertProblems(/*NONE*/);
 	}
 
 	@Test

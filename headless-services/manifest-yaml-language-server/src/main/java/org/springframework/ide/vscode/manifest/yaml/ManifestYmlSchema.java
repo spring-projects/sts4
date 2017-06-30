@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @author Kris De Volder
  */
-public class ManifestYmlSchema implements YamlSchema {
+public final class ManifestYmlSchema implements YamlSchema {
 
 	private static final String HEALTH_CHECK_HTTP_ENDPOINT_PROP = "health-check-http-endpoint";
 	private static final String HEALTH_CHECK_TYPE_PROP = "health-check-type";

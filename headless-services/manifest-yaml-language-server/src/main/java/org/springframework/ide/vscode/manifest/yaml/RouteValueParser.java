@@ -13,28 +13,32 @@ import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 
 public class RouteValueParser extends RegexpParser {
-	
+
 	private static final String ROUTE_REGEX = "^([\\da-z\\.-]+)(:\\d{1,5})?((\\/[\\dA-Za-z\\.-]+)*\\/?)?$";
 	private static final String ROUTE_TYPE_NAME = "Route";
 	private static final String ROUTE_DESCRIPTION = "HTTP or TCP application root route";
 	private static final int MAX_PORT_NUMBER = 65535;
-	
+
 	private Callable<Collection<String>> domains;
 
 	public RouteValueParser(Callable<Collection<String>> domains) {
 		super(ROUTE_REGEX, ROUTE_TYPE_NAME, ROUTE_DESCRIPTION);
 		this.domains = domains;
 	}
-	
+
 	private Matcher staticValidation(String str) throws Exception {
 		return (Matcher) super.parse(str);
 	}
-	
+
 	private Object dynamicValidation(String str, Matcher matcher) throws Exception {
+		if (domains==null) {
+			// If domains is unknown we can't do the dynamic checks, so bail out.
+			return str;
+		}
 		try {
 			Collection<String> cloudDomains = Collections.emptyList();
 			try {
-				cloudDomains = domains == null ? Collections.emptyList() : domains.call();
+				cloudDomains = domains.call();
 			} catch (ValueParseException e) {
 				/*
 				 * If domains hint provider throws exception it is
@@ -43,9 +47,9 @@ public class RouteValueParser extends RegexpParser {
 				 */
 				return matcher;
 			}
-			// Ensure cloud domains is empty list instead of null
 			if (cloudDomains == null) {
-				cloudDomains = Collections.emptyList();
+				// If domains is unknown we can't do the dynamic checks, so bail out.
+				return str;
 			}
 			CFRoute route = CFRoute.builder().from(str, cloudDomains).build();
 			if (route.getDomain() == null || route.getDomain().isEmpty()) {
@@ -65,13 +69,13 @@ public class RouteValueParser extends RegexpParser {
 				String hostDomain = matcher.group(1);
 				throw new ReconcileException("Unknown 'Domain'. Valid domains are: "+cloudDomains, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM, hostDomain.lastIndexOf(route.getDomain()), hostDomain.length());
 			}
-			return route;
+			return str;
 		} catch (ConnectionException | NoTargetsException e) {
 			// No connection to CF? Abort dynamic validation
-			return matcher;
+			return str;
 		}
 	}
-	
+
 	@Override
 	public Object parse(String str) throws Exception {
 		Matcher matcher = staticValidation(str);
@@ -80,5 +84,5 @@ public class RouteValueParser extends RegexpParser {
 		}
 		return null;
 	}
-	
+
 }
