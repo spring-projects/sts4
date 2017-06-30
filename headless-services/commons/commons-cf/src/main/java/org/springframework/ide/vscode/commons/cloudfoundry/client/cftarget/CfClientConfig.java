@@ -53,5 +53,7 @@ public interface CfClientConfig {
 	/**
 	 * Default CF Client configuration
 	 */
-	final static CfClientConfig DEFAULT = new CfClientConfigImpl();
+	static CfClientConfig createDefault() {
+		return new CfClientConfigImpl();
+	}
 }

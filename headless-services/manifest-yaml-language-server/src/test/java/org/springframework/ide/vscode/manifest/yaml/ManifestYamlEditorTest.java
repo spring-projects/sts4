@@ -47,7 +47,7 @@ public class ManifestYamlEditorTest {
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(
-				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.config),
+				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider),
 				LanguageId.CF_MANIFEST
 		);
 		harness.intialize(null);

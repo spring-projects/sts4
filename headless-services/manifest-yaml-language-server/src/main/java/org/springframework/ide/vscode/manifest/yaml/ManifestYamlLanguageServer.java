@@ -10,18 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFParamsProviderMessages;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfJsonParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
@@ -33,7 +39,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
-import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentContentChange;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -50,6 +55,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
+import com.google.common.collect.ImmutableList;
+
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
@@ -60,15 +67,17 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 
 	private final LanguageId FALLBACK_YML_ID = LanguageId.of("yml");
+	final private ClientParamsProvider defaultClientParamsProvider;
 
 	public ManifestYamlLanguageServer() {
-		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfClientConfig.DEFAULT);
+		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
 	}
 
-	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory, CfClientConfig cfClientConfig) {
+	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider defaultClientParamsProvider) {
 		super("vscode-manifest-yaml");
 		this.cfClientFactory = cfClientFactory;
-		this.cfClientConfig=cfClientConfig;
+		this.cfClientConfig=CfClientConfig.createDefault();
+		this.defaultClientParamsProvider = defaultClientParamsProvider;
 		SimpleTextDocumentService documents = getTextDocumentService();
 		SimpleWorkspaceService workspace = getWorkspaceService();
 
@@ -117,10 +126,57 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 		workspace.onDidChangeConfiguraton(settings -> {
 			Object cfClientParamsObj = settings.getProperty("cfClientParams");
-			if (cfClientParamsObj instanceof List<?>) {
-				cfClientConfig.setClientParamsProvider(new CfJsonParamsProvider((List<?>) cfClientParamsObj));
+			if (cfClientParamsObj instanceof Map<?,?>) {
+				applyCfLoginParameterSettings((Map<?,?>) cfClientParamsObj);
 			}
 		});
+	}
+
+	public CfClientConfig getCfClientConfig() {
+		return cfClientConfig;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void applyCfLoginParameterSettings(Map<?, ?> cfClientParamsData) {
+		if (cfClientParamsData.get("parameters") instanceof List<?>) {
+			List<?> loginParams = (List<?>) cfClientParamsData.get("parameters");
+
+			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(loginParams,
+					(Map<String, String>) cfClientParamsData.get("messages"));
+
+			cfClientConfig.setClientParamsProvider(new ClientParamsProvider() {
+
+				@Override
+				public Collection<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
+					List<ClientParamsProvider> providers = ImmutableList.of(defaultClientParamsProvider, cfClientParamsProvider);
+
+					List<CFClientParams> params = new ArrayList<>();
+
+					for (ClientParamsProvider provider : providers) {
+						try {
+							params.addAll(provider.getParams());
+						} catch (NoTargetsException e) {
+							// ignore
+						}
+					}
+
+					if (params.isEmpty()) {
+						throw new NoTargetsException(getMessages().noTargetsFound());
+					}
+
+					return params;
+				}
+
+				@Override
+				public CFParamsProviderMessages getMessages() {
+					return cfClientParamsData.isEmpty() ? defaultClientParamsProvider.getMessages()
+							: cfClientParamsProvider.getMessages();
+				}
+
+			});
+
+		}
+
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
@@ -174,7 +230,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		if (cfTargetCache == null) {
 			// Init CF client params provider if it's initilized
 			if (cfClientConfig.getClientParamsProvider() == null) {
-				cfClientConfig.setClientParamsProvider(CfCliParamsProvider.getInstance());
+				cfClientConfig.setClientParamsProvider(defaultClientParamsProvider );
 			}
 			CloudFoundryClientFactory clientFactory = cfClientFactory;
 			cfTargetCache = new CFTargetCache(cfClientConfig, clientFactory, new ClientTimeouts());

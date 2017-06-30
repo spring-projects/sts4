@@ -33,7 +33,7 @@ public class MockCfCli {
 
 	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
 	public final ClientRequests client = mock(ClientRequests.class);
-	public final CfClientConfig cfClientConfig = CfClientConfig.DEFAULT;
+	public final CfClientConfig cfClientConfig = CfClientConfig.createDefault();
 	public final ClientParamsProvider paramsProvider = mock(ClientParamsProvider.class);
 	public final CfCliProviderMessages actualCfCliMessages = new CfCliProviderMessages();
 
