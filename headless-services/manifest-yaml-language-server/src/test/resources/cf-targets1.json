@@ -1,18 +1,20 @@
 {
-  "cfClientParams": [
-    {
-      "Target": "https://api.system.demo-gcp.springapps.io",
-      "OrgName": "system",
-      "SpaceName": "p-dataflow",
-      "RefreshToken": "eyJhbGciOiJSUzI1N",
-      "SSLDisabled": true
-    },
-    {
-      "Target": "https://api.run.pivotal.io",
-      "OrgName": "test",
-      "SpaceName": "spring-testing",
-      "RefreshToken": "eyJhbGciOiJSUzI1N",
-      "SSLDisabled": true
-    }
-  ]
+	"cfClientParams": {
+		"parameters": [
+			{
+				"Target": "https://api.system.demo-gcp.springapps.io",
+				"OrgName": "system",
+				"SpaceName": "p-dataflow",
+				"RefreshToken": "eyJhbGciOiJSUzI1N",
+				"SSLDisabled": true
+			},
+			{
+				"Target": "https://api.run.pivotal.io",
+				"OrgName": "test",
+				"SpaceName": "spring-testing",
+				"RefreshToken": "eyJhbGciOiJSUzI1N",
+				"SSLDisabled": true
+			}
+		]
+	}
 }

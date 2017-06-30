@@ -82,9 +82,9 @@ public class ManifestYamlLanguageServerTest {
 		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
-	@Test public void cfClientParams1() throws Exception {
+	@Test public void changeCfClientParams() throws Exception {
 		MockCloudfoundry cloudfoundry = new MockCloudfoundry();
-		ManifestYamlLanguageServer manifestYamlLanguageServer = new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.config);
+		ManifestYamlLanguageServer manifestYamlLanguageServer = new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider);
 
 		LanguageServerHarness harness = new LanguageServerHarness(
 				() -> manifestYamlLanguageServer,
@@ -92,15 +92,14 @@ public class ManifestYamlLanguageServerTest {
 		);
 		harness.intialize(null);
 
-
-		assertEquals(1, cloudfoundry.config.getClientParamsProvider().getParams().size());
+		assertEquals(1, manifestYamlLanguageServer.getCfClientConfig().getClientParamsProvider().getParams().size());
 		assertEquals(Arrays.asList("test.io"), manifestYamlLanguageServer.getCfTargets());
 
 		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
 		params.setSettings(new ObjectMapper().readValue(getClass().getResourceAsStream("/cf-targets1.json"), Map.class));
 		manifestYamlLanguageServer.getWorkspaceService().didChangeConfiguration(params);
-		assertEquals(2, cloudfoundry.config.getClientParamsProvider().getParams().size());
-		assertEquals(Arrays.asList("api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());
+		assertEquals(3, manifestYamlLanguageServer.getCfClientConfig().getClientParamsProvider().getParams().size());
+		assertEquals(Arrays.asList("test.io", "api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());
 	}
 
 

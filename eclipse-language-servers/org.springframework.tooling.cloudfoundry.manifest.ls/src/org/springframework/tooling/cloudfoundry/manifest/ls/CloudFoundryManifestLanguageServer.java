@@ -18,10 +18,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -39,7 +36,7 @@ import org.osgi.framework.Bundle;
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings({ "restriction", "unchecked" })
+@SuppressWarnings("restriction")
 public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionProvider {
 	
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
@@ -47,11 +44,7 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	private LanguageServer languageServer;
 	private URI rootPath;
 
-	private static Object cfTargetOptionSettings = new HashMap<String, Object>();
-	// Default configuration data
-	static {
-		((Map<String,Object>)cfTargetOptionSettings).put("cfClientParams", Collections.EMPTY_LIST);
-	}
+	private static Object cfTargetOptionSettings = null;
 	private static List<CloudFoundryManifestLanguageServer> servers = new CopyOnWriteArrayList<>();
 
 	public CloudFoundryManifestLanguageServer() {

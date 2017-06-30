@@ -43,9 +43,16 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 	private static final String ORG_NAME = "OrgName";
 	private static final String SPACE_NAME = "SpaceName";
 	
-	private Supplier<Collection<CFClientParams>> paramsSupplier;
+	private static final String PROP_NO_TARGETS_FOUND = "noTargetsFound";
+	private static final String PROP_UNAUTHORISED = "unauthorised";
+	private static final String PROP_NO_NETWORK_CONNECTION = "noNetworkConnection";
+	private static final String PROP_NO_ORG_SPACE = "noOrgSpace";
 	
-	public CfJsonParamsProvider(List<?> json) {
+	private Supplier<Collection<CFClientParams>> paramsSupplier;
+	private Map<String, String> messages;
+	
+	public CfJsonParamsProvider(List<?> json, Map<String, String> messages) {
+		this.messages = messages;
 		this.paramsSupplier = Suppliers.memoize(() -> json
 				.stream()
 				.filter(o -> o instanceof Map<?, ?>)
@@ -56,7 +63,11 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 
 	@Override
 	public Collection<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
-		return paramsSupplier.get();
+		Collection<CFClientParams> params = paramsSupplier.get();
+		if (params == null || params.isEmpty()) {
+			throw new NoTargetsException(getMessages().noTargetsFound());
+		}
+		return params;
 	}
 	
 	private static CFClientParams parseCfClientParams(Map<?, ?> userData) {
@@ -82,21 +93,33 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 
 			@Override
 			public String noTargetsFound() {
+				if (messages != null && messages.containsKey(PROP_NO_TARGETS_FOUND)) {
+					return messages.get(PROP_NO_TARGETS_FOUND);
+				}
 				return NO_TARGETS_FOUND_MESSAGE;
 			}
 
 			@Override
 			public String unauthorised() {
+				if (messages != null && messages.containsKey(PROP_UNAUTHORISED)) {
+					return messages.get(PROP_UNAUTHORISED);
+				}
 				return NO_NETWORK_CONNECTION;
 			}
 
 			@Override
 			public String noNetworkConnection() {
+				if (messages != null && messages.containsKey(PROP_NO_NETWORK_CONNECTION)) {
+					return messages.get(PROP_NO_NETWORK_CONNECTION);
+				}
 				return NO_NETWORK_CONNECTION;
 			}
 
 			@Override
 			public String noOrgSpace() {
+				if (messages != null && messages.containsKey(PROP_NO_ORG_SPACE)) {
+					return messages.get(PROP_NO_ORG_SPACE);
+				}
 				return NO_ORG_SPACE;
 			}
 
