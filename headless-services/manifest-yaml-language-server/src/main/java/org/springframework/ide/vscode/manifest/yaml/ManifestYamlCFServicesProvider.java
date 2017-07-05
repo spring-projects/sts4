@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
@@ -29,30 +30,16 @@ public class ManifestYamlCFServicesProvider extends AbstractCFHintsProvider {
 	}
 
 	@Override
-	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-		if (targets==null || targets.isEmpty()) {
-			//no targets... means we don't know anything. Indicate this by returning null...
-			// this "don't know" value will suppress bogus warnings in the reconciler.
-			return null;
-		}
-		List<YValueHint> hints = new ArrayList<>();
-		for (CFTarget cfTarget : targets) {
-			List<CFServiceInstance> services = cfTarget.getServices();
+	public Collection<YValueHint> getHints(CFTarget cfTarget) throws Exception {
+		List<CFServiceInstance> services = cfTarget.getServices();
+		if (services == null) {
+			return Collections.emptyList();
+		} else {
 			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
-			if (services != null && !services.isEmpty()) {
-
-				for (CFServiceInstance service : services) {
-					String name = service.getName();
-					String label = getServiceLabel(cfTarget, service);
-					YValueHint hint = new BasicYValueHint(name, label)
-							.setDocumentation(targetLabel);
-					if (!hints.contains(hint)) {
-						hints.add(hint);
-					}
-				}
-			}
+			return services.stream()
+					.map(service -> new BasicYValueHint(service.getName(), getServiceLabel(cfTarget, service)).setDocumentation(targetLabel))
+					.collect(Collectors.toList());
 		}
-		return hints;
 	}
 
 	@Override

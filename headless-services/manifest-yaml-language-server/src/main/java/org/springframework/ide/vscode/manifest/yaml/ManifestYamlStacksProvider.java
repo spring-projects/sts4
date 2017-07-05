@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
@@ -34,30 +35,16 @@ public class ManifestYamlStacksProvider extends AbstractCFHintsProvider {
 	}
 
 	@Override
-	protected Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-		if (targets==null || targets.isEmpty()) {
-			//no targets... means we don't know anything. Indicate this by returning null...
-			// this "don't know" value will suppress bogus warnings in the reconciler.
-			return null;
-		}
-		List<YValueHint> hints = new ArrayList<>();
-		for (CFTarget cfTarget : targets) {
-			List<CFStack> stacks = cfTarget.getStacks();
+	protected Collection<YValueHint> getHints(CFTarget cfTarget) throws Exception {
+		List<CFStack> stacks = cfTarget.getStacks();
+		if (stacks == null) {
+			return Collections.emptyList();
+		} else {
 			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
-			if (stacks != null && !stacks.isEmpty()) {
-				for (CFStack s : stacks) {
-					String name = s.getName();
-					String label = name;
-					YValueHint hint = new BasicYValueHint(name, label)
-							.setDocumentation(targetLabel);
-					if (!hints.contains(hint)) {
-						hints.add(hint);
-					}
-				}
-			}
+			return stacks.stream()
+					.map(s -> new BasicYValueHint(s.getName(), s.getName()).setDocumentation(targetLabel))
+					.collect(Collectors.toList());
 		}
-		return hints;
 	}
-
 
 }

@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
@@ -29,32 +30,16 @@ public class ManifestYamlCFBuildpacksProvider extends AbstractCFHintsProvider {
 	}
 
 	@Override
-	public Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
-		if (targets==null || targets.isEmpty()) {
-			//no targets... means we don't know anything. Indicate this by returning null...
-			// this "don't know" value will suppress bogus warnings in the reconciler.
-			return null;
-		}
-		List<YValueHint> hints = new ArrayList<>();
-		for (CFTarget cfTarget : targets) {
-
-			List<CFBuildpack> buildpacks = cfTarget.getBuildpacks();
+	public Collection<YValueHint> getHints(CFTarget cfTarget) throws Exception {
+		List<CFBuildpack> buildpacks = cfTarget.getBuildpacks();
+		if (buildpacks == null) {
+			return Collections.emptyList();
+		} else {
 			Renderable targetLabel = Renderables.text(cfTarget.getLabel());
-
-			if (buildpacks != null && !buildpacks.isEmpty()) {
-
-				for (CFBuildpack buildpack : buildpacks) {
-					String name = buildpack.getName();
-					String label = getBuildpackLabel(cfTarget, buildpack);
-					YValueHint hint = new BasicYValueHint(name, label)
-							.setDocumentation(targetLabel);
-					if (!hints.contains(hint)) {
-						hints.add(hint);
-					}
-				}
-			}
+			return buildpacks.stream()
+					.map(buildpack -> new BasicYValueHint(buildpack.getName(), getBuildpackLabel(cfTarget, buildpack)).setDocumentation(targetLabel))
+					.collect(Collectors.toList());
 		}
-		return hints;
 	}
 
 	protected String getBuildpackLabel(CFTarget target, CFBuildpack buildpack) {

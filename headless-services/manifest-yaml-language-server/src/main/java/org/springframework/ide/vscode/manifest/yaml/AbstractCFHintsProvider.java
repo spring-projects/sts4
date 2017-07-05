@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -88,6 +89,31 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	 *
 	 * @return non-null list of hints. Return empty if no hints available
 	 */
-	abstract protected Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception;
+	protected Collection<YValueHint> getHints(List<CFTarget> targets) throws Exception {
+		if (targets==null || targets.isEmpty()) {
+			//no targets... means we don't know anything. Indicate this by returning null...
+			// this "don't know" value will suppress bogus warnings in the reconciler.
+			return null;
+		}
+		List<YValueHint> hints = new ArrayList<>();
+		boolean validTargetsPresent = false;
+		for (CFTarget cfTarget : targets) {
+			try {
+				// TODO: check if duplicate proposals can be the list of all hints. Duplicates don't seem to cause duplicate proposals. Verify this!
+				getHints(cfTarget).stream().filter(hint -> !hints.contains(hint)).forEach(hint -> hints.add(hint));
+				validTargetsPresent = true;
+			} catch (Exception e) {
+				// Drop individual target error
+			}
+		}
+		if (validTargetsPresent) {
+			return hints;
+		} else {
+			throw new ConnectionException(
+					targetCache.getCfClientConfig().getClientParamsProvider().getMessages().noNetworkConnection());
+		}
+	}
+
+	abstract Collection<YValueHint> getHints(CFTarget target) throws Exception;
 
 }

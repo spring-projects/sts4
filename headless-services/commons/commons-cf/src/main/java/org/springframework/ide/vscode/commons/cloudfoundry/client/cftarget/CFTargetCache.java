@@ -121,4 +121,8 @@ public class CFTargetCache {
 			return cfApiUrl;
 		}
 	}
+
+	public CfClientConfig getCfClientConfig() {
+		return cfClientConfig;
+	}
 }
