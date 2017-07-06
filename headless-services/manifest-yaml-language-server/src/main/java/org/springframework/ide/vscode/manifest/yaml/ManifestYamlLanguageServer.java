@@ -155,7 +155,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 					for (ClientParamsProvider provider : providers) {
 						try {
 							params.addAll(provider.getParams());
-						} catch (NoTargetsException e) {
+						} catch (Exception e) {
 							// ignore
 						}
 					}
