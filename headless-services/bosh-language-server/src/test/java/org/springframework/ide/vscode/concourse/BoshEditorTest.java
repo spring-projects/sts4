@@ -43,6 +43,11 @@ public class BoshEditorTest {
 				"- alias: default\n" + 
 				"  os: ubuntu-trusty\n" + 
 				"  version: 3421.11\n" + 
+				"update:\n" + 
+				"  canaries: 1\n" + 
+				"  max_in_flight: 10\n" + 
+				"  canary_watch_time: 1000-30000\n" + 
+				"  update_watch_time: 1000-30000\n" + 
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
@@ -53,6 +58,8 @@ public class BoshEditorTest {
 		editor.assertHoverContains("director_uuid", "This string must match the UUID of the currently targeted Director");
 		editor.assertHoverContains("releases", "The name and version of each release in the deployment");
 		editor.assertHoverContains("stemcells", "The name and version of each stemcell");
+		editor.assertHoverContains("update", "This specifies instance update properties");
+		
 	}
 
 	@Test public void toplevelV2PropertyCompletions() throws Exception {
@@ -63,7 +70,8 @@ public class BoshEditorTest {
 				"director_uuid: <*>",
 				"name: <*>",
 				"releases:\n- <*>",
-				"stemcells:\n- <*>"
+				"stemcells:\n- <*>",
+				"update:\n  <*>"
 		);
 	}
 

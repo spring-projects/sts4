@@ -65,6 +65,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YType t_stemcell = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627093
 		addProp(TOPLEVEL_TYPE, "stemcells", f.yseq(t_stemcell)).isRequired(true);
 
+		YType t_update = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627121
+		addProp(TOPLEVEL_TYPE, "update", t_update).isRequired(true);
 		
 	}
 
