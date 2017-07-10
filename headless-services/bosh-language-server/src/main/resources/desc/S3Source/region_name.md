@@ -1,0 +1,1 @@
+*Optional.* The region the bucket is in. Defaults to `us-east-1`.

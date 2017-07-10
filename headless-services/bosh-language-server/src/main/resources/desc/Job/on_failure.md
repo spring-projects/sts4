@@ -1,0 +1,1 @@
+*Optional*. Step to execute when the job fails. Equivalent to the `on_failure` step attribute.

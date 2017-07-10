@@ -1,0 +1,23 @@
+resources:
+- name: sts4
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
+- name: other-repo
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
+- name: more-stuff
+  type: git
+  source:
+    repository: https://github.com/kdvolder/somestuff
+jobs:
+- name: job1
+  plan:
+  - get: sts4
+  - task: do-stuff
+    input_mapping:
+      task_input: bogus_input
+      repo: sts4
+  - get: bogus-get
+  - put: bogus-put

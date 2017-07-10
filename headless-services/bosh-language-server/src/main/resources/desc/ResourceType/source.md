@@ -1,0 +1,3 @@
+*Optional.* The location of the resource type's resource. This varies by resource type, and is a black box to Concourse; it is blindly passed to the resource at runtime.
+
+To use `docker-image` as an example, the source would contain something like `repository: username/reponame`. See the [Docker Image resource](https://github.com/concourse/docker-image-resource) (or whatever resource type your resource type uses) for more information.

@@ -1,0 +1,1 @@
+*Optional.* An encryption algorithm to use when storing objects in S3.

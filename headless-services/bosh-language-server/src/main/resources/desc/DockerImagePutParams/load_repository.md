@@ -1,0 +1,1 @@
+*Optional.* The repository of the image loaded from `load_file`.

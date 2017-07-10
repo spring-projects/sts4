@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>bosh-language-server</artifactId>
+	<packaging>jar</packaging>
+	
+	<parent>
+		<groupId>org.springframework.ide.vscode</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../commons/pom.xml</relativePath>
+	</parent>
+	<version>0.0.8-SNAPSHOT</version>
+	
+	<properties>
+		<dependencies.version>0.0.1-SNAPSHOT</dependencies.version>
+	</properties>
+	
+	<distributionManagement>
+		<repository>
+			<id>distribution-repository</id>
+			<name>Temporary Staging Repository</name>
+			<url>file://${basedir}/dist</url>
+		</repository>
+	</distributionManagement>
+
+	<dependencies>
+		<!-- Language Servers -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-language-server</artifactId>
+			<version>${dependencies.version}</version>
+		</dependency>
+		<!-- Yaml -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-yaml</artifactId>
+			<version>${dependencies.version}</version>
+		</dependency>
+		<!-- Test harness -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>language-server-test-harness</artifactId>
+			<version>${dependencies.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<!-- Configure fat jar -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>1.4.1.RELEASE</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

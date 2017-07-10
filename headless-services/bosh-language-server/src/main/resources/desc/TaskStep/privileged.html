@@ -1,0 +1,8 @@
+<span class="py">privileged</span><span class="t"></span><span class="pi">:</span><span class="t"></span><span class="t"> </span><span class="nv"></span><span class="nv">boolean</span></a></pre></div><p><em>Optional. Default <code>false</code>.</em> If set to <code>true</code>, the task will
+run with full capabilities, as determined by the Garden backend the task runs
+on. For Linux-based backends it typically determines whether or not the
+container will run in a separate user namespace, and whether the <code>root</code>
+user is "actual" <code>root</code> (if set to <code>true</code>) or a user namespaced
+<code>root</code> (if set to <code>false</code>, the default).</p><p>This is a gaping security hole; use wisely and only if necessary. This is not
+part of the task configuration to prevent privilege escalation via pull
+requests.</p>

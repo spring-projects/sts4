@@ -1,0 +1,1 @@
+*Optional.* Explicitly set the user to run as. If not specified, this defaults to the user configured by the task's image. If not specified there, it's up to the Garden backend, and may be e.g. `root` on Linux.

@@ -1,0 +1,1 @@
+*Optional. Default 1m.* The interval on which to check for new versions of the resource. Acceptable interval options are defined by the [time.ParseDuration function](https://golang.org/pkg/time/#ParseDuration).
