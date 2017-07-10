@@ -48,6 +48,33 @@ public class BoshEditorTest {
 				"  max_in_flight: 10\n" + 
 				"  canary_watch_time: 1000-30000\n" + 
 				"  update_watch_time: 1000-30000\n" + 
+				"instance_groups:\n" + 
+				"- name: redis-master\n" + 
+				"  instances: 1\n" + 
+				"  azs: [z1, z2]\n" + 
+				"  jobs:\n" + 
+				"  - name: redis-server\n" + 
+				"    release: redis\n" + 
+				"    properties:\n" + 
+				"      port: 3606\n" + 
+				"  vm_type: medium\n" + 
+				"  vm_extensions: [public-lbs]\n" + 
+				"  stemcell: default\n" + 
+				"  persistent_disk_type: medium\n" + 
+				"  networks:\n" + 
+				"  - name: default\n" + 
+				"- name: redis-slave\n" + 
+				"  instances: 2\n" + 
+				"  azs: [z1, z2]\n" + 
+				"  jobs:\n" + 
+				"  - name: redis-server\n" + 
+				"    release: redis\n" + 
+				"    properties: {}\n" + 
+				"  vm_type: medium\n" + 
+				"  stemcell: default\n" + 
+				"  persistent_disk_type: medium\n" + 
+				"  networks:\n" + 
+				"  - name: default\n" + 
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
@@ -59,6 +86,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("releases", "The name and version of each release in the deployment");
 		editor.assertHoverContains("stemcells", "The name and version of each stemcell");
 		editor.assertHoverContains("update", "This specifies instance update properties");
+		editor.assertHoverContains("instance_groups", "Specifies the mapping between release [jobs](https://bosh.io/docs/terminology.html#job) and instance groups.");
 		
 	}
 
@@ -68,6 +96,7 @@ public class BoshEditorTest {
 		);
 		editor.assertCompletions(
 				"director_uuid: <*>",
+				"instance_groups:\n- <*>",
 				"name: <*>",
 				"releases:\n- <*>",
 				"stemcells:\n- <*>",
