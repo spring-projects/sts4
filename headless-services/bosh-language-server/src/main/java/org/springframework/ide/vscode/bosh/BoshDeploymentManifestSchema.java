@@ -50,18 +50,18 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		TYPE_UTIL = f.TYPE_UTIL;
 		
 		TOPLEVEL_TYPE = f.ybean("BoshDeploymentManifest");
-		addProp(TOPLEVEL_TYPE, "name", t_ne_string);
-		addProp(TOPLEVEL_TYPE, "director_uuid", t_ne_string);
+		addProp(TOPLEVEL_TYPE, "name", t_ne_string).isRequired(true);
+		addProp(TOPLEVEL_TYPE, "director_uuid", t_ne_string).isRequired(true);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest");
 		t_version.parseWith(ValueParsers.NE_STRING);
 
 		YBeanType t_release = f.ybean("Release");
-		addProp(t_release, "name", t_ne_string);
-		addProp(t_release, "version", t_version);
+		addProp(t_release, "name", t_ne_string).isRequired(true);
+		addProp(t_release, "version", t_version).isRequired(true);
 		
-		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release));
+		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release)).isRequired(true);
 	}
 
 	@Override
