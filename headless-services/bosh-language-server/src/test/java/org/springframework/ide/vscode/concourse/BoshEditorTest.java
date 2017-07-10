@@ -91,6 +91,8 @@ public class BoshEditorTest {
 				"    alternative_names: [cc.cf.internal]\n" +
 				"properties:\n" +
 				"  a-property: the-value\n" +
+				"tags:\n" + 
+				"  project: cf\n" + 
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
@@ -106,7 +108,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("instance_groups", "Specifies the mapping between release [jobs](https://bosh.io/docs/terminology.html#job) and instance groups.");
 		editor.assertHoverContains("properties", 3, "Describes global properties. Deprecated");
 		editor.assertHoverContains("variables", "Describes variables");
-		
+		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
 	}
 
 	@Test public void toplevelV2PropertyCompletions() throws Exception {

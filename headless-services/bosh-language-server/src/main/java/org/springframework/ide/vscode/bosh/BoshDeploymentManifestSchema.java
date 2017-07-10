@@ -76,6 +76,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YType t_variable = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627441
 		addProp(TOPLEVEL_TYPE, "variables", f.yseq(t_variable));
 
+		addProp(TOPLEVEL_TYPE, "tags", t_params);
+		
 	}
 
 	@Override
