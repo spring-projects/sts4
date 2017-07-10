@@ -60,8 +60,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_ne_string).isRequired(true);
 		addProp(t_release, "version", t_version).isRequired(true);
-		
 		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release)).isRequired(true);
+		
+		YType t_stemcell = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627093
+		addProp(TOPLEVEL_TYPE, "stemcells", f.yseq(t_stemcell)).isRequired(true);
+
+		
 	}
 
 	@Override
