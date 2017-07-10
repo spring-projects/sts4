@@ -75,6 +75,20 @@ public class BoshEditorTest {
 				"  persistent_disk_type: medium\n" + 
 				"  networks:\n" + 
 				"  - name: default\n" + 
+				"variables:\n" + 
+				"- name: admin_password\n" + 
+				"  type: password\n" + 
+				"- name: default_ca\n" + 
+				"  type: certificate\n" + 
+				"  options:\n" + 
+				"    is_ca: true\n" + 
+				"    common_name: some-ca\n" + 
+				"- name: director_ssl\n" + 
+				"  type: certificate\n" + 
+				"  options:\n" + 
+				"    ca: default_ca\n" + 
+				"    common_name: cc.cf.internal\n" + 
+				"    alternative_names: [cc.cf.internal]\n" +
 				"properties:\n" +
 				"  a-property: the-value\n" +
 				"blah: hoooo\n"
@@ -91,6 +105,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("update", "This specifies instance update properties");
 		editor.assertHoverContains("instance_groups", "Specifies the mapping between release [jobs](https://bosh.io/docs/terminology.html#job) and instance groups.");
 		editor.assertHoverContains("properties", 3, "Describes global properties. Deprecated");
+		editor.assertHoverContains("variables", "Describes variables");
 		
 	}
 

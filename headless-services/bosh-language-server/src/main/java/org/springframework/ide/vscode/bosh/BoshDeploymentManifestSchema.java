@@ -72,6 +72,10 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "instance_groups", f.yseq(t_instance_group)).isRequired(true);
 		
 		addProp(TOPLEVEL_TYPE, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
+		
+		YType t_variable = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627441
+		addProp(TOPLEVEL_TYPE, "variables", f.yseq(t_variable));
+
 	}
 
 	@Override
