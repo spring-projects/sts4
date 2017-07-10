@@ -75,9 +75,12 @@ public class BoshEditorTest {
 				"  persistent_disk_type: medium\n" + 
 				"  networks:\n" + 
 				"  - name: default\n" + 
+				"properties:\n" +
+				"  a-property: the-value\n" +
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
+				"properties|Deprecated in favor of job level properties and links",
 				"blah|Unknown property"
 		);
 
@@ -87,6 +90,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("stemcells", "The name and version of each stemcell");
 		editor.assertHoverContains("update", "This specifies instance update properties");
 		editor.assertHoverContains("instance_groups", "Specifies the mapping between release [jobs](https://bosh.io/docs/terminology.html#job) and instance groups.");
+		editor.assertHoverContains("properties", 3, "Describes global properties. Deprecated");
 		
 	}
 
