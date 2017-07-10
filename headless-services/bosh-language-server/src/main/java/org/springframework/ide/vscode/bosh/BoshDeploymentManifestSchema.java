@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import java.util.UUID;
+
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -45,13 +47,15 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 			.parseWith(ValueParsers.POS_INTEGER);
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
 			.parseWith(ValueParsers.integerAtLeast(1));
+	public final YType t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
 
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
 		
 		TOPLEVEL_TYPE = f.ybean("BoshDeploymentManifest");
 		addProp(TOPLEVEL_TYPE, "name", t_ne_string).isRequired(true);
-		addProp(TOPLEVEL_TYPE, "director_uuid", t_ne_string).isRequired(true);
+		addProp(TOPLEVEL_TYPE, "director_uuid", t_uuid)
+			.isRequired(true);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest");
