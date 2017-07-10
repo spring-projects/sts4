@@ -79,7 +79,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		}
 
 		public void setMaxCompletions(int max) {
-			completionEngine.setMaxCompletionsNumber(max);
+			completionEngine.setMaxCompletions(max);
 		}
 	}
 

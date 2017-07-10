@@ -1,1 +1,0 @@
-*Required.* The command to execute, relative to the task's working directory. For a script living in a resource's repo, you must specify the full path to the resource, i.e. `my-resource/scripts/test`.

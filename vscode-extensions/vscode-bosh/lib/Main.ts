@@ -13,8 +13,7 @@ import {TextDocument, OutputChannel} from 'vscode';
 
 var log_output : OutputChannel = null;
 
-const PIPELINE_LANGUAGE_ID = "concourse-pipeline-yaml";
-const TASK_LANGUAGE_ID = "concourse-task-yaml";
+const BOSH_DEPLOYMENT_LANGUAGE_ID = "bosh-deployment-manifest";
 
 function log(msg : string) {
     if (log_output) {
@@ -33,11 +32,11 @@ export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG : false,
         CONNECT_TO_LS: false,
-        extensionId: 'vscode-concourse',
+        extensionId: 'vscode-bosh',
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: "48m",
         clientOptions: {
-            documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ]
+            documentSelector: [ BOSH_DEPLOYMENT_LANGUAGE_ID ]
         }
     };
     let clientPromise = commons.activate(options, context);

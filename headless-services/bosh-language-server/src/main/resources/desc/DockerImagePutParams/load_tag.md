@@ -1,1 +1,0 @@
-*Optional.* Default `latest`. The tag of image loaded from `load_file`.

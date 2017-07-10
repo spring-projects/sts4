@@ -1,1 +1,0 @@
-*Optional.* If `true`, will not fetch Git LFS files.

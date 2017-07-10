@@ -1,1 +1,0 @@
-*Optional.* Place a `.tar` file of the image in the destination.

@@ -1,1 +1,0 @@
-*Optional.* Place a `docker save`d image in the destination.

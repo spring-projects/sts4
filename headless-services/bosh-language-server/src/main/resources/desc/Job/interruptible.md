@@ -1,1 +1,0 @@
-*Optional*. *Default* false. Normally, when a worker is shutting down it will wait for builds with containers running on that worker to finish before exiting. If this value is set to `true`, the worker will not wait on the builds of this job. You may want this if e.g. you have a self-deploying Concourse or long-running-but-low-importance jobs.

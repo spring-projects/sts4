@@ -59,7 +59,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder, indexProvider);
 		completionEngine = new VscodeCompletionEngineAdapter(this, bootCompletionEngine);
-		completionEngine.setMaxCompletionsNumber(100);
+		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
@@ -71,7 +71,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	}
 
 	public void setMaxCompletionsNumber(int number) {
-		completionEngine.setMaxCompletionsNumber(number);
+		completionEngine.setMaxCompletions(number);
 	}
 
 }

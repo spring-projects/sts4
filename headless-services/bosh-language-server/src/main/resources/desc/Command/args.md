@@ -1,1 +1,0 @@
-*Optional.* Arguments to pass to the command. Note that when executed with `fly`, any arguments passed to `fly` are appended to this array.

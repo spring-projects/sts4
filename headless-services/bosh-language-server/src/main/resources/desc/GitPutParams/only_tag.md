@@ -1,1 +1,0 @@
-*Optional.* When set to 'true' push only the tags of a repo.

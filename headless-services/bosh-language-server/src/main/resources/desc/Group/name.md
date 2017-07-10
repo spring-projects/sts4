@@ -1,1 +1,0 @@
-*Required.* The name of the group. This should be short and simple as it will be used as the tab name for navigation.

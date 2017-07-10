@@ -113,7 +113,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();
 		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
-		completionEngine.setMaxCompletionsNumber(100);
+		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
@@ -156,7 +156,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	}
 
 	public void setMaxCompletionsNumber(int number) {
-		completionEngine.setMaxCompletionsNumber(number);
+		completionEngine.setMaxCompletions(number);
 	}
 
 	public void setHoverType(HoverType type) {

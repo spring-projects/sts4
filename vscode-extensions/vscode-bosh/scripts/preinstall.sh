@@ -11,7 +11,7 @@ curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YA
 npm install ../commons-vscode
 
 # Use maven to build fat jar of the language server
-cd ../../headless-services/concourse-language-server
+cd ../../headless-services/bosh-language-server
 ./build.sh
 
 mkdir -p ${workdir}/jars

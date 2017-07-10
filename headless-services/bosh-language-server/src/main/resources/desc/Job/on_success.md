@@ -1,1 +1,0 @@
-*Optional*. Step to execute when the job succeeds. Equivalent to the `on_success` step attribute.

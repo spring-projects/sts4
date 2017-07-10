@@ -109,7 +109,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		this.resolver = resolver;
 	}
 
-	public void setMaxCompletionsNumber(int maxCompletions) {
+	public void setMaxCompletions(int maxCompletions) {
 		this.maxCompletions = maxCompletions;
 	}
 
