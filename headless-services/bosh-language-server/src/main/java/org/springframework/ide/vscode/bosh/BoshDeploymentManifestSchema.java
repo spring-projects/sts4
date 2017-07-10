@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
@@ -50,6 +51,17 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		
 		TOPLEVEL_TYPE = f.ybean("BoshDeploymentManifest");
 		addProp(TOPLEVEL_TYPE, "name", t_ne_string);
+		addProp(TOPLEVEL_TYPE, "director_uuid", t_ne_string);
+
+		YAtomicType t_version = f.yatomic("Version");
+		t_version.addHints("latest");
+		t_version.parseWith(ValueParsers.NE_STRING);
+
+		YBeanType t_release = f.ybean("Release");
+		addProp(t_release, "name", t_ne_string);
+		addProp(t_release, "version", t_version);
+		
+		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release));
 	}
 
 	@Override

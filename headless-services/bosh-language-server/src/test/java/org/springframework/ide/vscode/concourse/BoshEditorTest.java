@@ -34,6 +34,10 @@ public class BoshEditorTest {
 	@Test public void toplevelV2PropertyNamesKnown() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: some-name\n" +
+				"director_uuid: cf8dc1fc-9c42-4ffc-96f1-fbad983a6ce6\n" +
+				"releases:\n" + 
+				"- name: redis\n" +
+				"  version: 12\n" + 
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
@@ -44,17 +48,25 @@ public class BoshEditorTest {
 	@Test public void toplevelV2PropertyHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: some-name\n" +
+				"director_uuid: cf8dc1fc-9c42-4ffc-96f1-fbad983a6ce6\n" +
+				"releases:\n" + 
+				"- name: redis\n" +
+				"  version: 12\n" + 
 				"blah: hoooo\n"
 		);
 		editor.assertHoverContains("name", "The name of the deployment");
+		editor.assertHoverContains("director_uuid", "This string must match the UUID of the currently targeted Director");
+		editor.assertHoverContains("releases", "The name and version of each release in the deployment");
 	}
 
 	@Test public void toplevelV2PropertyCompletions() throws Exception {
 		Editor editor = harness.newEditor(
-				"<*>\n"
+				"<*>"
 		);
 		editor.assertCompletions(
-				"name: <*>\n"
+				"director_uuid: <*>",
+				"name: <*>",
+				"releases:\n- <*>"
 		);
 	}
 
