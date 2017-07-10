@@ -19,6 +19,8 @@ export vscode_boot_java=$(basename s3-boot-java-vsix-${dist_type}/*.vsix)
 echo "vscode_boot_java=$vscode_boot_java"
 export vscode_concourse=$(basename s3-concourse-vsix-${dist_type}/*.vsix)
 echo "vscode_concourse=$vscode_concourse"
+export vscode_bosh=$(basename s3-bosh-vsix-${dist_type}/*.vsix)
+echo "vscode_bosh=$vscode_bosh"
 
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
@@ -33,6 +35,9 @@ envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
    </li>
    <li>Concourse CI Language Server: 
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_concourse}">${vscode_concourse}</a> 
+   </li>
+   <li>Bosh Language Server: 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_bosh}">${vscode_bosh}</a> 
    </li>
 </ul>
 XXXXXX

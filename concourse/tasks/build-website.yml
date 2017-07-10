@@ -4,6 +4,7 @@ inputs:
 - name: s3-boot-properties-vsix-snapshot
 - name: s3-boot-java-vsix-snapshot
 - name: s3-concourse-vsix-snapshot
+- name: s3-bosh-vsix-snapshot
 outputs:
 - name: website
 platform: linux

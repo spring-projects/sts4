@@ -63,6 +63,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/vscode-extensions/snapshots/vscode-concourse-(.*).vsix
+- name: s3-bosh-vsix-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/vscode-extensions/snapshots/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-snapshot
   type: s3
   source:
@@ -189,6 +197,25 @@ jobs:
   - put: s3-concourse-vsix-snapshot
     params: 
       file: out/vscode-concourse-*.vsix
+      acl: public-read
+- name: build-bosh-vsix-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-bosh-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-bosh
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-bosh-vsix-snapshot
+    params: 
+      file: out/vscode-bosh-*.vsix
       acl: public-read
 - name: build-manifest-yaml-vsix-snapshot
   plan:
@@ -376,6 +403,10 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
+    - get: s3-bosh-vsix-snapshot
+      trigger: true
+      passed:
+      - build-bosh-vsix-snapshot
     - get: s3-manifest-yaml-vsix-snapshot
       trigger: true
       passed:
