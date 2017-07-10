@@ -54,7 +54,7 @@ public class BoshEditorTest {
 				"<*>\n"
 		);
 		editor.assertCompletions(
-				"name: <*>"
+				"name: <*>\n"
 		);
 	}
 
