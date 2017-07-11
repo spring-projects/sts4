@@ -152,6 +152,18 @@ public class BoshEditorTest {
 				"- alias<*>"
 		);
 	}
+	
+	@Test public void stemcellReconciling() throws Exception {
+		Editor editor = harness.newEditor(
+				"stemcells:\n" + 
+				"- {}"
+		);
+		editor.assertProblems(
+				"-|One of [name, os] is required",
+				"-|[alias, version] are required",
+				"}|[director_uuid, instance_groups, name, releases, update] are required"
+		);
+	}
 
 	@Test public void releasesBlockCompletions() throws Exception {
 		Editor editor = harness.newEditor(

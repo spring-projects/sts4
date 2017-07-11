@@ -86,7 +86,9 @@ public class Editor {
 		public int compare(Diagnostic o1, Diagnostic o2) {
 			int diff = compare(o1.getRange().getStart(), o2.getRange().getStart());
 			if (diff!=0) return diff;
-			return compare(o1.getRange().getEnd(), o2.getRange().getEnd());
+			diff = compare(o1.getRange().getEnd(), o2.getRange().getEnd());
+			if (diff!=0) return diff;
+			return o1.getMessage().compareTo(o2.getMessage());
 		}
 
 		private int compare(Position p1, Position p2) {
