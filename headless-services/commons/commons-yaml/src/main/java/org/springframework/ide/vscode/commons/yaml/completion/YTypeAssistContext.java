@@ -162,27 +162,28 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	 * in theory they would be free to define the properties in any order they want.
 	 */
 	protected List<List<YTypedProperty>> sortIntoTiers(List<YTypedProperty> properties) {
-		if (typeUtil.isEnabledTieredProposals()) {
-			if (properties.isEmpty()) {
-				//Nothing to sort
-				return ImmutableList.of();
-			} else {
-				ImmutableList.Builder<YTypedProperty> primary = ImmutableList.builder();
-				ImmutableList.Builder<YTypedProperty> required = ImmutableList.builder();
-				ImmutableList.Builder<YTypedProperty> other = ImmutableList.builder();
-				for (YTypedProperty p : properties) {
-					if (p.isPrimary()) {
-						primary.add(p);
-					} else if (p.isRequired()) {
-						required.add(p);
-					} else {
-						other.add(p);
-					}
-				}
-				return ImmutableList.of(primary.build(), required.build(), other.build());
-			}
+		boolean tieredOptionals = typeUtil.tieredOptionalPropertyProposals();
+		if (properties.isEmpty()) {
+			//Nothing to sort
+			return ImmutableList.of();
 		} else {
-			return ImmutableList.of(properties);
+			ImmutableList.Builder<YTypedProperty> primary = ImmutableList.builder();
+			ImmutableList.Builder<YTypedProperty> tier2 = ImmutableList.builder();
+			ImmutableList.Builder<YTypedProperty> tier3 = ImmutableList.builder();
+			for (YTypedProperty p : properties) {
+				if (p.isPrimary()) {
+					primary.add(p);
+				} else if (!tieredOptionals || p.isRequired()) {
+					tier2.add(p);
+				} else {
+					tier3.add(p);
+				}
+			}
+			if (tieredOptionals) {
+				return ImmutableList.of(primary.build(), tier2.build(), tier3.build());
+			} else {
+				return ImmutableList.of(primary.build(), tier2.build());
+			}
 		}
 	}
 

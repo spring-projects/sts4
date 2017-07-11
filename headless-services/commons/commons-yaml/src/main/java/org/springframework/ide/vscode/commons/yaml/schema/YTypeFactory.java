@@ -55,7 +55,7 @@ public class YTypeFactory {
 	/**
 	 * Configuration option for the type-based completion engine.
 	 */
-	private boolean enableTieredProposals = true;
+	private boolean enableTieredOptionalPropertyProposals = true;
 
 	private static class Deprecation {
 		final String errorMsg;
@@ -158,11 +158,6 @@ public class YTypeFactory {
 	 * YTypeFactory
 	 */
 	public final YTypeUtil TYPE_UTIL = new YTypeUtil() {
-
-		@Override
-		public boolean isEnabledTieredProposals() {
-			return enableTieredProposals;
-		}
 		
 		@Override
 		public boolean isSequencable(YType type) {
@@ -238,6 +233,11 @@ public class YTypeFactory {
 		@Override
 		public ISubCompletionEngine getCustomContentAssistant(YType type) {
 			return ((AbstractType)type).getCustomContentAssistant();
+		}
+
+		@Override
+		public boolean tieredOptionalPropertyProposals() {
+			return enableTieredOptionalPropertyProposals;
 		}
 	};
 
@@ -912,7 +912,7 @@ public class YTypeFactory {
 	}
 
 	public YTypeFactory enableTieredProposals(boolean enable) {
-		this.enableTieredProposals = enable;
+		this.enableTieredOptionalPropertyProposals = enable;
 		return this;
 	}
 

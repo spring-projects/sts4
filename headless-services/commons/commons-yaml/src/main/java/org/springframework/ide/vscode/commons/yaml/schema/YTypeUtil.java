@@ -55,5 +55,5 @@ public interface YTypeUtil {
 	 * 'tiered' proposals feature (so that optional properties are not
 	 * suggested until required ones are all defined)
 	 */
-	boolean isEnabledTieredProposals();
+	boolean tieredOptionalPropertyProposals();
 }

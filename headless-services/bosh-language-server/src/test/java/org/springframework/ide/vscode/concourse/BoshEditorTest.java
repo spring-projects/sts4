@@ -18,6 +18,8 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+
 public class BoshEditorTest {
 
 	LanguageServerHarness harness;
@@ -116,14 +118,37 @@ public class BoshEditorTest {
 				"<*>"
 		);
 		editor.assertCompletions(
-				"director_uuid: <*>",
-				"instance_groups:\n- <*>",
-				"name: <*>",
-				"releases:\n- <*>",
-				"stemcells:\n- <*>",
-				"tags:\n  <*>",
-				"update:\n  <*>",
-				"variables:\n- <*>",
+				"name: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"name: blah\n" +
+				"<*>"
+		);
+		
+		editor.assertCompletions(
+				"name: blah\n" +
+				"director_uuid: <*>"
+				, // ============
+				"name: blah\n" +
+				"instance_groups:\n- <*>"
+				, // ============
+				"name: blah\n" +
+				"releases:\n- <*>"
+				, // ============
+				"name: blah\n" +
+				"stemcells:\n- <*>"
+				, // ============
+				"name: blah\n" +
+				"tags:\n  <*>"
+				, // ============
+				"name: blah\n" +
+				"update:\n  <*>"
+				, // ============
+				"name: blah\n" +
+				"variables:\n- <*>"
+				, // ============
+				"name: blah\n" +
 				"properties:\n  <*>"
 		);
 	}
@@ -174,9 +199,17 @@ public class BoshEditorTest {
 		editor.assertCompletions(
 				"releases:\n" + 
 				"- name: <*>"
-				, //========
-				"releases:\n" + 
-				"- version: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  <*>"
+		);
+		editor.assertCompletions(PLAIN_COMPLETION, 
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: <*>"
 		);
 	}
 		
@@ -203,4 +236,12 @@ public class BoshEditorTest {
 		editor.assertCompletionLabels("latest");
 	}
 
+	@Test public void instanceGroupsCompletions() throws Exception {
+		Editor editor = harness.newEditor(
+				"instance_groups:\n" + 
+				"- <*>"
+		);
+		
+	}
+	
 }

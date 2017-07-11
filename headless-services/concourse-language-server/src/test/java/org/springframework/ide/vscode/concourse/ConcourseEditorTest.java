@@ -34,6 +34,8 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
 
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+
 public class ConcourseEditorTest {
 
 	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.TEST_DEFAULT;
@@ -3914,15 +3916,5 @@ public class ConcourseEditorTest {
 	private void assertContextualTaskCompletions(String conText, String textBefore, String... textAfter) throws Exception {
 		assertContextualCompletions(LanguageId.CONCOURSE_TASK, c -> true, conText, textBefore, textAfter);
 	}
-
-	public static final Predicate<CompletionItem> RELAXED_COMPLETION
-	= c -> c.getLabel().startsWith("- ")
-		|| c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")
-		|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ")
-		;
-
-	public static final Predicate<CompletionItem> PLAIN_COMPLETION = c -> !RELAXED_COMPLETION.test(c);
-	public static final Predicate<CompletionItem> DEDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ");
-	public static final Predicate<CompletionItem> INDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ");
 
 }

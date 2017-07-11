@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
@@ -53,6 +54,15 @@ import com.google.common.collect.ImmutableList;
 import reactor.core.publisher.Flux;
 
 public class Editor {
+
+	public static final Predicate<CompletionItem> RELAXED_COMPLETION
+			= c -> c.getLabel().startsWith("- ")
+				|| c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")
+				|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ")
+				;
+	public static final Predicate<CompletionItem> PLAIN_COMPLETION = c -> !RELAXED_COMPLETION.test(c);
+	public static final Predicate<CompletionItem> DEDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ");
+	public static final Predicate<CompletionItem> INDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ");
 
 	static class EditorState {
 		String documentContents;
