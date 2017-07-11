@@ -1,0 +1,1 @@
+*Optional*. A valid list of VM extension names from the cloud config.

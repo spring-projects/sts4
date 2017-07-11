@@ -54,7 +54,7 @@ public class AppendTextBuilder {
 			//ready to enter sequence element on next line
 			newline(text, indent);
 			text.append("- ");
-			singleRequiredProperty(typeUtil.getDomainType(type), indent+2, text);
+			singleMostImportantProperty(typeUtil.getDomainType(type), indent+2, text);
 			//Yes using 2 here instead of YamlIndentUtil.INDENT_BY is deliberate. It's the same value (now),
 			// but the 2 used here is the width of the "- " which should determine nested indent level for things to
 			// line up properly.
@@ -66,14 +66,18 @@ public class AppendTextBuilder {
 		}
 	}
 
-	private void singleRequiredProperty(YType type, int indent, StringBuilder text) {
+	private void singleMostImportantProperty(YType type, int indent, StringBuilder text) {
 		if (type!=null) {
-			YTypedProperty requireProp = Streams.getSingle(typeUtil.getProperties(type).stream()
-				.filter(p -> p.isRequired()));
-			if (requireProp!=null) {
-				text.append(requireProp.getName());
+			YTypedProperty singleProp = Streams.getSingle(typeUtil.getProperties(type).stream()
+					.filter(p -> p.isPrimary()));
+			if (singleProp==null) {
+				singleProp = Streams.getSingle(typeUtil.getProperties(type).stream()
+					.filter(p -> p.isRequired()));
+			}
+			if (singleProp!=null) {
+				text.append(singleProp.getName());
 				text.append(':');
-				build(requireProp.getType(), indent+YamlIndentUtil.INDENT_BY, text);
+				build(singleProp.getType(), indent+YamlIndentUtil.INDENT_BY, text);
 			}
 		}
 	}

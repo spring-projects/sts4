@@ -1,0 +1,1 @@
+*Required*. List of AZs associated with this instance group (should only be used when using [first class AZs](https://bosh.io/docs/azs.html) ). Example: `[z1, z2]`.

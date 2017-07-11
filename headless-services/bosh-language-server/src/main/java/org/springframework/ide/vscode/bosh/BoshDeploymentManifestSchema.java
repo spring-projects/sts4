@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
@@ -55,8 +56,35 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		
 		TOPLEVEL_TYPE = f.ybean("BoshDeploymentManifest");
 		addProp(TOPLEVEL_TYPE, "name", t_ne_string).isPrimary(true);
-		addProp(TOPLEVEL_TYPE, "director_uuid", t_uuid)
-			.isRequired(true);
+		addProp(TOPLEVEL_TYPE, "director_uuid", t_uuid).isDeprecated(
+				"bosh v2 CLI no longer checks or requires director_uuid in the deployment manifest. " + 
+				"To achieve similar safety make sure to give unique deployment names across environments."
+		);
+
+		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
+		t_network_name.parseWith(ValueParsers.NE_STRING);
+		
+		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
+		t_disk_type.parseWith(ValueParsers.NE_STRING);
+
+		YAtomicType t_stemcell_alias = f.yatomic("StemcellAlias"); //TODO: resolve from 'stemcells block' https://www.pivotaltracker.com/story/show/148706041
+		t_stemcell_alias.parseWith(ValueParsers.NE_STRING);
+
+		YAtomicType t_vm_extension = f.yatomic("VMExtension"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148703877
+		t_vm_extension.parseWith(ValueParsers.NE_STRING);
+
+		YAtomicType t_vm_type = f.yatomic("VMType"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148686169
+		t_vm_type.parseWith(ValueParsers.NE_STRING);
+
+		YAtomicType t_az = f.yatomic("AvailabilityZone"); //TODO: resolve dynamically from 'cloud config': https://www.pivotaltracker.com/story/show/148704481
+		t_az.parseWith(ValueParsers.NE_STRING);
+		
+		YBeanType t_network = f.ybean("Network");
+		addProp(t_network, "name", t_network_name).isRequired(true);
+		
+		YBeanType t_instance_group_env = f.ybean("InstanceGroupEnv");
+		addProp(t_instance_group_env, "npsh", t_params);
+		addProp(t_instance_group_env, "password", t_ne_string);
 
 		YAtomicType t_version = f.yatomic("Version");
 		t_version.addHints("latest");
@@ -77,8 +105,31 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YType t_update = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627121
 		addProp(TOPLEVEL_TYPE, "update", t_update).isRequired(true);
-			
-		YType t_instance_group = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627211
+
+		YBeanType t_job = f.ybean("Job");
+		addProp(t_job, "name", t_ne_string).isPrimary(true);
+		addProp(t_job, "release", t_ne_string).isRequired(true);
+		addProp(t_job, "consumes", t_params);
+		addProp(t_job, "provides", t_params);
+		addProp(t_job, "properties", t_params).isRequired(true);
+
+		YBeanType t_instance_group = f.ybean("InstanceGroup");
+		addProp(t_instance_group, "name", t_ne_string).isPrimary(true);
+		addProp(t_instance_group, "azs", f.yseq(t_az)).isRequired(true);
+		addProp(t_instance_group, "instances", t_pos_integer).isRequired(true); //Strictly positive? Or zero is okay?
+		addProp(t_instance_group, "jobs", f.yseq(t_job)).isRequired(true);
+		addProp(t_instance_group, "vm_type", t_vm_type).isRequired(true);
+		addProp(t_instance_group, "vm_extensions", f.yseq(t_vm_extension));
+		addProp(t_instance_group, "stemcell", t_stemcell_alias).isRequired(true);
+		addProp(t_instance_group, "persistent_disk_type", t_disk_type);
+		addProp(t_instance_group, "networks", f.yseq(t_network));
+		addProp(t_instance_group, "update", t_update);
+		YType t_migration = t_params; //TODO: https://www.pivotaltracker.com/story/show/148712595
+		addProp(t_instance_group, "migrated_from", f.yseq(t_migration));
+		addProp(t_instance_group, "lifecycle", f.yenum("WorkloadType", "service", "errand"));
+		addProp(t_instance_group, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
+		addProp(t_instance_group, "env", t_instance_group_env);
+		
 		addProp(TOPLEVEL_TYPE, "instance_groups", f.yseq(t_instance_group)).isRequired(true);
 		
 		addProp(TOPLEVEL_TYPE, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
