@@ -49,4 +49,11 @@ public interface YTypeUtil {
 	List<Constraint> getConstraints(YType type);
 	
 	ISubCompletionEngine getCustomContentAssistant(YType type);
+	
+	/**
+	 * Config option for type-based completion engine. This enables the
+	 * 'tiered' proposals feature (so that optional properties are not
+	 * suggested until required ones are all defined)
+	 */
+	boolean isEnabledTieredProposals();
 }

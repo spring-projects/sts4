@@ -121,7 +121,35 @@ public class BoshEditorTest {
 				"name: <*>",
 				"releases:\n- <*>",
 				"stemcells:\n- <*>",
-				"update:\n  <*>"
+				"tags:\n  <*>",
+				"update:\n  <*>",
+				"variables:\n- <*>",
+				"properties:\n  <*>"
+		);
+	}
+	
+	@Test public void stemcellCompletions() throws Exception {
+		Editor editor = harness.newEditor(
+				"stemcells:\n" + 
+				"- <*>"
+		);
+		editor.assertCompletions(
+				"stemcells:\n" + 
+				"- alias: <*>"
+				, // ==========
+				"stemcells:\n" + 
+				"- name: <*>"
+				, // ==========
+				"stemcells:\n" + 
+				"- os: <*>"
+				, // ==========
+				"stemcells:\n" + 
+				"- version: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"stemcells:\n" + 
+				"- alias<*>"
 		);
 	}
 

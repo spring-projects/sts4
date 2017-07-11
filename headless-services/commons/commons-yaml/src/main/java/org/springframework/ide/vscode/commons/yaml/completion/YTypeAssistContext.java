@@ -162,23 +162,27 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	 * in theory they would be free to define the properties in any order they want.
 	 */
 	protected List<List<YTypedProperty>> sortIntoTiers(List<YTypedProperty> properties) {
-		if (properties.isEmpty()) {
-			//Nothing to sort
-			return ImmutableList.of();
-		} else {
-			ImmutableList.Builder<YTypedProperty> primary = ImmutableList.builder();
-			ImmutableList.Builder<YTypedProperty> required = ImmutableList.builder();
-			ImmutableList.Builder<YTypedProperty> other = ImmutableList.builder();
-			for (YTypedProperty p : properties) {
-				if (p.isPrimary()) {
-					primary.add(p);
-				} else if (p.isRequired()) {
-					required.add(p);
-				} else {
-					other.add(p);
+		if (typeUtil.isEnabledTieredProposals()) {
+			if (properties.isEmpty()) {
+				//Nothing to sort
+				return ImmutableList.of();
+			} else {
+				ImmutableList.Builder<YTypedProperty> primary = ImmutableList.builder();
+				ImmutableList.Builder<YTypedProperty> required = ImmutableList.builder();
+				ImmutableList.Builder<YTypedProperty> other = ImmutableList.builder();
+				for (YTypedProperty p : properties) {
+					if (p.isPrimary()) {
+						primary.add(p);
+					} else if (p.isRequired()) {
+						required.add(p);
+					} else {
+						other.add(p);
+					}
 				}
+				return ImmutableList.of(primary.build(), required.build(), other.build());
 			}
-			return ImmutableList.of(primary.build(), required.build(), other.build());
+		} else {
+			return ImmutableList.of(properties);
 		}
 	}
 

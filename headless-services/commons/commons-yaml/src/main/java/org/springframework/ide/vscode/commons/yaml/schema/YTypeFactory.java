@@ -52,6 +52,11 @@ import reactor.core.publisher.Flux;
  */
 public class YTypeFactory {
 
+	/**
+	 * Configuration option for the type-based completion engine.
+	 */
+	private boolean enableTieredProposals = true;
+
 	private static class Deprecation {
 		final String errorMsg;
 		final String replacement;
@@ -154,6 +159,11 @@ public class YTypeFactory {
 	 */
 	public final YTypeUtil TYPE_UTIL = new YTypeUtil() {
 
+		@Override
+		public boolean isEnabledTieredProposals() {
+			return enableTieredProposals;
+		}
+		
 		@Override
 		public boolean isSequencable(YType type) {
 			return ((AbstractType)type).isSequenceable();
@@ -901,5 +911,9 @@ public class YTypeFactory {
 		return null;
 	}
 
+	public YTypeFactory enableTieredProposals(boolean enable) {
+		this.enableTieredProposals = enable;
+		return this;
+	}
 
 }

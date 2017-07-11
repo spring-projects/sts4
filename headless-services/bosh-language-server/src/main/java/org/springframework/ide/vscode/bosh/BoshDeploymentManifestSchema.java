@@ -32,7 +32,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private final AbstractType TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
 
-	public final YTypeFactory f = new YTypeFactory();
+	public final YTypeFactory f = new YTypeFactory()
+			.enableTieredProposals(false);
 	public final YType t_string = f.yatomic("String");
 	public final YType t_ne_string = f.yatomic("String")
 			.parseWith(ValueParsers.NE_STRING);
@@ -66,7 +67,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_release, "version", t_version).isRequired(true);
 		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release)).isRequired(true);
 		
-		YType t_stemcell = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627093
+		YBeanType t_stemcell = f.ybean("Stemcell");
+		addProp(t_stemcell, "alias", t_ne_string).isRequired(true);
+		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
+		addProp(t_stemcell, "name", t_ne_string);
+		addProp(t_stemcell, "os", t_ne_string);
+		t_stemcell.requireOneOf("name", "os");
 		addProp(TOPLEVEL_TYPE, "stemcells", f.yseq(t_stemcell)).isRequired(true);
 
 		YType t_update = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627121
