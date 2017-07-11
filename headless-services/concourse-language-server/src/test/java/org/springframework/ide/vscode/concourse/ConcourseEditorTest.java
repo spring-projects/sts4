@@ -682,9 +682,9 @@ public class ConcourseEditorTest {
 		);
 		{
 			List<Diagnostic> problems = editor.assertProblems(
-				"config|[platform, run] are required",
-				"config|Only one of [config, file]",
 				"config|One of [image_resource, rootfs_uri, image]",
+				"config|Only one of [config, file]",
+				"config|[platform, run] are required",
 				"file|Only one of [config, file]"
 			);
 			//All of the problems in this example are property contraint violations! So all should be warnings.
@@ -1715,8 +1715,8 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"s3-snapshots|Unused 'Resource'",
-				"source|'bucket' is required",
-				"source|One of [regexp, versioned_file] is required"
+				"source|One of [regexp, versioned_file] is required",
+				"source|'bucket' is required"
 		);
 
 		editor = harness.newEditor(
