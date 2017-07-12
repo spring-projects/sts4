@@ -387,7 +387,6 @@ public class BoshEditorTest {
 				"    provides:\n" + 
 				"      blah: blah\n"
 		);
-		
 		editor.assertHoverContains("name", 3, "The job name");
 		editor.assertHoverContains("release", "The release where the job exists");
 		editor.assertHoverContains("consumes", "Links consumed by the job");
@@ -421,6 +420,45 @@ public class BoshEditorTest {
 		);
 		editor.assertHoverContains("bosh", "no description");
 		editor.assertHoverContains("password", "Crypted password");
+	}
+	
+	@Test public void updateBlockCompletions() throws Exception {
+		Editor editor = harness.newEditor(
+				"update:\n" +
+				"  <*>"
+		);
+		editor.assertCompletions(PLAIN_COMPLETION, 
+				"update:\n" +
+				"  canaries: <*>"
+				, // =====
+				"update:\n" +
+				"  canary_watch_time: <*>"
+				, // =====
+				"update:\n" +
+				"  max_in_flight: <*>"
+				, // =====
+				"update:\n" +
+				"  serial: <*>"
+				, // =====
+				"update:\n" +
+				"  update_watch_time: <*>"
+		);
+	}
+
+	@Test public void updateBlockHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"update:\n" + 
+				"  canaries: 1\n" + 
+				"  max_in_flight: 10\n" + 
+				"  canary_watch_time: 1000-30000\n" + 
+				"  update_watch_time: 1000-30000\n" +
+				"  serial: false"
+		);
+		editor.assertHoverContains("canaries", "The number of [canary]");
+		editor.assertHoverContains("max_in_flight", "maximum number of non-canary instances");
+		editor.assertHoverContains("canary_watch_time", "checks whether the canary instances");
+		editor.assertHoverContains("update_watch_time", "checks whether the instances");
+		editor.assertHoverContains("serial", "deployed in parallel");
 	}
 
 }

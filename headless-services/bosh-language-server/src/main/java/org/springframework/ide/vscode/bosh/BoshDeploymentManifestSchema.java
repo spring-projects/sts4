@@ -50,6 +50,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
 			.parseWith(ValueParsers.integerAtLeast(1));
 	public final YType t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
+	public final YType t_integer_or_range = f.yatomic("Integer or Range")
+			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
 
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -108,7 +110,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_stemcell.requireOneOf("name", "os");
 		addProp(TOPLEVEL_TYPE, "stemcells", f.yseq(t_stemcell)).isRequired(true);
 
-		YType t_update = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627121
+		YBeanType t_update = f.ybean("Update");
+		addProp(t_update, "canaries", t_strictly_pos_integer).isRequired(true);
+		addProp(t_update, "max_in_flight", t_pos_integer).isRequired(true);
+		addProp(t_update, "canary_watch_time", t_integer_or_range).isRequired(true);
+		addProp(t_update, "update_watch_time", t_integer_or_range).isRequired(true);
+		addProp(t_update, "serial", t_boolean);
 		addProp(TOPLEVEL_TYPE, "update", t_update).isRequired(true);
 
 		YBeanType t_job = f.ybean("Job");

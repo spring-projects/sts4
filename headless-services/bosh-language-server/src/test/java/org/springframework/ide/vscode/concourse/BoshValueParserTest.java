@@ -1,0 +1,78 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.concourse;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.springframework.ide.vscode.bosh.BoshValueParsers;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
+import org.springframework.ide.vscode.commons.util.ValueParser;
+
+public class BoshValueParserTest {
+
+	private static final String MARKER = "<*>";
+
+	@Test public void integerOrRangeOkay() throws Exception {
+		BoshValueParsers.INTEGER_OR_RANGE.parse("123");
+		BoshValueParsers.INTEGER_OR_RANGE.parse("123-456");
+	}
+
+	@Test public void integerOrRangeGarbage() throws Exception {
+		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
+		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123--456<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
+		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>-123", "Should be a Integer");
+		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "123-<*>garbage<*>", "Should be a Integer");
+		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123-122<*>", "123 should be smaller than 122");
+	}
+
+	private void assertProblem(ValueParser parser, String input, String expectedMessage) throws Exception {
+		String unmarkedInput = input.replace(MARKER, "");
+		int firstMarker = input.indexOf(MARKER);
+		assertTrue(firstMarker>=0);
+		int secondMarker = input.indexOf(MARKER, firstMarker+1)-MARKER.length();
+		assertTrue(secondMarker>=firstMarker);
+		try {
+			parser.parse(unmarkedInput);
+		} catch (ValueParseException e) {
+			int startIndex = startIndex(unmarkedInput, e);
+			int endIndex = endIndex(unmarkedInput, e);
+			String markedInput = 
+					unmarkedInput.substring(0, startIndex) + 
+					MARKER +
+					unmarkedInput.substring(startIndex, endIndex) +
+					MARKER +
+					unmarkedInput.substring(endIndex);
+			assertEquals(input, markedInput);
+			assertEquals(expectedMessage, e.getMessage());
+		}
+	}
+
+	private int endIndex(String unmarkedInput, ValueParseException e) {
+		int i = e.getEndIndex();
+		if (i>=0) {
+			return i;
+		} else {
+			return unmarkedInput.length();
+		}
+	}
+
+	private int startIndex(String unarkedInput, ValueParseException e) {
+		int i = e.getStartIndex();
+		if (i>=0) {
+			return i;
+		} else {
+			return 0;
+		}
+	}
+
+}

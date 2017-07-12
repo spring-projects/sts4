@@ -1,0 +1,1 @@
+*Required*. The number of [canary](https://bosh.io/docs/terminology.html#canary) instances.
