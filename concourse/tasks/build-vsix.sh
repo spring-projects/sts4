@@ -2,7 +2,7 @@
 set -e
 workdir=`pwd`
 sources=$workdir/sts4/vscode-extensions/$extension_id
-server_id=${$extension_id/#vscode/}
+server_id=${$extension_id#vscode-}
 
 if [ -d "maven-cache" ]; then
     echo "Prepopulating maven cache"
