@@ -61,6 +61,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 				"To achieve similar safety make sure to give unique deployment names across environments."
 		);
 
+		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
+		t_ip_address.parseWith(ValueParsers.NE_STRING);
+
 		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
 		t_network_name.parseWith(ValueParsers.NE_STRING);
 		
@@ -81,9 +84,11 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		
 		YBeanType t_network = f.ybean("Network");
 		addProp(t_network, "name", t_network_name).isRequired(true);
+		addProp(t_network, "static_ips", f.yseq(t_ip_address));
+		addProp(t_network, "default", f.yseq(t_ne_string)); //TODO: Can we determine the set of valid values? How?
 		
 		YBeanType t_instance_group_env = f.ybean("InstanceGroupEnv");
-		addProp(t_instance_group_env, "npsh", t_params);
+		addProp(t_instance_group_env, "bosh", t_params);
 		addProp(t_instance_group_env, "password", t_ne_string);
 
 		YAtomicType t_version = f.yatomic("Version");
@@ -107,7 +112,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "update", t_update).isRequired(true);
 
 		YBeanType t_job = f.ybean("Job");
-		addProp(t_job, "name", t_ne_string).isPrimary(true);
+		addProp(t_job, "name", t_ne_string).isRequired(true);
 		addProp(t_job, "release", t_ne_string).isRequired(true);
 		addProp(t_job, "consumes", t_params);
 		addProp(t_job, "provides", t_params);

@@ -1,0 +1,1 @@
+*Optional*. Array of IP addresses reserved for the instances on the network.

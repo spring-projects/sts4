@@ -1,0 +1,1 @@
+*Optional*. Links consumed by the job. [Read more about link configuration](https://bosh.io/docs/links.html#deployment)

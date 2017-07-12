@@ -240,20 +240,6 @@ public class BoshEditorTest {
 		editor.assertCompletionLabels("latest");
 	}
 
-	@Test public void temp_instanceGroupsCompletions() throws Exception {
-		Editor editor = harness.newEditor(
-				"instance_groups:\n" + 
-				"- name: foo-group\n" +
-				"  job<*>"
-		);
-		editor.assertCompletions(
-				"instance_groups:\n" + 
-				"- name: foo-group\n" +
-				"  jobs:\n" +
-				"  - name: <*>"
-		);
-	}
-
 	@Test public void instanceGroupsCompletions() throws Exception {
 		Editor editor = harness.newEditor(
 				"instance_groups:\n" + 
@@ -287,7 +273,7 @@ public class BoshEditorTest {
 				"instance_groups:\n" + 
 				"- name: foo-group\n" +
 				"  jobs:\n" +
-				"  - name: <*>"
+				"  - <*>"
 				, // =============
 				"instance_groups:\n" + 
 				"- name: foo-group\n" +
@@ -386,18 +372,55 @@ public class BoshEditorTest {
 		editor.assertHoverContains("env", "Specifies advanced BOSH Agent configuration");
 	}
 
-	@Ignore @Test public void instanceGroups_job_hovers() throws Exception {
-		//For the nested properties of instance_groups.jobs
-		throw new IllegalStateException("Implement a test please!");
+	@Test public void instanceGroups_job_hovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" + 
+				"instance_groups:\n" + 
+				"- name: foo\n" + 
+				"  jobs:\n" + 
+				"  - name: the-job\n" + 
+				"    release: the-jobs-release\n" + 
+				"    properties:\n" + 
+				"      blah: blah\n" + 
+				"    consumes:\n" + 
+				"      blah: blah \n" + 
+				"    provides:\n" + 
+				"      blah: blah\n"
+		);
+		
+		editor.assertHoverContains("name", 3, "The job name");
+		editor.assertHoverContains("release", "The release where the job exists");
+		editor.assertHoverContains("consumes", "Links consumed by the job");
+		editor.assertHoverContains("provides", "Links provided by the job");
+		editor.assertHoverContains("properties", "Specifies job properties");
 	}
 
-	@Ignore @Test public void instanceGroups_network_hovers() throws Exception {
-		//For the nested properties of instance_groups.networks
-		throw new IllegalStateException("Implement a test please!");
+	@Test public void instanceGroups_network_hovers() throws Exception {
+		Editor editor = harness.newEditor(
+			"name: foo\n" + 
+			"instance_groups:\n" + 
+			"- name: foo\n" + 
+			"  networks:\n" + 
+			"  - name: the-network\n" + 
+			"    static_ips: []\n" + 
+			"    default: []\n" 
+		);
+		editor.assertHoverContains("name", 3, "A valid network name from the cloud config");
+		editor.assertHoverContains("static_ips", "Array of IP addresses");
+		editor.assertHoverContains("default", "Specifies which network components");
 	}
 
-	@Ignore @Test public void instanceGroups_env_hovers() throws Exception {
-		throw new IllegalStateException("Implement a test please!");
+	@Test public void instanceGroups_env_hovers() throws Exception {
+		Editor editor = harness.newEditor(
+			"name: foo\n" + 
+			"instance_groups:\n" + 
+			"- name: foo\n" + 
+			"  env:\n" + 
+			"    bosh: {}\n" + 
+			"    password: []\n" 
+		);
+		editor.assertHoverContains("bosh", "no description");
+		editor.assertHoverContains("password", "Crypted password");
 	}
 
 }
