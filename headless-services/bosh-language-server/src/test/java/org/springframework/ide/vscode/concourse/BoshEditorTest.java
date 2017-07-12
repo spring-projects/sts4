@@ -147,7 +147,8 @@ public class BoshEditorTest {
 				"update:\n  <*>"
 				, // ============
 				"name: blah\n" +
-				"variables:\n- <*>"
+				"variables:\n" +
+				"- name: <*>"
 				, // ============
 				"name: blah\n" +
 				"director_uuid: <*>"
@@ -461,4 +462,59 @@ public class BoshEditorTest {
 		editor.assertHoverContains("serial", "deployed in parallel");
 	}
 
+	@Test public void variablesBlockCompletions() throws Exception {
+		Editor editor = harness.newEditor(
+				"variables:\n" +
+				"- <*>"
+		);
+		editor.assertCompletions(
+				"variables:\n" +
+				"- name: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"variables:\n" +
+				"- name: foo\n" +
+				"  <*>"
+		);
+		editor.assertCompletions(PLAIN_COMPLETION, 
+				"variables:\n" +
+				"- name: foo\n" +
+				"  options:\n" +
+				"    <*>"
+				, // ===============
+				"variables:\n" +
+				"- name: foo\n" +
+				"  type: <*>"
+		);
+		
+		editor = harness.newEditor(
+				"variables:\n" +
+				"- name: foo\n" +
+				"  type: <*>"
+		);
+		editor.assertCompletionLabels("certificate", "password", "rsa", "ssh");
+	}
+
+	@Test public void variablesBlockHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"variables:\n" + 
+				"- name: admin_password\n" + 
+				"  type: password\n" + 
+				"- name: default_ca\n" + 
+				"  type: certificate\n" + 
+				"  options:\n" + 
+				"    is_ca: true\n" + 
+				"    common_name: some-ca\n" + 
+				"- name: director_ssl\n" + 
+				"  type: certificate\n" + 
+				"  options:\n" + 
+				"    ca: default_ca\n" + 
+				"    common_name: cc.cf.internal\n" + 
+				"    alternative_names: [cc.cf.internal]"
+		);
+		editor.assertHoverContains("name", "Unique name used to identify a variable");
+		editor.assertHoverContains("type", "Type of a variable");
+		editor.assertHoverContains("options", "Specifies generation options");
+	}
 }

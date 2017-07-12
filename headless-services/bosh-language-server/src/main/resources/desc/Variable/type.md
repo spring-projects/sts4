@@ -1,0 +1,1 @@
+*Required*. Type of a variable. Currently supported variable types are `certificate`, `password`, `rsa`, and `ssh`. Example: `password`.

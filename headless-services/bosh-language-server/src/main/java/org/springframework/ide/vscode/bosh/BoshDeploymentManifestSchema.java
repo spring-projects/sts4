@@ -143,10 +143,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group, "env", t_instance_group_env);
 		
 		addProp(TOPLEVEL_TYPE, "instance_groups", f.yseq(t_instance_group)).isRequired(true);
-		
 		addProp(TOPLEVEL_TYPE, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
 		
-		YType t_variable = t_params; //TODO: https://www.pivotaltracker.com/story/show/148627441
+		YBeanType t_variable = f.ybean("Variable");
+		addProp(t_variable, "name", t_ne_string).isPrimary(true);
+		addProp(t_variable, "type", f.yenum("VariableType", "certificate", "password", "rsa", "ssh")).isRequired(true);
+		addProp(t_variable, "options", t_params);
 		addProp(TOPLEVEL_TYPE, "variables", f.yseq(t_variable));
 
 		addProp(TOPLEVEL_TYPE, "tags", t_params);

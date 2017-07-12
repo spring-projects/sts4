@@ -1,0 +1,1 @@
+*Required*. Unique name used to identify a variable. Example: `admin_password`
