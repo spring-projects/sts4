@@ -10,16 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.BoshLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
 
 public class BoshEditorTest {
 
@@ -115,7 +114,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
 	}
 
-	@Test public void toplevelV2PropertyCompletions() throws Exception {
+	@Test public void toplevelPropertyCompletions() throws Exception {
 		Editor editor = harness.newEditor(
 				"<*>"
 		);
@@ -149,12 +148,13 @@ public class BoshEditorTest {
 				"name: blah\n" +
 				"variables:\n" +
 				"- name: <*>"
-				, // ============
-				"name: blah\n" +
-				"director_uuid: <*>"
-				, // ============
-				"name: blah\n" +
-				"properties:\n  <*>"
+// Below completions are suppressed because they are deprecated
+//				, // ============
+//				"name: blah\n" +
+//				"director_uuid: <*>"
+//				, // ============
+//				"name: blah\n" +
+//				"properties:\n  <*>"
 		);
 	}
 	
@@ -312,11 +312,12 @@ public class BoshEditorTest {
 				"- name: foo-group\n" +
 				"  vm_type: <*>"
 				
-				, // =============
-				"instance_groups:\n" + 
-				"- name: foo-group\n" +
-				"  properties:\n" +
-				"    <*>"
+//				, // ============= 
+// Not suggested because its deprecated:
+//				"instance_groups:\n" + 
+//				"- name: foo-group\n" +
+//				"  properties:\n" +
+//				"    <*>"
 		);
 	}
 
@@ -516,5 +517,83 @@ public class BoshEditorTest {
 		editor.assertHoverContains("name", "Unique name used to identify a variable");
 		editor.assertHoverContains("type", "Type of a variable");
 		editor.assertHoverContains("options", "Specifies generation options");
+	}
+	
+	@Test public void tolerateV1Manifests() throws Exception {
+		Editor editor = harness.newEditor(
+				"---\n" + 
+				"name: my-redis-deployment\n" + 
+				"director_uuid: 1234abcd-5678-efab-9012-3456cdef7890\n" + 
+				"\n" + 
+				"releases:\n" + 
+				"- {name: redis, version: 12}\n" + 
+				"\n" + 
+				"resource_pools:\n" + 
+				"- name: redis-servers\n" + 
+				"  network: default\n" + 
+				"  stemcell:\n" + 
+				"    name: bosh-aws-xen-ubuntu-trusty-go_agent\n" + 
+				"    version: 2708\n" + 
+				"  cloud_properties:\n" + 
+				"    instance_type: m1.small\n" + 
+				"    availability_zone: us-east-1c\n" + 
+				"\n" + 
+				"disk_pools: []\n" +
+				"\n" + 
+				"networks:\n" + 
+				"- name: default\n" + 
+				"  type: manual\n" + 
+				"  subnets:\n" + 
+				"  - range: 10.10.0.0/24\n" + 
+				"    gateway: 10.10.0.1\n" + 
+				"    static:\n" + 
+				"    - 10.10.0.16 - 10.10.0.18\n" + 
+				"    reserved:\n" + 
+				"    - 10.10.0.2 - 10.10.0.15\n" + 
+				"    dns: [10.10.0.6]\n" + 
+				"    cloud_properties:\n" + 
+				"      subnet: subnet-d597b993\n" + 
+				"\n" + 
+				"compilation:\n" + 
+				"  workers: 2\n" + 
+				"  network: default\n" + 
+				"  reuse_compilation_vms: true\n" + 
+				"  cloud_properties:\n" + 
+				"    instance_type: c1.medium\n" + 
+				"    availability_zone: us-east-1c\n" + 
+				"\n" + 
+				"update:\n" + 
+				"  canaries: 1\n" + 
+				"  max_in_flight: 3\n" + 
+				"  canary_watch_time: 15000-30000\n" + 
+				"  update_watch_time: 15000-300000\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: redis-master\n" + 
+				"  instances: 1\n" + 
+				"  templates:\n" + 
+				"  - {name: redis-server, release: redis}\n" + 
+				"  persistent_disk: 10_240\n" + 
+				"  resource_pool: redis-servers\n" + 
+				"  networks:\n" + 
+				"  - name: default\n" + 
+				"\n" + 
+				"- name: redis-slave\n" + 
+				"  instances: 2\n" + 
+				"  templates:\n" + 
+				"  - {name: redis-server, release: redis}\n" + 
+				"  persistent_disk: 10_240\n" + 
+				"  resource_pool: redis-servers\n" + 
+				"  networks:\n" + 
+				"  - name: default\n" + 
+				"\n" + 
+				"properties:\n" + 
+				"  redis:\n" + 
+				"    max_connections: 10\n" +
+				"\n" + 
+				"cloud_provider: {}"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.DEPRECATED_PROPERTY);
+		editor.assertProblems(/*NONE*/);
 	}
 }

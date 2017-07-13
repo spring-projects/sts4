@@ -52,10 +52,8 @@ import reactor.core.publisher.Flux;
  */
 public class YTypeFactory {
 
-	/**
-	 * Configuration option for the type-based completion engine.
-	 */
 	private boolean enableTieredOptionalPropertyProposals = true;
+	private boolean suggestDeprecatedProperties = true;
 
 	private static class Deprecation {
 		final String errorMsg;
@@ -238,6 +236,11 @@ public class YTypeFactory {
 		@Override
 		public boolean tieredOptionalPropertyProposals() {
 			return enableTieredOptionalPropertyProposals;
+		}
+
+		@Override
+		public boolean suggestDeprecatedProperties() {
+			return suggestDeprecatedProperties;
 		}
 	};
 
@@ -913,6 +916,11 @@ public class YTypeFactory {
 
 	public YTypeFactory enableTieredProposals(boolean enable) {
 		this.enableTieredOptionalPropertyProposals = enable;
+		return this;
+	}
+
+	public YTypeFactory suggestDeprecatedProperties(boolean enable) {
+		this.suggestDeprecatedProperties = enable;
 		return this;
 	}
 

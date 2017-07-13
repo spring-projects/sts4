@@ -10,31 +10,43 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YContextSensitive;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Kris De Volder
  */
 public class BoshDeploymentManifestSchema implements YamlSchema {
 
-	private final AbstractType TOPLEVEL_TYPE;
+	private final YBeanType V2_TOPLEVEL_TYPE;
+	private final YBeanType V1_TOPLEVEL_TYPE;
+	private final YContextSensitive TOPLEVEL_TYPE;
 	private final YTypeUtil TYPE_UTIL;
+	
+	private static final ImmutableSet<String> DEPRECATED_V1_PROPS = ImmutableSet.of("resource_pools", "networks", "compilation", "jobs", "disk_pools", "cloud_provider");
+	private static final ImmutableSet<String>  SHARED_V1_V2_PROPS = ImmutableSet.of("name", "director_uuid", "releases", "update", "properties");
+		//Note: 'director_uuid' is also deprecated. But its treated separately since it is deprecated and ignored by V2 client no matter what (i.e. deprecated in both schemas)
 
 	public final YTypeFactory f = new YTypeFactory()
-			.enableTieredProposals(false);
+			.enableTieredProposals(false)
+			.suggestDeprecatedProperties(false);
 	public final YType t_string = f.yatomic("String");
 	public final YType t_ne_string = f.yatomic("String")
 			.parseWith(ValueParsers.NE_STRING);
@@ -56,9 +68,34 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
 		
-		TOPLEVEL_TYPE = f.ybean("BoshDeploymentManifest");
-		addProp(TOPLEVEL_TYPE, "name", t_ne_string).isPrimary(true);
-		addProp(TOPLEVEL_TYPE, "director_uuid", t_uuid).isDeprecated(
+		V2_TOPLEVEL_TYPE = createV2Schema();
+		V1_TOPLEVEL_TYPE = createV1Schema(V2_TOPLEVEL_TYPE);
+		
+		TOPLEVEL_TYPE = f.contextAware("DeploymenManifestV1orV2", (dc) -> {
+			boolean looksLikeV1 = dc.getDefinedProperties().stream().anyMatch(DEPRECATED_V1_PROPS::contains);
+			return looksLikeV1 ? V1_TOPLEVEL_TYPE : V2_TOPLEVEL_TYPE;
+		});
+	}
+
+	private YBeanType createV1Schema(AbstractType v2Schema) {
+		YBeanType v1Schema = f.ybean("DeploymentManifestV1");
+		Map<String, YTypedProperty> v2properties = v2Schema.getPropertiesMap();
+		ImmutableSet<String> v1Props = ImmutableSet.<String>builder()
+				.addAll(DEPRECATED_V1_PROPS)
+				.addAll(SHARED_V1_V2_PROPS)
+				.build();
+		for (String name : v1Props) {
+			YTypedProperty prop = v2properties.get(name);
+			Assert.isNotNull(prop);
+			v1Schema.addProperty(prop);
+		}
+		return v1Schema;
+	}
+
+	private YBeanType createV2Schema() {
+		YBeanType v2Schema = f.ybean("BoshDeploymentManifest");
+		addProp(v2Schema, "name", t_ne_string).isPrimary(true);
+		addProp(v2Schema, "director_uuid", t_uuid).isDeprecated(
 				"bosh v2 CLI no longer checks or requires director_uuid in the deployment manifest. " + 
 				"To achieve similar safety make sure to give unique deployment names across environments."
 		);
@@ -100,7 +137,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_ne_string).isPrimary(true);
 		addProp(t_release, "version", t_version).isRequired(true);
-		addProp(TOPLEVEL_TYPE, "releases", f.yseq(t_release)).isRequired(true);
+		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
 		
 		YBeanType t_stemcell = f.ybean("Stemcell");
 		addProp(t_stemcell, "alias", t_ne_string).isRequired(true);
@@ -108,7 +145,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_stemcell, "name", t_ne_string);
 		addProp(t_stemcell, "os", t_ne_string);
 		t_stemcell.requireOneOf("name", "os");
-		addProp(TOPLEVEL_TYPE, "stemcells", f.yseq(t_stemcell)).isRequired(true);
+		addProp(v2Schema, "stemcells", f.yseq(t_stemcell)).isRequired(true);
 
 		YBeanType t_update = f.ybean("Update");
 		addProp(t_update, "canaries", t_strictly_pos_integer).isRequired(true);
@@ -116,7 +153,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_update, "canary_watch_time", t_integer_or_range).isRequired(true);
 		addProp(t_update, "update_watch_time", t_integer_or_range).isRequired(true);
 		addProp(t_update, "serial", t_boolean);
-		addProp(TOPLEVEL_TYPE, "update", t_update).isRequired(true);
+		addProp(v2Schema, "update", t_update).isRequired(true);
 
 		YBeanType t_job = f.ybean("Job");
 		addProp(t_job, "name", t_ne_string).isRequired(true);
@@ -142,17 +179,21 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
 		addProp(t_instance_group, "env", t_instance_group_env);
 		
-		addProp(TOPLEVEL_TYPE, "instance_groups", f.yseq(t_instance_group)).isRequired(true);
-		addProp(TOPLEVEL_TYPE, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
+		addProp(v2Schema, "instance_groups", f.yseq(t_instance_group)).isRequired(true);
+		addProp(v2Schema, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
 		
 		YBeanType t_variable = f.ybean("Variable");
 		addProp(t_variable, "name", t_ne_string).isPrimary(true);
 		addProp(t_variable, "type", f.yenum("VariableType", "certificate", "password", "rsa", "ssh")).isRequired(true);
 		addProp(t_variable, "options", t_params);
-		addProp(TOPLEVEL_TYPE, "variables", f.yseq(t_variable));
+		addProp(v2Schema, "variables", f.yseq(t_variable));
 
-		addProp(TOPLEVEL_TYPE, "tags", t_params);
+		addProp(v2Schema, "tags", t_params);
 		
+		for (String v1Prop : DEPRECATED_V1_PROPS) {
+			addProp(v2Schema, v1Prop, t_any).isDeprecated("Deprecated: '"+v1Prop+"' is a V1 schema property. Consider migrating your deployment manifest to V2");
+		}
+		return v2Schema;
 	}
 
 	@Override

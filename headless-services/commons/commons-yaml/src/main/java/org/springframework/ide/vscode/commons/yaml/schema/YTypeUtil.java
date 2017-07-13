@@ -56,4 +56,10 @@ public interface YTypeUtil {
 	 * suggested until required ones are all defined)
 	 */
 	boolean tieredOptionalPropertyProposals();
+	/**
+	 * Config option for type-based completion engine. This enables/disables
+	 * whether engine should generate proposals for deprecated properties (true), 
+	 * or suppress them (false).
+	 */
+	boolean suggestDeprecatedProperties();
 }
