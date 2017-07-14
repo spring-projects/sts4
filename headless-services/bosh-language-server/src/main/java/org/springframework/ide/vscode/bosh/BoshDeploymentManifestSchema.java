@@ -160,7 +160,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_job, "release", t_ne_string).isRequired(true);
 		addProp(t_job, "consumes", t_params);
 		addProp(t_job, "provides", t_params);
-		addProp(t_job, "properties", t_params).isRequired(true);
+		addProp(t_job, "properties", t_params);
 
 		YBeanType t_instance_group = f.ybean("InstanceGroup");
 		addProp(t_instance_group, "name", t_ne_string).isPrimary(true);
@@ -171,7 +171,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group, "vm_extensions", f.yseq(t_vm_extension));
 		addProp(t_instance_group, "stemcell", t_stemcell_alias).isRequired(true);
 		addProp(t_instance_group, "persistent_disk_type", t_disk_type);
-		addProp(t_instance_group, "networks", f.yseq(t_network));
+		addProp(t_instance_group, "networks", f.yseq(t_network)).isRequired(true);
 		addProp(t_instance_group, "update", t_update);
 		YType t_migration = t_params; //TODO: https://www.pivotaltracker.com/story/show/148712595
 		addProp(t_instance_group, "migrated_from", f.yseq(t_migration));
