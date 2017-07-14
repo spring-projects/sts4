@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.concourse;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.BoshLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -112,6 +113,12 @@ public class BoshEditorTest {
 		editor.assertHoverContains("properties", 3, "Describes global properties. Deprecated");
 		editor.assertHoverContains("variables", "Describes variables");
 		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
+	}
+	
+	@Ignore //For now... because not passing yet.
+	@Test public void reconcileCfManifest() throws Exception {
+		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
+		editor.assertProblems(/*NONE*/);
 	}
 
 	@Test public void toplevelPropertyCompletions() throws Exception {
@@ -372,6 +379,10 @@ public class BoshEditorTest {
 		editor.assertHoverContains("lifecycle", "Specifies the kind of workload");
 		editor.assertHoverContains("properties", "Specifies instance group properties");
 		editor.assertHoverContains("env", "Specifies advanced BOSH Agent configuration");
+	}
+	
+	@Test public void complexManifestValidation() throws Exception {
+		
 	}
 
 	@Test public void instanceGroups_job_hovers() throws Exception {
