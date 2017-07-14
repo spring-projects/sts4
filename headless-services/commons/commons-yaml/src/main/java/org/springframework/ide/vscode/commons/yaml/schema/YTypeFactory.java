@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
@@ -739,7 +740,7 @@ public class YTypeFactory {
 	}
 
 
-	public static class YTypedPropertyImpl implements YTypedProperty {
+	public static class YTypedPropertyImpl implements YTypedProperty, Cloneable {
 
 		final private String name;
 		final private YType type;
@@ -825,6 +826,13 @@ public class YTypeFactory {
 			return isPrimary;
 		}
 
+		public YTypedPropertyImpl copy() {
+			try {
+				return (YTypedPropertyImpl) super.clone();
+			} catch (CloneNotSupportedException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 
 	public YAtomicType yatomic(String name) {
@@ -834,6 +842,11 @@ public class YTypeFactory {
 	public YTypedPropertyImpl yprop(String name, YType type) {
 		return new YTypedPropertyImpl(name, type);
 	}
+	
+	public YTypedPropertyImpl yprop(YTypedProperty prop) {
+		return ((YTypedPropertyImpl)prop).copy();
+	}
+
 
 	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
 		YAtomicType t = yatomic(name);
@@ -923,5 +936,6 @@ public class YTypeFactory {
 		this.suggestDeprecatedProperties = enable;
 		return this;
 	}
+
 
 }

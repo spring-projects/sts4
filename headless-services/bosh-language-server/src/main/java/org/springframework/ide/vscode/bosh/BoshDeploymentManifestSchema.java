@@ -172,7 +172,14 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group, "stemcell", t_stemcell_alias).isRequired(true);
 		addProp(t_instance_group, "persistent_disk_type", t_disk_type);
 		addProp(t_instance_group, "networks", f.yseq(t_network)).isRequired(true);
-		addProp(t_instance_group, "update", t_update);
+		YType t_update_override = f.ybean("UpdateOverrides", t_update.getProperties()
+				.stream()
+				.map((YTypedProperty prop) -> 
+					f.yprop(prop).isRequired(false)
+				)
+				.toArray(sz -> new YTypedProperty[sz])
+		);
+		addProp(t_instance_group, "update", t_update_override);
 		YType t_migration = t_params; //TODO: https://www.pivotaltracker.com/story/show/148712595
 		addProp(t_instance_group, "migrated_from", f.yseq(t_migration));
 		addProp(t_instance_group, "lifecycle", f.yenum("WorkloadType", "service", "errand"));
