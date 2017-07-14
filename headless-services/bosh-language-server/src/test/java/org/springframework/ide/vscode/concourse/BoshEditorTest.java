@@ -232,7 +232,22 @@ public class BoshEditorTest {
 				"  version: <*>"
 		);
 	}
-		
+
+	@Test public void releasesBlockSha1RequiredForHttpUrl() throws Exception {
+		Editor editor = harness.newEditor(
+				"releases:\n" + 
+				"- name: some-release\n" +
+				"  url: https://my.releases.com/funky.tar.gz\n" +
+				"- name: other-relase\n" +
+				"  url: file:///root/releases/a-nice-file.tar.gz\n" +
+				"#x"
+		);
+		editor.assertProblems(
+				"url|'sha1' is required when the 'url' is http(s)",
+				"x|are required"
+		);
+	}
+
 	@Test public void releasesBlockReconcileAndHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"releases:\n" + 

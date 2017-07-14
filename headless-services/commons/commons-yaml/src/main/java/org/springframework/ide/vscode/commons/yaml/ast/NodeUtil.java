@@ -116,6 +116,18 @@ public class NodeUtil {
 		return null;
 	}
 
+	public static NodeTuple getPropertyTuple(Node node, String propName) {
+		if (node instanceof MappingNode) {
+			for (NodeTuple entry : ((MappingNode)node).getValue()) {
+				String key = NodeUtil.asScalar(entry.getKeyNode());
+				if (propName.equals(key)) {
+					return entry;
+				}
+			}
+		}
+		return null;
+	}
+
 	public static Node getProperty(Node node, String propName) {
 		if (node instanceof MappingNode) {
 			for (NodeTuple entry : ((MappingNode)node).getValue()) {

@@ -49,15 +49,26 @@ public class Constraints {
 	public static Constraint requireAtMostOneOf(String... properties) {
 		return new RequireOneOf(properties).allowFewer(true);
 	}
+	
+	public static Constraint requireAtLeastOneOf(String... properties) {
+		return new RequireOneOf(properties).allowMultiple(true);
+	}
+
 
 	static private class RequireOneOf implements Constraint {
 
 		private final String[] _requiredProps;
 		private boolean allowFewer = false;
+		private boolean allowMultiple = false;
 
 		public RequireOneOf(String[] properties) {
 			Assert.isLegal(properties.length>1);
 			this._requiredProps = properties;
+		}
+
+		public Constraint allowMultiple(boolean b) {
+			this.allowMultiple = b;
+			return this;
 		}
 
 		public Constraint allowFewer(boolean b) {
@@ -80,7 +91,7 @@ public class Constraints {
 						problems.accept(missingProperty(
 								"One of "+requiredProps+" is required for '"+type+"'", doc, parent, map));
 					}
-				} else if (foundPropsCount>1) {
+				} else if (foundPropsCount>1 && !allowMultiple) {
 					//Mark each of the found keys as a violation:
 					for (NodeTuple entry : map.getValue()) {
 						String key = NodeUtil.asScalar(entry.getKeyNode());
@@ -144,4 +155,5 @@ public class Constraints {
 			}
 		};	
 	}
+
 }
