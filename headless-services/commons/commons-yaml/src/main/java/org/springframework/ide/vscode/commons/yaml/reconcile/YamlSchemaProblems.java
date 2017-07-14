@@ -114,7 +114,7 @@ public class YamlSchemaProblems {
 		return new ReconcileProblemImpl(problemType, msg, start, end-start);
 	}
 
-	public static ReconcileProblemImpl missingProperty(String msg, IDocument doc, Node parent, MappingNode map) {
+	public static ReconcileProblemImpl missingProperty(String msg, IDocument doc, Node parent, Node map) {
 		DocumentRegion underline = NodeUtil.region(doc, map);
 		if (parent instanceof MappingNode) {
 			for (NodeTuple prop : ((MappingNode) parent).getValue()) {

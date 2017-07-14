@@ -115,7 +115,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
 	}
 	
-	@Ignore //For now... because not passing yet.
+	//@Ignore //For now... because not passing yet.
 	@Test public void reconcileCfManifest() throws Exception {
 		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
 		editor.assertProblems(/*NONE*/);
@@ -221,6 +221,14 @@ public class BoshEditorTest {
 		editor.assertCompletions(PLAIN_COMPLETION, 
 				"releases:\n" +
 				"- name: foo\n" +
+				"  sha1: <*>"
+				, // ============
+				"releases:\n" +
+				"- name: foo\n" +
+				"  url: <*>"
+				, // ============
+				"releases:\n" +
+				"- name: foo\n" +
 				"  version: <*>"
 		);
 	}
@@ -230,6 +238,8 @@ public class BoshEditorTest {
 				"releases:\n" + 
 				"- name: some-release\n" +
 				"  version: some-version\n" +
+				"  url: https://my.releases.com/funky.tar.gz\n" +
+				"  sha1: 440248a31253296b1626ad52886e58900730f32e\n" +
 				"  woot: dunno\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
@@ -239,6 +249,8 @@ public class BoshEditorTest {
 		
 		editor.assertHoverContains("name", "Name of a release used in the deployment");
 		editor.assertHoverContains("version", "The version of the release to use");
+		editor.assertHoverContains("url", "URL of the release to use");
+		editor.assertHoverContains("sha1", "The SHA1 of the release tarball");
 		
 		editor = harness.newEditor(
 				"releases:\n" + 

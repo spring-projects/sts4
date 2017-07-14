@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
@@ -27,6 +28,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPro
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -102,6 +104,10 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
 		t_ip_address.parseWith(ValueParsers.NE_STRING);
+		
+		YAtomicType t_url = f.yatomic("URL"); //TODO: some kind of checking?
+		t_url.parseWith(ValueParsers.NE_STRING);
+
 
 		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
 		t_network_name.parseWith(ValueParsers.NE_STRING);
@@ -136,8 +142,15 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_ne_string).isPrimary(true);
-		addProp(t_release, "version", t_version).isRequired(true);
+		addProp(t_release, "version", t_version).isRequired(true); //TODO: Is it really required? Maybe not id we use url + sha
+			//See: https://github.com/cloudfoundry/docs-bosh/issues/330
+		addProp(t_release, "url", t_url);
+		addProp(t_release, "sha1", t_ne_string);
 		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
+		 //TODO: these extra checks disabled because we aren't sure they are valid 
+		// See: https://github.com/cloudfoundry/docs-bosh/issues/330
+		//		t_release.require(Constraints.requireOneOf("url", "version"));
+		//		t_release.require(Constraints.mutuallyExclusive("version", "sha1"));    
 		
 		YBeanType t_stemcell = f.ybean("Stemcell");
 		addProp(t_stemcell, "alias", t_ne_string).isRequired(true);

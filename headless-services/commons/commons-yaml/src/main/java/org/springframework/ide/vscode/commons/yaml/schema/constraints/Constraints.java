@@ -11,10 +11,12 @@
 package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.EXTRA_PROPERTY;
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.missingProperty;
+import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,7 +41,7 @@ import com.google.common.collect.ImmutableSet;
  * @author Kris De Volder
  */
 public class Constraints {
-
+	
 	public static Constraint requireOneOf(String... properties) {
 		return new RequireOneOf(properties);
 	}
@@ -121,5 +123,25 @@ public class Constraints {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
 			dispatcher.withContext(dc).verify(dc, parent, node, type, problems);
 		};
+	}
+
+	public static Constraint mutuallyExclusive(String p1, String p2) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			if (node instanceof MappingNode) {
+				MappingNode map = (MappingNode) node;
+				Set<String> defined = dc.getDefinedProperties();
+				if (defined.contains(p1) && defined.contains(p2)) {
+					for (NodeTuple tup : map.getValue()) {
+						Node keyNode = tup.getKeyNode();
+						String key = NodeUtil.asScalar(keyNode);
+						if (p1.equals(key) || p1.equals(key)) {
+							problems.accept(problem(EXTRA_PROPERTY,
+									"Only one of '"+p1+"' and '"+p2+"' should be defined for '"+type+"'", keyNode
+							));
+						}
+					}
+				}
+			}
+		};	
 	}
 }
