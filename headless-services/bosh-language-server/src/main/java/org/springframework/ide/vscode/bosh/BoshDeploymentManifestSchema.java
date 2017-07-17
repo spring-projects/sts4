@@ -71,6 +71,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_instance_group_name_def;
 	private YType t_stemcell_alias_name_def;
 	private YType t_release_name_def;
+	private YType t_var_name_def;
 
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -109,11 +110,11 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		t_instance_group_name_def = f.yatomic("InstanceGroupName")
 				.parseWith(ValueParsers.NE_STRING);
-
 		t_stemcell_alias_name_def = f.yatomic("StemcellAliasName")
 				.parseWith(ValueParsers.NE_STRING);
-
 		t_release_name_def = f.yatomic("ReleaseName")
+				.parseWith(ValueParsers.NE_STRING);
+		t_var_name_def = f.yatomic("VariableName")
 				.parseWith(ValueParsers.NE_STRING);
 
 		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
@@ -217,7 +218,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(v2Schema, "properties", t_params).isDeprecated("Deprecated in favor of job level properties and links");
 
 		YBeanType t_variable = f.ybean("Variable");
-		addProp(t_variable, "name", t_ne_string).isPrimary(true);
+		addProp(t_variable, "name", t_var_name_def).isPrimary(true);
 		addProp(t_variable, "type", f.yenum("VariableType", "certificate", "password", "rsa", "ssh")).isRequired(true);
 		addProp(t_variable, "options", t_params);
 		addProp(v2Schema, "variables", f.yseq(t_variable));
@@ -266,7 +267,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 			definitionTypes = ImmutableList.of(
 					t_instance_group_name_def,
 					t_stemcell_alias_name_def,
-					t_release_name_def
+					t_release_name_def,
+					t_var_name_def
 			);
 		}
 		return definitionTypes;

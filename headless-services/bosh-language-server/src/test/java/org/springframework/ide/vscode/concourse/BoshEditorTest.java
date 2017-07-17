@@ -647,6 +647,11 @@ public class BoshEditorTest {
 	@Test public void documentSymbols() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: foo\n" +
+				"variables:\n" +
+				"- name: blobstore_admin_users_password\n" +
+				"  type: password\n" +
+				"- name: blobstore_secure_link_secret\n" +
+				"  type: password\n" +
 				"stemcells:\n" +
 				"- alias: default\n" +
 				"  os: ubuntu-trusty\n" +
@@ -671,7 +676,9 @@ public class BoshEditorTest {
 				"foo-group|InstanceGroup",
 				"bar-group|InstanceGroup",
 				"one-release|Release",
-				"other-release|Release"
+				"other-release|Release",
+				"blobstore_admin_users_password|Variable",
+				"blobstore_secure_link_secret|Variable"
 		);
 	}
 }
