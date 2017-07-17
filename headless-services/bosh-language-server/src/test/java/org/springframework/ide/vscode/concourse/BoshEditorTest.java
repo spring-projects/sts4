@@ -643,4 +643,25 @@ public class BoshEditorTest {
 				"networks|Deprecated: 'networks' is a V1 schema property"
 		);
 	}
+	
+	@Test public void documentSymbols() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" + 
+				"instance_groups:\n" + 
+				"- name: foo-group\n" + 
+				"  networks:\n" + 
+				"  - name: the-network\n" + 
+				"    static_ips: []\n" + 
+				"    default: []\n" +
+				"- name: bar-group\n" + 
+				"  networks:\n" + 
+				"  - name: the-network\n" + 
+				"    static_ips: []\n" + 
+				"    default: []\n" 
+		);
+		editor.assertDocumentSymbols(
+				"foo-group|InstanceGroup",
+				"bar-group|InstanceGroup"
+		);
+	}
 }

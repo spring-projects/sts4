@@ -40,7 +40,9 @@ import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache.NodeTypes;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -51,7 +53,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.util.Streams;
-import org.springframework.ide.vscode.concourse.ASTTypeCache.NodeTypes;
 import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;

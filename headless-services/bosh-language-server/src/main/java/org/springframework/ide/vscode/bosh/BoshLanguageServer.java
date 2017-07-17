@@ -28,6 +28,9 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ITypeCollector;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
@@ -43,7 +46,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		super("vscode-bosh");
 		YamlASTProvider parser = new YamlParser(yaml);
 		SimpleTextDocumentService documents = getTextDocumentService();
-		YamlSchema schema = new BoshDeploymentManifestSchema();
+		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema();
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -53,7 +56,10 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		ASTTypeCache astTypeCache = new ASTTypeCache();
+		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		engine.setTypeCollector(astTypeCache);
+		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
 
 		documents.onDidChangeContent(params -> {
 			validateOnDocumentChange(engine, params.getDocument());

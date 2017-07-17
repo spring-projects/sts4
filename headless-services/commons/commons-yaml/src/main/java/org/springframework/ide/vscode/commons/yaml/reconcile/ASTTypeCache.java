@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.concourse;
+package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
-import org.springframework.ide.vscode.commons.yaml.reconcile.ITypeCollector;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 

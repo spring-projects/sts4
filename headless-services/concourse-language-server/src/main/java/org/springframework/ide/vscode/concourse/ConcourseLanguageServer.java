@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -74,7 +75,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			reconcileEngine.setTypeCollector(models.getAstTypeCache());
 
 			this.symbolHandler = CollectionUtil.hasElements(definitionTypes)
-					? new ConcourseDocumentSymbolHandler(documents, models.getAstTypeCache(), definitionTypes)
+					? new TypeBasedYamlSymbolHandler(documents, models.getAstTypeCache(), definitionTypes)
 					: DocumentSymbolHandler.NO_SYMBOLS;
 		}
 

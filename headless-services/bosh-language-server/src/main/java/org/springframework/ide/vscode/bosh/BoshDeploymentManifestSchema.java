@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
@@ -29,6 +31,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -43,6 +47,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	
 	private static final ImmutableSet<String> DEPRECATED_V1_PROPS = ImmutableSet.of("resource_pools", "networks", "compilation", "jobs", "disk_pools", "cloud_provider");
 	private static final ImmutableSet<String>  SHARED_V1_V2_PROPS = ImmutableSet.of("name", "director_uuid", "releases", "update", "properties");
+	private Collection<YType> DEFINITION_TYPES = null;
 		//Note: 'director_uuid' is also deprecated. But its treated separately since it is deprecated and ignored by V2 client no matter what (i.e. deprecated in both schemas)
 
 	public final YTypeFactory f = new YTypeFactory()
@@ -65,6 +70,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public final YType t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
 	public final YType t_integer_or_range = f.yatomic("Integer or Range")
 			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
+	private YAtomicType t_instance_group_name_def;
 
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -109,6 +115,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
 		t_network_name.parseWith(ValueParsers.NE_STRING);
+		
+		t_instance_group_name_def = f.yatomic("InstanceGroupName");
+		t_instance_group_name_def.parseWith(ValueParsers.NE_STRING);
 		
 		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
 		t_disk_type.parseWith(ValueParsers.NE_STRING);
@@ -174,7 +183,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_job, "properties", t_params);
 
 		YBeanType t_instance_group = f.ybean("InstanceGroup");
-		addProp(t_instance_group, "name", t_ne_string).isPrimary(true);
+		addProp(t_instance_group, "name", t_instance_group_name_def).isPrimary(true);
 		addProp(t_instance_group, "azs", f.yseq(t_az)).isRequired(true);
 		addProp(t_instance_group, "instances", t_pos_integer).isRequired(true); //Strictly positive? Or zero is okay?
 		addProp(t_instance_group, "jobs", f.yseq(t_job)).isRequired(true);
@@ -243,6 +252,15 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YTypedPropertyImpl p = prop(superType, name, type);
 		bean.addProperty(p);
 		return p;
+	}
+
+	public Collection<YType> getDefinitionTypes() {
+		if (DEFINITION_TYPES==null) {
+			DEFINITION_TYPES = ImmutableList.of(
+					t_instance_group_name_def
+			);
+		}
+		return DEFINITION_TYPES;
 	}
 
 }
