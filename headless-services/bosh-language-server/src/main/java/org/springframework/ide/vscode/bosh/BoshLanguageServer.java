@@ -44,7 +44,8 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		super("vscode-bosh");
 		YamlASTProvider parser = new YamlParser(yaml);
 		SimpleTextDocumentService documents = getTextDocumentService();
-		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema();
+		ASTTypeCache astTypeCache = new ASTTypeCache();
+		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -54,7 +55,6 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
-		ASTTypeCache astTypeCache = new ASTTypeCache();
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
 		engine.setTypeCollector(astTypeCache);
 		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));

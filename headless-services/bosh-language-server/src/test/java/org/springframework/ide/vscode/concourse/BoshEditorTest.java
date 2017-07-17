@@ -681,4 +681,62 @@ public class BoshEditorTest {
 				"blobstore_secure_link_secret|Variable"
 		);
 	}
+
+	@Test public void duplicateSymbolChecking() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"variables:\n" +
+				"- name: dup_var\n" +
+				"  type: password\n" +
+				"- name: blobstore_admin_users_password\n" +
+				"  type: password\n" +
+				"- name: blobstore_secure_link_secret\n" +
+				"  type: password\n" +
+				"- name: dup_var\n" +
+				"  type: ssh\n" +
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: '3421.11'\n" +
+				"- alias: dup_cell\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: '3421.11'\n" +
+				"- alias: dup_cell\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: '3421.11'\n" +
+				"instance_groups:\n" +
+				"- name: foo-group\n" +
+				"  networks:\n" +
+				"  - name: the-network\n" +
+				"    static_ips: []\n" +
+				"    default: []\n" +
+				"- name: bar-group\n" +
+				"  networks:\n" +
+				"  - name: the-network\n" +
+				"    static_ips: []\n" +
+				"    default: []\n" +
+				"- name: bar-group\n" +
+				"  networks:\n" +
+				"  - name: the-network\n" +
+				"    static_ips: []\n" +
+				"    default: []\n" +
+				"releases:\n" +
+				"- name: one-release\n" +
+				"- name: other-release\n" +
+				"- name: one-release\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+
+		editor.assertProblems(
+				"dup_var|Duplicate 'VariableName'",
+				"dup_var|Duplicate 'VariableName'",
+				"dup_cell|Duplicate 'StemcellAliasName'",
+				"dup_cell|Duplicate 'StemcellAliasName'",
+				"bar-group|Duplicate 'InstanceGroupName'",
+				"bar-group|Duplicate 'InstanceGroupName'",
+				"one-release|Duplicate 'ReleaseName'",
+				"one-release|Duplicate 'ReleaseName'"
+		);
+	}
+
 }

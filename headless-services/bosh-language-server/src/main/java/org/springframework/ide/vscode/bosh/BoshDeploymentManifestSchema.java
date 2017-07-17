@@ -18,6 +18,8 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -72,8 +74,10 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_stemcell_alias_name_def;
 	private YType t_release_name_def;
 	private YType t_var_name_def;
+	private final ASTTypeCache astTypes;
 
-	public BoshDeploymentManifestSchema() {
+	public BoshDeploymentManifestSchema(ASTTypeCache astTypes) {
+		this.astTypes = astTypes;
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();
@@ -227,6 +231,10 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		for (String v1Prop : DEPRECATED_V1_PROPS) {
 			addProp(v2Schema, v1Prop, t_any).isDeprecated("Deprecated: '"+v1Prop+"' is a V1 schema property. Consider migrating your deployment manifest to V2");
+		}
+
+		for (YType defType : getDefinitionTypes()) {
+			v2Schema.require(Constraints.uniqueDefinition(this.astTypes, defType, YamlSchemaProblems.problemType("BOSH_DUPLICATE_"+defType)));
 		}
 		return v2Schema;
 	}

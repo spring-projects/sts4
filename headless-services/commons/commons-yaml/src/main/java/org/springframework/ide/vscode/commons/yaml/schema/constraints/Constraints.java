@@ -16,15 +16,20 @@ import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaPr
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache.NodeTypes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
@@ -33,7 +38,11 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multiset;
 
 /**
  * Various static methods for constructing/composing {@link Constraint}s.
@@ -154,6 +163,35 @@ public class Constraints {
 				}
 			}
 		};	
+	}
+
+	/**
+	 * Check that all nodes of a given type, across the AST represent unique names.
+	 */
+	public static Constraint uniqueDefinition(ASTTypeCache astTypes, YType defType, ProblemType problemType) {
+		return (DynamicSchemaContext dc, Node parent, Node _ignored_node, YType type, IProblemCollector problems) -> {
+			NodeTypes nodeTypes = astTypes.getNodeTypes(dc.getDocument().getUri());
+			if (nodeTypes!=null) {
+				Collection<Node> nodes = nodeTypes.getNodes(defType);
+				if (nodes!=null && !nodes.isEmpty()) {
+					Multimap<String, Node> name2nodes = ArrayListMultimap.create();
+					for (Node node : nodes) {
+						String name = NodeUtil.asScalar(node);
+						if (StringUtil.hasText(name)) {
+							name2nodes.put(name, node);
+						}
+					}
+					for (String name : name2nodes.keys()) {
+						Collection<Node> nodesForName = name2nodes.get(name);
+						if (nodesForName.size()>1) {
+							for (Node duplicateNode : nodesForName) {
+								problems.accept(YamlSchemaProblems.problem(problemType, "Duplicate '"+defType+"'", duplicateNode));
+							}
+						}
+					}
+				}
+			}
+		};
 	}
 
 }
