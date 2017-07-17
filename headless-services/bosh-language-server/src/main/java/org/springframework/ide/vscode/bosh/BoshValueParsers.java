@@ -10,10 +10,44 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import java.net.URI;
+
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 
+import com.google.common.collect.ImmutableList;
+
 public class BoshValueParsers {
+	
+	public static ValueParser url(String... _schemes) {
+		return new ValueParser() {
+
+			private final ImmutableList<String> validSchemes = ImmutableList.copyOf(_schemes);
+
+			@Override
+			public Object parse(String s) throws Exception {
+				URI uri = new URI(s);
+				String scheme = uri.getScheme();
+				if (scheme==null) {
+					throw new ValueParseException(message());
+				} else if (!validSchemes.contains(scheme.toLowerCase())) {
+					int start = s.indexOf(scheme);
+					if (start>=0) {
+						int end = start + scheme.length();
+						throw new ValueParseException(message(), start, end);
+					} else {
+						// Trouble finding exact location of underlined region so underline whole url
+						throw new ValueParseException(message());
+					}
+				}
+				return uri;
+			}
+
+			private String message() {
+				return "Url scheme must be one of "+validSchemes;
+			}
+		};
+	}
 
 	public static final ValueParser INTEGER_OR_RANGE = new ValueParser() {
 

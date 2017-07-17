@@ -104,9 +104,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
 		t_ip_address.parseWith(ValueParsers.NE_STRING);
 		
-		YAtomicType t_url = f.yatomic("URL"); //TODO: some kind of checking?
-		t_url.parseWith(ValueParsers.NE_STRING);
-
+		YAtomicType t_url = f.yatomic("URL");
+		t_url.parseWith(BoshValueParsers.url("http", "https", "file"));
 
 		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
 		t_network_name.parseWith(ValueParsers.NE_STRING);

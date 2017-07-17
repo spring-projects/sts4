@@ -35,6 +35,23 @@ public class BoshValueParserTest {
 		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123-122<*>", "123 should be smaller than 122");
 	}
 
+	@Test public void urlOkay() throws Exception {
+		ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
+		urlParser.parse("http://foobar.com/munhings.tar.gz");
+		urlParser.parse("https://foobar.com/munhings.tar.gz");
+		urlParser.parse("hTTp://foobar.com/munhings.tar.gz");
+		urlParser.parse("HTTPS://foobar.com/munhings.tar.gz");
+		urlParser.parse("file://local/file");
+		urlParser.parse("file:///local/file");
+		urlParser.parse("FILE:///local/file");
+	}
+
+	@Test public void urlGarbage() throws Exception {
+		ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
+		assertProblem(urlParser, "<*>woot<*>://foobar.com", "Url scheme must be one of [http, https, file]");
+		assertProblem(urlParser, "<*>wOOt<*>://foobar.com", "Url scheme must be one of [http, https, file]");
+	}
+
 	private void assertProblem(ValueParser parser, String input, String expectedMessage) throws Exception {
 		String unmarkedInput = input.replace(MARKER, "");
 		int firstMarker = input.indexOf(MARKER);

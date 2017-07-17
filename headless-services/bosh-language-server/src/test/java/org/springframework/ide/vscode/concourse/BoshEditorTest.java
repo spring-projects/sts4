@@ -232,22 +232,25 @@ public class BoshEditorTest {
 		);
 	}
 
-	@Test public void releasesBlockSha1RequiredForHttpUrl() throws Exception {
+	@Test public void releasesAdvancedValidations() throws Exception {
 		Editor editor = harness.newEditor(
 				"releases:\n" + 
 				"- name: some-release\n" +
 				"  url: https://my.releases.com/funky.tar.gz\n" +
 				"- name: other-relase\n" +
 				"  url: file:///root/releases/a-nice-file.tar.gz\n" +
+				"- name: bad-url\n" +
+				"  url: proto://something.com\n" +
 				"#x"
 		);
 		editor.assertProblems(
 				"url|'sha1' is required when the 'url' is http(s)",
+				"proto|Url scheme must be one of [http, https, file]",
 				"x|are required"
 		);
 	}
 
-	@Test public void releasesBlockReconcileAndHovers() throws Exception {
+	@Test public void releasesBlockPropertyReconcileAndHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"releases:\n" + 
 				"- name: some-release\n" +
@@ -407,10 +410,6 @@ public class BoshEditorTest {
 		editor.assertHoverContains("env", "Specifies advanced BOSH Agent configuration");
 	}
 	
-	@Test public void complexManifestValidation() throws Exception {
-		
-	}
-
 	@Test public void instanceGroups_job_hovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: foo\n" + 
