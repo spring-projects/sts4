@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.concourse;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.BoshLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -633,5 +632,16 @@ public class BoshEditorTest {
 		);
 		editor.ignoreProblem(YamlSchemaProblems.DEPRECATED_PROPERTY);
 		editor.assertProblems(/*NONE*/);
+		
+		editor = harness.newEditor(
+				"name: foo\n" + 
+				"director_uuid: dca5480a-6b0e-11e7-907b-a6006ad3dba0\n" + 
+				"networks: {}" //This makes it a V1 schema
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"director_uuid|bosh v2 CLI no longer checks or requires",
+				"networks|Deprecated: 'networks' is a V1 schema property"
+		);
 	}
 }
