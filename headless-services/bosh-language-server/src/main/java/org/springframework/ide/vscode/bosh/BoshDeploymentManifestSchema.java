@@ -47,7 +47,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	
 	private static final ImmutableSet<String> DEPRECATED_V1_PROPS = ImmutableSet.of("resource_pools", "networks", "compilation", "jobs", "disk_pools", "cloud_provider");
 	private static final ImmutableSet<String>  SHARED_V1_V2_PROPS = ImmutableSet.of("name", "director_uuid", "releases", "update", "properties");
-	private Collection<YType> DEFINITION_TYPES = null;
+	private ImmutableList<YType> definitionTypes = null;
 		//Note: 'director_uuid' is also deprecated. But its treated separately since it is deprecated and ignored by V2 client no matter what (i.e. deprecated in both schemas)
 
 	public final YTypeFactory f = new YTypeFactory()
@@ -71,6 +71,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public final YType t_integer_or_range = f.yatomic("Integer or Range")
 			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
 	private YAtomicType t_instance_group_name_def;
+	private YAtomicType t_stemcell_alias_name_def;
 
 	public BoshDeploymentManifestSchema() {
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -122,6 +123,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
 		t_disk_type.parseWith(ValueParsers.NE_STRING);
 
+		t_stemcell_alias_name_def = f.yatomic("StemcellAliasName");
+		t_stemcell_alias_name_def.parseWith(ValueParsers.NE_STRING);
+		
 		YAtomicType t_stemcell_alias = f.yatomic("StemcellAlias"); //TODO: resolve from 'stemcells block' https://www.pivotaltracker.com/story/show/148706041
 		t_stemcell_alias.parseWith(ValueParsers.NE_STRING);
 
@@ -160,7 +164,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
 		
 		YBeanType t_stemcell = f.ybean("Stemcell");
-		addProp(t_stemcell, "alias", t_ne_string).isRequired(true);
+		addProp(t_stemcell, "alias", t_stemcell_alias_name_def).isRequired(true);
 		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
 		addProp(t_stemcell, "name", t_ne_string);
 		addProp(t_stemcell, "os", t_ne_string);
@@ -255,12 +259,13 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	}
 
 	public Collection<YType> getDefinitionTypes() {
-		if (DEFINITION_TYPES==null) {
-			DEFINITION_TYPES = ImmutableList.of(
-					t_instance_group_name_def
+		if (definitionTypes==null) {
+			definitionTypes = ImmutableList.of(
+					t_instance_group_name_def,
+					t_stemcell_alias_name_def
 			);
 		}
-		return DEFINITION_TYPES;
+		return definitionTypes;
 	}
 
 }

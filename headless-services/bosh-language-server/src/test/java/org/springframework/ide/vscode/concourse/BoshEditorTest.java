@@ -32,69 +32,69 @@ public class BoshEditorTest {
 			LanguageId.BOSH_DEPLOYMENT
 		);
 		harness.intialize(null);
-	}	
+	}
 
 	@Test public void toplevelV2PropertyNamesKnown() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: some-name\n" +
 				"director_uuid: cf8dc1fc-9c42-4ffc-96f1-fbad983a6ce6\n" +
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: redis\n" +
-				"  version: 12\n" + 
-				"stemcells:\n" + 
-				"- alias: default\n" + 
-				"  os: ubuntu-trusty\n" + 
-				"  version: 3421.11\n" + 
-				"update:\n" + 
-				"  canaries: 1\n" + 
-				"  max_in_flight: 10\n" + 
-				"  canary_watch_time: 1000-30000\n" + 
-				"  update_watch_time: 1000-30000\n" + 
-				"instance_groups:\n" + 
-				"- name: redis-master\n" + 
-				"  instances: 1\n" + 
-				"  azs: [z1, z2]\n" + 
-				"  jobs:\n" + 
-				"  - name: redis-server\n" + 
-				"    release: redis\n" + 
-				"    properties:\n" + 
-				"      port: 3606\n" + 
-				"  vm_type: medium\n" + 
-				"  vm_extensions: [public-lbs]\n" + 
-				"  stemcell: default\n" + 
-				"  persistent_disk_type: medium\n" + 
-				"  networks:\n" + 
-				"  - name: default\n" + 
-				"- name: redis-slave\n" + 
-				"  instances: 2\n" + 
-				"  azs: [z1, z2]\n" + 
-				"  jobs:\n" + 
-				"  - name: redis-server\n" + 
-				"    release: redis\n" + 
-				"    properties: {}\n" + 
-				"  vm_type: medium\n" + 
-				"  stemcell: default\n" + 
-				"  persistent_disk_type: medium\n" + 
-				"  networks:\n" + 
-				"  - name: default\n" + 
-				"variables:\n" + 
-				"- name: admin_password\n" + 
-				"  type: password\n" + 
-				"- name: default_ca\n" + 
-				"  type: certificate\n" + 
-				"  options:\n" + 
-				"    is_ca: true\n" + 
-				"    common_name: some-ca\n" + 
-				"- name: director_ssl\n" + 
-				"  type: certificate\n" + 
-				"  options:\n" + 
-				"    ca: default_ca\n" + 
-				"    common_name: cc.cf.internal\n" + 
+				"  version: 12\n" +
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: 3421.11\n" +
+				"update:\n" +
+				"  canaries: 1\n" +
+				"  max_in_flight: 10\n" +
+				"  canary_watch_time: 1000-30000\n" +
+				"  update_watch_time: 1000-30000\n" +
+				"instance_groups:\n" +
+				"- name: redis-master\n" +
+				"  instances: 1\n" +
+				"  azs: [z1, z2]\n" +
+				"  jobs:\n" +
+				"  - name: redis-server\n" +
+				"    release: redis\n" +
+				"    properties:\n" +
+				"      port: 3606\n" +
+				"  vm_type: medium\n" +
+				"  vm_extensions: [public-lbs]\n" +
+				"  stemcell: default\n" +
+				"  persistent_disk_type: medium\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"- name: redis-slave\n" +
+				"  instances: 2\n" +
+				"  azs: [z1, z2]\n" +
+				"  jobs:\n" +
+				"  - name: redis-server\n" +
+				"    release: redis\n" +
+				"    properties: {}\n" +
+				"  vm_type: medium\n" +
+				"  stemcell: default\n" +
+				"  persistent_disk_type: medium\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"variables:\n" +
+				"- name: admin_password\n" +
+				"  type: password\n" +
+				"- name: default_ca\n" +
+				"  type: certificate\n" +
+				"  options:\n" +
+				"    is_ca: true\n" +
+				"    common_name: some-ca\n" +
+				"- name: director_ssl\n" +
+				"  type: certificate\n" +
+				"  options:\n" +
+				"    ca: default_ca\n" +
+				"    common_name: cc.cf.internal\n" +
 				"    alternative_names: [cc.cf.internal]\n" +
 				"properties:\n" +
 				"  a-property: the-value\n" +
-				"tags:\n" + 
-				"  project: cf\n" + 
+				"tags:\n" +
+				"  project: cf\n" +
 				"blah: hoooo\n"
 		);
 		editor.assertProblems(
@@ -113,7 +113,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("variables", "Describes variables");
 		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
 	}
-	
+
 	//@Ignore //For now... because not passing yet.
 	@Test public void reconcileCfManifest() throws Exception {
 		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
@@ -127,19 +127,19 @@ public class BoshEditorTest {
 		editor.assertCompletions(
 				"name: <*>"
 		);
-		
+
 		editor = harness.newEditor(
 				"name: blah\n" +
 				"<*>"
 		);
-		
+
 		editor.assertCompletions(
 				"name: blah\n" +
 				"instance_groups:\n" +
 				"- name: <*>"
 				, // ============
 				"name: blah\n" +
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: <*>"
 				, // ============
 				"name: blah\n" +
@@ -163,35 +163,35 @@ public class BoshEditorTest {
 //				"properties:\n  <*>"
 		);
 	}
-	
+
 	@Test public void stemcellCompletions() throws Exception {
 		Editor editor = harness.newEditor(
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- <*>"
 		);
 		editor.assertCompletions(
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- alias: <*>"
 				, // ==========
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- name: <*>"
 				, // ==========
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- os: <*>"
 				, // ==========
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- version: <*>"
 		);
-		
+
 		editor = harness.newEditor(
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- alias<*>"
 		);
 	}
-	
+
 	@Test public void stemcellReconciling() throws Exception {
 		Editor editor = harness.newEditor(
-				"stemcells:\n" + 
+				"stemcells:\n" +
 				"- {}"
 		);
 		editor.assertProblems(
@@ -203,21 +203,21 @@ public class BoshEditorTest {
 
 	@Test public void releasesBlockCompletions() throws Exception {
 		Editor editor = harness.newEditor(
-				"releases:\n" + 
+				"releases:\n" +
 				"- <*>"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertCompletions(
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: <*>"
 		);
-		
+
 		editor = harness.newEditor(
 				"releases:\n" +
 				"- name: foo\n" +
 				"  <*>"
 		);
-		editor.assertCompletions(PLAIN_COMPLETION, 
+		editor.assertCompletions(PLAIN_COMPLETION,
 				"releases:\n" +
 				"- name: foo\n" +
 				"  sha1: <*>"
@@ -234,7 +234,7 @@ public class BoshEditorTest {
 
 	@Test public void releasesAdvancedValidations() throws Exception {
 		Editor editor = harness.newEditor(
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: some-release\n" +
 				"  url: https://my.releases.com/funky.tar.gz\n" +
 				"- name: other-relase\n" +
@@ -252,7 +252,7 @@ public class BoshEditorTest {
 
 	@Test public void releasesBlockPropertyReconcileAndHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: some-release\n" +
 				"  version: some-version\n" +
 				"  url: https://my.releases.com/funky.tar.gz\n" +
@@ -263,94 +263,94 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"woot|Unknown property"
 		);
-		
+
 		editor.assertHoverContains("name", "Name of a release used in the deployment");
 		editor.assertHoverContains("version", "The version of the release to use");
 		editor.assertHoverContains("url", "URL of the release to use");
 		editor.assertHoverContains("sha1", "The SHA1 of the release tarball");
-		
+
 		editor = harness.newEditor(
-				"releases:\n" + 
+				"releases:\n" +
 				"- name: some-release\n" +
-				"  version: <*>\n" 
+				"  version: <*>\n"
 		);
 		editor.assertCompletionLabels("latest");
 	}
 
 	@Test public void instanceGroupsCompletions() throws Exception {
 		Editor editor = harness.newEditor(
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- <*>"
 		);
 		editor.assertCompletions(
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: <*>"
 		);
 
 		editor = harness.newEditor(
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  <*>"
 		);
-		editor.assertCompletions(PLAIN_COMPLETION, 
-				"instance_groups:\n" + 
+		editor.assertCompletions(PLAIN_COMPLETION,
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  azs:\n" +
 				"  - <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  env:\n" +
 				"    <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  instances: <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  jobs:\n" +
 				"  - <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  lifecycle: <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  migrated_from:\n" +
 				"  - <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  networks:\n" +
 				"  - name: <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  persistent_disk_type: <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  stemcell: <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  update:\n" +
 				"    <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  vm_extensions:\n" +
 				"  - <*>"
 				, // =============
-				"instance_groups:\n" + 
+				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  vm_type: <*>"
-				
-//				, // ============= 
+
+//				, // =============
 // Not suggested because its deprecated:
-//				"instance_groups:\n" + 
+//				"instance_groups:\n" +
 //				"- name: foo-group\n" +
 //				"  properties:\n" +
 //				"    <*>"
@@ -359,39 +359,39 @@ public class BoshEditorTest {
 
 	@Test public void instanceGroupsHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"instance_groups:\n" + 
-				"- name: redis-master\n" + 
+				"instance_groups:\n" +
+				"- name: redis-master\n" +
 				"  properties: {}\n" +
-				"  instances: 1\n" + 
-				"  azs: [z1, z2]\n" + 
-				"  jobs:\n" + 
-				"  - name: redis-server\n" + 
-				"    release: redis\n" + 
-				"    properties:\n" + 
-				"      port: 3606\n" + 
-				"  vm_type: medium\n" + 
-				"  vm_extensions: [public-lbs]\n" + 
-				"  stemcell: default\n" + 
-				"  persistent_disk_type: medium\n" + 
-				"  networks:\n" + 
-				"  - name: default\n" + 
-				"\n" + 
-				"- name: redis-slave\n" + 
-				"  instances: 2\n" + 
-				"  azs: [z1, z2]\n" + 
-				"  jobs:\n" + 
-				"  - name: redis-server\n" + 
-				"    release: redis\n" + 
-				"    properties: {}\n" + 
+				"  instances: 1\n" +
+				"  azs: [z1, z2]\n" +
+				"  jobs:\n" +
+				"  - name: redis-server\n" +
+				"    release: redis\n" +
+				"    properties:\n" +
+				"      port: 3606\n" +
+				"  vm_type: medium\n" +
+				"  vm_extensions: [public-lbs]\n" +
+				"  stemcell: default\n" +
+				"  persistent_disk_type: medium\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"\n" +
+				"- name: redis-slave\n" +
+				"  instances: 2\n" +
+				"  azs: [z1, z2]\n" +
+				"  jobs:\n" +
+				"  - name: redis-server\n" +
+				"    release: redis\n" +
+				"    properties: {}\n" +
 				"  update:\n" +
 				"    canaries: 2\n" +
 				"  lifecycle: errand\n" +
 				"  migrated_from: []\n" +
 				"  env: {}\n" +
-				"  vm_type: medium\n" + 
-				"  stemcell: default\n" + 
-				"  persistent_disk_type: medium\n" + 
-				"  networks:\n" + 
+				"  vm_type: medium\n" +
+				"  stemcell: default\n" +
+				"  persistent_disk_type: medium\n" +
+				"  networks:\n" +
 				"  - name: default\n"
 		);
 		editor.assertHoverContains("name", "A unique name used to identify and reference the instance group.");
@@ -409,20 +409,20 @@ public class BoshEditorTest {
 		editor.assertHoverContains("properties", "Specifies instance group properties");
 		editor.assertHoverContains("env", "Specifies advanced BOSH Agent configuration");
 	}
-	
+
 	@Test public void instanceGroups_job_hovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"name: foo\n" + 
-				"instance_groups:\n" + 
-				"- name: foo\n" + 
-				"  jobs:\n" + 
-				"  - name: the-job\n" + 
-				"    release: the-jobs-release\n" + 
-				"    properties:\n" + 
-				"      blah: blah\n" + 
-				"    consumes:\n" + 
-				"      blah: blah \n" + 
-				"    provides:\n" + 
+				"name: foo\n" +
+				"instance_groups:\n" +
+				"- name: foo\n" +
+				"  jobs:\n" +
+				"  - name: the-job\n" +
+				"    release: the-jobs-release\n" +
+				"    properties:\n" +
+				"      blah: blah\n" +
+				"    consumes:\n" +
+				"      blah: blah \n" +
+				"    provides:\n" +
 				"      blah: blah\n"
 		);
 		editor.assertHoverContains("name", 3, "The job name");
@@ -434,13 +434,13 @@ public class BoshEditorTest {
 
 	@Test public void instanceGroups_network_hovers() throws Exception {
 		Editor editor = harness.newEditor(
-			"name: foo\n" + 
-			"instance_groups:\n" + 
-			"- name: foo\n" + 
-			"  networks:\n" + 
-			"  - name: the-network\n" + 
-			"    static_ips: []\n" + 
-			"    default: []\n" 
+			"name: foo\n" +
+			"instance_groups:\n" +
+			"- name: foo\n" +
+			"  networks:\n" +
+			"  - name: the-network\n" +
+			"    static_ips: []\n" +
+			"    default: []\n"
 		);
 		editor.assertHoverContains("name", 3, "A valid network name from the cloud config");
 		editor.assertHoverContains("static_ips", "Array of IP addresses");
@@ -449,23 +449,23 @@ public class BoshEditorTest {
 
 	@Test public void instanceGroups_env_hovers() throws Exception {
 		Editor editor = harness.newEditor(
-			"name: foo\n" + 
-			"instance_groups:\n" + 
-			"- name: foo\n" + 
-			"  env:\n" + 
-			"    bosh: {}\n" + 
-			"    password: []\n" 
+			"name: foo\n" +
+			"instance_groups:\n" +
+			"- name: foo\n" +
+			"  env:\n" +
+			"    bosh: {}\n" +
+			"    password: []\n"
 		);
 		editor.assertHoverContains("bosh", "no description");
 		editor.assertHoverContains("password", "Crypted password");
 	}
-	
+
 	@Test public void updateBlockCompletions() throws Exception {
 		Editor editor = harness.newEditor(
 				"update:\n" +
 				"  <*>"
 		);
-		editor.assertCompletions(PLAIN_COMPLETION, 
+		editor.assertCompletions(PLAIN_COMPLETION,
 				"update:\n" +
 				"  canaries: <*>"
 				, // =====
@@ -485,10 +485,10 @@ public class BoshEditorTest {
 
 	@Test public void updateBlockHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"update:\n" + 
-				"  canaries: 1\n" + 
-				"  max_in_flight: 10\n" + 
-				"  canary_watch_time: 1000-30000\n" + 
+				"update:\n" +
+				"  canaries: 1\n" +
+				"  max_in_flight: 10\n" +
+				"  canary_watch_time: 1000-30000\n" +
 				"  update_watch_time: 1000-30000\n" +
 				"  serial: false"
 		);
@@ -508,13 +508,13 @@ public class BoshEditorTest {
 				"variables:\n" +
 				"- name: <*>"
 		);
-		
+
 		editor = harness.newEditor(
 				"variables:\n" +
 				"- name: foo\n" +
 				"  <*>"
 		);
-		editor.assertCompletions(PLAIN_COMPLETION, 
+		editor.assertCompletions(PLAIN_COMPLETION,
 				"variables:\n" +
 				"- name: foo\n" +
 				"  options:\n" +
@@ -524,7 +524,7 @@ public class BoshEditorTest {
 				"- name: foo\n" +
 				"  type: <*>"
 		);
-		
+
 		editor = harness.newEditor(
 				"variables:\n" +
 				"- name: foo\n" +
@@ -535,106 +535,106 @@ public class BoshEditorTest {
 
 	@Test public void variablesBlockHovers() throws Exception {
 		Editor editor = harness.newEditor(
-				"variables:\n" + 
-				"- name: admin_password\n" + 
-				"  type: password\n" + 
-				"- name: default_ca\n" + 
-				"  type: certificate\n" + 
-				"  options:\n" + 
-				"    is_ca: true\n" + 
-				"    common_name: some-ca\n" + 
-				"- name: director_ssl\n" + 
-				"  type: certificate\n" + 
-				"  options:\n" + 
-				"    ca: default_ca\n" + 
-				"    common_name: cc.cf.internal\n" + 
+				"variables:\n" +
+				"- name: admin_password\n" +
+				"  type: password\n" +
+				"- name: default_ca\n" +
+				"  type: certificate\n" +
+				"  options:\n" +
+				"    is_ca: true\n" +
+				"    common_name: some-ca\n" +
+				"- name: director_ssl\n" +
+				"  type: certificate\n" +
+				"  options:\n" +
+				"    ca: default_ca\n" +
+				"    common_name: cc.cf.internal\n" +
 				"    alternative_names: [cc.cf.internal]"
 		);
 		editor.assertHoverContains("name", "Unique name used to identify a variable");
 		editor.assertHoverContains("type", "Type of a variable");
 		editor.assertHoverContains("options", "Specifies generation options");
 	}
-	
+
 	@Test public void tolerateV1Manifests() throws Exception {
 		Editor editor = harness.newEditor(
-				"---\n" + 
-				"name: my-redis-deployment\n" + 
-				"director_uuid: 1234abcd-5678-efab-9012-3456cdef7890\n" + 
-				"\n" + 
-				"releases:\n" + 
-				"- {name: redis, version: 12}\n" + 
-				"\n" + 
-				"resource_pools:\n" + 
-				"- name: redis-servers\n" + 
-				"  network: default\n" + 
-				"  stemcell:\n" + 
-				"    name: bosh-aws-xen-ubuntu-trusty-go_agent\n" + 
-				"    version: 2708\n" + 
-				"  cloud_properties:\n" + 
-				"    instance_type: m1.small\n" + 
-				"    availability_zone: us-east-1c\n" + 
-				"\n" + 
+				"---\n" +
+				"name: my-redis-deployment\n" +
+				"director_uuid: 1234abcd-5678-efab-9012-3456cdef7890\n" +
+				"\n" +
+				"releases:\n" +
+				"- {name: redis, version: 12}\n" +
+				"\n" +
+				"resource_pools:\n" +
+				"- name: redis-servers\n" +
+				"  network: default\n" +
+				"  stemcell:\n" +
+				"    name: bosh-aws-xen-ubuntu-trusty-go_agent\n" +
+				"    version: 2708\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m1.small\n" +
+				"    availability_zone: us-east-1c\n" +
+				"\n" +
 				"disk_pools: []\n" +
-				"\n" + 
-				"networks:\n" + 
-				"- name: default\n" + 
-				"  type: manual\n" + 
-				"  subnets:\n" + 
-				"  - range: 10.10.0.0/24\n" + 
-				"    gateway: 10.10.0.1\n" + 
-				"    static:\n" + 
-				"    - 10.10.0.16 - 10.10.0.18\n" + 
-				"    reserved:\n" + 
-				"    - 10.10.0.2 - 10.10.0.15\n" + 
-				"    dns: [10.10.0.6]\n" + 
-				"    cloud_properties:\n" + 
-				"      subnet: subnet-d597b993\n" + 
-				"\n" + 
-				"compilation:\n" + 
-				"  workers: 2\n" + 
-				"  network: default\n" + 
-				"  reuse_compilation_vms: true\n" + 
-				"  cloud_properties:\n" + 
-				"    instance_type: c1.medium\n" + 
-				"    availability_zone: us-east-1c\n" + 
-				"\n" + 
-				"update:\n" + 
-				"  canaries: 1\n" + 
-				"  max_in_flight: 3\n" + 
-				"  canary_watch_time: 15000-30000\n" + 
-				"  update_watch_time: 15000-300000\n" + 
-				"\n" + 
-				"jobs:\n" + 
-				"- name: redis-master\n" + 
-				"  instances: 1\n" + 
-				"  templates:\n" + 
-				"  - {name: redis-server, release: redis}\n" + 
-				"  persistent_disk: 10_240\n" + 
-				"  resource_pool: redis-servers\n" + 
-				"  networks:\n" + 
-				"  - name: default\n" + 
-				"\n" + 
-				"- name: redis-slave\n" + 
-				"  instances: 2\n" + 
-				"  templates:\n" + 
-				"  - {name: redis-server, release: redis}\n" + 
-				"  persistent_disk: 10_240\n" + 
-				"  resource_pool: redis-servers\n" + 
-				"  networks:\n" + 
-				"  - name: default\n" + 
-				"\n" + 
-				"properties:\n" + 
-				"  redis:\n" + 
+				"\n" +
+				"networks:\n" +
+				"- name: default\n" +
+				"  type: manual\n" +
+				"  subnets:\n" +
+				"  - range: 10.10.0.0/24\n" +
+				"    gateway: 10.10.0.1\n" +
+				"    static:\n" +
+				"    - 10.10.0.16 - 10.10.0.18\n" +
+				"    reserved:\n" +
+				"    - 10.10.0.2 - 10.10.0.15\n" +
+				"    dns: [10.10.0.6]\n" +
+				"    cloud_properties:\n" +
+				"      subnet: subnet-d597b993\n" +
+				"\n" +
+				"compilation:\n" +
+				"  workers: 2\n" +
+				"  network: default\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: c1.medium\n" +
+				"    availability_zone: us-east-1c\n" +
+				"\n" +
+				"update:\n" +
+				"  canaries: 1\n" +
+				"  max_in_flight: 3\n" +
+				"  canary_watch_time: 15000-30000\n" +
+				"  update_watch_time: 15000-300000\n" +
+				"\n" +
+				"jobs:\n" +
+				"- name: redis-master\n" +
+				"  instances: 1\n" +
+				"  templates:\n" +
+				"  - {name: redis-server, release: redis}\n" +
+				"  persistent_disk: 10_240\n" +
+				"  resource_pool: redis-servers\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"\n" +
+				"- name: redis-slave\n" +
+				"  instances: 2\n" +
+				"  templates:\n" +
+				"  - {name: redis-server, release: redis}\n" +
+				"  persistent_disk: 10_240\n" +
+				"  resource_pool: redis-servers\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"\n" +
+				"properties:\n" +
+				"  redis:\n" +
 				"    max_connections: 10\n" +
-				"\n" + 
+				"\n" +
 				"cloud_provider: {}"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.DEPRECATED_PROPERTY);
 		editor.assertProblems(/*NONE*/);
-		
+
 		editor = harness.newEditor(
-				"name: foo\n" + 
-				"director_uuid: dca5480a-6b0e-11e7-907b-a6006ad3dba0\n" + 
+				"name: foo\n" +
+				"director_uuid: dca5480a-6b0e-11e7-907b-a6006ad3dba0\n" +
 				"networks: {}" //This makes it a V1 schema
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
@@ -643,23 +643,28 @@ public class BoshEditorTest {
 				"networks|Deprecated: 'networks' is a V1 schema property"
 		);
 	}
-	
+
 	@Test public void documentSymbols() throws Exception {
 		Editor editor = harness.newEditor(
-				"name: foo\n" + 
-				"instance_groups:\n" + 
-				"- name: foo-group\n" + 
-				"  networks:\n" + 
-				"  - name: the-network\n" + 
-				"    static_ips: []\n" + 
+				"name: foo\n" +
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: '3421.11'\n" +
+				"instance_groups:\n" +
+				"- name: foo-group\n" +
+				"  networks:\n" +
+				"  - name: the-network\n" +
+				"    static_ips: []\n" +
 				"    default: []\n" +
-				"- name: bar-group\n" + 
-				"  networks:\n" + 
-				"  - name: the-network\n" + 
-				"    static_ips: []\n" + 
-				"    default: []\n" 
+				"- name: bar-group\n" +
+				"  networks:\n" +
+				"  - name: the-network\n" +
+				"    static_ips: []\n" +
+				"    default: []\n"
 		);
 		editor.assertDocumentSymbols(
+				"default|StemcellAlias",
 				"foo-group|InstanceGroup",
 				"bar-group|InstanceGroup"
 		);
