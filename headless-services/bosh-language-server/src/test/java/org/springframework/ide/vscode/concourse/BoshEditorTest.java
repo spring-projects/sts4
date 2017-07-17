@@ -661,12 +661,17 @@ public class BoshEditorTest {
 				"  networks:\n" +
 				"  - name: the-network\n" +
 				"    static_ips: []\n" +
-				"    default: []\n"
+				"    default: []\n" +
+				"releases:\n" +
+				"- name: one-release\n" +
+				"- name: other-release\n"
 		);
 		editor.assertDocumentSymbols(
 				"default|StemcellAlias",
 				"foo-group|InstanceGroup",
-				"bar-group|InstanceGroup"
+				"bar-group|InstanceGroup",
+				"one-release|Release",
+				"other-release|Release"
 		);
 	}
 }
