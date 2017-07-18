@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.concourse;
+package org.springframework.ide.vscode.bosh;
 
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 
@@ -26,7 +26,7 @@ public class BoshEditorTest {
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer()
+				return new BoshLanguageServer(BoshCommandCloudConfigProviderTest.mockProvider)
 						.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT

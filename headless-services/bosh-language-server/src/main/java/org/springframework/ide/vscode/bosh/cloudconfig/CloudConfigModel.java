@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,15 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.bosh;
+package org.springframework.ide.vscode.bosh.cloudconfig;
 
-import java.io.IOException;
+import java.util.Collection;
 
-import org.springframework.ide.vscode.bosh.cloudconfig.BoshCommandCloudConfigProvider;
-import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-
-public class Main {
-	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> new BoshLanguageServer(new BoshCommandCloudConfigProvider()));
-	}
+/**
+ * Represents CloudConfig information as might be retrieved from bosh director.
+ */
+public interface CloudConfigModel {
+	Collection<String> getVMTypes();
 }

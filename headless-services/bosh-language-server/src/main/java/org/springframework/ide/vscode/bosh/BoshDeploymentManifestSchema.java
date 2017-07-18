@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -77,9 +78,11 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_release_name_ref;
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
+	private CloudConfigProvider cloudConfigProvider;
 
-	public BoshDeploymentManifestSchema(ASTTypeCache astTypes) {
+	public BoshDeploymentManifestSchema(ASTTypeCache astTypes, CloudConfigProvider cloudConfigProvider) {
 		this.astTypes = astTypes;
+		this.cloudConfigProvider = cloudConfigProvider;
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();

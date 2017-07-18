@@ -1,0 +1,50 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.bosh;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.ide.vscode.bosh.cloudconfig.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
+import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+
+import com.google.common.collect.ImmutableMultiset;
+
+public class BoshCommandCloudConfigProviderTest {
+
+	private static final String MOCK_DATA_RSRC = "/cmd-out/cloud-config.json";
+
+	public static final BoshCommandCloudConfigProvider mockProvider = new BoshCommandCloudConfigProvider() {
+		/**
+		 * Override with a 'fake' which just returns some mock data. That way we can unit-test
+		 * without requiring a real bosh setup.
+		 */
+		@Override
+		protected String executeBoshCloudConfigCommand() throws Exception {
+			return IOUtil.toString(BoshCommandCloudConfigProviderTest.class.getResourceAsStream(MOCK_DATA_RSRC));
+		};
+	};
+
+// For local testing only... in CI builds we don't have the means to use a real bosh director and cli.
+//	private BoshCommandCloudConfigProvider realProvider = new BoshCommandCloudConfigProvider();
+
+	@Test public void getVMTypes() throws Exception {
+		BoshCommandCloudConfigProvider provider = mockProvider;
+		DynamicSchemaContext dc = Mockito.mock(DynamicSchemaContext.class);
+		CloudConfigModel cloudConfig = provider.getCloudConfig(dc);
+
+		assertEquals(ImmutableMultiset.of("default", "large"), cloudConfig.getVMTypes());
+	}
+
+}

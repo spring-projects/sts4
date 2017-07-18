@@ -9,7 +9,7 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 
-package org.springframework.ide.vscode.concourse;
+package org.springframework.ide.vscode.bosh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,7 +31,9 @@ public class BoshLanguageServerTest {
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new BoshLanguageServer());
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new BoshLanguageServer(BoshCommandCloudConfigProviderTest.mockProvider)
+		);
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -39,7 +41,9 @@ public class BoshLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new BoshLanguageServer());
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new BoshLanguageServer(BoshCommandCloudConfigProviderTest.mockProvider)
+		);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 

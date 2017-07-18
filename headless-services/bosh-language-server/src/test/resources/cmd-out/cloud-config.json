@@ -1,0 +1,10 @@
+{
+    "Tables": null,
+    "Blocks": [
+        "azs:\n- cloud_properties:\n    datacenters:\n    - clusters:\n      - AppFabric: {}\n  name: z1\n- cloud_properties:\n    datacenters:\n    - clusters:\n      - AppFabric: {}\n  name: z2\n- cloud_properties:\n    datacenters:\n    - clusters:\n      - AppFabric: {}\n  name: z3\ncompilation:\n  az: z1\n  network: default\n  reuse_compilation_vms: true\n  vm_type: default\n  workers: 5\ndisk_types:\n- disk_size: 3000\n  name: default\n- disk_size: 50000\n  name: large\nnetworks:\n- name: default\n  subnets:\n  - azs:\n    - z1\n    - z2\n    - z3\n    cloud_properties:\n      name: VLAN 40 - AF\n    dns:\n    - 10.192.2.10\n    - 8.8.8.8\n    gateway: 10.194.4.1\n    range: 10.194.4.0/23\n    reserved:\n    - 10.194.4.1-10.194.4.34\n    - 10.194.4.40-10.194.5.255\n  type: manual\nvm_types:\n- cloud_properties:\n    cpu: 2\n    disk: 3240\n    ram: 1024\n  name: default\n- cloud_properties:\n    cpu: 2\n    disk: 30240\n    ram: 4096\n  name: large\n"
+    ],
+    "Lines": [
+        "Using environment '10.194.4.35' as client 'admin'",
+        "Succeeded"
+    ]
+}

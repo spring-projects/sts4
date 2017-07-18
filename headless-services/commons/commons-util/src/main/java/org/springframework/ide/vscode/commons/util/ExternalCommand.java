@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Encapsulates information about an 'external' command that can be run through the OS. 
@@ -68,7 +69,7 @@ public class ExternalCommand {
 	 * result of commands are logged to the console and if the command returns non
 	 * 0 exit value an exception is thrown.
 	 */
-	public void exec(File workdir) throws IOException, InterruptedException {
+	public void exec(File workdir) throws IOException, InterruptedException, TimeoutException {
 		System.out.println(">>> exec: "+this);
 		ExternalProcess process = new ExternalProcess(workdir, this);
 		System.out.println(process);
