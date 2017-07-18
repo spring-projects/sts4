@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,12 +19,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -124,6 +134,34 @@ public class ASTTypeCache implements ITypeCollector {
 
 	public synchronized NodeTypes getNodeTypes(String uri) {
 		return typeIndex.get(uri);
+	}
+
+	/**
+	 * Use this astTypeCache to extract all defined names for a given type of definition.
+	 */
+	public Collection<String> getDefinedNames(DynamicSchemaContext dc, YType defType) {
+		IDocument doc = dc.getDocument();
+		if (doc!=null) {
+			String uri = doc.getUri();
+			if (uri!=null) {
+				NodeTypes typeMap =  getNodeTypes(uri);
+				if (typeMap!=null) {
+					Collection<Node> nodes = typeMap.getNodes(defType);
+					if (nodes!=null) {
+						ImmutableSet.Builder<String> builder = ImmutableSortedSet.naturalOrder();
+						for (Node node : nodes) {
+							String name = NodeUtil.asScalar(node);
+							if (StringUtil.hasText(name)) {
+								builder.add(name);
+							}
+						}
+						return builder.build();
+					}
+				}
+				return ImmutableList.of();
+			}
+		}
+		return null;
 	}
 
 

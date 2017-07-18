@@ -209,8 +209,8 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public ValueParser getValueParser(YType type, DynamicSchemaContext dc) {
-			return ((AbstractType)type).getParser(dc);
+		public SchemaContextAware<ValueParser> getValueParser(YType type) {
+			return ((AbstractType)type).getParser();
 		}
 
 		@Override
@@ -406,8 +406,8 @@ public class YTypeFactory {
 			parseWith((DynamicSchemaContext dc) -> parser);
 			return this;
 		}
-		private ValueParser getParser(DynamicSchemaContext dc) {
-			return parser == null ? null : parser.withContext(dc);
+		private SchemaContextAware<ValueParser> getParser() {
+			return parser;
 		}
 
 		public AbstractType require(Constraint dynamicConstraint) {
@@ -847,7 +847,6 @@ public class YTypeFactory {
 		return ((YTypedPropertyImpl)prop).copy();
 	}
 
-
 	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
 		YAtomicType t = yatomic(name);
 		t.addHintProvider((dc) -> () -> values.withContext(dc));
@@ -863,6 +862,17 @@ public class YTypeFactory {
 		return t;
 	}
 
+	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<Collection<String>> values) {
+		return yenumFromHints(name, 
+				//Error message formatter:
+				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
+				//Hints provider:
+				(dc) -> 
+					hints(values.withContext(dc)
+				)
+		);
+	}
+	
 	public EnumTypeBuilder yenumBuilder(String name, String... values) {
 		return new EnumTypeBuilder(name, values);
 	}

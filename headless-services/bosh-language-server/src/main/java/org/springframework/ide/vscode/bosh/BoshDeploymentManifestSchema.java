@@ -73,6 +73,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_instance_group_name_def;
 	private YType t_stemcell_alias_name_def;
 	private YType t_release_name_def;
+	private YType t_release_name_ref;
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
 
@@ -114,10 +115,13 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		t_instance_group_name_def = f.yatomic("InstanceGroupName")
 				.parseWith(ValueParsers.NE_STRING);
+
 		t_stemcell_alias_name_def = f.yatomic("StemcellAliasName")
 				.parseWith(ValueParsers.NE_STRING);
+
 		t_release_name_def = f.yatomic("ReleaseName")
 				.parseWith(ValueParsers.NE_STRING);
+		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
 		t_var_name_def = f.yatomic("VariableName")
 				.parseWith(ValueParsers.NE_STRING);
 
@@ -167,8 +171,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_release, "url", t_url);
 		addProp(t_release, "sha1", t_ne_string);
 		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
-		t_release.require(Constraints.requireAtLeastOneOf("url", "version")); //allthough docs seem to imply you shouldn't define both url and version..
-																					//... it seems bosh tolerates it.
+		t_release.require(Constraints.requireAtLeastOneOf("url", "version"));
+										//   ^^^^^^^ allthough docs seem to imply you shouldn't
+										// define both url and version it seems that bosh tolerates it.
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
@@ -189,7 +194,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_job = f.ybean("Job");
 		addProp(t_job, "name", t_ne_string).isRequired(true);
-		addProp(t_job, "release", t_ne_string).isRequired(true);
+		addProp(t_job, "release", t_release_name_ref).isRequired(true);
 		addProp(t_job, "consumes", t_params);
 		addProp(t_job, "provides", t_params);
 		addProp(t_job, "properties", t_params);

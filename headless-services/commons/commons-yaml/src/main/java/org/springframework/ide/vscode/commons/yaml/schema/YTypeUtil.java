@@ -33,7 +33,7 @@ public interface YTypeUtil {
 	YValueHint[] getHintValues(YType yType, DynamicSchemaContext dc) throws Exception;
 	String niceTypeName(YType type);
 	YType getKeyType(YType type);
-	ValueParser getValueParser(YType type, DynamicSchemaContext dc);
+	SchemaContextAware<ValueParser> getValueParser(YType type);
 
 	//TODO: only one of these two should be enough?
 	List<YTypedProperty> getProperties(YType type);

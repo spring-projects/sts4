@@ -45,6 +45,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.schema.ASTDynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -129,11 +130,11 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		return allOf(ast, node);
 	}
 
-	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType type) {
+	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType _type) {
 //		IDocument doc = ast.getDocument();
-		if (type!=null) {
+		if (_type!=null) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
-			type = typeUtil.inferMoreSpecificType(type, schemaContext);
+			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
 			if (typeCollector!=null) {
 				typeCollector.accept(node, type);
 			}
@@ -190,19 +191,24 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				break;
 			case scalar:
 				if (typeUtil.isAtomic(type)) {
-					ValueParser parser = typeUtil.getValueParser(type, schemaContext);
-					if (parser!=null) {
-						try {
-							String value = NodeUtil.asScalar(node);
-							if (value!=null) {
-								parser.parse(value);
+					SchemaContextAware<ValueParser> parserProvider = typeUtil.getValueParser(type);
+					if (parserProvider!=null) {
+						delayedConstraints.add(() -> {
+							ValueParser parser = parserProvider.withContext(schemaContext);
+							if (parser!=null) {
+								try {
+									String value = NodeUtil.asScalar(node);
+									if (value!=null) {
+										parser.parse(value);
+									}
+								} catch (Exception e) {
+									ProblemType problemType = getProblemType(e);
+									DocumentRegion region = getRegion(e, ast.getDocument(), node);
+									String msg = getMessage(e);
+									valueParseError(type, region, msg, problemType, getValueReplacement(e));
+								}
 							}
-						} catch (Exception e) {
-							ProblemType problemType = getProblemType(e);
-							DocumentRegion region = getRegion(e, ast.getDocument(), node);
-							String msg = getMessage(e);
-							valueParseError(type, region, msg, problemType, getValueReplacement(e));
-						}
+						});
 					}
 				} else {
 					expectTypeButFoundScalar(type, node);

@@ -739,4 +739,48 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void contentAssistReleaseReference() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  jobs:\n" +
+				"  - release: <*>\n" +
+				"releases: \n" +
+				"- name: some-release\n" +
+				"  url: https://release-hub.info/some-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n" +
+				"- name: other-release\n" +
+				"  url: https://release-hub.info/other-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n"
+		);
+		editor.assertContextualCompletions("<*>"
+				, // ==>
+				"other-release<*>", "some-release<*>"
+		);
+	}
+
+	@Test public void reconcileReleaseReference() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  jobs:\n" +
+				"  - release: some-release\n" +
+				"- name: some-other-server\n" +
+				"  jobs:\n" +
+				"  - release: bogus-release\n" +
+				"releases: \n" +
+				"- name: some-release\n" +
+				"  url: https://release-hub.info/some-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n" +
+				"- name: other-release\n" +
+				"  url: https://release-hub.info/other-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus-release|unknown 'ReleaseName'. Valid values are: [other-release, some-release]"
+		);
+	}
 }
