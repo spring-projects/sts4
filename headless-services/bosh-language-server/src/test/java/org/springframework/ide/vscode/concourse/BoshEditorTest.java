@@ -730,8 +730,8 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"dup_var|Duplicate 'VariableName'",
 				"dup_var|Duplicate 'VariableName'",
-				"dup_cell|Duplicate 'StemcellAliasName'",
-				"dup_cell|Duplicate 'StemcellAliasName'",
+				"dup_cell|Duplicate 'StemcellAlias'",
+				"dup_cell|Duplicate 'StemcellAlias'",
 				"bar-group|Duplicate 'InstanceGroupName'",
 				"bar-group|Duplicate 'InstanceGroupName'",
 				"one-release|Duplicate 'ReleaseName'",
@@ -783,4 +783,49 @@ public class BoshEditorTest {
 				"bogus-release|unknown 'ReleaseName'. Valid values are: [other-release, some-release]"
 		);
 	}
+
+	@Test public void contentAssistStemcellReference() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  stemcell: <*>\n" +
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu\n" +
+				"  version: 1346.77.1\n" +
+				"- alias: windoze\n" +
+				"  os: windows\n" +
+				"  version: 678.9.1\n"
+		);
+		editor.assertContextualCompletions("<*>"
+				, // ==>
+				"default<*>", "windoze<*>"
+		);
+	}
+
+	@Test public void reconcileStemcellReference() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  stemcell: default\n" +
+				"- name: windoze-server\n" +
+				"  stemcell: windoze\n" +
+				"- name: bad-server\n" +
+				"  stemcell: bogus-stemcell\n" +
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu\n" +
+				"  version: 1346.77.1\n" +
+				"- alias: windoze\n" +
+				"  os: windows\n" +
+				"  version: 678.9.1\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus-stemcell|unknown 'StemcellAlias'. Valid values are: [default, windoze]"
+		);
+	}
+
 }

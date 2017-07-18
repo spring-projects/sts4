@@ -71,7 +71,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public final YType t_integer_or_range = f.yatomic("Integer or Range")
 			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
 	private YType t_instance_group_name_def;
-	private YType t_stemcell_alias_name_def;
+	private YType t_stemcell_alias_def;
+	private YType t_stemcell_alias_ref;
 	private YType t_release_name_def;
 	private YType t_release_name_ref;
 	private YType t_var_name_def;
@@ -116,12 +117,14 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_instance_group_name_def = f.yatomic("InstanceGroupName")
 				.parseWith(ValueParsers.NE_STRING);
 
-		t_stemcell_alias_name_def = f.yatomic("StemcellAliasName")
+		t_stemcell_alias_def = f.yatomic("StemcellAlias")
 				.parseWith(ValueParsers.NE_STRING);
+		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> astTypes.getDefinedNames(dc, t_stemcell_alias_def));
 
 		t_release_name_def = f.yatomic("ReleaseName")
 				.parseWith(ValueParsers.NE_STRING);
 		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
+
 		t_var_name_def = f.yatomic("VariableName")
 				.parseWith(ValueParsers.NE_STRING);
 
@@ -136,10 +139,6 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
 		t_disk_type.parseWith(ValueParsers.NE_STRING);
-
-
-		YAtomicType t_stemcell_alias = f.yatomic("StemcellAlias"); //TODO: resolve from 'stemcells block' https://www.pivotaltracker.com/story/show/148706041
-		t_stemcell_alias.parseWith(ValueParsers.NE_STRING);
 
 		YAtomicType t_vm_extension = f.yatomic("VMExtension"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148703877
 		t_vm_extension.parseWith(ValueParsers.NE_STRING);
@@ -177,7 +176,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
-		addProp(t_stemcell, "alias", t_stemcell_alias_name_def).isRequired(true);
+		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
 		addProp(t_stemcell, "name", t_ne_string);
 		addProp(t_stemcell, "os", t_ne_string);
@@ -206,7 +205,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group, "jobs", f.yseq(t_job)).isRequired(true);
 		addProp(t_instance_group, "vm_type", t_vm_type).isRequired(true);
 		addProp(t_instance_group, "vm_extensions", f.yseq(t_vm_extension));
-		addProp(t_instance_group, "stemcell", t_stemcell_alias).isRequired(true);
+		addProp(t_instance_group, "stemcell", t_stemcell_alias_ref).isRequired(true);
 		addProp(t_instance_group, "persistent_disk_type", t_disk_type);
 		addProp(t_instance_group, "networks", f.yseq(t_network)).isRequired(true);
 		YType t_update_override = f.ybean("UpdateOverrides", t_update.getProperties()
@@ -279,7 +278,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		if (definitionTypes==null) {
 			definitionTypes = ImmutableList.of(
 					t_instance_group_name_def,
-					t_stemcell_alias_name_def,
+					t_stemcell_alias_def,
 					t_release_name_def,
 					t_var_name_def
 			);
