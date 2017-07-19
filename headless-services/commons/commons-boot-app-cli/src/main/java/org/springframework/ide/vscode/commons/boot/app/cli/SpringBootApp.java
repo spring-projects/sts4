@@ -211,7 +211,7 @@ public class SpringBootApp {
 			if (env != null) {
 				JSONObject portsObject = env.getJSONObject("server.ports");
 				if (portsObject != null) {
-					String portValue = portsObject.getString("local.server.port");
+					String portValue = portsObject.get("local.server.port").toString();
 					return portValue;
 				}
 			}
