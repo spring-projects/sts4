@@ -76,11 +76,11 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	public final YType t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
 	public final YType t_integer_or_range = f.yatomic("Integer or Range")
 			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
-	private YType t_instance_group_name_def;
 	private YType t_stemcell_alias_def;
 	private YType t_stemcell_alias_ref;
 	private YType t_release_name_def;
 	private YType t_release_name_ref;
+	private YType t_instance_group_name_def;
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
@@ -300,7 +300,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		if (defAndRefTypes==null) {
 			defAndRefTypes = ImmutableList.of(
 					Pair.of(t_instance_group_name_def, null),
-					Pair.of(t_stemcell_alias_def, null),
+					Pair.of(t_stemcell_alias_def, t_stemcell_alias_ref),
 					Pair.of(t_release_name_def, t_release_name_ref),
 					Pair.of(t_var_name_def, null)
 			);
