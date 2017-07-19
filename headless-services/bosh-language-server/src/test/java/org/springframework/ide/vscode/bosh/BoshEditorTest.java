@@ -12,8 +12,11 @@ package org.springframework.ide.vscode.bosh;
 
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -23,9 +26,11 @@ public class BoshEditorTest {
 
 	LanguageServerHarness harness;
 
+	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider();
+
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(BoshCommandCloudConfigProviderTest.mockProvider)
+				return new BoshLanguageServer(cloudConfigProvider)
 						.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
@@ -58,7 +63,7 @@ public class BoshEditorTest {
 				"    release: redis\n" +
 				"    properties:\n" +
 				"      port: 3606\n" +
-				"  vm_type: medium\n" +
+				"  vm_type: large\n" +
 				"  vm_extensions: [public-lbs]\n" +
 				"  stemcell: default\n" +
 				"  persistent_disk_type: medium\n" +
@@ -71,9 +76,9 @@ public class BoshEditorTest {
 				"  - name: redis-server\n" +
 				"    release: redis\n" +
 				"    properties: {}\n" +
-				"  vm_type: medium\n" +
+				"  vm_type: large\n" +
 				"  stemcell: default\n" +
-				"  persistent_disk_type: medium\n" +
+				"  persistent_disk_type: large\n" +
 				"  networks:\n" +
 				"  - name: default\n" +
 				"variables:\n" +
@@ -116,6 +121,9 @@ public class BoshEditorTest {
 	//@Ignore //For now... because not passing yet.
 	@Test public void reconcileCfManifest() throws Exception {
 		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
+		cloudConfigProvider.readWith(() -> {
+			throw new IOException("Couldn't contact the director");
+		});
 		editor.assertProblems(/*NONE*/);
 	}
 

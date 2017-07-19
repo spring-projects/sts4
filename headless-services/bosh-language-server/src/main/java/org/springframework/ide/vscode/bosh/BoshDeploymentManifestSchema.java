@@ -14,7 +14,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigProvider;
+import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
+import org.springframework.ide.vscode.bosh.cloudconfig.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -78,9 +79,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_release_name_ref;
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
-	private CloudConfigProvider cloudConfigProvider;
+	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
 
-	public BoshDeploymentManifestSchema(ASTTypeCache astTypes, CloudConfigProvider cloudConfigProvider) {
+	public BoshDeploymentManifestSchema(ASTTypeCache astTypes, DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
 		this.astTypes = astTypes;
 		this.cloudConfigProvider = cloudConfigProvider;
 		TYPE_UTIL = f.TYPE_UTIL;
@@ -146,8 +147,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YAtomicType t_vm_extension = f.yatomic("VMExtension"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148703877
 		t_vm_extension.parseWith(ValueParsers.NE_STRING);
 
-		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType", (dc) -> cloudConfigProvider.getCloudConfig(dc).getVMTypes());
-		t_vm_type.parseWith(ValueParsers.NE_STRING);
+		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType", (dc) -> cloudConfigProvider.getModel(dc).getVMTypes());
 
 		YAtomicType t_az = f.yatomic("AvailabilityZone"); //TODO: resolve dynamically from 'cloud config': https://www.pivotaltracker.com/story/show/148704481
 		t_az.parseWith(ValueParsers.NE_STRING);

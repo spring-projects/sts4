@@ -16,25 +16,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.cloudconfig.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
-import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 import com.google.common.collect.ImmutableMultiset;
 
 public class BoshCommandCloudConfigProviderTest {
 
-	private static final String MOCK_DATA_RSRC = "/cmd-out/cloud-config.json";
-
-	public static final BoshCommandCloudConfigProvider mockProvider = new BoshCommandCloudConfigProvider() {
-		/**
-		 * Override with a 'fake' which just returns some mock data. That way we can unit-test
-		 * without requiring a real bosh setup.
-		 */
-		@Override
-		protected String executeBoshCloudConfigCommand() throws Exception {
-			return IOUtil.toString(BoshCommandCloudConfigProviderTest.class.getResourceAsStream(MOCK_DATA_RSRC));
-		};
-	};
+	public final MockCloudConfigProvider mockProvider = new MockCloudConfigProvider();
 
 // For local testing only... in CI builds we don't have the means to use a real bosh director and cli.
 //	private BoshCommandCloudConfigProvider realProvider = new BoshCommandCloudConfigProvider();
@@ -42,7 +31,7 @@ public class BoshCommandCloudConfigProviderTest {
 	@Test public void getVMTypes() throws Exception {
 		BoshCommandCloudConfigProvider provider = mockProvider;
 		DynamicSchemaContext dc = Mockito.mock(DynamicSchemaContext.class);
-		CloudConfigModel cloudConfig = provider.getCloudConfig(dc);
+		CloudConfigModel cloudConfig = provider.getModel(dc);
 
 		assertEquals(ImmutableMultiset.of("default", "large"), cloudConfig.getVMTypes());
 	}

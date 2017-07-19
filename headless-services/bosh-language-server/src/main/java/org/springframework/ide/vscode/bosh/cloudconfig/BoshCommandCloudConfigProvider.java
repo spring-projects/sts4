@@ -41,10 +41,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Kris De Volder
  */
-public class BoshCommandCloudConfigProvider implements CloudConfigProvider {
+public class BoshCommandCloudConfigProvider implements DynamicModelProvider<CloudConfigModel> {
 
 	ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	final YamlParser yamlParser;
+
+	private Duration CMD_TIMEOUT = Duration.ofSeconds(10);
 
 	public BoshCommandCloudConfigProvider() {
 		Representer representer = new Representer();
@@ -75,7 +77,7 @@ public class BoshCommandCloudConfigProvider implements CloudConfigProvider {
 			.thenValAt("name");
 
 	@Override
-	public CloudConfigModel getCloudConfig(DynamicSchemaContext dc) throws Exception {
+	public CloudConfigModel getModel(DynamicSchemaContext dc) throws Exception {
 		String out = executeBoshCloudConfigCommand();
 		CloudConfigResponse response = mapper.readValue(out, CloudConfigResponse.class);
 		String[] blocks = response.getBlocks();
@@ -99,9 +101,18 @@ public class BoshCommandCloudConfigProvider implements CloudConfigProvider {
 		};
 	}
 
+	/**
+	 * Configure how long we wait for the command to fetch cloud config before
+	 * raising timeout exception. (The command may block for long amounts of time
+	 * of the director is unreachable on the network).
+	 */
+	public void setCommandTimeout(Duration duration) {
+		this.CMD_TIMEOUT = duration;
+	}
+
 	protected String executeBoshCloudConfigCommand() throws Exception {
 		ExternalCommand command = new ExternalCommand("bosh", "cloud-config", "--json");
-		ExternalProcess process = new ExternalProcess(new File(".").getAbsoluteFile(), command, true, Duration.ofSeconds(30));
+		ExternalProcess process = new ExternalProcess(new File(".").getAbsoluteFile(), command, true, CMD_TIMEOUT);
 		System.out.println("executeBoshCloudConfigCommand: "+process);
 		String out = process.getOut();
 		return out;

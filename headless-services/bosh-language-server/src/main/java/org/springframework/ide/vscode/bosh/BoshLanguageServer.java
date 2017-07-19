@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigProvider;
+import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
+import org.springframework.ide.vscode.bosh.cloudconfig.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -41,7 +42,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 	private final VscodeCompletionEngineAdapter completionEngine;
 
-	public BoshLanguageServer(CloudConfigProvider cloudConfigProvider) {
+	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
 		super("vscode-bosh");
 		YamlASTProvider parser = new YamlParser(yaml);
 		SimpleTextDocumentService documents = getTextDocumentService();

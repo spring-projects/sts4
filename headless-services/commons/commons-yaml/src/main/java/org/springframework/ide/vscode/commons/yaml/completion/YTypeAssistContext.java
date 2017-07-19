@@ -216,7 +216,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			}
 			for (YValueHint value : values) {
 				double score = FuzzyMatcher.matchScore(query, value.getValue());
-				if (score!=0 && !value.equals(query)) {
+				if (score!=0 && value!=null && !query.equals(value.getValue())) {
 					int queryStart = offset-query.length();
 					DocumentEdits edits = new DocumentEdits(doc.getDocument());
 					edits.delete(queryStart, offset);
@@ -358,7 +358,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		}
 		return null;
 	}
-	
+
 	protected Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
 		try {
 			YamlAssistContext relaxed = relaxForDashes();
