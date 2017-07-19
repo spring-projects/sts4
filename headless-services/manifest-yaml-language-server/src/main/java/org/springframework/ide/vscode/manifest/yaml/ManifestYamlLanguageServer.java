@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
@@ -66,7 +67,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private final CfClientConfig cfClientConfig;
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 
-	private final LanguageId FALLBACK_YML_ID = LanguageId.of("yml");
+	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
 	final private ClientParamsProvider defaultClientParamsProvider;
 
 	public ManifestYamlLanguageServer() {
@@ -181,7 +182,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
 		if (LanguageId.CF_MANIFEST.equals(doc.getLanguageId())
-				|| FALLBACK_YML_ID.equals(doc.getLanguageId())) {
+				|| FALLBACK_YML_IDS.contains(doc.getLanguageId())) {
 			//
 			// this FALLBACK_YML_ID got introduced to workaround a limitation in LSP4E, which sets the file extension as language ID to the document
 			//
