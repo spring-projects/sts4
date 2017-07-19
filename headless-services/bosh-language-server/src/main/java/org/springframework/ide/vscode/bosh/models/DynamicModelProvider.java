@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.bosh.cloudconfig;
+package org.springframework.ide.vscode.bosh.models;
 
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 

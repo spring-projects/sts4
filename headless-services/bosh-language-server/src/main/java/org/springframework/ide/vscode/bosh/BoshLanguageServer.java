@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
-import org.springframework.ide.vscode.bosh.cloudconfig.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
+import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;

@@ -14,9 +14,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.ide.vscode.bosh.cloudconfig.BoshCommandCloudConfigProvider;
-import org.springframework.ide.vscode.bosh.cloudconfig.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 import com.google.common.collect.ImmutableMultiset;

@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.bosh;
 
 import java.io.IOException;
 
-import org.springframework.ide.vscode.bosh.cloudconfig.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 
 public class Main {

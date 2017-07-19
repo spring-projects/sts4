@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.bosh.cloudconfig;
+package org.springframework.ide.vscode.bosh.models;
 
 import java.io.File;
 import java.time.Duration;

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import static org.junit.Assert.assertEquals;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 
 import java.io.IOException;
@@ -849,5 +850,27 @@ public class BoshEditorTest {
 				"default<*>",
 				"large<*>"
 		);
+
+		//Verify that the cache is working. Shouldn't read the cc provier more than once, evem for multiple CA requests.
+		editor.assertCompletionLabels("default", "large");
+		editor.assertCompletionLabels("default", "large");
+		assertEquals(1, cloudConfigProvider.getReadCount());
 	}
+
+	@Test public void reconcileVMtype() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  vm_type: bogus-vm\n" +
+				"- name: other-server\n" +
+				"  vm_type: large"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus-vm|unknown 'VMType'. Valid values are: [default, large]"
+		);
+		assertEquals(1, cloudConfigProvider.getReadCount());
+	}
+
 }
