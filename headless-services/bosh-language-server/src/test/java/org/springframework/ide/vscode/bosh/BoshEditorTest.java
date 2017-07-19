@@ -14,7 +14,6 @@ import static org.springframework.ide.vscode.languageserver.testharness.Editor.P
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.bosh.BoshLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -828,4 +827,19 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void contentAssistVMtype() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  stemcell: windoze\n" +
+				"  vm_type: <*>"
+		);
+		editor.assertContextualCompletions(
+				"<*>"
+				, // ==>
+				"default<*>",
+				"large<*>"
+		);
+	}
 }

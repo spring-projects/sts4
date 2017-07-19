@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import java.util.Optional;
+
 /**
  * Interface that can be implemented by something producing another
  * component (of some type `T`) where the returned component needs to
@@ -19,7 +21,18 @@ package org.springframework.ide.vscode.commons.yaml.schema;
  */
 @FunctionalInterface
 public interface SchemaContextAware<T> {
-	T withContext(DynamicSchemaContext dc);
+	T withContext(DynamicSchemaContext dc) throws Exception;
+	
+	/**
+	 * Like `withContext' method, but swallows exceptions silently.
+	 */
+	default Optional<T> safeWithContext(DynamicSchemaContext dc) {
+		try {
+			return Optional.ofNullable(withContext(dc));
+		} catch (Exception e) {
+			return Optional.empty();
+		}
+	}
 
 	/**
 	 * Convert a plain value into a {@link SchemaContextAware} that ignores the context and simply returns the value.

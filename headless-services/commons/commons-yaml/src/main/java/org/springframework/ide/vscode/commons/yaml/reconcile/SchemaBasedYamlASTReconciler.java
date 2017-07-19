@@ -194,8 +194,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					SchemaContextAware<ValueParser> parserProvider = typeUtil.getValueParser(type);
 					if (parserProvider!=null) {
 						delayedConstraints.add(() -> {
-							ValueParser parser = parserProvider.withContext(schemaContext);
-							if (parser!=null) {
+							parserProvider.safeWithContext(schemaContext).ifPresent(parser -> {
 								try {
 									String value = NodeUtil.asScalar(node);
 									if (value!=null) {
@@ -207,7 +206,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 									String msg = getMessage(e);
 									valueParseError(type, region, msg, problemType, getValueReplacement(e));
 								}
-							}
+							});
 						});
 					}
 				} else {

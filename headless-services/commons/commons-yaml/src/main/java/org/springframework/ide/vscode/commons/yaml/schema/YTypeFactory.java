@@ -157,7 +157,7 @@ public class YTypeFactory {
 	 * YTypeFactory
 	 */
 	public final YTypeUtil TYPE_UTIL = new YTypeUtil() {
-		
+
 		@Override
 		public boolean isSequencable(YType type) {
 			return ((AbstractType)type).isSequenceable();
@@ -257,6 +257,8 @@ public class YTypeFactory {
 		private List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
+			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
+
 		private List<Constraint> constraints = new ArrayList<>(2);
 		private ISubCompletionEngine customContentAssistant = null;
 
@@ -267,7 +269,7 @@ public class YTypeFactory {
 		public ISubCompletionEngine getCustomContentAssistant() {
 			return customContentAssistant;
 		}
-		
+
 		public AbstractType setCustomContentAssistant(ISubCompletionEngine customContentAssistant) {
 			this.customContentAssistant = customContentAssistant;
 			return this;
@@ -295,6 +297,7 @@ public class YTypeFactory {
 		}
 
 		public AbstractType addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
+			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
 			this.hintProvider = hintProvider;
 			return this;
 		}
@@ -448,10 +451,7 @@ public class YTypeFactory {
 		@Override
 		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
 			if (dc!=null) {
-				YType inferred = typeGuesser.withContext(dc);
-				if (inferred!=null) {
-					return inferred;
-				}
+				return typeGuesser.safeWithContext(dc).orElse(this);
 			}
 			return this;
 		}
@@ -797,7 +797,7 @@ public class YTypeFactory {
 			this.isDeprecated = deprecationMessage!=null;
 			this.deprecationMessage = deprecationMessage;
 		}
-		
+
 		@Override
 		public String getDeprecationMessage() {
 			return this.deprecationMessage;
@@ -808,7 +808,7 @@ public class YTypeFactory {
 			return this.isDeprecated;
 		}
 
-		
+
 		public YTypedPropertyImpl isPrimary(boolean primary) {
 			this.isPrimary = primary;
 			this.isRequired = primary;
@@ -820,7 +820,7 @@ public class YTypeFactory {
 			this.isRequired = required;
 			return this;
 		}
-		
+
 		@Override
 		public boolean isPrimary() {
 			return isPrimary;
@@ -842,7 +842,7 @@ public class YTypeFactory {
 	public YTypedPropertyImpl yprop(String name, YType type) {
 		return new YTypedPropertyImpl(name, type);
 	}
-	
+
 	public YTypedPropertyImpl yprop(YTypedProperty prop) {
 		return ((YTypedPropertyImpl)prop).copy();
 	}
@@ -863,16 +863,16 @@ public class YTypeFactory {
 	}
 
 	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<Collection<String>> values) {
-		return yenumFromHints(name, 
+		return yenumFromHints(name,
 				//Error message formatter:
 				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
 				//Hints provider:
-				(dc) -> 
+				(dc) ->
 					hints(values.withContext(dc)
 				)
 		);
 	}
-	
+
 	public EnumTypeBuilder yenumBuilder(String name, String... values) {
 		return new EnumTypeBuilder(name, values);
 	}

@@ -141,7 +141,7 @@ public class Constraints {
 	@Deprecated
 	public static Constraint schemaContextAware(SchemaContextAware<Constraint> dispatcher) {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
-			dispatcher.withContext(dc).verify(dc, parent, node, type, problems);
+			dispatcher.safeWithContext(dc).ifPresent((constraint) -> constraint.verify(dc, parent, node, type, problems));
 		};
 	}
 
