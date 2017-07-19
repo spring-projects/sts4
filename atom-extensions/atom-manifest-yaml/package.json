@@ -15,6 +15,9 @@
     "remote-file-size": "^3.0.3",
     "atom-commons": "file:../atom-commons"
   },
+  "scripts": {
+    "clean": "rm -rf node_modules"
+  },
   "consumedServices": {
     "linter-indie": {
       "versions": {

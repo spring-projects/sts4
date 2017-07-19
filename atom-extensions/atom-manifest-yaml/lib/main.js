@@ -218,12 +218,12 @@ class ManifestYamlLanguageClient extends JarLanguageClient {
 
     constructor() {
         super(
-            'https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/fatjars/snapshots/manifest-yaml-language-server-0.0.9-201707121637.jar',
+            'https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/fatjars/snapshots/manifest-yaml-language-server-0.0.9-201707192158.jar',
             path.join(__dirname, '..', 'server')
         );
 
-        this.statusElement = document.createElement('span')
-        this.statusElement.className = 'inline-block'
+        this.statusElement = document.createElement('span');
+        this.statusElement.className = 'inline-block';
     }
 
     getGrammarScopes() {
