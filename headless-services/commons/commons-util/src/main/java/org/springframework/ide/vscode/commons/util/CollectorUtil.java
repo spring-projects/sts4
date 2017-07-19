@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -19,6 +21,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 
@@ -55,6 +58,38 @@ public class CollectorUtil {
 			@Override
 			public Function<HashMultiset<T>, ImmutableMultiset<T>> finisher() {
 				return ImmutableMultiset::copyOf;
+			}
+
+			@Override
+			public Set<Collector.Characteristics> characteristics() {
+				return ImmutableSet.of(Collector.Characteristics.UNORDERED);
+			}
+		};
+	}
+
+	public static <T> Collector<T, ArrayList<T>, ImmutableList<T>> toImmutableList() {
+		return new Collector<T, ArrayList<T>, ImmutableList<T>>() {
+
+			@Override
+			public Supplier<ArrayList<T>> supplier() {
+				return ArrayList::new;
+			}
+
+			@Override
+			public BiConsumer<ArrayList<T>, T> accumulator() {
+				return (a, e) -> a.add(e);
+			}
+
+			@Override
+			public BinaryOperator<ArrayList<T>> combiner() {
+				return (a1, a2) -> {
+					a1.addAll(a2);
+					return a1;
+				};
+			}
+			@Override
+			public Function<ArrayList<T>, ImmutableList<T>> finisher() {
+				return ImmutableList::copyOf;
 			}
 
 			@Override

@@ -712,7 +712,7 @@ public class Editor {
 	}
 
 	/**
-	 * Determines the position of (the middle of) a snippet of text in the document.
+	 * Determines the position of a snippet of text in the document.
 	 *
 	 * @param contextSnippet A larger snippet containing the actual snippet to look for.
 	 *                   This larger snippet is used to narrow the section of the document
@@ -723,6 +723,10 @@ public class Editor {
 	public Position positionOf(String longSnippet, String focusSnippet) throws Exception {
 		Range r = rangeOf(longSnippet, focusSnippet);
 		return r==null?null:r.getStart();
+	}
+
+	public Position positionOf(String snippet) throws Exception {
+		return positionOf(snippet, snippet);
 	}
 
 	/**
@@ -794,5 +798,6 @@ public class Editor {
 	public void setCursor(Position position) {
 		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
+
 
 }

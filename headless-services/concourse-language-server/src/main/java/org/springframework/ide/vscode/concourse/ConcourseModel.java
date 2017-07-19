@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
@@ -52,8 +53,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnio
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.util.StaleFallbackCache;
 import org.springframework.ide.vscode.commons.yaml.util.Streams;
-import org.springframework.ide.vscode.concourse.util.StaleFallbackCache;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -112,7 +113,7 @@ public class ConcourseModel {
 			if (job!=null) {
 				//Only check if the job exists. Otherwise the extra checks will show 'redundant' errors (e.g.
 				//  complaining that 'some-job' doesn't ineract with a resource (because the resource doesn't exist).
-				YamlFileAST root = this.getSafeAst(dc.getDocument());
+				YamlFileAST root = asts.getSafeAst(dc.getDocument());
 				if (root!=null) {
 					Node stepNode = path.dropLast().traverseToNode(root);
 					if (stepNode!=null) {
@@ -256,9 +257,7 @@ public class ConcourseModel {
 		valueAt("name")
 	);
 
-	private final YamlParser parser;
-	private final StaleFallbackCache<String, YamlFileAST> asts = new StaleFallbackCache<>();
-
+	private final YamlAstCache asts = new YamlAstCache();
 	private final ASTTypeCache astTypes = new ASTTypeCache();
 
 	private ResourceTypeRegistry resourceTypes;
@@ -268,8 +267,6 @@ public class ConcourseModel {
 	private YBeanUnionType stepType;
 
 	public ConcourseModel(SimpleLanguageServer languageServer) {
-		Yaml yaml = new Yaml();
-		this.parser = new YamlParser(yaml);
 		this.snippetBuilderFactory = languageServer::createSnippetBuilder;
 	}
 
@@ -368,7 +365,7 @@ public class ConcourseModel {
 	public Node getParentPropertyNode(String propName, DynamicSchemaContext dc) {
 		YamlPath path = dc.getPath();
 		if (path!=null) {
-			YamlFileAST root = this.getSafeAst(dc.getDocument());
+			YamlFileAST root = asts.getSafeAst(dc.getDocument());
 			if (root!=null) {
 				return path.dropLast().append(YamlPathSegment.valueAt(propName)).traverseToNode(root);
 			}
@@ -402,7 +399,7 @@ public class ConcourseModel {
 			if (doc!=null) {
 				String uri = doc.getUri();
 				if (uri!=null) {
-					YamlFileAST ast = getAst(doc, true);
+					YamlFileAST ast = asts.getAst(doc, true);
 					return astFunction.apply(ast);
 				}
 			}
@@ -414,36 +411,6 @@ public class ConcourseModel {
 		return null;
 	}
 
-	public YamlFileAST getSafeAst(IDocument doc) {
-		return getSafeAst(doc, true);
-	}
-
-	public YamlFileAST getAst(IDocument doc, boolean allowStaleAst) throws Exception {
-		return getAstProvider(allowStaleAst).getAST(doc);
-	}
-
-	public YamlASTProvider getAstProvider(boolean allowStaleAsts) {
-		return (IDocument doc) -> {
-			String uri = doc.getUri();
-			if (uri!=null) {
-				return asts.get(uri, doc.getVersion(), allowStaleAsts, () -> {
-					return parser.getAST(doc);
-				});
-			}
-			return null;
-		};
-	}
-
-	public YamlFileAST getSafeAst(IDocument doc, boolean allowStaleAst) {
-		if (doc!=null) {
-			try {
-				return getAst(doc, allowStaleAst);
-			} catch (Exception e) {
-				//ignored
-			}
-		}
-		return null;
-	}
 
 	public ASTTypeCache getAstTypeCache() {
 		return astTypes;
@@ -456,6 +423,10 @@ public class ConcourseModel {
 	public void setStepType(YBeanUnionType step) {
 		Assert.isNull("stepType already set", this.stepType);
 		this.stepType = step;
+	}
+
+	public YamlAstCache getAstCache() {
+		return this.asts;
 	}
 
 }

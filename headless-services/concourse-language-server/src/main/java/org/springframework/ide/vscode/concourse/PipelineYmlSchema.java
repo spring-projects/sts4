@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
@@ -134,6 +135,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	private final ResourceTypeRegistry resourceTypes = new ResourceTypeRegistry();
 
 	private final ConcourseModel models;
+	private final YamlAstCache asts;
 
 	public final YType t_semver = f.yatomic("Semver")
 			.parseWith(ValueParsers.NE_STRING); //TODO: use real semver parser.
@@ -155,9 +157,9 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private List<YType> definitionTypes = new ArrayList<>();
 
-
 	public PipelineYmlSchema(ConcourseModel models) {
 		this.models = models;
+		this.asts = models.getAstCache();
 		models.setResourceTypeRegistry(resourceTypes);
 		TYPE_UTIL = f.TYPE_UTIL;
 
@@ -659,7 +661,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	private String getSiblingPropertyValue(DynamicSchemaContext dc, String propName) {
 		YamlPath path = dc.getPath();
 		if (path!=null) {
-			YamlFileAST root = models.getSafeAst(dc.getDocument());
+			YamlFileAST root = asts.getSafeAst(dc.getDocument());
 			if (root!=null) {
 				return NodeUtil.asScalar(path.append(YamlPathSegment.valueAt(propName)).traverseToNode(root));
 			}

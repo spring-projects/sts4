@@ -26,7 +26,6 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-
 public class BoshEditorTest {
 
 	LanguageServerHarness harness;
@@ -919,5 +918,35 @@ public class BoshEditorTest {
 		completion = harness.resolveCompletionItem(completion);
 		assertContains("Reading cloud config timed out", completion.getDocumentation());
 	}
+
+	@Test public void gotoReleaseDefinition() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  jobs:\n" +
+				"  - release: some-release\n" +
+				"- name: some-other-server\n" +
+				"  jobs:\n" +
+				"  - release: bogus-release\n" +
+				"releases:\n" +
+				"- name: some-release\n" +
+				"  url: https://release-hub.info/some-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n" +
+				"- name: other-release\n" +
+				"  url: https://release-hub.info/other-release.tar.gz?version=99.3.2\n" +
+				"  sha1: asddsfsd\n"
+		);
+
+		editor.assertGotoDefinition(editor.positionOf("some-release"),
+			editor.rangeOf(
+				"releases:\n" +
+				"- name: some-release\n"
+				,
+				"some-release"
+			)
+		);
+	}
+
 
 }

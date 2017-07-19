@@ -164,5 +164,15 @@ public class ASTTypeCache implements ITypeCollector {
 		return null;
 	}
 
+	public Collection<Node> getNodes(String uri, YType type) {
+		NodeTypes nodeMap = getNodeTypes(uri);
+		if (nodeMap!=null) {
+			Collection<Node> nodes = nodeMap.getNodes(type);
+			if (nodes!=null) {
+				return nodes;
+			}
+		}
+		return ImmutableList.of();
+	}
 
 }

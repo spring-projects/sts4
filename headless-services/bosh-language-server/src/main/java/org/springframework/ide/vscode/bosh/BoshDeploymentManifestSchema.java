@@ -11,13 +11,16 @@
 package org.springframework.ide.vscode.bosh;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -81,6 +84,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
+	private List<Pair<YType, YType>> defAndRefTypes;
 
 	public BoshDeploymentManifestSchema(ASTTypeCache astTypes, DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
 		this.astTypes = astTypes;
@@ -280,14 +284,28 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 	public Collection<YType> getDefinitionTypes() {
 		if (definitionTypes==null) {
-			definitionTypes = ImmutableList.of(
-					t_instance_group_name_def,
-					t_stemcell_alias_def,
-					t_release_name_def,
-					t_var_name_def
-			);
+			definitionTypes = getDefAndRefTypes().stream()
+					.map(pair -> pair.getLeft())
+					.collect(CollectorUtil.toImmutableList());
 		}
 		return definitionTypes;
+	}
+
+	/**
+	 * @return Pairs of types. Each pair contains a 'def' type and a 'ref' type. Nodes with the ref-type
+	 * shall be interpreted as reference to a corresponding node with the 'def' type if the def and ref node
+	 * contain the same scalar value.
+	 */
+	public Collection<Pair<YType, YType>> getDefAndRefTypes() {
+		if (defAndRefTypes==null) {
+			defAndRefTypes = ImmutableList.of(
+					Pair.of(t_instance_group_name_def, null),
+					Pair.of(t_stemcell_alias_def, null),
+					Pair.of(t_release_name_def, t_release_name_ref),
+					Pair.of(t_var_name_def, null)
+			);
+		}
+		return defAndRefTypes;
 	}
 
 }

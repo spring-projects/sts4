@@ -49,7 +49,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 	YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 	SimpleTextDocumentService documents = getTextDocumentService();
 	ConcourseModel models = new ConcourseModel(this);
-	YamlASTProvider currentAsts = models.getAstProvider(false);
+	YamlASTProvider currentAsts = models.getAstCache().getAstProvider(false);
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
 	private final YamlQuickfixes yamlQuickfixes;

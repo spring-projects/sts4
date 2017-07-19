@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.concourse.util;
+package org.springframework.ide.vscode.commons.yaml.util;
 
 import java.util.HashMap;
 import java.util.Map;

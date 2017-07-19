@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
 import org.springframework.ide.vscode.commons.yaml.completion.SchemaBasedYamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
@@ -34,18 +34,18 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.yaml.snakeyaml.Yaml;
 
 public class BoshLanguageServer extends SimpleLanguageServer {
 
-	private Yaml yaml = new Yaml();
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 	private final VscodeCompletionEngineAdapter completionEngine;
 
 	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
 		super("vscode-bosh");
-		YamlASTProvider parser = new YamlParser(yaml);
+		YamlAstCache asts = new YamlAstCache();
+		YamlASTProvider parser = asts.getAstProvider(false);
 		SimpleTextDocumentService documents = getTextDocumentService();
+
 		ASTTypeCache astTypeCache = new ASTTypeCache();
 		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache, cloudConfigProvider);
 
@@ -67,6 +67,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine ::getHover);
+		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
