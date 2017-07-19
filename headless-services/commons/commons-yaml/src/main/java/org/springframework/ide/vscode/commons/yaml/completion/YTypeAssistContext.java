@@ -70,18 +70,18 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		this.type = relaxedType;
 	}
 
-	public YTypeAssistContext(YTypeAssistContext parent, YamlPath contextPath, YType YType, YTypeUtil typeUtil) {
+	public YTypeAssistContext(YTypeAssistContext parent, YamlPath contextPath, YType type, YTypeUtil typeUtil) {
 		super(parent.getDocument(), parent.documentSelector, contextPath);
 		this.parent = parent;
 		this.typeUtil = typeUtil;
-		this.type = typeUtil.inferMoreSpecificType(YType, getSchemaContext());
+		this.type = typeUtil.inferMoreSpecificType(type, getSchemaContext());
 	}
 
 	public YTypeAssistContext(TopLevelAssistContext parent, int documentSelector, YType type, YTypeUtil typeUtil) {
 		super(parent.getDocument(), documentSelector, YamlPath.EMPTY);
 		this.parent = parent;
 		this.typeUtil = typeUtil;
-		this.type = type;
+		this.type = typeUtil.inferMoreSpecificType(type, getSchemaContext());
 	}
 
 	@Override
@@ -114,9 +114,10 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			List<List<YTypedProperty>> tieredProperties = sortIntoTiers(allProperties);
 			Set<String> definedProps = dynamicCtxt.getDefinedProperties();
 			List<ICompletionProposal> proposals = new ArrayList<>();
+			boolean suggestDeprecated = typeUtil.suggestDeprecatedProperties();
 			for (List<YTypedProperty> thisTier : tieredProperties) {
 				List<YTypedProperty> undefinedProps = thisTier.stream()
-						.filter(p -> !definedProps.contains(p.getName()))
+						.filter(p -> !definedProps.contains(p.getName()) && (suggestDeprecated || !p.isDeprecated()))
 						.collect(Collectors.toList());
 				if (!undefinedProps.isEmpty()) {
 					for (YTypedProperty p : undefinedProps) {
@@ -215,7 +216,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			}
 			for (YValueHint value : values) {
 				double score = FuzzyMatcher.matchScore(query, value.getValue());
-				if (score!=0 && !value.equals(query)) {
+				if (score!=0 && value!=null && !query.equals(value.getValue())) {
 					int queryStart = offset-query.length();
 					DocumentEdits edits = new DocumentEdits(doc.getDocument());
 					edits.delete(queryStart, offset);
@@ -357,7 +358,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		}
 		return null;
 	}
-	
+
 	protected Collection<ICompletionProposal> getDashedCompletions(YamlDocument doc, SNode current, int offset) {
 		try {
 			YamlAssistContext relaxed = relaxForDashes();

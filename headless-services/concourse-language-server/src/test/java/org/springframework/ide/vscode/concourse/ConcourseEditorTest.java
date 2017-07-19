@@ -473,7 +473,7 @@ public class ConcourseEditorTest {
 		editor = harness.newEditor("jo<*>");
 		editor.assertCompletions(
 				"jobs:\n"+
-				"- <*>"
+				"- name: <*>"
 		);
 	}
 
@@ -486,19 +486,19 @@ public class ConcourseEditorTest {
 				"- name: <*>"
 				, // --------------
 				"jobs:\n" +
-				"- <*>"
+				"- name: <*>"
 				, // ---------------
 				"resource_types:\n" +
-				"- <*>"
+				"- name: <*>"
 				, // ---------------
 				"resources:\n"+
-				"- <*>"
+				"- name: <*>"
 		);
 
 		editor = harness.newEditor("rety<*>");
 		editor.assertCompletions(
 				"resource_types:\n" +
-				"- <*>"
+				"- name: <*>"
 		);
 	}
 

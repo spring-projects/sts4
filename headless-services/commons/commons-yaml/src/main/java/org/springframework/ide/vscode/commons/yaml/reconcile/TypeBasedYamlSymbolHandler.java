@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.concourse;
+package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,19 +35,20 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Finds symbols in a concourse document. This relies on type information cached
- * during reconcile and stored in the {@link ConcourseModel}. Therefore,
- * this handler only works if invoked after a reconcile.
+ * Finds symbols in a yaml document based on type information cached
+ * during reconcile and stored in the {@link ASTTypeCache}. Because
+ * it relies on information computed during reconcile, this handler only
+ * works if it is invoked after a reconcile.
  *
  * @author Kris De Volder
  */
-public class ConcourseDocumentSymbolHandler implements DocumentSymbolHandler {
+public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 
 	private ASTTypeCache astTypeCache;
 	private Set<YType> definitionTypes;
 	private SimpleTextDocumentService documents;
 
-	public ConcourseDocumentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, Collection<YType> definitionTypes) {
+	public TypeBasedYamlSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, Collection<YType> definitionTypes) {
 		Assert.isTrue(!definitionTypes.isEmpty()); // If there's no interesting types then you are better of using DocumentSymbolHandler.NO_SYMBOLS
 		this.documents = documents;
 		this.astTypeCache = astTypeCache;

@@ -1,0 +1,1 @@
+*Required*. A valid VM type name from the cloud config.

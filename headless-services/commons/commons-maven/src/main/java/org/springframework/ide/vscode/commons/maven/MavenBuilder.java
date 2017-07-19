@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
@@ -28,7 +29,7 @@ public class MavenBuilder {
 
 	private List<String> properties;
 
-	public void execute() throws IOException, InterruptedException {
+	public void execute() throws IOException, InterruptedException, TimeoutException {
 		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win") ? projectPath.resolve("mvnw.cmd")
 				: projectPath.resolve("mvnw");
 		mvnwPath.toFile().setExecutable(true);

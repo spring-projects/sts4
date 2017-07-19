@@ -103,4 +103,5 @@ public class TypedProperty implements YTypedProperty {
 	public Deprecation getDeprecation() {
 		return deprecation;
 	}
+	
 }

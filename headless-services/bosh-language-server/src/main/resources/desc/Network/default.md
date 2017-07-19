@@ -1,0 +1,1 @@
+*Optional*. Specifies which network components (DNS, Gateway) BOSH populates by default from this network. This property is required if more than one network is specified.

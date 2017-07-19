@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
@@ -52,10 +53,8 @@ import reactor.core.publisher.Flux;
  */
 public class YTypeFactory {
 
-	/**
-	 * Configuration option for the type-based completion engine.
-	 */
 	private boolean enableTieredOptionalPropertyProposals = true;
+	private boolean suggestDeprecatedProperties = true;
 
 	private static class Deprecation {
 		final String errorMsg;
@@ -158,7 +157,7 @@ public class YTypeFactory {
 	 * YTypeFactory
 	 */
 	public final YTypeUtil TYPE_UTIL = new YTypeUtil() {
-		
+
 		@Override
 		public boolean isSequencable(YType type) {
 			return ((AbstractType)type).isSequenceable();
@@ -210,8 +209,8 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public ValueParser getValueParser(YType type, DynamicSchemaContext dc) {
-			return ((AbstractType)type).getParser(dc);
+		public SchemaContextAware<ValueParser> getValueParser(YType type) {
+			return ((AbstractType)type).getParser();
 		}
 
 		@Override
@@ -239,6 +238,11 @@ public class YTypeFactory {
 		public boolean tieredOptionalPropertyProposals() {
 			return enableTieredOptionalPropertyProposals;
 		}
+
+		@Override
+		public boolean suggestDeprecatedProperties() {
+			return suggestDeprecatedProperties;
+		}
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -253,6 +257,8 @@ public class YTypeFactory {
 		private List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
 		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
+			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
+
 		private List<Constraint> constraints = new ArrayList<>(2);
 		private ISubCompletionEngine customContentAssistant = null;
 
@@ -263,7 +269,7 @@ public class YTypeFactory {
 		public ISubCompletionEngine getCustomContentAssistant() {
 			return customContentAssistant;
 		}
-		
+
 		public AbstractType setCustomContentAssistant(ISubCompletionEngine customContentAssistant) {
 			this.customContentAssistant = customContentAssistant;
 			return this;
@@ -291,6 +297,7 @@ public class YTypeFactory {
 		}
 
 		public AbstractType addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
+			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
 			this.hintProvider = hintProvider;
 			return this;
 		}
@@ -402,8 +409,8 @@ public class YTypeFactory {
 			parseWith((DynamicSchemaContext dc) -> parser);
 			return this;
 		}
-		private ValueParser getParser(DynamicSchemaContext dc) {
-			return parser == null ? null : parser.withContext(dc);
+		private SchemaContextAware<ValueParser> getParser() {
+			return parser;
 		}
 
 		public AbstractType require(Constraint dynamicConstraint) {
@@ -444,10 +451,7 @@ public class YTypeFactory {
 		@Override
 		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
 			if (dc!=null) {
-				YType inferred = typeGuesser.withContext(dc);
-				if (inferred!=null) {
-					return inferred;
-				}
+				return typeGuesser.safeWithContext(dc).orElse(this);
 			}
 			return this;
 		}
@@ -736,7 +740,7 @@ public class YTypeFactory {
 	}
 
 
-	public static class YTypedPropertyImpl implements YTypedProperty {
+	public static class YTypedPropertyImpl implements YTypedProperty, Cloneable {
 
 		final private String name;
 		final private YType type;
@@ -793,7 +797,7 @@ public class YTypeFactory {
 			this.isDeprecated = deprecationMessage!=null;
 			this.deprecationMessage = deprecationMessage;
 		}
-		
+
 		@Override
 		public String getDeprecationMessage() {
 			return this.deprecationMessage;
@@ -804,7 +808,7 @@ public class YTypeFactory {
 			return this.isDeprecated;
 		}
 
-		
+
 		public YTypedPropertyImpl isPrimary(boolean primary) {
 			this.isPrimary = primary;
 			this.isRequired = primary;
@@ -816,12 +820,19 @@ public class YTypeFactory {
 			this.isRequired = required;
 			return this;
 		}
-		
+
 		@Override
 		public boolean isPrimary() {
 			return isPrimary;
 		}
 
+		public YTypedPropertyImpl copy() {
+			try {
+				return (YTypedPropertyImpl) super.clone();
+			} catch (CloneNotSupportedException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 
 	public YAtomicType yatomic(String name) {
@@ -830,6 +841,10 @@ public class YTypeFactory {
 
 	public YTypedPropertyImpl yprop(String name, YType type) {
 		return new YTypedPropertyImpl(name, type);
+	}
+
+	public YTypedPropertyImpl yprop(YTypedProperty prop) {
+		return ((YTypedPropertyImpl)prop).copy();
 	}
 
 	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
@@ -845,6 +860,17 @@ public class YTypeFactory {
 			};
 		});
 		return t;
+	}
+
+	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<Collection<String>> values) {
+		return yenumFromHints(name,
+				//Error message formatter:
+				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
+				//Hints provider:
+				(dc) ->
+					hints(values.withContext(dc)
+				)
+		);
 	}
 
 	public EnumTypeBuilder yenumBuilder(String name, String... values) {
@@ -915,5 +941,11 @@ public class YTypeFactory {
 		this.enableTieredOptionalPropertyProposals = enable;
 		return this;
 	}
+
+	public YTypeFactory suggestDeprecatedProperties(boolean enable) {
+		this.suggestDeprecatedProperties = enable;
+		return this;
+	}
+
 
 }

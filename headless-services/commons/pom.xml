@@ -23,6 +23,7 @@
 	</modules>
 
 	<repositories>
+	<!-- Note: avoid using this repo, it can block project builds for long time.
 		<repository>
 			<id>lsp4j-snapshots-repo</id>
 			<name>lsp4j-snapshots-repo</name>
@@ -34,6 +35,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		-->
 		<repository>
 			<id>spring-milestones</id>
 			<name>Spring Milestones</name>
@@ -75,9 +77,10 @@
 		<assertj-version>3.5.2</assertj-version>
 		<slf4j-version>1.7.22</slf4j-version>
 		<guava-version>19.0</guava-version>
+		<mockito-version>1.10.19</mockito-version>
 		<jackson-2-version>2.5.0</jackson-2-version>
 		<jersey-2-version>2.10</jersey-2-version>
-		<lsp4j-version>0.2.0-SNAPSHOT</lsp4j-version>
+		<lsp4j-version>0.2.1</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
 		<reactor-version>3.0.5.RELEASE</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>

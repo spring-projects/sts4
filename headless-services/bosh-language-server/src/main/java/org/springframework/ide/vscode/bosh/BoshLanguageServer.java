@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
+import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -28,8 +30,9 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
-import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
@@ -39,11 +42,12 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 	private final VscodeCompletionEngineAdapter completionEngine;
 
-	public BoshLanguageServer() {
+	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
 		super("vscode-bosh");
 		YamlASTProvider parser = new YamlParser(yaml);
 		SimpleTextDocumentService documents = getTextDocumentService();
-		YamlSchema schema = new BoshDeploymentManifestSchema();
+		ASTTypeCache astTypeCache = new ASTTypeCache();
+		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache, cloudConfigProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -53,7 +57,9 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		engine.setTypeCollector(astTypeCache);
+		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
 
 		documents.onDidChangeContent(params -> {
 			validateOnDocumentChange(engine, params.getDocument());

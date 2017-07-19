@@ -2,6 +2,7 @@
 set -e
 workdir=`pwd`
 sources=$workdir/sts4/vscode-extensions/$extension_id
+server_id=${extension_id#vscode-}
 
 if [ -d "maven-cache" ]; then
     echo "Prepopulating maven cache"
@@ -48,3 +49,4 @@ if [ "$dist_type" == release ]; then
 fi
 
 cp *.vsix $workdir/out
+cp $workdir/sts4/headless-services/${server_id}-language-server/target/*.jar $workdir/out/${server_id}-language-server-${base_version}-${timestamp}.jar

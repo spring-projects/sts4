@@ -1,0 +1,1 @@
+URL of the release to use. URL may use the file protocol (`file://`) or HTTP(s) (`http(s)://`). File URLs can be absolute or relative to the current directory of `bosh-init` execution.

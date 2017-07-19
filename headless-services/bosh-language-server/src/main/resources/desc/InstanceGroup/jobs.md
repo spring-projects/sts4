@@ -1,0 +1,1 @@
+*Required*. Specifies the name and release of jobs that will be installed on each instance.

@@ -14,8 +14,11 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -80,6 +83,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.LanguageServer
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -568,5 +572,17 @@ public class LanguageServerHarness {
 				return blocker;
 			}
 		};
+	}
+
+	/**
+	 * Create a new editor and populate contents from a file found on the (test) classpath.
+	 */
+	public Editor newEditorFromClasspath(String resourcePath) throws Exception {
+		try (InputStream is = LanguageServerHarness.class.getResourceAsStream(resourcePath)) {
+			if (is==null) {
+				fail("Couldn't find the resource: "+resourcePath);
+			}
+			return newEditor(IOUtil.toString(is));
+		}
 	}
 }

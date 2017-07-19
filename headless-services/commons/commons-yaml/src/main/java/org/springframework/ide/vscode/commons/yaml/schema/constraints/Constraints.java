@@ -11,18 +11,25 @@
 package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.EXTRA_PROPERTY;
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.missingProperty;
+import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache.NodeTypes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
@@ -31,7 +38,11 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multiset;
 
 /**
  * Various static methods for constructing/composing {@link Constraint}s.
@@ -39,7 +50,7 @@ import com.google.common.collect.ImmutableSet;
  * @author Kris De Volder
  */
 public class Constraints {
-
+	
 	public static Constraint requireOneOf(String... properties) {
 		return new RequireOneOf(properties);
 	}
@@ -47,15 +58,26 @@ public class Constraints {
 	public static Constraint requireAtMostOneOf(String... properties) {
 		return new RequireOneOf(properties).allowFewer(true);
 	}
+	
+	public static Constraint requireAtLeastOneOf(String... properties) {
+		return new RequireOneOf(properties).allowMultiple(true);
+	}
+
 
 	static private class RequireOneOf implements Constraint {
 
 		private final String[] _requiredProps;
 		private boolean allowFewer = false;
+		private boolean allowMultiple = false;
 
 		public RequireOneOf(String[] properties) {
 			Assert.isLegal(properties.length>1);
 			this._requiredProps = properties;
+		}
+
+		public Constraint allowMultiple(boolean b) {
+			this.allowMultiple = b;
+			return this;
 		}
 
 		public Constraint allowFewer(boolean b) {
@@ -78,7 +100,7 @@ public class Constraints {
 						problems.accept(missingProperty(
 								"One of "+requiredProps+" is required for '"+type+"'", doc, parent, map));
 					}
-				} else if (foundPropsCount>1) {
+				} else if (foundPropsCount>1 && !allowMultiple) {
 					//Mark each of the found keys as a violation:
 					for (NodeTuple entry : map.getValue()) {
 						String key = NodeUtil.asScalar(entry.getKeyNode());
@@ -119,7 +141,57 @@ public class Constraints {
 	@Deprecated
 	public static Constraint schemaContextAware(SchemaContextAware<Constraint> dispatcher) {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
-			dispatcher.withContext(dc).verify(dc, parent, node, type, problems);
+			dispatcher.safeWithContext(dc).ifPresent((constraint) -> constraint.verify(dc, parent, node, type, problems));
 		};
 	}
+
+	public static Constraint mutuallyExclusive(String p1, String p2) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			if (node instanceof MappingNode) {
+				MappingNode map = (MappingNode) node;
+				Set<String> defined = dc.getDefinedProperties();
+				if (defined.contains(p1) && defined.contains(p2)) {
+					for (NodeTuple tup : map.getValue()) {
+						Node keyNode = tup.getKeyNode();
+						String key = NodeUtil.asScalar(keyNode);
+						if (p1.equals(key) || p1.equals(key)) {
+							problems.accept(problem(EXTRA_PROPERTY,
+									"Only one of '"+p1+"' and '"+p2+"' should be defined for '"+type+"'", keyNode
+							));
+						}
+					}
+				}
+			}
+		};	
+	}
+
+	/**
+	 * Check that all nodes of a given type, across the AST represent unique names.
+	 */
+	public static Constraint uniqueDefinition(ASTTypeCache astTypes, YType defType, ProblemType problemType) {
+		return (DynamicSchemaContext dc, Node parent, Node _ignored_node, YType type, IProblemCollector problems) -> {
+			NodeTypes nodeTypes = astTypes.getNodeTypes(dc.getDocument().getUri());
+			if (nodeTypes!=null) {
+				Collection<Node> nodes = nodeTypes.getNodes(defType);
+				if (nodes!=null && !nodes.isEmpty()) {
+					Multimap<String, Node> name2nodes = ArrayListMultimap.create();
+					for (Node node : nodes) {
+						String name = NodeUtil.asScalar(node);
+						if (StringUtil.hasText(name)) {
+							name2nodes.put(name, node);
+						}
+					}
+					for (String name : name2nodes.keys()) {
+						Collection<Node> nodesForName = name2nodes.get(name);
+						if (nodesForName.size()>1) {
+							for (Node duplicateNode : nodesForName) {
+								problems.accept(YamlSchemaProblems.problem(problemType, "Duplicate '"+defType+"'", duplicateNode));
+							}
+						}
+					}
+				}
+			}
+		};
+	}
+
 }

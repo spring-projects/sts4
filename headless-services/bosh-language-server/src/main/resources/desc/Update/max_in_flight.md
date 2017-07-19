@@ -1,0 +1,1 @@
+*Required*. The maximum number of non-canary instances to update in parallel.

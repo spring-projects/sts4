@@ -8,8 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
-package org.springframework.ide.vscode.concourse;
+package org.springframework.ide.vscode.bosh;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +19,7 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
-import org.springframework.ide.vscode.bosh.BoshLanguageServer;
+import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 public class BoshLanguageServerTest {
@@ -31,7 +30,9 @@ public class BoshLanguageServerTest {
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new BoshLanguageServer());
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new BoshLanguageServer(new MockCloudConfigProvider())
+		);
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -39,7 +40,9 @@ public class BoshLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new BoshLanguageServer());
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new BoshLanguageServer(new MockCloudConfigProvider())
+		);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 

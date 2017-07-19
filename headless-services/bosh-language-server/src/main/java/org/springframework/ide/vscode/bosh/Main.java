@@ -8,16 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.bosh;
 
 import java.io.IOException;
 
+import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 
 public class Main {
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> new BoshLanguageServer());
+		LaunguageServerApp.start(() -> new BoshLanguageServer(new BoshCommandCloudConfigProvider()));
 	}
 }

@@ -326,7 +326,7 @@ public class Editor {
 		return completions;
 	}
 
-	public void assertCompletionLabels(String... expectedLabels) throws Exception {
+	public List<CompletionItem> assertCompletionLabels(String... expectedLabels) throws Exception {
 		StringBuilder expect = new StringBuilder();
 		StringBuilder actual = new StringBuilder();
 		for (String label : expectedLabels) {
@@ -334,11 +334,13 @@ public class Editor {
 			expect.append("\n");
 		}
 
-		for (CompletionItem completion : getCompletions()) {
+		List<CompletionItem> completions;
+		for (CompletionItem completion : completions = getCompletions()) {
 			actual.append(completion.getLabel());
 			actual.append("\n");
 		}
 		assertEquals(expect.toString(), actual.toString());
+		return completions;
 	}
 
 	public void assertContainsCompletions(String... expectTextAfter) throws Exception {
@@ -380,6 +382,32 @@ public class Editor {
 
 		for (String after : notToBeFound) {
 			assertDoesNotContain(after, actualText);
+		}
+	}
+
+	public void assertContextualCompletions(LanguageId language, Predicate<CompletionItem> isInteresting, String textBefore, String... textAfter) throws Exception {
+		Editor editor = harness.newEditor(language, this.getText());
+		editor.reconcile(); //this ensures the conText is parsed and its AST is cached (will be used for
+		                    //dynamic CA when the conText + textBefore is not parsable.
+
+		textBefore = replaceSelection(textBefore);
+		textAfter = Arrays.stream(textAfter)
+				.map((String t) -> replaceSelection(t))
+				.collect(Collectors.toList()).toArray(new String[0]);
+		editor.setText(textBefore);
+		editor.assertCompletions(isInteresting, textAfter);
+	}
+
+	public void assertContextualCompletions(String textBefore, String... textAfter) throws Exception {
+		assertContextualCompletions(getLanguageId(), (x) -> true, textBefore, textAfter);
+	}
+
+	private String replaceSelection(String replacement) {
+		try {
+			String text = getRawText();
+			return text.substring(0, selectionStart) + replacement + text.substring(selectionEnd);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

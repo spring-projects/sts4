@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -113,13 +116,14 @@ public class ExternalProcess {
 	 * Creates an external process and waits for it to terminate. The output and error streams
 	 * will be read and forwarded to System.out and System.err	 
 	 */
-	public ExternalProcess(File workingDir, ExternalCommand cmd) throws IOException, InterruptedException {
-		this(workingDir, cmd, false);
+	public ExternalProcess(File workingDir, ExternalCommand cmd) throws IOException, InterruptedException, TimeoutException {
+		this(workingDir, cmd, false, null);
 	}
 
 	private void init(File workingDir, ExternalCommand cmd,
-			OutputStream outStream, OutputStream errStream) throws IOException,
-			InterruptedException {
+			OutputStream outStream, OutputStream errStream, 
+			Duration timeout) throws IOException,
+			InterruptedException, TimeoutException {
 		this.cmd = cmd; 
 		ProcessBuilder processBuilder = new ProcessBuilder(cmd.getProgramAndArgs());
 		processBuilder.directory(workingDir);
@@ -127,15 +131,33 @@ public class ExternalProcess {
 		process = processBuilder.start();
 		err = new StreamGobler(process.getErrorStream(), errStream);
 		out = new StreamGobler(process.getInputStream(), outStream);
-		exitValue = process.waitFor();
-	}
-	
-	public ExternalProcess(File workingDir, ExternalCommand cmd, boolean captureStreams) throws IOException, InterruptedException {
-		if (captureStreams) {
-			init(workingDir, cmd, new ByteArrayOutputStream(), new ByteArrayOutputStream());
+		if (timeout==null) {
+			exitValue = process.waitFor();
 		} else {
-			init(workingDir, cmd, System.out, System.err);
+			if (process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
+				exitValue = process.exitValue();
+			} else {
+				process.destroy();
+				exitValue = 999; //Set some non-0 value as that is what some callers might use to determine 'failure' occurred. 
+				throw new TimeoutException("Command timed out: "+this);
+			}
 		}
+		if (exitValue!=0) {
+			throw new IOException("Command execution failed:\n"+this);
+		}
+	}
+
+	public ExternalProcess(File workingDir, ExternalCommand cmd, boolean captureStreams, Duration timeout) throws IOException, InterruptedException, TimeoutException {
+		if (captureStreams) {
+			init(workingDir, cmd, new ByteArrayOutputStream(), new ByteArrayOutputStream(), timeout);
+		} else {
+			init(workingDir, cmd, System.out, System.err, timeout);
+		}
+		
+	}
+
+	public ExternalProcess(File workingDir, ExternalCommand cmd, boolean captureStreams) throws IOException, InterruptedException, TimeoutException {
+		this(workingDir, cmd, captureStreams, null);
 	}
 
 	public String getOut() throws InterruptedException {
@@ -156,13 +178,13 @@ public class ExternalProcess {
 			result.append("exitValue = "+exitValue+"\n");
 			String strOut = getOut();
 			if (strOut!=null) {
-				result.append("\n------- System.out -------\n");
+				result.append("------- System.out -------\n");
 				result.append(strOut);
 			}
 			String strErr = getErr();
 			if (strErr!=null) {
-				result.append("\n------- System.err -------\n");
-				result.append(getOut());
+				result.append("------- System.err -------\n");
+				result.append(strErr);
 			}
 			result.append("<<<< ExternalProcess");
 			return result.toString();

@@ -1,0 +1,1 @@
+*Required*. A valid stemcell alias from the Stemcells Block.
