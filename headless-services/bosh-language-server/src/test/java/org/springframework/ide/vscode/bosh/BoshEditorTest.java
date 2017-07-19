@@ -12,9 +12,12 @@ package org.springframework.ide.vscode.bosh;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
+import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
@@ -22,6 +25,7 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+
 
 public class BoshEditorTest {
 
@@ -871,6 +875,49 @@ public class BoshEditorTest {
 				"bogus-vm|unknown 'VMType'. Valid values are: [default, large]"
 		);
 		assertEquals(1, cloudConfigProvider.getReadCount());
+	}
+
+	@Test public void reconcileVMTypeWhenCloudConfigUnavailable() throws Exception {
+		cloudConfigProvider.readWith(() -> null);
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  vm_type: bogus-vm\n" +
+				"- name: other-server\n" +
+				"  vm_type: large"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/); //Should not complain about unknown vm_types, if we can't determine what valid vm_types actually exist.
+	}
+
+	@Test public void reconcileVMTypeWhenCloudConfigThrows() throws Exception {
+		cloudConfigProvider.readWith(() -> { throw new TimeoutException("Reading cloud config timed out"); });
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  vm_type: bogus-vm\n" +
+				"- name: other-server\n" +
+				"  vm_type: large"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/); //Should not complain about unknown vm_types, if we can't determine what valid vm_types actually exist.
+	}
+
+	@Test public void contentAssistShowsWarningWhenCloudConfigThrows() throws Exception {
+		cloudConfigProvider.readWith(() -> {
+			throw new TimeoutException("Reading cloud config timed out");
+		});
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"instance_groups: \n" +
+				"- name: some-server\n" +
+				"  vm_type: <*>"
+		);
+		CompletionItem completion = editor.assertCompletionLabels("TimeoutException").get(0);
+		completion = harness.resolveCompletionItem(completion);
+		assertContains("Reading cloud config timed out", completion.getDocumentation());
 	}
 
 }
