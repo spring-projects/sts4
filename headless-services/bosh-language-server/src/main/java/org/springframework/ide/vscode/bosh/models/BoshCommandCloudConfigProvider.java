@@ -76,20 +76,31 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 			.thenAnyChild()
 			.thenValAt("name");
 
+	protected static final YamlTraversal NETWORK_NAMES = YamlPath.EMPTY
+			.thenAnyChild()
+			.thenValAt("networks")
+			.thenAnyChild()
+			.thenValAt("name");
+
 	@Override
 	public CloudConfigModel getModel(DynamicSchemaContext dc) throws Exception {
-		String out = executeBoshCloudConfigCommand();
-		CloudConfigResponse response = mapper.readValue(out, CloudConfigResponse.class);
-		String[] blocks = response.getBlocks();
-		Assert.isLegal(blocks!=null);
-		Assert.isLegal(blocks.length==1);
+		String block = getCloudConfigBlock();
 		TextDocument doc = new TextDocument(null, LanguageId.BOSH_CLOUD_CONFIG);
-		doc.setText(blocks[0]);
+		doc.setText(block);
 		YamlFileAST ast = yamlParser.getAST(doc);
 		return new CloudConfigModel() {
 			@Override
 			public Collection<String> getVMTypes() {
-				return VM_TYPE_NAMES.traverseAmbiguously(ast)
+				return getNames(VM_TYPE_NAMES);
+			}
+
+			@Override
+			public Collection<String> getNetworkNames() {
+				return getNames(NETWORK_NAMES);
+			}
+
+			private Collection<String> getNames(YamlTraversal namesPath) {
+				return namesPath.traverseAmbiguously(ast)
 				.flatMap(nameNode -> {
 					String name = NodeUtil.asScalar(nameNode);
 					return StringUtil.hasText(name)
@@ -98,7 +109,17 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 				})
 				.collect(CollectorUtil.toMultiset());
 			}
+
 		};
+	}
+
+	protected String getCloudConfigBlock() throws Exception{
+		String out = executeBoshCloudConfigCommand();
+		CloudConfigResponse response = mapper.readValue(out, CloudConfigResponse.class);
+		String[] blocks = response.getBlocks();
+		Assert.isLegal(blocks!=null);
+		Assert.isLegal(blocks.length==1);
+		return blocks[0];
 	}
 
 	/**

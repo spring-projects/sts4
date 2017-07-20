@@ -18,11 +18,15 @@ import org.springframework.ide.vscode.commons.util.IOUtil;
 
 public final class MockCloudConfigProvider extends BoshCommandCloudConfigProvider {
 
+	//TODO: use mockito to create this mock instead of a subclass?
+
 	static final String MOCK_DATA_RSRC = "/cmd-out/cloud-config.json";
 
-	private Callable<String> cloudConfigReader = () -> IOUtil.toString(BoshCommandCloudConfigProviderTest.class.getResourceAsStream(MOCK_DATA_RSRC));
+	private Callable<String> cloudConfigCmdExecutor = () -> IOUtil.toString(BoshCommandCloudConfigProviderTest.class.getResourceAsStream(MOCK_DATA_RSRC));
 
 	private int readCount = 0;
+
+	private Callable<String> reader = null;
 
 	/**
 	 * Override with a 'fake' which just returns some mock data. That way we can unit-test
@@ -31,11 +35,25 @@ public final class MockCloudConfigProvider extends BoshCommandCloudConfigProvide
 	@Override
 	protected String executeBoshCloudConfigCommand() throws Exception {
 		readCount++;
-		return cloudConfigReader.call();
+		return cloudConfigCmdExecutor.call();
+	}
+
+	@Override
+	protected String getCloudConfigBlock() throws Exception {
+		if (reader==null) {
+			return super.getCloudConfigBlock();
+		}
+		readCount++;
+		return reader.call();
+	}
+
+	public MockCloudConfigProvider executeCommandWith(Callable<String> executor) {
+		this.cloudConfigCmdExecutor = executor;
+		return this;
 	}
 
 	public MockCloudConfigProvider readWith(Callable<String> reader) {
-		this.cloudConfigReader = reader;
+		this.reader = reader;
 		return this;
 	}
 

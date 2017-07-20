@@ -125,7 +125,7 @@ public class BoshEditorTest {
 	//@Ignore //For now... because not passing yet.
 	@Test public void reconcileCfManifest() throws Exception {
 		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
-		cloudConfigProvider.readWith(() -> {
+		cloudConfigProvider.executeCommandWith(() -> {
 			throw new IOException("Couldn't contact the director");
 		});
 		editor.assertProblems(/*NONE*/);
@@ -718,17 +718,17 @@ public class BoshEditorTest {
 				"instance_groups:\n" +
 				"- name: foo-group\n" +
 				"  networks:\n" +
-				"  - name: the-network\n" +
+				"  - name: default\n" +
 				"    static_ips: []\n" +
 				"    default: []\n" +
 				"- name: bar-group\n" +
 				"  networks:\n" +
-				"  - name: the-network\n" +
+				"  - name: default\n" +
 				"    static_ips: []\n" +
 				"    default: []\n" +
 				"- name: bar-group\n" +
 				"  networks:\n" +
-				"  - name: the-network\n" +
+				"  - name: default\n" +
 				"    static_ips: []\n" +
 				"    default: []\n" +
 				"releases:\n" +
@@ -877,7 +877,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void reconcileVMTypeWhenCloudConfigUnavailable() throws Exception {
-		cloudConfigProvider.readWith(() -> null);
+		cloudConfigProvider.executeCommandWith(() -> null);
 		Editor editor = harness.newEditor(
 				"name: foo\n" +
 				"instance_groups: \n" +
@@ -891,7 +891,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void reconcileVMTypeWhenCloudConfigThrows() throws Exception {
-		cloudConfigProvider.readWith(() -> { throw new TimeoutException("Reading cloud config timed out"); });
+		cloudConfigProvider.executeCommandWith(() -> { throw new TimeoutException("Reading cloud config timed out"); });
 		Editor editor = harness.newEditor(
 				"name: foo\n" +
 				"instance_groups: \n" +
@@ -905,7 +905,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void contentAssistShowsWarningWhenCloudConfigThrows() throws Exception {
-		cloudConfigProvider.readWith(() -> {
+		cloudConfigProvider.executeCommandWith(() -> {
 			throw new TimeoutException("Reading cloud config timed out");
 		});
 		Editor editor = harness.newEditor(
@@ -917,6 +917,58 @@ public class BoshEditorTest {
 		CompletionItem completion = editor.assertCompletionLabels("TimeoutException").get(0);
 		completion = harness.resolveCompletionItem(completion);
 		assertContains("Reading cloud config timed out", completion.getDocumentation());
+	}
+
+	@Test public void reconcileNetworkName() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  networks:\n" +
+				"  - name: default\n" +
+				"  - name: bogus-nw\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus-nw|unknown 'NetworkName'. Valid values are: [default]");
+	}
+
+	@Test public void reconcileNetworkName2() throws Exception {
+		cloudConfigProvider.readWith(() ->
+			"networks:\n" +
+			"- name: public-nw\n" +
+			"- name: local-nw"
+		);
+
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  networks:\n" +
+				"  - name: public-nw\n" +
+				"  - name: local-nw\n" +
+				"  - name: bogus-nw\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus-nw|unknown 'NetworkName'. Valid values are: [public-nw, local-nw]");
+	}
+
+	@Test public void contentAssistNetworkName() throws Exception {
+		cloudConfigProvider.readWith(() ->
+			"networks:\n" +
+			"- name: public-nw\n" +
+			"- name: local-nw"
+		);
+
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  networks:\n" +
+				"  - name: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"local-nw<*>", "public-nw<*>"
+		);
 	}
 
 	@Test public void gotoReleaseDefinition() throws Exception {

@@ -143,8 +143,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YAtomicType t_url = f.yatomic("URL");
 		t_url.parseWith(BoshValueParsers.url("http", "https", "file"));
 
-		YAtomicType t_network_name = f.yatomic("NetworkName"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148712155
-		t_network_name.parseWith(ValueParsers.NE_STRING);
+		YAtomicType t_network_name = f.yenumFromDynamicValues("NetworkName",  (dc) -> cloudConfigProvider.getModel(dc).getNetworkNames());
 
 		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
 		t_disk_type.parseWith(ValueParsers.NE_STRING);
