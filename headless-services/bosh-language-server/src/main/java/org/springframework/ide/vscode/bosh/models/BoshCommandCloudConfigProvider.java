@@ -82,6 +82,12 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 			.thenAnyChild()
 			.thenValAt("name");
 
+	protected static final YamlTraversal AVAILABILITY_ZONES = YamlPath.EMPTY
+			.thenAnyChild()
+			.thenValAt("azs")
+			.thenAnyChild()
+			.thenValAt("name");
+
 	@Override
 	public CloudConfigModel getModel(DynamicSchemaContext dc) throws Exception {
 		String block = getCloudConfigBlock();
@@ -99,6 +105,11 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 				return getNames(NETWORK_NAMES);
 			}
 
+			@Override
+			public Collection<String> getAvailabilityZones() {
+				return getNames(AVAILABILITY_ZONES);
+			}
+
 			private Collection<String> getNames(YamlTraversal namesPath) {
 				return namesPath.traverseAmbiguously(ast)
 				.flatMap(nameNode -> {
@@ -109,7 +120,6 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 				})
 				.collect(CollectorUtil.toMultiset());
 			}
-
 		};
 	}
 

@@ -18,4 +18,5 @@ import java.util.Collection;
 public interface CloudConfigModel {
 	Collection<String> getVMTypes();
 	Collection<String> getNetworkNames();
+	Collection<String>  getAvailabilityZones();
 }

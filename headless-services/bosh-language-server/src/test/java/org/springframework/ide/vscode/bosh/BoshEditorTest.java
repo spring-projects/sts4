@@ -971,6 +971,30 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void reconcileAZs() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  azs: [z1, z2, z-bogus]\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("z-bogus|unknown 'AvailabilityZone'. Valid values are: [z1, z2, z3]");
+	}
+
+	@Test public void contentAssistAZ() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  azs:\n" +
+				"  - <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"z1<*>", "z2<*>", "z3<*>"
+		);
+	}
+
 	@Test public void gotoReleaseDefinition() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: foo\n" +

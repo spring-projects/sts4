@@ -153,8 +153,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType", (dc) -> cloudConfigProvider.getModel(dc).getVMTypes());
 
-		YAtomicType t_az = f.yatomic("AvailabilityZone"); //TODO: resolve dynamically from 'cloud config': https://www.pivotaltracker.com/story/show/148704481
-		t_az.parseWith(ValueParsers.NE_STRING);
+		YAtomicType t_az = f.yenumFromDynamicValues("AvailabilityZone", (dc) -> cloudConfigProvider.getModel(dc).getAvailabilityZones());
 
 		YBeanType t_network = f.ybean("Network");
 		addProp(t_network, "name", t_network_name).isRequired(true);
