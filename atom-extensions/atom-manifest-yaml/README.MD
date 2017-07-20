@@ -1,4 +1,4 @@
-#CF Manifest YAML for Atom
+# CF Manifest YAML for Atom
 
 ## Dev environment setup:
 **Prerequisite**: Node 6.x.x or higher is installed, Atom 1.17 or higher is installed
