@@ -43,10 +43,10 @@ public class ParserJavadocProvider implements IJavadocProvider {
 	public IJavadoc getJavadoc(IType type) {
 		if (type.isEnum()) {
 			EnumDeclaration declaration = getEnumDeclaration(type);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		} else {
 			ClassOrInterfaceDeclaration declaration = getClassOrInterfaceDeclaration(type);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		}
 	}
 	
@@ -54,10 +54,10 @@ public class ParserJavadocProvider implements IJavadocProvider {
 		IType declaringType = field.getDeclaringType();
 		if (declaringType.isEnum()) {
 			EnumConstantDeclaration declaration = createVisitorToFindEnumConstant(field).visit(getEnumDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		} else {
 			FieldDeclaration declaration = createVisitorToFindField(field).visit(getClassOrInterfaceDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		}
 	}
 	
@@ -68,10 +68,10 @@ public class ParserJavadocProvider implements IJavadocProvider {
 		IType declaringType = method.getDeclaringType();
 		if (declaringType.isEnum()) {
 			MethodDeclaration declaration = createVisitorToFindMethod(method).visit(getEnumDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		} else {
 			MethodDeclaration declaration = createVisitorToFindMethod(method).visit(getClassOrInterfaceDeclaration(declaringType), null);
-			return declaration.getJavaDoc() == null ? null : new RawJavadoc(declaration.getJavaDoc().toString());
+			return declaration.getJavadoc() == null ? null : new RawJavadoc(declaration.getJavadocComment().get().toString());
 		}
 	}
 	
@@ -126,7 +126,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 
 			@Override
 			public ClassOrInterfaceDeclaration visit(ClassOrInterfaceDeclaration n, Object arg) {
-				if (n.getName().equals(type.getElementName())) {
+				if (n.getName().toString().equals(type.getElementName())) {
 					return n;
 				} else {
 					return super.visit(n, arg);
@@ -141,7 +141,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 
 			@Override
 			public EnumDeclaration visit(EnumDeclaration n, Object arg) {
-				if (n.getName().equals(type.getElementName())) {
+				if (n.getName().toString().equals(type.getElementName())) {
 					return n;
 				} else {
 					return super.visit(n, arg);
@@ -155,7 +155,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 		return new GenericVisitorAdapter<MethodDeclaration, Object>() {
 			@Override
 			public MethodDeclaration visit(MethodDeclaration n, Object arg) {
-				if (n.getParameters().isEmpty() && n.getName().equals(method.getElementName())) {
+				if (n.getParameters().isEmpty() && n.getName().toString().equals(method.getElementName())) {
 					return n;
 				}
 				return null;
@@ -167,7 +167,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 		return new GenericVisitorAdapter<FieldDeclaration, Object>() {
 			@Override
 			public FieldDeclaration visit(FieldDeclaration n, Object arg) {
-				Optional<VariableDeclarator> variable = n.getVariables().stream().filter(v -> v.getId().getName().equals(field.getElementName())).findFirst();
+				Optional<VariableDeclarator> variable = n.getVariables().stream().filter(v -> v.getName().toString().equals(field.getElementName())).findFirst();
 				return variable.isPresent() ? n : null;
 			}
 		};
@@ -177,7 +177,7 @@ public class ParserJavadocProvider implements IJavadocProvider {
 		return new GenericVisitorAdapter<EnumConstantDeclaration, Object>() {
 			@Override
 			public EnumConstantDeclaration visit(EnumConstantDeclaration n, Object arg) {
-				if (n.getName().equals(field.getElementName())) {
+				if (n.getName().toString().equals(field.getElementName())) {
 					return n;
 				} else {
 					return null;
