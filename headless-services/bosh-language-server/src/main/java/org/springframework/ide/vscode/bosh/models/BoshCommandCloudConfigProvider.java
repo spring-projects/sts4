@@ -88,6 +88,12 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 			.thenAnyChild()
 			.thenValAt("name");
 
+	protected static final YamlTraversal DISK_TYPES = YamlPath.EMPTY
+			.thenAnyChild()
+			.thenValAt("disk_types")
+			.thenAnyChild()
+			.thenValAt("name");
+
 	@Override
 	public CloudConfigModel getModel(DynamicSchemaContext dc) throws Exception {
 		String block = getCloudConfigBlock();
@@ -108,6 +114,11 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 			@Override
 			public Collection<String> getAvailabilityZones() {
 				return getNames(AVAILABILITY_ZONES);
+			}
+
+			@Override
+			public Collection<String> getDiskTypes() {
+				return getNames(DISK_TYPES);
 			}
 
 			private Collection<String> getNames(YamlTraversal namesPath) {

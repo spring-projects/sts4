@@ -19,4 +19,5 @@ public interface CloudConfigModel {
 	Collection<String> getVMTypes();
 	Collection<String> getNetworkNames();
 	Collection<String>  getAvailabilityZones();
+	Collection<String>  getDiskTypes();
 }

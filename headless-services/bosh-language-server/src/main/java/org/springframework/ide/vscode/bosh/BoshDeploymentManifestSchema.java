@@ -145,8 +145,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YAtomicType t_network_name = f.yenumFromDynamicValues("NetworkName",  (dc) -> cloudConfigProvider.getModel(dc).getNetworkNames());
 
-		YAtomicType t_disk_type = f.yatomic("DiskType"); //TODO: resolve from 'cloud config' https://www.pivotaltracker.com/story/show/148704001
-		t_disk_type.parseWith(ValueParsers.NE_STRING);
+		YAtomicType t_disk_type = f.yenumFromDynamicValues("DiskType", (dc) -> cloudConfigProvider.getModel(dc).getDiskTypes());
 
 		YAtomicType t_vm_extension = f.yatomic("VMExtension"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148703877
 		t_vm_extension.parseWith(ValueParsers.NE_STRING);

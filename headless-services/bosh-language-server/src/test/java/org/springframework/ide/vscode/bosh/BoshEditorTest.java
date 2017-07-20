@@ -70,7 +70,7 @@ public class BoshEditorTest {
 				"  vm_type: large\n" +
 				"  vm_extensions: [public-lbs]\n" +
 				"  stemcell: default\n" +
-				"  persistent_disk_type: medium\n" +
+				"  persistent_disk_type: large\n" +
 				"  networks:\n" +
 				"  - name: default\n" +
 				"- name: redis-slave\n" +
@@ -993,6 +993,41 @@ public class BoshEditorTest {
 		editor.assertContextualCompletions("<*>",
 				"z1<*>", "z2<*>", "z3<*>"
 		);
+	}
+
+	@Test public void reconcilePersistentDiskType() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server1\n" +
+				"  persistent_disk_type: default\n" +
+				"- name: my-server2\n" +
+				"  persistent_disk_type: bogus\n" +
+				"- name: my-server3\n" +
+				"  persistent_disk_type: large\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'DiskType'. Valid values are: [default, large]");
+	}
+
+	@Test public void reconcilePersistentDiskType2() throws Exception {
+		cloudConfigProvider.readWith(() ->
+			"disk_types:\n" +
+			"- name: small-disk\n" +
+			"- name: large-disk\n"
+		);
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server1\n" +
+				"  persistent_disk_type: small-disk\n" +
+				"- name: my-server2\n" +
+				"  persistent_disk_type: bogus\n" +
+				"- name: my-server3\n" +
+				"  persistent_disk_type: large-disk\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'DiskType'. Valid values are: [small-disk, large-disk]");
 	}
 
 	@Test public void gotoReleaseDefinition() throws Exception {
