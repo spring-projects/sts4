@@ -43,6 +43,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void toplevelV2PropertyNamesKnown() throws Exception {
+		cloudConfigProvider.readWith(() -> { throw new IOException("Can't read cloud config"); });
 		Editor editor = harness.newEditor(
 				"name: some-name\n" +
 				"director_uuid: cf8dc1fc-9c42-4ffc-96f1-fbad983a6ce6\n" +
@@ -1028,6 +1029,37 @@ public class BoshEditorTest {
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems("bogus|unknown 'DiskType'. Valid values are: [small-disk, large-disk]");
+	}
+
+	@Test public void reconcileVMExtensions() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  vm_extensions:\n" +
+				"  - blah"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("blah|unknown 'VMExtension'. Valid values are: []");
+	}
+
+	@Test public void reconcileVMExtensions2() throws Exception {
+		cloudConfigProvider.readWith(() ->
+			"vm_extensions:\n" +
+			"- name: pub-lbs\n" +
+			"  cloud_properties:\n" +
+			"    elbs: [main]"
+		);
+		Editor editor = harness.newEditor(
+				"name: my-first-deployment\n" +
+				"instance_groups:\n" +
+				"- name: my-server\n" +
+				"  vm_extensions:\n" +
+				"  - pub-lbs\n" +
+				"  - bogus"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'VMExtension'. Valid values are: [pub-lbs]");
 	}
 
 	@Test public void gotoReleaseDefinition() throws Exception {

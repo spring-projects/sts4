@@ -70,27 +70,29 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 		}
 	}
 
-	YamlTraversal VM_TYPE_NAMES = YamlPath.EMPTY
+	private static final YamlTraversal VM_TYPE_NAMES = YamlPath.EMPTY
 			.thenAnyChild()
 			.thenValAt("vm_types")
 			.thenAnyChild()
 			.thenValAt("name");
-
-	protected static final YamlTraversal NETWORK_NAMES = YamlPath.EMPTY
+	private static final YamlTraversal NETWORK_NAMES = YamlPath.EMPTY
 			.thenAnyChild()
 			.thenValAt("networks")
 			.thenAnyChild()
 			.thenValAt("name");
-
-	protected static final YamlTraversal AVAILABILITY_ZONES = YamlPath.EMPTY
+	private static final YamlTraversal AVAILABILITY_ZONES = YamlPath.EMPTY
 			.thenAnyChild()
 			.thenValAt("azs")
 			.thenAnyChild()
 			.thenValAt("name");
-
-	protected static final YamlTraversal DISK_TYPES = YamlPath.EMPTY
+	private static final YamlTraversal DISK_TYPES = YamlPath.EMPTY
 			.thenAnyChild()
 			.thenValAt("disk_types")
+			.thenAnyChild()
+			.thenValAt("name");
+	private static final YamlTraversal VM_EXTENSIONS = YamlPath.EMPTY
+			.thenAnyChild()
+			.thenValAt("vm_extensions")
 			.thenAnyChild()
 			.thenValAt("name");
 
@@ -119,6 +121,11 @@ public class BoshCommandCloudConfigProvider implements DynamicModelProvider<Clou
 			@Override
 			public Collection<String> getDiskTypes() {
 				return getNames(DISK_TYPES);
+			}
+
+			@Override
+			public Collection<String> getVMExtensions() {
+				return getNames(VM_EXTENSIONS);
 			}
 
 			private Collection<String> getNames(YamlTraversal namesPath) {

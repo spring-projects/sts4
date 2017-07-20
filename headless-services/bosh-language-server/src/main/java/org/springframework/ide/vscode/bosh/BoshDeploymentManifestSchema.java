@@ -144,12 +144,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_url.parseWith(BoshValueParsers.url("http", "https", "file"));
 
 		YAtomicType t_network_name = f.yenumFromDynamicValues("NetworkName",  (dc) -> cloudConfigProvider.getModel(dc).getNetworkNames());
-
 		YAtomicType t_disk_type = f.yenumFromDynamicValues("DiskType", (dc) -> cloudConfigProvider.getModel(dc).getDiskTypes());
-
-		YAtomicType t_vm_extension = f.yatomic("VMExtension"); //TODO: resolve dynamically from 'cloud config' ? https://www.pivotaltracker.com/story/show/148703877
-		t_vm_extension.parseWith(ValueParsers.NE_STRING);
-
+		YAtomicType t_vm_extension = f.yenumFromDynamicValues("VMExtension", (dc) -> cloudConfigProvider.getModel(dc).getVMExtensions());
 		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType", (dc) -> cloudConfigProvider.getModel(dc).getVMTypes());
 
 		YAtomicType t_az = f.yenumFromDynamicValues("AvailabilityZone", (dc) -> cloudConfigProvider.getModel(dc).getAvailabilityZones());
