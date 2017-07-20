@@ -194,7 +194,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			edits.apply(newDoc);
 			TextEdit vscodeEdit = new TextEdit();
 			vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-			vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+			if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
+				vscodeEdit.setNewText(replaceEdit.newText);
+			} else {
+				vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+			}
 			//TODO: cursor offset within newText? for now we assume its always at the end.
 			item.setTextEdit(vscodeEdit);
 			item.setInsertTextFormat(InsertTextFormat.Snippet);

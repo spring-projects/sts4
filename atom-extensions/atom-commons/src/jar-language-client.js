@@ -63,6 +63,9 @@ export class JarLanguageClient extends AutoLanguageClient {
     doLaunchProcess(javaExecutable, launcher, port, args=[]) {
         let vmArgs = args.concat([
             `-Dserver.port=${port}`,
+            // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
+            '-Dlsp.lazy.completions.disable=true',
+            '-Dlsp.completions.indentation.enable=true',
             '-jar',
             launcher
         ]);
