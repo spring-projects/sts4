@@ -72,6 +72,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			if (id!=null) {
 				Consumer<CompletionItem> resolver = resolvers.get(id);
 				if (resolver!=null) {
+					Log.info("Resolving lazy completion item: "+unresolved.getLabel());
 					resolver.accept(unresolved);
 					unresolved.setData(null); //No longer needed after item is resolved.
 				} else {
@@ -91,12 +92,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
-	private LazyCompletionResolver resolver = null;
-
-	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
-		this.server = server;
-		this.engine = engine;
-	}
+	private final LazyCompletionResolver resolver;
 
 	/**
 	 * By setting a non-null {@link LazyCompletionResolver} you can enable lazy completion resolution.
@@ -105,7 +101,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	 * The resolver is injected rather than created locally to allow sharing it between multiple
 	 * engines.
 	 */
-	public void setLazyCompletionResolver(LazyCompletionResolver resolver) {
+	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine, LazyCompletionResolver resolver) {
+		this.server = server;
+		this.engine = engine;
 		this.resolver = resolver;
 	}
 

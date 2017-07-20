@@ -58,7 +58,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		});
 
 		ICompletionEngine bootCompletionEngine = new BootJavaCompletionEngine(javaProjectFinder, indexProvider);
-		completionEngine = new VscodeCompletionEngineAdapter(this, bootCompletionEngine);
+		completionEngine = createCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);

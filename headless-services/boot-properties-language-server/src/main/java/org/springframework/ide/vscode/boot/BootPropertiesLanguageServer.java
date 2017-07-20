@@ -112,7 +112,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 		});
 
 		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();
-		completionEngine = new VscodeCompletionEngineAdapter(this, propertiesCompletionEngine);
+		completionEngine = createCompletionEngineAdapter(this, propertiesCompletionEngine);
 		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);

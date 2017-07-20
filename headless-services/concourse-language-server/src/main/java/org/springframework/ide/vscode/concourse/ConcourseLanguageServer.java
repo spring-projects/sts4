@@ -16,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -53,7 +52,6 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
 	private final YamlQuickfixes yamlQuickfixes;
-	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set this to null to disable lazy completion resolving
 
 	private class SchemaSpecificPieces {
 
@@ -65,8 +63,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes) {
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, COMPLETION_OPTIONS);
-			this.completionEngine = new VscodeCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
-			this.completionEngine.setLazyCompletionResolver(completionResolver);
+			this.completionEngine = createCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
 
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 			this.hoverEngine = new VscodeHoverEngineAdapter(ConcourseLanguageServer.this, infoProvider);
@@ -82,11 +79,6 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		public void setMaxCompletions(int max) {
 			completionEngine.setMaxCompletions(max);
 		}
-	}
-
-	@Override
-	public boolean hasLazyCompletionResolver() {
-		return completionResolver!=null;
 	}
 
 	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions) {

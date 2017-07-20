@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.bosh;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -36,7 +35,6 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 
 public class BoshLanguageServer extends SimpleLanguageServer {
 
-	private final LazyCompletionResolver completionResolver = new LazyCompletionResolver(); //Set to null to disable lazy resolving
 	private final VscodeCompletionEngineAdapter completionEngine;
 
 	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
@@ -50,8 +48,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
-		completionEngine = new VscodeCompletionEngineAdapter(this, yamlCompletionEngine);
-		completionEngine.setLazyCompletionResolver(completionResolver);
+		completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
@@ -68,17 +65,13 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
 	}
 
+
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
 		if (LanguageId.BOSH_DEPLOYMENT.equals(doc.getLanguageId())) {
 			validateWith(doc.getId(), engine);
 		} else {
 			validateWith(doc.getId(), IReconcileEngine.NULL);
 		}
-	}
-
-	@Override
-	public boolean hasLazyCompletionResolver() {
-		return completionResolver!=null;
 	}
 
 	public BoshLanguageServer setMaxCompletions(int maxCompletions) {

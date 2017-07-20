@@ -39,6 +39,9 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
@@ -72,6 +75,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
+	protected final LazyCompletionResolver completionResolver = createCompletionResolver();
 
     private Path workspaceRoot;
 
@@ -101,6 +105,17 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
+	}
+
+	protected VscodeCompletionEngineAdapter createCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
+		return new VscodeCompletionEngineAdapter(server, engine, completionResolver);
+	}
+
+	protected LazyCompletionResolver createCompletionResolver() {
+		if (!Boolean.getBoolean("lsp.lazy.completions.disable")) {
+			return new LazyCompletionResolver();
+		}
+		return null;
 	}
 
 	protected synchronized QuickfixRegistry getQuickfixRegistry() {
@@ -233,8 +248,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		return c;
 	}
 
-	public boolean hasLazyCompletionResolver() {
-		return false;
+	public final boolean hasLazyCompletionResolver() {
+		return completionResolver!=null;
 	}
 
 	private boolean hasDocumentSymbolHandler() {
