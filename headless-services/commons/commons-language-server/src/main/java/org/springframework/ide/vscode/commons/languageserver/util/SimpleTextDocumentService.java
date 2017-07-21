@@ -219,6 +219,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletionList NO_COMPLETIONS = new CompletionList(false, Collections.emptyList());
 	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
 	public final static CompletableFuture<List<? extends Location>> NO_REFERENCES = CompletableFuture.completedFuture(ImmutableList.of());
+	public final static List<? extends SymbolInformation> NO_SYMBOLS = ImmutableList.of();
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
@@ -369,7 +370,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	public synchronized TextDocument get(TextDocumentPositionParams params) {
-		TrackedDocument td = documents.get(params.getTextDocument().getUri());
+		return get(params.getTextDocument().getUri());
+	}
+
+	public synchronized TextDocument get(String uri) {
+		TrackedDocument td = documents.get(uri);
 		return td == null ? null : td.getDocument();
 	}
 

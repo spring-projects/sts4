@@ -14,6 +14,7 @@ import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEn
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.hover.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.references.BootJavaReferencesHandler;
+import org.springframework.ide.vscode.boot.java.symbols.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
@@ -68,6 +69,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		ReferencesHandler referencesHandler = new BootJavaReferencesHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
+		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, javaProjectFinder));
 	}
 
 	public void setMaxCompletionsNumber(int number) {
