@@ -9,16 +9,16 @@
   },
   "main": "./dist/index",
   "dependencies": {
-    "atom-languageclient": "0.1.2",
+    "atom-languageclient": "file:/Users/aboyko/git/atom-languageclient",
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
-    "remote-file-size": "^3.0.3"
+    "remote-file-size": "^3.0.3",
+    "postinstall-build": "^3.0.0"
   },
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist node_modules",
     "compile": "babel src --out-dir dist",
     "postinstall": "postinstall-build --only-as-dependency build \"npm run compile\"",
-    "prepublish": "npm run clean && npm run compile",
     "watch": "babel src --out-dir dist -w"
   },
   "atomTranspilers": [

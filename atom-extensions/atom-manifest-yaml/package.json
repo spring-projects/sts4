@@ -16,7 +16,7 @@
     "atom-commons": "file:../atom-commons"
   },
   "scripts": {
-    "clean": "rm -rf node_modules"
+    "clean": "rm -fr node_modules"
   },
   "consumedServices": {
     "linter-indie": {
