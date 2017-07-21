@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.MISSING_PROPERTY;
+import static org.springframework.ide.vscode.bosh.BoshSchemaProblems.MISSING_SHA1_PROPERTY;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.nodes.NodeTuple;
 public class BoshConstraints {
 
 	public static final Constraint SHA1_REQUIRED_FOR_HTTP_URL = new Constraint() {
-		
+
 		@Override
 		public void verify(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
 			NodeTuple urlProp = NodeUtil.getPropertyTuple(node, "url");
@@ -33,7 +33,7 @@ public class BoshConstraints {
 				if (url!=null && url.startsWith("http")) {
 					Node sha1 = NodeUtil.getProperty(node, "sha1");
 					if (sha1==null) {
-						problems.accept(problem(MISSING_PROPERTY, "'sha1' is required when the 'url' is http(s)", urlProp.getKeyNode()));
+						problems.accept(problem(MISSING_SHA1_PROPERTY, "'sha1' is recommended when the 'url' is http(s)", urlProp.getKeyNode()));
 					}
 				}
 			}

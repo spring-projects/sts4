@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -276,10 +278,13 @@ public class BoshEditorTest {
 				"#x"
 		);
 		editor.assertProblems(
-				"url|'sha1' is required when the 'url' is http(s)",
+				"url|'sha1' is recommended when the 'url' is http(s)",
 				"proto|Url scheme must be one of [http, https, file]",
 				"x|are required"
 		);
+		Diagnostic missingSha1Problem = editor.assertProblem("url");
+		assertContains("'sha1' is recommended", missingSha1Problem.getMessage());
+		assertEquals(DiagnosticSeverity.Warning, missingSha1Problem.getSeverity());
 	}
 
 	@Test public void releasesBlockPropertyReconcileAndHovers() throws Exception {
