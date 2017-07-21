@@ -16,6 +16,7 @@ import java.time.Duration;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -74,7 +75,9 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	}
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
+		Log.info("executing cmd: "+command);
 		ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, CMD_TIMEOUT);
+		Log.info("executing cmd DONE: "+process);
 		String out = process.getOut();
 		return out;
 	}
