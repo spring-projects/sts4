@@ -72,7 +72,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			if (id!=null) {
 				Consumer<CompletionItem> resolver = resolvers.get(id);
 				if (resolver!=null) {
-					Log.info("Resolving lazy completion item: "+unresolved.getLabel());
 					resolver.accept(unresolved);
 					unresolved.setData(null); //No longer needed after item is resolved.
 				} else {

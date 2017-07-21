@@ -1,0 +1,1 @@
+Operating system of a matching stemcell. Example: `ubuntu-trusty`. Either `name` or `os` keys can be specified.

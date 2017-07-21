@@ -1,0 +1,1 @@
+*Required*. The version of a matching stemcell. Version can be `latest`.

@@ -213,6 +213,22 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void stemcellHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: default\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: 3147\n" +
+				"  name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent"
+		);
+		editor.assertHoverContains("alias", "Name of a stemcell used in the deployment");
+		editor.assertHoverContains("os", "Operating system of a matching stemcell");
+		editor.assertHoverContains("version", "The version of a matching stemcell");
+		editor.assertHoverContains("name", "Full name of a matching stemcell. Either `name` or `os` keys can be specified.");
+	}
+
+
+
 	@Test public void releasesBlockCompletions() throws Exception {
 		Editor editor = harness.newEditor(
 				"releases:\n" +

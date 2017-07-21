@@ -22,7 +22,6 @@
     "java", "spring-boot"
   ],
   "activationEvents": [
-    "onLanguage:ini",
     "onLanguage:java"
   ],
   "main": "./out/lib/Main",

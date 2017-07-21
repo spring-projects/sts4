@@ -1,0 +1,1 @@
+Full name of a matching stemcell. Either `name` or `os` keys can be specified.
