@@ -17,6 +17,9 @@ import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 
 public class Main {
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> new BoshLanguageServer(new BoshCommandCloudConfigProvider()));
+		LaunguageServerApp.start(() -> new BoshLanguageServer(
+				new BoshCommandCloudConfigProvider(),
+				(dc) -> null //TODO: real model provider here!
+		));
 	}
 }

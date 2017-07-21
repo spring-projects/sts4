@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandBasedModelProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
@@ -23,13 +24,13 @@ import com.google.common.collect.ImmutableMultiset;
 
 public class BoshCommandCloudConfigProviderTest {
 
-	public final MockCloudConfigProvider mockProvider = new MockCloudConfigProvider();
+	public final BoshCommandCloudConfigProvider mockProvider = new MockCloudConfigProvider();
 
 // For local testing only... in CI builds we don't have the means to use a real bosh director and cli.
 //	private BoshCommandCloudConfigProvider realProvider = new BoshCommandCloudConfigProvider();
 
 	@Test public void getVMTypes() throws Exception {
-		BoshCommandCloudConfigProvider provider = mockProvider;
+		BoshCommandBasedModelProvider<CloudConfigModel> provider = mockProvider;
 		DynamicSchemaContext dc = Mockito.mock(DynamicSchemaContext.class);
 		CloudConfigModel cloudConfig = provider.getModel(dc);
 

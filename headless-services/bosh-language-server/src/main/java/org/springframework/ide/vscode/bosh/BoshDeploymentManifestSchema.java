@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -84,11 +85,17 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_var_name_def;
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
+	private DynamicModelProvider<StemcellsModel> stemcellsProvider;
 	private List<Pair<YType, YType>> defAndRefTypes;
 
-	public BoshDeploymentManifestSchema(ASTTypeCache astTypes, DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
+	public BoshDeploymentManifestSchema(
+			ASTTypeCache astTypes,
+			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
+			DynamicModelProvider<StemcellsModel> stemcellsProvider
+	) {
 		this.astTypes = astTypes;
 		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider);
+		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider);
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();
@@ -228,7 +235,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_variable = f.ybean("Variable");
 		addProp(t_variable, "name", t_var_name_def).isPrimary(true);
-		addProp(t_variable, "type", f.yenum("VariableType", "certificate", "password", "rsa", "ssh")).isRequired(true);
+		YType t_variable_type = f.yenum("VariableType", "certificate", "password", "rsa", "ssh")
+				.parseWith(ValueParsers.NE_STRING); //Overrid the parser -> no errors / warnings... in theory there could be other valid values.
+		addProp(t_variable, "type", t_variable_type).isRequired(true);
 		addProp(t_variable, "options", t_params);
 		addProp(v2Schema, "variables", f.yseq(t_variable));
 

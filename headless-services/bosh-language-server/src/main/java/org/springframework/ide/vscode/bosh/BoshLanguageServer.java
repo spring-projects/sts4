@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.bosh;
 
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
@@ -37,13 +38,13 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
 
-	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider) {
+	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider, DynamicModelProvider<StemcellsModel> stemcellsProvider) {
 		super("vscode-bosh");
 		YamlAstCache asts = new YamlAstCache();
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
-		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache, cloudConfigProvider);
+		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache, cloudConfigProvider, stemcellsProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);

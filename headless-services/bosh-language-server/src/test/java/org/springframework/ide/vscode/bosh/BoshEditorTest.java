@@ -20,7 +20,10 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -31,10 +34,11 @@ public class BoshEditorTest {
 	LanguageServerHarness harness;
 
 	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider();
+	private DynamicModelProvider<StemcellsModel> stemcellsProvider = Mockito.mock(DynamicModelProvider.class);
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(cloudConfigProvider)
+				return new BoshLanguageServer(cloudConfigProvider, stemcellsProvider)
 						.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
@@ -559,6 +563,20 @@ public class BoshEditorTest {
 				"  type: <*>"
 		);
 		editor.assertCompletionLabels("certificate", "password", "rsa", "ssh");
+	}
+
+	@Test public void variablesBlockReconciling() throws Exception {
+		Editor editor = harness.newEditor(
+				"variables:\n" +
+				"- name: admin-passcode\n" +
+				"  type: something-that-might-work-in-theory\n" + //shouldn't be a warning/error
+				"  bogus-propt: bah\n" +
+				"  options: {}"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus-propt|Unknown property"
+		);
 	}
 
 	@Test public void variablesBlockHovers() throws Exception {
