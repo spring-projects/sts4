@@ -12,8 +12,9 @@ package org.springframework.ide.vscode.bosh.mocks;
 
 import java.util.concurrent.Callable;
 
-import org.springframework.ide.vscode.bosh.BoshCommandCloudConfigProviderTest;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProviderTest;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 
 public final class MockCloudConfigProvider extends BoshCommandCloudConfigProvider {
@@ -33,15 +34,15 @@ public final class MockCloudConfigProvider extends BoshCommandCloudConfigProvide
 	 * without requiring a real bosh setup.
 	 */
 	@Override
-	protected String executeBoshCloudConfigCommand() throws Exception {
+	protected String executeCommand(ExternalCommand cmd) throws Exception {
 		readCount++;
 		return cloudConfigCmdExecutor.call();
 	}
 
 	@Override
-	protected String getCloudConfigBlock() throws Exception {
+	protected String getBlock() throws Exception {
 		if (reader==null) {
-			return super.getCloudConfigBlock();
+			return super.getBlock();
 		}
 		readCount++;
 		return reader.call();

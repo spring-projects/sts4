@@ -17,16 +17,16 @@ import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 public class Main {
-   	SimpleLanguageServer server = new ManifestYamlLanguageServer();
+	SimpleLanguageServer server = new ManifestYamlLanguageServer();
 
-   	public static void main(String[] args) throws IOException, InterruptedException {
-   		File logfile = null;
-   		if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
-   			logfile = File.createTempFile("manifest-yaml-language-server", ".log");
-   			System.setProperty("org.slf4j.simpleLogger.logFile", logfile.toString());
-   		} else {
-   			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
-   		}
+	public static void main(String[] args) throws IOException, InterruptedException {
+		File logfile = null;
+		if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
+			logfile = File.createTempFile("manifest-yaml-language-server", ".log");
+			System.setProperty("org.slf4j.simpleLogger.logFile", logfile.toString());
+		} else {
+			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
+		}
 		System.err.println("Redirecting log output to: "+logfile);
 		LaunguageServerApp.start(ManifestYamlLanguageServer::new);
 	}

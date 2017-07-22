@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -62,7 +63,7 @@ public class CollectorUtil {
 
 			@Override
 			public Set<Collector.Characteristics> characteristics() {
-				return ImmutableSet.of(Collector.Characteristics.UNORDERED);
+				return EnumSet.of(Collector.Characteristics.UNORDERED);
 			}
 		};
 	}
@@ -94,7 +95,39 @@ public class CollectorUtil {
 
 			@Override
 			public Set<Collector.Characteristics> characteristics() {
-				return ImmutableSet.of(Collector.Characteristics.UNORDERED);
+				return EnumSet.of(Collector.Characteristics.UNORDERED);
+			}
+		};
+	}
+
+	public static <T> Collector<T, ArrayList<T>, ImmutableSet<T>> toImmutableSet() {
+		return new Collector<T, ArrayList<T>, ImmutableSet<T>>() {
+
+			@Override
+			public Supplier<ArrayList<T>> supplier() {
+				return ArrayList::new;
+			}
+
+			@Override
+			public BiConsumer<ArrayList<T>, T> accumulator() {
+				return (a, e) -> a.add(e);
+			}
+
+			@Override
+			public BinaryOperator<ArrayList<T>> combiner() {
+				return (a1, a2) -> {
+					a1.addAll(a2);
+					return a1;
+				};
+			}
+			@Override
+			public Function<ArrayList<T>, ImmutableSet<T>> finisher() {
+				return ImmutableSet::copyOf;
+			}
+
+			@Override
+			public Set<Collector.Characteristics> characteristics() {
+				return EnumSet.of(Collector.Characteristics.UNORDERED);
 			}
 		};
 	}

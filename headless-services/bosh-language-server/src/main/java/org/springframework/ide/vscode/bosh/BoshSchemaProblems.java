@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,16 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import java.io.IOException;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 
-import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
-import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
+public class BoshSchemaProblems {
 
-public class Main {
-	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> new BoshLanguageServer(
-				new BoshCommandCloudConfigProvider(),
-				(dc) -> null //TODO: real model provider here!
-		));
-	}
+	public static final ProblemType MISSING_SHA1_PROPERTY = YamlSchemaProblems.problemType("MISSING_SHA1_PROPERTY", ProblemSeverity.WARNING);
+
 }

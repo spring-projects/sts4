@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh.models;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -29,9 +30,9 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 	 */
 	private static final Object NULL_KEY = new Object();
 
-	private long timeout = 15;
+	private long timeout = 30;
 	private TimeUnit timeoutUnit = TimeUnit.SECONDS;
-	private Cache<Object, T> cache = createCache();
+	private Cache<Object, CompletableFuture<T>> cache = createCache();
 
 	private final DynamicModelProvider<T> delegate;
 
@@ -48,7 +49,7 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 	 */
 	private Function<DynamicSchemaContext, Object> keyGetter = (dc) -> "WHATEVER";
 
-	protected Cache<Object, T> createCache() {
+	protected Cache<Object, CompletableFuture<T>> createCache() {
 		return CacheBuilder.newBuilder()
 				.expireAfterWrite(timeout, timeoutUnit)
 				.build();
@@ -67,7 +68,19 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 			//guava cache doesn't like null key
 			key = NULL_KEY;
 		}
-		return cache.get(key, () -> delegate.getModel(dc));
+		CompletableFuture<T> cached;
+		synchronized (this) {
+			cached = cache.get(key, () -> {
+				try {
+					return CompletableFuture.completedFuture(delegate.getModel(dc));
+				} catch (Throwable e) {
+					CompletableFuture<T> failed = new CompletableFuture<>();
+					failed.completeExceptionally(e);
+					return failed;
+				}
+			});
+		}
+		return cached.get();
 	}
 
 }

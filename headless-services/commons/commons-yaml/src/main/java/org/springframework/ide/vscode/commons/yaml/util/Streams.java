@@ -8,12 +8,12 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.yaml.util;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Streams {
 
@@ -33,6 +33,10 @@ public class Streams {
 	 */
 	public static <T> Stream<T> fromNullable(T e) {
 		return e==null ? Stream.empty() : Stream.of(e);
+	}
+
+	public static <T> Stream<T> fromIterable(Iterable<T> target) {
+		return StreamSupport.stream(target.spliterator(), false);
 	}
 
 }

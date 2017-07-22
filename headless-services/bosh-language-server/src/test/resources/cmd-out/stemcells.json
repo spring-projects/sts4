@@ -1,0 +1,38 @@
+{
+    "Tables": [
+        {
+            "Content": "stemcells",
+            "Header": {
+                "cid": "CID",
+                "cpi": "CPI",
+                "name": "Name",
+                "os": "OS",
+                "version": "Version"
+            },
+            "Rows": [
+                {
+                    "cid": "sc-cd694110-4b23-4361-b5e7-b817874eadca",
+                    "cpi": "",
+                    "name": "bosh-vsphere-esxi-centos-7-go_agent",
+                    "os": "centos-7",
+                    "version": "3421.11"
+                },
+                {
+                    "cid": "sc-3378b7e1-5a80-4351-b521-7e9aeeb417bc",
+                    "cpi": "",
+                    "name": "bosh-vsphere-esxi-ubuntu-trusty-go_agent",
+                    "os": "ubuntu-trusty",
+                    "version": "3421.11"
+                }
+            ],
+            "Notes": [
+                "(*) Currently deployed"
+            ]
+        }
+    ],
+    "Blocks": null,
+    "Lines": [
+        "Using environment '10.194.4.35' as client 'admin'",
+        "Succeeded"
+    ]
+}
