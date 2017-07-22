@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.ide.vscode.bosh.BoshCommandCloudConfigProviderTest;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 

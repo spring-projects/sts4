@@ -37,7 +37,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	private final YamlParser yamlParser;
 	protected final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-	protected Duration CMD_TIMEOUT = Duration.ofSeconds(10);
+	protected Duration CMD_TIMEOUT = Duration.ofSeconds(3);
 
 	protected BoshCommandBasedModelProvider() {
 		Representer representer = new Representer();
@@ -76,10 +76,15 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		Log.info("executing cmd: "+command);
-		ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, CMD_TIMEOUT);
-		Log.info("executing cmd DONE: "+process);
-		String out = process.getOut();
-		return out;
+		try {
+			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, CMD_TIMEOUT);
+			Log.info("executing cmd SUCCESS: "+process);
+			String out = process.getOut();
+			return out;
+		} catch (Exception e) {
+			Log.log("executing cmd FAILED", e);
+			throw e;
+		}
 	}
 
 	protected File getWorkingDir() {

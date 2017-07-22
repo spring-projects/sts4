@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.bosh.mocks;
 
 import java.util.concurrent.Callable;
 
-import org.springframework.ide.vscode.bosh.BoshCommandCloudConfigProviderTest;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProviderTest;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 
