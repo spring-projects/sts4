@@ -48,9 +48,10 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
@@ -60,7 +61,7 @@ import com.google.common.collect.ImmutableSet;
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
-	private YamlSchema schema;
+	private ManifestYmlSchema schema;
 	private CFTargetCache cfTargetCache;
 	private final CloudFoundryClientFactory cfClientFactory;
 	private final CfClientConfig cfClientConfig;
@@ -91,7 +92,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
-		IReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+
+		ASTTypeCache astTypeCache = new ASTTypeCache();
+		engine.setTypeCollector(astTypeCache);
+		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
 
 		documents.onDidChangeContent(params -> {
 			validateOnDocumentChange(engine, params.getDocument());

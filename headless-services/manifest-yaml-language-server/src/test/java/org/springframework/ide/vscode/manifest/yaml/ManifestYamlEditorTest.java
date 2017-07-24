@@ -1464,6 +1464,23 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
+	@Test public void gotoSymbolInPipeline() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  routes:\n" +
+				"  - route: myapp.org\n" +
+				"- name: app2\n" +
+				"  routes:\n" +
+				"  - route: my-route.org"
+		);
+
+		editor.assertDocumentSymbols(
+				"my-app|Application",
+				"app2|Application"
+		);
+	}
+
 	@Test public void contentAssistInsideRouteDomain() throws Exception {
 		Editor editor;
 

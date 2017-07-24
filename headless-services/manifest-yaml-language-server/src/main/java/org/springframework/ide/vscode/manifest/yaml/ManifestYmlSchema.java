@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -50,6 +51,9 @@ public final class ManifestYmlSchema implements YamlSchema {
 	private final YTypeUtil TYPE_UTIL;
 
 	public final AbstractType t_route_string;
+	private final YAtomicType t_application_name;
+
+	private ImmutableList<YType> definitionTypes = null;
 
 	private static final Set<String> TOPLEVEL_EXCLUDED = ImmutableSet.of(
 		"name", "host", "hosts", "routes"
@@ -144,6 +148,10 @@ public final class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_ne_string = f.yatomic("String");
 		t_ne_string.parseWith(ValueParsers.NE_STRING);
+
+		t_application_name = f.yatomic("ApplicationName");
+		t_application_name.parseWith(ValueParsers.NE_STRING);
+		
 		YType t_string = f.yatomic("String");
 
 		t_route_string = f.yatomic("RouteUri")
@@ -187,7 +195,7 @@ public final class ManifestYmlSchema implements YamlSchema {
 			f.yprop("hosts", f.yseq(t_host)),
 			f.yprop("instances", t_strictly_pos_integer),
 			f.yprop("memory", t_memory),
-			f.yprop("name", t_ne_string).isRequired(true),
+			f.yprop("name", t_application_name).isRequired(true),
 			f.yprop("no-hostname", t_boolean),
 			f.yprop("no-route", t_boolean),
 			f.yprop("path", t_path),
@@ -226,5 +234,13 @@ public final class ManifestYmlSchema implements YamlSchema {
 	@Override
 	public YTypeUtil getTypeUtil() {
 		return TYPE_UTIL;
+	}
+
+	public Collection<YType> getDefinitionTypes() {
+		// These are the types of "interest" for symbol navigation.
+		if (definitionTypes==null) {
+			definitionTypes = ImmutableList.of(t_application_name);
+		}
+		return definitionTypes;
 	}
 }
