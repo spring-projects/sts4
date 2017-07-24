@@ -35,6 +35,7 @@ public class SourceJavadocTest {
 		try {
 			JandexClasspath.providerType = JavadocProviderTypes.JAVA_PARSER;
 			testProjectPath = Paths.get(SourceJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
 			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		} catch (Exception e) {
 			return null;
@@ -63,7 +64,7 @@ public class SourceJavadocTest {
 		assertEquals(expected, type.getJavaDoc().raw().trim());
 	}
 
-	@Test //TODO: why is this sometimes failing in CI build?
+	@Test
 	public void parser_testClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.getClasspath().findType("hello.Greeting");
@@ -120,7 +121,7 @@ public class SourceJavadocTest {
 		assertEquals(expected, method.getJavaDoc().raw().trim().substring(0, expected.length()));
 	}
 
-	@Test //TODO: why is this sometimes failing in CI build?
+	@Test
 	public void parser_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass");
