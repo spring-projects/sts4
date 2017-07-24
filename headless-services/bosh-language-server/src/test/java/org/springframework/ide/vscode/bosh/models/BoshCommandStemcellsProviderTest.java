@@ -57,4 +57,10 @@ public class BoshCommandStemcellsProviderTest {
 			provider.getModel(mock(DynamicSchemaContext.class)).getStemcellOss());
 	}
 
+	@Test public void getVersions() throws Exception {
+		assertEquals(ImmutableSet.of("3421.11"),
+			provider.getModel(mock(DynamicSchemaContext.class)).getVersions());
+	}
+
+
 }

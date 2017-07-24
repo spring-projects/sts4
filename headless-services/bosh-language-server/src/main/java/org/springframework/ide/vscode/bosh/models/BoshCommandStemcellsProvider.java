@@ -34,6 +34,9 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 	private static final YamlTraversal STEMCELL_OSS = STEMCELLS
 			.thenValAt("os");
 
+	private static final YamlTraversal STEMCELL_VERSIONS = STEMCELLS
+			.thenValAt("version");
+
 	@Override
 	public StemcellsModel getModel(DynamicSchemaContext dc) throws Exception {
 		JSONCursor cursor = new JSONCursor(getJsonTree());
@@ -79,6 +82,11 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 			@Override
 			public Collection<String> getStemcellOss() {
 				return getNames(STEMCELL_OSS);
+			}
+
+			@Override
+			public Collection<String> getVersions() {
+				return getNames(STEMCELL_VERSIONS);
 			}
 		};
 	}

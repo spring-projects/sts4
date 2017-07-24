@@ -936,13 +936,13 @@ public class BoshEditorTest {
 		editor = harness.newEditor(
 				"stemcells:\n" +
 				"- alias: good\n" +
-				"  os: ubuntu-trusty\n" +
+				"  os: ubuntu\n" +
 				"- alias: not-so-good\n" +
 				"  os: bogus<*>"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
-				"bogus|unknown 'StemcellOs'. Valid values are: [centos-7, ubuntu-trusty]"
+				"bogus|unknown 'StemcellOs'. Valid values are: [ubuntu, centos]"
 		);
 	}
 

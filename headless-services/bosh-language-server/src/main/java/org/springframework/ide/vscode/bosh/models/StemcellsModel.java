@@ -19,4 +19,5 @@ public interface StemcellsModel {
 	Collection<String> getStemcellNames();
 	Collection<String> getStemcellOss();
 	Collection<StemcellData> getStemcells();
+	Collection<String> getVersions();
 }
