@@ -19,14 +19,20 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -83,16 +89,18 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private YType t_release_name_ref;
 	private YType t_instance_group_name_def;
 	private YType t_var_name_def;
+	private final YamlAstCache asts;
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
 	private DynamicModelProvider<StemcellsModel> stemcellsProvider;
 	private List<Pair<YType, YType>> defAndRefTypes;
 
 	public BoshDeploymentManifestSchema(
-			ASTTypeCache astTypes,
+			YamlAstCache asts, ASTTypeCache astTypes,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
 			DynamicModelProvider<StemcellsModel> stemcellsProvider
 	) {
+		this.asts = asts;
 		this.astTypes = astTypes;
 		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider);
 		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider);
@@ -144,9 +152,6 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 				.parseWith(ValueParsers.NE_STRING);
 
 
-		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
-		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) -> stemcellsProvider.getModel(dc).getStemcellOss());
-
 		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
 		t_ip_address.parseWith(ValueParsers.NE_STRING);
 
@@ -187,8 +192,24 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
+
+		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
+		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) -> stemcellsProvider.getModel(dc).getStemcellOss());
+		YType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion", (dc) -> {
+			StemcellModel currentStemcell = getCurrentStemcell(dc);
+			if (currentStemcell!=null) {
+				return stemcellsProvider.getModel(dc).getStemcells().stream()
+						.filter(sc -> StringUtil.hasText(sc.getVersion()))
+						.filter(currentStemcell.createVersionFilter())
+						.map(sc -> sc.getVersion())
+						.collect(CollectorUtil.toImmutableSet());
+			}
+			//Troubles determining the filter. So return all stemcells.
+			return stemcellsProvider.getModel(dc).getVersions();
+		});
+
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
-		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
+		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);
 		addProp(t_stemcell, "name", t_stemcell_name_ref);
 		addProp(t_stemcell, "os", t_stemcell_os_ref);
 		t_stemcell.requireOneOf("name", "os");
@@ -254,6 +275,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 			v2Schema.require(Constraints.uniqueDefinition(this.astTypes, defType, YamlSchemaProblems.problemType("BOSH_DUPLICATE_"+defType)));
 		}
 		return v2Schema;
+	}
+
+	private StemcellModel getCurrentStemcell(DynamicSchemaContext dc) throws Exception {
+		YamlPath path = dc.getPath();
+		YamlFileAST ast = asts.getAst(dc.getDocument(), true);
+		return new StemcellModel(path.dropLast().traverseToNode(ast));
 	}
 
 	@Override

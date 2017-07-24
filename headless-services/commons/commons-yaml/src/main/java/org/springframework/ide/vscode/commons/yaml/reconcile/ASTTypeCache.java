@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,9 +29,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 

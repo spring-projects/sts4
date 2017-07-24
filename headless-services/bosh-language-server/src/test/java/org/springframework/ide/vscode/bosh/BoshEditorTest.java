@@ -16,7 +16,10 @@ import static org.springframework.ide.vscode.languageserver.testharness.TestAsse
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.TimeoutException;
+
+import javax.management.modelmbean.ModelMBeanAttributeInfo;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
@@ -27,12 +30,17 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 
@@ -45,7 +53,7 @@ public class BoshEditorTest {
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(cloudConfigProvider, stemcellsProvider)
+				return new BoshLanguageServer(cloudConfigProvider, (dc) -> stemcellsProvider.getModel(dc))
 						.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
@@ -944,6 +952,124 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"bogus|unknown 'StemcellOs'. Valid values are: [ubuntu, centos]"
 		);
+	}
+
+	@Test public void contentAssistStemcellVersionFromDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = provideStemcellsFrom(
+				new StemcellData("ubuntu-agent", "123.4", "ubuntu"),
+				new StemcellData("ubuntu-agent", "222.2", "ubuntu"),
+				new StemcellData("centos-agent", "222.2", "centos"),
+				new StemcellData("centos-agent", "333.3", "centos")
+		);
+
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: centos-agent\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"222.2<*>", "333.3<*>"
+		);
+
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  os: ubuntu\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>", "222.2<*>"
+		);
+
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>", "222.2<*>", "333.3<*>"
+		);
+
+		//when os or name are 'bogus' at least suggest proposals based on other prop
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: centos-agent\n" +
+				"  os: bogus\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"222.2<*>", "333.3<*>"
+		);
+
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  os: centos\n" +
+				"  name: bogus\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"222.2<*>", "333.3<*>"
+		);
+
+		//when the os and name disagree, merge the proposals for both:
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  os: centos\n" + //Contradicts the name
+				"  name: ubuntu-agent\n" + //Contradicts the os
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>", "222.2<*>", "333.3<*>"
+		);
+	}
+
+	@Test public void reconcileStemcellVersionFromDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = provideStemcellsFrom(
+				new StemcellData("ubuntu-agent", "123.4", "ubuntu"),
+				new StemcellData("ubuntu-agent", "222.2", "ubuntu"),
+				new StemcellData("centos-agent", "222.2", "centos"),
+				new StemcellData("centos-agent", "333.3", "centos")
+		);
+
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: aaa\n" +
+				"  name: centos-agent\n" +
+				"  version: 222.2\n" +
+				"- alias: bbb\n" +
+				"  name: centos-agent\n" +
+				"  version: 123.4\n" +
+				"- alias: ddd\n" +
+				"  os: ubuntu\n" +
+				"  version: 333.3\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"123.4|unknown 'StemcellVersion'. Valid values are: [222.2, 333.3]",
+				"333.3|unknown 'StemcellVersion'. Valid values are: [123.4, 222.2]"
+		);
+	}
+
+	private DynamicModelProvider<StemcellsModel> provideStemcellsFrom(StemcellData... stemcellData) {
+		return new BoshCommandStemcellsProvider() {
+			@Override
+			protected String executeCommand(ExternalCommand command) throws Exception {
+				String rows = mapper.writeValueAsString(stemcellData);
+				return "{\n" +
+						"    \"Tables\": [\n" +
+						"        {\n" +
+						"            \"Rows\": " + rows +
+						"        }\n" +
+						"    ]\n" +
+						"}";
+			}
+		};
 	}
 
 	@Test public void contentAssistVMtype() throws Exception {

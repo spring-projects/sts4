@@ -44,7 +44,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
-		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(astTypeCache, cloudConfigProvider, stemcellsProvider);
+		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -65,7 +65,6 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine ::getHover);
 		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
 	}
-
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
 		if (LanguageId.BOSH_DEPLOYMENT.equals(doc.getLanguageId())) {
