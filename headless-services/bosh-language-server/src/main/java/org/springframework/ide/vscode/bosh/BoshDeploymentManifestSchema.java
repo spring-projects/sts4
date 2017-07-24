@@ -136,7 +136,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_stemcell_alias_def = f.yatomic("StemcellAlias")
 				.parseWith(ValueParsers.NE_STRING);
 		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> astTypes.getDefinedNames(dc, t_stemcell_alias_def));
-
+		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
 		t_release_name_def = f.yatomic("ReleaseName")
 				.parseWith(ValueParsers.NE_STRING);
 		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
@@ -186,7 +186,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YBeanType t_stemcell = f.ybean("Stemcell");
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
-		addProp(t_stemcell, "name", t_ne_string);
+		addProp(t_stemcell, "name", t_stemcell_name_ref);
 		addProp(t_stemcell, "os", t_ne_string);
 		t_stemcell.requireOneOf("name", "os");
 		addProp(v2Schema, "stemcells", f.yseq(t_stemcell)).isRequired(true);

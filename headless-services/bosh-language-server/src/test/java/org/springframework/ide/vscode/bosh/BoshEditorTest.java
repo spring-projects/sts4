@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.bosh;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -30,6 +31,8 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+
+import com.google.common.collect.ImmutableMultiset;
 
 public class BoshEditorTest {
 
@@ -876,6 +879,39 @@ public class BoshEditorTest {
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
 				"bogus-stemcell|unknown 'StemcellAlias'. Valid values are: [default, windoze]"
+		);
+	}
+
+	@Test public void dynamicStemcellNamesFromDirector() throws Exception {
+		StemcellsModel stemcellsModel = mock(StemcellsModel.class);
+		when(stemcellsProvider.getModel(any())).thenReturn(stemcellsModel);
+		when(stemcellsModel.getStemcellNames()).thenReturn(ImmutableMultiset.of(
+				"bosh-vsphere-esxi-centos-7-go_agent",
+				"bosh-vsphere-esxi-ubuntu-trusty-go_agent"
+		));
+
+		//content assist
+		Editor editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: blah\n" +
+				"  name: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"bosh-vsphere-esxi-centos-7-go_agent<*>",
+				"bosh-vsphere-esxi-ubuntu-trusty-go_agent<*>"
+		);
+
+		//reconcile
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: bosh-vsphere-esxi-centos-7-go_agent\n" +
+				"- alias: not-so-good\n" +
+				"  name: bogus<*>"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus|unknown 'StemcellName'. Valid values are: [bosh-vsphere-esxi-centos-7-go_agent, bosh-vsphere-esxi-ubuntu-trusty-go_agent]"
 		);
 	}
 
