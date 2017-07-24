@@ -136,13 +136,16 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_stemcell_alias_def = f.yatomic("StemcellAlias")
 				.parseWith(ValueParsers.NE_STRING);
 		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> astTypes.getDefinedNames(dc, t_stemcell_alias_def));
-		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
 		t_release_name_def = f.yatomic("ReleaseName")
 				.parseWith(ValueParsers.NE_STRING);
 		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
 
 		t_var_name_def = f.yatomic("VariableName")
 				.parseWith(ValueParsers.NE_STRING);
+
+
+		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
+		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) -> stemcellsProvider.getModel(dc).getStemcellOss());
 
 		YAtomicType t_ip_address = f.yatomic("IPAddress"); //TODO: some kind of checking?
 		t_ip_address.parseWith(ValueParsers.NE_STRING);
@@ -187,7 +190,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_ne_string).isRequired(true);
 		addProp(t_stemcell, "name", t_stemcell_name_ref);
-		addProp(t_stemcell, "os", t_ne_string);
+		addProp(t_stemcell, "os", t_stemcell_os_ref);
 		t_stemcell.requireOneOf("name", "os");
 		addProp(v2Schema, "stemcells", f.yseq(t_stemcell)).isRequired(true);
 

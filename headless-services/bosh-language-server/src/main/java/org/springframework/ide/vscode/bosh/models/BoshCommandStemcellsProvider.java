@@ -22,12 +22,17 @@ import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<StemcellsModel> {
 
-	YamlTraversal STEMCELL_NAMES = YamlPath.EMPTY
+	private static final YamlTraversal STEMCELLS = YamlPath.EMPTY
 			.thenValAt("Tables")
 			.thenAnyChild()
 			.thenValAt("Rows")
-			.thenAnyChild()
+			.thenAnyChild();
+
+	private static final YamlTraversal STEMCELL_NAMES = STEMCELLS
 			.thenValAt("name");
+
+	private static final YamlTraversal STEMCELL_OSS = STEMCELLS
+			.thenValAt("os");
 
 	@Override
 	public StemcellsModel getModel(DynamicSchemaContext dc) throws Exception {
@@ -50,6 +55,30 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 					}
 				})
 				.collect(CollectorUtil.toImmutableSet());
+			}
+
+			@Override
+			public Collection<StemcellData> getStemcells() {
+				return STEMCELLS.traverseAmbiguously(cursor)
+				.map(c -> new StemcellData(
+						getStringProperty(c, "name"),
+						getStringProperty(c, "version"),
+						getStringProperty(c, "os")
+				))
+				.collect(CollectorUtil.toImmutableList());
+			}
+
+			private String getStringProperty(JSONCursor c, String prop) {
+				c = YamlPath.EMPTY.thenValAt(prop).traverse(c);
+				if (c!=null) {
+					return c.target.asText();
+				}
+				return null;
+			}
+
+			@Override
+			public Collection<String> getStemcellOss() {
+				return getNames(STEMCELL_OSS);
 			}
 		};
 	}

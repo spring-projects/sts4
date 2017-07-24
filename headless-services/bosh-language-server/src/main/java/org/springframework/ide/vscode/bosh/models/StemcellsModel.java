@@ -16,7 +16,7 @@ import java.util.Collection;
  * Represents Stemcells information as might be retrieved from bosh director.
  */
 public interface StemcellsModel {
-
 	Collection<String> getStemcellNames();
-
+	Collection<String> getStemcellOss();
+	Collection<StemcellData> getStemcells();
 }

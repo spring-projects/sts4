@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.bosh.models;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 public class BoshCommandStemcellsProviderTest {
@@ -36,9 +38,23 @@ public class BoshCommandStemcellsProviderTest {
 				"bosh-vsphere-esxi-centos-7-go_agent",
 				"bosh-vsphere-esxi-ubuntu-trusty-go_agent"
 			),
-			provider.getModel(Mockito.mock(DynamicSchemaContext.class))
+			provider.getModel(mock(DynamicSchemaContext.class))
 				.getStemcellNames()
 		);
+	}
+
+	@Test public void getStemcells() throws Exception {
+		assertEquals(ImmutableList.of(
+				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
+				new StemcellData("bosh-vsphere-esxi-ubuntu-trusty-go_agent", "3421.11", "ubuntu-trusty")
+			),
+			provider.getModel(mock(DynamicSchemaContext.class)).getStemcells()
+		);
+	}
+
+	@Test public void getOss() throws Exception {
+		assertEquals(ImmutableSet.of("centos-7", "ubuntu-trusty"),
+			provider.getModel(mock(DynamicSchemaContext.class)).getStemcellOss());
 	}
 
 }

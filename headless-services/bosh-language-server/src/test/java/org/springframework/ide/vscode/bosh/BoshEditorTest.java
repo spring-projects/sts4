@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -33,6 +34,7 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
 
 public class BoshEditorTest {
 
@@ -912,6 +914,35 @@ public class BoshEditorTest {
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
 				"bogus|unknown 'StemcellName'. Valid values are: [bosh-vsphere-esxi-centos-7-go_agent, bosh-vsphere-esxi-ubuntu-trusty-go_agent]"
+		);
+	}
+
+	@Test public void dynamicStemcellOssFromDirector() throws Exception {
+		StemcellsModel stemcellsModel = mock(StemcellsModel.class);
+		when(stemcellsProvider.getModel(any())).thenReturn(stemcellsModel);
+		when(stemcellsModel.getStemcellOss()).thenReturn(ImmutableSet.of("ubuntu", "centos"));
+
+		//content assist
+		Editor editor = harness.newEditor(
+				"stemcells:\n" +
+				"- os: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"centos<*>",
+				"ubuntu<*>"
+		);
+
+		//reconcile
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  os: ubuntu-trusty\n" +
+				"- alias: not-so-good\n" +
+				"  os: bogus<*>"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"bogus|unknown 'StemcellOs'. Valid values are: [centos-7, ubuntu-trusty]"
 		);
 	}
 
