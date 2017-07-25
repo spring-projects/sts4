@@ -1,0 +1,21 @@
+{
+  "name": "language-cf-manifest-yaml",
+  "version": "0.1.0",
+  "description": "CF Deployment Manifest YAML language support in Atom",
+  "license": "MIT",
+  "engines": {
+    "atom": "*",
+    "node": "*"
+  },
+  "homepage": "http://pivotalcf.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spring-projects/sts4/issues"
+  },
+  "devDependencies": {
+    "coffeelint": "^1.10.1"
+  }
+}
