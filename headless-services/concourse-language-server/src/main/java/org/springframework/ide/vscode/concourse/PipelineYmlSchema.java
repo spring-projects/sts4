@@ -118,7 +118,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_location = f.yatomic("Location")
 			//Note: we could have used f.yenum here too. But it saves memory if we don't keep the large set of ValueHints in memory.
 			// That's why we attach custom hint provider and parser here that do essentially the same thing.
-			.addHintProvider(() -> {
+			.setHintProvider(() -> {
 				return ZoneId.getAvailableZoneIds().stream()
 				.map(BasicYValueHint::new)
 				.collect(Collectors.toList());
@@ -187,7 +187,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				}
 		);
 		t_maybe_resource_name = f.yatomic("ResourceName | TaskOutput");
-		t_maybe_resource_name.addHintProvider((DynamicSchemaContext dc) -> {
+		t_maybe_resource_name.setHintProvider((DynamicSchemaContext dc) -> {
 			//Putting the Callable into a local variable is strange, but the compiler doesn't like it if
 			// we return it directly. Too much complexity for Java type-inference?
 			Callable<Collection<YValueHint>> callable = () -> YTypeFactory.hints(models.getResourceNames(dc));

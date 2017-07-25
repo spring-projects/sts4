@@ -14,11 +14,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -33,6 +35,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -193,20 +196,40 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
 
-		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
-		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) -> stemcellsProvider.getModel(dc).getStemcellOss());
-		YType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion", (dc) -> {
-			StemcellModel currentStemcell = getCurrentStemcell(dc);
-			if (currentStemcell!=null) {
-				return stemcellsProvider.getModel(dc).getStemcells().stream()
-						.filter(sc -> StringUtil.hasText(sc.getVersion()))
-						.filter(currentStemcell.createVersionFilter())
-						.map(sc -> sc.getVersion())
-						.collect(CollectorUtil.toImmutableSet());
+		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) ->
+			stemcellsProvider.getModel(dc).getStemcellNames()
+		);
+		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) ->
+			stemcellsProvider.getModel(dc).getStemcellOss()
+		);
+		YType t_stemcell_version_ref = f.contextAware("StemcellVersion", new SchemaContextAware<YType>() {
+
+			YAtomicType baseType = f.yenumFromDynamicValues("StemcellVersion", (dc) -> stemcellsProvider.getModel(dc).getVersions());
+			{
+				baseType.addHints("latest");
+				baseType.alsoAccept("latest");
 			}
-			//Troubles determining the filter. So return all stemcells.
-			return stemcellsProvider.getModel(dc).getVersions();
-		});
+
+			@Override
+			public YType withContext(DynamicSchemaContext dc) throws Exception {
+				StemcellModel currentStemcell = getCurrentStemcell(dc);
+				if (StringUtil.hasText(currentStemcell.getName())||StringUtil.hasText(currentStemcell.getOs())) {
+					Predicate<StemcellData> filter = currentStemcell.createVersionFilter();
+					YAtomicType filteredType = f.yenumFromDynamicValues("StemcellVersion["+filter+"]", (_dc) -> {
+						//Note: it doesn't really matter whether we use _dc or dc in code below as they should be the same.
+						return stemcellsProvider.getModel(dc).getStemcells().stream()
+								.filter(sc -> StringUtil.hasText(sc.getVersion()))
+								.filter(currentStemcell.createVersionFilter())
+								.map(sc -> sc.getVersion())
+								.collect(CollectorUtil.toImmutableSet());
+					});
+					filteredType.addHints("latest");
+					filteredType.alsoAccept("latest");
+					return filteredType;
+				}
+				return baseType;
+			}
+		}).treatAsAtomic();
 
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);
@@ -260,7 +283,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YBeanType t_variable = f.ybean("Variable");
 		addProp(t_variable, "name", t_var_name_def).isPrimary(true);
 		YType t_variable_type = f.yenum("VariableType", "certificate", "password", "rsa", "ssh")
-				.parseWith(ValueParsers.NE_STRING); //Overrid the parser -> no errors / warnings... in theory there could be other valid values.
+				.parseWith(ValueParsers.NE_STRING); //Override the parser -> no errors / warnings... in theory there could be other valid values.
 		addProp(t_variable, "type", t_variable_type).isRequired(true);
 		addProp(t_variable, "options", t_params);
 		addProp(v2Schema, "variables", f.yseq(t_variable));
