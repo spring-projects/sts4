@@ -1008,7 +1008,7 @@ public class BoshEditorTest {
 				"123.4<*>", "222.2<*>", "333.3<*>", "latest<*>"
 		);
 
-		//when os or name are 'bogus' at least suggest proposals based on other prop
+		//when os and name are 'bogus' at least suggest proposals based on other prop
 		editor = harness.newEditor(
 				"stemcells:\n" +
 				"- alias: good\n" +
@@ -1094,8 +1094,8 @@ public class BoshEditorTest {
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
-				"123.4|unknown 'StemcellVersion'. Valid values are: [222.2, 333.3]",
-				"333.3|unknown 'StemcellVersion'. Valid values are: [123.4, 222.2]"
+				"123.4|unknown 'StemcellVersion[name=centos-agent]'. Valid values are: [222.2, 333.3]",
+				"333.3|unknown 'StemcellVersion[os=ubuntu]'. Valid values are: [123.4, 222.2]"
 		);
 	}
 

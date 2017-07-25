@@ -45,17 +45,50 @@ public class StemcellModel {
 		if (StringUtil.hasText(name) && StringUtil.hasText(os)) {
 			//User shouldn't really specify both of these... but if they do... then
 			// let's do our best to generate proposals for the both of them.
-			return (sc) ->
-				name.equals(sc.getName()) || os.equals(sc.getOs());
+			return new Predicate<StemcellData>() {
+				@Override
+				public boolean test(StemcellData sc) {
+					return 	name.equals(sc.getName()) || os.equals(sc.getOs());
+				}
+
+				@Override
+				public String toString() {
+					return "name="+name+", os="+os;
+				}
+			};
 		} else if (StringUtil.hasText(name)) {
-			return (sc) ->
-				name.equals(sc.getName());
+			return new Predicate<StemcellData>() {
+				@Override
+				public boolean test(StemcellData sc) {
+					return name.equals(sc.getName());
+				}
+				@Override
+				public String toString() {
+					return "name="+name;
+				}
+			};
 		} else if (StringUtil.hasText(os)) {
-			return (sc) ->
-				os.equals(sc.getOs());
+			return new Predicate<StemcellData>() {
+				@Override
+				public boolean test(StemcellData sc) {
+					return os.equals(sc.getOs());
+				}
+				@Override
+				public String toString() {
+					return "os="+os;
+				}
+			};
 		} else {
-			return (sc) ->
-				true;
+			return new Predicate<StemcellData>() {
+				@Override
+				public boolean test(StemcellData sc) {
+					return true;
+				}
+				@Override
+				public String toString() {
+					return "true";
+				}
+			};
 		}
 	}
 
