@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.schema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,12 +25,12 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
@@ -291,19 +292,30 @@ public class YTypeFactory {
 			return null;
 		}
 
-		public AbstractType addHintProvider(Callable<Collection<YValueHint>> hintProvider) {
-			addHintProvider((DynamicSchemaContext dc) -> hintProvider);
+		public AbstractType setHintProvider(Callable<Collection<YValueHint>> hintProvider) {
+			setHintProvider((DynamicSchemaContext dc) -> hintProvider);
 			return this;
 		}
 
-		public AbstractType addHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
+		public AbstractType setHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
 			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
 			this.hintProvider = hintProvider;
 			return this;
 		}
 
 		public YValueHint[] getHintValues(DynamicSchemaContext dc) throws Exception {
-			Collection<YValueHint> providerHints=getProviderHints(dc);
+			Collection<YValueHint> providerHints = null;
+			try {
+				providerHints=getProviderHints(dc);
+			} catch (Exception e) {
+				if (!hints.isEmpty()) {
+					Log.log(e);
+					//Recover from error returning just the static hints.
+					return hints.toArray(new YValueHint[hints.size()]);
+				} else {
+					throw e;
+				}
+			}
 
 			if (providerHints == null || providerHints.isEmpty()) {
 				return hints.toArray(new YValueHint[hints.size()]);
@@ -324,6 +336,9 @@ public class YTypeFactory {
 			}
 		}
 
+		/**
+		 * Prevents adding additional hints.
+		 */
 		public void sealHints() {
 			hints = ImmutableList.copyOf(hints);
 		}
@@ -382,23 +397,16 @@ public class YTypeFactory {
 			addProperty(new YTypedPropertyImpl(name, type));
 		}
 		public AbstractType addHints(String... strings) {
-			if (strings != null) {
-				for (String value : strings) {
-					BasicYValueHint hint = new BasicYValueHint(value);
-					if (!hints.contains(hint)) {
-						hints.add(hint);
-					}
-				}
-			}
-			return this;
+			return addHints(Arrays.stream(strings).map(s -> new BasicYValueHint(s)).toArray(BasicYValueHint[]::new));
 		}
 
-		public void addHints(YValueHint... extraHints) {
+		public AbstractType addHints(YValueHint... extraHints) {
 			for (YValueHint h : extraHints) {
 				if (!hints.contains(h)) {
 					hints.add(h);
 				}
 			}
+			return this;
 		}
 
 		public void parseWith(SchemaContextAware<ValueParser> parser) {
@@ -411,6 +419,29 @@ public class YTypeFactory {
 		}
 		private SchemaContextAware<ValueParser> getParser() {
 			return parser;
+		}
+
+		/**
+		 * Modifies currently installed parser so it is guaranteed to accept at least given values.
+		 * @return
+		 */
+		public AbstractType alsoAccept(String... _values) {
+			if (parser!=null) {
+				ImmutableSet<String> values = ImmutableSet.copyOf(_values);
+				final SchemaContextAware<ValueParser> oldParserProvider = parser;
+				parser = (dc) -> (s) -> {
+					if (values.contains(s)) {
+						return s;
+					} else {
+						ValueParser oldParser = oldParserProvider.safeWithContext(dc).orElse(null);
+						if (oldParser!=null) {
+							return oldParser.parse(s);
+						}
+						return s;
+					}
+				};
+			}
+			return this;
 		}
 
 		public AbstractType require(Constraint dynamicConstraint) {
@@ -849,7 +880,7 @@ public class YTypeFactory {
 
 	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
 		YAtomicType t = yatomic(name);
-		t.addHintProvider((dc) -> () -> values.withContext(dc));
+		t.setHintProvider((dc) -> () -> values.withContext(dc));
 		t.parseWith((DynamicSchemaContext dc) -> {
 			Collection<String> strings = YTypeFactory.values(values.withContext(dc));
 			return new EnumValueParser(name, strings) {
@@ -867,9 +898,7 @@ public class YTypeFactory {
 				//Error message formatter:
 				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
 				//Hints provider:
-				(dc) ->
-					hints(values.withContext(dc)
-				)
+				(dc) -> hints(values.withContext(dc))
 		);
 	}
 
@@ -879,7 +908,7 @@ public class YTypeFactory {
 
 	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
-		t.addHintProvider((dc) -> {
+		t.setHintProvider((dc) -> {
 			Collection<String> strings = values.withContext(dc);
 			return strings==null
 					? null

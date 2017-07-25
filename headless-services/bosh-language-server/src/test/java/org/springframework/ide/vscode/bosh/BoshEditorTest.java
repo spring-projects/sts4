@@ -954,6 +954,22 @@ public class BoshEditorTest {
 		);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test public void contentAssistStemcellVersionNoDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = mock(DynamicModelProvider.class);
+		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: centos-agent\n" +
+				"  version: <*>\n"
+		);
+		editor.assertContextualCompletions("<*>",
+				"latest<*>"
+		);
+	}
+
 	@Test public void contentAssistStemcellVersionFromDirector() throws Exception {
 		Editor editor;
 		stemcellsProvider = provideStemcellsFrom(
@@ -970,7 +986,7 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"222.2<*>", "333.3<*>"
+				"222.2<*>", "333.3<*>", "latest<*>"
 		);
 
 		editor = harness.newEditor(
@@ -980,7 +996,7 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"123.4<*>", "222.2<*>"
+				"123.4<*>", "222.2<*>", "latest<*>"
 		);
 
 		editor = harness.newEditor(
@@ -989,7 +1005,7 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"123.4<*>", "222.2<*>", "333.3<*>"
+				"123.4<*>", "222.2<*>", "333.3<*>", "latest<*>"
 		);
 
 		//when os or name are 'bogus' at least suggest proposals based on other prop
@@ -1001,7 +1017,7 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"222.2<*>", "333.3<*>"
+				"222.2<*>", "333.3<*>", "latest<*>"
 		);
 
 		editor = harness.newEditor(
@@ -1012,7 +1028,7 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"222.2<*>", "333.3<*>"
+				"222.2<*>", "333.3<*>", "latest<*>"
 		);
 
 		//when the os and name disagree, merge the proposals for both:
@@ -1024,8 +1040,32 @@ public class BoshEditorTest {
 				"  version: <*>\n"
 		);
 		editor.assertContextualCompletions("<*>",
-				"123.4<*>", "222.2<*>", "333.3<*>"
+				"123.4<*>", "222.2<*>", "333.3<*>", "latest<*>"
 		);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test public void reconcileStemcellVersionNoDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = mock(DynamicModelProvider.class);
+		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: aaa\n" +
+				"  name: centos-agent\n" +
+				"  version: 222.2\n" +
+				"- alias: bbb\n" +
+				"  name: centos-agent\n" +
+				"  version: 123.4\n" +
+				"- alias: ddd\n" +
+				"  os: ubuntu\n" +
+				"  version: 333.3\n" +
+				"- alias: eee\n" +
+				"  os: ubuntu\n" +
+				"  version: latest\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
 	}
 
 	@Test public void reconcileStemcellVersionFromDirector() throws Exception {
@@ -1047,7 +1087,10 @@ public class BoshEditorTest {
 				"  version: 123.4\n" +
 				"- alias: ddd\n" +
 				"  os: ubuntu\n" +
-				"  version: 333.3\n"
+				"  version: 333.3\n" +
+				"- alias: eee\n" +
+				"  os: ubuntu\n" +
+				"  version: latest\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(

@@ -122,25 +122,25 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		if (buildpackProvider != null) {
-			t_buildpack.addHintProvider(buildpackProvider);
+			t_buildpack.setHintProvider(buildpackProvider);
 //			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
 		}
 
 		YAtomicType t_stack = f.yatomic("Stack");
 		if (stacksProvider!=null) {
-			t_stack.addHintProvider(stacksProvider);
+			t_stack.setHintProvider(stacksProvider);
 			t_stack.parseWith(ManifestYmlValueParsers.fromValueHints(stacksProvider, t_stack, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM));
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
 		if (domainsProvider != null) {
-			t_domain.addHintProvider(domainsProvider);
+			t_domain.setHintProvider(domainsProvider);
 			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
 		}
 
 		YAtomicType t_service = f.yatomic("Service");
 		if (servicesProvider != null) {
-			t_service.addHintProvider(servicesProvider);
+			t_service.setHintProvider(servicesProvider);
 			t_service.parseWith(new CFServicesValueParser(t_service.toString(),
 					YTypeFactory.valuesFromHintProvider(servicesProvider)));
 		}

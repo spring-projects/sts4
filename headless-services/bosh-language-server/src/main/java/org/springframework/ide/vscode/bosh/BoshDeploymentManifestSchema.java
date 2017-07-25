@@ -193,9 +193,13 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
 
-		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) -> stemcellsProvider.getModel(dc).getStemcellNames());
-		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) -> stemcellsProvider.getModel(dc).getStemcellOss());
-		YType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion", (dc) -> {
+		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) ->
+			stemcellsProvider.getModel(dc).getStemcellNames()
+		);
+		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) ->
+			stemcellsProvider.getModel(dc).getStemcellOss()
+		);
+		YAtomicType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion", (dc) -> {
 			StemcellModel currentStemcell = getCurrentStemcell(dc);
 			if (currentStemcell!=null) {
 				return stemcellsProvider.getModel(dc).getStemcells().stream()
@@ -207,6 +211,8 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 			//Troubles determining the filter. So return all stemcells.
 			return stemcellsProvider.getModel(dc).getVersions();
 		});
+		t_stemcell_version_ref.addHints("latest");
+		t_stemcell_version_ref.alsoAccept("latest");
 
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);
@@ -260,7 +266,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YBeanType t_variable = f.ybean("Variable");
 		addProp(t_variable, "name", t_var_name_def).isPrimary(true);
 		YType t_variable_type = f.yenum("VariableType", "certificate", "password", "rsa", "ssh")
-				.parseWith(ValueParsers.NE_STRING); //Overrid the parser -> no errors / warnings... in theory there could be other valid values.
+				.parseWith(ValueParsers.NE_STRING); //Override the parser -> no errors / warnings... in theory there could be other valid values.
 		addProp(t_variable, "type", t_variable_type).isRequired(true);
 		addProp(t_variable, "options", t_params);
 		addProp(v2Schema, "variables", f.yseq(t_variable));
