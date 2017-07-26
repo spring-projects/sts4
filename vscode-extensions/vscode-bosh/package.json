@@ -44,7 +44,23 @@
         "scopeName": "source.yaml",
         "path": "./yaml-support/yaml.tmLanguage"
       }
-    ]
+    ],
+    "configuration": {
+        "type": "object",
+        "title": "Bosh CLI Configuration",
+        "properties": {
+            "bosh.cli.command": {
+                "type": ["string" , "null"],
+                "default": "bosh",
+                "description": "Path to an executable to launch the bosh cli V2. A V2 cli is required! Set this to null to completely disable all editor features that require access to the bosh director"
+            },
+            "bosh.cli.director": {
+                "type": ["string", "null"],
+                "default": null,
+                "description": "Specifies the director to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
+            }
+        }
+    }
   },
   "main": "./out/lib/Main",
   "scripts": {
