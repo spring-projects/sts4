@@ -18,8 +18,11 @@ import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProv
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
@@ -38,7 +41,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
 
-	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider, DynamicModelProvider<StemcellsModel> stemcellsProvider) {
+	public BoshLanguageServer(BoshCliConfig cliConfig, DynamicModelProvider<CloudConfigModel> cloudConfigProvider, DynamicModelProvider<StemcellsModel> stemcellsProvider) {
 		super("vscode-bosh");
 		YamlAstCache asts = new YamlAstCache();
 		SimpleTextDocumentService documents = getTextDocumentService();
@@ -64,6 +67,11 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine ::getHover);
 		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
+
+		SimpleWorkspaceService workspace = getWorkspaceService();
+		workspace.onDidChangeConfiguraton((Settings settings) -> {
+			cliConfig.handleConfigurationChange(settings);
+		});
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {

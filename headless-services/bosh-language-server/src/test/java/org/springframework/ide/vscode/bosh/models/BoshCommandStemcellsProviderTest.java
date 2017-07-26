@@ -11,21 +11,30 @@
 package org.springframework.ide.vscode.bosh.models;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.ide.vscode.bosh.BoshCliConfig;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
+import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public class BoshCommandStemcellsProviderTest {
 
-	private static final String MOCK_DATA_RSRC = "/cmd-out/stemcells.json";;
-	public BoshCommandStemcellsProvider provider = Mockito.spy(BoshCommandStemcellsProvider.class);
+	private static final String MOCK_DATA_RSRC = "/cmd-out/stemcells.json";
+	private BoshCliConfig cliConfig = new BoshCliConfig();
+	public BoshCommandStemcellsProvider provider = Mockito.spy(new BoshCommandStemcellsProvider(cliConfig));
 
 	@Before
 	public void settup() throws Exception {
@@ -62,5 +71,33 @@ public class BoshCommandStemcellsProviderTest {
 			provider.getModel(mock(DynamicSchemaContext.class)).getVersions());
 	}
 
+	@Test public void obeysCliConfigCommand() throws Exception {
+		Map<String, String> settings = ImmutableMap.of(
+				"cli.command", "alternate-command"
+		);
+		cliConfig.handleConfigurationChange(new Settings(settings));
+		assertEquals(ImmutableList.of(
+				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
+				new StemcellData("bosh-vsphere-esxi-ubuntu-trusty-go_agent", "3421.11", "ubuntu-trusty")
+			),
+			provider.getModel(mock(DynamicSchemaContext.class)).getStemcells()
+		);
+		verify(provider).executeCommand(eq(new ExternalCommand("alternate-command", "stemcells", "--json")));
+	}
+
+	@Test public void obeysCliConfigTarget() throws Exception {
+		Map<String, String> settings = ImmutableMap.of(
+				"cli.command", "alternate-command",
+				"cli.target", "explicit-target"
+		);
+		cliConfig.handleConfigurationChange(new Settings(settings));
+		assertEquals(ImmutableList.of(
+				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
+				new StemcellData("bosh-vsphere-esxi-ubuntu-trusty-go_agent", "3421.11", "ubuntu-trusty")
+			),
+			provider.getModel(mock(DynamicSchemaContext.class)).getStemcells()
+		);
+		verify(provider).executeCommand(eq(new ExternalCommand("alternate-command", "-e", "explicit-target", "stemcells", "--json")));
+	}
 
 }

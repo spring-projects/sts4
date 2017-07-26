@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.bosh.mocks;
 
 import java.util.concurrent.Callable;
 
+import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProviderTest;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
@@ -28,6 +29,10 @@ public final class MockCloudConfigProvider extends BoshCommandCloudConfigProvide
 	private int readCount = 0;
 
 	private Callable<String> reader = null;
+
+	public MockCloudConfigProvider(BoshCliConfig config) {
+		super(config);
+	}
 
 	/**
 	 * Override with a 'fake' which just returns some mock data. That way we can unit-test

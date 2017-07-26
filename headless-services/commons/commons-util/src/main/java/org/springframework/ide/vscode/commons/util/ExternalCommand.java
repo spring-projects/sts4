@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -76,4 +77,27 @@ public class ExternalCommand {
 //		org.junit.Assert.assertEquals(0, process.getExitValue());
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(command);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ExternalCommand other = (ExternalCommand) obj;
+		if (!Arrays.equals(command, other.command))
+			return false;
+		return true;
+	}
+
+	
 }

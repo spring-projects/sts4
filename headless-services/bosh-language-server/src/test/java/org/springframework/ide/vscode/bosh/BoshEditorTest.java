@@ -48,12 +48,13 @@ public class BoshEditorTest {
 
 	LanguageServerHarness harness;
 
-	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider();
+	private BoshCliConfig cliConfig = new BoshCliConfig();
+	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider(cliConfig);
 	private DynamicModelProvider<StemcellsModel> stemcellsProvider = Mockito.mock(DynamicModelProvider.class);
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(cloudConfigProvider, (dc) -> stemcellsProvider.getModel(dc))
+				return new BoshLanguageServer(cliConfig, cloudConfigProvider, (dc) -> stemcellsProvider.getModel(dc))
 						.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
@@ -1100,7 +1101,7 @@ public class BoshEditorTest {
 	}
 
 	private DynamicModelProvider<StemcellsModel> provideStemcellsFrom(StemcellData... stemcellData) {
-		return new BoshCommandStemcellsProvider() {
+		return new BoshCommandStemcellsProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
 				String rows = mapper.writeValueAsString(stemcellData);

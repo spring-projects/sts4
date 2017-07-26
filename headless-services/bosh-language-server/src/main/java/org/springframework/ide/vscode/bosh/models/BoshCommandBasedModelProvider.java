@@ -11,8 +11,10 @@
 package org.springframework.ide.vscode.bosh.models;
 
 import java.io.File;
-import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
@@ -37,9 +39,10 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	private final YamlParser yamlParser;
 	protected final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-	protected Duration CMD_TIMEOUT = Duration.ofSeconds(3);
+	private final BoshCliConfig config;
 
-	protected BoshCommandBasedModelProvider() {
+	protected BoshCommandBasedModelProvider(BoshCliConfig config) {
+		this.config = config;
 		Representer representer = new Representer();
 		representer.getPropertyUtils().setSkipMissingProperties(true);
 		yamlParser = new YamlParser(new Yaml());
@@ -69,6 +72,20 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		return blocks[0];
 	}
 
+	protected final ExternalCommand getCommand() {
+		List<String> command = new ArrayList<>();
+		command.add(config.getCommand());
+		String target = config.getTarget();
+		if (target!=null) {
+			command.add("-e");
+			command.add(target);
+		}
+		for (String s : getBoshCommand()) {
+			command.add(s);
+		}
+		return new ExternalCommand(command.toArray(new String[command.size()]));
+	}
+
 	protected JsonNode getJsonTree() throws Exception {
 		String out = executeCommand(getCommand());
 		return mapper.readTree(out);
@@ -77,7 +94,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		Log.info("executing cmd: "+command);
 		try {
-			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, CMD_TIMEOUT);
+			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, config.getTimeout());
 			Log.info("executing cmd SUCCESS: "+process);
 			String out = process.getOut();
 			return out;
@@ -91,7 +108,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		return new File(".").getAbsoluteFile();
 	}
 
-	protected abstract ExternalCommand getCommand();
+	protected abstract String[] getBoshCommand();
 
 	protected YamlFileAST parseYaml(String block) throws Exception {
 		TextDocument doc = new TextDocument(null, LanguageId.BOSH_CLOUD_CONFIG);

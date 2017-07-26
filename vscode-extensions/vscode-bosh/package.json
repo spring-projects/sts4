@@ -58,6 +58,11 @@
                 "type": ["string", "null"],
                 "default": null,
                 "description": "Specifies the director to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
+            },
+            "bosh.cli.timeout": {
+                "type": "integer",
+                "default": 3,
+                "description": "Number of seconds before CLI commands are terminated with a timeout"
             }
         }
     }

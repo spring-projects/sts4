@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.bosh.models;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -36,6 +37,10 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 
 	private static final YamlTraversal STEMCELL_VERSIONS = STEMCELLS
 			.thenValAt("version");
+
+	public BoshCommandStemcellsProvider(BoshCliConfig config) {
+		super(config);
+	}
 
 	@Override
 	public StemcellsModel getModel(DynamicSchemaContext dc) throws Exception {
@@ -92,8 +97,8 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 	}
 
 	@Override
-	protected ExternalCommand getCommand() {
-		return new ExternalCommand("bosh", "stemcells", "--json");
+	protected String[] getBoshCommand() {
+		return new String[] { "stemcells", "--json" };
 	}
 
 }

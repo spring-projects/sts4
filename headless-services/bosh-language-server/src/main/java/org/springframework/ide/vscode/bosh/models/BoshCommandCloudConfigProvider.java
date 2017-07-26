@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -31,7 +32,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
  */
 public class BoshCommandCloudConfigProvider extends BoshCommandBasedModelProvider<CloudConfigModel> {
 
-	public BoshCommandCloudConfigProvider() {
+	public BoshCommandCloudConfigProvider(BoshCliConfig config) {
+		super(config);
 	}
 
 	private static final YamlTraversal VM_TYPE_NAMES = YamlPath.EMPTY
@@ -103,18 +105,9 @@ public class BoshCommandCloudConfigProvider extends BoshCommandBasedModelProvide
 		};
 	}
 
-	/**
-	 * Configure how long we wait for the command to fetch cloud config before
-	 * raising timeout exception. (The command may block for long amounts of time
-	 * of the director is unreachable on the network).
-	 */
-	public void setCommandTimeout(Duration duration) {
-		this.CMD_TIMEOUT = duration;
-	}
-
 	@Override
-	protected ExternalCommand getCommand() {
-		return new ExternalCommand("bosh", "cloud-config", "--json");
+	protected String[] getBoshCommand() {
+		return new String[] {"cloud-config", "--json"};
 	}
 
 }

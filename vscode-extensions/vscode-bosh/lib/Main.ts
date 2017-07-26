@@ -36,7 +36,10 @@ export function activate(context: VSCode.ExtensionContext) {
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: "48m",
         clientOptions: {
-            documentSelector: [ BOSH_DEPLOYMENT_LANGUAGE_ID ]
+            documentSelector: [ BOSH_DEPLOYMENT_LANGUAGE_ID ],
+            synchronize: {
+                configurationSection: "bosh"
+            }
         }
     };
     let clientPromise = commons.activate(options, context);
