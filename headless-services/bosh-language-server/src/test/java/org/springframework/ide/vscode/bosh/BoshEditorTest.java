@@ -17,6 +17,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
@@ -953,6 +954,25 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"bogus|unknown 'StemcellOs'. Valid values are: [ubuntu, centos]"
 		);
+	}
+
+	@Test public void contentAssistStemcellNameNoDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = mock(DynamicModelProvider.class);
+		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: <*>\n"
+		);
+		List<CompletionItem> completions = editor.getCompletions();
+		assertEquals(1, completions.size());
+		CompletionItem c = completions.get(0);
+		c = harness.resolveCompletionItem(c);
+		assertContains("Couldn't connect to bosh", c.getDocumentation());
+		System.out.println("label  = " + c.getLabel());
+		System.out.println("detail = " + c.getDetail());
+		System.out.println("doc    = " + c.getDocumentation());
 	}
 
 	@SuppressWarnings("unchecked")

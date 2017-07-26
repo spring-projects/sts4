@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.bosh.models;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
@@ -37,7 +38,7 @@ public class BoshCommandStemcellsProviderTest {
 	public BoshCommandStemcellsProvider provider = Mockito.spy(new BoshCommandStemcellsProvider(cliConfig));
 
 	@Before
-	public void settup() throws Exception {
+	public void setup() throws Exception {
 		Mockito.doReturn(IOUtil.toString(BoshCommandCloudConfigProviderTest.class.getResourceAsStream(MOCK_DATA_RSRC)))
 			.when(provider).executeCommand(Mockito.any());
 	}
