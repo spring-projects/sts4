@@ -72,32 +72,32 @@ See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview
 ### Targetting a specific Director
 
 Some of the Validations and Content Assist depend on information dymanically retrieved from an active Bosh director.
-This information is retrieve by the editor by executing commands using the Bosh CLI. For this to work the CLI (V2 
+The editor retreives information by executing commands using the Bosh CLI. For this to work the CLI (V2 
 CLI is required) and editor have to be installed and configured correctly.
 
-There are two ways to set things up:
+There are two ways to set things up to make this work:
 
 #### Explicitly Configure the CLI:
 
-From vscode, press `CTRL-SHIFT-P` and type `Settings` then select either "Open User Settings" or "Open Workspace Settings".
-The bosh cli can be conigured by specifying values for keys of the form `bosh.cli.XXX`. Content assist and hover docs 
-explain the meaning of the available keys.
+From vscode, press `CTRL-SHIFT-P` and type `Settings` then select either `Open User Settings` or `Open Workspace Settings`.
+The bosh cli is configured by specifying keys of the form `bosh.cli.XXX`. Content assist and hover docs show you the
+the available keys and their meaning.
 
 #### Implictly Configure the CLI:
 
-If the bosh cli is not explicitly configure it will, by default try to execute commands like `bosh cloud-config --json` 
-without an explicit `-e ...` argument to target a specific director. This works only if you ensure that the editor
-process executes with a proper set of environment variables:
+If the bosh cli is not explicitly configured it will, by default, try to execute commands like `bosh cloud-config --json`
+and `bosh stemcells --json` without an explicit `-e ...` argument. This works only if you ensure that the editor
+process executes with a proper set of OS environment variables:
 
-- `PATH`: must be set so that `bosh` command can be found and refers to the V2 CLI.
+- `PATH`: must be set so that `bosh` cli executable can be found and refers to the V2 CLI.
 - `BOSH_ENVIRONMENT`: must be set to point to the bosh director you want to target.
 
 If you start vscode from a terminal, you can verify that things are setup correctly by executing command:
 
-     bosh cloud-config
+     bosh cloud-config 
 
-If that command executes without any errors and returns the cloud-config, then things are setup correctly 
-and if you launch vscode from that same terminal the dynamic CA and linting should work correctly.
+If that command executes without any errors and returns the cloud-config you expected, then things are setup correctly. 
+If subsequently launch vscode from that same terminal the dynamic CA and linting should work correctly.
 
 ## Issues and Feature Requests
 
