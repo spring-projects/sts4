@@ -54,10 +54,10 @@
                 "default": "bosh",
                 "description": "Path to an executable to launch the bosh cli V2. A V2 cli is required! Set this to null to completely disable all editor features that require access to the bosh director"
             },
-            "bosh.cli.director": {
+            "bosh.cli.target": {
                 "type": ["string", "null"],
                 "default": null,
-                "description": "Specifies the director to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
+                "description": "Specifies the director/environment to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
             },
             "bosh.cli.timeout": {
                 "type": "integer",
