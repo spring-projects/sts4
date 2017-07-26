@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.bosh.models;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,17 +74,21 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	}
 
 	protected final ExternalCommand getCommand() {
-		List<String> command = new ArrayList<>();
-		command.add(config.getCommand());
+		List<String> commandAndArgs = new ArrayList<>();
+		String command = config.getCommand();
+		if (command==null) {
+			return null;
+		}
+		commandAndArgs.add(command);
 		String target = config.getTarget();
 		if (target!=null) {
-			command.add("-e");
-			command.add(target);
+			commandAndArgs.add("-e");
+			commandAndArgs.add(target);
 		}
 		for (String s : getBoshCommand()) {
-			command.add(s);
+			commandAndArgs.add(s);
 		}
-		return new ExternalCommand(command.toArray(new String[command.size()]));
+		return new ExternalCommand(commandAndArgs.toArray(new String[commandAndArgs.size()]));
 	}
 
 	protected JsonNode getJsonTree() throws Exception {
@@ -93,6 +98,9 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		Log.info("executing cmd: "+command);
+		if (command==null) {
+			throw new IOException("bosh cli based editor features are disabled");
+		}
 		try {
 			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, config.getTimeout());
 			Log.info("executing cmd SUCCESS: "+process);

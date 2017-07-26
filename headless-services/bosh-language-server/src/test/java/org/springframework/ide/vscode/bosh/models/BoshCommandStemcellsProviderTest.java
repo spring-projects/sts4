@@ -71,10 +71,23 @@ public class BoshCommandStemcellsProviderTest {
 			provider.getModel(mock(DynamicSchemaContext.class)).getVersions());
 	}
 
+//	@Test public void defaultCliConfig() throws Exception {
+//		assertEquals(ImmutableList.of(
+//				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
+//				new StemcellData("bosh-vsphere-esxi-ubuntu-trusty-go_agent", "3421.11", "ubuntu-trusty")
+//			),
+//			provider.getModel(mock(DynamicSchemaContext.class)).getStemcells()
+//		);
+//		verify(provider).executeCommand(eq(new ExternalCommand("bosh", "stemcells", "--json")));
+//	}
+
 	@Test public void obeysCliConfigCommand() throws Exception {
-		Map<String, String> settings = ImmutableMap.of(
-				"cli.command", "alternate-command"
-		);
+		Map<String, Object> settings = ImmutableMap.of("bosh", ImmutableMap.of("cli",
+				ImmutableMap.of(
+						"command", "alternate-command"
+				)
+		));
+
 		cliConfig.handleConfigurationChange(new Settings(settings));
 		assertEquals(ImmutableList.of(
 				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
@@ -86,10 +99,12 @@ public class BoshCommandStemcellsProviderTest {
 	}
 
 	@Test public void obeysCliConfigTarget() throws Exception {
-		Map<String, String> settings = ImmutableMap.of(
-				"cli.command", "alternate-command",
-				"cli.target", "explicit-target"
-		);
+		Map<String, Object> settings = ImmutableMap.of("bosh", ImmutableMap.of("cli",
+				ImmutableMap.of(
+						"command", "alternate-command",
+						"target", "explicit-target"
+				)
+		));
 		cliConfig.handleConfigurationChange(new Settings(settings));
 		assertEquals(ImmutableList.of(
 				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.bosh;
 import java.time.Duration;
 
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Provides access to configuration options that allow user to
@@ -29,17 +30,18 @@ public class BoshCliConfig {
 	private Settings settings = new Settings(null);
 
 	public String getCommand() {
-		return (String) settings.getProperty("cli.command");
+		return (String) settings.getProperty("bosh", "cli", "command");
 	}
 	public String getTarget() {
-		return (String) settings.getProperty("cli.target");
+		return (String) settings.getProperty("bosh", "cli", "target");
 	}
 	public Duration getTimeout() {
-		Integer seconds = (Integer) settings.getProperty("cli.timeout");
+		Integer seconds = (Integer) settings.getProperty("cli", "timeout");
 		return seconds == null ? Duration.ofSeconds(3) : Duration.ofSeconds(seconds);
 	}
 
 	public void handleConfigurationChange(Settings newConfig) {
+		Log.info("BoshCliConfig changed: "+newConfig);
 		this.settings = newConfig;
 	}
 }
