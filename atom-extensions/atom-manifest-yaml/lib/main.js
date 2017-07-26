@@ -43,6 +43,7 @@ class ManifestYamlLanguageClient extends JarLanguageClient {
 
     launchVmArgs(version) {
         return [
+            '-Dlsp.yaml.completions.errors.disable=true',
             '-Xdebug',
             '-agentlib:jdwp=transport=dt_socket,address=9000,server=y,suspend=n',
             '-Dorg.slf4j.simpleLogger.logFile=manifest-yaml.log',

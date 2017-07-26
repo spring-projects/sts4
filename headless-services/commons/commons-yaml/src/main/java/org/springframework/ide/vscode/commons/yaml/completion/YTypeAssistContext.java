@@ -201,7 +201,11 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		try {
 			values = typeUtil.getHintValues(type, getSchemaContext());
 		} catch (Exception e) {
-			return ImmutableList.of(completionFactory().errorMessage(query, getMessage(e)));
+			if (!Boolean.getBoolean("lsp.yaml.completions.errors.disable")) {
+				return ImmutableList.of(completionFactory().errorMessage(query, getMessage(e)));
+			} else {
+				Log.warn(query, e);
+			}
 		}
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();

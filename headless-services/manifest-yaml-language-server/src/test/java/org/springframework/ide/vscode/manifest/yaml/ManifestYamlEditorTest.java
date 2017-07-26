@@ -24,7 +24,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
@@ -52,6 +51,7 @@ public class ManifestYamlEditorTest {
 				LanguageId.CF_MANIFEST
 		);
 		harness.intialize(null);
+		System.setProperty("lsp.yaml.completions.errors.disable", "false");
 	}
 
 	@Test public void testReconcileCatchesParseError() throws Exception {
@@ -1141,6 +1141,27 @@ public class ManifestYamlEditorTest {
 		//The message from the exception should appear in the 'doc string':
 		editor.assertCompletionDetails("No Cloudfoundry Targets", "Error", "Please login");
 
+	}
+
+	@Test
+	public void servicesContentAssistWhenNotLoggedIn_ErrorProposalsDisabled() throws Exception {
+		System.setProperty("lsp.yaml.completions.errors.disable", "true");
+
+		reset(cloudfoundry.defaultParamsProvider);
+
+		when(cloudfoundry.defaultParamsProvider.getParams()).thenThrow(new NoTargetsException("No Cloudfoundry Targets: Please login"));
+
+		String textBefore =
+				"applications:\n" +
+				"- name: foo\n" +
+				"  services:\n" +
+				"  - <*>";
+		Editor editor = harness.newEditor(
+				textBefore
+		);
+
+		//Applying the single completion should do nothing in the editor:
+		assertEquals(0, editor.assertCompletions().size());
 	}
 
 	@Test
