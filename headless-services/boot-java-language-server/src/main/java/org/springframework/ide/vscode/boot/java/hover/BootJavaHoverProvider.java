@@ -52,8 +52,8 @@ public class BootJavaHoverProvider implements HoverHandler {
 	@Override
 	public CompletableFuture<Hover> handle(TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
-		TextDocument doc = documents.get(params).copy();
-		if (doc != null) {
+		if (documents.get(params) != null) {
+			TextDocument doc = documents.get(params).copy();
 			try {
 				int offset = doc.toOffset(params.getPosition());
 				CompletableFuture<Hover> hoverResult = provideHover(doc, offset);
@@ -64,7 +64,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 			catch (Exception e) {
 			}
 		}
-		
+
 		return SimpleTextDocumentService.NO_HOVER;
 	}
 
@@ -77,7 +77,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
-		
+
 		String[] classpathEntries = getClasspathEntries(document);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
@@ -89,7 +89,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		ASTNode node = NodeFinder.perform(cu, offset, 0);
-		
+
 		if (node != null) {
 			System.out.println("AST node found: " + node.getClass().getName());
 			return provideHoverForAnnotation(node, offset, document);
@@ -101,11 +101,11 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private CompletableFuture<Hover> provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc) {
 		Annotation annotation = null;
 		ASTNode exactNode = node;
-		
+
 		while (node != null && !(node instanceof Annotation)) {
 			node = node.getParent();
 		}
-		
+
 		if (node != null) {
 			annotation = (Annotation) node;
 			ITypeBinding type = annotation.resolveTypeBinding();
@@ -116,7 +116,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -124,7 +124,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		if (type.getQualifiedName().equals(SPRING_VALUE)) {
 			return new ValueHoverProvider().provideHoverForValueAnnotation(node, annotation, type, offset, doc);
 		}
-		
+
 		return null;
 	}
 
@@ -134,7 +134,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries
 				.filter(path -> path.toFile().exists())
-				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new); 
+				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
 	}
 
 }
