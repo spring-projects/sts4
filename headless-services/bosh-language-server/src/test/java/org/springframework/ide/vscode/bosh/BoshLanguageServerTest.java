@@ -20,11 +20,11 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
+import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
+@SuppressWarnings("unchecked")
 public class BoshLanguageServerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
@@ -36,7 +36,7 @@ public class BoshLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
 		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), mock(DynamicModelProvider.class))
+			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), mock(DynamicModelProvider.class), mock(DynamicModelProvider.class))
 		);
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
@@ -46,7 +46,7 @@ public class BoshLanguageServerTest {
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
 		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), Mockito.mock(DynamicModelProvider.class))
+			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), mock(DynamicModelProvider.class), mock(DynamicModelProvider.class))
 		);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}

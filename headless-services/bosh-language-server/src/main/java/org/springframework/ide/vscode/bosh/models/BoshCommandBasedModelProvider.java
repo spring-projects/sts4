@@ -13,17 +13,22 @@ package org.springframework.ide.vscode.bosh.models;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -123,5 +128,18 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		doc.setText(block);
 		YamlFileAST ast = yamlParser.getAST(doc);
 		return ast;
+	}
+
+	protected Collection<String> getNames(JSONCursor _cursor, YamlTraversal path) {
+		return path.traverseAmbiguously(_cursor)
+		.flatMap((cursor) -> {
+			String text = cursor.target.asText();
+			if (StringUtil.hasText(text)) {
+				return Stream.of(text);
+			} else {
+				return Stream.empty();
+			}
+		})
+		.collect(CollectorUtil.toImmutableSet());
 	}
 }

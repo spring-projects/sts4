@@ -29,8 +29,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleaseData;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
@@ -51,12 +54,16 @@ public class BoshEditorTest {
 
 	private BoshCliConfig cliConfig = new BoshCliConfig();
 	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider(cliConfig);
-	private DynamicModelProvider<StemcellsModel> stemcellsProvider = Mockito.mock(DynamicModelProvider.class);
+	private DynamicModelProvider<StemcellsModel> stemcellsProvider = mock(DynamicModelProvider.class);
+	private DynamicModelProvider<ReleasesModel> releasesProvider = mock(DynamicModelProvider.class);
 
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(cliConfig, cloudConfigProvider, (dc) -> stemcellsProvider.getModel(dc))
-						.setMaxCompletions(100);
+				return new BoshLanguageServer(cliConfig, cloudConfigProvider,
+						(dc) -> stemcellsProvider.getModel(dc),
+						(dc) -> releasesProvider.getModel(dc)
+				)
+				.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
 		);
@@ -1122,6 +1129,58 @@ public class BoshEditorTest {
 
 	private DynamicModelProvider<StemcellsModel> provideStemcellsFrom(StemcellData... stemcellData) {
 		return new BoshCommandStemcellsProvider(cliConfig) {
+			@Override
+			protected String executeCommand(ExternalCommand command) throws Exception {
+				String rows = mapper.writeValueAsString(stemcellData);
+				return "{\n" +
+						"    \"Tables\": [\n" +
+						"        {\n" +
+						"            \"Rows\": " + rows +
+						"        }\n" +
+						"    ]\n" +
+						"}";
+			}
+		};
+	}
+
+	@Test public void contentAssistReleaseNameDef() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"bar<*>",
+				"foo<*>"
+		);
+	}
+
+	@Test public void reconcileReleaseNameDef() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"- name: bar\n" +
+				"- name: bogus\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseName'. Valid values are: [foo, bar]");
+	}
+
+	private DynamicModelProvider<ReleasesModel> provideReleasesFrom(ReleaseData... stemcellData) {
+		return new BoshCommandReleasesProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
 				String rows = mapper.writeValueAsString(stemcellData);

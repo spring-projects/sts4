@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
@@ -96,17 +97,20 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
 	private DynamicModelProvider<StemcellsModel> stemcellsProvider;
+	private DynamicModelProvider<ReleasesModel> releasesProvider;
 	private List<Pair<YType, YType>> defAndRefTypes;
 
 	public BoshDeploymentManifestSchema(
 			YamlAstCache asts, ASTTypeCache astTypes,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
-			DynamicModelProvider<StemcellsModel> stemcellsProvider
+			DynamicModelProvider<StemcellsModel> stemcellsProvider,
+			DynamicModelProvider<ReleasesModel> releasesProvider
 	) {
 		this.asts = asts;
 		this.astTypes = astTypes;
 		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider);
 		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider);
+		this.releasesProvider = new CachingModelProvider<>(releasesProvider);
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();
@@ -147,8 +151,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		t_stemcell_alias_def = f.yatomic("StemcellAlias")
 				.parseWith(ValueParsers.NE_STRING);
 		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> astTypes.getDefinedNames(dc, t_stemcell_alias_def));
-		t_release_name_def = f.yatomic("ReleaseName")
-				.parseWith(ValueParsers.NE_STRING);
+		t_release_name_def = f.yenumFromDynamicValues("ReleaseName", (dc) -> releasesProvider.getModel(dc).getReleaseNames());
 		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
 
 		t_var_name_def = f.yatomic("VariableName")
