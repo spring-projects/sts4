@@ -16,4 +16,5 @@ import java.util.List;
 public interface ReleasesModel {
 	List<ReleaseData> getReleases();
 	Collection<String> getReleaseNames();
+	Collection<String> getVersions();
 }

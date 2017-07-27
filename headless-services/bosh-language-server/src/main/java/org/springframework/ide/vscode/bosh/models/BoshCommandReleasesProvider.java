@@ -32,6 +32,9 @@ public class BoshCommandReleasesProvider  extends BoshCommandBasedModelProvider<
 	private static final YamlTraversal RELEASE_NAMES = RELEASES
 			.thenValAt("name");
 
+	private static final YamlTraversal RELEASE_VERSIONS = RELEASES
+			.thenValAt("version");
+
 	public BoshCommandReleasesProvider(BoshCliConfig config) {
 		super(config);
 	}
@@ -61,6 +64,11 @@ public class BoshCommandReleasesProvider  extends BoshCommandBasedModelProvider<
 			@Override
 			public Collection<String> getReleaseNames() {
 				return getNames(cursor, RELEASE_NAMES);
+			}
+
+			@Override
+			public Collection<String> getVersions() {
+				return getNames(cursor, RELEASE_VERSIONS);
 			}
 		};
 	}

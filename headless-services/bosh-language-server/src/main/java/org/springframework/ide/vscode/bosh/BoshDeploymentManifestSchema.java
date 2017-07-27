@@ -180,13 +180,13 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group_env, "bosh", t_params);
 		addProp(t_instance_group_env, "password", t_ne_string);
 
-		YAtomicType t_version = f.yatomic("Version");
-		t_version.addHints("latest");
-		t_version.parseWith(ValueParsers.NE_STRING);
+		YAtomicType t_release_version = f.yenumFromDynamicValues("ReleaseVersion", dc -> releasesProvider.getModel(dc).getVersions());
+		t_release_version.addHints("latest");
+		t_release_version.alsoAccept("latest");
 
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_release_name_def).isPrimary(true);
-		addProp(t_release, "version", t_version);
+		addProp(t_release, "version", t_release_version);
 		//TODO: the checking here is just 'my best guess'. Unclarity remains:
 		//   See: https://github.com/cloudfoundry/docs-bosh/issues/330
 		addProp(t_release, "url", t_url);

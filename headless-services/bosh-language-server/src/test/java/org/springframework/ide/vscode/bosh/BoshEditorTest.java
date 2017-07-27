@@ -1179,6 +1179,44 @@ public class BoshEditorTest {
 		editor.assertProblems("bogus|unknown 'ReleaseName'. Valid values are: [foo, bar]");
 	}
 
+	@Test public void contentAssistReleaseVersion() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- version: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+	}
+
+	@Test public void reconcileReleaseVersion() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- version: 123.4\n" +
+				"- version: bogus\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3]");
+	}
+
+
 	private DynamicModelProvider<ReleasesModel> provideReleasesFrom(ReleaseData... stemcellData) {
 		return new BoshCommandReleasesProvider(cliConfig) {
 			@Override
