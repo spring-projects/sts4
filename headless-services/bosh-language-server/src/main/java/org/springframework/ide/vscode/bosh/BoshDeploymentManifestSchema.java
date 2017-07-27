@@ -108,9 +108,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	) {
 		this.asts = asts;
 		this.astTypes = astTypes;
-		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider);
-		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider);
-		this.releasesProvider = new CachingModelProvider<>(releasesProvider);
+		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider, CloudConfigModel.class);
+		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider, StemcellsModel.class);
+		this.releasesProvider = new CachingModelProvider<>(releasesProvider, ReleasesModel.class);
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();

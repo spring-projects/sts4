@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh.models;
 
+import java.lang.reflect.Proxy;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -35,9 +36,11 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 	private Cache<Object, CompletableFuture<T>> cache = createCache();
 
 	private final DynamicModelProvider<T> delegate;
+	private Class<T> modelInterface;
 
-	public CachingModelProvider(DynamicModelProvider<T> delegate) {
+	public CachingModelProvider(DynamicModelProvider<T> delegate, Class<T> modelInterface) {
 		this.delegate = delegate;
+		this.modelInterface = modelInterface;
 	}
 
 	/**
@@ -72,15 +75,37 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 		synchronized (this) {
 			cached = cache.get(key, () -> {
 				try {
-					return CompletableFuture.completedFuture(delegate.getModel(dc));
+					return CompletableFuture.completedFuture(wrapWithCachingProxy(delegate.getModel(dc)));
 				} catch (Throwable e) {
-					CompletableFuture<T> failed = new CompletableFuture<>();
-					failed.completeExceptionally(e);
-					return failed;
+					return failed(e);
 				}
 			});
 		}
 		return cached.get();
+	}
+
+	private static <T> CompletableFuture<T> failed(Throwable e) {
+		CompletableFuture<T> failed = new CompletableFuture<>();
+		failed.completeExceptionally(e);
+		return failed;
+	}
+
+	@SuppressWarnings("unchecked")
+	private T wrapWithCachingProxy(T model) {
+		Cache<String, CompletableFuture<Object>> attributesCache = CacheBuilder.newBuilder().build();
+		return (T) Proxy.newProxyInstance(modelInterface.getClassLoader(), new Class[] {modelInterface}, (o, m, a) -> {
+			//We only support caching results for methods that have no arguments (for now, its all we need).
+			if (m.getParameterTypes().length==0) {
+				return attributesCache.get(m.getName(), () -> {
+					try {
+						return CompletableFuture.completedFuture((T)m.invoke(model, a));
+					} catch (Throwable e) {
+						return failed(e);
+					}
+				}).get();
+			}
+			return m.invoke(model, a);
+		});
 	}
 
 }

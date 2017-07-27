@@ -52,7 +52,7 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 	 * currently pointed at in the current document using String.indexOf.
 	 */
 	protected Flux<Location> findDefinitions(TextDocumentPositionParams params) {
-			try {
+		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc != null) {
 				int offset = doc.toOffset(params.getPosition());
