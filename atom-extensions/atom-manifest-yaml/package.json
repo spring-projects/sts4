@@ -9,7 +9,6 @@
     "atom": ">=1.17.0"
   },
   "dependencies": {
-    "atom-languageclient": "0.1.1",
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",

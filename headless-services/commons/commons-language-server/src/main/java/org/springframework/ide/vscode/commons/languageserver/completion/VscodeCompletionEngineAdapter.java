@@ -117,8 +117,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
-		TextDocument doc = documents.get(params).copy();
-		if (doc!=null) {
+		if (documents.get(params) != null) {
+			TextDocument doc = documents.get(params).copy();
 			return Mono.fromCallable(() -> {
 				if (resolver!=null) {
 					//Assumes we don't have more than one completion request in flight from the client.
