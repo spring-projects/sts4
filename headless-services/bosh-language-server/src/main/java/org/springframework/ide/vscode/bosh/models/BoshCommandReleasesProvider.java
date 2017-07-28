@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 public class BoshCommandReleasesProvider  extends BoshCommandBasedModelProvider<ReleasesModel> {
 
-	private static final String[] COMMAND = new String[] { "stemcells", "--json" };
+	private static final String[] COMMAND = new String[] { "releases", "--json" };
 
 	private static final YamlTraversal RELEASES = YamlPath.EMPTY
 			.thenValAt("Tables")
