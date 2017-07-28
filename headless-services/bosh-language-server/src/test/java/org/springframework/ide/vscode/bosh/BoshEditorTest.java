@@ -1591,4 +1591,21 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void bug_149769913() throws Exception {
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: learn-bosh\n" +
+				"  url: file:///blah\n" +
+				"  version:\n" +
+				"- name: blah-blah\n" +
+				"  version:"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+
+		editor.assertProblems(
+				"version:^^|cannot be blank",
+				"version:^^|cannot be blank"
+		);
+	}
+
 }

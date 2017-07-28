@@ -53,6 +53,10 @@ public class EnumValueParser implements ValueParser {
 		this.values = values;
 	}
 
+	public EnumValueParser(String name, PartialCollection<String> values) {
+		this(name, () -> values);
+	}
+
 	@Override
 	public Object parse(String str) throws Exception {
 		// IMPORTANT: check the text FIRST before fetching values

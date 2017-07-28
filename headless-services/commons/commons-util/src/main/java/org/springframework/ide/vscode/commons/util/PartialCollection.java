@@ -68,6 +68,20 @@ public class PartialCollection<T> {
 			return new PartialCollection<>(ImmutableSet.of(), e);
 		}
 	}
+	
+	/**
+	 * Create a {@link PartialCollection} by executing some computation that returs a collectioon. 
+	 * If the computation throws the resulting collection will be completely unknown, otherwise
+	 * it will be completely known.
+	 */
+	public static <T> PartialCollection<T> fromCallable(Callable<PartialCollection<T>> computer) {
+		try {
+			return computer.call();
+		} catch (Exception e) {
+			return new PartialCollection<>(ImmutableSet.of(), e);
+		}
+	}
+
 
 	/**
 	 * @return All the known elements of this partial collection.

@@ -859,21 +859,17 @@ public class YTypeFactory {
 		YAtomicType t = yatomic(name);
 		t.setHintProvider(values);
 		t.parseWith((DynamicSchemaContext dc) -> {
-			PartialCollection<YValueHint> hints = values.withContext(dc);
-			if (hints.isComplete()) {
-				Collection<String> strings = values(hints.getElements());
-				return new EnumValueParser(name, strings) {
-					@Override
-					protected String createErrorMessage(String parseString, Collection<String> values) {
-						try {
-							return errorMessageFormatter.withContext(dc).apply(parseString, values);
-						} catch (Exception e) {
-							return super.createErrorMessage(parseString, values);
-						}
+			PartialCollection<YValueHint> hints = PartialCollection.fromCallable(() -> values.withContext(dc));
+			return new EnumValueParser(name, hints.map(h -> h.getValue())) {
+				@Override
+				protected String createErrorMessage(String parseString, Collection<String> values) {
+					try {
+						return errorMessageFormatter.withContext(dc).apply(parseString, values);
+					} catch (Exception e) {
+						return super.createErrorMessage(parseString, values);
 					}
-				};
-			}
-			return null;
+				}
+			};
 		});
 		return t;
 	}
