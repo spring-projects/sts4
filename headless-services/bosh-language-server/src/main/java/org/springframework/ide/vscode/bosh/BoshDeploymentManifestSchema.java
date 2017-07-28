@@ -219,16 +219,11 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_release_name_def).isPrimary(true);
-		addProp(t_release, "version", t_release_version);
-		//TODO: the checking here is just 'my best guess'. Unclarity remains:
-		//   See: https://github.com/cloudfoundry/docs-bosh/issues/330
+		addProp(t_release, "version", t_release_version).isRequired(true);
 		addProp(t_release, "url", t_url);
 		addProp(t_release, "sha1", t_ne_string);
-		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
-		t_release.require(Constraints.requireAtLeastOneOf("url", "version"));
-										//   ^^^^^^^ allthough docs seem to imply you shouldn't
-										// define both url and version it seems that bosh tolerates it.
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
+		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
 

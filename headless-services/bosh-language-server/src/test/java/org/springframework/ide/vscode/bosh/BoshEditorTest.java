@@ -294,12 +294,15 @@ public class BoshEditorTest {
 				"- name: some-release\n" +
 				"  url: https://my.releases.com/funky.tar.gz\n" +
 				"- name: other-relase\n" +
+				"  version: other-version\n" +
 				"  url: file:///root/releases/a-nice-file.tar.gz\n" +
 				"- name: bad-url\n" +
+				"  version: more-version\n" +
 				"  url: proto://something.com\n" +
 				"#x"
 		);
 		editor.assertProblems(
+				"^-^ name: some-release|'version' is required",
 				"url|'sha1' is recommended when the 'url' is http(s)",
 				"proto|Url scheme must be one of [http, https, file]",
 				"x|are required"
