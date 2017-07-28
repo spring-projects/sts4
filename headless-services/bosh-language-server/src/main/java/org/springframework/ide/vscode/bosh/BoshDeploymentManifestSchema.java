@@ -192,36 +192,30 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group_env, "bosh", t_params);
 		addProp(t_instance_group_env, "password", t_ne_string);
 
-		YType t_release_version = f.contextAware("ReleaseVersion", new SchemaContextAware<YType>() {
-			private AbstractType no_dynamic_checks = f.yenumFromDynamicValues("ReleaseVersion",
-						dc -> PartialCollection.compute(() -> releasesProvider.getModel(dc).getVersions())
-					)
-					.addHints("latest")
-					.parseWith(ValueParsers.NE_STRING);
-			private AbstractType base_type = f.yenumFromDynamicValues("ReleaseVersion",
-						dc -> PartialCollection.compute(() -> releasesProvider.getModel(dc).getVersions())
-					)
-					.addHints("latest")
-					.alsoAccept("latest");
-
-			@Override
-			public YType withContext(DynamicSchemaContext dc) throws Exception {
-				if (StringUtil.hasText(getCurrentEntityProperty(dc,"url"))) {
-					return no_dynamic_checks;
+		YType t_release_version = f.yenumFromDynamicValues("ReleaseVersion",
+			//message formatter:
+			dc -> (s, values) -> {
+				String name = getCurrentEntityProperty(dc, "name");
+				if (StringUtil.hasText(name)) {
+					return "'"+s+"' is an unknown 'ReleaseVersion[name="+name+"]'. Valid values are: "+values;
+				} else {
+					return "'"+s+"' is an unknown 'ReleaseVersion'. Valid values are: "+values;
+				}
+			},
+			//value provider:
+			dc -> {
+				PartialCollection<ReleaseData> releases = PartialCollection.compute(() -> releasesProvider.getModel(dc).getReleases());
+				if (StringUtil.hasText(getCurrentEntityProperty(dc, "url"))) {
+					releases = releases.addUncertainty();
 				} else {
 					String name = getCurrentEntityProperty(dc, "name");
 					if (StringUtil.hasText(name)) {
-						return f.yenumFromDynamicValues("ReleaseVersion[name="+name+"]", (_dc) ->
-							PartialCollection.compute(() -> releasesProvider.getModel(dc).getReleases())
-							.map(r ->  name.equals(r.getName()) ? r.getVersion() : null)
-						)
-						.addHints("latest")
-						.alsoAccept("latest");
+						releases = releases.map(r -> name.equals(r.getName()) ? r : null);
 					}
 				}
-				return base_type;
+				return releases.map(r -> r.getVersion()).add("latest");
 			}
-		}).treatAsAtomic();
+		);
 
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_release_name_def).isPrimary(true);
@@ -244,34 +238,25 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) ->
 			PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcellOss())
 		);
-		YType t_stemcell_version_ref = f.contextAware("StemcellVersion", new SchemaContextAware<YType>() {
-
-			YAtomicType baseType = f.yenumFromDynamicValues("StemcellVersion", (dc) ->
-				PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getVersions())
-			);
-			{
-				baseType.addHints("latest");
-				baseType.alsoAccept("latest");
-			}
-
-			@Override
-			public YType withContext(DynamicSchemaContext dc) throws Exception {
-				StemcellModel currentStemcell = getCurrentStemcell(dc);
-				if (StringUtil.hasText(currentStemcell.getName())||StringUtil.hasText(currentStemcell.getOs())) {
-					Predicate<StemcellData> filter = currentStemcell.createVersionFilter();
-					YAtomicType filteredType = f.yenumFromDynamicValues("StemcellVersion["+filter+"]", (_dc) -> {
-						//Note: it doesn't really matter whether we use _dc or dc in code below as they should be the same.
-						Predicate<StemcellData> versionFilter = currentStemcell.createVersionFilter();
-						return PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcells())
-								.map(sc -> versionFilter.test(sc) ? sc.getVersion() : null);
-					});
-					filteredType.addHints("latest");
-					filteredType.alsoAccept("latest");
-					return filteredType;
+		YType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion",
+			(dc) -> (parseString, validValues) -> {
+				try {
+					Predicate<StemcellData> filter = getCurrentStemcell(dc).createVersionFilter();
+					if (filter!=StemcellModel.ALLWAYS_TRUE_FILTER) {
+						return "'"+parseString+"' is an unknown 'StemcellVersion["+filter+"]'. Valid values are: "+validValues;
+					}
+				} catch (Exception e) {
+					//ignore (parse error most likely)
 				}
-				return baseType;
+				return "'"+parseString+"' is an unknown 'StemcellVersion'. Valid values are: "+validValues;
+			},
+			(dc) -> {
+				Predicate<StemcellData> filter = getCurrentStemcell(dc).createVersionFilter();
+				return PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcells())
+					.map(sc -> filter.test(sc) ? sc.getVersion() : null)
+					.add("latest");
 			}
-		}).treatAsAtomic();
+		);
 
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);

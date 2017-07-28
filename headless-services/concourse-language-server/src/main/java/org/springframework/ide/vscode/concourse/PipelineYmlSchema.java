@@ -171,7 +171,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_version.addHints("latest", "every");
 
 		t_resource_type_name = f.yenumFromHints("ResourceType Name",
-				(parseString, validValues) ->  {
+				(dc) -> (parseString, validValues) ->  {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {

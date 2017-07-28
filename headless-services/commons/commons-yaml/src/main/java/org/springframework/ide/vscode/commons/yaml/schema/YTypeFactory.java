@@ -855,7 +855,7 @@ public class YTypeFactory {
 		return ((YTypedPropertyImpl)prop).copy();
 	}
 
-	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<PartialCollection<YValueHint>> values) {
+	public YAtomicType yenumFromHints(String name, SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter, SchemaContextAware<PartialCollection<YValueHint>> values) {
 		YAtomicType t = yatomic(name);
 		t.setHintProvider(values);
 		t.parseWith((DynamicSchemaContext dc) -> {
@@ -865,7 +865,11 @@ public class YTypeFactory {
 				return new EnumValueParser(name, strings) {
 					@Override
 					protected String createErrorMessage(String parseString, Collection<String> values) {
-						return errorMessageFormatter.apply(parseString, values);
+						try {
+							return errorMessageFormatter.withContext(dc).apply(parseString, values);
+						} catch (Exception e) {
+							return super.createErrorMessage(parseString, values);
+						}
 					}
 				};
 			}
@@ -874,10 +878,22 @@ public class YTypeFactory {
 		return t;
 	}
 
+	public YAtomicType yenumFromDynamicValues(String name,
+			SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter,
+			SchemaContextAware<PartialCollection<String>> values
+	) {
+		return yenumFromHints(name,
+				//Error message formatter:
+				errorMessageFormatter,
+				//Hints provider:
+				(dc) -> hints(values.withContext(dc))
+		);
+	}
+
 	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<PartialCollection<String>> values) {
 		return yenumFromHints(name,
 				//Error message formatter:
-				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
+				(dc) -> (parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
 				//Hints provider:
 				(dc) -> hints(values.withContext(dc))
 		);
@@ -887,7 +903,7 @@ public class YTypeFactory {
 		return new EnumTypeBuilder(name, values);
 	}
 
-	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+	public YAtomicType yenum(String name, SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
 		t.setHintProvider((dc) -> {
 			return PartialCollection.compute(() -> values.withContext(dc))
@@ -897,12 +913,21 @@ public class YTypeFactory {
 			EnumValueParser enumParser = new EnumValueParser(name, values.withContext(dc)) {
 				@Override
 				protected String createErrorMessage(String parseString, Collection<String> values) {
-					return errorMessageFormatter.apply(parseString, values);
+					try {
+						return errorMessageFormatter.withContext(dc).apply(parseString, values);
+					} catch (Exception e) {
+						return super.createErrorMessage(parseString, values);
+					}
 				}
 			};
 			return enumParser;
 		});
 		return t;
+
+	}
+
+	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+		return yenum(name, (dc) -> errorMessageFormatter,  values);
 	}
 
 	public static Collection<String> values(Collection<YValueHint> hints) {

@@ -64,7 +64,7 @@ public class EnumValueParser implements ValueParser {
 
 		PartialCollection<String> values = this.values.get();
 
-		// If values is not known (null) then just assume the str is acceptable.
+		// If values is not fully known then just assume the str is acceptable.
 		if (values == null || !values.isComplete() || values.getElements().contains(str)) {
 			return str;
 		} else {

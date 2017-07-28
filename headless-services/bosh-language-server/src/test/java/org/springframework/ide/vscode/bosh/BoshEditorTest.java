@@ -1122,8 +1122,8 @@ public class BoshEditorTest {
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
-				"123.4|unknown 'StemcellVersion[name=centos-agent]'. Valid values are: [222.2, 333.3]",
-				"333.3|unknown 'StemcellVersion[os=ubuntu]'. Valid values are: [123.4, 222.2]"
+				"123.4|unknown 'StemcellVersion[name=centos-agent]'. Valid values are: [222.2, 333.3, latest]",
+				"333.3|unknown 'StemcellVersion[os=ubuntu]'. Valid values are: [123.4, 222.2, latest]"
 		);
 	}
 
@@ -1200,11 +1200,35 @@ public class BoshEditorTest {
 				"latest<*>"
 		);
 
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"latest<*>"
+		);
+
 		//Still get all suggestions even when 'url' property is added
 		editor = harness.newEditor(
 				"releases:\n" +
 				"- version: <*>\n" +
 				"  url: blah"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  url: blah\n" +
+				"  version: <*>"
 		);
 		editor.assertContextualCompletions("<*>",
 				"123.4<*>",
@@ -1228,10 +1252,13 @@ public class BoshEditorTest {
 				"releases:\n" +
 				"- version: bogus\n" +
 				"- version: url-makes-this-possibly-correct\n" +
-				"  url: file:///relesease-folder/blah-release.tar.gz"
+				"  url: file:///relesease-folder/blah-release.tar.gz\n"+
+				"- name: bar\n" +
+				"  version: url-makes-this-also-possibly-correct\n" +
+				"  url: file:///relesease-folder/other-release.tar.gz"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
-		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3]");
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3, latest]");
 
 		editor = harness.newEditor(
 				"releases:\n" +
@@ -1240,7 +1267,32 @@ public class BoshEditorTest {
 				"- version: bogus\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
-		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3]");
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3, latest]");
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 123.4\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 222.2\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 333.3\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("333.3|unknown 'ReleaseVersion[name=foo]'. Valid values are: [123.4, 222.2, latest]");
+
 	}
 
 

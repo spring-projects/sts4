@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
@@ -132,4 +133,7 @@ public class PartialCollection<T> {
 		return explanation;
 	}
 
+	public PartialCollection<T> add(@SuppressWarnings("unchecked") T... values) {
+		return addAll(Arrays.asList(values));
+	}
 }
