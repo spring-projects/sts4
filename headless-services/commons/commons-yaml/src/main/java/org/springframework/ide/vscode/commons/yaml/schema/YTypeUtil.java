@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.schema;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 
@@ -30,7 +31,7 @@ public interface YTypeUtil {
 	boolean isSequencable(YType type);
 	boolean isBean(YType type);
 	YType getDomainType(YType type);
-	YValueHint[] getHintValues(YType yType, DynamicSchemaContext dc) throws Exception;
+	PartialCollection<YValueHint> getHintValues(YType yType, DynamicSchemaContext dc);
 	String niceTypeName(YType type);
 	YType getKeyType(YType type);
 	SchemaContextAware<ValueParser> getValueParser(YType type);
@@ -47,9 +48,9 @@ public interface YTypeUtil {
 	 */
 	YType inferMoreSpecificType(YType type, DynamicSchemaContext dc);
 	List<Constraint> getConstraints(YType type);
-	
+
 	ISubCompletionEngine getCustomContentAssistant(YType type);
-	
+
 	/**
 	 * Config option for type-based completion engine. This enables the
 	 * 'tiered' proposals feature (so that optional properties are not
@@ -58,7 +59,7 @@ public interface YTypeUtil {
 	boolean tieredOptionalPropertyProposals();
 	/**
 	 * Config option for type-based completion engine. This enables/disables
-	 * whether engine should generate proposals for deprecated properties (true), 
+	 * whether engine should generate proposals for deprecated properties (true),
 	 * or suppress them (false).
 	 */
 	boolean suggestDeprecatedProperties();

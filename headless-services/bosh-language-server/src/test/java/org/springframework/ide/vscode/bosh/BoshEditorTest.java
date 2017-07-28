@@ -1173,7 +1173,9 @@ public class BoshEditorTest {
 				"releases:\n" +
 				"- name: foo\n" +
 				"- name: bar\n" +
-				"- name: bogus\n"
+				"- name: bogus\n" +
+				"- name: url-makes-this-ok\n" +
+				"  url: file://blah"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems("bogus|unknown 'ReleaseName'. Valid values are: [foo, bar]");
@@ -1197,9 +1199,24 @@ public class BoshEditorTest {
 				"333.3<*>",
 				"latest<*>"
 		);
+
+		//Still get all suggestions even when 'url' property is added
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- version: <*>\n" +
+				"  url: blah"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+
 	}
 
 	@Test public void reconcileReleaseVersion() throws Exception {
+		Editor editor;
 		releasesProvider = provideReleasesFrom(
 				new ReleaseData("foo", "123.4"),
 				new ReleaseData("foo", "222.2"),
@@ -1207,9 +1224,19 @@ public class BoshEditorTest {
 				new ReleaseData("bar", "333.3")
 		);
 
-		Editor editor = harness.newEditor(
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- version: bogus\n" +
+				"- version: url-makes-this-possibly-correct\n" +
+				"  url: file:///relesease-folder/blah-release.tar.gz"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3]");
+
+		editor = harness.newEditor(
 				"releases:\n" +
 				"- version: 123.4\n" +
+				"- version: latest\n" +
 				"- version: bogus\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);

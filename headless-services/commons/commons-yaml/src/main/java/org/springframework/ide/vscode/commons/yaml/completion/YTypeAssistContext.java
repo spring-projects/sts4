@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
@@ -197,16 +198,11 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, SNode node, int offset, String query) {
-		YValueHint[] values=null;
-		try {
-			values = typeUtil.getHintValues(type, getSchemaContext());
-		} catch (Exception e) {
-			if (!Boolean.getBoolean("lsp.yaml.completions.errors.disable")) {
-				return ImmutableList.of(completionFactory().errorMessage(query, getMessage(e)));
-			} else {
-				Log.warn(query, e);
-			}
+		PartialCollection<YValueHint> _values = typeUtil.getHintValues(type, getSchemaContext());
+		if (_values.getExplanation()!=null && _values.getElements().isEmpty() && !Boolean.getBoolean("lsp.yaml.completions.errors.disable")) {
+			return ImmutableList.of(completionFactory().errorMessage(query, getMessage(_values.getExplanation())));
 		}
+		Collection<YValueHint> values = _values.getElements();
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
 			YamlIndentUtil indenter = new YamlIndentUtil(doc);
@@ -243,7 +239,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return Collections.emptyList();
 	}
 
-	private String getMessage(Exception _e) {
+	private String getMessage(Throwable _e) {
 		Throwable e = ExceptionUtil.getDeepestCause(_e);
 
 		// If value parse exception, do not append any additional information

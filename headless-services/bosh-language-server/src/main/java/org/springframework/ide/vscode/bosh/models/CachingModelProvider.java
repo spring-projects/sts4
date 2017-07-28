@@ -92,6 +92,12 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 
 	@SuppressWarnings("unchecked")
 	private T wrapWithCachingProxy(T model) {
+		if (model==null) {
+			//Special case for 'no model' we'll create a model that always returns null
+			return (T) Proxy.newProxyInstance(modelInterface.getClassLoader(), new Class[] {modelInterface}, (o, m, a) -> {
+				return null;
+			});
+		}
 		Cache<String, CompletableFuture<Object>> attributesCache = CacheBuilder.newBuilder().build();
 		return (T) Proxy.newProxyInstance(modelInterface.getClassLoader(), new Class[] {modelInterface}, (o, m, a) -> {
 			//We only support caching results for methods that have no arguments (for now, its all we need).

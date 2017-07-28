@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 public class EnumValueParser implements ValueParser {
 
 	private String typeName;
-	private Provider<Collection<String>> values;
+	private Provider<PartialCollection<String>> values;
 
 	public EnumValueParser(String typeName, String... values) {
 		this(typeName, ImmutableSet.copyOf(values));
@@ -36,11 +36,19 @@ public class EnumValueParser implements ValueParser {
 		this(typeName, provider(values));
 	}
 
+	private static <T> Provider<PartialCollection<T>> provider(Collection<T> values) {
+		return () -> PartialCollection.compute(() -> values);
+	}
+	private static <T> Provider<PartialCollection<T>> provider(Callable<Collection<T>> values) {
+		return () -> PartialCollection.compute(() -> values.call());
+	}
+
 	public EnumValueParser(String typeName, Callable<Collection<String>> values) {
 		this(typeName, provider(values));
 	}
 
-	public EnumValueParser(String typeName, Provider<Collection<String>> values) {
+
+	public EnumValueParser(String typeName, Provider<PartialCollection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
 	}
@@ -54,13 +62,13 @@ public class EnumValueParser implements ValueParser {
 			throw errorOnBlank(createBlankTextErrorMessage());
 		}
 
-		Collection<String> values = this.values.get();
+		PartialCollection<String> values = this.values.get();
 
 		// If values is not known (null) then just assume the str is acceptable.
-		if (values == null || values.contains(str)) {
+		if (values == null || !values.isComplete() || values.getElements().contains(str)) {
 			return str;
 		} else {
-			throw errorOnParse(createErrorMessage(str, values));
+			throw errorOnParse(createErrorMessage(str, values.getElements()));
 		}
 	}
 
@@ -80,19 +88,5 @@ public class EnumValueParser implements ValueParser {
 		return new ValueParseException(message);
 	}
 
-	private static <T> Provider<T> provider(T values) {
-		return () -> values;
-	}
-
-	private static <T> Provider<T> provider(Callable<T> values) {
-		return () -> {
-			try {
-				return values.call();
-			} catch (Exception e) {
-				// Ignore
-				return null;
-			}
-		};
-	}
 
 }
