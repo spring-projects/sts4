@@ -417,19 +417,25 @@ public class Editor {
 		String docText = doc.getText();
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
-			//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
-			// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
-			int referenceLine = edit.getRange().getStart().getLine();
-			int cursorOffset = edit.getRange().getStart().getCharacter();
-			String referenceIndent = doc.getLineIndentString(referenceLine);
-			if (cursorOffset<referenceIndent.length()) {
-				referenceIndent = referenceIndent.substring(0, cursorOffset);
-			}
-			replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
+			int cursorReplaceOffset = 0;
 
-			int cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
-			if (cursorReplaceOffset>=0) {
-				replaceWith = replaceWith.substring(0, cursorReplaceOffset) + replaceWith.substring(cursorReplaceOffset+VS_CODE_CURSOR_MARKER.length());
+			if (!Boolean.getBoolean("lsp.completions.indentation.enable")) {
+				//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
+				// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
+				int referenceLine = edit.getRange().getStart().getLine();
+				int cursorOffset = edit.getRange().getStart().getCharacter();
+				String referenceIndent = doc.getLineIndentString(referenceLine);
+				if (cursorOffset<referenceIndent.length()) {
+					referenceIndent = referenceIndent.substring(0, cursorOffset);
+				}
+				replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
+			}
+
+			// Replace the cursor string
+			cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
+			if (cursorReplaceOffset >= 0) {
+				replaceWith = replaceWith.substring(0, cursorReplaceOffset)
+						+ replaceWith.substring(cursorReplaceOffset + VS_CODE_CURSOR_MARKER.length());
 			} else {
 				cursorReplaceOffset = replaceWith.length();
 			}
