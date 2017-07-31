@@ -122,7 +122,7 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		V1_TOPLEVEL_TYPE = createV1Schema(V2_TOPLEVEL_TYPE);
 
 		TOPLEVEL_TYPE = f.contextAware("DeploymenManifestV1orV2", (dc) -> {
-			boolean looksLikeV1 = dc.getDefinedProperties().stream().anyMatch(DEPRECATED_V1_PROPS::contains);
+			boolean looksLikeV1 = dc.getDefinedProperties().contains("networks");
 			return looksLikeV1 ? V1_TOPLEVEL_TYPE : V2_TOPLEVEL_TYPE;
 		});
 	}
