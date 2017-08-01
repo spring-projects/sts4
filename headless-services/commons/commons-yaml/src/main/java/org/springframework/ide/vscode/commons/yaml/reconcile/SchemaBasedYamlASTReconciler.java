@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -65,12 +66,14 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private final YTypeUtil typeUtil;
 	private final ITypeCollector typeCollector;
 	private final YamlQuickfixes quickfixes;
-	
-	private List<Runnable> delayedConstraints = new ArrayList<>(); 
+
+	private List<Runnable> delayedConstraints = new ArrayList<>();
 		// keeps track of dynamic constraints discovered during reconciler walk
 		// the constraints are validated at the end of the walk rather than during the walk.
 		// This facilitates constraints that depend on, for example, the contents of the ast type cache being
 		// populated prior to checking.
+
+	private List<Runnable> slowDelayedConstraints = new ArrayList<>();
 
 	public SchemaBasedYamlASTReconciler(IProblemCollector problems, YamlSchema schema, ITypeCollector typeCollector, YamlQuickfixes quickfixes) {
 		this.problems = problems;
@@ -84,6 +87,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	public void reconcile(YamlFileAST ast) {
 		if (typeCollector!=null) typeCollector.beginCollecting(ast);
 		delayedConstraints.clear();
+		slowDelayedConstraints.clear();
 		try {
 			List<Node> nodes = ast.getNodes();
 			IntegerRange expectedDocs = schema.expectedNumberOfDocuments();
@@ -193,20 +197,16 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isAtomic(type)) {
 					SchemaContextAware<ValueParser> parserProvider = typeUtil.getValueParser(type);
 					if (parserProvider!=null) {
-						delayedConstraints.add(() -> {
-							parserProvider.safeWithContext(schemaContext).ifPresent(parser -> {
-								try {
-									String value = NodeUtil.asScalar(node);
-									if (value!=null) {
-										parser.parse(value);
-									}
-								} catch (Exception e) {
-									ProblemType problemType = getProblemType(e);
-									DocumentRegion region = getRegion(e, ast.getDocument(), node);
-									String msg = getMessage(e);
-									valueParseError(type, region, msg, problemType, getValueReplacement(e));
-								}
-							});
+						parserProvider.safeWithContext(schemaContext).ifPresent(parser -> {
+							if (parser instanceof EnumValueParser && ((EnumValueParser) parser).longRunning()) {
+								slowDelayedConstraints.add(() -> {
+									parse(ast, node, type, parser);
+								});
+							} else {
+								delayedConstraints.add(() -> {
+									parse(ast, node, type, parser);
+								});
+							}
 						});
 					}
 				} else {
@@ -216,6 +216,20 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			default:
 				// other stuff we don't check
 			}
+		}
+	}
+
+	private void parse(YamlFileAST ast, Node node, YType type, ValueParser parser) {
+		try {
+			String value = NodeUtil.asScalar(node);
+			if (value!=null) {
+				parser.parse(value);
+			}
+		} catch (Exception e) {
+			ProblemType problemType = getProblemType(e);
+			DocumentRegion region = getRegion(e, ast.getDocument(), node);
+			String msg = getMessage(e);
+			valueParseError(type, region, msg, problemType, getValueReplacement(e));
 		}
 	}
 
@@ -305,7 +319,16 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		for (Runnable runnable : delayedConstraints) {
 			runnable.run();
 		}
+
+		// First report the "faster" delayed constraints
+		problems.checkPointCollecting();
+
 		delayedConstraints.clear();
+
+		for (Runnable runnable : slowDelayedConstraints) {
+			runnable.run();
+		}
+		slowDelayedConstraints.clear();
 	}
 
 	protected NodeId getNodeId(Node node) {

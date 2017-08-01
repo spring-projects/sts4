@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2016 Pivotal, Inc.
+ * Copyright (c) 2014-2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ public interface IProblemCollector {
 	void beginCollecting();
 	void endCollecting();
 	void accept(ReconcileProblem problem);
+	void checkPointCollecting();
 
 	/**
 	 * Problem collector that simply ignores/discards anything passed to it.
@@ -25,6 +26,8 @@ public interface IProblemCollector {
 		public void endCollecting() {
 		}
 		public void accept(ReconcileProblem problem) {
+		}
+		public void checkPointCollecting() {
 		}
 	};
 }

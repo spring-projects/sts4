@@ -1121,6 +1121,35 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
+	public void delayedConstraints() throws Exception {
+		// This tests the two different types of delayed constraints:
+		// Slow delayed constraints that require CF connection (services
+		// and "faster" delayed constraints that check that 'routes' property
+		// cannot exist with 'domain' and 'host'
+		ClientRequests cfClient = cloudfoundry.client;
+		when(cfClient.getServices()).thenReturn(ImmutableList.of());
+
+		List<CFDomain> domains = ImmutableList.of(mockDomain("test.cfapps.io"));
+		when(cloudfoundry.client.getDomains()).thenReturn(domains);
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+			    "  host: foosite\n" +
+				"  domain: test.cfapps.io\n" +
+				"  routes:\n" +
+				"  - route: test.cfapps.io/path\n" +
+				"  services:\n" +
+				"  - bad-service\n");
+		editor.assertProblems(
+				// These are the "fast" delayed constraints
+				"host|Property cannot co-exist with property 'routes'",
+				"domain|Property cannot co-exist with property 'routes'",
+				"routes|Property cannot co-exist with properties [domain, host]",
+				// This is the "slow" delayed constraint
+				"bad-service|There is no service instance called");
+	}
+
+	@Test
 	public void servicesContentAssistShowErrorMessageWhenNotLoggedIn() throws Exception {
 		reset(cloudfoundry.defaultParamsProvider);
 

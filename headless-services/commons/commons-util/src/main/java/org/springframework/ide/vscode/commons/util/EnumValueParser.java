@@ -27,22 +27,24 @@ public class EnumValueParser implements ValueParser {
 
 	private String typeName;
 	private Provider<Collection<String>> values;
+	private final boolean longRunning;
 
 	public EnumValueParser(String typeName, String... values) {
 		this(typeName, ImmutableSet.copyOf(values));
 	}
 
 	public EnumValueParser(String typeName, Collection<String> values) {
-		this(typeName, provider(values));
+		this(typeName, false /* not long running by default */, provider(values));
 	}
 
-	public EnumValueParser(String typeName, Callable<Collection<String>> values) {
-		this(typeName, provider(values));
+	public EnumValueParser(String typeName, boolean longRunning, Callable<Collection<String>> values) {
+		this(typeName, longRunning, provider(values));
 	}
 
-	public EnumValueParser(String typeName, Provider<Collection<String>> values) {
+	public EnumValueParser(String typeName, boolean longRunning, Provider<Collection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
+		this.longRunning = longRunning;
 	}
 
 	@Override
@@ -94,5 +96,8 @@ public class EnumValueParser implements ValueParser {
 			}
 		};
 	}
-
+	
+	public boolean longRunning() {
+		return this.longRunning ;
+	}
 }
