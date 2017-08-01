@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class BoshEditorTest {
 
-	LanguageServerHarness harness;
+	LanguageServerHarness<BoshLanguageServer> harness;
 
 	private BoshCliConfig cliConfig = new BoshCliConfig();
 	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider(cliConfig);
@@ -53,7 +53,7 @@ public class BoshEditorTest {
 	private DynamicModelProvider<ReleasesModel> releasesProvider = mock(DynamicModelProvider.class);
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(() -> {
+		harness = new LanguageServerHarness<BoshLanguageServer>(() -> {
 				return new BoshLanguageServer(cliConfig, cloudConfigProvider,
 						(dc) -> stemcellsProvider.getModel(dc),
 						(dc) -> releasesProvider.getModel(dc)
@@ -156,6 +156,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void toplevelPropertyCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"<*>"
 		);
@@ -200,6 +201,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void stemcellCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"stemcells:\n" +
 				"- <*>"
@@ -253,6 +255,7 @@ public class BoshEditorTest {
 
 
 	@Test public void releasesBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"releases:\n" +
 				"- <*>"
@@ -518,6 +521,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void updateBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"update:\n" +
 				"  <*>"
@@ -557,6 +561,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void variablesBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"variables:\n" +
 				"- <*>"

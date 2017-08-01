@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
+import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 
 /**
  * An implementation of YTypeUtil provides implementations of various
@@ -50,6 +53,14 @@ public interface YTypeUtil {
 	List<Constraint> getConstraints(YType type);
 
 	ISubCompletionEngine getCustomContentAssistant(YType type);
+
+	/**
+	 * Config option for type-bases complection enging. Snippets can be
+	 * associated with schema types. These snippets will be suggested as
+	 * additional completions based on the type of value expected in
+	 * a context.
+	 */
+	TypeBasedSnippetProvider getSnippetProvider();
 
 	/**
 	 * Config option for type-based completion engine. This enables the

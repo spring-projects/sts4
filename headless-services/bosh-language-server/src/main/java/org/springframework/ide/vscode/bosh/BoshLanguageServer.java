@@ -14,6 +14,7 @@ import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.bosh.snippets.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
@@ -23,7 +24,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 public class BoshLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
+	private BoshDeploymentManifestSchema schema;
 
 	public BoshLanguageServer(BoshCliConfig cliConfig,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
@@ -52,10 +53,11 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
-		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider, releasesProvider);
+		schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider, releasesProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
+		enableSnippets(true);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
 		completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
@@ -84,6 +86,14 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 			validateWith(doc.getId(), engine);
 		} else {
 			validateWith(doc.getId(), IReconcileEngine.NULL);
+		}
+	}
+
+	public void enableSnippets(boolean enable) {
+		if (enable) {
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), this::createSnippetBuilder));
+		} else {
+			schema.f.setSnippetProvider(null);
 		}
 	}
 

@@ -45,6 +45,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
@@ -98,6 +100,29 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
 		if (completions.isEmpty()) {
 			completions = getKeyCompletions(doc, offset, query);
+			TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
+			if (snippetProvider!=null) {
+				Collection<Snippet> snippets = snippetProvider.getSnippets(type);
+				YamlIndentUtil indenter = new YamlIndentUtil(doc);
+				for (Snippet snippet : snippets) {
+					String snippetName = snippet.getName();
+					double score = FuzzyMatcher.matchScore(query, snippetName);
+					if (score!=0.0) {
+						String textBeforeQuery = doc.getLineTextBefore(offset);
+						DocumentEdits edits = new DocumentEdits(doc.getDocument());
+						int start = offset - query.length();
+						edits.delete(start, query);
+						int referenceIndent = textBeforeQuery.length();
+						boolean needsSpace = start > 0 && !Character.isWhitespace(doc.getChar(offset-1));
+						if (needsSpace) {
+							referenceIndent++;
+							edits.insert(start, " ");
+						}
+						edits.insert(start, indenter.applyIndentation(snippet.getSnippet(), referenceIndent));
+						completions.add(completionFactory().valueProposal(snippetName, query, snippetName, type, null, score, edits, typeUtil));
+					}
+				}
+			}
 		}
 		if (typeUtil.isSequencable(type)) {
 			completions = new ArrayList<>(completions);

@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,8 +30,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Replaceme
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -40,8 +37,8 @@ import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -60,6 +57,7 @@ public class YTypeFactory {
 
 	private boolean enableTieredOptionalPropertyProposals = true;
 	private boolean suggestDeprecatedProperties = true;
+	private TypeBasedSnippetProvider snippetProvider = null;
 
 	private static class Deprecation {
 		final String errorMsg;
@@ -237,6 +235,11 @@ public class YTypeFactory {
 		@Override
 		public ISubCompletionEngine getCustomContentAssistant(YType type) {
 			return ((AbstractType)type).getCustomContentAssistant();
+		}
+
+		@Override
+		public TypeBasedSnippetProvider getSnippetProvider() {
+			return snippetProvider;
 		}
 
 		@Override
@@ -977,6 +980,11 @@ public class YTypeFactory {
 
 	public YTypeFactory suggestDeprecatedProperties(boolean enable) {
 		this.suggestDeprecatedProperties = enable;
+		return this;
+	}
+
+	public YTypeFactory setSnippetProvider(TypeBasedSnippetProvider snippetProvider) {
+		this.snippetProvider = snippetProvider;
 		return this;
 	}
 
