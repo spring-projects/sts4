@@ -338,6 +338,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void instanceGroupsCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"instance_groups:\n" +
 				"- <*>"
