@@ -196,6 +196,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				if (typeUtil.isAtomic(type)) {
 					SchemaContextAware<ValueParser> parserProvider = typeUtil.getValueParser(type);
 					if (parserProvider!=null) {
+						//Take care not to execute parserProvider early just to check how long it should be delayed.
 						delayedConstraints.add(() -> {
 							parserProvider.safeWithContext(schemaContext).ifPresent(parser -> {
 								if (parser.longRunning()) {
