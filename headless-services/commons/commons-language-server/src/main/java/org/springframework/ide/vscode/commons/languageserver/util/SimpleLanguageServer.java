@@ -346,6 +346,12 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 				}
 
 				@Override
+				public void checkPointCollecting() {
+					// publish what has been collected so far
+					documents.publishDiagnostics(docId, diagnostics);
+				}
+
+				@Override
 				public void accept(ReconcileProblem problem) {
 					try {
 						DiagnosticSeverity severity = getDiagnosticSeverity(problem);

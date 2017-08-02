@@ -20,7 +20,7 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 public class CFServicesValueParser extends EnumValueParser {
 
 	public CFServicesValueParser(String typeName, Callable<Collection<String>> values) {
-		super(typeName, values);
+		super(typeName, true /*CF value parsers are potentially long running*/, values);
 	}
 
 	@Override

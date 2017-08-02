@@ -129,13 +129,13 @@ public final class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_stack = f.yatomic("Stack");
 		if (stacksProvider!=null) {
 			t_stack.setHintProvider(stacksProvider);
-			t_stack.parseWith(ManifestYmlValueParsers.fromValueHints(stacksProvider, t_stack, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM));
+			t_stack.parseWith(ManifestYmlValueParsers.fromCFValueHints(stacksProvider, t_stack, ManifestYamlSchemaProblemsTypes.UNKNOWN_STACK_PROBLEM));
 		}
 
 		YAtomicType t_domain = f.yatomic("Domain");
 		if (domainsProvider != null) {
 			t_domain.setHintProvider(domainsProvider);
-			t_domain.parseWith(ManifestYmlValueParsers.fromValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
+			t_domain.parseWith(ManifestYmlValueParsers.fromCFValueHints(domainsProvider, t_domain, ManifestYamlSchemaProblemsTypes.UNKNOWN_DOMAIN_PROBLEM));
 		}
 
 		YAtomicType t_service = f.yatomic("Service");

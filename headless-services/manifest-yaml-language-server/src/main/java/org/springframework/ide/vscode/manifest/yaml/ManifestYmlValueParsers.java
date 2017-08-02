@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -95,8 +95,8 @@ public class ManifestYmlValueParsers {
 		};
 	}
 
-	public static EnumValueParser fromValueHints(Callable<Collection<YValueHint>> hintProvider, YAtomicType type, ProblemType problemType) {
-		return new EnumValueParser(type.toString(), YTypeFactory.valuesFromHintProvider(hintProvider)) {
+	public static EnumValueParser fromCFValueHints(Callable<Collection<YValueHint>> hintProvider, YAtomicType type, ProblemType problemType) {
+		return new EnumValueParser(type.toString(), true /*CF value parsers are potentially long running*/, YTypeFactory.valuesFromHintProvider(hintProvider)) {
 			@Override
 			protected Exception errorOnParse(String message) {
 				return new ReconcileException(message, problemType);
