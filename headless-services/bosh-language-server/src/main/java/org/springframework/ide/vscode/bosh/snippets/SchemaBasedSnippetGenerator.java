@@ -141,7 +141,7 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 			generateNestedSnippet(true, typeUtil.getDomainType(type), builder, indent, nestingLimit);
 		} else { //Treat like atomic
 			//ready to enter whatever on the same line
-			builder.text(" ");
+			builder.ensureSpace();
 			builder.placeHolder();
 		}
 	}
