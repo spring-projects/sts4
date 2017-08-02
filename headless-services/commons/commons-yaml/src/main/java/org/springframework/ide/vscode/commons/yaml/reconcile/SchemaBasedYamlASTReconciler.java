@@ -31,7 +31,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -198,7 +197,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					SchemaContextAware<ValueParser> parserProvider = typeUtil.getValueParser(type);
 					if (parserProvider!=null) {
 						parserProvider.safeWithContext(schemaContext).ifPresent(parser -> {
-							if (parser instanceof EnumValueParser && ((EnumValueParser) parser).longRunning()) {
+							if (parser.longRunning()) {
 								slowDelayedConstraints.add(() -> {
 									parse(ast, node, type, parser);
 								});

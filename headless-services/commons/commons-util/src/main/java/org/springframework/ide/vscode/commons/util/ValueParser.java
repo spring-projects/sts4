@@ -23,6 +23,10 @@ public interface ValueParser {
 	 * that the String is not the format this parser expects.
 	 */
 	Object parse(String str) throws Exception;
+	
+	default boolean longRunning() {
+		return false;
+	}
 
 	static ValueParser of(ValueParser x) {
 		return x;
