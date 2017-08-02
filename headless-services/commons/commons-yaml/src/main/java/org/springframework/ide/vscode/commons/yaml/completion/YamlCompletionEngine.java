@@ -193,6 +193,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		int spacesStart = spacesEnd-numSpacesToRemove;
 		int numArrows = numSpacesToRemove / YamlIndentUtil.INDENT_BY;
 		String spaces = new DocumentRegion(doc, spacesStart, spacesEnd).toString();
+		YamlIndentUtil indenter = new YamlIndentUtil(doc);
 		if (spaces.length()==numSpacesToRemove && SPACES.matcher(spaces).matches()) {
 			ScoreableProposal transformed = new TransformedCompletion(proposal) {
 				@Override public String tranformLabel(String originalLabel) {
@@ -200,6 +201,11 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				}
 				@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
 					originalEdit.firstDelete(spacesStart, spacesEnd);
+					originalEdit.transformFirstNonWhitespaceEdit((offset, insertText) -> {
+						String prefix = insertText.substring(0, offset);
+						String dedented = indenter.applyIndentation(insertText.substring(offset), -numSpacesToRemove);
+						return prefix + dedented;
+					});
 					return originalEdit;
 				}
 				@Override

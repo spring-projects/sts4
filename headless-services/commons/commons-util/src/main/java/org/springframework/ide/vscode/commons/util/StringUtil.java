@@ -12,9 +12,11 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,5 +187,19 @@ public class StringUtil {
 		return line.substring(start);
 	}
 
-
+	public static String[] split(String string, char c) {
+		//Why not use String.split? Because when the string being split ends with separator, it drops the final
+		// empty string. But... we need that empty string! I.e. we want the number of pieces to allways be equal
+		// to the number of separators + 1, even if it means some of the Strings are ""
+		List<String> pieces = new ArrayList<>();
+		int start = 0;
+		int next = string.indexOf(c);
+		while (next>=0) {
+			pieces.add(string.substring(start, next));
+			start = next+1;
+			next = string.indexOf(c, start);
+		}
+		pieces.add(string.substring(start));
+		return pieces.toArray(new String[pieces.size()]);
+	}
 }

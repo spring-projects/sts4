@@ -1628,7 +1628,7 @@ public class BoshEditorTest {
 				"instance_groups:\n" +
 				"- name: $10\n" +
 				"  azs:\n" +
-				"  -  $11\n" +
+				"  - $11\n" +
 				"  instances: $12\n" +
 				"  jobs:\n" +
 				"  - name: $13\n" +
@@ -1641,7 +1641,7 @@ public class BoshEditorTest {
 				"instance_groups:\n" +
 				"- name: $1\n" +
 				"  azs:\n" +
-				"  -  $2\n" +
+				"  - $2\n" +
 				"  instances: $3\n" +
 				"  jobs:\n" +
 				"  - name: $4\n" +
@@ -1738,6 +1738,81 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void snippet_dedented() throws Exception {
+		Editor editor;
+		editor = harness.newEditor(
+				"name: \n" +
+				"variables:\n" +
+				"- name: voo\n" +
+				"  type: aaa\n" +
+				"<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, DEDENTED_COMPLETION.and(SNIPPET_COMPLETION),
+				"  <*>"
+				, // ==>
+				"instance_groups:\n" +
+				"- name: $1\n" +
+				"  azs:\n" +
+				"  - $2\n" +
+				"  instances: $3\n" +
+				"  jobs:\n" +
+				"  - name: $4\n" +
+				"    release: $5\n" +
+				"  vm_type: $6\n" +
+				"  stemcell: $7\n" +
+				"  networks:\n" +
+				"  - name: $8<*>"
+				, //=========
+				"releases:\n" +
+				"- name: $1\n" +
+				"  version: $2<*>"
+				, //========
+				"stemcells:\n" +
+				"- alias: $1\n" +
+				"  version: $2<*>"
+				, //========
+				"update:\n" +
+				"  canaries: $1\n" +
+				"  max_in_flight: $2\n" +
+				"  canary_watch_time: $3\n" +
+				"  update_watch_time: $4<*>"
+				, //========
+				"- name: $1\n" +
+				"  type: $2<*>"
+		);
+	}
+
+	@Test public void relaxedCALessSpaces() throws Exception {
+		Editor editor;
+		editor = harness.newEditor(
+				"name: \n" +
+				"variables:\n" +
+				"- name: voo\n" +
+				"  type: aaa\n" +
+				"<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, DEDENTED_COMPLETION.and(SNIPPET_COMPLETION.negate()),
+				"  <*>"
+				, //==>
+				"instance_groups:\n" +
+				"- name: <*>"
+				, //----
+				"releases:\n" +
+				"- name: <*>"
+				, //----
+				"stemcells:\n" +
+				"- <*>"
+				, //---
+				"tags:\n" +
+				"  <*>"
+				, //---
+				"update:\n" +
+				"  <*>"
+				, //---
+				"- name: <*>"
+		);
+	}
+
 	@Test public void relaxedCAmoreSpaces() throws Exception {
 		Editor editor = harness.newEditor(
 			"name: foo\n" +
@@ -1753,7 +1828,7 @@ public class BoshEditorTest {
 		);
 	}
 
-	@Test @Ignore public void keyCompletionThatNeedANewline() throws Exception {
+	@Test @Ignore public void keyCompletionThatNeedsANewline() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: foo\n" +
 				"update: canwa<*>"

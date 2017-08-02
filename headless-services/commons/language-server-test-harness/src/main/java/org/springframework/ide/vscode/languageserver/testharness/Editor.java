@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
@@ -230,7 +231,7 @@ public class Editor {
 		String badSnippet = parts[0];
 		String snippetBefore;
 		String snippetAfter;
-		String[] badParts = split(badSnippet, '^');
+		String[] badParts = StringUtil.split(badSnippet, '^');
 		Assert.assertTrue(badParts.length<=3);
 		if (badParts.length == 1) {
 			snippetBefore = "";
@@ -262,22 +263,6 @@ public class Editor {
 				&& snippetBefore.equals(doc.textBetween(start - snippetBefore.length(), start))
 				&& snippetAfter.equals(doc.textBetween(end, end+snippetAfter.length()))
 				&& problem.getMessage().contains(messageSnippet);
-	}
-
-	private String[] split(String string, char c) {
-		//Why not use String.split? Because when the string being split ends with separator, it drops the final
-		// empty string. But... we need that empty string! I.e. we want the number of pieces to allways be equal
-		// to the number of separators + 1, even if it means some of the Strings are ""
-		List<String> pieces = new ArrayList<>();
-		int start = 0;
-		int next = string.indexOf(c);
-		while (next>=0) {
-			pieces.add(string.substring(start, next));
-			start = next+1;
-			next = string.indexOf(c, start);
-		}
-		pieces.add(string.substring(start));
-		return pieces.toArray(new String[pieces.size()]);
 	}
 
 	private String getText(Position start, int length) {

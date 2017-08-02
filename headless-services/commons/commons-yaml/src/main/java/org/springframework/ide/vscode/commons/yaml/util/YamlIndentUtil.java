@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.util;
 
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 
@@ -89,9 +90,35 @@ public class YamlIndentUtil {
 	 * Notes:
 	 *  - '\n' are replaced by the default line delimeter for the current document.
 	 *  - indentation is not applied to the first line of text.
+	 *  - negative indentations are support and result in removing upto that number of spaces after each newline
 	 */
 	public String applyIndentation(String text, int indentBy) {
-		return text.replaceAll("\\n", newlineWithIndent(indentBy));
+		if (indentBy>0) {
+			return text.replaceAll("\\n", newlineWithIndent(indentBy));
+		} else if (indentBy<0) {
+			int dedentBy = - indentBy;
+			StringBuilder dedented = new StringBuilder();
+			boolean first = true;
+			for (String line : StringUtil.split(text, '\n')) {
+				if (!first) {
+					dedented.append('\n');
+					line = dedentLine(line, dedentBy);
+				}
+				dedented.append(line);
+				first = false;
+			}
+			return dedented.toString();
+		} else { // indentBy==0
+			return text;
+		}
+	}
+
+	private String dedentLine(String line, int dedentBy) {
+		int i = 0;
+		while (i<line.length() && i<dedentBy && line.charAt(i)==' ') {
+			i++;
+		}
+		return line.substring(i);
 	}
 
 	public String applyIndentation(String text, String indentStr) {
