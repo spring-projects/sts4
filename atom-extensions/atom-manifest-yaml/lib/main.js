@@ -5,7 +5,7 @@ class ManifestYamlLanguageClient extends JarLanguageClient {
 
     constructor() {
         super(
-            'https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/fatjars/snapshots/manifest-yaml-language-server-0.0.9-201707201812.jar',
+            'https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/fatjars/snapshots/manifest-yaml-language-server-0.0.9-201707270057.jar',
             path.join(__dirname, '..', 'server')
         );
 

@@ -52,31 +52,33 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 	 * currently pointed at in the current document using String.indexOf.
 	 */
 	protected Flux<Location> findDefinitions(TextDocumentPositionParams params) {
-			try {
+		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
-			int offset = doc.toOffset(params.getPosition());
-			int start = offset;
-			while (Character.isLetter(doc.getSafeChar(start))) {
-				start--;
-			}
-			start = start+1;
-			int end = offset;
-			while (Character.isLetter(doc.getSafeChar(end))) {
-				end++;
-			}
-			String word = doc.textBetween(start, end);
-			Log.log("Looking for definition of '"+word+"'");
-			String text = doc.get();
-			int def = text.indexOf(word);
-			if (def>=0) {
-				return Flux.just(
-					new Location(params.getTextDocument().getUri(),
-						doc.toRange(def, word.length())
+			if (doc != null) {
+				int offset = doc.toOffset(params.getPosition());
+				int start = offset;
+				while (Character.isLetter(doc.getSafeChar(start))) {
+					start--;
+				}
+				start = start+1;
+				int end = offset;
+				while (Character.isLetter(doc.getSafeChar(end))) {
+					end++;
+				}
+				String word = doc.textBetween(start, end);
+				Log.log("Looking for definition of '"+word+"'");
+				String text = doc.get();
+				int def = text.indexOf(word);
+				if (def>=0) {
+					return Flux.just(
+						new Location(params.getTextDocument().getUri(),
+							doc.toRange(def, word.length())
+						)
 					)
-				)
-				.doOnNext((Location loc) -> {
-					Log.log("definition: "+loc);
-				});
+					.doOnNext((Location loc) -> {
+						Log.log("definition: "+loc);
+					});
+				}
 			}
 		} catch (Exception e) {
 			Log.log(e);

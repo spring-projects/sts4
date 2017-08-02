@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
@@ -170,11 +171,11 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_version.addHints("latest", "every");
 
 		t_resource_type_name = f.yenumFromHints("ResourceType Name",
-				(parseString, validValues) ->  {
+				(dc) -> (parseString, validValues) ->  {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return models.getResourceTypeNameHints(dc);
+					return PartialCollection.compute(() -> models.getResourceTypeNameHints(dc));
 				}
 		);
 
@@ -190,8 +191,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		t_maybe_resource_name.setHintProvider((DynamicSchemaContext dc) -> {
 			//Putting the Callable into a local variable is strange, but the compiler doesn't like it if
 			// we return it directly. Too much complexity for Java type-inference?
-			Callable<Collection<YValueHint>> callable = () -> YTypeFactory.hints(models.getResourceNames(dc));
-			return callable;
+			PartialCollection<YValueHint> hints = PartialCollection.compute(() -> YTypeFactory.hints(models.getResourceNames(dc)));
+			return hints;
 		});
 		t_maybe_resource_name.parseWith(ValueParsers.NE_STRING);
 

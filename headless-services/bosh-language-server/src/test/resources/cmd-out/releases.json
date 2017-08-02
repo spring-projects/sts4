@@ -1,0 +1,28 @@
+{
+    "Tables": [
+        {
+            "Content": "releases",
+            "Header": {
+                "commit_hash": "Commit Hash",
+                "name": "Name",
+                "version": "Version"
+            },
+            "Rows": [
+                {
+                    "commit_hash": "5c612c4+",
+                    "name": "learn-bosh",
+                    "version": "0+dev.2"
+                }
+            ],
+            "Notes": [
+                "(*) Currently deployed",
+                "(+) Uncommitted changes"
+            ]
+        }
+    ],
+    "Blocks": null,
+    "Lines": [
+        "Using environment '10.194.4.35' as client 'admin'",
+        "Succeeded"
+    ]
+}

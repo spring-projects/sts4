@@ -11,50 +11,55 @@
 package org.springframework.ide.vscode.bosh;
 
 import static org.junit.Assert.assertEquals;
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
-import static org.mockito.Mockito.*;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
-
-import javax.management.modelmbean.ModelMBeanAttributeInfo;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleaseData;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
-import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 
 public class BoshEditorTest {
 
-	LanguageServerHarness harness;
+	LanguageServerHarness<BoshLanguageServer> harness;
 
-	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider();
-	private DynamicModelProvider<StemcellsModel> stemcellsProvider = Mockito.mock(DynamicModelProvider.class);
+	private BoshCliConfig cliConfig = new BoshCliConfig();
+	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider(cliConfig);
+	private DynamicModelProvider<StemcellsModel> stemcellsProvider = mock(DynamicModelProvider.class);
+	private DynamicModelProvider<ReleasesModel> releasesProvider = mock(DynamicModelProvider.class);
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(() -> {
-				return new BoshLanguageServer(cloudConfigProvider, (dc) -> stemcellsProvider.getModel(dc))
-						.setMaxCompletions(100);
+		harness = new LanguageServerHarness<BoshLanguageServer>(() -> {
+				return new BoshLanguageServer(cliConfig, cloudConfigProvider,
+						(dc) -> stemcellsProvider.getModel(dc),
+						(dc) -> releasesProvider.getModel(dc)
+				)
+				.setMaxCompletions(100);
 			},
 			LanguageId.BOSH_DEPLOYMENT
 		);
@@ -152,6 +157,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void toplevelPropertyCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"<*>"
 		);
@@ -196,6 +202,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void stemcellCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"stemcells:\n" +
 				"- <*>"
@@ -249,6 +256,7 @@ public class BoshEditorTest {
 
 
 	@Test public void releasesBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"releases:\n" +
 				"- <*>"
@@ -285,12 +293,15 @@ public class BoshEditorTest {
 				"- name: some-release\n" +
 				"  url: https://my.releases.com/funky.tar.gz\n" +
 				"- name: other-relase\n" +
+				"  version: other-version\n" +
 				"  url: file:///root/releases/a-nice-file.tar.gz\n" +
 				"- name: bad-url\n" +
+				"  version: more-version\n" +
 				"  url: proto://something.com\n" +
 				"#x"
 		);
 		editor.assertProblems(
+				"^-^ name: some-release|'version' is required",
 				"url|'sha1' is recommended when the 'url' is http(s)",
 				"proto|Url scheme must be one of [http, https, file]",
 				"x|are required"
@@ -328,6 +339,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void instanceGroupsCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"instance_groups:\n" +
 				"- <*>"
@@ -511,6 +523,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void updateBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"update:\n" +
 				"  <*>"
@@ -550,6 +563,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void variablesBlockCompletions() throws Exception {
+		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"variables:\n" +
 				"- <*>"
@@ -954,6 +968,25 @@ public class BoshEditorTest {
 		);
 	}
 
+	@Test public void contentAssistStemcellNameNoDirector() throws Exception {
+		Editor editor;
+		stemcellsProvider = mock(DynamicModelProvider.class);
+		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
+		editor = harness.newEditor(
+				"stemcells:\n" +
+				"- alias: good\n" +
+				"  name: <*>\n"
+		);
+		List<CompletionItem> completions = editor.getCompletions();
+		assertEquals(1, completions.size());
+		CompletionItem c = completions.get(0);
+		c = harness.resolveCompletionItem(c);
+		assertContains("Couldn't connect to bosh", c.getDocumentation());
+		System.out.println("label  = " + c.getLabel());
+		System.out.println("detail = " + c.getDetail());
+		System.out.println("doc    = " + c.getDocumentation());
+	}
+
 	@SuppressWarnings("unchecked")
 	@Test public void contentAssistStemcellVersionNoDirector() throws Exception {
 		Editor editor;
@@ -1094,13 +1127,182 @@ public class BoshEditorTest {
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
-				"123.4|unknown 'StemcellVersion[name=centos-agent]'. Valid values are: [222.2, 333.3]",
-				"333.3|unknown 'StemcellVersion[os=ubuntu]'. Valid values are: [123.4, 222.2]"
+				"123.4|unknown 'StemcellVersion[name=centos-agent]'. Valid values are: [222.2, 333.3, latest]",
+				"333.3|unknown 'StemcellVersion[os=ubuntu]'. Valid values are: [123.4, 222.2, latest]"
 		);
 	}
 
 	private DynamicModelProvider<StemcellsModel> provideStemcellsFrom(StemcellData... stemcellData) {
-		return new BoshCommandStemcellsProvider() {
+		return new BoshCommandStemcellsProvider(cliConfig) {
+			@Override
+			protected String executeCommand(ExternalCommand command) throws Exception {
+				String rows = mapper.writeValueAsString(stemcellData);
+				return "{\n" +
+						"    \"Tables\": [\n" +
+						"        {\n" +
+						"            \"Rows\": " + rows +
+						"        }\n" +
+						"    ]\n" +
+						"}";
+			}
+		};
+	}
+
+	@Test public void contentAssistReleaseNameDef() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"bar<*>",
+				"foo<*>"
+		);
+	}
+
+	@Test public void reconcileReleaseNameDef() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"- name: bar\n" +
+				"- name: bogus\n" +
+				"- name: url-makes-this-ok\n" +
+				"  url: file://blah"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseName'. Valid values are: [foo, bar]");
+	}
+
+	@Test public void contentAssistReleaseVersion() throws Exception {
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- version: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"latest<*>"
+		);
+
+		//Still get all suggestions even when 'url' property is added
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- version: <*>\n" +
+				"  url: blah"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  url: blah\n" +
+				"  version: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"123.4<*>",
+				"222.2<*>",
+				"333.3<*>",
+				"latest<*>"
+		);
+
+	}
+
+	@Test public void reconcileReleaseVersion() throws Exception {
+		Editor editor;
+		releasesProvider = provideReleasesFrom(
+				new ReleaseData("foo", "123.4"),
+				new ReleaseData("foo", "222.2"),
+				new ReleaseData("bar", "222.2"),
+				new ReleaseData("bar", "333.3")
+		);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- version: bogus\n" +
+				"- version: url-makes-this-possibly-correct\n" +
+				"  url: file:///relesease-folder/blah-release.tar.gz\n"+
+				"- name: bar\n" +
+				"  version: url-makes-this-also-possibly-correct\n" +
+				"  url: file:///relesease-folder/other-release.tar.gz"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3, latest]");
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- version: 123.4\n" +
+				"- version: latest\n" +
+				"- version: bogus\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bogus|unknown 'ReleaseVersion'. Valid values are: [123.4, 222.2, 333.3, latest]");
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 123.4\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 222.2\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"releases:\n" +
+				"- name: foo\n" +
+				"  version: 333.3\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("333.3|unknown 'ReleaseVersion[name=foo]'. Valid values are: [123.4, 222.2, latest]");
+
+	}
+
+
+	private DynamicModelProvider<ReleasesModel> provideReleasesFrom(ReleaseData... stemcellData) {
+		return new BoshCommandReleasesProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
 				String rows = mapper.writeValueAsString(stemcellData);
@@ -1388,6 +1590,178 @@ public class BoshEditorTest {
 		editor.assertGotoDefinition(
 			editor.positionOf("stemcell: windoze", "windoze"),
 			editor.rangeOf("- alias: windoze", "windoze")
+		);
+	}
+
+	@Test public void bug_149769913() throws Exception {
+		Editor editor = harness.newEditor(
+				"releases:\n" +
+				"- name: learn-bosh\n" +
+				"  url: file:///blah\n" +
+				"  version:\n" +
+				"- name: blah-blah\n" +
+				"  version:"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+
+		editor.assertProblems(
+				"version:^^|cannot be blank",
+				"version:^^|cannot be blank"
+		);
+	}
+
+	@Test public void snippet_toplevel() throws Exception {
+		Editor editor = harness.newEditor("<*>");
+		editor.assertCompletions(SNIPPET_COMPLETION,
+				"name: $1\n" +
+				"releases:\n" +
+				"- name: $2\n" +
+				"  version: $3\n" +
+				"stemcells:\n" +
+				"- alias: $4\n" +
+				"  version: $5\n" +
+				"update:\n" +
+				"  canaries: $6\n" +
+				"  max_in_flight: $7\n" +
+				"  canary_watch_time: $8\n" +
+				"  update_watch_time: $9\n" +
+				"instance_groups:\n" +
+				"- name: $10\n" +
+				"  azs:\n" +
+				"  -  $11\n" +
+				"  instances: $12\n" +
+				"  jobs:\n" +
+				"  - name: $13\n" +
+				"    release: $14\n" +
+				"  vm_type: $15\n" +
+				"  stemcell: $16\n" +
+				"  networks:\n" +
+				"  - name: $17<*>"
+				, // ------------------
+				"instance_groups:\n" +
+				"- name: $1\n" +
+				"  azs:\n" +
+				"  -  $2\n" +
+				"  instances: $3\n" +
+				"  jobs:\n" +
+				"  - name: $4\n" +
+				"    release: $5\n" +
+				"  vm_type: $6\n" +
+				"  stemcell: $7\n" +
+				"  networks:\n" +
+				"  - name: $8<*>"
+				, // ----------------
+				"releases:\n" +
+				"- name: $1\n" +
+				"  version: $2<*>"
+				, // ----------------
+				"stemcells:\n" +
+				"- alias: $1\n" +
+				"  version: $2<*>"
+				, // ----------------
+				"update:\n" +
+				"  canaries: $1\n" +
+				"  max_in_flight: $2\n" +
+				"  canary_watch_time: $3\n" +
+				"  update_watch_time: $4<*>"
+				, // -----------------
+				"variables:\n" +
+				"- name: $1\n" +
+				"  type: $2<*>"
+		);
+	}
+
+	@Test public void snippet_disabledWhenPropertiesAlreadyDefined() throws Exception {
+		Editor editor = harness.newEditor(
+				"name:\n" +
+				"releases:\n" +
+				"stemcells:\n" +
+				"<*>"
+		);
+
+		editor.assertCompletionLabels(SNIPPET_COMPLETION,
+				//"BoshDeploymentManifest Snippet",
+				"instance_groups Snippet",
+//				"releases Snippet",
+//				"stemcells Snippet"
+				"update Snippet",
+				"variables Snippet",
+				"- Stemcell Snippet"
+		);
+	}
+
+	@Test public void snippet_nested_plain() throws Exception {
+		Editor editor;
+		//Plain exact completion
+		editor = harness.newEditor(
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("jobs Snippet"),
+				"jo<*>"
+				, // ------
+				"jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+		editor.assertCompletionWithLabel("jobs Snippet",
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+	}
+
+	@Test public void snippet_nested_indenting() throws Exception {
+		Editor editor;
+		//With extra indent:
+		editor = harness.newEditor(
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"<*>"
+		);
+		editor.assertCompletionWithLabel("→ jobs Snippet",
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs Snippet"),
+				"jo<*>"
+				, // ------
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+	}
+
+	@Test public void relaxedCAmoreSpaces() throws Exception {
+		Editor editor = harness.newEditor(
+			"name: foo\n" +
+			"instance_groups:\n" +
+			"- name: \n" +
+			"<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs"),
+				"jo<*>"
+				, // ==>
+				"  jobs:\n" +
+				"  - <*>"
+		);
+	}
+
+	@Test @Ignore public void keyCompletionThatNeedANewline() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"update: canwa<*>"
+		);
+		editor.assertCompletions(
+				"name: foo\n" +
+				"update: \n" +
+				"  canary_watch_time: <*>"
 		);
 	}
 

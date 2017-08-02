@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.util.Map;
@@ -18,9 +17,9 @@ import java.util.Map;
  * retrieve properties from the settings object.
  */
 public class Settings {
-	
+
 	private Object settings;
-	
+
 	public Settings(Object settings) {
 		this.settings = settings;
 	}
@@ -32,7 +31,7 @@ public class Settings {
 		}
 		return null;
 	}
-	
+
 	public Object getProperty(String... names) {
 		return getProperty(settings, names, 0);
 	}
@@ -49,6 +48,8 @@ public class Settings {
 		}
 	}
 
-
-
+	@Override
+	public String toString() {
+		return settings.toString();
+	}
 }

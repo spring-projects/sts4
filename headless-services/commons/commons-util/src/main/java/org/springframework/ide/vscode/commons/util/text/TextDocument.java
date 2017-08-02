@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 import org.springframework.ide.vscode.commons.util.text.linetracker.ILineTracker;
 
@@ -88,11 +89,14 @@ public class TextDocument implements IDocument {
 
 	public synchronized void apply(DidChangeTextDocumentParams params) throws BadLocationException {
 		int newVersion = params.getTextDocument().getVersion();
-		Assert.isLegal(version<newVersion);
-		for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
-			apply(change);
+		if (version<newVersion) {
+			for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
+				apply(change);
+			}
+			this.version = newVersion;
+		} else {
+			Log.warn("Change event with bad version ignored: "+params);
 		}
-		this.version = newVersion;
 	}
 
 	/**

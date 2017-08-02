@@ -13,14 +13,18 @@ package org.springframework.ide.vscode.bosh;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 
 public class Main {
 	public static void main(String[] args) throws IOException, InterruptedException {
+		BoshCliConfig cliConfig = new BoshCliConfig();
 		LaunguageServerApp.start(() -> new BoshLanguageServer(
-				new BoshCommandCloudConfigProvider(),
-				new BoshCommandStemcellsProvider()
+				cliConfig,
+				new BoshCommandCloudConfigProvider(cliConfig),
+				new BoshCommandStemcellsProvider(cliConfig),
+				new BoshCommandReleasesProvider(cliConfig)
 		));
 	}
 }

@@ -12,14 +12,18 @@ package org.springframework.ide.vscode.bosh;
 
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.bosh.snippets.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
@@ -37,17 +41,23 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 public class BoshLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
+	private BoshDeploymentManifestSchema schema;
 
-	public BoshLanguageServer(DynamicModelProvider<CloudConfigModel> cloudConfigProvider, DynamicModelProvider<StemcellsModel> stemcellsProvider) {
+	public BoshLanguageServer(BoshCliConfig cliConfig,
+			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
+			DynamicModelProvider<StemcellsModel> stemcellsProvider,
+			DynamicModelProvider<ReleasesModel> releasesProvider
+	) {
 		super("vscode-bosh");
 		YamlAstCache asts = new YamlAstCache();
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
-		BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider);
+		schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider, releasesProvider);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
+		enableSnippets(true);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
 		completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
@@ -64,6 +74,11 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine ::getHover);
 		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
+
+		SimpleWorkspaceService workspace = getWorkspaceService();
+		workspace.onDidChangeConfiguraton((Settings settings) -> {
+			cliConfig.handleConfigurationChange(settings);
+		});
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
@@ -71,6 +86,14 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 			validateWith(doc.getId(), engine);
 		} else {
 			validateWith(doc.getId(), IReconcileEngine.NULL);
+		}
+	}
+
+	public void enableSnippets(boolean enable) {
+		if (enable) {
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), this::createSnippetBuilder));
+		} else {
+			schema.f.setSnippetProvider(null);
 		}
 	}
 

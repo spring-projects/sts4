@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DASH_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEPRECATION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,9 +31,9 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
-import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
@@ -44,6 +45,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
@@ -97,6 +100,28 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
 		if (completions.isEmpty()) {
 			completions = getKeyCompletions(doc, offset, query);
+			TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
+			if (snippetProvider!=null) {
+				Collection<Snippet> snippets = snippetProvider.getSnippets(type);
+				YamlIndentUtil indenter = new YamlIndentUtil(doc);
+				for (Snippet snippet : snippets) {
+					String snippetName = snippet.getName();
+					double score = FuzzyMatcher.matchScore(query, snippetName);
+					if (score!=0.0 && snippet.isApplicable(getSchemaContext())) {
+						DocumentEdits edits = new DocumentEdits(doc.getDocument());
+						int start = offset - query.length();
+						edits.delete(start, query);
+						int referenceIndent = doc.getColumn(start);
+						boolean needsSpace = start > 0 && !Character.isWhitespace(doc.getChar(start-1));
+						if (needsSpace) {
+							referenceIndent++;
+							edits.insert(start, " ");
+						}
+						edits.insert(start, indenter.applyIndentation(snippet.getSnippet(), referenceIndent));
+						completions.add(completionFactory().valueProposal(snippetName, query, snippetName, type, null, score, edits, typeUtil));
+					}
+				}
+			}
 		}
 		if (typeUtil.isSequencable(type)) {
 			completions = new ArrayList<>(completions);
@@ -107,7 +132,6 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
 		int queryOffset = offset - query.length();
-		SNode contextNode = getContextNode();
 		DynamicSchemaContext dynamicCtxt = getSchemaContext();
 		List<YTypedProperty> allProperties = typeUtil.getProperties(type);
 		if (CollectionUtil.hasElements(allProperties)) {
@@ -115,6 +139,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			Set<String> definedProps = dynamicCtxt.getDefinedProperties();
 			List<ICompletionProposal> proposals = new ArrayList<>();
 			boolean suggestDeprecated = typeUtil.suggestDeprecatedProperties();
+			YamlIndentUtil indenter = new YamlIndentUtil(doc);
 			for (List<YTypedProperty> thisTier : tieredProperties) {
 				List<YTypedProperty> undefinedProps = thisTier.stream()
 						.filter(p -> !definedProps.contains(p.getName()) && (suggestDeprecated || !p.isDeprecated()))
@@ -124,15 +149,17 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						String name = p.getName();
 						double score = FuzzyMatcher.matchScore(query, name);
 						if (score!=0) {
-							YamlPath relativePath = YamlPath.fromSimpleProperty(name);
-							YamlPathEdits edits = new YamlPathEdits(doc);
+							DocumentEdits edits = new DocumentEdits(doc.getDocument());
 							YType YType = p.getType();
 							edits.delete(queryOffset, query);
+							int referenceIndent = doc.getColumn(queryOffset);
 							if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
 								//See https://www.pivotaltracker.com/story/show/137722057
 								edits.insert(queryOffset, " ");
+								referenceIndent++;
 							}
-							edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(YType));
+							String snippet = p.getName()+":" +appendTextFor(YType);
+							edits.insert(queryOffset, indenter.applyIndentation(snippet, referenceIndent));
 							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil);
@@ -197,16 +224,11 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, SNode node, int offset, String query) {
-		YValueHint[] values=null;
-		try {
-			values = typeUtil.getHintValues(type, getSchemaContext());
-		} catch (Exception e) {
-			if (!Boolean.getBoolean("lsp.yaml.completions.errors.disable")) {
-				return ImmutableList.of(completionFactory().errorMessage(query, getMessage(e)));
-			} else {
-				Log.warn(query, e);
-			}
+		PartialCollection<YValueHint> _values = typeUtil.getHintValues(type, getSchemaContext());
+		if (_values.getExplanation()!=null && _values.getElements().isEmpty() && !Boolean.getBoolean("lsp.yaml.completions.errors.disable")) {
+			return ImmutableList.of(completionFactory().errorMessage(query, getMessage(_values.getExplanation())));
 		}
+		Collection<YValueHint> values = _values.getElements();
 		if (values!=null) {
 			ArrayList<ICompletionProposal> completions = new ArrayList<>();
 			YamlIndentUtil indenter = new YamlIndentUtil(doc);
@@ -243,7 +265,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return Collections.emptyList();
 	}
 
-	private String getMessage(Exception _e) {
+	private String getMessage(Throwable _e) {
 		Throwable e = ExceptionUtil.getDeepestCause(_e);
 
 		// If value parse exception, do not append any additional information
@@ -384,18 +406,20 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						@Override
 						protected DocumentEdits transformEdit(DocumentEdits textEdit) {
 							textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+								YamlIndentUtil indenter = new YamlIndentUtil("\n");
 								if (needNewline(textEdit)) {
 									return insertText.substring(0,  offset)
 											+ "\n" +Strings.repeat(" ", node.getIndent())+"- "
-											+ insertText.substring(offset);
+											+ indenter.applyIndentation(insertText.substring(offset), YamlIndentUtil.INDENT_BY);
 								} else if (offset > 2) {
 									String prefix = insertText.substring(offset-2, offset);
 									if ("  ".equals(prefix)) {
 										//special case don't add the "- " in front, but replace the inserted spaces instead.
-										return insertText.substring(0, offset-2)+"- "+insertText.substring(offset);
+										return insertText.substring(0, offset-2)
+												+ "- "+ insertText.substring(offset);
 									}
 								}
-								return insertText.substring(0, offset) + "- "+insertText.substring(offset);
+								return insertText.substring(0, offset) + "- "+indenter.applyIndentation(insertText.substring(offset), YamlIndentUtil.INDENT_BY);
 							});
 							return textEdit;
 						}
@@ -404,11 +428,9 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							//value proposals which are inserted right after a key will not automatically include a newline, as
 							// its not required for them. So we should add it along with the dash.
 							try {
-								if (original instanceof ValueProposal) {
-									Integer insertAt = textEdit.getFirstEditStart();
-									if (insertAt!=null) {
-										return !"".equals(doc.getLineTextBefore(insertAt).trim());
-									}
+								Integer insertAt = textEdit.getFirstEditStart();
+								if (insertAt!=null) {
+									return !"".equals(doc.getLineTextBefore(insertAt).trim());
 								}
 							} catch (Exception e) {
 								Log.log(e);

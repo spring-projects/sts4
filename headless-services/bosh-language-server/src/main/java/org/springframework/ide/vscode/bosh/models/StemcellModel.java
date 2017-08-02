@@ -21,6 +21,16 @@ import org.yaml.snakeyaml.nodes.Node;
  */
 public class StemcellModel {
 
+	public static final Predicate<StemcellData> ALLWAYS_TRUE_FILTER = new Predicate<StemcellData>() {
+			@Override
+			public boolean test(StemcellData sc) {
+				return true;
+			}
+			@Override
+			public String toString() {
+				return "true";
+			}
+	};
 	private Node node;
 
 	public StemcellModel(Node node) {
@@ -79,16 +89,7 @@ public class StemcellModel {
 				}
 			};
 		} else {
-			return new Predicate<StemcellData>() {
-				@Override
-				public boolean test(StemcellData sc) {
-					return true;
-				}
-				@Override
-				public String toString() {
-					return "true";
-				}
-			};
+			return ALLWAYS_TRUE_FILTER;
 		}
 	}
 

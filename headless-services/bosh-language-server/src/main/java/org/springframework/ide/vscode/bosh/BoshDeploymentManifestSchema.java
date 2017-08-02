@@ -20,22 +20,26 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleaseData;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.bosh.snippets.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
-import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -96,24 +100,27 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private final ASTTypeCache astTypes;
 	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
 	private DynamicModelProvider<StemcellsModel> stemcellsProvider;
+	private DynamicModelProvider<ReleasesModel> releasesProvider;
 	private List<Pair<YType, YType>> defAndRefTypes;
 
 	public BoshDeploymentManifestSchema(
 			YamlAstCache asts, ASTTypeCache astTypes,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
-			DynamicModelProvider<StemcellsModel> stemcellsProvider
+			DynamicModelProvider<StemcellsModel> stemcellsProvider,
+			DynamicModelProvider<ReleasesModel> releasesProvider
 	) {
 		this.asts = asts;
 		this.astTypes = astTypes;
-		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider);
-		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider);
+		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider, CloudConfigModel.class);
+		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider, StemcellsModel.class);
+		this.releasesProvider = new CachingModelProvider<>(releasesProvider, ReleasesModel.class);
 		TYPE_UTIL = f.TYPE_UTIL;
 
 		V2_TOPLEVEL_TYPE = createV2Schema();
 		V1_TOPLEVEL_TYPE = createV1Schema(V2_TOPLEVEL_TYPE);
 
 		TOPLEVEL_TYPE = f.contextAware("DeploymenManifestV1orV2", (dc) -> {
-			boolean looksLikeV1 = dc.getDefinedProperties().stream().anyMatch(DEPRECATED_V1_PROPS::contains);
+			boolean looksLikeV1 = dc.getDefinedProperties().contains("networks");
 			return looksLikeV1 ? V1_TOPLEVEL_TYPE : V2_TOPLEVEL_TYPE;
 		});
 	}
@@ -146,10 +153,12 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 
 		t_stemcell_alias_def = f.yatomic("StemcellAlias")
 				.parseWith(ValueParsers.NE_STRING);
-		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> astTypes.getDefinedNames(dc, t_stemcell_alias_def));
-		t_release_name_def = f.yatomic("ReleaseName")
-				.parseWith(ValueParsers.NE_STRING);
-		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> astTypes.getDefinedNames(dc, t_release_name_def));
+		t_stemcell_alias_ref = f.yenumFromDynamicValues("StemcellAlias", (dc) -> PartialCollection.compute(() -> astTypes.getDefinedNames(dc, t_stemcell_alias_def)));
+		t_release_name_def = f.yenumFromDynamicValues("ReleaseName", (dc) -> {
+			PartialCollection<String> releaseNames = PartialCollection.compute(() -> releasesProvider.getModel(dc).getReleaseNames());
+			return StringUtil.hasText(getCurrentEntityProperty(dc, "url")) ? releaseNames.addUncertainty() : releaseNames;
+		});
+		t_release_name_ref = f.yenumFromDynamicValues("ReleaseName", (dc) -> PartialCollection.compute(() -> astTypes.getDefinedNames(dc, t_release_name_def)));
 
 		t_var_name_def = f.yatomic("VariableName")
 				.parseWith(ValueParsers.NE_STRING);
@@ -161,12 +170,16 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YAtomicType t_url = f.yatomic("URL");
 		t_url.parseWith(BoshValueParsers.url("http", "https", "file"));
 
-		YAtomicType t_network_name = f.yenumFromDynamicValues("NetworkName",  (dc) -> cloudConfigProvider.getModel(dc).getNetworkNames());
-		YAtomicType t_disk_type = f.yenumFromDynamicValues("DiskType", (dc) -> cloudConfigProvider.getModel(dc).getDiskTypes());
-		YAtomicType t_vm_extension = f.yenumFromDynamicValues("VMExtension", (dc) -> cloudConfigProvider.getModel(dc).getVMExtensions());
-		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType", (dc) -> cloudConfigProvider.getModel(dc).getVMTypes());
-
-		YAtomicType t_az = f.yenumFromDynamicValues("AvailabilityZone", (dc) -> cloudConfigProvider.getModel(dc).getAvailabilityZones());
+		YAtomicType t_network_name = f.yenumFromDynamicValues("NetworkName",
+				(dc) -> PartialCollection.compute(() -> cloudConfigProvider.getModel(dc).getNetworkNames()));
+		YAtomicType t_disk_type = f.yenumFromDynamicValues("DiskType",
+				(dc) -> PartialCollection.compute(() -> cloudConfigProvider.getModel(dc).getDiskTypes()));
+		YAtomicType t_vm_extension = f.yenumFromDynamicValues("VMExtension",
+				(dc) -> PartialCollection.compute(() -> cloudConfigProvider.getModel(dc).getVMExtensions()));
+		YAtomicType t_vm_type = f.yenumFromDynamicValues("VMType",
+				(dc) -> PartialCollection.compute(() -> cloudConfigProvider.getModel(dc).getVMTypes()));
+		YAtomicType t_az = f.yenumFromDynamicValues("AvailabilityZone",
+				(dc) -> PartialCollection.compute(() -> cloudConfigProvider.getModel(dc).getAvailabilityZones()));
 
 		YBeanType t_network = f.ybean("Network");
 		addProp(t_network, "name", t_network_name).isRequired(true);
@@ -177,59 +190,66 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		addProp(t_instance_group_env, "bosh", t_params);
 		addProp(t_instance_group_env, "password", t_ne_string);
 
-		YAtomicType t_version = f.yatomic("Version");
-		t_version.addHints("latest");
-		t_version.parseWith(ValueParsers.NE_STRING);
+		YType t_release_version = f.yenumFromDynamicValues("ReleaseVersion",
+			//message formatter:
+			dc -> (s, values) -> {
+				String name = getCurrentEntityProperty(dc, "name");
+				if (StringUtil.hasText(name)) {
+					return "'"+s+"' is an unknown 'ReleaseVersion[name="+name+"]'. Valid values are: "+values;
+				} else {
+					return "'"+s+"' is an unknown 'ReleaseVersion'. Valid values are: "+values;
+				}
+			},
+			//value provider:
+			dc -> {
+				PartialCollection<ReleaseData> releases = PartialCollection.compute(() -> releasesProvider.getModel(dc).getReleases());
+				if (StringUtil.hasText(getCurrentEntityProperty(dc, "url"))) {
+					releases = releases.addUncertainty();
+				} else {
+					String name = getCurrentEntityProperty(dc, "name");
+					if (StringUtil.hasText(name)) {
+						releases = releases.map(r -> name.equals(r.getName()) ? r : null);
+					}
+				}
+				return releases.map(r -> r.getVersion()).add("latest");
+			}
+		);
 
 		YBeanType t_release = f.ybean("Release");
 		addProp(t_release, "name", t_release_name_def).isPrimary(true);
-		addProp(t_release, "version", t_version);
-		//TODO: the checking here is just 'my best guess'. Unclarity remains:
-		//   See: https://github.com/cloudfoundry/docs-bosh/issues/330
+		addProp(t_release, "version", t_release_version).isRequired(true);
 		addProp(t_release, "url", t_url);
 		addProp(t_release, "sha1", t_ne_string);
-		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
-		t_release.require(Constraints.requireAtLeastOneOf("url", "version"));
-										//   ^^^^^^^ allthough docs seem to imply you shouldn't
-										// define both url and version it seems that bosh tolerates it.
 		t_release.require(BoshConstraints.SHA1_REQUIRED_FOR_HTTP_URL);
+		addProp(v2Schema, "releases", f.yseq(t_release)).isRequired(true);
 
 		YBeanType t_stemcell = f.ybean("Stemcell");
 
 		YType t_stemcell_name_ref = f.yenumFromDynamicValues("StemcellName", (dc) ->
-			stemcellsProvider.getModel(dc).getStemcellNames()
+			PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcellNames())
 		);
 		YType t_stemcell_os_ref = f.yenumFromDynamicValues("StemcellOs", (dc) ->
-			stemcellsProvider.getModel(dc).getStemcellOss()
+			PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcellOss())
 		);
-		YType t_stemcell_version_ref = f.contextAware("StemcellVersion", new SchemaContextAware<YType>() {
-
-			YAtomicType baseType = f.yenumFromDynamicValues("StemcellVersion", (dc) -> stemcellsProvider.getModel(dc).getVersions());
-			{
-				baseType.addHints("latest");
-				baseType.alsoAccept("latest");
-			}
-
-			@Override
-			public YType withContext(DynamicSchemaContext dc) throws Exception {
-				StemcellModel currentStemcell = getCurrentStemcell(dc);
-				if (StringUtil.hasText(currentStemcell.getName())||StringUtil.hasText(currentStemcell.getOs())) {
-					Predicate<StemcellData> filter = currentStemcell.createVersionFilter();
-					YAtomicType filteredType = f.yenumFromDynamicValues("StemcellVersion["+filter+"]", (_dc) -> {
-						//Note: it doesn't really matter whether we use _dc or dc in code below as they should be the same.
-						return stemcellsProvider.getModel(dc).getStemcells().stream()
-								.filter(sc -> StringUtil.hasText(sc.getVersion()))
-								.filter(currentStemcell.createVersionFilter())
-								.map(sc -> sc.getVersion())
-								.collect(CollectorUtil.toImmutableSet());
-					});
-					filteredType.addHints("latest");
-					filteredType.alsoAccept("latest");
-					return filteredType;
+		YType t_stemcell_version_ref = f.yenumFromDynamicValues("StemcellVersion",
+			(dc) -> (parseString, validValues) -> {
+				try {
+					Predicate<StemcellData> filter = getCurrentStemcell(dc).createVersionFilter();
+					if (filter!=StemcellModel.ALLWAYS_TRUE_FILTER) {
+						return "'"+parseString+"' is an unknown 'StemcellVersion["+filter+"]'. Valid values are: "+validValues;
+					}
+				} catch (Exception e) {
+					//ignore (parse error most likely)
 				}
-				return baseType;
+				return "'"+parseString+"' is an unknown 'StemcellVersion'. Valid values are: "+validValues;
+			},
+			(dc) -> {
+				Predicate<StemcellData> filter = getCurrentStemcell(dc).createVersionFilter();
+				return PartialCollection.compute(() -> stemcellsProvider.getModel(dc).getStemcells())
+					.map(sc -> filter.test(sc) ? sc.getVersion() : null)
+					.add("latest");
 			}
-		}).treatAsAtomic();
+		);
 
 		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
 		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);
@@ -304,6 +324,15 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		YamlPath path = dc.getPath();
 		YamlFileAST ast = asts.getAst(dc.getDocument(), true);
 		return new StemcellModel(path.dropLast().traverseToNode(ast));
+	}
+
+	private String getCurrentEntityProperty(DynamicSchemaContext dc, String propName) {
+		YamlPath path = dc.getPath();
+		YamlFileAST ast = asts.getSafeAst(dc.getDocument(), true);
+		if (ast!=null) {
+			return NodeUtil.asScalar(path.dropLast().thenValAt(propName).traverseToNode(ast));
+		}
+		return null;
 	}
 
 	@Override

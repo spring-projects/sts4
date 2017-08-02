@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,14 +28,16 @@ import java.util.stream.Collectors;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -56,6 +57,7 @@ public class YTypeFactory {
 
 	private boolean enableTieredOptionalPropertyProposals = true;
 	private boolean suggestDeprecatedProperties = true;
+	private TypeBasedSnippetProvider snippetProvider = null;
 
 	private static class Deprecation {
 		final String errorMsg;
@@ -185,7 +187,7 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public YValueHint[] getHintValues(YType type, DynamicSchemaContext dc) throws Exception {
+		public PartialCollection<YValueHint> getHintValues(YType type, DynamicSchemaContext dc) {
 			return ((AbstractType)type).getHintValues(dc);
 		}
 
@@ -236,6 +238,11 @@ public class YTypeFactory {
 		}
 
 		@Override
+		public TypeBasedSnippetProvider getSnippetProvider() {
+			return snippetProvider;
+		}
+
+		@Override
 		public boolean tieredOptionalPropertyProposals() {
 			return enableTieredOptionalPropertyProposals;
 		}
@@ -257,7 +264,7 @@ public class YTypeFactory {
 		private List<YTypedProperty> propertyList = new ArrayList<>();
 		private List<YValueHint> hints = new ArrayList<>();
 		private Map<String, YTypedProperty> cachedPropertyMap;
-		private SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider;
+		private SchemaContextAware<PartialCollection<YValueHint>> hintProvider;
 			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
 
 		private List<Constraint> constraints = new ArrayList<>(2);
@@ -293,47 +300,19 @@ public class YTypeFactory {
 		}
 
 		public AbstractType setHintProvider(Callable<Collection<YValueHint>> hintProvider) {
-			setHintProvider((DynamicSchemaContext dc) -> hintProvider);
+			setHintProvider((DynamicSchemaContext dc) -> PartialCollection.compute(hintProvider));
 			return this;
 		}
 
-		public AbstractType setHintProvider(SchemaContextAware<Callable<Collection<YValueHint>>> hintProvider) {
+		public AbstractType setHintProvider(SchemaContextAware<PartialCollection<YValueHint>> hintProvider) {
 			//TODO: SchemaContextAware now allows throwing exceptions so should be able to simplify the above to SchemaContextAware<Collection<YValueHint>>
 			this.hintProvider = hintProvider;
 			return this;
 		}
 
-		public YValueHint[] getHintValues(DynamicSchemaContext dc) throws Exception {
-			Collection<YValueHint> providerHints = null;
-			try {
-				providerHints=getProviderHints(dc);
-			} catch (Exception e) {
-				if (!hints.isEmpty()) {
-					Log.log(e);
-					//Recover from error returning just the static hints.
-					return hints.toArray(new YValueHint[hints.size()]);
-				} else {
-					throw e;
-				}
-			}
-
-			if (providerHints == null || providerHints.isEmpty()) {
-				return hints.toArray(new YValueHint[hints.size()]);
-			} else {
-				// Only merge if there are provider hints to merge
-				Set<YValueHint> mergedHints = new LinkedHashSet<>();
-
-				// Add type hints first
-				for (YValueHint val : hints) {
-					mergedHints.add(val);
-				}
-
-				// merge the provider hints
-				for (YValueHint val : providerHints) {
-					mergedHints.add(val);
-				}
-				return mergedHints.toArray(new YValueHint[mergedHints.size()]);
-			}
+		public PartialCollection<YValueHint> getHintValues(DynamicSchemaContext dc) {
+			return getProviderHints(dc)
+					.addAll(hints);
 		}
 
 		/**
@@ -343,14 +322,15 @@ public class YTypeFactory {
 			hints = ImmutableList.copyOf(hints);
 		}
 
-		private Collection<YValueHint> getProviderHints(DynamicSchemaContext dc) throws Exception {
+		private PartialCollection<YValueHint> getProviderHints(DynamicSchemaContext dc) {
 			if (hintProvider != null) {
-				Callable<Collection<YValueHint>> withContext = hintProvider.withContext(dc);
-				if (withContext != null) {
-					 return withContext.call();
+				try {
+					return hintProvider.withContext(dc);
+				} catch (Exception e) {
+					return PartialCollection.unknown(e);
 				}
 			}
-			return ImmutableList.of();
+			return PartialCollection.empty();
 		}
 
 		public List<Constraint> getConstraints() {
@@ -417,7 +397,7 @@ public class YTypeFactory {
 			parseWith((DynamicSchemaContext dc) -> parser);
 			return this;
 		}
-		private SchemaContextAware<ValueParser> getParser() {
+		public SchemaContextAware<ValueParser> getParser() {
 			return parser;
 		}
 
@@ -878,25 +858,41 @@ public class YTypeFactory {
 		return ((YTypedPropertyImpl)prop).copy();
 	}
 
-	public YAtomicType yenumFromHints(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<YValueHint>> values) {
+	public YAtomicType yenumFromHints(String name, SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter, SchemaContextAware<PartialCollection<YValueHint>> values) {
 		YAtomicType t = yatomic(name);
-		t.setHintProvider((dc) -> () -> values.withContext(dc));
+		t.setHintProvider(values);
 		t.parseWith((DynamicSchemaContext dc) -> {
-			Collection<String> strings = YTypeFactory.values(values.withContext(dc));
-			return new EnumValueParser(name, strings) {
+			PartialCollection<YValueHint> hints = PartialCollection.fromCallable(() -> values.withContext(dc));
+			return new EnumValueParser(name, hints.map(h -> h.getValue())) {
 				@Override
 				protected String createErrorMessage(String parseString, Collection<String> values) {
-					return errorMessageFormatter.apply(parseString, values);
+					try {
+						return errorMessageFormatter.withContext(dc).apply(parseString, values);
+					} catch (Exception e) {
+						return super.createErrorMessage(parseString, values);
+					}
 				}
 			};
 		});
 		return t;
 	}
 
-	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<Collection<String>> values) {
+	public YAtomicType yenumFromDynamicValues(String name,
+			SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter,
+			SchemaContextAware<PartialCollection<String>> values
+	) {
 		return yenumFromHints(name,
 				//Error message formatter:
-				(parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
+				errorMessageFormatter,
+				//Hints provider:
+				(dc) -> hints(values.withContext(dc))
+		);
+	}
+
+	public YAtomicType yenumFromDynamicValues(String name, SchemaContextAware<PartialCollection<String>> values) {
+		return yenumFromHints(name,
+				//Error message formatter:
+				(dc) -> (parseString, validValues) -> "'"+parseString+"' is an unknown '"+name+"'. Valid values are: "+validValues,
 				//Hints provider:
 				(dc) -> hints(values.withContext(dc))
 		);
@@ -906,30 +902,35 @@ public class YTypeFactory {
 		return new EnumTypeBuilder(name, values);
 	}
 
-	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+	public YAtomicType yenum(String name, SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		YAtomicType t = yatomic(name);
 		t.setHintProvider((dc) -> {
-			Collection<String> strings = values.withContext(dc);
-			return strings==null
-					? null
-					: () -> strings.stream()
-						.map((s) -> new BasicYValueHint(s))
-						.collect(Collectors.toSet());
+			return PartialCollection.compute(() -> values.withContext(dc))
+					.map(BasicYValueHint::new);
 		});
 		t.parseWith((DynamicSchemaContext dc) -> {
 			EnumValueParser enumParser = new EnumValueParser(name, values.withContext(dc)) {
 				@Override
 				protected String createErrorMessage(String parseString, Collection<String> values) {
-					return errorMessageFormatter.apply(parseString, values);
+					try {
+						return errorMessageFormatter.withContext(dc).apply(parseString, values);
+					} catch (Exception e) {
+						return super.createErrorMessage(parseString, values);
+					}
 				}
 			};
 			return enumParser;
 		});
 		return t;
+
+	}
+
+	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+		return yenum(name, (dc) -> errorMessageFormatter,  values);
 	}
 
 	public static Collection<String> values(Collection<YValueHint> hints) {
-		return hints.stream().map(YValueHint::getValue).collect(Collectors.toList());
+		return hints == null ? null : hints.stream().map(YValueHint::getValue).collect(Collectors.toList());
 	}
 
 	public YAtomicType yenum(String name, String... values) {
@@ -960,10 +961,16 @@ public class YTypeFactory {
 	}
 
 	public static Collection<YValueHint> hints(Collection<String> values) {
+		return values.stream()
+				.map(YTypeFactory::hint)
+				.collect(CollectorUtil.toMultiset());
+	}
+
+	public static PartialCollection<YValueHint> hints(PartialCollection<String> values) {
 		if (values!=null) {
-			return values.stream().map(YTypeFactory::hint).collect(Collectors.toList());
+			return values.map(YTypeFactory::hint);
 		}
-		return null;
+		return PartialCollection.unknown();
 	}
 
 	public YTypeFactory enableTieredProposals(boolean enable) {
@@ -973,6 +980,11 @@ public class YTypeFactory {
 
 	public YTypeFactory suggestDeprecatedProperties(boolean enable) {
 		this.suggestDeprecatedProperties = enable;
+		return this;
+	}
+
+	public YTypeFactory setSnippetProvider(TypeBasedSnippetProvider snippetProvider) {
+		this.snippetProvider = snippetProvider;
 		return this;
 	}
 

@@ -92,16 +92,16 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
-public class LanguageServerHarness {
+public class LanguageServerHarness<S extends SimpleLanguageServer> {
 
 	//Warning this 'harness' is incomplete. Growing it as needed.
 
 	private Random random = new Random();
 
-	private Callable<? extends SimpleLanguageServer> factory;
+	private Callable<S> factory;
 	private LanguageId defaultLanguageId;
 
-	private SimpleLanguageServer server;
+	private S server;
 
 	private InitializeResult initResult;
 
@@ -110,12 +110,12 @@ public class LanguageServerHarness {
 	private List<Editor> activeEditors = new ArrayList<>();
 
 
-	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory, LanguageId defaultLanguageId) {
+	public LanguageServerHarness(Callable<S> factory, LanguageId defaultLanguageId) {
 		this.factory = factory;
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
-	public LanguageServerHarness(Callable<? extends SimpleLanguageServer> factory) throws Exception {
+	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);
 	}
 
@@ -184,9 +184,9 @@ public class LanguageServerHarness {
 		workspaceCap.setExecuteCommand(exeCap);
 		clientCap.setWorkspace(workspaceCap);
 		initParams.setCapabilities(clientCap);
-		initResult = server.initialize(initParams).get();
-		if (server instanceof LanguageClientAware) {
-			((LanguageClientAware) server).connect(new STS4LanguageClient() {
+		initResult = getServer().initialize(initParams).get();
+		if (getServer() instanceof LanguageClientAware) {
+			((LanguageClientAware) getServer()).connect(new STS4LanguageClient() {
 				@Override
 				public void telemetryEvent(Object object) {
 					// TODO Auto-generated method stub
@@ -248,15 +248,15 @@ public class LanguageServerHarness {
 			});
 
 		}
-		server.initialized();
+		getServer().initialized();
 		return initResult;
 	}
 
 	public TextDocumentInfo openDocument(TextDocumentInfo documentInfo) throws Exception {
 		DidOpenTextDocumentParams didOpen = new DidOpenTextDocumentParams();
 		didOpen.setTextDocument(documentInfo.getDocument());
-		if (server!=null) {
-			server.getTextDocumentService().didOpen(didOpen);
+		if (getServer()!=null) {
+			getServer().getTextDocumentService().didOpen(didOpen);
 		}
 		return documentInfo;
 	}
@@ -295,8 +295,8 @@ public class LanguageServerHarness {
 		default:
 			throw new IllegalStateException("Unkown SYNC mode: "+getDocumentSyncMode());
 		}
-		if (server!=null) {
-			server.getTextDocumentService().didChange(didChange);
+		if (getServer()!=null) {
+			getServer().getTextDocumentService().didChange(didChange);
 		}
 		return documents.get(uri);
 	}
@@ -320,8 +320,8 @@ public class LanguageServerHarness {
 		default:
 			throw new IllegalStateException("Unkown SYNC mode: "+getDocumentSyncMode());
 		}
-		if (server!=null) {
-			server.getTextDocumentService().didChange(didChange);
+		if (getServer()!=null) {
+			getServer().getTextDocumentService().didChange(didChange);
 		}
 		return documents.get(uri);
 	}
@@ -339,7 +339,7 @@ public class LanguageServerHarness {
 	}
 
 	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) throws Exception {
-		this.server.waitForReconcile();
+		this.getServer().waitForReconcile();
 		return diagnostics.get(doc.getUri());
 	}
 
@@ -376,8 +376,8 @@ public class LanguageServerHarness {
 		TextDocumentPositionParams params = new TextDocumentPositionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
-		server.waitForReconcile();
-		Either<List<CompletionItem>, CompletionList> completions = server.getTextDocumentService().completion(params).get();
+		getServer().waitForReconcile();
+		Either<List<CompletionItem>, CompletionList> completions = getServer().getTextDocumentService().completion(params).get();
 		if (completions.isLeft()) {
 			List<CompletionItem> list = completions.getLeft();
 			return new CompletionList(false, list);
@@ -391,14 +391,14 @@ public class LanguageServerHarness {
 		TextDocumentPositionParams params = new TextDocumentPositionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(document.getId());
-		return server.getTextDocumentService().hover(params ).get();
+		return getServer().getTextDocumentService().hover(params ).get();
 	}
 
 
 	public CompletionItem resolveCompletionItem(CompletionItem maybeUnresolved) {
-		if (server.hasLazyCompletionResolver()) {
+		if (getServer().hasLazyCompletionResolver()) {
 			try {
-				return server.getTextDocumentService().resolveCompletionItem(maybeUnresolved).get();
+				return getServer().getTextDocumentService().resolveCompletionItem(maybeUnresolved).get();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -477,14 +477,14 @@ public class LanguageServerHarness {
 	}
 
 	public List<? extends Location> getDefinitions(TextDocumentPositionParams params) throws Exception {
-		server.waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
-		return server.getTextDocumentService().definition(params).get();
+		getServer().waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
+		return getServer().getTextDocumentService().definition(params).get();
 	}
 
 	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Diagnostic problem) throws Exception {
 		CodeActionContext context = new CodeActionContext(ImmutableList.of(problem));
 		List<? extends Command> actions =
-				server.getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), problem.getRange(), context)).get();
+				getServer().getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), problem.getRange(), context)).get();
 		return actions.stream()
 				.map((command) -> new CodeAction(this, command))
 				.collect(Collectors.toList());
@@ -498,7 +498,7 @@ public class LanguageServerHarness {
 		//Note convert the params to a 'typeless' Object because that is more representative on how it will be
 		// received when we get it in a real client/server setting (i.e. parsed from json).
 		List untypedParams = mapper.convertValue(args, List.class);
-		server.getWorkspaceService()
+		getServer().getWorkspaceService()
 			.executeCommand(new ExecuteCommandParams(command.getCommand(), untypedParams))
 			.get();
 	}
@@ -544,9 +544,9 @@ public class LanguageServerHarness {
 	}
 
 	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
-		server.waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
+		getServer().waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
-		return server.getTextDocumentService().documentSymbol(params).get();
+		return getServer().getTextDocumentService().documentSymbol(params).get();
 	}
 
 	/**
@@ -554,7 +554,7 @@ public class LanguageServerHarness {
 	 */
 	public SynchronizationPoint reconcilerThreadStart() {
 		CompletableFuture<Void> blocker = new CompletableFuture<>();
-		server.setTestListener(new LanguageServerTestListener() {
+		getServer().setTestListener(new LanguageServerTestListener() {
 			@Override
 			public void reconcileStarted(String uri, int version) {
 				try {
@@ -584,5 +584,9 @@ public class LanguageServerHarness {
 			}
 			return newEditor(IOUtil.toString(is));
 		}
+	}
+
+	public S getServer() {
+		return server;
 	}
 }

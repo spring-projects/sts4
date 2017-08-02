@@ -35,11 +35,7 @@ public class SnippetBuilder {
 	 * be overridden by subclasses to support other formats.
 	 * <p>
 	 * The default implementation creates place holder strings that
-	 * match the undocumented format vscode currently supports.
-	 * <p>
-	 * Note: this format is explicitly different from what the LSP
-	 * specifies. So it is very likely we should change this implementation
-	 * in the near future.
+	 * match format specified by LSP 3.0.
 	 */
 	protected String createPlaceHolder(int id) {
 		return "$"+id;
@@ -48,6 +44,26 @@ public class SnippetBuilder {
 	@Override
 	public String toString() {
 		return buf.toString();
+	}
+
+	public void newline(int indent) {
+		buf.append("\n");
+		for (int i = 0; i < indent; i++) {
+			buf.append(' ');
+		}
+	}
+
+	public void ensureSpace() {
+		if (buf.length()>0 && !Character.isWhitespace(buf.charAt(buf.length()-1))) {
+			buf.append(' ');
+		}
+	}
+
+	/**
+	 * @return The number of placeholder that where inserted in the snippet.
+	 */
+	public int getPlaceholderCount() {
+		return nextPlaceHolderId-1;
 	}
 
 }

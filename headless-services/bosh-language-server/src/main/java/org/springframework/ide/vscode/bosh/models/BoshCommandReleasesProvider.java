@@ -11,52 +11,44 @@
 package org.springframework.ide.vscode.bosh.models;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
-public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<StemcellsModel> {
+public class BoshCommandReleasesProvider  extends BoshCommandBasedModelProvider<ReleasesModel> {
 
-	private static final YamlTraversal STEMCELLS = YamlPath.EMPTY
+	private static final String[] COMMAND = new String[] { "releases", "--json" };
+
+	private static final YamlTraversal RELEASES = YamlPath.EMPTY
 			.thenValAt("Tables")
 			.thenAnyChild()
 			.thenValAt("Rows")
 			.thenAnyChild();
 
-	private static final YamlTraversal STEMCELL_NAMES = STEMCELLS
+	private static final YamlTraversal RELEASE_NAMES = RELEASES
 			.thenValAt("name");
 
-	private static final YamlTraversal STEMCELL_OSS = STEMCELLS
-			.thenValAt("os");
-
-	private static final YamlTraversal STEMCELL_VERSIONS = STEMCELLS
+	private static final YamlTraversal RELEASE_VERSIONS = RELEASES
 			.thenValAt("version");
 
-	public BoshCommandStemcellsProvider(BoshCliConfig config) {
+	public BoshCommandReleasesProvider(BoshCliConfig config) {
 		super(config);
 	}
 
 	@Override
-	public StemcellsModel getModel(DynamicSchemaContext dc) throws Exception {
+	public ReleasesModel getModel(DynamicSchemaContext dc) throws Exception {
 		JSONCursor cursor = new JSONCursor(getJsonTree());
-		return new StemcellsModel() {
-
+		return new ReleasesModel() {
 			@Override
-			public Collection<String> getStemcellNames() {
-				return getNames(cursor, STEMCELL_NAMES);
-			}
-
-			@Override
-			public Collection<StemcellData> getStemcells() {
-				return STEMCELLS.traverseAmbiguously(cursor)
-				.map(c -> new StemcellData(
+			public List<ReleaseData> getReleases() {
+				return RELEASES.traverseAmbiguously(cursor)
+				.map(c -> new ReleaseData(
 						getStringProperty(c, "name"),
-						getStringProperty(c, "version"),
-						getStringProperty(c, "os")
+						getStringProperty(c, "version")
 				))
 				.collect(CollectorUtil.toImmutableList());
 			}
@@ -70,20 +62,20 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 			}
 
 			@Override
-			public Collection<String> getStemcellOss() {
-				return getNames(cursor, STEMCELL_OSS);
+			public Collection<String> getReleaseNames() {
+				return getNames(cursor, RELEASE_NAMES);
 			}
 
 			@Override
 			public Collection<String> getVersions() {
-				return getNames(cursor, STEMCELL_VERSIONS);
+				return getNames(cursor, RELEASE_VERSIONS);
 			}
 		};
 	}
 
 	@Override
 	protected String[] getBoshCommand() {
-		return new String[] { "stemcells", "--json" };
+		return COMMAND;
 	}
 
 }

@@ -26,8 +26,10 @@ import com.google.common.collect.ImmutableSet;
 public class EnumValueParser implements ValueParser {
 
 	private String typeName;
-	private Provider<Collection<String>> values;
-	private final boolean longRunning;
+
+	private Provider<PartialCollection<String>> values;
+    private final boolean longRunning;
+
 
 	public EnumValueParser(String typeName, String... values) {
 		this(typeName, ImmutableSet.copyOf(values));
@@ -37,14 +39,26 @@ public class EnumValueParser implements ValueParser {
 		this(typeName, false /* not long running by default */, provider(values));
 	}
 
+	private static <T> Provider<PartialCollection<T>> provider(Collection<T> values) {
+		return () -> PartialCollection.compute(() -> values);
+	}
+	
+	private static <T> Provider<PartialCollection<T>> provider(Callable<Collection<T>> values) {
+		return () -> PartialCollection.compute(() -> values.call());
+	}
+
 	public EnumValueParser(String typeName, boolean longRunning, Callable<Collection<String>> values) {
 		this(typeName, longRunning, provider(values));
 	}
 
-	public EnumValueParser(String typeName, boolean longRunning, Provider<Collection<String>> values) {
+	public EnumValueParser(String typeName, boolean longRunning, Provider<PartialCollection<String>> values) {
 		this.typeName = typeName;
 		this.values = values;
 		this.longRunning = longRunning;
+	}
+
+	public EnumValueParser(String name, PartialCollection<String> values) {
+		this(name, false /* not long running by default */, () -> values);
 	}
 
 	@Override
@@ -56,13 +70,13 @@ public class EnumValueParser implements ValueParser {
 			throw errorOnBlank(createBlankTextErrorMessage());
 		}
 
-		Collection<String> values = this.values.get();
+		PartialCollection<String> values = this.values.get();
 
-		// If values is not known (null) then just assume the str is acceptable.
-		if (values == null || values.contains(str)) {
+		// If values is not fully known then just assume the str is acceptable.
+		if (values == null || !values.isComplete() || values.getElements().contains(str)) {
 			return str;
 		} else {
-			throw errorOnParse(createErrorMessage(str, values));
+			throw errorOnParse(createErrorMessage(str, values.getElements()));
 		}
 	}
 
@@ -80,21 +94,6 @@ public class EnumValueParser implements ValueParser {
 
 	protected Exception errorOnBlank(String message) {
 		return new ValueParseException(message);
-	}
-
-	private static <T> Provider<T> provider(T values) {
-		return () -> values;
-	}
-
-	private static <T> Provider<T> provider(Callable<T> values) {
-		return () -> {
-			try {
-				return values.call();
-			} catch (Exception e) {
-				// Ignore
-				return null;
-			}
-		};
 	}
 	
 	public boolean longRunning() {

@@ -3,35 +3,6 @@
 This extension provides validation, content assist and documentation hovers
 for editing [Bosh](https://bosh.io/) Deployment Manifest files.
 
-## Usage
-
-### Activating the Editor
-
-The Bosh editor automatically activates when the name of the  `.yml` file you are editing 
-follows a certain pattern:
-
-  - `**/*deployment*.yml` : activates support for bosh manifest file.
-  
-You can also define your own patterns and map them to the language-id `bosh-deployment-manifest` 
-by defining `files.associations` in workspace settings. 
-See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
-
-### Targetting a specific Director
-
-Some Validation and Content Assist use information dymanically retrieved from an active Bosh director.
-For these feature to work it is required that you 
-
-- have the bosh cli V2 installed (information is obtained by executing commands using the V2 cli)
-- target a director by setting the `BOSH_ENVIROMENT` variable.
-
-You can verify that you have set things up right by executing command:
-
-```
-bosh cloud-config --json
-```
-
-If setup correctly, it should return information about the cloud-config on your intended bosh director/environment.
-
 ## Functionality
 
 ### Validation
@@ -85,13 +56,56 @@ When you use attributes from the V1 schema the editor will detect this however a
 In this mode, V1 properties are accepted but marked with deprecation warnings and V2 properties are marked as (unknown property)
 errors.
 
+## Usage
+
+### Activating the Editor
+
+The Bosh editor automatically activates when the name of the  `.yml` file you are editing 
+follows a certain pattern:
+
+  - `**/*deployment*.yml` : activates support for bosh manifest file.
+  
+You can also define your own patterns and map them to the language-id `bosh-deployment-manifest` 
+by defining `files.associations` in workspace settings. 
+See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
+
+### Targetting a specific Director
+
+Some of the Validations and Content Assist depend on information dymanically retrieved from an active Bosh director.
+The editor retreives information by executing commands using the Bosh CLI. For this to work the CLI (V2 
+CLI is required) and editor have to be installed and configured correctly.
+
+There are two ways to set things up to make this work:
+
+#### Explicitly Configure the CLI:
+
+From vscode, press `CTRL-SHIFT-P` and type `Settings` then select either `Open User Settings` or `Open Workspace Settings`.
+The bosh cli is configured by specifying keys of the form `bosh.cli.XXX`. Content assist and hover docs show you the
+the available keys and their meaning.
+
+#### Implictly Configure the CLI:
+
+If the bosh cli is not explicitly configured it will, by default, try to execute commands like `bosh cloud-config --json`
+and `bosh stemcells --json` without an explicit `-e ...` argument. This works only if you ensure that the editor
+process executes with a proper set of OS environment variables:
+
+- `PATH`: must be set so that `bosh` cli executable can be found and refers to the V2 CLI.
+- `BOSH_ENVIRONMENT`: must be set to point to the bosh director you want to target.
+
+If you start vscode from a terminal, you can verify that things are setup correctly by executing command:
+
+     bosh cloud-config 
+
+If that command executes without any errors and returns the cloud-config you expected, then things are setup correctly. 
+If subsequently launch vscode from that same terminal the dynamic CA and linting should work correctly.
+
 ## Issues and Feature Requests
 
 Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
 
-[linting]: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/linting.png
-[ca1]:     https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/content-assist-1.png
-[ca2]:     https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/content-assist-2.png
-[hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/hover.png
-[peek]:    https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/peek.png
-[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-bosh/readme-imgs/goto-symbol.png
+[linting]:     https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/linting.png
+[ca1]:         https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-1.png
+[ca2]:         https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-2.png
+[hovers]:      https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/hover.png
+[peek]:        https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/peek.png
+[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/goto-symbol.png

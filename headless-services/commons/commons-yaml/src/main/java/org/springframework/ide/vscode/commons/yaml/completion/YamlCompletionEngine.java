@@ -52,7 +52,7 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class YamlCompletionEngine implements ICompletionEngine {
-	
+
 	Pattern SPACES = Pattern.compile("[ ]+");
 
 	final static Logger logger = LoggerFactory.getLogger(YamlCompletionEngine.class);
@@ -110,7 +110,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 
 	protected Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode, int baseIndent, double deempasizeBy) {
 		try {
-			return fixIndentations(getBaseCompletions(offset, doc, current, contextNode), 
+			return fixIndentations(getBaseCompletions(offset, doc, current, contextNode),
 					current, contextNode, baseIndent, deempasizeBy);
 		} catch (Exception e) {
 			Log.log(e);
@@ -118,7 +118,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return ImmutableList.of();
 	}
 
-	protected Collection<? extends ICompletionProposal> fixIndentations(Collection<ICompletionProposal> completions, SNode currentNode, 
+	protected Collection<? extends ICompletionProposal> fixIndentations(Collection<ICompletionProposal> completions, SNode currentNode,
 			SNode contextNode, int baseIndent, double deempasizeBy) {
 		if (!completions.isEmpty()) {
 			int dashyIndent = getTargetIndent(contextNode, currentNode, true);
@@ -144,7 +144,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			if (isExtraIndentRelaxable(contextNode, fixIndentBy)) {
 				return indented(p, Strings.repeat(" ", fixIndentBy));
 			}
-		} else { // fixIndentBy < 0 
+		} else { // fixIndentBy < 0
 			if (isLesserIndentRelaxable(currentNode, contextNode)) {
 				return dedented(p, -fixIndentBy, contextNode.getDocument());
 			}
@@ -168,7 +168,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	}
 
 	/**
-	 * Determine the indentation level needed to line up with other contextNode children. 
+	 * Determine the indentation level needed to line up with other contextNode children.
 	 * If the contextNode has no children, then compute a proper default indentation where
 	 * a new child could be added.
 	 */
@@ -182,8 +182,8 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		if (child.isPresent()) {
 			return child.get().getIndent();
 		}
-		return (dashy || contextNode.getNodeType()==SNodeType.DOC) 
-				? contextNode.getIndent() 
+		return (dashy || contextNode.getNodeType()==SNodeType.DOC)
+				? contextNode.getIndent()
 				: contextNode.getIndent() + YamlIndentUtil.INDENT_BY;
 	}
 
@@ -212,7 +212,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			};
 			transformed.deemphasize(DEEMP_DEDENTED_PROPOSAL*numArrows);
 			return transformed;
-		} 
+		}
 		// we can't dedent the proposal by the requested amount of space. So err on the safe
 		// side and ignore the proposal. (Otherwise me might end up deleting non-space chars
 		// in our attempt to de-dent.)
@@ -226,7 +226,13 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				return Strings.repeat(Unicodes.RIGHT_ARROW+" ", numArrows) + originalLabel;
 			}
 			@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
-				originalEdit.indentFirstEdit(indentStr);
+//				originalEdit.indentFirstEdit(indentStr);
+				YamlIndentUtil indenter = new YamlIndentUtil("\n");
+				originalEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+					String prefix = insertText.substring(0, offset);
+					String target = insertText.substring(offset);
+					return prefix + indentStr + indenter.applyIndentation(target, indentStr);
+				});
 				return originalEdit;
 			}
 		};
@@ -306,14 +312,14 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Get context node candidates taking into account that we want to have a 'relaxed' interpretation
 	 * of the context node with respect to the current indentation where we ask for a completion.
-	 * To allow for the ambiguity in indentation a list of context nodes is returned instead of a 
+	 * To allow for the ambiguity in indentation a list of context nodes is returned instead of a
 	 * single node. (Note we may still return a singleton list for cases where relaxed indentation
 	 * doesn't seem desirable).
-	 * @param baseIndent 
+	 * @param baseIndent
 	 */
 	protected List<SNode> getContextNodes(YamlDocument doc, SNode node, int offset, int baseIndent) {
 		if (node==null) {
@@ -340,7 +346,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			//This node has flexibility around indentation. So this is where me need to build a list of candidates!
 			ImmutableList.Builder<SNode> contextNodes = ImmutableList.builder();
 			while (node!=null ) {
-				//Any node that represents a 'step' between contexts and is not too deeply nested is kept. 
+				//Any node that represents a 'step' between contexts and is not too deeply nested is kept.
 				if (node.getSegment()!=null && node.getIndent()<=baseIndent) {
 					contextNodes.add(node);
 				}
