@@ -24,7 +24,7 @@ public interface IProblemCollector {
 	 * responsible to decide when and how often these checkpoints are invoked during
 	 * a collecting session.
 	 * <p/>
-	 * For implementors, this support cases where problems need to be processed in
+	 * For implementors, this optional support handles cases where problems need to be processed in
 	 * intermediate phases between the start and end collecting stages, and if
 	 * implemented, should support multiple checkpoint invocations.
 	 */
