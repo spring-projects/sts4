@@ -1,5 +1,5 @@
 const path = require('path');
-const { JarLanguageClient } = require('atom-commons');
+const { JarLanguageClient } = require('pivotal-atom-languageclient-commons');
 
 class ManifestYamlLanguageClient extends JarLanguageClient {
 

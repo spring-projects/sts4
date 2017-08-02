@@ -1,7 +1,7 @@
 {
-  "name": "atom-commons",
+  "name": "pivotal-atom-languageclient-commons",
   "version": "0.1.0",
-  "description": "Atom Commons for STS4",
+  "description": "Atom language client commons for STS4 language servers",
   "repository": "https://github.com/spring-projects/sts4",
   "license": "MIT",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "main": "./dist/index",
   "dependencies": {
-    "atom-languageclient": "https://github.com/atom/atom-languageclient#master",
+    "atom-languageclient": "git://github.com/BoykoAlex/atom-languageclient#grammar-override",
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",

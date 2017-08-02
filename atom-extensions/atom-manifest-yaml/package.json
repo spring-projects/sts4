@@ -1,18 +1,23 @@
 {
-  "name": "cf-manifest-yaml",
+  "name": "pivotal-atom-cf-manifest-yaml",
   "main": "./lib/main",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Cloud Foundry Deployment Manifest YAML support for Atom",
-  "repository": "https://github.com/spring-projects/sts4",
+  "repository": "https://github.com/spring-projects/sts4/atom-extensions/atom-manifest-yaml",
   "license": "MIT",
   "engines": {
     "atom": ">=1.17.0"
   },
+  "files": [
+    "grammars/",
+    "settings/",
+    "lib/"
+  ],
   "dependencies": {
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",
-    "atom-commons": "file:../atom-commons"
+    "pivotal-atom-languageclient-commons": "file:../atom-commons"
   },
   "devDependencies": {
     "coffeelint": "^1.10.1"
