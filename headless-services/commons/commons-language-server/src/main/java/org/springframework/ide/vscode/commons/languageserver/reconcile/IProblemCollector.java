@@ -17,15 +17,16 @@ public interface IProblemCollector {
 	void accept(ReconcileProblem problem);
 
 	/**
-	 * Allows the problem collector to process problems that has been collected so
-	 * far, BEFORE the end collecting. It is to handle cases where a subset of
-	 * problems need to be processed or published in an "intermediate" phase during
-	 * a collecting session, but prior to the final end collecting. For example, if
-	 * a collection session in a reconcile engine wants to publish fast problems
-	 * first before handling slow problems , this method allows the reconcile engine
-	 * to notify the problem collector to process the fast problems first before
-	 * starting with the slow ones. The reconcile engine, or whoever is calling the
-	 * collector, is responsible for deciding when to call this checkpoint.
+	 * Optional for both implementors and callers.
+	 * <p/>
+	 * This method optionally allows callers to do partial collection between the
+	 * start and end collecting, and can be called numerous times. The caller is
+	 * responsible to decide when and how often these checkpoints are invoked during
+	 * a collecting session.
+	 * <p/>
+	 * For implementors, this support cases where problems need to be processed in
+	 * intermediate phases between the start and end collecting stages, and if
+	 * implemented, should support multiple checkpoint invocations.
 	 */
 	default void checkPointCollecting() {
 
