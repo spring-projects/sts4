@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.util;
 
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 
 import com.google.common.base.Strings;
@@ -42,7 +43,11 @@ public class YamlIndentUtil {
 	}
 
 	public YamlIndentUtil(YamlDocument doc) {
-		this(doc.getDocument().getDefaultLineDelimiter());
+		this(doc.getDocument());
+	}
+
+	public YamlIndentUtil(IDocument doc) {
+		this(doc.getDefaultLineDelimiter());
 	}
 
 	/**
@@ -87,6 +92,10 @@ public class YamlIndentUtil {
 	 */
 	public String applyIndentation(String text, int indentBy) {
 		return text.replaceAll("\\n", newlineWithIndent(indentBy));
+	}
+
+	public String applyIndentation(String text, String indentStr) {
+		return text.replaceAll("\\n", "\n"+indentStr);
 	}
 
 	/**

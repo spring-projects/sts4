@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.IOException;
@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
@@ -1606,6 +1607,161 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"version:^^|cannot be blank",
 				"version:^^|cannot be blank"
+		);
+	}
+
+	@Test public void snippet_toplevel() throws Exception {
+		Editor editor = harness.newEditor("<*>");
+		editor.assertCompletions(SNIPPET_COMPLETION,
+				"name: $1\n" +
+				"releases:\n" +
+				"- name: $2\n" +
+				"  version: $3\n" +
+				"stemcells:\n" +
+				"- alias: $4\n" +
+				"  version: $5\n" +
+				"update:\n" +
+				"  canaries: $6\n" +
+				"  max_in_flight: $7\n" +
+				"  canary_watch_time: $8\n" +
+				"  update_watch_time: $9\n" +
+				"instance_groups:\n" +
+				"- name: $10\n" +
+				"  azs:\n" +
+				"  -  $11\n" +
+				"  instances: $12\n" +
+				"  jobs:\n" +
+				"  - name: $13\n" +
+				"    release: $14\n" +
+				"  vm_type: $15\n" +
+				"  stemcell: $16\n" +
+				"  networks:\n" +
+				"  - name: $17<*>"
+				, // ------------------
+				"instance_groups:\n" +
+				"- name: $1\n" +
+				"  azs:\n" +
+				"  -  $2\n" +
+				"  instances: $3\n" +
+				"  jobs:\n" +
+				"  - name: $4\n" +
+				"    release: $5\n" +
+				"  vm_type: $6\n" +
+				"  stemcell: $7\n" +
+				"  networks:\n" +
+				"  - name: $8<*>"
+				, // ----------------
+				"releases:\n" +
+				"- name: $1\n" +
+				"  version: $2<*>"
+				, // ----------------
+				"stemcells:\n" +
+				"- alias: $1\n" +
+				"  version: $2<*>"
+				, // ----------------
+				"update:\n" +
+				"  canaries: $1\n" +
+				"  max_in_flight: $2\n" +
+				"  canary_watch_time: $3\n" +
+				"  update_watch_time: $4<*>"
+				, // -----------------
+				"variables:\n" +
+				"- name: $1\n" +
+				"  type: $2<*>"
+		);
+	}
+
+	@Test public void snippet_disabledWhenPropertiesAlreadyDefined() throws Exception {
+		Editor editor = harness.newEditor(
+				"name:\n" +
+				"releases:\n" +
+				"stemcells:\n" +
+				"<*>"
+		);
+
+		editor.assertCompletionLabels(SNIPPET_COMPLETION,
+				//"BoshDeploymentManifest Snippet",
+				"instance_groups Snippet",
+//				"releases Snippet",
+//				"stemcells Snippet"
+				"update Snippet",
+				"variables Snippet",
+				"- Stemcell Snippet"
+		);
+	}
+
+	@Test public void snippet_nested_plain() throws Exception {
+		Editor editor;
+		//Plain exact completion
+		editor = harness.newEditor(
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("jobs Snippet"),
+				"jo<*>"
+				, // ------
+				"jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+		editor.assertCompletionWithLabel("jobs Snippet",
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+	}
+
+	@Test public void snippet_nested_indenting() throws Exception {
+		Editor editor;
+		//With extra indent:
+		editor = harness.newEditor(
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"<*>"
+		);
+		editor.assertCompletionWithLabel("→ jobs Snippet",
+				"instance_groups:\n" +
+				"- name: blah\n" +
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs Snippet"),
+				"jo<*>"
+				, // ------
+				"  jobs:\n" +
+				"  - name: $1\n" +
+				"    release: $2<*>"
+		);
+	}
+
+	@Test public void relaxedCAmoreSpaces() throws Exception {
+		Editor editor = harness.newEditor(
+			"name: foo\n" +
+			"instance_groups:\n" +
+			"- name: \n" +
+			"<*>"
+		);
+		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs"),
+				"jo<*>"
+				, // ==>
+				"  jobs:\n" +
+				"  - <*>"
+		);
+	}
+
+	@Test @Ignore public void keyCompletionThatNeedANewline() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: foo\n" +
+				"update: canwa<*>"
+		);
+		editor.assertCompletions(
+				"name: foo\n" +
+				"update: \n" +
+				"  canary_watch_time: <*>"
 		);
 	}
 

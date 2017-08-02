@@ -47,6 +47,8 @@ public class DocumentEdits implements ProposalApplier {
 
 	private static final Pattern NON_WS_CHAR = Pattern.compile("\\S");
 
+	private boolean isRelativeIndent = false;
+
 	// Note: for small number of edits this implementation is okay.
 	// for large number of edits it is potentially slow because of the
 	// way it transforms edit coordinates (a growing chain of

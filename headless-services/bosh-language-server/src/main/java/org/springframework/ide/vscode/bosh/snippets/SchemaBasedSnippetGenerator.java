@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
@@ -84,17 +85,13 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 			SnippetBuilder builder = snippetBuilderFactory.get();
 			List<YTypedProperty> requiredProps = typeUtil.getProperties(type).stream()
 			.filter(p -> p.isPrimary() || p.isRequired())
-			.collect(Collectors.toList());
+			.collect(CollectorUtil.toImmutableList());
 			if (!requiredProps.isEmpty()) {
 				generateBeanSnippet(requiredProps, builder, indent, maxNesting);
 			}
 			if (builder.getPlaceholderCount()>=2) {
-				//place holder count is a good indicator of snippet complexity and allows us to
-				// avoid creating trivial snippets (which aren't very useful).
-				ImmutableSet<YTypedProperty> vetoProps = ImmutableSet.copyOf(requiredProps);
-				// Do not suggest snippet if it contains properties that are already defined.
 				return new Snippet(typeUtil.niceTypeName(type)+" Snippet", builder.toString(), (dc) ->
-					dc.getDefinedProperties().stream().noneMatch(vetoProps::contains)
+					requiredProps.stream().noneMatch(p -> dc.getDefinedProperties().contains(p.getName()))
 				);
 			}
 		}

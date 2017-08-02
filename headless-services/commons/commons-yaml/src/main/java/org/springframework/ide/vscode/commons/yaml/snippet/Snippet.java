@@ -37,4 +37,10 @@ public class Snippet {
 	public String toString() {
 		return "Snippet [ name="+name+",\n" +snippet +"\n]";
 	}
+	public Predicate<DynamicSchemaContext> getApplicability() {
+		return applicability;
+	}
+	public boolean isApplicable(DynamicSchemaContext dc) {
+		return applicability==null || applicability.test(dc);
+	}
 }

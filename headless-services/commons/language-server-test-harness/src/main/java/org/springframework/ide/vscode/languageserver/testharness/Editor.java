@@ -63,6 +63,7 @@ public class Editor {
 	public static final Predicate<CompletionItem> PLAIN_COMPLETION = c -> !RELAXED_COMPLETION.test(c);
 	public static final Predicate<CompletionItem> DEDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ");
 	public static final Predicate<CompletionItem> INDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ");
+	public static final Predicate<CompletionItem> SNIPPET_COMPLETION = c -> c.getLabel().endsWith("Snippet");
 
 	static class EditorState {
 		String documentContents;
@@ -327,6 +328,10 @@ public class Editor {
 	}
 
 	public List<CompletionItem> assertCompletionLabels(String... expectedLabels) throws Exception {
+		return assertCompletionLabels(c -> true, expectedLabels);
+	}
+
+	public List<CompletionItem> assertCompletionLabels(Predicate<CompletionItem> isInteresting, String... expectedLabels) throws Exception {
 		StringBuilder expect = new StringBuilder();
 		StringBuilder actual = new StringBuilder();
 		for (String label : expectedLabels) {
@@ -336,8 +341,10 @@ public class Editor {
 
 		List<CompletionItem> completions;
 		for (CompletionItem completion : completions = getCompletions()) {
-			actual.append(completion.getLabel());
-			actual.append("\n");
+			if (isInteresting.test(completion)) {
+				actual.append(completion.getLabel());
+				actual.append("\n");
+			}
 		}
 		assertEquals(expect.toString(), actual.toString());
 		return completions;
