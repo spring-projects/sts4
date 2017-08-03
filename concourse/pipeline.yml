@@ -445,6 +445,7 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
+      trigger: true
     - get: maven-cache
   - task: atom-language-servers-test
     file: sts4/concourse/tasks/atom-language-servers-test.yml
