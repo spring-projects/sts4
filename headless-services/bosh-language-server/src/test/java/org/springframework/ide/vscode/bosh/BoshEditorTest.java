@@ -64,6 +64,7 @@ public class BoshEditorTest {
 			LanguageId.BOSH_DEPLOYMENT
 		);
 		harness.intialize(null);
+		System.setProperty("lsp.yaml.completions.errors.disable", "false");
 	}
 
 	@Test public void toplevelV2PropertyNamesKnown() throws Exception {
