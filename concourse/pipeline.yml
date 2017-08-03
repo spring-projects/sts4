@@ -489,7 +489,6 @@ jobs:
       - atom-language-servers-test
   - task: build-manifest-yaml-atom-package
     input_mapping:
-      sts4: atom-commons
       package_sources: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml

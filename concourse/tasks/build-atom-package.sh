@@ -3,7 +3,7 @@ set -e
 set -v
 workdir=`pwd`
 
-url=`fatjar/url`
+url=`cat fatjar/url`
 
 echo "The url of the fatjar is ${url}"
 
