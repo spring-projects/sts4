@@ -492,15 +492,6 @@ jobs:
       package_sources: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
-      
-#boot-java-language-server-0.0.2-201708031854.jar
-# -rw-r--r-- 1 root root 16846312 Aug  3 18:54 boot-properties-language-server-0.0.2-201708031854.jar
-# -rw-r--r-- 1 root root  7936924 Aug  3 18:54 bosh-language-server-0.0.8-201708031854.jar
-# -rw-r--r-- 1 root root  7979261 Aug  3 18:54 concourse-language-server-0.0.8-201708031854.jar
-# -rw-r--r-- 1 root root 20783856 Aug  3 18:54 manifest-yaml-language-server-0.0.9-201708031854.jar
-
-
-
   on_failure:
     put: slack-notification
     params:
