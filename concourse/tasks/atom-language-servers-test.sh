@@ -21,5 +21,3 @@ for i in `ls *-language-server/target/*.jar`; do
     basename=$basename($i)
     cp $i $output/${basename/SNAPSHOT/$timestamp}
 done
-
-find . -name "*-language-server"
