@@ -45,7 +45,11 @@ public class ConcourseLanguageServerTest {
 	}
 
 	private void assertExpectedInitResult(InitializeResult initResult) {
-		assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
+		if (Boolean.getBoolean("lsp.lazy.completions.disable")) {
+			assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isFalse();
+		} else {
+			assertThat(initResult.getCapabilities().getCompletionProvider().getResolveProvider()).isTrue();
+		}
 		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
