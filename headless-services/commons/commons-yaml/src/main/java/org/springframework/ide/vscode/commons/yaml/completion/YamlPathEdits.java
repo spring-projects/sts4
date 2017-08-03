@@ -88,7 +88,7 @@ public class YamlPathEdits extends DocumentEdits {
 	}
 
 	private void createNewPath(SChildBearingNode parent, YamlPath path, String appendText) throws Exception {
-		int indent = getChildIndent(parent);
+		int indent = YamlIndentUtil.getNewChildKeyIndent(parent);
 		int insertionPoint = getNewPathInsertionOffset(parent);
 		boolean startOnNewLine = true;
 		insert(insertionPoint, createPathInsertionText(path, indent, startOnNewLine, appendText));
@@ -110,14 +110,6 @@ public class YamlPathEdits extends DocumentEdits {
 			}
 		}
 		return buf.toString();
-	}
-
-	private int getChildIndent(SNode parent) {
-		if (parent.getNodeType()==SNodeType.DOC) {
-			return parent.getIndent();
-		} else {
-			return parent.getIndent()+YamlIndentUtil.INDENT_BY;
-		}
 	}
 
 	private int getNewPathInsertionOffset(SChildBearingNode parent) throws Exception {
@@ -142,7 +134,7 @@ public class YamlPathEdits extends DocumentEdits {
 	}
 
 	public void createPathInPlace(SNode contextNode, YamlPath relativePath, int insertionPoint, String appendText) throws Exception {
-		int indent = getChildIndent(contextNode);
+		int indent = YamlIndentUtil.getNewChildKeyIndent(contextNode);
 		insert(insertionPoint, createPathInsertionText(relativePath, indent, needNewline(contextNode, insertionPoint), appendText));
 	}
 

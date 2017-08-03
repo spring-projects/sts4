@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
+import org.springframework.ide.vscode.commons.yaml.completion.DefaultCompletionFactory.ValueProposal;
 import org.springframework.ide.vscode.commons.yaml.hover.YPropertyInfoTemplates;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
@@ -49,6 +50,7 @@ import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
 import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.google.common.base.Strings;
@@ -99,7 +101,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		String query = getPrefix(doc, node, offset);
 		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
 		if (completions.isEmpty()) {
-			completions = getKeyCompletions(doc, offset, query);
+			completions = getKeyCompletions(doc, node, offset, query);
 			TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
 			if (snippetProvider!=null) {
 				Collection<Snippet> snippets = snippetProvider.getSnippets(type);
@@ -130,7 +132,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		return completions;
 	}
 
-	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, int offset, String query) throws Exception {
+	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, SNode node, int offset, String query) throws Exception {
 		int queryOffset = offset - query.length();
 		DynamicSchemaContext dynamicCtxt = getSchemaContext();
 		List<YTypedProperty> allProperties = typeUtil.getProperties(type);
@@ -153,13 +155,20 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							YType YType = p.getType();
 							edits.delete(queryOffset, query);
 							int referenceIndent = doc.getColumn(queryOffset);
-							if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
+							boolean needNewline = node.getNodeType()==SNodeType.KEY;
+							StringBuilder snippet = new StringBuilder();
+							if (needNewline) {
+								snippet.append("\n");
+								referenceIndent = YamlIndentUtil.getNewChildKeyIndent(node);
+							} else if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
 								//See https://www.pivotaltracker.com/story/show/137722057
-								edits.insert(queryOffset, " ");
+								snippet.append(" ");
 								referenceIndent++;
 							}
-							String snippet = p.getName()+":" +appendTextFor(YType);
-							edits.insert(queryOffset, indenter.applyIndentation(snippet, referenceIndent));
+							snippet.append(p.getName());
+							snippet.append(":");
+							snippet.append(appendTextFor(YType));
+							edits.insert(queryOffset, indenter.applyIndentation(snippet.toString(), referenceIndent));
 							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil);
@@ -429,7 +438,8 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							// its not required for them. So we should add it along with the dash.
 							try {
 								Integer insertAt = textEdit.getFirstEditStart();
-								if (insertAt!=null) {
+								if (insertAt!=null && c instanceof ValueProposal) {
+									//Value proposals don't automatically get newline added (because they don't require it), so we dmust add it here.
 									return !"".equals(doc.getLineTextBefore(insertAt).trim());
 								}
 							} catch (Exception e) {

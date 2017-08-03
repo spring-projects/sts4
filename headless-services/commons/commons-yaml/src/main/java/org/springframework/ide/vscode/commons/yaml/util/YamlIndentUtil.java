@@ -14,6 +14,8 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNodeType;
 
 import com.google.common.base.Strings;
 
@@ -123,6 +125,14 @@ public class YamlIndentUtil {
 
 	public String applyIndentation(String text, String indentStr) {
 		return text.replaceAll("\\n", "\n"+indentStr);
+	}
+
+	public static int getNewChildKeyIndent(SNode parent) {
+		if (parent.getNodeType()==SNodeType.DOC) {
+			return parent.getIndent();
+		} else {
+			return parent.getIndent()+INDENT_BY;
+		}
 	}
 
 	/**

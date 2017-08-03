@@ -1828,7 +1828,7 @@ public class BoshEditorTest {
 		);
 	}
 
-	@Test @Ignore public void keyCompletionThatNeedsANewline() throws Exception {
+	@Test public void keyCompletionThatNeedsANewline() throws Exception {
 		Editor editor = harness.newEditor(
 				"name: foo\n" +
 				"update: canwa<*>"
