@@ -464,9 +464,11 @@ jobs:
       - put: s3-manifest-yaml-fatjar-snapshot
         params:
           file: out/manifest-yaml-language-server-*.jar
+          acl: public-read
       - put: s3-concourse-fatjar-snapshot
         params:
           file: out/concourse-language-server-*.jar
+          acl: public-read
 - name: build-manifest-yaml-atom-package
   plan:
   - aggregate:
