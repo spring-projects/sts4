@@ -1,6 +1,8 @@
 inputs:
 - name: sts4
 - name: maven-cache
+outputs:
+- name: out
 platform: linux
 image_resource:
   type: docker-image
