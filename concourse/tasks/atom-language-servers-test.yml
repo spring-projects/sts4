@@ -1,0 +1,10 @@
+inputs:
+- name: sts4
+- name: maven-cache
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+run:
+  path: sts4/concourse/tasks/atom-language-servers-test.sh
