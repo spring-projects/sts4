@@ -27,10 +27,13 @@ node ./node_modules/bundle-deps/bundle-deps .
 
 npm pack
 
+ls *.tgz
+
 timestamp=`date -u +%Y%m%d%H%M`
 for i in `ls *.tgz`; do
     basename=$(basename $i)
-    cp $i $output/${basename/SNAPSHOT/$timestamp}
+    length = ${#basename}
+    cp $i $output/${basename:0:$length-4}-$timestamp${basename:$length-4:$length}
 done
 
 ls -la $output

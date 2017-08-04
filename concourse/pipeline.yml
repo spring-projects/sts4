@@ -101,6 +101,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
+- name: s3-atom-cf-manifest-yaml-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/atom/snapshots/(.*)cf-manifest-yaml-(.*).tgz
 - name: snapshot-website
   type: s3-multi
   source:
@@ -491,3 +499,9 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  on_success:
+    aggregate:
+    - put: s3-atom-cf-manifest-yaml-snapshot
+      params:
+        file: out/*cf-manifest-yaml-*.tgz
+        acl: public-read
