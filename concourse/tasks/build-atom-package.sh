@@ -2,6 +2,7 @@
 set -e
 set -v
 workdir=`pwd`
+output=$workdir/out
 
 url=`cat fatjar/url`
 
@@ -27,19 +28,13 @@ node ./node_modules/bundle-deps/bundle-deps .
 
 basename=$(npm pack | tee /dev/tty)
 
-echo ${basename}
-
-ls *.tgz
-
 timestamp=`date -u +%Y%m%d%H%M`
 
 length=${#basename}
 
 newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
-echo ${newName}
-cp ${basename} ${newName}
-cp ${basename} ${output}/${newName}
+cp ${basename} $output/${newName}
 
 cd $output
 ls -la
