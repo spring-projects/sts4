@@ -23,7 +23,8 @@
     "bosh"
   ],
   "activationEvents": [
-    "onLanguage:bosh-deployment-manifest"
+    "onLanguage:bosh-deployment-manifest",
+    "onLanguage:bosh-cloud-config"
   ],
   "contributes": {
     "languages": [
