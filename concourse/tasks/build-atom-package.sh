@@ -9,10 +9,13 @@ url=`cat fatjar/url`
 cd package_sources
 
 npm install ../sts4/atom-extensions/atom-commons
+cd ./node_modules/pivotal-atom-languageclient-commons
+ls -la
+cd ../../
 
 cat > properties.json << EOF
 {
-    jarUrl: ${url}
+    "jarUrl": "${url}"
 }
 EOF
 
