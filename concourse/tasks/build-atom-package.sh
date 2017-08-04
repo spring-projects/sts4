@@ -10,11 +10,27 @@ echo "The url of the fatjar is ${url}"
 ls -la
 
 cd package_sources
+
 npm install ../sts4/atom-extensions/atom-commons
+
 cat > properties.json << EOF
 {
     jarUrl: ${url}
 }
 EOF
 
-cat properties.json
+npm install
+
+npm install bundle-deps
+
+bundle-deps .
+
+npm pack
+
+timestamp=`date -u +%Y%m%d%H%M`
+for i in `ls *.tgz`; do
+    basename=$(basename $i)
+    cp $i $output/${basename/SNAPSHOT/$timestamp}
+done
+
+ls -la $output
