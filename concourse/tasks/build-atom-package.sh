@@ -25,7 +25,7 @@ npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
 
-basename = $(npm pack | tee /dev/tty)
+basename=$(npm pack | tee /dev/tty)
 
 echo ${basename}
 
@@ -33,7 +33,7 @@ ls *.tgz
 
 timestamp=`date -u +%Y%m%d%H%M`
 
-length = ${#basename}
+length=${#basename}
 
 cp $basename $output/${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
