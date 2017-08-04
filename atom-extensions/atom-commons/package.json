@@ -8,6 +8,10 @@
     "atom": ">=1.17.0"
   },
   "main": "./dist/index",
+  "files": [
+    "./src/",
+    "./dist/"
+  ],
   "dependencies": {
     "atom-languageclient": "0.1.4",
     "decompress": "^4.2.0",
@@ -19,7 +23,6 @@
     "clean": "rm -rf dist node_modules",
     "compile": "babel src --out-dir dist",
     "postinstall": "postinstall-build --only-as-dependency build \"npm run compile\"",
-    "prepublish": "npm run clean && npm run compile",
     "watch": "babel src --out-dir dist -w"
   },
   "atomTranspilers": [
