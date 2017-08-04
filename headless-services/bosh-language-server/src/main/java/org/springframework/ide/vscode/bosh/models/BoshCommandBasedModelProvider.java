@@ -102,15 +102,12 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	}
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
-		Log.info("executing cmd: "+command);
 		if (command==null) {
 			throw new IOException("bosh cli based editor features are disabled");
 		}
 		try {
 			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, config.getTimeout());
-			Log.info("executing cmd SUCCESS: "+process);
-			String out = process.getOut();
-			return out;
+			return process.getOut();
 		} catch (Exception e) {
 			Log.log("executing cmd FAILED", e);
 			throw e;

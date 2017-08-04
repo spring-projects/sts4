@@ -24,9 +24,9 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 
 	public BoshCloudConfigSchema(YTypeFactory f, BoshModels models) {
 		super(f);
-		this.toplevelType = f.ybean("CloudConfig");
 		t_any = f.yany("Object");
 
+		this.toplevelType = f.ybean("CloudConfig");
 		addProp(toplevelType, "azs", t_any);
 		addProp(toplevelType, "networks", t_any);
 		addProp(toplevelType, "vm_types", t_any);

@@ -13,8 +13,6 @@ import {TextDocument, OutputChannel} from 'vscode';
 
 var log_output : OutputChannel = null;
 
-const BOSH_DEPLOYMENT_LANGUAGE_ID = "bosh-deployment-manifest";
-
 function log(msg : string) {
     if (log_output) {
         log_output.append(msg +"\n");
@@ -36,7 +34,10 @@ export function activate(context: VSCode.ExtensionContext) {
         fatJarFile: 'jars/language-server.jar',
         jvmHeap: "48m",
         clientOptions: {
-            documentSelector: [ BOSH_DEPLOYMENT_LANGUAGE_ID ],
+            documentSelector: [ 
+                "bosh-deployment-manifest",
+                "bosh-cloud-config"
+            ],
             synchronize: {
                 configurationSection: "bosh"
             }

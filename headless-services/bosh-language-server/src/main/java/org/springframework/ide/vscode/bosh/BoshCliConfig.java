@@ -41,7 +41,6 @@ public class BoshCliConfig {
 	}
 
 	public void handleConfigurationChange(Settings newConfig) {
-		Log.info("BoshCliConfig changed: "+newConfig);
 		this.settings = newConfig;
 	}
 }
