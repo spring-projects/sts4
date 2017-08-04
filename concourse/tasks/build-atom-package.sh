@@ -11,4 +11,10 @@ ls -la
 
 cd package_sources
 npm install ../sts4/atom-extensions/atom-commons
-ls -la
+cat > properties.json << EOF
+{
+    jarUrl: ${url}
+}
+EOF
+
+cat properties.json
