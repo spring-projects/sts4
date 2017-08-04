@@ -23,7 +23,7 @@ npm install
 
 npm install bundle-deps
 
-bundle-deps .
+node ./node_modules/bundle-deps/bundle-deps .
 
 npm pack
 
