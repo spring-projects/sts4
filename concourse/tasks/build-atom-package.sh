@@ -25,7 +25,7 @@ npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
 
-basename = $(npm pack)
+basename = $(npm pack | tee /dev/tty)
 
 echo ${basename}
 
