@@ -9,7 +9,7 @@
   },
   "main": "./dist/index",
   "dependencies": {
-    "atom-languageclient": "git://github.com/BoykoAlex/atom-languageclient#grammar-override",
+    "atom-languageclient": "git://github.com/atom/atom-languageclient#master",
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",

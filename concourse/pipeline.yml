@@ -101,6 +101,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
+- name: s3-atom-cf-manifest-yaml-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/atom/snapshots/(.*)cf-manifest-yaml-(.*).tgz
 - name: snapshot-website
   type: s3-multi
   source:
@@ -464,9 +472,11 @@ jobs:
       - put: s3-manifest-yaml-fatjar-snapshot
         params:
           file: out/manifest-yaml-language-server-*.jar
+          acl: public-read
       - put: s3-concourse-fatjar-snapshot
         params:
           file: out/concourse-language-server-*.jar
+          acl: public-read
 - name: build-manifest-yaml-atom-package
   plan:
   - aggregate:
@@ -484,17 +494,14 @@ jobs:
       package_sources: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
-      
-#boot-java-language-server-0.0.2-201708031854.jar
-# -rw-r--r-- 1 root root 16846312 Aug  3 18:54 boot-properties-language-server-0.0.2-201708031854.jar
-# -rw-r--r-- 1 root root  7936924 Aug  3 18:54 bosh-language-server-0.0.8-201708031854.jar
-# -rw-r--r-- 1 root root  7979261 Aug  3 18:54 concourse-language-server-0.0.8-201708031854.jar
-# -rw-r--r-- 1 root root 20783856 Aug  3 18:54 manifest-yaml-language-server-0.0.9-201708031854.jar
-
-
-
   on_failure:
     put: slack-notification
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  on_success:
+    aggregate:
+    - put: s3-atom-cf-manifest-yaml-snapshot
+      params:
+        file: out/*cf-manifest-yaml-*.tgz
+        acl: public-read

@@ -125,12 +125,6 @@ export class JarLanguageClient extends AutoLanguageClient {
         })
     }
 
-    // createRpcConnection(process) {
-    //     let connection = super.createRpcConnection(process);
-    //     connection.trace(rpc.Trace.Messages, console);
-    //     return connection;
-    // }
-
     findJavaExecutable(binname) {
         binname = this.correctBinname(binname);
 
