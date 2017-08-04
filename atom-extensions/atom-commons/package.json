@@ -19,6 +19,7 @@
     "clean": "rm -rf dist node_modules",
     "compile": "babel src --out-dir dist",
     "postinstall": "postinstall-build --only-as-dependency build \"npm run compile\"",
+    "prepublish": "npm run clean && npm run compile",
     "watch": "babel src --out-dir dist -w"
   },
   "atomTranspilers": [
