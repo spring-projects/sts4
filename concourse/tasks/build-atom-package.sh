@@ -35,6 +35,10 @@ timestamp=`date -u +%Y%m%d%H%M`
 
 length=${#basename}
 
-cp $basename $output/${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
+newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
-ls -la $output
+echo ${newName}
+cp $basename $output/${newName}
+
+cd $output
+ls -la
