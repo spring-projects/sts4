@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.bosh.models.CachingModelProvider;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
@@ -58,7 +59,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @author Kris De Volder
  */
-public class BoshDeploymentManifestSchema implements YamlSchema {
+public class BoshDeploymentManifestSchema extends SchemaSupport implements YamlSchema {
 
 	private final YBeanType V2_TOPLEVEL_TYPE;
 	private final YBeanType V1_TOPLEVEL_TYPE;
@@ -70,26 +71,19 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private ImmutableList<YType> definitionTypes = null;
 		//Note: 'director_uuid' is also deprecated. But its treated separately since it is deprecated and ignored by V2 client no matter what (i.e. deprecated in both schemas)
 
-	public final YTypeFactory f = new YTypeFactory()
-			.enableTieredProposals(false)
-			.suggestDeprecatedProperties(false);
-	public final YType t_string = f.yatomic("String");
-	public final YType t_ne_string = f.yatomic("String")
-			.parseWith(ValueParsers.NE_STRING);
+	public final YType t_string;
+	public final YType t_ne_string;
 
-	public final YType t_strings = f.yseq(t_string);
+	public final YType t_strings;
 
-	public final YAtomicType t_boolean = f.yenum("boolean", "true", "false");
-	public final YType t_any = f.yany("Object");
-	public final YType t_params = f.ymap(t_string, t_any);
-	public final YType t_string_params = f.ymap(t_string, t_string);
-	public final YType t_pos_integer = f.yatomic("Positive Integer")
-			.parseWith(ValueParsers.POS_INTEGER);
-	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
-			.parseWith(ValueParsers.integerAtLeast(1));
-	public final YType t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
-	public final YType t_integer_or_range = f.yatomic("Integer or Range")
-			.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
+	public final YAtomicType t_boolean;
+	public final YType t_any;
+	public final YType t_params;
+	public final YType t_string_params;
+	public final YType t_pos_integer;
+	public final YType t_strictly_pos_integer;
+	public final YType t_uuid;
+	public final YType t_integer_or_range;
 	private YType t_stemcell_alias_def;
 	private YType t_stemcell_alias_ref;
 	private YType t_release_name_def;
@@ -103,18 +97,30 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 	private DynamicModelProvider<ReleasesModel> releasesProvider;
 	private List<Pair<YType, YType>> defAndRefTypes;
 
-	public BoshDeploymentManifestSchema(
-			YamlAstCache asts, ASTTypeCache astTypes,
-			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
-			DynamicModelProvider<StemcellsModel> stemcellsProvider,
-			DynamicModelProvider<ReleasesModel> releasesProvider
-	) {
-		this.asts = asts;
-		this.astTypes = astTypes;
-		this.cloudConfigProvider = new CachingModelProvider<>(cloudConfigProvider, CloudConfigModel.class);
-		this.stemcellsProvider = new CachingModelProvider<>(stemcellsProvider, StemcellsModel.class);
-		this.releasesProvider = new CachingModelProvider<>(releasesProvider, ReleasesModel.class);
+	public BoshDeploymentManifestSchema(YTypeFactory f, BoshModels models) {
+		super(f);
+		this.asts = models.asts;
+		this.astTypes = models.astTypes;
+		this.cloudConfigProvider = new CachingModelProvider<>(models.cloudConfigProvider, CloudConfigModel.class);
+		this.stemcellsProvider = new CachingModelProvider<>(models.stemcellsProvider, StemcellsModel.class);
+		this.releasesProvider = new CachingModelProvider<>(models.releasesProvider, ReleasesModel.class);
 		TYPE_UTIL = f.TYPE_UTIL;
+
+		t_string = f.yatomic("String");
+		t_boolean = f.yenum("boolean", "true", "false");
+		t_ne_string = f.yatomic("String")
+				.parseWith(ValueParsers.NE_STRING);
+		t_strings = f.yseq(t_string);
+		t_any = f.yany("Object");
+		t_params = f.ymap(t_string, t_any);
+		t_string_params = f.ymap(t_string, t_string);
+		t_pos_integer = f.yatomic("Positive Integer")
+				.parseWith(ValueParsers.POS_INTEGER);
+		t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
+				.parseWith(ValueParsers.integerAtLeast(1));
+		t_uuid = f.yatomic("UUID").parseWith(UUID::fromString);
+		t_integer_or_range = f.yatomic("Integer or Range")
+				.parseWith(BoshValueParsers.INTEGER_OR_RANGE);
 
 		V2_TOPLEVEL_TYPE = createV2Schema();
 		V1_TOPLEVEL_TYPE = createV1Schema(V2_TOPLEVEL_TYPE);
@@ -345,25 +351,9 @@ public class BoshDeploymentManifestSchema implements YamlSchema {
 		return TYPE_UTIL;
 	}
 
-	private YTypedPropertyImpl prop(AbstractType beanType, String name, YType type) {
-		YTypedPropertyImpl prop = f.yprop(name, type);
-		prop.setDescriptionProvider(descriptionFor(beanType, name));
-		return prop;
-	}
-
-	public static Renderable descriptionFor(YType owner, String propName) {
-		String typeName = owner.toString();
-		return Renderables.fromClasspath(BoshDeploymentManifestSchema.class, "/desc/"+typeName+"/"+propName);
-	}
-
-	private YTypedPropertyImpl addProp(AbstractType bean, String name, YType type) {
-		return addProp(bean, bean, name, type);
-	}
-
-	private YTypedPropertyImpl addProp(AbstractType superType, AbstractType bean, String name, YType type) {
-		YTypedPropertyImpl p = prop(superType, name, type);
-		bean.addProperty(p);
-		return p;
+	@Override
+	protected String getResourcePathPrefix() {
+		return "/deployment-manifest/";
 	}
 
 	public Collection<YType> getDefinitionTypes() {

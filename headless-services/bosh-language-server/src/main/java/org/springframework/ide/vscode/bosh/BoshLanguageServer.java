@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.bosh.models.ReleasesModel;
@@ -41,7 +42,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 public class BoshLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
-	private BoshDeploymentManifestSchema schema;
+	private BoshSchemas schema;
 
 	public BoshLanguageServer(BoshCliConfig cliConfig,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
@@ -49,11 +50,12 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 			DynamicModelProvider<ReleasesModel> releasesProvider
 	) {
 		super("vscode-bosh");
-		YamlAstCache asts = new YamlAstCache();
+		BoshModels models = new BoshModels(cloudConfigProvider, stemcellsProvider, releasesProvider);
 		SimpleTextDocumentService documents = getTextDocumentService();
 
-		ASTTypeCache astTypeCache = new ASTTypeCache();
-		schema = new BoshDeploymentManifestSchema(asts, astTypeCache, cloudConfigProvider, stemcellsProvider, releasesProvider);
+		schema = new BoshSchemas(models);
+		YamlAstCache asts = models.asts;
+		ASTTypeCache astTypeCache = models.astTypes;
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -82,11 +84,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
-		if (LanguageId.BOSH_DEPLOYMENT.equals(doc.getLanguageId())) {
-			validateWith(doc.getId(), engine);
-		} else {
-			validateWith(doc.getId(), IReconcileEngine.NULL);
-		}
+		validateWith(doc.getId(), engine);
 	}
 
 	public void enableSnippets(boolean enable) {

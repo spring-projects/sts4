@@ -148,7 +148,6 @@ public class BoshEditorTest {
 		editor.assertHoverContains("tags", "Specifies key value pairs to be sent to the CPI for VM tagging");
 	}
 
-	//@Ignore //For now... because not passing yet.
 	@Test public void reconcileCfManifest() throws Exception {
 		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
 		cloudConfigProvider.executeCommandWith(() -> {
@@ -253,8 +252,6 @@ public class BoshEditorTest {
 		editor.assertHoverContains("version", "The version of a matching stemcell");
 		editor.assertHoverContains("name", "Full name of a matching stemcell. Either `name` or `os` keys can be specified.");
 	}
-
-
 
 	@Test public void releasesBlockCompletions() throws Exception {
 		harness.getServer().enableSnippets(false);
@@ -1839,6 +1836,63 @@ public class BoshEditorTest {
 				"update: \n" +
 				"  canary_watch_time: <*>"
 		);
+	}
+
+	@Test public void cloudconfigReconcile() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"bogus: bad\n" +
+				"azs:\n" +
+				"- name: z1\n" +
+				"  cloud_properties: {availability_zone: us-east-1a}\n" +
+				"- name: z2\n" +
+				"  cloud_properties: {availability_zone: us-east-1b}\n" +
+				"\n" +
+				"vm_types:\n" +
+				"- name: small\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: t2.micro\n" +
+				"    ephemeral_disk: {size: 3000, type: gp2}\n" +
+				"- name: medium\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m3.medium\n" +
+				"    ephemeral_disk: {size: 30000, type: gp2}\n" +
+				"\n" +
+				"disk_types:\n" +
+				"- name: small\n" +
+				"  disk_size: 3000\n" +
+				"  cloud_properties: {type: gp2}\n" +
+				"- name: large\n" +
+				"  disk_size: 50_000\n" +
+				"  cloud_properties: {type: gp2}\n" +
+				"\n" +
+				"networks:\n" +
+				"- name: private\n" +
+				"  type: manual\n" +
+				"  subnets:\n" +
+				"  - range: 10.10.0.0/24\n" +
+				"    gateway: 10.10.0.1\n" +
+				"    az: z1\n" +
+				"    static: [10.10.0.62]\n" +
+				"    dns: [10.10.0.2]\n" +
+				"    cloud_properties: {subnet: subnet-f2744a86}\n" +
+				"  - range: 10.10.64.0/24\n" +
+				"    gateway: 10.10.64.1\n" +
+				"    az: z2\n" +
+				"    static: [10.10.64.121, 10.10.64.122]\n" +
+				"    dns: [10.10.0.2]\n" +
+				"    cloud_properties: {subnet: subnet-eb8bd3ad}\n" +
+				"- name: vip\n" +
+				"  type: vip\n" +
+				"\n" +
+				"compilation:\n" +
+				"  workers: 5\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  az: z1\n" +
+				"  vm_type: medium\n" +
+				"  network: private\n"
+		);
+
+		editor.assertProblems("bogus|Unknown property");
 	}
 
 }

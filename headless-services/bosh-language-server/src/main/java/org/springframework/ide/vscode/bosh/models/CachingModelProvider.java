@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 import com.google.common.cache.Cache;
@@ -39,6 +40,7 @@ public class CachingModelProvider<T> implements DynamicModelProvider<T> {
 	private Class<T> modelInterface;
 
 	public CachingModelProvider(DynamicModelProvider<T> delegate, Class<T> modelInterface) {
+		Assert.isNotNull(delegate);
 		this.delegate = delegate;
 		this.modelInterface = modelInterface;
 	}

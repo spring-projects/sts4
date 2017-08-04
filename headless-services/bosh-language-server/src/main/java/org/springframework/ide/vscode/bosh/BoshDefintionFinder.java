@@ -38,7 +38,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 
 	private final YamlAstCache asts;
 	private final ASTTypeCache astTypes;
-	private final BoshDeploymentManifestSchema schema;
+	private final BoshSchemas schema;
 
 	private Map<YType, Handler> handlers = new HashMap<>();
 
@@ -47,7 +47,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 		Flux<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
 	}
 
-	public BoshDefintionFinder(BoshLanguageServer server, BoshDeploymentManifestSchema schema, YamlAstCache asts, ASTTypeCache astTypes) {
+	public BoshDefintionFinder(BoshLanguageServer server, BoshSchemas schema, YamlAstCache asts, ASTTypeCache astTypes) {
 		super(server);
 		this.schema = schema;
 		this.asts = asts;

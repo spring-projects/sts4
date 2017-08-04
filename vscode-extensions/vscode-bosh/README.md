@@ -1,7 +1,8 @@
 # Bosh Deployment Manifest Editor for Visual Studio Code
 
 This extension provides validation, content assist and documentation hovers
-for editing [Bosh](https://bosh.io/) Deployment Manifest files.
+for editing [Bosh](https://bosh.io/) Deployment Manifest files and 
+Cloud Configs.
 
 ## Functionality
 
@@ -63,9 +64,10 @@ errors.
 The Bosh editor automatically activates when the name of the  `.yml` file you are editing 
 follows a certain pattern:
 
-  - `**/*deployment*.yml` : activates support for bosh manifest file.
+  - `**/*deployment*.yml` : activates support for Bosh manifest file.
+  - `**/*cloud-config*.yml` : activates support for Bosh cloud config. 
   
-You can also define your own patterns and map them to the language-id `bosh-deployment-manifest` 
+You can also define your own patterns and map them to the language-id `bosh-deployment-manifest` or `bosh-cloud-config`
 by defining `files.associations` in workspace settings. 
 See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
 

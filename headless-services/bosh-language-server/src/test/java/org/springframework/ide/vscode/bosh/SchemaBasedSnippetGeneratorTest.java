@@ -13,19 +13,16 @@ package org.springframework.ide.vscode.bosh;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.bosh.snippets.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
-import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 
 public class SchemaBasedSnippetGeneratorTest {
 
-	private ASTTypeCache astTypes = new ASTTypeCache();
-	private YamlAstCache asts = new YamlAstCache();
-	private BoshDeploymentManifestSchema schema = new BoshDeploymentManifestSchema(asts, astTypes, (dc) -> null, (dc) -> null, (dc) -> null);
+	private BoshDeploymentManifestSchema schema = new BoshSchemas(new BoshModels((dc) -> null, (dc) -> null, (dc) -> null)).getDeploymentSchema();
 	private YTypeUtil typeUtil = schema.getTypeUtil();
 	private SchemaBasedSnippetGenerator generator = new SchemaBasedSnippetGenerator(typeUtil, SnippetBuilder::new);
 
@@ -60,7 +57,6 @@ public class SchemaBasedSnippetGeneratorTest {
 				,
 				generator.getSnippets(v2Schema).iterator().next().getSnippet()
 		);
-		System.out.println();
 	}
 
 }

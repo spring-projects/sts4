@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
-import java.util.Collection;
-
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 
 /**

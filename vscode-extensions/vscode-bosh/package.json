@@ -28,6 +28,15 @@
   "contributes": {
     "languages": [
       {
+        "id": "bosh-cloud-config",
+        "aliases": [
+          "Bosh Cloud Config"
+        ],
+        "filenamePatterns": [
+          "*cloud-config*.yml"
+        ]
+      },
+      {
         "id": "bosh-deployment-manifest",
         "aliases": [
           "Bosh Deployment Manifest"
@@ -41,6 +50,11 @@
     "grammars": [
       {
         "language": "bosh-deployment-manifest",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      },
+      {
+        "language": "bosh-cloud-config",
         "scopeName": "source.yaml",
         "path": "./yaml-support/yaml.tmLanguage"
       }
