@@ -25,15 +25,16 @@ npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
 
-npm pack
+basename = $(npm pack)
+
+echo ${basename}
 
 ls *.tgz
 
 timestamp=`date -u +%Y%m%d%H%M`
-for i in `ls *.tgz`; do
-    basename=$(basename $i)
-    length = ${#basename}
-    cp $i $output/${basename:0:$length-4}-$timestamp${basename:$length-4:$length}
-done
+
+length = ${#basename}
+
+cp $basename $output/${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
 ls -la $output
