@@ -8,10 +8,6 @@
     "atom": ">=1.17.0"
   },
   "main": "./dist/index",
-  "files": [
-    "src/",
-    "dist/"
-  ],
   "dependencies": {
     "atom-languageclient": "0.1.4",
     "decompress": "^4.2.0",
