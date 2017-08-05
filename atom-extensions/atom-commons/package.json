@@ -7,7 +7,6 @@
   "engines": {
     "atom": ">=1.17.0"
   },
-  "main": "./dist/index",
   "dependencies": {
     "atom-languageclient": "0.1.4",
     "decompress": "^4.2.0",
@@ -15,15 +14,17 @@
     "remote-file-size": "^3.0.3",
     "postinstall-build": "^3.0.0"
   },
+  "main": "./build/lib/index",
   "scripts": {
-    "clean": "rm -rf dist node_modules",
-    "compile": "babel src --out-dir dist",
+    "clean": "rm -rf build",
+    "compile": "babel lib --out-dir build/lib",
     "postinstall": "postinstall-build --only-as-dependency build \"npm run compile\"",
-    "watch": "babel src --out-dir dist -w"
+    "prepublish": "npm run clean && npm run compile",
+    "watch": "babel lib --out-dir build/lib -w"
   },
   "atomTranspilers": [
     {
-      "glob": "{src}/**/*.js",
+      "glob": "{lib}/**/*.js",
       "transpiler": "atom-babel6-transpiler",
       "options": {
         "cacheKeyFiles": [
@@ -35,7 +36,6 @@
   ],
   "devDependencies": {
     "atom-babel6-transpiler": "0.0.3",
-    "atom-mocha-test-runner": "^1.0.0",
     "babel-cli": "^6.24.0",
     "babel-core": "6.22.1",
     "babel-plugin-add-module-exports": "0.2.1",

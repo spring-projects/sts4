@@ -3,15 +3,17 @@ set -e
 set -v
 workdir=`pwd`
 output=$workdir/out
+atom_commons=$workdir/sts4/atom-extensions/atom-commons
+atom_package=$workdir/package_sources
 
 url=`cat fatjar/url`
 
-cd package_sources
+cd $atom_commons
+npm install
 
-npm install ../sts4/atom-extensions/atom-commons
-cd ./node_modules/pivotal-atom-languageclient-commons
-ls -la
-cd ../../
+cd $atom_package
+
+npm install ${atom_commons}
 
 cat > properties.json << EOF
 {
