@@ -9,8 +9,8 @@
   },
   "main": "./dist/index",
   "files": [
-    "./src/",
-    "./dist/"
+    "src/",
+    "dist/"
   ],
   "dependencies": {
     "atom-languageclient": "0.1.4",
