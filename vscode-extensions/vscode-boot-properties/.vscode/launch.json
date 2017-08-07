@@ -3,14 +3,17 @@
 	"version": "0.1.0",
 	"configurations": [
 		{
-			"name": "Launch Extension",
 			"type": "extensionHost",
 			"request": "launch",
+			"name": "Launch Extension",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
-			"stopOnEntry": false,
+			"args": [
+				"--extensionDevelopmentPath=${workspaceRoot}"
+			],
 			"sourceMaps": true,
-			"outDir": "${workspaceRoot}/out/lib",
+			"outFiles": [
+				"${workspaceRoot}/out/**/*.js"
+			],
 			"preLaunchTask": "npm"
 		},
 		{
