@@ -555,6 +555,105 @@ public class ManifestYamlEditorTest {
 		editor.assertProblems("health-check-http-endpoint|This has no effect unless `health-check-type` is `http` (but it is currently set to `process`)");
 	}
 
+	@Test public void reconcileHealthHttpEndpointValidation() throws Exception {
+		Editor editor;
+		Diagnostic problem;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health/additionalpath"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health/applog.txt"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health?check=true"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /?check=true"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint:"
+		);
+		problem = editor.assertProblems("|Path requires a value staring with '/'").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: health"
+		);
+		problem = editor.assertProblems("health|Path must start with a '/'").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: ?check=true"
+		);
+		problem = editor.assertProblems("?check=true|Path must start with a '/'").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: health/additionalpath"
+		);
+		problem = editor.assertProblems("health/additionalpath|Path must start with a '/'").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: http://health/additionalpath"
+		);
+		problem = editor.assertProblems("http://health/additionalpath|Path contains scheme").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  health-check-type: http\n" +
+				"  health-check-http-endpoint: /health/ additionalpath"
+		);
+		problem = editor.assertProblems("/health/ additionalpath|Illegal character in path").get(0);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+	}
+
 	@Test public void reconcileRoutesWithNoHost() throws Exception {
 		Editor editor;
 

@@ -147,11 +147,11 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_ne_string = f.yatomic("String");
-		t_ne_string.parseWith(ValueParsers.NE_STRING);
+		t_ne_string.parseWith(ManifestYmlValueParsers.healthCheckEndpointPath());
 
 		t_application_name = f.yatomic("ApplicationName");
 		t_application_name.parseWith(ValueParsers.NE_STRING);
-		
+
 		YType t_string = f.yatomic("String");
 
 		t_route_string = f.yatomic("RouteUri")
