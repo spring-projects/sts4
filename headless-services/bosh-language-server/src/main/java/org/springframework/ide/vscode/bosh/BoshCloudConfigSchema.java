@@ -27,12 +27,12 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		t_any = f.yany("Object");
 
 		this.toplevelType = f.ybean("CloudConfig");
-		addProp(toplevelType, "azs", t_any);
-		addProp(toplevelType, "networks", t_any);
-		addProp(toplevelType, "vm_types", t_any);
+		addProp(toplevelType, "azs", t_any).isRequired(true);
+		addProp(toplevelType, "networks", t_any).isRequired(true);
+		addProp(toplevelType, "vm_types", t_any).isRequired(true);
 		addProp(toplevelType, "vm_extensions", t_any);
-		addProp(toplevelType, "disk_types", t_any);
-		addProp(toplevelType, "compilation", t_any);
+		addProp(toplevelType, "disk_types", t_any).isRequired(true);
+		addProp(toplevelType, "compilation", t_any).isRequired(true);
 	}
 
 	@Override
@@ -47,6 +47,6 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 
 	@Override
 	protected String getResourcePathPrefix() {
-		return "cloud-config";
+		return "/cloud-config/";
 	}
 }

@@ -31,7 +31,7 @@ public class SchemaSupport {
 	}
 
 	protected String getResourcePathPrefix() {
-		return "desc";
+		return "/desc/";
 	}
 
 	protected YTypedPropertyImpl prop(AbstractType beanType, String name, YType type) {
@@ -42,7 +42,7 @@ public class SchemaSupport {
 
 	protected Renderable descriptionFor(YType owner, String propName) {
 		String typeName = owner.toString();
-		return Renderables.fromClasspath(BoshDeploymentManifestSchema.class, getResourcePathPrefix()+typeName+"/"+propName);
+		return Renderables.fromClasspath(SchemaSupport.class, getResourcePathPrefix()+typeName+"/"+propName);
 	}
 
 	protected YTypedPropertyImpl addProp(AbstractType bean, String name, YType type) {
