@@ -1,0 +1,1 @@
+*Required*. A unique name used to identify and reference the VM type.

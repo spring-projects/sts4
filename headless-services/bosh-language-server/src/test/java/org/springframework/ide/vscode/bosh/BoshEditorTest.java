@@ -1959,19 +1959,19 @@ public class BoshEditorTest {
 
 		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
 				"vm_types:\n" +
+				"- <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"name: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
 				"- name: nice-vm\n" +
 				"  <*>"
 		);
 		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
 				"cloud_properties:\n    <*>"
-		);
-
-		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
-				"vm_types:\n" +
-				"- <*>"
-		);
-		editor.assertContextualCompletions("<*>",
-				"name: <*>"
 		);
 
 		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
@@ -1985,6 +1985,15 @@ public class BoshEditorTest {
 				"dup|Duplicate 'VMTypeName'",
 				"dup|Duplicate 'VMTypeName'"
 		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: default\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m1.small\n"
+		);
+		editor.assertHoverContains("name", "A unique name used to identify and reference the VM type");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to create VMs");
 	}
 
 }
