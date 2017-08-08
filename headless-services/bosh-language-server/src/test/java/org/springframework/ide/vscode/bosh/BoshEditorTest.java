@@ -1954,4 +1954,37 @@ public class BoshEditorTest {
 		editor.assertHoverContains("network", "References a valid network name defined in the Networks block");
 	}
 
+	@Test public void cloudconfig_vm_types_subproperties() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: nice-vm\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				"cloud_properties:\n    <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"name: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: nice-vm\n" +
+				"- name: dup\n" +
+				"- name: dup\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"dup|Duplicate 'VMTypeName'",
+				"dup|Duplicate 'VMTypeName'"
+		);
+	}
+
 }
