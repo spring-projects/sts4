@@ -377,7 +377,8 @@ public class Editor {
 		}
 	}
 
-	public void assertContextualCompletions(LanguageId language, Predicate<CompletionItem> isInteresting, String textBefore, String... textAfter) throws Exception {
+	public void assertContextualCompletions(Predicate<CompletionItem> isInteresting, String textBefore, String... textAfter) throws Exception {
+		LanguageId language = this.getLanguageId();
 		Editor editor = harness.newEditor(language, this.getText());
 		editor.reconcile(); //this ensures the conText is parsed and its AST is cached (will be used for
 		                    //dynamic CA when the conText + textBefore is not parsable.
@@ -391,7 +392,7 @@ public class Editor {
 	}
 
 	public void assertContextualCompletions(String textBefore, String... textAfter) throws Exception {
-		assertContextualCompletions(getLanguageId(), (x) -> true, textBefore, textAfter);
+		assertContextualCompletions((x) -> true, textBefore, textAfter);
 	}
 
 	private String replaceSelection(String replacement) {

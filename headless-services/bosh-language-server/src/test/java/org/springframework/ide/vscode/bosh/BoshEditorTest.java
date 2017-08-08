@@ -1696,7 +1696,7 @@ public class BoshEditorTest {
 				"- name: blah\n" +
 				"  <*>"
 		);
-		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("jobs Snippet"),
+		editor.assertContextualCompletions(c -> c.getLabel().equals("jobs Snippet"),
 				"jo<*>"
 				, // ------
 				"jobs:\n" +
@@ -1727,7 +1727,7 @@ public class BoshEditorTest {
 				"  - name: $1\n" +
 				"    release: $2<*>"
 		);
-		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs Snippet"),
+		editor.assertContextualCompletions(c -> c.getLabel().equals("→ jobs Snippet"),
 				"jo<*>"
 				, // ------
 				"  jobs:\n" +
@@ -1745,7 +1745,7 @@ public class BoshEditorTest {
 				"  type: aaa\n" +
 				"<*>"
 		);
-		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, DEDENTED_COMPLETION.and(SNIPPET_COMPLETION),
+		editor.assertContextualCompletions(DEDENTED_COMPLETION.and(SNIPPET_COMPLETION),
 				"  <*>"
 				, // ==>
 				"instance_groups:\n" +
@@ -1789,7 +1789,7 @@ public class BoshEditorTest {
 				"  type: aaa\n" +
 				"<*>"
 		);
-		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, DEDENTED_COMPLETION.and(SNIPPET_COMPLETION.negate()),
+		editor.assertContextualCompletions(DEDENTED_COMPLETION.and(SNIPPET_COMPLETION.negate()),
 				"  <*>"
 				, //==>
 				"instance_groups:\n" +
@@ -1818,7 +1818,7 @@ public class BoshEditorTest {
 			"- name: \n" +
 			"<*>"
 		);
-		editor.assertContextualCompletions(LanguageId.BOSH_DEPLOYMENT, c -> c.getLabel().equals("→ jobs"),
+		editor.assertContextualCompletions(c -> c.getLabel().equals("→ jobs"),
 				"jo<*>"
 				, // ==>
 				"  jobs:\n" +
@@ -1908,6 +1908,50 @@ public class BoshEditorTest {
 		editor.assertHoverContains("vm_types", "Specifies the [VM types](https://bosh.io/docs/terminology.html#vm-type) available to deployments.");
 		editor.assertHoverContains("disk_types", "Specifies the [disk types](https://bosh.io/docs/terminology.html#disk-types) available to deployments.");
 		editor.assertHoverContains("compilation", "A compilation definition allows to specify VM characteristics.");
+	}
+
+	@Test public void cloudconfig_compilation_subproperties() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"compilation:\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION.or(SNIPPET_COMPLETION),
+				"<*>"
+				, // ==>
+				  "workers: $1\n" +
+				"  az: $2\n" +
+				"  vm_type: $3\n" +
+				"  network: $4<*>"
+				,
+				"az: <*>"
+				,
+				"network: <*>"
+				,
+				"reuse_compilation_vms: <*>"
+				,
+				"vm_type: <*>"
+				,
+				"workers: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"compilation:\n" +
+				"  workers: not-int\n" +
+				"  reuse_compilation_vms: not-bool\n" +
+				"  az: z1\n" +
+				"  vm_type: default\n" +
+				"  network: private\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"not-int|NumberFormatException",
+				"not-bool|unknown 'boolean'"
+		);
+		editor.assertHoverContains("workers", "The maximum number of compilation VMs");
+		editor.assertHoverContains("reuse_compilation_vms", "If `false`, BOSH creates a new compilation VM");
+		editor.assertHoverContains("az", "Name of the AZ defined in AZs section");
+		editor.assertHoverContains("vm_type", "Name of the VM type defined in VM types section");
+		editor.assertHoverContains("network", "References a valid network name defined in the Networks block");
 	}
 
 }

@@ -1,0 +1,1 @@
+*Required*. Name of the AZ defined in AZs section to use for creating compilation VMs.
