@@ -15,6 +15,7 @@ import java.util.Collection;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
@@ -52,8 +53,10 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		YType t_params = f.ymap(t_ne_string, t_any);
 
 		t_az_ref = t_ne_string;
-		t_vm_type_ref = t_ne_string;
 		t_vm_type_def = f.yatomic("VMTypeName").parseWith(ValueParsers.NE_STRING);
+		t_vm_type_ref = f.yenumFromDynamicValues("VMTypeName", (dc) -> PartialCollection.compute(() ->
+			models.astTypes.getDefinedNames(dc, t_vm_type_def)
+		));
 		t_network_ref = t_ne_string;
 
 		YBeanType t_compilation = f.ybean("Compilation");

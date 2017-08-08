@@ -1945,7 +1945,8 @@ public class BoshEditorTest {
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
 				"not-int|NumberFormatException",
-				"not-bool|unknown 'boolean'"
+				"not-bool|unknown 'boolean'",
+				"default|unknown 'VMTypeName'"
 		);
 		editor.assertHoverContains("workers", "The maximum number of compilation VMs");
 		editor.assertHoverContains("reuse_compilation_vms", "If `false`, BOSH creates a new compilation VM");
@@ -1994,6 +1995,69 @@ public class BoshEditorTest {
 		);
 		editor.assertHoverContains("name", "A unique name used to identify and reference the VM type");
 		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to create VMs");
+	}
+
+	@Test public void cloudconfig_vm_types_reference() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: small\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: t2.micro\n" +
+				"    ephemeral_disk: {size: 3000, type: gp2}\n" +
+				"- name: medium\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m3.medium\n" +
+				"    ephemeral_disk: {size: 30000, type: gp2}\n" +
+				"compilation:\n" +
+				"  workers: 5\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  az: z1\n" +
+				"  vm_type: <*>\n" +
+				"  network: private"
+		);
+		editor.assertContextualCompletions("<*>",
+				"medium<*>",
+				"small<*>"
+		);
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: small\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: t2.micro\n" +
+				"    ephemeral_disk: {size: 3000, type: gp2}\n" +
+				"- name: medium\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m3.medium\n" +
+				"    ephemeral_disk: {size: 30000, type: gp2}\n" +
+				"compilation:\n" +
+				"  workers: 5\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  az: z1\n" +
+				"  vm_type: medium\n" +
+				"  network: private"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_types:\n" +
+				"- name: small\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: t2.micro\n" +
+				"    ephemeral_disk: {size: 3000, type: gp2}\n" +
+				"- name: medium\n" +
+				"  cloud_properties:\n" +
+				"    instance_type: m3.medium\n" +
+				"    ephemeral_disk: {size: 30000, type: gp2}\n" +
+				"compilation:\n" +
+				"  workers: 5\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  az: z1\n" +
+				"  vm_type: woot-vm\n" +
+				"  network: private"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("woot-vm|unknown 'VMTypeName'");
 	}
 
 }
