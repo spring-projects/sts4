@@ -110,11 +110,11 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		addProp(t_disk_type, "cloud_properties", t_params);
 
 		this.toplevelType = f.ybean("CloudConfig");
-		addProp(toplevelType, "azs", f.yseq(t_az)).isRequired(true);
-		addProp(toplevelType, "networks", f.yseq(t_network)).isRequired(true);
-		addProp(toplevelType, "vm_types", f.yseq(t_vm_type)).isRequired(true);
+		addProp(toplevelType, "azs", f.yseq(t_az).notEmpty()).isRequired(true);
+		addProp(toplevelType, "networks", f.yseq(t_network).notEmpty()).isRequired(true);
+		addProp(toplevelType, "vm_types", f.yseq(t_vm_type).notEmpty()).isRequired(true);
 		addProp(toplevelType, "vm_extensions", f.yseq(t_any));
-		addProp(toplevelType, "disk_types", f.yseq(t_disk_type)).isRequired(true);
+		addProp(toplevelType, "disk_types", f.yseq(t_disk_type).notEmpty()).isRequired(true);
 		addProp(toplevelType, "compilation", t_compilation).isRequired(true);
 
 		ASTTypeCache astTypes = models.astTypes;

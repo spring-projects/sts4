@@ -25,6 +25,7 @@ import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -38,6 +39,8 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.SequenceNode;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -600,6 +603,16 @@ public class YTypeFactory {
 		@Override
 		public YType getDomainType() {
 			return el;
+		}
+
+		public YSeqType notEmpty() {
+			require((DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+				SequenceNode seq = (SequenceNode) node;
+				if (seq.getValue().size()==0) {
+					problems.accept(YamlSchemaProblems.schemaProblem("At least one '"+el+"' is required", node));
+				}
+			});
+			return this;
 		}
 	}
 

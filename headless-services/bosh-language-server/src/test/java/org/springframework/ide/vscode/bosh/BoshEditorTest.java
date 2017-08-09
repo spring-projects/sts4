@@ -2422,4 +2422,20 @@ public class BoshEditorTest {
 		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to create disks");
 	}
 
+	@Test public void cloudconfig_at_least_one_required() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+			"azs: []\n" +
+			"vm_types: []\n" +
+			"networks: []\n" +
+			"disk_types: []\n" +
+			"vm_extensions: []" //This one should be okay!
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"[]|At least one 'AZ' is required",
+				"[]|At least one 'VMType' is required",
+				"[]|At least one 'Network' is required",
+				"[]|At least one 'DiskType' is required"
+		);
+	}
 }
