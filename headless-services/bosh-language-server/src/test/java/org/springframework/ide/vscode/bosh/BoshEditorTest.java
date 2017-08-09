@@ -2438,4 +2438,32 @@ public class BoshEditorTest {
 				"[]|At least one 'DiskType' is required"
 		);
 	}
+
+	@Test public void cloudconfig_vm_extensions() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_extensions:\n" +
+				"- name: pub-lbs\n" +
+				"  cloud_properties:\n" +
+				"    elbs: [main]\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+		editor.assertHoverContains("name", "A unique name used to identify and reference the VM extension");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to configure VMs");
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_extensions:\n" +
+				"- <*>"
+		);
+		editor.assertContextualCompletions("<*>", "name: <*>");
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"vm_extensions:\n" +
+				"- name: flubbergastly-vm\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				"cloud_properties:\n    <*>");
+
+	}
 }

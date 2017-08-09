@@ -44,6 +44,8 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 	private final YType t_network_def;
 	private final YType t_disk_type_def;
 	private final YType t_disk_type_ref;
+	private final YType t_vm_extension_def;
+	private final YType t_vm_extension_ref;
 	private Collection<YType> definitionTypes;
 	private final Lazy<Collection<Pair<YType, YType>>> defAndRefTypes = new Lazy<>();
 	private AbstractType t_any;
@@ -87,6 +89,11 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 			models.astTypes.getDefinedNames(dc, t_disk_type_def)
 		));
 
+		t_vm_extension_def = f.yatomic("VMExtensionName").parseWith(ValueParsers.NE_STRING);
+		t_vm_extension_ref = f.yenumFromDynamicValues("VMExtensionName",(dc) -> PartialCollection.compute(() ->
+			models.astTypes.getDefinedNames(dc, t_vm_extension_def)
+		));
+
 		YType t_network = createNetworkBlockSchema(models);
 
 		YBeanType t_az = f.ybean("AZ");
@@ -109,11 +116,15 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		addProp(t_disk_type, "disk_size", t_pos_integer).isRequired(true);
 		addProp(t_disk_type, "cloud_properties", t_params);
 
+		YBeanType t_vm_extension = f.ybean("VMExtension");
+		addProp(t_vm_extension, "name", t_vm_extension_def).isPrimary(true);
+		addProp(t_vm_extension, "cloud_properties", t_params);
+
 		this.toplevelType = f.ybean("CloudConfig");
 		addProp(toplevelType, "azs", f.yseq(t_az).notEmpty()).isRequired(true);
 		addProp(toplevelType, "networks", f.yseq(t_network).notEmpty()).isRequired(true);
 		addProp(toplevelType, "vm_types", f.yseq(t_vm_type).notEmpty()).isRequired(true);
-		addProp(toplevelType, "vm_extensions", f.yseq(t_any));
+		addProp(toplevelType, "vm_extensions", f.yseq(t_vm_extension));
 		addProp(toplevelType, "disk_types", f.yseq(t_disk_type).notEmpty()).isRequired(true);
 		addProp(toplevelType, "compilation", t_compilation).isRequired(true);
 
@@ -199,7 +210,8 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 			Pair.of(t_vm_type_def, t_vm_type_ref),
 			Pair.of(t_network_def, t_network_ref),
 			Pair.of(t_az_def, t_az_ref),
-			Pair.of(t_disk_type_def, t_disk_type_ref)
+			Pair.of(t_disk_type_def, t_disk_type_ref),
+			Pair.of(t_vm_extension_def, t_vm_extension_ref)
 		));
 	}
 

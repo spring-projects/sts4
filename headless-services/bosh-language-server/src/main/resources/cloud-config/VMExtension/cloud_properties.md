@@ -1,0 +1,1 @@
+Describes any IaaS-specific properties needed to configure VMs. Example: `elbs: [...]`. Default is `{}` (empty Hash).
