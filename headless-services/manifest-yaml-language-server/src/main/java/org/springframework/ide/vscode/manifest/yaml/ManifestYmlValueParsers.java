@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -18,6 +21,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
@@ -100,6 +104,48 @@ public class ManifestYmlValueParsers {
 			@Override
 			protected Exception errorOnParse(String message) {
 				return new ReconcileException(message, problemType);
+			}
+		};
+	}
+
+	/**
+	 * Parses an HTTP health check endpoint path. Note that this not parse the path portion of an HTTP URI, but verifies
+	 * that the WHOLE value is a valid HTTP path, and therefore needs to start with an '/'
+	 * <p/>
+	 * Example: /appPath, /?check=true, /appPath/test.txt
+	 * @return
+	 */
+	public static ValueParser healthCheckEndpointPath() {
+		return new ValueParser() {
+
+			@Override
+			public Object parse(String pathVal) throws Exception {
+				String parsed = pathVal;
+				if (!StringUtil.hasText(pathVal)) {
+					throw new IllegalArgumentException("Path requires a value staring with '/'");
+				}
+				else {
+					URI uri = URI.create(pathVal);
+
+					if (uri.getScheme() != null) {
+						throw new IllegalArgumentException("Path contains scheme: " + uri.getScheme());
+					}
+					if (uri.getHost() != null) {
+						throw new IllegalArgumentException("Path contains host: " + uri.getHost());
+					}
+					if (uri.getPort() != -1 ) {
+						throw new IllegalArgumentException("Path contains port: " + uri.getPort());
+					}
+					if (uri.getAuthority() != null) {
+						throw new IllegalArgumentException("Path contains authority: " + uri.getAuthority());
+					}
+
+					Path path = Paths.get(pathVal);
+					if (!path.startsWith("/")) {
+						throw new IllegalArgumentException("Path must start with a '/'");
+					}
+				}
+				return parsed;
 			}
 		};
 	}

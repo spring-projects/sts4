@@ -10,12 +10,12 @@ const {AutoLanguageClient, DownloadFile} = require('atom-languageclient');
 
 export class JarLanguageClient extends AutoLanguageClient {
 
-    constructor(serverDownloadUrl, serverHome) {
+    constructor(serverDownloadUrl, serverHome, serverLauncherJar) {
         super();
 
         this.serverHome = serverHome;
         this.serverDownloadUrl = serverDownloadUrl;
-        this.serverLauncherJar = path.basename(url.parse(this.serverDownloadUrl).pathname);
+        this.serverLauncherJar = serverLauncherJar;
     }
 
     startServerProcess () {
