@@ -147,7 +147,10 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YAtomicType t_boolean = f.yenum("boolean", "true", "false");
 		YAtomicType t_ne_string = f.yatomic("String");
-		t_ne_string.parseWith(ManifestYmlValueParsers.healthCheckEndpointPath());
+		t_ne_string.parseWith(ValueParsers.NE_STRING);
+
+		YAtomicType t_health_check_endpoint_string = f.yatomic("String");
+		t_health_check_endpoint_string.parseWith(ManifestYmlValueParsers.healthCheckEndpointPath());
 
 		t_application_name = f.yatomic("ApplicationName");
 		t_application_name.parseWith(ValueParsers.NE_STRING);
@@ -206,7 +209,7 @@ public final class ManifestYmlSchema implements YamlSchema {
 			f.yprop("timeout", t_pos_integer),
 
 			f.yprop(HEALTH_CHECK_TYPE_PROP, t_health_check_type),
-			f.yprop(HEALTH_CHECK_HTTP_ENDPOINT_PROP, t_ne_string)
+			f.yprop(HEALTH_CHECK_HTTP_ENDPOINT_PROP, t_health_check_endpoint_string)
 		};
 
 		for (YTypedPropertyImpl prop : props) {
