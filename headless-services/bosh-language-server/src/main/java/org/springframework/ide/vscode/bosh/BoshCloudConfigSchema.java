@@ -83,7 +83,7 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		YType t_network = createNetworkBlockSchema(models);
 
 		YBeanType t_az = f.ybean("AZ");
-		addProp(t_az, "name", t_az_def).isRequired(true);
+		addProp(t_az, "name", t_az_def).isPrimary(true);
 		addProp(t_az, "cloud_properties", t_params);
 
 		YBeanType t_compilation = f.ybean("Compilation");

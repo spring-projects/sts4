@@ -2358,4 +2358,32 @@ public class BoshEditorTest {
 		editor.assertProblems("bad-network|unknown 'NetworkName'");
 	}
 
+	@Test public void cloudconfig_network_azs_ca() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"azs:\n" +
+				"- <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"name: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"azs:\n" +
+				"- name: the-zone\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				  "cloud_properties:\n" +
+				"    <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"azs:\n" +
+				"- name: the-zone\n" +
+				"  cloud_properties: {}\n"
+		);
+		editor.assertHoverContains("name", "Name of an AZ within the Director");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to associated with AZ");
+	}
+
 }
