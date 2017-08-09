@@ -1,0 +1,1 @@
+*Required*. The type of configuration. Should be one of `manual`, `dynamic` or `vip`.

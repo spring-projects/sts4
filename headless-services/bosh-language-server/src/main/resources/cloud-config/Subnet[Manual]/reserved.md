@@ -1,0 +1,1 @@
+Array of reserved IPs and/or IP ranges. BOSH does not assign IPs from this range to any VM.

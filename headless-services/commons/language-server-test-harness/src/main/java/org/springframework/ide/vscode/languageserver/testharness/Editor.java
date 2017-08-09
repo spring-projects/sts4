@@ -61,10 +61,10 @@ public class Editor {
 				|| c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")
 				|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ")
 				;
-	public static final Predicate<CompletionItem> PLAIN_COMPLETION = c -> !RELAXED_COMPLETION.test(c);
+	public static final Predicate<CompletionItem> SNIPPET_COMPLETION = c -> c.getLabel().endsWith("Snippet");
+	public static final Predicate<CompletionItem> PLAIN_COMPLETION = RELAXED_COMPLETION.negate();
 	public static final Predicate<CompletionItem> DEDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ");
 	public static final Predicate<CompletionItem> INDENTED_COMPLETION = c -> c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ");
-	public static final Predicate<CompletionItem> SNIPPET_COMPLETION = c -> c.getLabel().endsWith("Snippet");
 
 	static class EditorState {
 		String documentContents;

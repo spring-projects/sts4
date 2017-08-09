@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.bosh;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -1915,13 +1916,8 @@ public class BoshEditorTest {
 				"compilation:\n" +
 				"  <*>"
 		);
-		editor.assertContextualCompletions(PLAIN_COMPLETION.or(SNIPPET_COMPLETION),
+		editor.assertContextualCompletions(PLAIN_COMPLETION.and(SNIPPET_COMPLETION.negate()),
 				"<*>"
-				, // ==>
-				  "workers: $1\n" +
-				"  az: $2\n" +
-				"  vm_type: $3\n" +
-				"  network: $4<*>"
 				,
 				"az: <*>"
 				,
@@ -1932,6 +1928,14 @@ public class BoshEditorTest {
 				"vm_type: <*>"
 				,
 				"workers: <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION.and(SNIPPET_COMPLETION),
+				"<*>"
+				, // ==>
+				  "workers: $1\n" +
+				"  az: $2\n" +
+				"  vm_type: $3\n" +
+				"  network: $4<*>"
 		);
 
 		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
@@ -1946,6 +1950,7 @@ public class BoshEditorTest {
 		editor.assertProblems(
 				"not-int|NumberFormatException",
 				"not-bool|unknown 'boolean'",
+				"z1|unknown 'AZName'",
 				"default|unknown 'VMTypeName'"
 		);
 		editor.assertHoverContains("workers", "The maximum number of compilation VMs");
@@ -2037,7 +2042,9 @@ public class BoshEditorTest {
 				"  network: private"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
-		editor.assertProblems(/*NONE*/);
+		editor.assertProblems(
+				"z1|unknown 'AZName'"
+		);
 
 		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
 				"vm_types:\n" +
@@ -2057,7 +2064,167 @@ public class BoshEditorTest {
 				"  network: private"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
-		editor.assertProblems("woot-vm|unknown 'VMTypeName'");
+		editor.assertProblems(
+				"z1|unknown 'AZName'",
+				"woot-vm|unknown 'VMTypeName'"
+		);
+	}
+
+	@Test public void cloudconfig_network_ca() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- <*>"
+		);
+		editor.assertCompletions(SNIPPET_COMPLETION.negate(),
+				"networks:\n" +
+				"- name: <*>"
+		);
+		editor.assertCompletions(SNIPPET_COMPLETION,
+				"networks:\n" +
+				"- name: $1\n" +
+				"  type: $2<*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  <*>"
+		);
+		editor.assertCompletions(PLAIN_COMPLETION,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"<*>"
+				, // =>
+				"dynamic<*>",
+				"manual<*>",
+				"vip<*>"
+		);
+	}
+
+	@Test public void cloudconfig_manual_network_ca() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: manual\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"<*>"
+				, // =>
+				"subnets:\n" + //non-snippet
+				"  - <*>"
+				,
+				"subnets:\n" + //snippet
+				"  - range: $1\n" +
+				"    gateway: $2<*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: manual\n" +
+				"  subnets:\n" +
+				"  - <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION.and(SNIPPET_COMPLETION.negate()),
+				"<*>"
+				, // ==>
+				"az: <*>"
+				,
+				"azs:\n" +
+				"    - <*>"
+				,
+				"cloud_properties:\n" +
+				"      <*>"
+				,
+				"dns:\n" +
+				"    - <*>"
+				,
+				"gateway: <*>"
+				,
+				"range: <*>"
+				,
+				"reserved:\n" +
+				"    - <*>"
+				,
+				"static:\n" +
+				"    - <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"azs:\n" +
+				"- name: zone-1\n" +
+				"- name: zone-2\n" +
+				"- name: zone-3\n" +
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: manual\n" +
+				"  subnets:\n" +
+				"  - az: <*>"
+		);
+		editor.assertContextualCompletions("<*>", "zone-1<*>", "zone-2<*>", "zone-3<*>");
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"azs:\n" +
+				"- name: zone-1\n" +
+				"- name: zone-2\n" +
+				"- name: zone-3\n" +
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: manual\n" +
+				"  subnets:\n" +
+				"  - azs:\n" +
+				"    - <*>"
+		);
+		editor.assertContextualCompletions("<*>", "zone-1<*>", "zone-2<*>", "zone-3<*>");
+
+	}
+
+	@Test public void cloudconfig_manual_network_hovers() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: my-network\n" +
+				"  type: manual\n" +
+				"\n" +
+				"  subnets:\n" +
+				"  - range:    10.10.0.0/24\n" +
+				"    gateway:  10.10.0.1\n" +
+				"    dns:      [10.10.0.2]\n" +
+				"\n" +
+				"    # IPs that will not be used for anything\n" +
+				"    reserved: [10.10.0.2-10.10.0.10]\n" +
+				"    az: z1\n" +
+				"\n" +
+				"    cloud_properties: {subnet: subnet-9be6c3f7}\n" +
+				"\n" +
+				"  - range:   10.10.1.0/24\n" +
+				"    gateway: 10.10.1.1\n" +
+				"    dns:     [10.10.1.2]\n" +
+				"\n" +
+				"    static: [10.10.1.11-10.10.1.20]\n" +
+				"\n" +
+				"    azs: [z2, z3]\n" +
+				"    cloud_properties: {subnet: subnet-9be6c6gh}"
+		);
+		editor.assertHoverContains("name", "Name used to reference this network configuration");
+		editor.assertHoverContains("type", "The type of configuration. Should be one of `manual`, `dynamic` or `vip`");
+		editor.assertHoverContains("subnets", "Lists subnets in this network");
+		editor.assertHoverContains("range", "Subnet IP range that includes all IPs from this subnet");
+		editor.assertHoverContains("gateway", "Subnet gateway IP");
+		editor.assertHoverContains("dns", "DNS IP addresses for this subnet");
+		editor.assertHoverContains("reserved", "Array of reserved IPs and/or IP ranges. BOSH does not assign IPs from this range to any VM");
+		editor.assertHoverContains("static", "Array of static IPs and/or IP ranges.");
+		editor.assertHoverContains("az", "AZ associated with this subnet");
+		editor.assertHoverContains("azs", "List of AZs associated with this subnet");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the subnet");
 	}
 
 }

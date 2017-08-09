@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh.models;
 
+import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 public class BoshModels {
 	public final YamlAstCache asts = new YamlAstCache();
@@ -26,6 +29,14 @@ public class BoshModels {
 			this.cloudConfigProvider = cloudConfigProvider;
 			this.stemcellsProvider = stemcellsProvider;
 			this.releasesProvider = releasesProvider;
+	}
+
+	public String getTypeTag(DynamicSchemaContext dc) {
+		YamlFileAST ast = asts.getSafeAst(dc.getDocument(), true);
+		if (ast!=null) {
+			return NodeUtil.asScalar(dc.getPath().thenValAt("type").traverseToNode(ast));
+		}
+		return null;
 	}
 
 }
