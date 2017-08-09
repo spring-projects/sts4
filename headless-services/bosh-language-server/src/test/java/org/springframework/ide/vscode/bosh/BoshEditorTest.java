@@ -2227,4 +2227,78 @@ public class BoshEditorTest {
 		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the subnet");
 	}
 
+	@Test public void cloudconfig_dynamic_network_ca() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: dynamic\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"<*>"
+				, // ==>
+				"cloud_properties:\n" +
+				"    <*>"
+				,
+				"dns:\n" +
+				"  - <*>"
+				,
+				"subnets:\n" +
+				"  - <*>"
+		);
+	}
+
+	@Test public void cloudconfig_dynamic_network_mutex_props_reconcile() throws Exception {
+		//There are essentially two alternate schemas for dynamic NW config. Because we have simply unified them into one (merged all properties)...
+		// some properties can not be used together because they belong to different sub-schemas.
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: dynamic\n" +
+				"  dns: []\n" +
+				"  cloud_properties: {}\n" +
+				"  subnets: []"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(
+				"dns|Only one of 'dns' and 'subnets' should be defined",
+				"cloud_properties|Only one of 'cloud_properties' and 'subnets' should be defined"
+		);
+	}
+
+	@Test public void cloudconfig_dynamic_network_hovers() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+			"networks:\n" +
+			"- name: foo\n" +
+			"  type: dynamic\n" +
+			"  dns: []\n" +
+			"  cloud_properties: {}\n"
+		);
+		editor.assertHoverContains("name", "Name used to reference this network configuration");
+		editor.assertHoverContains("type", "The type of configuration");
+		editor.assertHoverContains("dns", "DNS IP addresses for this network");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the network");
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: my-network\n" +
+				"  type: dynamic\n" +
+				"  subnets:\n" +
+				"  - az: z1\n" +
+				"    dns: []\n" +
+				"    cloud_properties: {subnet: subnet-9be6c3f7}\n" +
+				"  - azs: [z2, z3]\n" +
+				"    cloud_properties: {subnet: subnet-9be6c384}"
+		);
+		editor.assertHoverContains("name", "Name used to reference this network configuration");
+		editor.assertHoverContains("type", "The type of configuration");
+		editor.assertHoverContains("subnets", "Lists subnets in this network");
+		editor.assertHoverContains("dns", "DNS IP addresses for this subnet");
+		editor.assertHoverContains("az", "AZ associated with this subnet");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the subnet");
+		editor.assertHoverContains("azs", "List of AZs associated with this subnet");
+	}
+
 }

@@ -132,6 +132,15 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		AbstractType t_dynamic_nw = f.ybean("DynamicNetwork");
 		addProp(t_dynamic_nw, "dns", f.yseq(t_ip_address));
 		addProp(t_dynamic_nw, "cloud_properties", t_params);
+		{
+			YBeanType t_subnet = f.ybean("Subnet[Dynamic]");
+			addProp(t_subnet, "dns", f.yseq(t_ip_address));
+			addProp(t_subnet, "az", t_az_ref);
+			addProp(t_subnet, "azs", f.yseq(t_az_ref));
+			addProp(t_subnet, "cloud_properties", t_params);
+
+			addProp(t_dynamic_nw, "subnets", f.yseq(t_subnet));
+		}
 
 		t_dynamic_nw.require(Constraints.mutuallyExclusive("dns", "subnets"));
 		t_dynamic_nw.require(Constraints.mutuallyExclusive("cloud_properties", "subnets"));
