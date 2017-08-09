@@ -467,6 +467,11 @@ jobs:
     - get: maven-cache
   - task: atom-language-servers-test
     file: sts4/concourse/tasks/atom-language-servers-test.yml
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
     on_success:
       aggregate:
       - put: s3-manifest-yaml-fatjar-snapshot
