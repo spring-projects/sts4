@@ -2301,4 +2301,31 @@ public class BoshEditorTest {
 		editor.assertHoverContains("azs", "List of AZs associated with this subnet");
 	}
 
+	@Test public void cloudconfig_vip_network() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: vip\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"<*>"
+				, // ==>
+				"cloud_properties:\n" +
+				"    <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: foo\n" +
+				"  type: vip\n" +
+				"  cloud_properties: {}"
+		);
+		editor.assertHoverContains("name", "Name used to reference this network configuration");
+		editor.assertHoverContains("type", "The type of configuration");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the network");
+	}
+
 }
