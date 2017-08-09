@@ -73,7 +73,9 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 			models.astTypes.getDefinedNames(dc, t_vm_type_def)
 		));
 		t_network_def = f.yatomic("NetworkName").parseWith(ValueParsers.NE_STRING);
-		t_network_ref = t_ne_string;
+		t_network_ref = f.yenumFromDynamicValues("NetworkName",  (dc) -> PartialCollection.compute(() ->
+			models.astTypes.getDefinedNames(dc, t_network_def)
+		));
 		t_ip_address = t_ne_string; //TODO? Syntax for ip addresses like 192.168.1.22 ?
 		t_ip_range = t_ne_string; //TODO? Syntax for ip ranges like 10.10.0.0/22 ?
 		t_ip_address_or_range = t_ne_string; //TODO?

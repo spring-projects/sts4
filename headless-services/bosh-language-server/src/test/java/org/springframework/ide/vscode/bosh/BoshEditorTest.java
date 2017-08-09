@@ -1951,7 +1951,8 @@ public class BoshEditorTest {
 				"not-int|NumberFormatException",
 				"not-bool|unknown 'boolean'",
 				"z1|unknown 'AZName'",
-				"default|unknown 'VMTypeName'"
+				"default|unknown 'VMTypeName'",
+				"private|unknown 'NetworkName'"
 		);
 		editor.assertHoverContains("workers", "The maximum number of compilation VMs");
 		editor.assertHoverContains("reuse_compilation_vms", "If `false`, BOSH creates a new compilation VM");
@@ -2038,8 +2039,7 @@ public class BoshEditorTest {
 				"  workers: 5\n" +
 				"  reuse_compilation_vms: true\n" +
 				"  az: z1\n" +
-				"  vm_type: medium\n" +
-				"  network: private"
+				"  vm_type: medium\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
@@ -2060,8 +2060,7 @@ public class BoshEditorTest {
 				"  workers: 5\n" +
 				"  reuse_compilation_vms: true\n" +
 				"  az: z1\n" +
-				"  vm_type: woot-vm\n" +
-				"  network: private"
+				"  vm_type: woot-vm\n"
 		);
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
@@ -2326,6 +2325,37 @@ public class BoshEditorTest {
 		editor.assertHoverContains("name", "Name used to reference this network configuration");
 		editor.assertHoverContains("type", "The type of configuration");
 		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties for the network");
+	}
+
+	@Test public void cloudconfig_network_ref() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+			"networks:\n" +
+			"- name: private\n" +
+			"- name: vip\n" +
+			"\n" +
+			"compilation:\n" +
+			"  workers: 5\n" +
+			"  reuse_compilation_vms: true\n" +
+			"  az: z1\n" +
+			"  vm_type: medium\n" +
+			"  network: <*>"
+		);
+		editor.assertContextualCompletions("<*>", "private<*>", "vip<*>");
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"networks:\n" +
+				"- name: private\n" +
+				"  type: manual\n" +
+				"- name: vip\n" +
+				"  type: vip\n" +
+				"\n" +
+				"compilation:\n" +
+				"  workers: 5\n" +
+				"  reuse_compilation_vms: true\n" +
+				"  network: bad-network"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems("bad-network|unknown 'NetworkName'");
 	}
 
 }
