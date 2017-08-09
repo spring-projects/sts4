@@ -41,7 +41,9 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 	private final YType t_vm_type_ref;
 	private final YType t_vm_type_def;
 	private final YType t_network_ref;
-	private AbstractType t_network_def;
+	private final YType t_network_def;
+	private final YType t_disk_type_def;
+	private final YType t_disk_type_ref;
 	private Collection<YType> definitionTypes;
 	private final Lazy<Collection<Pair<YType, YType>>> defAndRefTypes = new Lazy<>();
 	private AbstractType t_any;
@@ -80,6 +82,11 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		t_ip_range = t_ne_string; //TODO? Syntax for ip ranges like 10.10.0.0/22 ?
 		t_ip_address_or_range = t_ne_string; //TODO?
 
+		t_disk_type_def = f.yatomic("DiskTypeName").parseWith(ValueParsers.NE_STRING);
+		t_disk_type_ref = f.yenumFromDynamicValues("DiskTypeName",(dc) -> PartialCollection.compute(() ->
+			models.astTypes.getDefinedNames(dc, t_disk_type_def)
+		));
+
 		YType t_network = createNetworkBlockSchema(models);
 
 		YBeanType t_az = f.ybean("AZ");
@@ -97,12 +104,17 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		addProp(t_vm_type, "name", t_vm_type_def).isPrimary(true);
 		addProp(t_vm_type, "cloud_properties", t_params);
 
+		YBeanType t_disk_type = f.ybean("DiskType");
+		addProp(t_disk_type, "name", t_disk_type_def).isPrimary(true);
+		addProp(t_disk_type, "disk_size", t_pos_integer).isRequired(true);
+		addProp(t_disk_type, "cloud_properties", t_params);
+
 		this.toplevelType = f.ybean("CloudConfig");
 		addProp(toplevelType, "azs", f.yseq(t_az)).isRequired(true);
 		addProp(toplevelType, "networks", f.yseq(t_network)).isRequired(true);
 		addProp(toplevelType, "vm_types", f.yseq(t_vm_type)).isRequired(true);
-		addProp(toplevelType, "vm_extensions", t_any);
-		addProp(toplevelType, "disk_types", t_any).isRequired(true);
+		addProp(toplevelType, "vm_extensions", f.yseq(t_any));
+		addProp(toplevelType, "disk_types", f.yseq(t_disk_type)).isRequired(true);
 		addProp(toplevelType, "compilation", t_compilation).isRequired(true);
 
 		ASTTypeCache astTypes = models.astTypes;
@@ -186,7 +198,8 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		return defAndRefTypes.load(() -> ImmutableList.of(
 			Pair.of(t_vm_type_def, t_vm_type_ref),
 			Pair.of(t_network_def, t_network_ref),
-			Pair.of(t_az_def, t_az_ref)
+			Pair.of(t_az_def, t_az_ref),
+			Pair.of(t_disk_type_def, t_disk_type_ref)
 		));
 	}
 

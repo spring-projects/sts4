@@ -2358,7 +2358,7 @@ public class BoshEditorTest {
 		editor.assertProblems("bad-network|unknown 'NetworkName'");
 	}
 
-	@Test public void cloudconfig_network_azs_ca() throws Exception {
+	@Test public void cloudconfig_azs() throws Exception {
 		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
 				"azs:\n" +
 				"- <*>"
@@ -2384,6 +2384,42 @@ public class BoshEditorTest {
 		);
 		editor.assertHoverContains("name", "Name of an AZ within the Director");
 		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to associated with AZ");
+	}
+
+	@Test public void cloudconfig_diskt_types() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"disk_types:\n" +
+				"- <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				//snippet:
+				  "name: $1\n" +
+				"  disk_size: $2<*>"
+				,
+				//non-snippet:
+				"name: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"disk_types:\n" +
+				"- name: massive-disk\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				"cloud_properties:\n    <*>",
+				"disk_size: <*>"
+		);
+
+		editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
+				"disk_types:\n" +
+				"- name: default\n" +
+				"  disk_size: 2\n" +
+				"  cloud_properties:\n" +
+				"    type: gp2\n"
+		);
+		editor.assertHoverContains("name", "A unique name used to identify and reference the disk type");
+		editor.assertHoverContains("disk_size", "size in megabytes");
+		editor.assertHoverContains("cloud_properties", "Describes any IaaS-specific properties needed to create disks");
 	}
 
 }

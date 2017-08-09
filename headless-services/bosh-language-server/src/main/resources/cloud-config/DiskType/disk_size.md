@@ -1,0 +1,1 @@
+*Require*. Specifies the disk size. `disk_size` must be a positive integer. BOSH creates a [persistent disk](https://bosh.io/docs/persistent-disks.html) of that size in megabytes and attaches it to each job instance VM.

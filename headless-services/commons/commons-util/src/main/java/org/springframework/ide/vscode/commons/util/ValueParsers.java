@@ -36,6 +36,7 @@ public class ValueParsers {
 		return new ValueParser() {
 			@Override
 			public Object parse(String str) throws Exception {
+				str = str.replace("_", ""); //Tolerate and ignore underscores in integers.
 				int value = Integer.parseInt(str);
 				if (lowerBound!=null && value<lowerBound) {
 					if (lowerBound==0) {
