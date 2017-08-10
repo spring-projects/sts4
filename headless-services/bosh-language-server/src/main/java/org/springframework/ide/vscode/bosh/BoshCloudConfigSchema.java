@@ -132,7 +132,6 @@ public class BoshCloudConfigSchema extends SchemaSupport implements YamlSchema {
 		for (YType defType : getDefinitionTypes()) {
 			toplevelType.require(Constraints.uniqueDefinition(astTypes, defType, YamlSchemaProblems.problemType("BOSH_CC_DUPLICATE_"+defType)));
 		}
-
 	}
 
 	private YType createNetworkBlockSchema(BoshModels models) {

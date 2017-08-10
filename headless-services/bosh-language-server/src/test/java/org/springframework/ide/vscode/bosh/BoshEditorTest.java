@@ -1900,6 +1900,7 @@ public class BoshEditorTest {
 		Editor editor = harness.newEditor(LanguageId.BOSH_CLOUD_CONFIG,
 				"azs: []\n" +
 				"vm_types: []\n" +
+				"vm_extensions: []\n" +
 				"disk_types: []\n" +
 				"networks: []\n" +
 				"compilation: {}\n"
@@ -1909,6 +1910,7 @@ public class BoshEditorTest {
 		editor.assertHoverContains("vm_types", "Specifies the [VM types](https://bosh.io/docs/terminology.html#vm-type) available to deployments.");
 		editor.assertHoverContains("disk_types", "Specifies the [disk types](https://bosh.io/docs/terminology.html#disk-types) available to deployments.");
 		editor.assertHoverContains("compilation", "A compilation definition allows to specify VM characteristics.");
+		editor.assertHoverContains("vm_extensions", "Specifies the [VM extensions](https://bosh.io/docs/terminology.html#vm-extension) available to deployments.");
 	}
 
 	@Test public void cloudconfig_compilation_subproperties() throws Exception {
