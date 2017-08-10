@@ -29,7 +29,6 @@ import com.google.common.base.Supplier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * An implementation of {@link TypeBasedSnippetProvider} that generates snippets
@@ -46,7 +45,9 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 		this.snippetBuilderFactory = snippetBuilderFactory;
 	}
 
-	private Cache<YType, Collection<Snippet>> cache = CacheBuilder.newBuilder().build();
+	private Cache<YType, Collection<Snippet>> cache = CacheBuilder.newBuilder()
+			.weakKeys()
+			.build();
 	private int maxNesting = Integer.MAX_VALUE;
 
 	@Override
@@ -60,24 +61,9 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 	}
 
 	private Collection<Snippet> generateSnippets(YType type) {
-		ImmutableList.Builder<Snippet> snippets = ImmutableList.builder();
 		//Generate a 'full' snippet that defines all required properties of the current type.
 		Snippet snippet = generateFullSnippet(type, 0);
-		if (snippet!=null) {
-			snippets.add(snippet);
-		}
-		//Generate single property snippets that only define a single properties (with 'mega snippets' for nested types)
-		for (YTypedProperty p : typeUtil.getProperties(type)) {
-			String propName = p.getName();
-			SnippetBuilder builder = snippetBuilderFactory.get();
-			generateBeanSnippet(ImmutableList.of(p), builder, 0, maxNesting);
-			if (builder.getPlaceholderCount()>=2) {
-				snippets.add(new Snippet(p.getName()+" Snippet", builder.toString(), (dc) ->
-					!dc.getDefinedProperties().contains(propName)
-				));
-			}
-		}
-		return snippets.build();
+		return snippet==null ? ImmutableList.of() : ImmutableList.of(snippet);
 	}
 
 	private Snippet generateFullSnippet(YType type, int indent) {
@@ -116,6 +102,16 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 		}
 	}
 
+	@Override
+	public Snippet getSnippet(YType contextType, YTypedProperty p) {
+		//TODO: cache?
+		SnippetBuilder builder = snippetBuilderFactory.get();
+		generateBeanSnippet(ImmutableList.of(p), builder, 0, maxNesting);
+		String propName = p.getName();
+		return new Snippet(propName, builder.toString(), (dc) ->
+			!dc.getDefinedProperties().contains(propName)
+		);
+	}
 
 	private void generateNestedSnippet(boolean parentIsSeq, YType type, SnippetBuilder builder, int indent, int nestingLimit) {
 		if (type==null) {

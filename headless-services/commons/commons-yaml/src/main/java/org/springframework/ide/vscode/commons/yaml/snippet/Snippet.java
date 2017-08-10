@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.snippet;
 import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public class Snippet {
 

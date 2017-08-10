@@ -101,7 +101,6 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 		String query = getPrefix(doc, node, offset);
 		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
 		if (completions.isEmpty()) {
-			completions = getKeyCompletions(doc, node, offset, query);
 			TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
 			if (snippetProvider!=null) {
 				Collection<Snippet> snippets = snippetProvider.getSnippets(type);
@@ -110,26 +109,38 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 					String snippetName = snippet.getName();
 					double score = FuzzyMatcher.matchScore(query, snippetName);
 					if (score!=0.0 && snippet.isApplicable(getSchemaContext())) {
-						DocumentEdits edits = new DocumentEdits(doc.getDocument());
-						int start = offset - query.length();
-						edits.delete(start, query);
-						int referenceIndent = doc.getColumn(start);
-						boolean needsSpace = start > 0 && !Character.isWhitespace(doc.getChar(start-1));
-						if (needsSpace) {
-							referenceIndent++;
-							edits.insert(start, " ");
-						}
-						edits.insert(start, indenter.applyIndentation(snippet.getSnippet(), referenceIndent));
+						DocumentEdits edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
 						completions.add(completionFactory().valueProposal(snippetName, query, snippetName, type, null, score, edits, typeUtil));
 					}
 				}
 			}
+			completions.addAll(getKeyCompletions(doc, node, offset, query));
 		}
 		if (typeUtil.isSequencable(type)) {
 			completions = new ArrayList<>(completions);
 			completions.addAll(getDashedCompletions(doc, node, offset));
 		}
 		return completions;
+	}
+
+	private DocumentEdits createEditFromSnippet(YamlDocument doc, SNode node, int offset, String query, YamlIndentUtil indenter,
+			Snippet _snippet) throws Exception {
+		DocumentEdits edits = new DocumentEdits(doc.getDocument());
+		int start = offset - query.length();
+		edits.delete(start, query);
+		int referenceIndent = doc.getColumn(start);
+
+		boolean needNewline = node.getNodeType()==SNodeType.KEY;
+		String snippet = _snippet.getSnippet();
+		if (needNewline) {
+			snippet = "\n"+snippet;
+			referenceIndent = YamlIndentUtil.getNewChildKeyIndent(node);
+		} else if (start > 0 && !Character.isWhitespace(doc.getChar(start-1))) {
+			referenceIndent++;
+			edits.insert(start, " ");
+		}
+		edits.insert(start, indenter.applyIndentation(snippet, referenceIndent));
+		return edits;
 	}
 
 	public List<ICompletionProposal> getKeyCompletions(YamlDocument doc, SNode node, int offset, String query) throws Exception {
@@ -151,24 +162,33 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						String name = p.getName();
 						double score = FuzzyMatcher.matchScore(query, name);
 						if (score!=0) {
-							DocumentEdits edits = new DocumentEdits(doc.getDocument());
-							YType YType = p.getType();
-							edits.delete(queryOffset, query);
-							int referenceIndent = doc.getColumn(queryOffset);
-							boolean needNewline = node.getNodeType()==SNodeType.KEY;
-							StringBuilder snippet = new StringBuilder();
-							if (needNewline) {
-								snippet.append("\n");
-								referenceIndent = YamlIndentUtil.getNewChildKeyIndent(node);
-							} else if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
-								//See https://www.pivotaltracker.com/story/show/137722057
-								snippet.append(" ");
-								referenceIndent++;
+							TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
+							DocumentEdits edits;
+							if (snippetProvider!=null) {
+								// Generate edits from snippet
+								Snippet snippet = snippetProvider.getSnippet(type, p);
+								edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
+							} else {
+								//Generate edits the old-fashioned way
+								edits = new DocumentEdits(doc.getDocument());
+								YType YType = p.getType();
+								edits.delete(queryOffset, query);
+								int referenceIndent = doc.getColumn(queryOffset);
+								boolean needNewline = node.getNodeType()==SNodeType.KEY;
+								StringBuilder snippet = new StringBuilder();
+								if (needNewline) {
+									snippet.append("\n");
+									referenceIndent = YamlIndentUtil.getNewChildKeyIndent(node);
+								} else if (queryOffset>0 && !Character.isWhitespace(doc.getChar(queryOffset-1))) {
+									//See https://www.pivotaltracker.com/story/show/137722057
+									snippet.append(" ");
+									referenceIndent++;
+								}
+								snippet.append(p.getName());
+								snippet.append(":");
+								snippet.append(appendTextFor(YType));
+								edits.insert(queryOffset, indenter.applyIndentation(snippet.toString(), referenceIndent));
 							}
-							snippet.append(p.getName());
-							snippet.append(":");
-							snippet.append(appendTextFor(YType));
-							edits.insert(queryOffset, indenter.applyIndentation(snippet.toString(), referenceIndent));
 							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil);

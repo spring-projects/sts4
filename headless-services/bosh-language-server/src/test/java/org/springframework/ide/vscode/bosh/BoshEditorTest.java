@@ -11,11 +11,12 @@
 package org.springframework.ide.vscode.bosh;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.DEDENTED_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.SNIPPET_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.IOException;
@@ -26,7 +27,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
@@ -158,11 +158,10 @@ public class BoshEditorTest {
 	}
 
 	@Test public void toplevelPropertyCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"<*>"
 		);
-		editor.assertCompletions(
+		editor.assertCompletions(SNIPPET_COMPLETION.negate(),
 				"name: <*>"
 		);
 
@@ -174,24 +173,42 @@ public class BoshEditorTest {
 		editor.assertCompletions(
 				"name: blah\n" +
 				"instance_groups:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  azs:\n" +
+				"  - $2\n" +
+				"  instances: $3\n" +
+				"  jobs:\n" +
+				"  - name: $4\n" +
+				"    release: $5\n" +
+				"  vm_type: $6\n" +
+				"  stemcell: $7\n" +
+				"  networks:\n" +
+				"  - name: $8<*>"
 				, // ============
 				"name: blah\n" +
 				"releases:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  version: $2<*>"
 				, // ============
 				"name: blah\n" +
-				"stemcells:\n- <*>"
+				"stemcells:\n" +
+				"- alias: $1\n" +
+				"  version: $2<*>"
 				, // ============
 				"name: blah\n" +
 				"tags:\n  <*>"
 				, // ============
 				"name: blah\n" +
-				"update:\n  <*>"
+				"update:\n" +
+				"  canaries: $1\n" +
+				"  max_in_flight: $2\n" +
+				"  canary_watch_time: $3\n" +
+				"  update_watch_time: $4<*>"
 				, // ============
 				"name: blah\n" +
 				"variables:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  type: $2<*>"
 // Below completions are suppressed because they are deprecated
 //				, // ============
 //				"name: blah\n" +
@@ -203,29 +220,32 @@ public class BoshEditorTest {
 	}
 
 	@Test public void stemcellCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"stemcells:\n" +
 				"- <*>"
 		);
-		editor.assertCompletions(
+		editor.assertCompletions(PLAIN_COMPLETION,
+				"stemcells:\n" +
+				"- alias: $1\n" +
+				"  version: $2<*>"
+				, // ==========
 				"stemcells:\n" +
 				"- alias: <*>"
-				, // ==========
-				"stemcells:\n" +
-				"- name: <*>"
-				, // ==========
-				"stemcells:\n" +
-				"- os: <*>"
-				, // ==========
-				"stemcells:\n" +
-				"- version: <*>"
 		);
 
 		editor = harness.newEditor(
 				"stemcells:\n" +
-				"- alias<*>"
+				"- alias: blah\n" +
+				"  <*>"
 		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"<*>"
+				, // =>
+				"name: <*>",
+				"os: <*>",
+				"version: <*>"
+		);
+
 	}
 
 	@Test public void stemcellReconciling() throws Exception {
@@ -1636,37 +1656,6 @@ public class BoshEditorTest {
 				"  stemcell: $16\n" +
 				"  networks:\n" +
 				"  - name: $17<*>"
-				, // ------------------
-				"instance_groups:\n" +
-				"- name: $1\n" +
-				"  azs:\n" +
-				"  - $2\n" +
-				"  instances: $3\n" +
-				"  jobs:\n" +
-				"  - name: $4\n" +
-				"    release: $5\n" +
-				"  vm_type: $6\n" +
-				"  stemcell: $7\n" +
-				"  networks:\n" +
-				"  - name: $8<*>"
-				, // ----------------
-				"releases:\n" +
-				"- name: $1\n" +
-				"  version: $2<*>"
-				, // ----------------
-				"stemcells:\n" +
-				"- alias: $1\n" +
-				"  version: $2<*>"
-				, // ----------------
-				"update:\n" +
-				"  canaries: $1\n" +
-				"  max_in_flight: $2\n" +
-				"  canary_watch_time: $3\n" +
-				"  update_watch_time: $4<*>"
-				, // -----------------
-				"variables:\n" +
-				"- name: $1\n" +
-				"  type: $2<*>"
 		);
 	}
 
@@ -1678,14 +1667,16 @@ public class BoshEditorTest {
 				"<*>"
 		);
 
-		editor.assertCompletionLabels(SNIPPET_COMPLETION,
+		editor.assertCompletionLabels(
 				//"BoshDeploymentManifest Snippet",
-				"instance_groups Snippet",
+				"instance_groups",
 //				"releases Snippet",
 //				"stemcells Snippet"
-				"update Snippet",
-				"variables Snippet",
-				"- Stemcell Snippet"
+				"tags",
+				"update",
+				"variables",
+				"- Stemcell Snippet",
+				"- alias"
 		);
 	}
 
@@ -1697,14 +1688,14 @@ public class BoshEditorTest {
 				"- name: blah\n" +
 				"  <*>"
 		);
-		editor.assertContextualCompletions(c -> c.getLabel().equals("jobs Snippet"),
+		editor.assertContextualCompletions(c -> c.getLabel().equals("jobs"),
 				"jo<*>"
 				, // ------
 				"jobs:\n" +
 				"  - name: $1\n" +
 				"    release: $2<*>"
 		);
-		editor.assertCompletionWithLabel("jobs Snippet",
+		editor.assertCompletionWithLabel("jobs",
 				"instance_groups:\n" +
 				"- name: blah\n" +
 				"  jobs:\n" +
@@ -1721,14 +1712,14 @@ public class BoshEditorTest {
 				"- name: blah\n" +
 				"<*>"
 		);
-		editor.assertCompletionWithLabel("→ jobs Snippet",
+		editor.assertCompletionWithLabel("→ jobs",
 				"instance_groups:\n" +
 				"- name: blah\n" +
 				"  jobs:\n" +
 				"  - name: $1\n" +
 				"    release: $2<*>"
 		);
-		editor.assertContextualCompletions(c -> c.getLabel().equals("→ jobs Snippet"),
+		editor.assertContextualCompletions(c -> c.getLabel().equals("→ jobs"),
 				"jo<*>"
 				, // ------
 				"  jobs:\n" +
@@ -1746,7 +1737,7 @@ public class BoshEditorTest {
 				"  type: aaa\n" +
 				"<*>"
 		);
-		editor.assertContextualCompletions(DEDENTED_COMPLETION.and(SNIPPET_COMPLETION),
+		editor.assertContextualCompletions(DEDENTED_COMPLETION,
 				"  <*>"
 				, // ==>
 				"instance_groups:\n" +
@@ -1770,6 +1761,9 @@ public class BoshEditorTest {
 				"- alias: $1\n" +
 				"  version: $2<*>"
 				, //========
+				"tags:\n" +
+				"  <*>"
+				, //========
 				"update:\n" +
 				"  canaries: $1\n" +
 				"  max_in_flight: $2\n" +
@@ -1778,6 +1772,8 @@ public class BoshEditorTest {
 				, //========
 				"- name: $1\n" +
 				"  type: $2<*>"
+				, //========
+				"- name: <*>"
 		);
 	}
 
@@ -1794,19 +1790,34 @@ public class BoshEditorTest {
 				"  <*>"
 				, //==>
 				"instance_groups:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  azs:\n" +
+				"  - $2\n" +
+				"  instances: $3\n" +
+				"  jobs:\n" +
+				"  - name: $4\n" +
+				"    release: $5\n" +
+				"  vm_type: $6\n" +
+				"  stemcell: $7\n" +
+				"  networks:\n" +
+				"  - name: $8<*>"
 				, //----
 				"releases:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  version: $2<*>"
 				, //----
 				"stemcells:\n" +
-				"- <*>"
+				"- alias: $1\n" +
+				"  version: $2<*>"
 				, //---
 				"tags:\n" +
 				"  <*>"
 				, //---
 				"update:\n" +
-				"  <*>"
+				"  canaries: $1\n" +
+				"  max_in_flight: $2\n" +
+				"  canary_watch_time: $3\n" +
+				"  update_watch_time: $4<*>"
 				, //---
 				"- name: <*>"
 		);
@@ -1823,7 +1834,8 @@ public class BoshEditorTest {
 				"jo<*>"
 				, // ==>
 				"  jobs:\n" +
-				"  - <*>"
+				"  - name: $1\n" +
+				"    release: $2<*>"
 		);
 	}
 
@@ -2121,9 +2133,6 @@ public class BoshEditorTest {
 		editor.assertContextualCompletions(PLAIN_COMPLETION,
 				"<*>"
 				, // =>
-				"subnets:\n" + //non-snippet
-				"  - <*>"
-				,
 				"subnets:\n" + //snippet
 				"  - range: $1\n" +
 				"    gateway: $2<*>"

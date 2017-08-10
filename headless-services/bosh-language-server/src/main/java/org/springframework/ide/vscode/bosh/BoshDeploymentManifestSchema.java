@@ -257,7 +257,7 @@ public class BoshDeploymentManifestSchema extends SchemaSupport implements YamlS
 			}
 		);
 
-		addProp(t_stemcell, "alias", t_stemcell_alias_def).isRequired(true);
+		addProp(t_stemcell, "alias", t_stemcell_alias_def).isPrimary(true);
 		addProp(t_stemcell, "version", t_stemcell_version_ref).isRequired(true);
 		addProp(t_stemcell, "name", t_stemcell_name_ref);
 		addProp(t_stemcell, "os", t_stemcell_os_ref);

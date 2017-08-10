@@ -13,9 +13,11 @@ package org.springframework.ide.vscode.commons.yaml.snippet;
 import java.util.Collection;
 
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public interface TypeBasedSnippetProvider {
 
 	Collection<Snippet> getSnippets(YType contextType);
+	Snippet getSnippet(YType contextType, YTypedProperty p);
 
 }

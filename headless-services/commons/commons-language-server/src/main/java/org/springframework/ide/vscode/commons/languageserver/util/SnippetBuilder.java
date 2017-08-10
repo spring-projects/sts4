@@ -12,7 +12,8 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 
 public class SnippetBuilder {
 
-	private int nextPlaceHolderId = 1;
+	private static final int FIRST_PLACE_HOLDER_ID = 1;
+	private int nextPlaceHolderId = FIRST_PLACE_HOLDER_ID;
 	private StringBuilder buf = new StringBuilder();
 
 	public SnippetBuilder text(String text) {
@@ -43,7 +44,14 @@ public class SnippetBuilder {
 
 	@Override
 	public String toString() {
-		return buf.toString();
+		String str = buf.toString();
+		if (getPlaceholderCount()==1 ) {
+			String placeHolder = createPlaceHolder(FIRST_PLACE_HOLDER_ID);
+			if (str.endsWith(placeHolder)) {
+				str = str.substring(0, str.length()-placeHolder.length());
+			}
+		}
+		return str;
 	}
 
 	public void newline(int indent) {
