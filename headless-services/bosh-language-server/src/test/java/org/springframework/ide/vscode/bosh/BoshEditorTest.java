@@ -39,6 +39,7 @@ import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -2475,6 +2476,52 @@ public class BoshEditorTest {
 		);
 		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
 				"cloud_properties:\n    <*>");
+	}
 
+	@Test public void missingPropertiesQuickfix() throws Exception {
+		Editor editor = harness.newEditor(
+				"name: blah\n" +
+				"stemcells:\n" +
+				"- alias: ubuntu\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: 3421.11\n" +
+				"- alias: centos\n" +
+				"  os: centos-7\n" +
+				"  version: latest"
+		);
+		Diagnostic problem = editor.assertProblems("t|Properties [instance_groups, releases, update] are required").get(0);
+		CodeAction quickfix = editor.assertCodeAction(problem);
+		assertEquals("Add properties: [instance_groups, releases, update]", quickfix.getLabel());
+		quickfix.perform();
+		editor.assertText(
+				"name: blah\n" +
+				"stemcells:\n" +
+				"- alias: ubuntu\n" +
+				"  os: ubuntu-trusty\n" +
+				"  version: 3421.11\n" +
+				"- alias: centos\n" +
+				"  os: centos-7\n" +
+				"  version: latest\n" +
+				"releases:\n" +
+				"- name: <*>\n" +
+				"  version: \n" +
+				"update:\n" +
+				"  canaries: \n" +
+				"  max_in_flight: \n" +
+				"  canary_watch_time: \n" +
+				"  update_watch_time: \n" +
+				"instance_groups:\n" +
+				"- name: \n" +
+				"  azs:\n" +
+				"  - \n" +
+				"  instances: \n" +
+				"  jobs:\n" +
+				"  - name: \n" +
+				"    release: \n" +
+				"  vm_type: \n" +
+				"  stemcell: \n" +
+				"  networks:\n" +
+				"  - name: "
+		);
 	}
 }

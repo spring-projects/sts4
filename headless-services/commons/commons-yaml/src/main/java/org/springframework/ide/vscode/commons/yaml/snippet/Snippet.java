@@ -12,16 +12,18 @@ package org.springframework.ide.vscode.commons.yaml.snippet;
 
 import java.util.function.Predicate;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString.PlaceHolder;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
 public class Snippet {
 
 	private final String name;
-	private final String snippet;
+	private final PlaceHolderString snippet;
 	private final Predicate<DynamicSchemaContext> applicability;
 
-	public Snippet(String name, String snippet, Predicate<DynamicSchemaContext> applicability) {
+	public Snippet(String name, PlaceHolderString snippet, Predicate<DynamicSchemaContext> applicability) {
 		super();
 		this.name = name;
 		this.snippet = snippet;
@@ -31,7 +33,7 @@ public class Snippet {
 		return name;
 	}
 	public String getSnippet() {
-		return snippet;
+		return snippet.toString();
 	}
 
 	@Override
@@ -43,5 +45,8 @@ public class Snippet {
 	}
 	public boolean isApplicable(DynamicSchemaContext dc) {
 		return applicability==null || applicability.test(dc);
+	}
+	public PlaceHolder getPlaceHolder(Object id) {
+		return snippet.getPlaceHolder(id);
 	}
 }

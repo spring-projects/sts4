@@ -12,20 +12,43 @@ package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 public class MissingPropertiesData {
 
 	private String uri;
+
+	/**
+	 * Yaml path (encoded segments) pointing to the node where
+	 * the missing properties should be added (as children of that node).
+	 */
 	private List<String> path;
+
+	/**
+	 * The properties that are missing and should be added.
+	 */
 	private List<String> props;
 
-	public MissingPropertiesData(String uri, List<String> path, List<String> props) {
+	/**
+	 * Snippet to insert when applying the quickfix.
+	 */
+	private String snippet;
+
+	/**
+	 * Offset where to place cursor relative to snippet start.
+	 */
+	private int cursorOffset;
+
+	public MissingPropertiesData() {
+	}
+
+	public MissingPropertiesData(String uri, List<String> path, List<String> props, String snippet, int cursorOffset) {
 		super();
 		this.uri = uri;
 		this.path = path;
 		this.props = props;
-	}
-
-	public MissingPropertiesData() {
+		this.snippet = snippet;
+		this.cursorOffset = cursorOffset;
 	}
 
 	public String getUri() {
@@ -47,8 +70,24 @@ public class MissingPropertiesData {
 		this.props = props;
 	}
 
+	public String getSnippet() {
+		return snippet;
+	}
+
+	public void setSnippet(String snippet) {
+		this.snippet = snippet;
+	}
+
 	@Override
 	public String toString() {
 		return "MissingPropertiesData [uri=" + uri + ", path=" + path + ", props=" + props + "]";
+	}
+
+	public int getCursorOffset() {
+		return cursorOffset;
+	}
+
+	public void setCursorOffset(int cursorOffset) {
+		this.cursorOffset = cursorOffset;
 	}
 }

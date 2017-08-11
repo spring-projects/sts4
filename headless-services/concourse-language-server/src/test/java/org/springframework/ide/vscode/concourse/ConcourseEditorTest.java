@@ -100,9 +100,9 @@ public class ConcourseEditorTest {
 				"  type: pool\n" +
 				"  source:\n" +
 				"    username: someone\n" +
-				"    branch: <*>\n" +
-				"    pool: \n" +
-				"    uri: \n"
+				"    uri: <*>\n" +
+				"    branch: \n" +
+				"    pool: \n"
 		);
 	}
 

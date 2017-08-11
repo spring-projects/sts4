@@ -112,7 +112,7 @@ public class YamlPathEdits extends DocumentEdits {
 		return buf.toString();
 	}
 
-	private int getNewPathInsertionOffset(SChildBearingNode parent) throws Exception {
+	public int getNewPathInsertionOffset(SChildBearingNode parent) throws Exception {
 		int insertAfterLine = doc.getLineOfOffset(parent.getTreeEnd());
 		while (insertAfterLine>=0 && doc.getLineIndentation(insertAfterLine)==-1) {
 			insertAfterLine--;

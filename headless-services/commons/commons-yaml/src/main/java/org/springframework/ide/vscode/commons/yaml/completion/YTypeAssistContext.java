@@ -166,7 +166,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							DocumentEdits edits;
 							if (snippetProvider!=null) {
 								// Generate edits from snippet
-								Snippet snippet = snippetProvider.getSnippet(type, p);
+								Snippet snippet = snippetProvider.getSnippet(p);
 								edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
 							} else {
 								//Generate edits the old-fashioned way

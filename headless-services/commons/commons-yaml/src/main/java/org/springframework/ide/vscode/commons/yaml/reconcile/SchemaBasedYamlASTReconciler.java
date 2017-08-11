@@ -31,6 +31,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReplacementQuickfix;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -51,6 +53,9 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
+import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
+import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
+import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
@@ -285,21 +290,25 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		//Don't check for missing properties if some properties look like they might be spelled incorrectly.
 		if (allPropertiesKnown) {
 			//Check for missing required properties:
-			Set<String> missingProps = beanProperties.values().stream()
+			List<YTypedProperty> missingProps = beanProperties.values().stream()
 					.filter(YTypedProperty::isRequired)
+					.filter(prop -> !foundProps.contains(prop.getName()))
+					.collect(CollectorUtil.toImmutableList());
+			Set<String> missingPropNames = missingProps.stream()
 					.map(YTypedProperty::getName)
-					.filter((required) -> !foundProps.contains(required))
 					.collect(Collectors.toCollection(TreeSet::new));
-			if (!missingProps.isEmpty()) {
+			if (!missingPropNames.isEmpty()) {
 				String message;
-				if (missingProps.size()==1) {
+				if (missingPropNames.size()==1) {
 					// slightly more specific message when only one missing property
-					String missing = missingProps.stream().findFirst().get();
+					String missing = missingPropNames.stream().findFirst().get();
 					message = "Property '"+missing+"' is required for '"+type+"'";
 				} else {
-					message = "Properties "+missingProps+" are required for '"+type+"'";
+					message = "Properties "+missingPropNames+" are required for '"+type+"'";
 				}
-				problems.accept(YamlSchemaProblems.missingProperties(message, dc, missingProps, parent, map, quickfixes.MISSING_PROP_FIX));
+				SchemaBasedSnippetGenerator snippetProvider = new SchemaBasedSnippetGenerator(typeUtil, SnippetBuilder::gimped);
+				Snippet snippet = snippetProvider.getSnippet(missingProps);
+				problems.accept(YamlSchemaProblems.missingProperties(message, dc, missingPropNames, snippet.getSnippet(), snippet.getPlaceHolder(1).getOffset(), parent, map, quickfixes.MISSING_PROP_FIX));
 			}
 		}
 	}

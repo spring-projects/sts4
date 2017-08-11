@@ -11,13 +11,19 @@
 package org.springframework.ide.vscode.commons.yaml.snippet;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 
+import com.google.common.collect.ImmutableList;
+
 public interface TypeBasedSnippetProvider {
 
 	Collection<Snippet> getSnippets(YType contextType);
-	Snippet getSnippet(YType contextType, YTypedProperty p);
+	default Snippet getSnippet(YTypedProperty p) {
+		return getSnippet(ImmutableList.of(p));
+	}
+	Snippet getSnippet(List<YTypedProperty> props);
 
 }

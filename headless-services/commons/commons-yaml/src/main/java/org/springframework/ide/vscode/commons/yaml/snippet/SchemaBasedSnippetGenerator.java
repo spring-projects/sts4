@@ -8,26 +8,21 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.bosh.snippets;
+package org.springframework.ide.vscode.commons.yaml.snippet;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
-import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.google.common.base.Supplier;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -45,19 +40,11 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 		this.snippetBuilderFactory = snippetBuilderFactory;
 	}
 
-	private Cache<YType, Collection<Snippet>> cache = CacheBuilder.newBuilder()
-			.weakKeys()
-			.build();
 	private int maxNesting = Integer.MAX_VALUE;
 
 	@Override
 	public Collection<Snippet> getSnippets(YType type) {
-		try {
-			return cache.get(type, () -> generateSnippets(type));
-		} catch (ExecutionException e) {
-			Log.log(e);
-			return ImmutableList.of();
-		}
+		return generateSnippets(type);
 	}
 
 	private Collection<Snippet> generateSnippets(YType type) {
@@ -76,7 +63,7 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 				generateBeanSnippet(requiredProps, builder, indent, maxNesting);
 			}
 			if (builder.getPlaceholderCount()>=2) {
-				return new Snippet(typeUtil.niceTypeName(type)+" Snippet", builder.toString(), (dc) ->
+				return new Snippet(typeUtil.niceTypeName(type)+" Snippet", builder.build(), (dc) ->
 					requiredProps.stream().noneMatch(p -> dc.getDefinedProperties().contains(p.getName()))
 				);
 			}
@@ -103,15 +90,20 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 	}
 
 	@Override
-	public Snippet getSnippet(YType contextType, YTypedProperty p) {
-		//TODO: cache?
+	public Snippet getSnippet(List<YTypedProperty> props) {
 		SnippetBuilder builder = snippetBuilderFactory.get();
-		generateBeanSnippet(ImmutableList.of(p), builder, 0, maxNesting);
-		String propName = p.getName();
-		return new Snippet(propName, builder.toString(), (dc) ->
-			!dc.getDefinedProperties().contains(propName)
+		generateBeanSnippet(props, builder, 0, maxNesting);
+		String snippetName;
+		if (props.size()==1) {
+			snippetName = props.get(0).getName();
+		} else {
+			snippetName = props.stream().map(p -> p.getName()).collect(Collectors.toList()).toString() + " Snippet";
+		}
+		return new Snippet(snippetName, builder.build(), (dc) ->
+			props.stream().allMatch(p -> !dc.getDefinedProperties().contains(p.getName()))
 		);
 	}
+
 
 	private void generateNestedSnippet(boolean parentIsSeq, YType type, SnippetBuilder builder, int indent, int nestingLimit) {
 		if (type==null) {

@@ -84,6 +84,12 @@ public class YamlIndentUtil {
 		return buf.toString();
 	}
 
+	public String indentString(int indent) {
+		StringBuilder buf = new StringBuilder();
+		addIndent(indent, buf);
+		return buf.toString();
+	}
+
 	/**
 	 * Applies a certain level of indentation to all new lines in the given text. Newlines
 	 * are expressed by '\n' characters in the text will be replaced by the appropriate

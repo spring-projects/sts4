@@ -10,11 +10,31 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.HashMap;
+
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString.PlaceHolder;
+import org.springframework.ide.vscode.commons.util.text.Region;
+
 public class SnippetBuilder {
+
+	/**
+	 * Create a 'gimped' snippetbuilder which generates snippets without
+	 * the '$' placeholders. This is useful to provide some snippet-like
+	 * support in contexts that don't provide snippet support.
+	 */
+	public static SnippetBuilder gimped() {
+		return new SnippetBuilder() {
+			@Override
+			protected String createPlaceHolder(int id) {
+				return "";
+			}
+		};
+	}
 
 	private static final int FIRST_PLACE_HOLDER_ID = 1;
 	private int nextPlaceHolderId = FIRST_PLACE_HOLDER_ID;
 	private StringBuilder buf = new StringBuilder();
+	private HashMap<Object, PlaceHolder> placeHolders = new HashMap<>();
 
 	public SnippetBuilder text(String text) {
 		buf.append(text);
@@ -25,7 +45,11 @@ public class SnippetBuilder {
 	 * Create a new `placeholder` and appends it to the snippet.
 	 */
 	public SnippetBuilder placeHolder() {
-		buf.append(createPlaceHolder(nextPlaceHolderId++));
+		int offset = buf.length();
+		int id = nextPlaceHolderId++;
+		buf.append(createPlaceHolder(id));
+		int end = buf.length();
+		placeHolders.put(id, new PlaceHolderString.PlaceHolder(id, new Region(offset, end-offset)));
 		return this;
 	}
 
@@ -40,6 +64,10 @@ public class SnippetBuilder {
 	 */
 	protected String createPlaceHolder(int id) {
 		return "$"+id;
+	}
+
+	public PlaceHolderString build() {
+		return new PlaceHolderString(placeHolders, buf.toString());
 	}
 
 	@Override

@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -58,11 +59,22 @@ public class YamlQuickfixes {
 						YamlPath path = YamlPath.decode(params.getPath());
 						SNode _target = path.traverse(root);
 						if (_target instanceof SChildBearingNode) {
-							YamlPathEdits edits = new YamlPathEdits(doc);
+							YamlIndentUtil indenter = new YamlIndentUtil(doc);
 							SChildBearingNode target = (SChildBearingNode) _target;
-							for (String prop : params.getProps()) {
-								edits.createPath(target, new YamlPath(YamlPathSegment.valueAt(prop)), " ");
-								edits.freezeCursor();
+							YamlPathEdits edits = new YamlPathEdits(doc);
+							int insertAt = edits.getNewPathInsertionOffset(target);
+							int indentBy = YamlIndentUtil.getNewChildKeyIndent(target);
+							boolean first = true;
+							String propSnippet = params.getSnippet();
+							int cursorOffset = params.getCursorOffset();
+							{
+								edits.insert(insertAt, indenter.newlineWithIndent(indentBy));
+								edits.insert(insertAt, indenter.applyIndentation(propSnippet.substring(0,cursorOffset), indentBy));
+								if (first) {
+									edits.freezeCursor();
+									first = false;
+								}
+								edits.insert(insertAt, indenter.applyIndentation(propSnippet.substring(cursorOffset), indentBy));
 							}
 							TextReplace replaceEdit = edits.asReplacement(_doc);
 							if (replaceEdit!=null) {
@@ -94,13 +106,12 @@ public class YamlQuickfixes {
 							ImmutableMap.of(params.getUri(), ImmutableList.of(params.getEdit())),
 							null
 						),
-						null //TODO: compute end of the range after applying the edit 
+						null //TODO: compute end of the range after applying the edit
 					);
 				}
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			//Something went wrong. Return empty edit object.
 			//Something went wrong. Return empty edit object.
 			return NULL_FIX;
 		});
@@ -113,7 +124,7 @@ public class YamlQuickfixes {
 				//There is probably a more efficient way to compute the new cursor position. But its tricky...
 				//... because we need to compute line/char coordinate, in terms of lines in the *new* document.
 				//So we have to take into account how newlines have been inserted or shifted around by the edits.
-				//Doing that without actually applying the edits is... difficult. 
+				//Doing that without actually applying the edits is... difficult.
 				TextDocument doc = _doc.copy();
 				edits.apply(doc);
 				return doc.toPosition(newSelection.getOffset());

@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -30,6 +31,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
 import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -138,7 +140,7 @@ public class YamlSchemaProblems {
 		return problem(MISSING_PROPERTY, msg, underline);
 	}
 
-	public static ReconcileProblem missingProperties(String msg, DynamicSchemaContext dc, Set<String> missingProps, Node parent, MappingNode map, QuickfixType quickfixType) {
+	public static ReconcileProblem missingProperties(String msg, DynamicSchemaContext dc, Set<String> missingProps, String snippet, int cursorOffset, Node parent, MappingNode map, QuickfixType quickfixType) {
 		YamlPath contextPath = dc.getPath();
 		List<String> segments = Stream.of(contextPath.getSegments())
 				.map(YamlPathSegment::encode)
@@ -152,7 +154,9 @@ public class YamlSchemaProblems {
 				new MissingPropertiesData(
 						dc.getDocument().getUri(),
 						segments,
-						ImmutableList.copyOf(missingProps)
+						ImmutableList.copyOf(missingProps),
+						snippet,
+						cursorOffset
 				),
 				fixTitle
 		);

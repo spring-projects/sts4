@@ -14,11 +14,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.models.BoshModels;
-import org.springframework.ide.vscode.bosh.snippets.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
+import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 
 public class SchemaBasedSnippetGeneratorTest {
 
