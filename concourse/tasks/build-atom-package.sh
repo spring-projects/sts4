@@ -36,6 +36,3 @@ length=${#basename}
 newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
 cp ${basename} $output/${newName}
-
-cd $output
-ls -la
