@@ -113,15 +113,15 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/releases/oxygen/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>staging</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/staging/oxygen/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20170306214312/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170516192513/repository/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>

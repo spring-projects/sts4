@@ -31,6 +31,12 @@ resources:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
+- name: atom-concourse
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com:spring-projects/atom-concourse.git
 - name: tasks
   type: git
   source:
@@ -109,6 +115,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/atom/snapshots/(.*)cf-manifest-yaml-(.*).tgz
+- name: s3-atom-concourse-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/atom/snapshots/(.*)concourse-pipeline-yaml-(.*).tgz
 - name: snapshot-website
   type: s3-multi
   source:
@@ -509,4 +523,32 @@ jobs:
     - put: s3-atom-cf-manifest-yaml-snapshot
       params:
         file: out/*cf-manifest-yaml-*.tgz
+        acl: public-read
+- name: build-concourse-pipeline-yaml-atom-package
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-concourse
+      trigger: true
+    - get: s3-concourse-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-concourse-pipeline-yaml-atom-package
+    input_mapping:
+      package_sources: atom-concourse
+      fatjar: s3-concourse-fatjar-snapshot
+    file: sts4/concourse/tasks/build-atom-package.yml
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  on_success:
+    aggregate:
+    - put: s3-atom-concourse-snapshot
+      params:
+        file: out/*concourse-pipeline-yaml-*.tgz
         acl: public-read
