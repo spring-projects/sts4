@@ -72,7 +72,7 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 	}
 
 	private void generateBeanSnippet(List<YTypedProperty> props, SnippetBuilder builder, int indent, int nestingLimit) {
-		if (nestingLimit>0) {
+		if (nestingLimit>0 && !props.isEmpty()) {
 			boolean first = true;
 			for (YTypedProperty p : props) {
 				if (!first) {
