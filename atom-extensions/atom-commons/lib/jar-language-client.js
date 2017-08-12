@@ -7,6 +7,8 @@ const PortFinder = require('portfinder');
 const net = require('net');
 const rpc = require('vscode-jsonrpc');
 const {AutoLanguageClient, DownloadFile} = require('atom-languageclient');
+const { Disposable } = require('atom');
+
 
 export class JarLanguageClient extends AutoLanguageClient {
 
@@ -26,13 +28,12 @@ export class JarLanguageClient extends AutoLanguageClient {
 
         return new Promise((resolve, reject) => {
             PortFinder.getPort((err, port) => {
-                let server = net.createServer(socket => {
-                    server.close();
+                this.server = net.createServer(socket => {
                     this.socket = socket;
                     resolve(childProcess);
                 });
 
-                server.listen(port, 'localhost', () => {
+                this.server.listen(port, 'localhost', () => {
                     this.launchProcess(port).then(p => childProcess = p);
                 });
 
@@ -175,6 +176,13 @@ export class JarLanguageClient extends AutoLanguageClient {
                 });
             });
         });
+    }
+
+    // Late wire-up of listeners after initialize method has been sent
+    postInitialization(server) {
+        server.disposable.add(new Disposable(() => {
+            this.server.close()
+        }));
     }
 
 }
