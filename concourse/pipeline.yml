@@ -107,6 +107,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
+- name: s3-bosh-fatjar-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
 - name: s3-atom-cf-manifest-yaml-snapshot
   type: s3
   source:
@@ -534,6 +542,10 @@ jobs:
       - put: s3-concourse-fatjar-snapshot
         params:
           file: out/concourse-language-server-*.jar
+          acl: public-read
+      - put: s3-bosh-fatjar-snapshot
+        params:
+          file: out/bosh-language-server-*.jar
           acl: public-read
 - name: build-manifest-yaml-atom-package
   plan:
