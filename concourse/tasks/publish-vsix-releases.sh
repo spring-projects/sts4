@@ -6,7 +6,10 @@ workdir=`pwd`
 #vsix_files=`ls ${workdir}/s3-*/*.vsix`
 
 #Uncomment the below to publish only concourse vxix
-vsix_files=`ls ${workdir}/s3-*/vscode-concourse-*.vsix`
+#vsix_files=`ls ${workdir}/s3-*/vscode-concourse-*.vsix`
+
+#Uncomment the below to publish all vsix files
+vsix_files=`ls ${workdir}/s3-*/vscode-*.vsix`
 
 for vsix_file in $vsix_files
 do
