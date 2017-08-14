@@ -151,10 +151,10 @@ public class BoshEditorTest {
 	}
 
 	@Test public void reconcileCfManifest() throws Exception {
-		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
 		cloudConfigProvider.executeCommandWith(() -> {
 			throw new IOException("Couldn't contact the director");
 		});
+		Editor editor = harness.newEditorFromClasspath("/workspace/cf-deployment-manifest.yml");
 		editor.assertProblems(/*NONE*/);
 	}
 

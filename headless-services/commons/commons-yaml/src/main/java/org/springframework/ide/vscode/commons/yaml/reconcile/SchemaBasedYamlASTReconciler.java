@@ -55,7 +55,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
-import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
