@@ -485,8 +485,8 @@ jobs:
       trigger: true
       passed:
       - publish-release
-  - task: bump-package-json-versions
-    file: sts4/concourse/tasks/bump-package-json-versions.yml
+  - task: bump-versions
+    file: sts4/concourse/tasks/bump-versions.yml
   - put: sts4-out
     params:
       repository: out
