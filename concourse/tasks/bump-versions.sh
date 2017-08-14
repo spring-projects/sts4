@@ -8,6 +8,7 @@ sources=$workdir/sts4/vscode-extensions
 version=`cat version/version`
 echo "version=$version"
 
+cd $sources
 for extension_id in $(ls -d vscode-*)
 do
     cd $sources/$extension_id
