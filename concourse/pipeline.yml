@@ -370,6 +370,40 @@ jobs:
         text: |
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-bosh-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-bosh-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-bosh-rc
+    file: sts4/concourse/tasks/rc-build.yml
+    params:
+      extension_id: vscode-bosh
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-bosh-vsix-snapshot
+    params: 
+      file: out/vscode-concourse-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-bosh-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-release
   serial: true
   plan:
@@ -379,16 +413,21 @@ jobs:
       passed:
       - build-manifest-yaml-rc
       - build-concourse-rc
+      - build-bosh-rc
     - get: s3-concourse-vsix-snapshot
       passed:
       - build-concourse-rc
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
       - build-manifest-yaml-rc
+    - get: s3-bosh-vsix-snapshot
+      passed:
+      - build-bosh-rc
     - get: version
       passed:
       - build-concourse-rc
       - build-manifest-yaml-rc
+      - build-bosh-rc
       params:
         bump: final
   - task: publish-vsix-releases
