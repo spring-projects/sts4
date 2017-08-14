@@ -394,7 +394,7 @@ jobs:
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
   - put: s3-bosh-vsix-snapshot
     params: 
-      file: out/vscode-concourse-*.vsix
+      file: out/vscode-*.vsix
       acl: public-read
     on_success:
       put: slack-notification
