@@ -297,6 +297,7 @@ jobs:
       passed:
       - build-manifest-yaml-vsix-snapshot
       - build-consourse-vsix-snapshot
+      - build-bosh-vsix-snapshot
     - do:
       - get: version
         params:
