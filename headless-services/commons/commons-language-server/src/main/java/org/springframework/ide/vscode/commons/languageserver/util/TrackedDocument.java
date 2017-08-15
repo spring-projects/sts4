@@ -21,6 +21,7 @@ public class TrackedDocument {
 
 	private final TextDocument doc;
 	private List<Quickfix> quickfixes = ImmutableList.of();
+	private int openCount = 0;
 
 	public TrackedDocument(TextDocument doc) {
 		this.doc = doc;
@@ -36,6 +37,16 @@ public class TrackedDocument {
 
 	public List<Quickfix> getQuickfixes() {
 		return quickfixes;
+	}
+
+	public TrackedDocument open() {
+		openCount++;
+		return this;
+	}
+
+	public boolean close() {
+		openCount--;
+		return openCount<=0;
 	}
 
 }

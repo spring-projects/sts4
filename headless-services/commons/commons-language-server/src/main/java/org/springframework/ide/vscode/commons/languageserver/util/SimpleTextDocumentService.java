@@ -151,7 +151,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		int version = docId.getVersion();
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
-			TextDocument doc = createDocument(url, languageId, version, text).getDocument();
+			TextDocument doc = createDocument(url, languageId, version, text).open().getDocument();
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
 				public Range getRange() {
@@ -177,12 +177,20 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public void didClose(DidCloseTextDocumentParams params) {
 		//Log.info("didClose: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
-		//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
-		// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
-		// document go 'out of scope'.
-		publishDiagnostics(params.getTextDocument(), ImmutableList.of());
 		if (url!=null) {
-			documents.remove(url);
+			TrackedDocument doc = documents.get(url);
+			if (doc!=null) {
+				if (doc.close()) {
+					//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
+					// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
+					// document go 'out of scope'.
+					publishDiagnostics(params.getTextDocument(), ImmutableList.of());
+					documents.remove(url);
+				}
+				Log.warn("Close event ignored! Assuming document still open because of its openCount");
+			} else {
+				Log.warn("Document closed, but it didn't exist! Close event ignored");
+			}
 		}
 	}
 
@@ -208,8 +216,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	private synchronized TrackedDocument createDocument(String url, LanguageId languageId, int version, String text) {
-		if (documents.get(url)!=null) {
-			Log.warn("Creating document ["+url+"] but it already exists. Existing document discarded!");
+		TrackedDocument existingDoc = documents.get(url);
+		if (existingDoc!=null) {
+			Log.warn("Creating document ["+url+"] but it already exists. Reusing existing!");
+			return existingDoc;
 		}
 		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version, text));
 		documents.put(url, doc);
