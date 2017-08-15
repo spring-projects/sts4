@@ -189,8 +189,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 					// document go 'out of scope'.
 					publishDiagnostics(params.getTextDocument(), ImmutableList.of());
 					documents.remove(url);
+				} else {
+					Log.warn("Close event ignored! Assuming document still open because openCount = "+doc.getOpenCount());
 				}
-				Log.warn("Close event ignored! Assuming document still open because of its openCount ["+doc.getOpenCount()+"]");
 			} else {
 				Log.warn("Document closed, but it didn't exist! Close event ignored");
 			}
