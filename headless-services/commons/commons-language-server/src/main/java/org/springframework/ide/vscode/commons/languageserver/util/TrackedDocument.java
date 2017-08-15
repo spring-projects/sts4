@@ -49,4 +49,8 @@ public class TrackedDocument {
 		return openCount<=0;
 	}
 
+	public int getOpenCount() {
+		return openCount;
+	}
+
 }

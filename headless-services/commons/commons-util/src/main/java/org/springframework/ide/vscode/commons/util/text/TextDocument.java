@@ -297,5 +297,4 @@ public class TextDocument implements IDocument {
 		}
 		return null;
 	}
-
 }
