@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReco
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 
 import com.google.common.collect.ImmutableList;
@@ -81,10 +82,19 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		}
 	}
 
+	public void enableSnippets(PipelineYmlSchema schema, boolean enable) {
+		if (enable) {
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), this::createSnippetBuilder));
+		} else {
+			schema.f.setSnippetProvider(null);
+		}
+	}
+
 	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions) {
 		super("vscode-concourse");
 		this.COMPLETION_OPTIONS = completionOptions;
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
+		enableSnippets(pipelineSchema, true);
 		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
 
 		this.forPipelines = new SchemaSpecificPieces(pipelineSchema, pipelineSchema.getDefinitionTypes());

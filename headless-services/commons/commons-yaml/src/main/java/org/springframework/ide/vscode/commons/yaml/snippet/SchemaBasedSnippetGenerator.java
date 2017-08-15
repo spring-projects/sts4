@@ -57,7 +57,7 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 		if (typeUtil.isBean(type)) {
 			SnippetBuilder builder = snippetBuilderFactory.get();
 			List<YTypedProperty> requiredProps = typeUtil.getProperties(type).stream()
-			.filter(p -> p.isPrimary() || p.isRequired())
+			.filter(p -> p.isRequired())
 			.collect(CollectorUtil.toImmutableList());
 			if (!requiredProps.isEmpty()) {
 				generateBeanSnippet(requiredProps, builder, indent, maxNesting);
@@ -118,7 +118,7 @@ public class SchemaBasedSnippetGenerator implements TypeBasedSnippetProvider {
 			}
 			//Insert required keys
 			List<YTypedProperty> requiredProps = typeUtil.getProperties(type).stream()
-			.filter(p -> p.isPrimary() || p.isRequired())
+			.filter(p -> p.isRequired())
 			.collect(Collectors.toList());
 			generateBeanSnippet(requiredProps, builder, indent, nestingLimit);
 		} else if (typeUtil.isSequencable(type)) {

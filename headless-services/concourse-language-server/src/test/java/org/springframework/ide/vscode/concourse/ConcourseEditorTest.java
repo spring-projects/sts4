@@ -472,8 +472,10 @@ public class ConcourseEditorTest {
 		Editor editor;
 		editor = harness.newEditor("jo<*>");
 		editor.assertCompletions(
-				"jobs:\n"+
-				"- name: <*>"
+				"jobs:\n" +
+				"- name: $1\n" +
+				"  plan:\n" +
+				"  - $2<*>"
 		);
 	}
 
@@ -486,19 +488,24 @@ public class ConcourseEditorTest {
 				"- name: <*>"
 				, // --------------
 				"jobs:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  plan:\n" +
+				"  - $2<*>"
 				, // ---------------
 				"resource_types:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  type: $2<*>"
 				, // ---------------
 				"resources:\n"+
-				"- name: <*>"
+				"- name: $1\n" +
+				"  type: $2<*>"
 		);
 
 		editor = harness.newEditor("rety<*>");
 		editor.assertCompletions(
 				"resource_types:\n" +
-				"- name: <*>"
+				"- name: $1\n" +
+				"  type: $2<*>"
 		);
 	}
 
@@ -2095,6 +2102,10 @@ public class ConcourseEditorTest {
 				, // ===========
 				"<*>"
 				, // ==>
+				    "uri: $1\n" +
+				"    branch: $2\n" +
+				"    file: $3<*>"
+				, //---
 				"uri: <*>"
 		);
 		assertContextualCompletions(PLAIN_COMPLETION,
@@ -2186,6 +2197,12 @@ public class ConcourseEditorTest {
 				, /////////////
 				"<*>"
 				, // ==>
+				//snippet:
+				    "bucket: $1\n" +
+				"    key: $2\n" +
+				"    access_key_id: $3\n" +
+				"    secret_access_key: $4<*>",
+				//non-snippet:
 				"bucket: <*>",
 				"driver: <*>"
 		);
@@ -2200,6 +2217,12 @@ public class ConcourseEditorTest {
 				, /////////////
 				"<*>"
 				, // ==>
+				//snippet:
+				    "bucket: $1\n" +
+				"    key: $2\n" +
+				"    access_key_id: $3\n" +
+				"    secret_access_key: $4<*>",
+				//non-snippet:
 				"bucket: <*>"
 		);
 
@@ -2246,6 +2269,10 @@ public class ConcourseEditorTest {
 				, /////////////
 				"<*>"
 				, // ==>
+				    "uri: $1\n" +
+				"    branch: $2\n" +
+				"    file: $3<*>"
+				, //===
 				"uri: <*>"
 		);
 		assertContextualCompletions(PLAIN_COMPLETION,
@@ -2793,10 +2820,14 @@ public class ConcourseEditorTest {
 		assertTaskCompletions(
 				"<*>"
 				, // ==>
+				"platform: $1\n" +
+				"run:\n" +
+				"  path: $2<*>"
+				,
 				"platform: <*>"
 				,
 				"run:\n" +
-				"  <*>"
+				"  path: <*>"
 		);
 
 		assertContextualTaskCompletions(
@@ -2807,7 +2838,7 @@ public class ConcourseEditorTest {
 				"<*>"
 				, // ==>
 				"image_resource:\n" +
-				"  <*>"
+				"  type: <*>"
 				,
 				"inputs:\n" +
 				"- name: <*>"
@@ -3142,6 +3173,7 @@ public class ConcourseEditorTest {
 				"← groups",
 				"← jobs",
 				"← resource_types",
+				"← - Resource Snippet",
 				// For the 'next job' context:
 				"← - name"
 		);
@@ -3358,6 +3390,7 @@ public class ConcourseEditorTest {
 				"← groups",
 				"← resource_types",
 				"← resources",
+				"← - Job Snippet",
 				"← - name"
 			);
 	}
@@ -3758,6 +3791,7 @@ public class ConcourseEditorTest {
 				"jobs",
 				"resource_types",
 				"→ type",
+				"- Resource Snippet",
 				"- name"
 		);
 	}
