@@ -92,6 +92,7 @@ to store the credentials would be something like the following:
 
 First, create an alias for your environment:
 
+```
 $ bosh alias-env my-env -e 10.194.4.35 --ca-cert <(bosh int ./creds.yml --path /director_ssl/ca)
 Using environment '10.194.4.35' as anonymous user
 ...
