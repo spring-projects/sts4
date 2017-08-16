@@ -126,7 +126,11 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	}
 
 	public SnippetBuilder createSnippetBuilder() {
-		return new SnippetBuilder();
+		if (hasCompletionSnippetSupport) {
+			return new SnippetBuilder();
+		} else {
+			return SnippetBuilder.gimped();
+		}
 	}
 
 	public SimpleLanguageServer(String extensionId) {
