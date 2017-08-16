@@ -49,7 +49,7 @@ to its corresponding definition.
 
 ![Peek Definition Screenshot][peek]
 
-### V2 versus V1 Schena
+### V2 versus V1 Schema
 
 The editor is intended primarily to support editing manifests in the [V2 schema](https://bosh.io/docs/manifest-v2.html).
 When you use attributes from the V1 schema the editor will detect this however and switch to 'V1 tolerance' mode.
