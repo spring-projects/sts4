@@ -108,7 +108,9 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		if (command==null) {
 			Log.log("bosh cli based editor features are disabled");
-			throw new IOException("bosh cli based editor features are disabled");
+			throw new IOException("bosh cli based editor features are disabled. "
+					+ "Consult the atom/vscode extension's readme for detailed "
+					+ "instructions on how to target a director and enable them.");
 		}
 		try {
 			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, config.getTimeout());
