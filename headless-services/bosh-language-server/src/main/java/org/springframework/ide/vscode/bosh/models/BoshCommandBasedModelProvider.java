@@ -103,6 +103,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		if (command==null) {
+			Log.log("bosh cli based editor features are disabled");
 			throw new IOException("bosh cli based editor features are disabled");
 		}
 		try {
