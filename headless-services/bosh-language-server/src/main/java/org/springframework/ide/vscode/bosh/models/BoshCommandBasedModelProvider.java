@@ -86,6 +86,10 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		}
 		commandAndArgs.add(command);
 		String target = config.getTarget();
+		if (target==null && !StringUtil.hasText(System.getenv("BOSH_ENVIRONMENT"))) {
+			//See https://www.pivotaltracker.com/story/show/150309966
+			return null;
+		}
 		if (target!=null) {
 			commandAndArgs.add("-e");
 			commandAndArgs.add(target);

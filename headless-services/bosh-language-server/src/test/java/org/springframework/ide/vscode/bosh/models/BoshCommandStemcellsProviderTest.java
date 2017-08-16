@@ -82,13 +82,13 @@ public class BoshCommandStemcellsProviderTest {
 //		verify(provider).executeCommand(eq(new ExternalCommand("bosh", "stemcells", "--json")));
 //	}
 
-	@Test public void obeysCliConfigCommand() throws Exception {
+	@Test public void obeysCliConfigCommandAndTarget() throws Exception {
 		Map<String, Object> settings = ImmutableMap.of("bosh", ImmutableMap.of("cli",
 				ImmutableMap.of(
-						"command", "alternate-command"
+						"command", "alternate-command",
+						"target", "some-target"
 				)
 		));
-
 		cliConfig.handleConfigurationChange(new Settings(settings));
 		assertEquals(ImmutableList.of(
 				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
@@ -96,7 +96,7 @@ public class BoshCommandStemcellsProviderTest {
 			),
 			provider.getModel(mock(DynamicSchemaContext.class)).getStemcells()
 		);
-		verify(provider).executeCommand(eq(new ExternalCommand("alternate-command", "stemcells", "--json")));
+		verify(provider).executeCommand(eq(new ExternalCommand("alternate-command", "-e", "some-target", "stemcells", "--json")));
 	}
 
 	@Test public void obeysCliConfigTarget() throws Exception {
