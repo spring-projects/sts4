@@ -1,7 +1,7 @@
 # Bosh Deployment Manifest Editor for Visual Studio Code
 
 This extension provides validation, content assist and documentation hovers
-for editing [Bosh](https://bosh.io/) Deployment Manifest files and 
+for editing [Bosh](https://bosh.io/) Deployment Manifest files and
 Cloud Configs.
 
 ## Functionality
@@ -25,18 +25,18 @@ to the rescue:
 
 ### Documentation Hovers
 
-Having trouble remembering exactly what the meaning of each attribute is? Hover over an attribute and 
+Having trouble remembering exactly what the meaning of each attribute is? Hover over an attribute and
 read its detailed documentation:
 
 ![Hover Docs Screenshot][hovers]
 
 ### Goto Symbol in File
 
-Is your Deployment Manifest getting larger and is it becoming harder to find a particular Instance Group, 
+Is your Deployment Manifest getting larger and is it becoming harder to find a particular Instance Group,
 Release, or Stemcell definition? The "Goto Symbol in File" command helps you quickly jump to a specific
 definition.
 
-Type `CTRL-SHIFT-O` to popup a list of all symbols in your current file. Start typing a name 
+Type `CTRL-SHIFT-O` to popup a list of all symbols in your current file. Start typing a name
 (or portion thereof) to narrow down the list. Select a symbol to jump directly to its location in the
 file.
 
@@ -44,7 +44,7 @@ file.
 
 ### Goto/Peek Definition
 
-Use "Goto Defition" or "Peek Definition" to quickly go (or peek) from a Release or Stemcell name 
+Use "Goto Defition" or "Peek Definition" to quickly go (or peek) from a Release or Stemcell name
 to its corresponding definition.
 
 ![Peek Definition Screenshot][peek]
@@ -61,20 +61,20 @@ errors.
 
 ### Activating the Editor
 
-The Bosh editor automatically activates when the name of the  `.yml` file you are editing 
+The Bosh editor automatically activates when the name of the  `.yml` file you are editing
 follows a certain pattern:
 
   - `**/*deployment*.yml` : activates support for Bosh manifest file.
-  - `**/*cloud-config*.yml` : activates support for Bosh cloud config. 
-  
+  - `**/*cloud-config*.yml` : activates support for Bosh cloud config.
+
 You can also define your own patterns and map them to the language-id `bosh-deployment-manifest` or `bosh-cloud-config`
-by defining `files.associations` in workspace settings. 
+by defining `files.associations` in workspace settings.
 See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
 
 ### Targetting a specific Director
 
 Some of the Validations and Content Assist depend on information dymanically retrieved from an active Bosh director.
-The editor retreives information by executing commands using the Bosh CLI. For this to work the CLI (V2 
+The editor retreives information by executing commands using the Bosh CLI. For this to work the CLI (V2
 CLI is required) and editor have to be installed and configured correctly.
 
 There are two ways to set things up to make this work:
@@ -85,9 +85,54 @@ From vscode, press `CTRL-SHIFT-P` and type `Settings` then select either `Open U
 The bosh cli is configured by specifying keys of the form `bosh.cli.XXX`. Content assist and hover docs show you the
 the available keys and their meaning.
 
+Note that the `bosh.cli.XXX` settings do not allow you to provide credentials to connect to the director.
+The editor assumes that you are providing the credentials implicitly by using the `bosh login` command from a terminal.
+The bosh cli will persist the credentials in `~/.bosh/config` and read them from there. A typical sequence of commands
+to store the credentials would be something like the following:
+
+First, create an alias for your environment:
+
+$ bosh alias-env my-env -e 10.194.4.35 --ca-cert <(bosh int ./creds.yml --path /director_ssl/ca)
+Using environment '10.194.4.35' as anonymous user
+...
+Succeeded
+$
+```
+
+Second, obtain username/password for your director. For example:
+
+```
+$ bosh int ./creds.yml --path /admin_password
+very-secret-admin-password
+
+Succeeded
+```
+
+Now use `bosh login` to establish a session and store the credentials:
+
+```
+$ bosh login -e my-env
+Username (): admin
+Password (): very-secret-admin-password
+
+Using environment '10.194.4.35' as client 'admin'
+
+Logged in to '10.194.4.35'
+
+Succeeded
+```
+
+You can verify that CLI is setup correctly by executing a command like:
+
+```
+$ bosh -e my-env cloud-config
+...
+Succeeded
+```
+
 #### Implictly Configure the CLI:
 
-If the bosh cli is not explicitly configured it will, by default, try to execute commands like `bosh cloud-config --json`
+If the bosh cli is not explicitly configured, the editor will, by default, try to execute commands like `bosh cloud-config --json`
 and `bosh stemcells --json` without an explicit `-e ...` argument. This works only if you ensure that the editor
 process executes with a proper set of OS environment variables:
 
@@ -96,14 +141,14 @@ process executes with a proper set of OS environment variables:
 
 If you start vscode from a terminal, you can verify that things are setup correctly by executing command:
 
-     bosh cloud-config 
+     bosh cloud-config
 
-If that command executes without any errors and returns the cloud-config you expected, then things are setup correctly. 
-If subsequently launch vscode from that same terminal the dynamic CA and linting should work correctly.
+If that command executes without any errors and returns the cloud-config you expected, then things are setup correctly.
+If you subsequently launch vscode from that same terminal the dynamic CA and linting should work correctly.
 
 ## Issues and Feature Requests
 
-Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues).
 
 [linting]:     https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/linting.png
 [ca1]:         https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-1.png
