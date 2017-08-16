@@ -83,7 +83,7 @@ There are two ways to set things up to make this work:
 
 From vscode, press `CTRL-SHIFT-P` and type `Settings` then select either `Open User Settings` or `Open Workspace Settings`.
 The bosh cli is configured by specifying keys of the form `bosh.cli.XXX`. Content assist and hover docs show you the
-the available keys and their meaning.
+available keys and their meaning.
 
 Note that the `bosh.cli.XXX` settings do not allow you to provide credentials to connect to the director.
 The editor assumes that you are providing the credentials implicitly by using the `bosh login` command from a terminal.
