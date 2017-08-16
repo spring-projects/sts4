@@ -67,6 +67,7 @@ export class JarLanguageClient extends AutoLanguageClient {
             // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
             '-Dlsp.lazy.completions.disable=true',
             '-Dlsp.completions.indentation.enable=true',
+            '-Dlsp.yaml.completions.errors.disable=true',
             '-jar',
             launcher
         ]);
