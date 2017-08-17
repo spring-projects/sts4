@@ -16,8 +16,8 @@ echo "package=${packages}"
 
 echo "<ul>" > $target/atom-packages-snippet.html
 for p in $packages; do
-export pkd_url=`cat $p/url`
-export pkg_name=$(basename $url) 
+export pkg_url=`cat $p/url`
+export pkg_name=$(basename $pkg_url) 
 envsubst >> "$target/vscode-extensions-snippet.html" << XXXXXX
     <li><a href="${pkg_url}">${pkg_name}</a>
 XXXXXX
