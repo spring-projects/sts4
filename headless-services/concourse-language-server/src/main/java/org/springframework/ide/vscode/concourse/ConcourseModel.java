@@ -157,8 +157,13 @@ public class ConcourseModel {
 	}
 
 	private static final YamlTraversal JobModel_GET_PUT_STEP_PATH = new YamlPath()
-			.then(valueAt("plan"))
-			.then(anyChild().repeatAtLeast(1))
+			.then(
+					valueAt("plan")
+					.or(valueAt("on_success"))
+					.or(valueAt("on_failure"))
+					.or(valueAt("ensure"))
+			)
+			.then(anyChild().repeat())
 			.has(keyAt("get").or(keyAt("put")));
 
 	/**

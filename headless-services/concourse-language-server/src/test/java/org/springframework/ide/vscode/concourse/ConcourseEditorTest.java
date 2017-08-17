@@ -3914,6 +3914,31 @@ public class ConcourseEditorTest {
 		editor.assertProblems(/*NONE*/);
 	}
 
+	@Test public void bug_150337510() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/150337510
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: test\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    bucket: blah\n" +
+				"    regexp: blah/blah*.tar.gz\n" +
+				"jobs:\n" +
+				"- name: build-it\n" +
+				"  plan:\n" +
+				"  - task: build-it\n" +
+				"    file: tasks/build-it.yml\n" +
+				"  on_success:\n" +
+				"    put: test\n" +
+				"- name: create-website\n" +
+				"  plan:\n" +
+				"  - get: test\n" +
+				"    passed:\n" +
+				"    - build-it"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
