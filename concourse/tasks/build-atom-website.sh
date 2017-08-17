@@ -18,19 +18,19 @@ echo "<ul>" > $target/atom-packages-snippet.html
 for p in $packages; do
 export pkg_url=`cat $p/url`
 export pkg_name=$(basename $pkg_url) 
-envsubst >> "$target/vscode-extensions-snippet.html" << XXXXXX
+envsubst >> "$target/atom-packages-snippet.html" << XXXXXX
     <li><a href="${pkg_url}">${pkg_name}</a>
 XXXXXX
 done
 echo "<ul>" >> $target/atom-packages-snippet.html
-export atom_snippet=`cat "$target/atom-extensions-snippet.html"`
+export atom_snippet=`cat "$target/atom-packages-snippet.html"`
 
-envsubst > "$target/atom-extensions.html" << XXXXXX
+envsubst > "$target/atom-packages.html" << XXXXXX
 <!DOCTYPE html>
 <html>
 <body>
 
-<h1>STS4 Vscode Extensions</h1>
+<h1>STS4 Atom Packages</h1>
 
 $atom_snippet
 
@@ -38,7 +38,7 @@ $atom_snippet
 </html>
 XXXXXX
 
-echo "============== atom-extensions.html =============="
-cat $target/atom-extensions.html
-echo "============== atom-extensions-snippet.html =============="
-cat $target/atom-extensions-snippet.html
+echo "============== atom-packages.html =============="
+cat $target/atom-packages.html
+echo "============== atom-packages-snippet.html =============="
+cat $target/atom-packages-snippet.html
