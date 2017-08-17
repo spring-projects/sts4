@@ -121,7 +121,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
-- name: s3-atom-cf-manifest-yaml-snapshot
+- name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
@@ -129,7 +129,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/atom/snapshots/cf-manifest-yaml-(.*).tgz
-- name: s3-atom-concourse-snapshot
+- name: s3-concourse-atom-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
@@ -137,7 +137,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/atom/snapshots/concourse-pipeline-yaml-(.*).tgz
-- name: s3-atom-bosh-snapshot
+- name: s3-bosh-atom-snapshot
   type: s3
   source:
     bucket: {{s3_bucket}}
@@ -155,16 +155,16 @@ resources:
     path: snapshot/STS4/vscode-extensions
     options:
     - "--acl public-read"
-# - name: atom-snapshot-website
-#   type: s3-multi
-#   source:
-#     bucket: {{s3_prod_bucket}}
-#     access_key_id: {{s3_prod_accesskey}}
-#     secret_access_key: {{s3_prod_secretkey}}
-#     region_name: {{s3_region}}
-#     path: snapshot/STS4/atom-packages
-#     options:
-#     - "--acl public-read"
+- name: atom-snapshot-website
+  type: s3-multi
+  source:
+    bucket: {{s3_prod_bucket}}
+    access_key_id: {{s3_prod_accesskey}}
+    secret_access_key: {{s3_prod_secretkey}}
+    region_name: {{s3_region}}
+    path: snapshot/STS4/atom-packages
+    options:
+    - "--acl public-read"
 - name: slack-notification
   type: slack-notification
   source:
@@ -517,7 +517,29 @@ jobs:
       rebase: true
   - put: version
     params:
-      file: version/version    
+      file: version/version
+- name: build-atom-snapshot-website
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: s3-bosh-atom-snapshot
+      trigger: true
+      passed:
+      - build-bosh-atom-package
+    - get: s3-manifest-yaml-atom-snapshot
+      trigger: true
+      passed:
+      - build-manifest-yaml-atom-package
+    - get: s3-concourse-atom-snapshot
+      trigger: true
+      passed:
+      - build-concourse-atom-package
+  - task: build-website
+    file: sts4/concourse/tasks/build-atom-website.yml
+  - put: atom-snapshot-website
+    params:
+      path: website
 - name: build-vscode-snapshot-website
   serial: true
   plan:
@@ -592,18 +614,16 @@ jobs:
       package_sources: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
+  - put: s3-manifest-yaml-atom-snapshot
+    params:
+      file: out/cf-manifest-yaml-*.tgz
+      acl: public-read
   on_failure:
     put: slack-notification
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  on_success:
-    aggregate:
-    - put: s3-atom-cf-manifest-yaml-snapshot
-      params:
-        file: out/cf-manifest-yaml-*.tgz
-        acl: public-read
-- name: build-concourse-pipeline-yaml-atom-package
+- name: build-concourse-atom-package
   plan:
   - aggregate:
     - get: sts4
@@ -620,18 +640,16 @@ jobs:
       package_sources: atom-concourse
       fatjar: s3-concourse-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
+  - put: s3-concourse-atom-snapshot
+    params:
+      file: out/concourse-pipeline-yaml-*.tgz
+      acl: public-read
   on_failure:
     put: slack-notification
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  on_success:
-    aggregate:
-    - put: s3-atom-concourse-snapshot
-      params:
-        file: out/concourse-pipeline-yaml-*.tgz
-        acl: public-read
-- name: build-bosh-yaml-atom-package
+- name: build-bosh-atom-package
   plan:
   - aggregate:
     - get: sts4
@@ -643,19 +661,17 @@ jobs:
       trigger: true
       passed:
       - atom-language-servers-test
-  - task: build-bosh-yaml-atom-package
+  - task: build-bosh-atom-package
     input_mapping:
       package_sources: atom-bosh
       fatjar: s3-bosh-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
+  - put: s3-bosh-atom-snapshot
+    params:
+      file: out/bosh-yaml-*.tgz
+      acl: public-read  
   on_failure:
     put: slack-notification
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  on_success:
-    aggregate:
-    - put: s3-atom-bosh-snapshot
-      params:
-        file: out/bosh-yaml-*.tgz
-        acl: public-read
