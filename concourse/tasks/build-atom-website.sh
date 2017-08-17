@@ -11,7 +11,7 @@ dist_type=snapshot
 #cp s3-manifest-yaml-vsix/*.vsix "$target"
 #cp s3-boot-properties-vsix/*.vsix "$target"
 
-packages=$(ls s3-*)
+packages=$(ls -d s3-*)
 echo "package=${packages}"
 
 echo "<ul>" > $target/atom-packages-snippet.html
