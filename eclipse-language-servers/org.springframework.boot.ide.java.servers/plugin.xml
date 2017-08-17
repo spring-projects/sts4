@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.lsp4e.languageServer">
       <server
-            class="org.springframework.boot.ide.java.servers.SpringBootJavaLanguageServer"
+            class="org.springframework.boot.ide.java.servers.DelegatingStreamConnectionProvider"
             id="org.eclipse.languageserver.languages.springbootjava"
             label="Spring Boot Java Language Server">
       </server>
