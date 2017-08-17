@@ -13,4 +13,4 @@ image_resource:
   source:
     repository: kdvolder/sts4-build-env
 run:
-  path: "sts4/concourse/tasks/build-website.sh"
+  path: "sts4/concourse/tasks/build-vscode-website.sh"
