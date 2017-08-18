@@ -52,7 +52,7 @@
           "Concourse Task"
         ],
         "filenamePatterns": [
-          "*task*.yml",
+          "*task.yml",
           "**/tasks/*.yml"
         ],
         "firstLine": "^#(\\s)*task(\\s)*",
