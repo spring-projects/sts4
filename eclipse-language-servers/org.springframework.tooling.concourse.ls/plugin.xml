@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            id="org.springframework.tooling.concourse.pipeline"
+            name="Cloudfoundry Pipeline"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.tooling.concourse.pipeline"
+            file-names="pipeline.yml">
+      </file-association>
+   </extension>
+
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            id="org.springframework.tooling.concourse.task"
+            name="Cloudfoundry Pipeline"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.tooling.concourse.task"
+            file-names="task.yml">
+      </file-association>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.tooling.concourse.pipeline"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.tooling.concourse.task"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.tooling.concourse.pipeline">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.tooling.concourse.pipeline">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <grammar
+      		scopeName="source.yaml"
+            path="./syntaxes/YAML.tmLanguage" >
+      </grammar>
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.tooling.concourse.pipeline"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.tooling.concourse.task"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.lsp4e.languageServer">
+      <server
+            class="org.springframework.tooling.concourse.ls.ConcourseLanguageServer"
+            id="org.eclipse.languageserver.languages.concourse"
+            label="Concourse Language Server">
+      </server>
+      <contentTypeMapping
+            contentType="org.springframework.tooling.concourse.pipeline"
+            id="org.eclipse.languageserver.languages.concourse"
+            languageId="concourse-pipeline-yaml">
+      </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.tooling.concourse.task"
+            id="org.eclipse.languageserver.languages.concourse"
+            languageId="concourse-task-yaml">
+      </contentTypeMapping>
+   </extension>
+
+</plugin>
