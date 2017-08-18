@@ -395,6 +395,7 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: sts4
     - get: atom-cf-manifest-yaml
     - get: s3-manifest-yaml-fatjar-rc
       trigger: true
@@ -403,7 +404,7 @@ jobs:
   - task: build-manifest-yaml-atom-package
     input_mapping:
       package_sources: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar-snapshot
+      fatjar: s3-manifest-yaml-fatjar-rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-cf-manifest-yaml-out
     params:

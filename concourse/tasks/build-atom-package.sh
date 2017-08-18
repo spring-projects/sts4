@@ -44,6 +44,6 @@ git config user.name "Kris De Volder"
 git add .
 
 git commit \
-    -m "Use fatjar version to ${fatjarversion}"
+    -m "Use fatjar version ${fatjar_version}"
 
 git clone $atom_package $workdir/out/repo
