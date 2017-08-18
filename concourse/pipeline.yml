@@ -49,7 +49,19 @@ resources:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-concourse.git
+- name: atom-concourse-out
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com:spring-projects/atom-concourse.git
 - name: atom-bosh
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com:spring-projects/atom-bosh.git
+- name: atom-bosh-out
   type: git
   source:
     branch: {{branch}}
@@ -401,12 +413,50 @@ jobs:
       trigger: true
       passed:
       - promote-fatjars-to-rc
-  - task: build-manifest-yaml-atom-package
+  - task: build-atom-package
     input_mapping:
       package_sources: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-cf-manifest-yaml-out
+    params:
+      repository: out/repo
+      rebase: true
+- name: prepare-concourse-atom-rc
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: atom-concourse
+    - get: s3-concourse-fatjar-rc
+      trigger: true
+      passed:
+      - promote-fatjars-to-rc
+  - task: build-atom-package
+    input_mapping:
+      package_sources: atom-concourse
+      fatjar: s3-concourse-fatjar-rc
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - put: atom-concourse-out
+    params:
+      repository: out/repo
+      rebase: true
+- name: prepare-bosh-atom-rc
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: atom-bosh
+    - get: s3-bosh-fatjar-rc
+      trigger: true
+      passed:
+      - promote-fatjars-to-rc
+  - task: build-atom-package
+    input_mapping:
+      package_sources: atom-bosh
+      fatjar: s3-bosh-fatjar-rc
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - put: atom-bosh-out
     params:
       repository: out/repo
       rebase: true
