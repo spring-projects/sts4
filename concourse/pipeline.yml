@@ -105,6 +105,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
+- name: s3-manifest-yaml-fatjar-rc
+  type: s3
+  source:
+    bucket: {{s3_prod_bucket}}
+    access_key_id: {{s3_prod_accesskey}}
+    secret_access_key: {{s3_prod_secretkey}}
+    region_name: {{s3_prod_region}}
+    regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
 - name: s3-concourse-fatjar-snapshot
   type: s3
   source:
@@ -113,6 +121,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
+- name: s3-concourse-fatjar-rc
+  type: s3
+  source:
+    bucket: {{s3_prod_bucket}}
+    access_key_id: {{s3_prod_accesskey}}
+    secret_access_key: {{s3_prod_secretkey}}
+    region_name: {{s3_prod_region}}
+    regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
 - name: s3-bosh-fatjar-snapshot
   type: s3
   source:
@@ -121,6 +137,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
+- name: s3-bosh-fatjar-rc
+  type: s3
+  source:
+    bucket: {{s3_prod_bucket}}
+    access_key_id: {{s3_prod_accesskey}}
+    secret_access_key: {{s3_prod_secretkey}}
+    region_name: {{s3_prod_region}}
+    regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -335,6 +359,32 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
+- name: promote-fatjars-to-rc
+  serial: true
+  plan:
+  - aggregate:
+    - get: s3-bosh-fatjar-snapshot
+      passed:
+      - build-bosh-atom-package
+    - get: s3-concourse-fatjar-snapshot
+      passed:
+      - build-concourse-atom-package
+    - get: s3-manifest-yaml-fatjar-snapshot
+      passed:
+      - build-manifest-yaml-atom-package
+  - aggregate:
+    - put: s3-bosh-fatjar-rc
+      params:
+        file: s3-bosh-fatjar-snapshot/*.jar
+        acl: public-read
+    - put: s3-concourse-fatjar-rc
+      params:
+        file: s3-concourse-fatjar-snapshot/*.jar
+        acl: public-read
+    - put: s3-manifest-yaml-fatjar-rc
+      params:
+        file: s3-manifest-yaml-fatjar-snapshot/*.jar
+        acl: public-read
 - name: build-concourse-rc
   plan:
   - aggregate:
@@ -364,7 +414,6 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "@kdevolder"
         text_file: s3-concourse-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -399,7 +448,6 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "@kdevolder"
         text_file: s3-manifest-yaml-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
@@ -434,7 +482,6 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "@kdevolder"
         text_file: s3-bosh-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -475,7 +522,6 @@ jobs:
     on_failure:
       put: slack-notification
       params:
-        channel: "@kdvolder"
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
     on_success:
