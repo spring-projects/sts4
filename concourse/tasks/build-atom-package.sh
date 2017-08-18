@@ -11,7 +11,7 @@ fatjar_version=`cat fatjar/version`
 package_version=${fatjar_version%-*}
 
 cd $atom_commons
-npm version $package_version
+npm --no-git-tag-version version $package_version
 npm install
 
 cd $atom_package
