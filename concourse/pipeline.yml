@@ -25,7 +25,19 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: {{branch}}
     private_key: {{rsa_id}}
+- name: sts4-out
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: {{branch}}
+    private_key: {{rsa_id}}
 - name: atom-cf-manifest-yaml
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
+- name: atom-cf-manifest-yaml-out
   type: git
   source:
     branch: {{branch}}
@@ -50,12 +62,6 @@ resources:
     branch: {{branch}}
     paths:
     - concourse/tasks
-    private_key: {{rsa_id}}
-- name: sts4-out
-  type: git
-  source:
-    uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
     private_key: {{rsa_id}}
 - name: s3-boot-properties-vsix-snapshot
   type: s3
@@ -385,6 +391,24 @@ jobs:
       params:
         file: s3-manifest-yaml-fatjar-snapshot/*.jar
         acl: public-read
+- name: prepare-manifest-yaml-atom-rc
+  serial: true
+  plan:
+  - aggregate:
+    - get: atom-cf-manifest-yaml
+    - get: s3-manifest-yaml-fatjar-rc
+      trigger: true
+      passed:
+      - promote-fatjars-to-rc
+  - task: build-manifest-yaml-atom-package
+    input_mapping:
+      package_sources: atom-cf-manifest-yaml
+      fatjar: s3-manifest-yaml-fatjar-snapshot
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - put: atom-cf-manifest-yaml-out
+    params:
+      repository: out/repo
+      rebase: true
 - name: build-concourse-rc
   plan:
   - aggregate:

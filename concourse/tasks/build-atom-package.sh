@@ -7,6 +7,7 @@ atom_commons=$workdir/sts4/atom-extensions/atom-commons
 atom_package=$workdir/package_sources
 
 url=`cat fatjar/url`
+fatjar_version=`cat fatjar/version`
 
 cd $atom_commons
 npm install
@@ -36,3 +37,13 @@ length=${#basename}
 newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
 cp ${basename} $output/${newName}
+
+git config user.email "kdevolder@pivotal.io"
+git config user.name "Kris De Volder"
+
+git add .
+
+git commit \
+    -m "Use fatjar version to ${fatjarversion}"
+
+git clone $atom_package $workdir/out/repo
