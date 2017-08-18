@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<category-def name="Spring Boot IDE Language Server Integrations for Eclipse" label="Spring Boot IDE Language Server Integrations for Eclipse"/>
+
+	<feature id="org.springframework.tooling.properties.ls.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.boot.java.ls.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature">
+		<category name="Spring Tooling Language Servers for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.bosh.ls.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.concourse.ls.feature">
+		<category name="Spring Boot IDE Language Servers for Eclipse"/>
+	</feature>
+
+	<category-def name="deps" label="Dependencies"/>
+
+	<feature id="tm-feature">
+		<category name="deps"/>
+	</feature>
+
+	<bundle id="org.eclipse.lsp4e">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j.jsonrpc">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.eclipse.xtext.xbase.lib">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="com.google.gson">
+		<category name="deps"/>
+	</bundle>
+
+</site>

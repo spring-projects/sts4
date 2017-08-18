@@ -27,17 +27,27 @@
 	</licenses>
 
 	<modules>
-		<module>org.springframework.boot.ide.properties.servers</module>
-		<module>org.springframework.boot.ide.properties.servers.feature</module>
-		<module>org.springframework.boot.ide.java.servers</module>
-		<module>org.springframework.boot.ide.java.servers.feature</module>
-		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration</module>
-		<module>org.springframework.boot.ide.cloudfoundry.manifest.integration.feature</module>
-		<module>org.springframework.boot.ide.ls.integration.repository</module>
-
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>
 		<module>org.springframework.tooling.ls.repository</module>
+
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature</module>
+
+		<module>org.springframework.tooling.properties.ls</module>
+		<module>org.springframework.tooling.properties.ls.feature</module>
+
+		<module>org.springframework.tooling.boot.java.ls</module>
+		<module>org.springframework.tooling.boot.java.ls.feature</module>
+
+		<module>org.springframework.tooling.bosh.ls</module>
+		<module>org.springframework.tooling.bosh.ls.feature</module>
+
+		<module>org.springframework.tooling.concourse.ls</module>
+		<module>org.springframework.tooling.concourse.ls.feature</module>
+
+		<module>org.springframework.tooling.ls.integration.repository</module>
+
 	</modules>
 
 	<properties>

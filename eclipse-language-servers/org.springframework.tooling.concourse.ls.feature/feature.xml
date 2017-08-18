@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+	id="org.springframework.tooling.concourse.ls.feature"
+	label="Spring Boot IDE Property Editing Language Server Feature"
+	version="4.0.0.qualifier"
+	provider-name="Pivotal, Inc.">
+
+	<requires>
+		<import plugin="org.eclipse.ui.genericeditor"/>
+		<import plugin="org.eclipse.lsp4e"/>
+	</requires>
+
+	<plugin
+		id="org.springframework.tooling.concourse.ls"
+		download-size="0"
+		install-size="0"
+		version="0.0.0"
+		unpack="false">
+	</plugin>
+
+</feature>
