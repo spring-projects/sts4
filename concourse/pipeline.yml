@@ -609,6 +609,7 @@ jobs:
           Releases now available on Vscode Marketplace:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest YML Support>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
   - aggregate:
     - put: sts4-out
       params:
