@@ -3,7 +3,7 @@
   "displayName": "Bosh Editor",
   "description": "Provides validation and content assist for various Bosh configuration files",
   "icon": "icon.png",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -61,25 +61,31 @@
       }
     ],
     "configuration": {
-        "type": "object",
-        "title": "Bosh CLI Configuration",
-        "properties": {
-            "bosh.cli.command": {
-                "type": ["string" , "null"],
-                "default": "bosh",
-                "description": "Path to an executable to launch the bosh cli V2. A V2 cli is required! Set this to null to completely disable all editor features that require access to the bosh director"
-            },
-            "bosh.cli.target": {
-                "type": ["string", "null"],
-                "default": null,
-                "description": "Specifies the director/environment to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
-            },
-            "bosh.cli.timeout": {
-                "type": "integer",
-                "default": 3,
-                "description": "Number of seconds before CLI commands are terminated with a timeout"
-            }
+      "type": "object",
+      "title": "Bosh CLI Configuration",
+      "properties": {
+        "bosh.cli.command": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": "bosh",
+          "description": "Path to an executable to launch the bosh cli V2. A V2 cli is required! Set this to null to completely disable all editor features that require access to the bosh director"
+        },
+        "bosh.cli.target": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the director/environment to target when executing bosh cli commands. I.e. this value is passed to the CLI via `-e` parameter."
+        },
+        "bosh.cli.timeout": {
+          "type": "integer",
+          "default": 3,
+          "description": "Number of seconds before CLI commands are terminated with a timeout"
         }
+      }
     }
   },
   "main": "./out/lib/Main",
