@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Java Support",
   "description": "Provides validation, content assist, and more working with Spring Boot applications Java code",
   "icon": "spring-boot-logo.png",
-  "version": "0.0.6",
+  "version": "0.0.10",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
     "Linters"
   ],
   "keywords": [
-    "java", "spring-boot"
+    "java",
+    "spring-boot"
   ],
   "activationEvents": [
     "onLanguage:java"
