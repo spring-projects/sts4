@@ -43,9 +43,12 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		List<String> commands = new ArrayList<>();
 		commands.add(getJDKLocation());
 		
-		commands.add("-Xdebug");
-		commands.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
+//		commands.add("-Xdebug");
+//		commands.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
 		
+		commands.add("-Dlsp.lazy.completions.disable=true");
+		commands.add("-Dlsp.completions.indentation.enable=true");
+
 		commands.add("-jar");
 		commands.add(getLanguageServerJARLocation());
 

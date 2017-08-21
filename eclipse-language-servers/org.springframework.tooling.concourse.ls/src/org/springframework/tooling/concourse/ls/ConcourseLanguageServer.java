@@ -42,6 +42,13 @@ public class ConcourseLanguageServer extends ProcessStreamConnectionProvider {
 	public ConcourseLanguageServer() {
 		List<String> commands = new ArrayList<>();
 		commands.add(getJDKLocation());
+
+//		commands.add("-Xdebug");
+//		commands.add("-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n");
+
+		commands.add("-Dlsp.lazy.completions.disable=true");
+		commands.add("-Dlsp.completions.indentation.enable=true");
+
 		commands.add("-jar");
 		commands.add(getLanguageServerJARLocation());
 
