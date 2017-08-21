@@ -3,6 +3,10 @@
 This extension provides basic validation, content assist and hover infos
 for editing Cloud Foundry [Manifest](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html) Files.
 
+You can also define your own patterns and map them to the language-id `manifest-yaml`
+by defining `files.associations` in workspace settings or user settings. 
+See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
+
 ## Usage
 
 The CF manifest editor automatically activates when the name of the `.yml` file you are editing, 
