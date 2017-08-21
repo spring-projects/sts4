@@ -27,7 +27,8 @@ export class JarLanguageClient extends AutoLanguageClient {
         let childProcess;
 
         return new Promise((resolve, reject) => {
-            PortFinder.getPort((err, port) => {
+            let basePort = Math.floor(Math.random() * 10000) + 40000;
+            PortFinder.getPort({port: basePort}, (err, port) => {
                 this.server = net.createServer(socket => {
                     this.socket = socket;
                     resolve(childProcess);
