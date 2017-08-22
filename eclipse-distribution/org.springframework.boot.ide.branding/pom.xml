@@ -38,10 +38,10 @@
 
 										<property name="qualifier" value="${unqualifiedVersion}.${shortQualifier}" />
 
-										<replace file="${buildDirectory}/plugins/org.springsource.sts/about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
-										<replace file="${buildDirectory}/plugins/org.springsource.sts/about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
-										<replace file="${buildDirectory}/plugins/org.springsource.sts/plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
-										<replace file="${buildDirectory}/plugins/org.springsource.sts/plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+										<replace file="${buildDirectory}/org.springframework.boot.ide.branding/about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+										<replace file="${buildDirectory}/org.springframework.boot.ide.branding/about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+										<replace file="${buildDirectory}/org.springframework.boot.ide.branding/plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+										<replace file="${buildDirectory}/org.springframework.boot.ide.branding/plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
 									</then>
 								</if>
 							</target>
