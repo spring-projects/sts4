@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
 	id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature"
-	label="Spring Boot IDE Cloud Foundry Manifest Language Server Integration"
+	label="Cloud Foundry Manifest Language Server Generic Editor Integration Feature"
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
