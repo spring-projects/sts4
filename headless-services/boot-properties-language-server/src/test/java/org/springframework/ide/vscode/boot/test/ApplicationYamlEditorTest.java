@@ -3624,6 +3624,31 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test
+	public void testIgnoreTypeErrorsForValuesContainingMavenResourcesPlaceholders_workaround() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/150005676
+		defaultTestData();
+		Editor editor = newEditor(
+				"server:\n" + 
+				"  port: \"@application-port@\"\n" +
+				"bogus: bad" //token error to ensure reconciler is really working
+		);
+		editor.assertProblems("bogus|Unknown property");
+	}
+
+	@Test @Ignore
+	public void IGNORED_testIgnoreTypeErrorsForValuesContainingMavenResourcesPlaceholders_direct() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/150005676
+		//Not implemented, this test fails. The choice not to implement this was deliberate!
+		defaultTestData();
+		Editor editor = newEditor(
+				"server:\n" + 
+				"  port: @application-port@\n" +
+				"bogus: bad" //token error to ensure reconciler is really working
+		);
+		editor.assertProblems("bogus|Unknown property");
+	}
+
 	///////////////// cruft ////////////////////////////////////////////////////////
 
 	private void generateNestedProperties(int levels, String[] names, String prefix) {

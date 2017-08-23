@@ -48,5 +48,4 @@ public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 	protected ReconcileProblem syntaxError(String msg, int offset, int len) {
 		return ApplicationYamlProblems.problem(YAML_SYNTAX_ERROR, msg, offset, len);
 	}
-
 }

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -265,8 +266,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 
 	private void reconcile(ScalarNode scalar, Type type) {
 		String stringValue = scalar.getValue();
-		if (!stringValue.contains("${")) { //don't check anything with ${} expressions in it as we
-											// don't know its actual value
+		if (!hasPlaceHolder(stringValue)) { //don't check anything with placeholder expressions in it
 			ValueParser valueParser = typeUtil.getValueParser(type);
 			if (valueParser!=null) {
 				// Tag tag = scalar.getTag(); //use the tag? Actually, boot tolerates String values
@@ -280,6 +280,12 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 				}
 			}
 		}
+	}
+
+	private static final Pattern PLACE_HOLDER = Pattern.compile("(\\$\\{\\S+\\})|(\\@\\S+\\@)");
+
+	private boolean hasPlaceHolder(String str) {
+		return PLACE_HOLDER.matcher(str).find();
 	}
 
 	private void expectTypeFoundMapping(Type type, MappingNode node) {

@@ -152,7 +152,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
 			TrackedDocument td = createDocument(url, languageId, version, text).open();
-			Log.info("Opened "+td.getOpenCount()+" times: "+url);
+//			Log.info("Opened "+td.getOpenCount()+" times: "+url);
 			TextDocument doc = td.getDocument();
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
