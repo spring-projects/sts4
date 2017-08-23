@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.hover;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -29,7 +26,7 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -69,32 +66,37 @@ public class ValueHoverProvider {
 			if (range != null) {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 
-				JSONObject properties = getPropertiesFromProcess();
-				if (propertyKey != null && properties != null) {
-					Iterator<?> keys = properties.keys();
-					while (keys.hasNext()) {
-						String key = (String) keys.next();
-						JSONObject props = properties.getJSONObject(key);
+				if (propertyKey != null) {
+					JSONObject[] allProperties = getPropertiesFromProcesses();
 
-						if (props.has(propertyKey)) {
-							String propertyValue = props.getString(propertyKey);
+					List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
-							Range hoverRange = doc.toRange(nodeStartOffset + range.getStart(), range.getEnd() - range.getStart());
+					for (int i = 0; i < allProperties.length; i++) {
+						Iterator<?> keys = allProperties[i].keys();
+						while (keys.hasNext()) {
+							String key = (String) keys.next();
+							if (allProperties[i].get(key) instanceof JSONObject) {
+								JSONObject props = allProperties[i].getJSONObject(key);
 
-							Hover hover = new Hover();
-							List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
+								if (props.has(propertyKey)) {
+									String propertyValue = props.getString(propertyKey);
 
-							hoverContent.add(Either.forLeft("property value for " + propertyKey));
-							hoverContent.add(Either.forLeft(propertyValue));
-							hoverContent.add(Either.forLeft("coming from:"));
-							hoverContent.add(Either.forLeft(key));
-
-							hover.setContents(hoverContent);
-							hover.setRange(hoverRange);
-
-							return CompletableFuture.completedFuture(hover);
+									hoverContent.add(Either.forLeft("property value for " + propertyKey));
+									hoverContent.add(Either.forLeft(propertyValue));
+									hoverContent.add(Either.forLeft("coming from:"));
+									hoverContent.add(Either.forLeft(key));
+								}
+							}
 						}
 					}
+
+					Range hoverRange = doc.toRange(nodeStartOffset + range.getStart(), range.getEnd() - range.getStart());
+					Hover hover = new Hover();
+
+					hover.setContents(hoverContent);
+					hover.setRange(hoverRange);
+
+					return CompletableFuture.completedFuture(hover);
 				}
 			}
 		}
@@ -105,26 +107,30 @@ public class ValueHoverProvider {
 		return null;
 	}
 
-	public JSONObject getPropertiesFromProcess() {
+	public JSONObject[] getPropertiesFromProcesses() {
+		List<JSONObject> result = new ArrayList<>();
+
 		try {
-			URL url = new URL("http://localhost:8080/env");
-
-			URLConnection con = url.openConnection();
-			InputStream in = con.getInputStream();
-			String encoding = con.getContentEncoding();
-			encoding = encoding == null ? "UTF-8" : encoding;
-			String body = IOUtils.toString(in, encoding);
-
-			JSONTokener tokener = new JSONTokener(body);
-			JSONObject jsonData = new JSONObject(tokener);
-
-			return jsonData;
+			Map<String, SpringBootApp> apps = SpringBootApp.getAllRunningJavaApps();
+			Iterator<SpringBootApp> appsIter = apps.values().iterator();
+			while (appsIter.hasNext()) {
+				SpringBootApp app = appsIter.next();
+				if (app.isSpringBootApp()) {
+					String environment = app.getEnvironment();
+					if (environment != null) {
+						JSONObject env = new JSONObject(environment);
+						if (env != null) {
+							result.add(env);
+						}
+					}
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return null;
+		return result.toArray(new JSONObject[result.size()]);
 	}
 
 	public String getPropertyKey(String value, int offset) {

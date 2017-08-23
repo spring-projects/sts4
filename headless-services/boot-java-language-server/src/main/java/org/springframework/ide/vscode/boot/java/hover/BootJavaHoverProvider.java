@@ -41,6 +41,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private static final String SPRING_VALUE = "org.springframework.beans.factory.annotation.Value";
 
+	private static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
+	private static final String SPRING_GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";
+	private static final String SPRING_POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping";
+	private static final String SPRING_PUT_MAPPING = "org.springframework.web.bind.annotation.PutMapping";
+	private static final String SPRING_DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
+	private static final String SPRING_PATCH_MAPPING = "org.springframework.web.bind.annotation.PatchMapping";
+
 	private JavaProjectFinder projectFinder;
 	private SimpleLanguageServer server;
 
@@ -123,6 +130,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private CompletableFuture<Hover> provideHoverForSpringAnnotation(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc) {
 		if (type.getQualifiedName().equals(SPRING_VALUE)) {
 			return new ValueHoverProvider().provideHoverForValueAnnotation(node, annotation, type, offset, doc);
+		} else if (type.getQualifiedName().equals(SPRING_REQUEST_MAPPING)
+				|| type.getQualifiedName().equals(SPRING_GET_MAPPING)
+				|| type.getQualifiedName().equals(SPRING_POST_MAPPING)
+				|| type.getQualifiedName().equals(SPRING_PUT_MAPPING)
+				|| type.getQualifiedName().equals(SPRING_DELETE_MAPPING)
+				|| type.getQualifiedName().equals(SPRING_PATCH_MAPPING)) {
+			return new RequestMappingHoverProvider().provideHoverForRequestMappingAnnotation(node, annotation, type, offset, doc);
 		}
 
 		return null;

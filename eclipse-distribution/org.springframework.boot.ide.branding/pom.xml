@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.boot.ide</groupId>
@@ -11,13 +11,48 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-  <artifactId>org.springframework.boot.ide.branding</artifactId>
-  <packaging>eclipse-plugin</packaging>
+	<artifactId>org.springframework.boot.ide.branding</artifactId>
+	<packaging>eclipse-plugin</packaging>
 
-  <name>org.springframework.boot.ide.branding</name>
+	<name>org.springframework.boot.ide.branding</name>
 
-  <build>
+	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>add-version-details-about-dialog</id>
+						<phase>validate</phase>
+						<configuration>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+								<if>
+									<equals arg1="${p2.replaceQualifier}" arg2="true" />
+									<then>
+										<propertyregex property="shortQualifier" input="${buildQualifier}" regexp="[0-9a-z.A-Z]*\-(.*)" select="\1" casesensitive="false" />
+										<propertyregex property="build.id" input="${buildQualifier}" regexp="([0-9a-z.A-Z]*)\-.*" select="\1" casesensitive="false" />
+
+										<property name="qualifier" value="${unqualifiedVersion}.${shortQualifier}" />
+
+										<replace file="about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+										<replace file="about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+										<replace file="plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+										<replace file="plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+									</then>
+								</if>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-plugin</artifactId>
@@ -33,5 +68,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-  </build>
+	</build>
 </project>
