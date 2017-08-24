@@ -6,5 +6,5 @@
     { "x": 448, "y": 100, "type": "link", "path": "/Applications" },
     { "x": 1000, "y": 2000, "type": "file", "path": "../org.springframework.boot.ide.branding/sts.icns", "name": ".VolumeIcon.icns" }
   ],
-  "format": "UDBZ"
+  "format": "UDZO"
 }
