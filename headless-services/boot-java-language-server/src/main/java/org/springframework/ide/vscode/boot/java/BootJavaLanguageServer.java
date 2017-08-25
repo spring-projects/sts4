@@ -15,6 +15,7 @@ import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEng
 import org.springframework.ide.vscode.boot.java.hover.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.references.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.symbols.BootJavaDocumentSymbolHandler;
+import org.springframework.ide.vscode.boot.java.symbols.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
@@ -28,6 +29,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
@@ -50,6 +52,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		super("vscode-boot-java");
+		SimpleWorkspaceService workspaceService = getWorkspaceService();
 		SimpleTextDocumentService documents = getTextDocumentService();
 
 		IReconcileEngine reconcileEngine = new BootJavaReconcileEngine();
@@ -70,6 +73,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		ReferencesHandler referencesHandler = new BootJavaReferencesHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, javaProjectFinder));
+
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(this, javaProjectFinder));
 	}
 
 	public void setMaxCompletionsNumber(int number) {
