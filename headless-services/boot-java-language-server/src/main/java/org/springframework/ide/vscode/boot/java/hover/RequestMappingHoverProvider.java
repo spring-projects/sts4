@@ -74,7 +74,7 @@ public class RequestMappingHoverProvider {
 		while (keys.hasNext()) {
 			String key = keys.next();
 			if (doesMatch(annotation, key)) {
-				hoverContent.add(Either.forLeft(key));
+				hoverContent.add(Either.forLeft(key + " - [url of the mapping](http://localhost:8080/path)"));
 				hoverContent.add(Either.forLeft(jsonObject.get(key).toString()));
 			}
 		}

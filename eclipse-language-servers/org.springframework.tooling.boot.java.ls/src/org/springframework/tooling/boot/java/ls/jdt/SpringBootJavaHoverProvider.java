@@ -11,7 +11,9 @@
 package org.springframework.tooling.boot.java.ls.jdt;
 
 import org.eclipse.jdt.ui.text.java.hover.IJavaEditorTextHover;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHoverExtension;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.lsp4e.operations.hover.LSBasedHover;
 import org.eclipse.ui.IEditorPart;
@@ -20,7 +22,7 @@ import org.eclipse.ui.IEditorPart;
  * @author Martin Lippert
  */
 @SuppressWarnings("restriction")
-public class SpringBootJavaHoverProvider implements IJavaEditorTextHover {
+public class SpringBootJavaHoverProvider implements IJavaEditorTextHover, ITextHoverExtension {
 	
 	private LSBasedHover lsBasedHover;
 
@@ -40,6 +42,11 @@ public class SpringBootJavaHoverProvider implements IJavaEditorTextHover {
 
 	@Override
 	public void setEditor(IEditorPart editor) {
+	}
+
+	@Override
+	public IInformationControlCreator getHoverControlCreator() {
+		return this.lsBasedHover.getHoverControlCreator();
 	}
 
 }
