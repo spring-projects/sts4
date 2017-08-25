@@ -248,6 +248,9 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 					CODE_ACTION_COMMAND_ID
 			)));
 		}
+		if (hasWorkspaceSymbolHandler()) {
+			c.setWorkspaceSymbolProvider(true);
+		}
 
 		return c;
 	}
@@ -270,6 +273,10 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private boolean hasQuickFixes() {
 		return quickfixRegistry!=null && quickfixRegistry.hasFixes();
+	}
+
+	private boolean hasWorkspaceSymbolHandler() {
+		return getWorkspaceService().hasWorkspaceSymbolHandler();
 	}
 
 	@Override
@@ -299,7 +306,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	}
 
 	public SimpleWorkspaceService createWorkspaceService() {
-		return new SimpleWorkspaceService();
+		return new SimpleWorkspaceService(this);
 	}
 
 	@Override
