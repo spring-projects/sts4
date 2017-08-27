@@ -19,10 +19,12 @@ import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 /**
@@ -38,7 +40,23 @@ public class BootPropertiesLanguageServerTest {
 	}
 
 	private LanguageServerHarness newHarness() throws Exception {
-		Callable<? extends SimpleLanguageServer> f = () -> new BootPropertiesLanguageServer((d) -> null, (d) -> null, (d) -> null);
+		JavaProjectFinder nullJavaProjectFinder = new JavaProjectFinder() {
+			@Override
+			public boolean isProjectRoot(File file) {
+				return false;
+			}
+			@Override
+			public IJavaProject find(File file) {
+				return null;
+			}
+			@Override
+			public IJavaProject find(IDocument doc) {
+				return null;
+			}
+		};
+		
+		
+		Callable<? extends SimpleLanguageServer> f = () -> new BootPropertiesLanguageServer((d) -> null, (d) -> null, nullJavaProjectFinder);
 		return new LanguageServerHarness(f);
 	}
 
