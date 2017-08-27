@@ -11,14 +11,10 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.util.FileUtils;
-import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -40,23 +36,19 @@ public class GradleProjectFinderStrategy implements IJavaProjectFinderStrategy {
 	}
 
 	@Override
-	public GradleJavaProject find(IDocument d) throws ExecutionException, URISyntaxException {
-		String uriStr = d.getUri();
-		if (StringUtil.hasText(uriStr)) {
-			URI uri = new URI(uriStr);
-			// TODO: This only work with File uri. Should it work with others
-			// too?
-			if (uri.getScheme().equalsIgnoreCase("file")) {
-				File file = new File(uri).getAbsoluteFile();
-				File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
-				if (gradlebuild != null) {
-					return cache.get(gradlebuild.getParentFile(), () -> {
-						return new GradleJavaProject(gradle, gradlebuild.getParentFile());
-					});
-				}
-			}
+	public GradleJavaProject find(File file) throws ExecutionException {
+		File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
+		if (gradlebuild != null) {
+			return cache.get(gradlebuild.getParentFile(), () -> {
+				return new GradleJavaProject(gradle, gradlebuild.getParentFile());
+			});
 		}
 		return null;
+	}
+
+	@Override
+	public boolean isProjectRoot(File file) {
+		return FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE, false) != null;
 	}
 
 }

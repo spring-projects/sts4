@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,18 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
+import java.io.File;
+
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Strategy foe finding Java project for a document
  *
  * @author Alex Boyko
- *
  */
-@FunctionalInterface
 public interface IJavaProjectFinderStrategy {
 
-	IJavaProject find(IDocument document) throws Exception;
+	IJavaProject find(File file) throws Exception;
+	boolean isProjectRoot(File file);
 
 }

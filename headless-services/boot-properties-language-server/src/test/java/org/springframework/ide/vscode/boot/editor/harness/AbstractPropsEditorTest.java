@@ -14,6 +14,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,8 +43,22 @@ public abstract class AbstractPropsEditorTest {
 	public static final String STRING = String.class.getName();
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
+
 	protected PropertyIndexHarness md;
-	protected final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
+	protected final JavaProjectFinder javaProjectFinder = new JavaProjectFinder() {
+		@Override
+		public boolean isProjectRoot(File file) {
+			return false;
+		}
+		@Override
+		public IJavaProject find(File file) {
+			return null;
+		}
+		@Override
+		public IJavaProject find(IDocument doc) {
+			return getTestProject();
+		}
+	};
 			
 	private LanguageServerHarness harness;
 	private IJavaProject testProject;

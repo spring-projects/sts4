@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.completions.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -35,7 +37,20 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ScopeCompletionTest {
 
-	private final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
+	protected final JavaProjectFinder javaProjectFinder = new JavaProjectFinder() {
+		@Override
+		public boolean isProjectRoot(File file) {
+			return false;
+		}
+		@Override
+		public IJavaProject find(File file) {
+			return null;
+		}
+		@Override
+		public IJavaProject find(IDocument doc) {
+			return getTestProject();
+		}
+	};
 
 	private LanguageServerHarness harness;
 	private PropertyIndexHarness indexHarness;

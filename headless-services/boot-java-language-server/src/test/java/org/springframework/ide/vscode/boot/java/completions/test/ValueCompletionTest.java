@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.completions.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -25,6 +26,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.completions.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -35,8 +37,21 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  * @author Martin Lippert
  */
 public class ValueCompletionTest {
-	
-	private final JavaProjectFinder javaProjectFinder = (doc) -> getTestProject();
+
+	protected final JavaProjectFinder javaProjectFinder = new JavaProjectFinder() {
+		@Override
+		public boolean isProjectRoot(File file) {
+			return false;
+		}
+		@Override
+		public IJavaProject find(File file) {
+			return null;
+		}
+		@Override
+		public IJavaProject find(IDocument doc) {
+			return getTestProject();
+		}
+	};
 
 	private LanguageServerHarness harness;
 	private IJavaProject testProject;
@@ -49,7 +64,7 @@ public class ValueCompletionTest {
 	public void setup() throws Exception {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
-		
+
 		harness = new LanguageServerHarness(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
@@ -64,15 +79,15 @@ public class ValueCompletionTest {
 		};
 		harness.intialize(null);
 	}
-	
+
 	private IJavaProject getTestProject() {
 		return testProject;
 	}
-	
+
 	@Test
 	public void testPrefixIdentification() {
 		ValueCompletionProcessor processor = new ValueCompletionProcessor(null);
-		
+
 		assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
 		assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
 		assertEquals("", processor.identifyPropertyPrefix("", 0));
@@ -195,20 +210,20 @@ public class ValueCompletionTest {
 	public void testPlainPrefixCompletion() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(spri<*>)");
 		prepareDefaultIndexData();
-		
+
 		assertAnnotationCompletions(
 				"@Value(\"${spring.prop1}\"<*>)");
 	}
-	
+
 	@Test
 	public void testQoutedPrefixCompletion() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
 		prepareDefaultIndexData();
-		
+
 		assertAnnotationCompletions(
 				"@Value(\"${spring.prop1}<*>\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionNoCompletion() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{<*>}\")");
@@ -219,7 +234,7 @@ public class ValueCompletionTest {
 				"@Value(\"#{${else.prop3}<*>}\")",
 				"@Value(\"#{${spring.prop1}<*>}\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionWithPropertyDollar() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{345$<*>}\")");
@@ -230,7 +245,7 @@ public class ValueCompletionTest {
 				"@Value(\"#{345${else.prop3}<*>}\")",
 				"@Value(\"#{345${spring.prop1}<*>}\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionWithPropertyDollerWithoutClosindBracket() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}\")");
@@ -241,7 +256,7 @@ public class ValueCompletionTest {
 				"@Value(\"#{345${else.prop3}<*>}\")",
 				"@Value(\"#{345${spring.prop1}<*>}\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionWithPropertyDollerWithClosingBracket() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}}\")");
@@ -252,7 +267,7 @@ public class ValueCompletionTest {
 				"@Value(\"#{345${else.prop3<*>}}\")",
 				"@Value(\"#{345${spring.prop1<*>}}\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionWithPropertyPrefixWithoutClosingBracket() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}\")");
@@ -261,7 +276,7 @@ public class ValueCompletionTest {
 		assertAnnotationCompletions(
 				"@Value(\"#{345${spring.prop1}<*>}\")");
 	}
-	
+
 	@Test
 	public void testRandomSpelExpressionWithPropertyPrefixWithClosingBracket() throws Exception {
 		prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}}\")");
@@ -270,21 +285,21 @@ public class ValueCompletionTest {
 		assertAnnotationCompletions(
 				"@Value(\"#{345${spring.prop1<*>}}\")");
 	}
-	
+
 	private void prepareDefaultIndexData() {
 		indexHarness.data("spring.prop1", "java.lang.String", null, null);
 		indexHarness.data("data.prop2", "java.lang.String", null, null);
 		indexHarness.data("else.prop3", "java.lang.String", null, null);
 	}
-	
+
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestValueCompletion.java");
 		String content = IOUtils.toString(resource);
-		
+
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
-	
+
 	private void assertAnnotationCompletions(String... completedAnnotations) throws Exception {
 		List<CompletionItem> completions = editor.getCompletions();
 		int i = 0;
@@ -293,7 +308,7 @@ public class ValueCompletionTest {
 			clonedEditor.apply(completions.get(i++));
 			assertTrue(clonedEditor.getText().contains(expectedCompleted));
 		}
-		
+
 		assertEquals(i, completions.size());
 	}
 

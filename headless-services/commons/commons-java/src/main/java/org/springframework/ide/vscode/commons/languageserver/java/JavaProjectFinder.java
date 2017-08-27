@@ -8,13 +8,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver.java;
+
+import java.io.File;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
-@FunctionalInterface
 public interface JavaProjectFinder {
+
 	IJavaProject find(IDocument doc);
+	IJavaProject find(File file);
+	boolean isProjectRoot(File file);
+
 }
