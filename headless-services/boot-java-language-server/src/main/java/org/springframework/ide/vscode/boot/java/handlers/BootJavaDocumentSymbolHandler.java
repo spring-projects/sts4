@@ -8,10 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.symbols;
+package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -22,18 +23,16 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -50,10 +49,14 @@ public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 
 	private SimpleLanguageServer server;
 	private JavaProjectFinder projectFinder;
+	private Map<String, SymbolProvider> symbolProviders;
 
 	public BootJavaDocumentSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		this.server = server;
 		this.projectFinder = projectFinder;
+
+		this.symbolProviders = new HashMap<>();
+		RequestMappingSymbolProvider.register(this.symbolProviders);
 	}
 
 	@Override
@@ -102,57 +105,22 @@ public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 	private List<? extends SymbolInformation> provideDocumentSymbolsForAnnotations(ASTNode node, TextDocument doc) {
 		List<SymbolInformation> result = new ArrayList<>();
 		ASTVisitor visitor = new ASTVisitor() {
-			@Override
-			public boolean visit(AnnotationTypeDeclaration node) {
-				// TODO Auto-generated method stub
-				return super.visit(node);
-			}
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				ITypeBinding type = node.resolveTypeBinding();
-				if (type != null) {
-					String qualifiedName = type.getQualifiedName();
-					if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-						provideDocumentSymbolsForSpringAnnotations(node, type, doc, result);
-					}
-				}
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(AnnotationTypeMemberDeclaration node) {
-				// TODO Auto-generated method stub
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MemberValuePair node) {
-				// TODO Auto-generated method stub
+				extractSymbol(node, doc, result);
 				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				ITypeBinding type = node.resolveTypeBinding();
-				if (type != null) {
-					String qualifiedName = type.getQualifiedName();
-					if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-						provideDocumentSymbolsForSpringAnnotations(node, type, doc, result);
-					}
-				}
+				extractSymbol(node, doc, result);
 				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(MarkerAnnotation node) {
-				ITypeBinding type = node.resolveTypeBinding();
-				if (type != null) {
-					String qualifiedName = type.getQualifiedName();
-					if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-						provideDocumentSymbolsForSpringAnnotations(node, type, doc, result);
-					}
-				}
+				extractSymbol(node, doc, result);
 				return super.visit(node);
 			}
 		};
@@ -161,11 +129,37 @@ public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 		return result;
 	}
 
-	private void provideDocumentSymbolsForSpringAnnotations(Annotation node, ITypeBinding type,
-			TextDocument doc, List<SymbolInformation> resultAccumulator) {
+	private void extractSymbol(Annotation node, TextDocument doc, List<SymbolInformation> result) {
+		System.out.println("annotation found: " + node.toString());
+		ITypeBinding typeBinding = node.resolveTypeBinding();
+
+		if (typeBinding != null) {
+			String qualifiedTypeName = typeBinding.getQualifiedName();
+
+			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
+			if (provider != null) {
+				SymbolInformation symbol = provider.getSymbol(node, doc);
+				if (symbol != null) {
+					result.add(symbol);
+				}
+			}
+			else {
+				provideDefaultSymbol(node, doc, result);
+			}
+		}
+	}
+
+	private void provideDefaultSymbol(Annotation node, TextDocument doc, List<SymbolInformation> result) {
 		try {
-			resultAccumulator.add(new SymbolInformation(node.toString(), SymbolKind.Interface, new Location(doc.getUri(),
-					doc.toRange(node.getStartPosition(), node.getLength()))));
+			ITypeBinding type = node.resolveTypeBinding();
+			if (type != null) {
+				String qualifiedName = type.getQualifiedName();
+				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
+					SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
+							new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+					result.add(symbol);
+				}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();

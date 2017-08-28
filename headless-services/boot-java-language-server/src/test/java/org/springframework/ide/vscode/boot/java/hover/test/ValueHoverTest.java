@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.hover.ValueHoverProvider;
+import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 
 /**
  * @author Martin Lippert

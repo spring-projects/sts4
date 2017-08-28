@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.hover;
+package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,15 +29,28 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class RequestMappingHoverProvider {
+public class RequestMappingHoverProvider implements HoverProvider {
 
-	public CompletableFuture<Hover> provideHoverForRequestMappingAnnotation(ASTNode node, Annotation annotation,
+	public static void register(Map<String, HoverProvider> hoverProviders) {
+		RequestMappingHoverProvider provider = new RequestMappingHoverProvider();
+
+		hoverProviders.put(Constants.SPRING_REQUEST_MAPPING, provider);
+		hoverProviders.put(Constants.SPRING_GET_MAPPING, provider);
+		hoverProviders.put(Constants.SPRING_POST_MAPPING, provider);
+		hoverProviders.put(Constants.SPRING_PUT_MAPPING, provider);
+		hoverProviders.put(Constants.SPRING_DELETE_MAPPING, provider);
+		hoverProviders.put(Constants.SPRING_PATCH_MAPPING, provider);
+	}
+
+	@Override
+	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {
 		return provideHover(annotation, doc);
 	}

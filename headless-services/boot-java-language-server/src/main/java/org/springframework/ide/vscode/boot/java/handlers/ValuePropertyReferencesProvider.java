@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.references;
+package org.springframework.ide.vscode.boot.java.handlers;
 
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 

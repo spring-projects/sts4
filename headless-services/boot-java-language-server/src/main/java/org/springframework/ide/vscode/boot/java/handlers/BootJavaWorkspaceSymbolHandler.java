@@ -1,9 +1,20 @@
-package org.springframework.ide.vscode.boot.java.symbols;
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -12,6 +23,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
@@ -22,6 +34,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -30,10 +43,14 @@ import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbo
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+/**
+ * @author Martin Lippert
+ */
 public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
 	private SimpleLanguageServer server;
 	private JavaProjectFinder projectFinder;
+	private Map<String, SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
 
@@ -41,6 +58,9 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbols = new ArrayList<>();
+
+		this.symbolProviders = new HashMap<>();
+		RequestMappingSymbolProvider.register(this.symbolProviders);
 	}
 
 	@Override
@@ -49,6 +69,7 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
 		symbols.clear();
 		scanFiles(root.toFile());
+
 		return collectSymbols();
 	}
 
@@ -127,23 +148,13 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 		}
 	}
 
-	private void scanAST(CompilationUnit cu, TextDocument doc) {
+	private void scanAST(final CompilationUnit cu, final TextDocument doc) {
 		cu.accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					System.out.println("annotation found: " + node.toString());
-					ITypeBinding typeBinding = node.resolveTypeBinding();
-
-					if (typeBinding != null) {
-						String qualifiedTypeName = typeBinding.getQualifiedName();
-						if (qualifiedTypeName.startsWith("org.springframework.")) {
-							SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-									new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-							symbols.add(symbol);
-						}
-					}
+					extractSymbolInformation(node, doc);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -155,17 +166,7 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					System.out.println("annotation found: " + node.toString());
-					ITypeBinding typeBinding = node.resolveTypeBinding();
-
-					if (typeBinding != null) {
-						String qualifiedTypeName = typeBinding.getQualifiedName();
-						if (qualifiedTypeName.startsWith("org.springframework.")) {
-							SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-									new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-							symbols.add(symbol);
-						}
-					}
+					extractSymbolInformation(node, doc);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -177,17 +178,7 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					System.out.println("annotation found: " + node.toString());
-					ITypeBinding typeBinding = node.resolveTypeBinding();
-
-					if (typeBinding != null) {
-						String qualifiedTypeName = typeBinding.getQualifiedName();
-						if (qualifiedTypeName.startsWith("org.springframework.")) {
-							SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-									new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-							symbols.add(symbol);
-						}
-					}
+					extractSymbolInformation(node, doc);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -196,6 +187,48 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 				return super.visit(node);
 			}
 		});
+	}
+
+	private void extractSymbolInformation(Annotation node, TextDocument doc) {
+		System.out.println("annotation found: " + node.toString());
+		ITypeBinding typeBinding = node.resolveTypeBinding();
+
+		if (typeBinding != null) {
+			String qualifiedTypeName = typeBinding.getQualifiedName();
+
+			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
+			if (provider != null) {
+				SymbolInformation symbol = provider.getSymbol(node, doc);
+				if (symbol != null) {
+					symbols.add(symbol);
+				}
+			}
+			else {
+				SymbolInformation symbol = provideDefaultSymbol(node, doc);
+				if (symbol != null) {
+					symbols.add(symbol);
+				}
+			}
+		}
+	}
+
+	private SymbolInformation provideDefaultSymbol(Annotation node, TextDocument doc) {
+		try {
+			ITypeBinding type = node.resolveTypeBinding();
+			if (type != null) {
+				String qualifiedName = type.getQualifiedName();
+				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
+					SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
+							new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+					return symbol;
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {

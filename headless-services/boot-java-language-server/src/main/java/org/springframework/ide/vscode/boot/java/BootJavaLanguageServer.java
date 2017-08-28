@@ -12,10 +12,10 @@ package org.springframework.ide.vscode.boot.java;
 
 import org.springframework.ide.vscode.boot.java.completions.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.completions.BootJavaReconcileEngine;
-import org.springframework.ide.vscode.boot.java.hover.BootJavaHoverProvider;
-import org.springframework.ide.vscode.boot.java.references.BootJavaReferencesHandler;
-import org.springframework.ide.vscode.boot.java.symbols.BootJavaDocumentSymbolHandler;
-import org.springframework.ide.vscode.boot.java.symbols.BootJavaWorkspaceSymbolHandler;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
