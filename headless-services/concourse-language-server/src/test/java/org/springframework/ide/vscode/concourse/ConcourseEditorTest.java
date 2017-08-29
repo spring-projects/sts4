@@ -1162,11 +1162,11 @@ public class ConcourseEditorTest {
 				,
 				"disable_git_lfs: <*>"
 				,
-				"fetch:\n" +
-				"      - <*>"
-				,
 				"submodules:\n"+
 				"        <*>"
+				,
+				"fetch:\n" + // Deprecated, so not suggested
+				"      - <*>"
 		);
 		assertContextualCompletions(context,
 				"disable_git_lfs: <*>"
@@ -3911,7 +3911,8 @@ public class ConcourseEditorTest {
 				"      fetch: [master]\n" +
 				"      submodules: none\n"
 		);
-		editor.assertProblems(/*NONE*/);
+		Diagnostic p = editor.assertProblems("fetch|Deprecated").get(0);
+		assertEquals(DiagnosticSeverity.Warning, p.getSeverity());
 	}
 
 	@Test public void bug_150337510() throws Exception {
