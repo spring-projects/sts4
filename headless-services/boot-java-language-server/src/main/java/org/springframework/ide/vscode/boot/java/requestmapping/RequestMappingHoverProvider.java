@@ -38,17 +38,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class RequestMappingHoverProvider implements HoverProvider {
 
-	public static void register(Map<String, HoverProvider> hoverProviders) {
-		RequestMappingHoverProvider provider = new RequestMappingHoverProvider();
-
-		hoverProviders.put(Constants.SPRING_REQUEST_MAPPING, provider);
-		hoverProviders.put(Constants.SPRING_GET_MAPPING, provider);
-		hoverProviders.put(Constants.SPRING_POST_MAPPING, provider);
-		hoverProviders.put(Constants.SPRING_PUT_MAPPING, provider);
-		hoverProviders.put(Constants.SPRING_DELETE_MAPPING, provider);
-		hoverProviders.put(Constants.SPRING_PATCH_MAPPING, provider);
-	}
-
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {

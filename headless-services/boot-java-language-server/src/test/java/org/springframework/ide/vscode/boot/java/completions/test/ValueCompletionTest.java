@@ -23,7 +23,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.completions.ValueCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -53,7 +53,7 @@ public class ValueCompletionTest {
 		}
 	};
 
-	private LanguageServerHarness harness;
+	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private IJavaProject testProject;
 
 	private Editor editor;
@@ -65,7 +65,7 @@ public class ValueCompletionTest {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
 
-		harness = new LanguageServerHarness(new Callable<BootJavaLanguageServer>() {
+		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
 				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexHarness.getIndexProvider());

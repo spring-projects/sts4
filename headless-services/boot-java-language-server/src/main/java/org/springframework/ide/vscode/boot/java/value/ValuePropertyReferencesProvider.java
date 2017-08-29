@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.handlers;
+package org.springframework.ide.vscode.boot.java.value;
 
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 
@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -52,15 +53,16 @@ import org.yaml.snakeyaml.nodes.NodeTuple;
 /**
  * @author Martin Lippert
  */
-public class ValuePropertyReferencesProvider {
-	
+public class ValuePropertyReferencesProvider implements ReferenceProvider {
+
 	private SimpleLanguageServer languageServer;
 
-	public ValuePropertyReferencesProvider(SimpleLanguageServer languageServer) {
-		this.languageServer = languageServer;
+	public ValuePropertyReferencesProvider(SimpleLanguageServer server) {
+		this.languageServer = server;
 	}
 
-	public CompletableFuture<List<? extends Location>> provideReferencesForValueAnnotation(ASTNode node, Annotation annotation,
+	@Override
+	public CompletableFuture<List<? extends Location>> provideReferences(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {
 
 		try {
@@ -102,10 +104,10 @@ public class ValuePropertyReferencesProvider {
 
 		return null;
 	}
-	
+
 	public CompletableFuture<List<? extends Location>> findReferencesFromPropertyFiles(Path workspaceRoot,
 			String propertyKey) {
-		
+
 		try (Stream<Path> walk = Files.walk(workspaceRoot)) {
 			List<Location> locations = walk
 					.filter(path -> isPropertiesFile(path))
@@ -113,19 +115,19 @@ public class ValuePropertyReferencesProvider {
 					.map(path -> findReferences(path, propertyKey))
 					.flatMap(Collection::stream)
 					.collect(Collectors.toList());
-			
+
 			return CompletableFuture.completedFuture(locations);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
 	private boolean isPropertiesFile(Path path) {
 		Path fileName = path.getFileName();
-		
+
 		if (fileName.toString().endsWith(".properties") || path.toString().endsWith(".yml")) {
 			return fileName.toString().contains("application");
 		}
@@ -147,24 +149,24 @@ public class ValuePropertyReferencesProvider {
 
 	private List<Location> findReferencesInYMLFile(String filePath, String propertyKey) {
 		List<Location> foundLocations = new ArrayList<>();
-		
+
 		try {
 			String fileContent = FileUtils.readFileToString(new File(filePath));
-	
+
 			Yaml yaml = new Yaml();
 			YamlASTProvider parser = new YamlParser(yaml);
-			
+
 			URI docURI = Paths.get(filePath).toUri();
 			TextDocument doc = new TextDocument(docURI.toString(), null);
 			doc.setText(fileContent);
 			YamlFileAST ast = parser.getAST(doc);
-			
+
 			List<Node> nodes = ast.getNodes();
 			if (nodes != null && !nodes.isEmpty()) {
 				for (Node node : nodes) {
 					Node foundNode = findNode(node, "", propertyKey);
 					if (foundNode != null) {
-						
+
 						Position start = new Position();
 						start.setLine(foundNode.getStartMark().getLine());
 						start.setCharacter(foundNode.getStartMark().getColumn());
@@ -190,15 +192,15 @@ public class ValuePropertyReferencesProvider {
 
 		return foundLocations;
 	}
-	
+
 	protected Node findNode(Node node, String prefix, String propertyKey) {
 		if (node.getNodeId().equals(NodeId.mapping)) {
 			for (NodeTuple entry : ((MappingNode)node).getValue()) {
 				Node keyNode = entry.getKeyNode();
 				String key = asScalar(keyNode);
-				
+
 				String combinedKey = prefix.length() > 0 ? prefix + "." + key : key;
-				
+
 				if (combinedKey != null && combinedKey.equals(propertyKey)) {
 					return keyNode;
 				}
@@ -210,19 +212,19 @@ public class ValuePropertyReferencesProvider {
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
 	private List<Location> findReferencesInPropertiesFile(String filePath, String propertyKey) {
 		List<Location> foundLocations = new ArrayList<>();
-		
+
 		try {
 			String fileContent = FileUtils.readFileToString(new File(filePath));
 
 			Parser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(fileContent);
-			
+
 			if (parseResults != null && parseResults.ast != null) {
 				parseResults.ast.getNodes(KeyValuePair.class).forEach(pair -> {
 					if (pair.getKey() != null && pair.getKey().decode().equals(propertyKey)) {
@@ -256,7 +258,7 @@ public class ValuePropertyReferencesProvider {
 					}
 				});
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

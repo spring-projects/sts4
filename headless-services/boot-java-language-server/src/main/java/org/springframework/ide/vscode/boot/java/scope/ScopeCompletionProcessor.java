@@ -8,8 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.completions;
+package org.springframework.ide.vscode.boot.java.scope;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -18,26 +20,30 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * @author Martin Lippert
  */
-public class ScopeCompletionProcessor {
+public class ScopeCompletionProcessor implements CompletionProvider {
 
-	public void collectCompletionsForScopeAnnotation(ASTNode node, Annotation annotation, ITypeBinding type,
-			List<ICompletionProposal> completions, int offset, IDocument doc) {
-		
+	@Override
+	public Collection<ICompletionProposal> provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
+			int offset, IDocument doc) {
+
+		List<ICompletionProposal> result = new ArrayList<>();
+
 		try {
 			if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair) {
 				MemberValuePair memberPair = (MemberValuePair) node.getParent();
-				
+
 				// case: @Scope(value=<*>)
 				if ("value".equals(memberPair.getName().toString()) && memberPair.getValue().toString().equals("$missing$")) {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
-						completions.add(proposal);
+						result.add(proposal);
 					}
 				}
 			}
@@ -45,7 +51,7 @@ public class ScopeCompletionProcessor {
 			else if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 					ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
-					completions.add(proposal);
+					result.add(proposal);
 				}
 			}
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
@@ -55,21 +61,21 @@ public class ScopeCompletionProcessor {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
 							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
-							completions.add(proposal);
+							result.add(proposal);
 						}
 					}
 				}
 			}
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair) {
 				MemberValuePair memberPair = (MemberValuePair) node.getParent();
-				
+
 				// case: @Scope(value=<*>)
 				if ("value".equals(memberPair.getName().toString()) && node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
 					String prefix = doc.get(node.getStartPosition(), offset - node.getStartPosition());
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
 							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
-							completions.add(proposal);
+							result.add(proposal);
 						}
 					}
 				}
@@ -78,6 +84,8 @@ public class ScopeCompletionProcessor {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		return result;
 	}
 
 }

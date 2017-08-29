@@ -40,14 +40,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class BootJavaReferencesHandler implements ReferencesHandler {
 
-	private static final String SPRING_VALUE = "org.springframework.beans.factory.annotation.Value";
-
 	private JavaProjectFinder projectFinder;
 	private SimpleLanguageServer server;
+	private Map<String, ReferenceProvider> referenceProviders;
 
-	public BootJavaReferencesHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaReferencesHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
+		this.referenceProviders = specificProviders;
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 			catch (Exception e) {
 			}
 		}
-		
+
 		return SimpleTextDocumentService.NO_REFERENCES;
 	}
 
@@ -78,7 +78,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
-		
+
 		String[] classpathEntries = getClasspathEntries(document);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
@@ -90,7 +90,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 		ASTNode node = NodeFinder.perform(cu, offset, 0);
-		
+
 		if (node != null) {
 			System.out.println("AST node found: " + node.getClass().getName());
 			return provideReferencesForAnnotation(node, offset, document);
@@ -101,31 +101,25 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 
 	private CompletableFuture<List<? extends Location>> provideReferencesForAnnotation(ASTNode node, int offset, TextDocument doc) {
 		Annotation annotation = null;
-		ASTNode exactNode = node;
-		
+
 		while (node != null && !(node instanceof Annotation)) {
 			node = node.getParent();
 		}
-		
+
 		if (node != null) {
 			annotation = (Annotation) node;
 			ITypeBinding type = annotation.resolveTypeBinding();
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
-				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-					return provideReferencesForSpringAnnotation(exactNode, annotation, type, offset, doc);
+				if (qualifiedName != null) {
+					ReferenceProvider provider = this.referenceProviders.get(qualifiedName);
+					if (provider != null) {
+						return provider.provideReferences(node, annotation, type, offset, doc);
+					}
 				}
 			}
 		}
-		
-		return null;
-	}
 
-	private CompletableFuture<List<? extends Location>> provideReferencesForSpringAnnotation(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc) {
-		if (type.getQualifiedName().equals(SPRING_VALUE)) {
-			return new ValuePropertyReferencesProvider(server).provideReferencesForValueAnnotation(node, annotation, type, offset, doc);
-		}
-		
 		return null;
 	}
 
@@ -135,7 +129,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries
 				.filter(path -> path.toFile().exists())
-				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new); 
+				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
 	}
 
 }

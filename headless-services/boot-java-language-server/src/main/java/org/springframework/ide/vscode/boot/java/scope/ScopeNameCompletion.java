@@ -8,53 +8,49 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.completions;
+package org.springframework.ide.vscode.boot.java.scope;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
  * @author Martin Lippert
  */
-public class ValuePropertyKeyProposal implements ICompletionProposal {
-
-	private DocumentEdits edits;
-	private String label;
-	private String detail;
-	private Renderable documentation;
-
-	public ValuePropertyKeyProposal(DocumentEdits edits, String label, String detail, Renderable documentation) {
-		this.edits = edits;
+public class ScopeNameCompletion {
+	
+	private final String label;
+	private final String detail;
+	private final Renderable documentation;
+	private final CompletionItemKind kind;
+	private final String value;
+	
+	public ScopeNameCompletion(String value, String label, String detail, Renderable documentation, CompletionItemKind kind) {
+		super();
+		this.value = value;
 		this.label = label;
 		this.detail = detail;
 		this.documentation = documentation;
+		this.kind = kind;
 	}
-
-	@Override
+	
 	public String getLabel() {
-		return this.label;
+		return label;
 	}
-
-	@Override
-	public CompletionItemKind getKind() {
-		return CompletionItemKind.Property;
-	}
-
-	@Override
-	public DocumentEdits getTextEdit() {
-		return this.edits;
-	}
-
-	@Override
+	
 	public String getDetail() {
-		return this.detail;
+		return detail;
 	}
-
-	@Override
+	
+	public CompletionItemKind getKind() {
+		return kind;
+	}
+	
 	public Renderable getDocumentation() {
-		return this.documentation;
+		return documentation;
+	}
+	
+	public String getValue() {
+		return this.value;
 	}
 
 }

@@ -8,33 +8,23 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.requestmapping;
+package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class RequestMappingSymbolProvider implements SymbolProvider {
+public interface ReferenceProvider {
 
-	@Override
-	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
-		try {
-			SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-					new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-			return symbol;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
+	CompletableFuture<List<? extends Location>> provideReferences(ASTNode node, Annotation annotation,
+			ITypeBinding type, int offset, TextDocument doc);
 
 }

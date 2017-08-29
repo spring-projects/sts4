@@ -14,7 +14,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -33,8 +32,6 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -54,13 +51,11 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
 	private List<SymbolInformation> symbols;
 
-	public BootJavaWorkspaceSymbolHandler(BootJavaLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaWorkspaceSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbols = new ArrayList<>();
-
-		this.symbolProviders = new HashMap<>();
-		RequestMappingSymbolProvider.register(this.symbolProviders);
+		this.symbolProviders = specificProviders;
 	}
 
 	@Override

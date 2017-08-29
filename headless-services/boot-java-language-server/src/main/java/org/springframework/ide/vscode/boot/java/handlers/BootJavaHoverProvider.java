@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -26,8 +25,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
-import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -44,16 +41,12 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private JavaProjectFinder projectFinder;
 	private SimpleLanguageServer server;
-
 	private Map<String, HoverProvider> hoverProviders;
 
-	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, HoverProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
-		this.hoverProviders = new HashMap<>();
-
-		RequestMappingHoverProvider.register(this.hoverProviders);
-		ValueHoverProvider.register(this.hoverProviders);
+		this.hoverProviders = specificProviders;
 	}
 
 	@Override
@@ -107,7 +100,6 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private CompletableFuture<Hover> provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc) {
 		Annotation annotation = null;
-		ASTNode exactNode = node;
 
 		while (node != null && !(node instanceof Annotation)) {
 			node = node.getParent();
@@ -118,20 +110,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 			ITypeBinding type = annotation.resolveTypeBinding();
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
-				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-					return provideHoverForSpringAnnotation(exactNode, annotation, type, offset, doc);
+				if (qualifiedName != null) {
+					HoverProvider provider = this.hoverProviders.get(qualifiedName);
+					if (provider != null) {
+						return provider.provideHover(node, annotation, type, offset, doc);
+					}
 				}
 			}
-		}
-
-		return null;
-	}
-
-	private CompletableFuture<Hover> provideHoverForSpringAnnotation(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc) {
-		String typeName = type.getQualifiedName();
-		HoverProvider provider = this.hoverProviders.get(typeName);
-		if (provider != null) {
-			return provider.provideHover(node, annotation, type, offset, doc);
 		}
 
 		return null;

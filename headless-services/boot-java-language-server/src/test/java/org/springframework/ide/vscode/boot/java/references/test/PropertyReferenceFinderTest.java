@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.handlers.ValuePropertyReferencesProvider;
+import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**

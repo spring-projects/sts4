@@ -52,7 +52,7 @@ public class ScopeCompletionTest {
 		}
 	};
 
-	private LanguageServerHarness harness;
+	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private PropertyIndexHarness indexHarness;
 	private IJavaProject testProject;
 
@@ -64,7 +64,7 @@ public class ScopeCompletionTest {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
 
-		harness = new LanguageServerHarness(new Callable<BootJavaLanguageServer>() {
+		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
 				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexHarness.getIndexProvider());

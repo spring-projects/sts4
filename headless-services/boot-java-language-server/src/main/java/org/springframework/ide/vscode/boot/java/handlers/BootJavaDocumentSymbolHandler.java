@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -32,7 +31,6 @@ import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -51,12 +49,10 @@ public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 	private JavaProjectFinder projectFinder;
 	private Map<String, SymbolProvider> symbolProviders;
 
-	public BootJavaDocumentSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaDocumentSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
-
-		this.symbolProviders = new HashMap<>();
-		RequestMappingSymbolProvider.register(this.symbolProviders);
+		this.symbolProviders = specificProviders;
 	}
 
 	@Override
