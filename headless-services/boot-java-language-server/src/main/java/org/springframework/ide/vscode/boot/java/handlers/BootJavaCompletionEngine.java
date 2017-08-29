@@ -77,6 +77,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 
 	private Collection<ICompletionProposal> collectCompletionsForAnnotations(ASTNode node, int offset, IDocument doc) {
 		Annotation annotation = null;
+		ASTNode exactNode = node;
 
 		while (node != null && !(node instanceof Annotation)) {
 			node = node.getParent();
@@ -90,7 +91,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 				if (qualifiedName != null) {
 					CompletionProvider provider = this.completionProviders.get(qualifiedName);
 					if (provider != null) {
-						return provider.provideCompletions(node, annotation, type, offset, doc);
+						return provider.provideCompletions(exactNode, annotation, type, offset, doc);
 					}
 				}
 			}
