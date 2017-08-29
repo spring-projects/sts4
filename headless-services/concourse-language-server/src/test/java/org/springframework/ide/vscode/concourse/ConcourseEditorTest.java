@@ -1165,7 +1165,7 @@ public class ConcourseEditorTest {
 				"submodules:\n"+
 				"        <*>"
 				,
-				"fetch:\n" + // Deprecated, so not suggested
+				"fetch:\n" + // Deprecated, so suggested last
 				"      - <*>"
 		);
 		assertContextualCompletions(context,
