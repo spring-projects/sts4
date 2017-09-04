@@ -16,9 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.JavaCore;
@@ -69,22 +69,11 @@ public class AnnotationIndexer {
 
 	public void scanFiles(File directory) {
 		try {
-			Path[] javaFiles = Files.walk(directory.toPath())
+			Map<IJavaProject, List<String>> projects = Files.walk(directory.toPath())
 					.filter(Files::isRegularFile)
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
-					.toArray(Path[]::new);
-
-			Map<IJavaProject, List<String>> projects = new HashMap<>();
-			for (Path javaFile : javaFiles) {
-				IJavaProject project = projectFinder.find(javaFile.toFile());
-				if (project != null) {
-					if (!projects.containsKey(project)) {
-						projects.put(project, new ArrayList<>());
-					}
-
-					projects.get(project).add(javaFile.toAbsolutePath().toString());
-				}
-			}
+					.map(path -> path.toAbsolutePath().toString())
+					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new File(javaFile))));
 
 			projects.forEach((project, files) -> scanProject(project, files.toArray(new String[0])));
 
