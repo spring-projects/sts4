@@ -21,7 +21,7 @@ import java.io.File;
 public class FileUtils {
 
 	/**
-	 * Find file given its fil name in the given folder or its parent folders
+	 * Find file given its file name in the given folder or its parent folders
 	 * 
 	 * @param folder Starting folder
 	 * @param fileNameToFind Name of the file to find
