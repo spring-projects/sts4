@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
@@ -89,6 +90,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onReferences(referencesHandler);
 		documents.onDocumentSymbol(createDocumentSymbolHandler(this, javaProjectFinder));
 
+		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
+		documents.onCodeLens(codeLensHandler::createCodeLenses);
+		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
+
 		workspaceService.onWorkspaceSymbol(createWorkspaceSymbolHandler(this, javaProjectFinder));
 	}
 
@@ -147,5 +152,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		return new BootJavaReferencesHandler(server, projectFinder, providers);
 	}
+
+	protected BootJavaCodeLensEngine createCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+		return new BootJavaCodeLensEngine(server, projectFinder);
+	}
+
 
 }

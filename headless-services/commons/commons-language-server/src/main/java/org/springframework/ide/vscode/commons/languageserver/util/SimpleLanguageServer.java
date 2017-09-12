@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -243,6 +244,11 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		if (hasDocumentSymbolHandler()) {
 			c.setDocumentSymbolProvider(true);
 		}
+		if (hasCodeLensHandler()) {
+			CodeLensOptions codeLensOptions = new CodeLensOptions();
+			codeLensOptions.setResolveProvider(hasCodeLensResolveProvider());
+			c.setCodeLensProvider(codeLensOptions );
+		}
 		if (hasExecuteCommandSupport && hasQuickFixes()) {
 			c.setExecuteCommandProvider(new ExecuteCommandOptions(ImmutableList.of(
 					CODE_ACTION_COMMAND_ID
@@ -261,6 +267,14 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private boolean hasDocumentSymbolHandler() {
 		return getTextDocumentService().hasDocumentSymbolHandler();
+	}
+
+	private boolean hasCodeLensHandler() {
+		return getTextDocumentService().hasCodeLensHandler();
+	}
+
+	private boolean hasCodeLensResolveProvider() {
+		return getTextDocumentService().hasCodeLensResolveProvider();
 	}
 
 	private boolean hasReferencesHandler() {

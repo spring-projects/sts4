@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.util.Collection;
@@ -71,14 +70,18 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	final private SimpleLanguageServer server;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
+
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
-	private HoverHandler hoverHandler = null;
 
+	private HoverHandler hoverHandler = null;
 	private DefinitionHandler definitionHandler;
 	private ReferencesHandler referencesHandler;
-
 	private DocumentSymbolHandler documentSymbolHandler;
+
+	private CodeLensHandler codeLensHandler;
+	private CodeLensResolveHandler codeLensResolveHandler;
+
 	private Consumer<TextDocumentSaveChange> documentSaveListener;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
@@ -88,6 +91,16 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onHover(HoverHandler h) {
 		Assert.isNull("A hover handler is already set, multiple handlers not supported yet", hoverHandler);
 		this.hoverHandler = h;
+	}
+
+	public synchronized void onCodeLens(CodeLensHandler h) {
+		Assert.isNull("A code lens handler is already set, multiple handlers not supported yet", codeLensHandler);
+		this.codeLensHandler = h;
+	}
+
+	public synchronized void onCodeLensResolve(CodeLensResolveHandler h) {
+		Assert.isNull("A code lens resolve handler is already set, multiple handlers not supported yet", codeLensResolveHandler);
+		this.codeLensResolveHandler = h;
 	}
 
 	public synchronized void onDocumentSymbol(DocumentSymbolHandler h) {
@@ -234,6 +247,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
 	public final static CompletableFuture<List<? extends Location>> NO_REFERENCES = CompletableFuture.completedFuture(ImmutableList.of());
 	public final static List<? extends SymbolInformation> NO_SYMBOLS = ImmutableList.of();
+	public final static CompletableFuture<List<? extends CodeLens>> NO_CODELENS = CompletableFuture.completedFuture(ImmutableList.of());
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
@@ -319,11 +333,19 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
+		CodeLensHandler handler = this.codeLensHandler;
+		if (handler != null) {
+			return handler.handle(params);
+		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 	@Override
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
+		CodeLensResolveHandler handler = this.codeLensResolveHandler;
+		if (handler != null) {
+			return handler.handle(unresolved);
+		}
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -407,6 +429,14 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public boolean hasDocumentSymbolHandler() {
 		return this.documentSymbolHandler!=null;
+	}
+
+	public boolean hasCodeLensHandler() {
+		return this.codeLensHandler != null;
+	}
+
+	public boolean hasCodeLensResolveProvider() {
+		return this.codeLensResolveHandler != null;
 	}
 
 }
