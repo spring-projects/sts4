@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Spring Boot IDE" id="org.springframework.boot.ide" uid="org.springframework.boot.ide" application="org.eclipse.ui.ide.workbench" version="4.0.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Spring Tool Suite 4" id="org.springframework.boot.ide" uid="org.springframework.boot.ide" application="org.eclipse.ui.ide.workbench" version="4.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -30,7 +30,7 @@ openFile</programArgs>
       startupMessageRect="7,220,441,20"
       startupForegroundColor="c1d72e" />
 
-   <launcher name="SpringBootIDE">
+   <launcher name="SpringToolSuite4">
       <macosx icon="../org.springframework.boot.ide.branding/sts.icns"/>
       <solaris/>
       <win useIco="true">
@@ -93,7 +93,7 @@ openFile</programArgs>
 
    <configurations>
    	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
-   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-boot-ide-${unqualifiedVersion}.${p2.qualifier}"/>
+   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
    	  <property name="osgi.splashPath" value="platform:/base/plugins/org.springframework.boot.ide.branding"/>
    	  
    	  <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
 	id="org.springframework.boot.ide.branding.feature"
-	label="Spring Boot IDE Branding Feature"
+	label="Spring Tool Suite 4 Branding Feature"
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
 	id="org.springframework.boot.ide.main.feature"
-	label="Spring Boot IDE Main Feature"
+	label="Spring Tool Suite 4 Main Feature"
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
