@@ -8,7 +8,7 @@
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
     "node": ">=4.0.0",
-    "vscode": "^1.15"
+    "vscode": "^1.15.0"
   },
   "keywords": [
     ""

@@ -11,7 +11,7 @@
   },
   "license": "EPL",
   "engines": {
-    "vscode": "^1.15"
+    "vscode": "^1.15.0"
   },
   "categories": [
     "Languages"
