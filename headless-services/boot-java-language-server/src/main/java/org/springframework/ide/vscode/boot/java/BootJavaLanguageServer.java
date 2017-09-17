@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.java;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
+import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
@@ -27,6 +29,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
@@ -39,13 +42,11 @@ import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaPro
 import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
-import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
@@ -88,13 +89,15 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
-		documents.onDocumentSymbol(createDocumentSymbolHandler(this, javaProjectFinder));
+
+		AnnotationIndexer indexer = createAnnotationIndexer(this, javaProjectFinder);
+		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, indexer));
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(this, indexer));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		workspaceService.onWorkspaceSymbol(createWorkspaceSymbolHandler(this, javaProjectFinder));
 	}
 
 	public void setMaxCompletionsNumber(int number) {
@@ -122,7 +125,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers);
 	}
 
-	protected DocumentSymbolHandler createDocumentSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	protected AnnotationIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
@@ -131,19 +134,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING, new RequestMappingSymbolProvider());
 
-		return new BootJavaDocumentSymbolHandler(server, projectFinder, providers);
-	}
+		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_BEAN, new BeansSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-	protected WorkspaceSymbolHandler createWorkspaceSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
-		HashMap<String, SymbolProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING, new RequestMappingSymbolProvider());
-
-		return new BootJavaWorkspaceSymbolHandler(server, projectFinder, providers);
+		return new AnnotationIndexer(projectFinder, providers);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {

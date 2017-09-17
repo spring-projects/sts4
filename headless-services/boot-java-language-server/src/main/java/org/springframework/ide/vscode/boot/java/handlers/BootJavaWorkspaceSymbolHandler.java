@@ -12,12 +12,10 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 
@@ -29,9 +27,9 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 	private SimpleLanguageServer server;
 	private AnnotationIndexer indexer;
 
-	public BootJavaWorkspaceSymbolHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
+	public BootJavaWorkspaceSymbolHandler(SimpleLanguageServer server, AnnotationIndexer indexer) {
 		this.server = server;
-		this.indexer = new AnnotationIndexer(projectFinder, specificProviders);
+		this.indexer = indexer;
 	}
 
 	@Override

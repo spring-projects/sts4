@@ -72,6 +72,31 @@ public class AnnotationIndexerTest {
 	}
 
 	@Test
+	public void testRetrievingSymbolsPerDocument() throws Exception {
+		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		indexer.scanFiles(directory);
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
+		assertEquals(4, symbols.size());
+		assertTrue(containsSymbol(symbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
+		assertTrue(containsSymbol(symbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
+		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 41));
+
+		symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
+		assertEquals(2, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
+		assertTrue(containsSymbol(symbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+
+		symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java");
+		assertEquals(2, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
+		assertTrue(containsSymbol(symbols, "@/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+	}
+
+	@Test
 	public void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
 		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI());

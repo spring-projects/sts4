@@ -18,6 +18,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,12 +53,14 @@ public class AnnotationIndexer {
 	private Map<String, SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
+	private ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
 
 	public AnnotationIndexer(JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
 		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
 
 		this.symbols = new ArrayList<>();
+		this.symbolsByDoc = new ConcurrentHashMap<>();
 	}
 
 	public void reset() {
@@ -64,7 +68,11 @@ public class AnnotationIndexer {
 	}
 
 	public List<? extends SymbolInformation> getAllSymbols() {
-		return symbols;
+		return this.symbols;
+	}
+
+	public List<? extends SymbolInformation> getSymbols(String docURI) {
+		return this.symbolsByDoc.get(docURI);
 	}
 
 	public void scanFiles(File directory) {
@@ -172,12 +180,14 @@ public class AnnotationIndexer {
 				SymbolInformation symbol = provider.getSymbol(node, doc);
 				if (symbol != null) {
 					symbols.add(symbol);
+					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
 				}
 			}
 			else {
 				SymbolInformation symbol = provideDefaultSymbol(node, doc);
 				if (symbol != null) {
 					symbols.add(symbol);
+					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
 				}
 			}
 		}
