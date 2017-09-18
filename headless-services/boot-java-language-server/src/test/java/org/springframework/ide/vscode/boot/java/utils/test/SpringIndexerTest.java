@@ -18,28 +18,34 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.Constants;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
  */
-public class AnnotationIndexerTest {
+public class SpringIndexerTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
 	private JavaProjectFinder projectFinder;
+	private LanguageServerHarness<BootJavaLanguageServer> harness;
+	private PropertyIndexHarness indexHarness;
 
 	@Before
 	public void setup() throws Exception {
@@ -47,11 +53,27 @@ public class AnnotationIndexerTest {
 		symbolProviders.put(Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 
 		projectFinder = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {new MavenProjectFinderStrategy(MavenCore.getDefault())});
+
+		indexHarness = new PropertyIndexHarness();
+		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
+			@Override
+			public BootJavaLanguageServer call() throws Exception {
+				BootJavaLanguageServer server = new BootJavaLanguageServer(projectFinder, indexHarness.getIndexProvider());
+				return server;
+			}
+		}) {
+			@Override
+			protected String getFileExtension() {
+				return ".java";
+			}
+		};
 	}
 
 	@Test
 	public void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
-		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		indexer.scanFiles(directory);
 
@@ -73,7 +95,9 @@ public class AnnotationIndexerTest {
 
 	@Test
 	public void testRetrievingSymbolsPerDocument() throws Exception {
-		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		indexer.scanFiles(directory);
 
@@ -98,7 +122,9 @@ public class AnnotationIndexerTest {
 
 	@Test
 	public void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
-		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI());
 		indexer.scanFiles(directory);
 

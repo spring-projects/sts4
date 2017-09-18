@@ -18,8 +18,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,21 +44,26 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class AnnotationIndexer {
+public class SpringIndexer {
 
+	private SimpleLanguageServer server;
 	private JavaProjectFinder projectFinder;
 	private Map<String, SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
 	private ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
 
-	public AnnotationIndexer(JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
+	private CompletableFuture<Void> initializeTask;
+
+	public SpringIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
+		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
 
@@ -63,16 +71,45 @@ public class AnnotationIndexer {
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 	}
 
+	public void initialize() {
+		synchronized(this) {
+			if (this.initializeTask == null) {
+				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("start initial scan...");
+						Path workspaceRoot = server.getWorkspaceRoot();
+						reset();
+						scanFiles(workspaceRoot.toFile());
+						System.out.println("initial scan done...!!!");
+					}
+				});
+			}
+		}
+
+		try {
+			this.initializeTask.get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void reset() {
 		this.symbols.clear();
 		this.symbolsByDoc.clear();
 	}
 
+	public void updateDocument(String docURI) {
+		// TODO: update information because of doc change
+	}
+
 	public List<? extends SymbolInformation> getAllSymbols() {
+		initialize();
 		return this.symbols;
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
+		initialize();
 		return this.symbolsByDoc.get(docURI);
 	}
 

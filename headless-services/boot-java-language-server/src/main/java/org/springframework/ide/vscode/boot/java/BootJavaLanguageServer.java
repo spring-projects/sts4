@@ -29,7 +29,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
-import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
@@ -90,9 +90,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 
-		AnnotationIndexer indexer = createAnnotationIndexer(this, javaProjectFinder);
-		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, indexer));
-		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(this, indexer));
+		SpringIndexer indexer = createAnnotationIndexer(this, javaProjectFinder);
+		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
@@ -125,7 +125,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers);
 	}
 
-	protected AnnotationIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
@@ -137,7 +137,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_BEAN, new BeansSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-		return new AnnotationIndexer(projectFinder, providers);
+		return new SpringIndexer(this, projectFinder, providers);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {

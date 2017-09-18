@@ -10,35 +10,26 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.nio.file.Path;
 import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 /**
  * @author Martin Lippert
  */
 public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 
-	private SimpleLanguageServer server;
-	private AnnotationIndexer indexer;
+	private SpringIndexer indexer;
 
-	public BootJavaDocumentSymbolHandler(SimpleLanguageServer server, AnnotationIndexer indexer) {
-		this.server = server;
+	public BootJavaDocumentSymbolHandler(SpringIndexer indexer) {
 		this.indexer = indexer;
 	}
 
 	@Override
 	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
-		Path root = this.server.getWorkspaceRoot();
-
-		indexer.reset();
-		indexer.scanFiles(root.toFile());
-
 		return indexer.getSymbols(params.getTextDocument().getUri());
 	}
 

@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.nio.file.Path;
 import java.util.List;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
-import org.springframework.ide.vscode.boot.java.utils.AnnotationIndexer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 
 /**
@@ -24,21 +22,14 @@ import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbo
  */
 public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
-	private SimpleLanguageServer server;
-	private AnnotationIndexer indexer;
+	private SpringIndexer indexer;
 
-	public BootJavaWorkspaceSymbolHandler(SimpleLanguageServer server, AnnotationIndexer indexer) {
-		this.server = server;
+	public BootJavaWorkspaceSymbolHandler(SpringIndexer indexer) {
 		this.indexer = indexer;
 	}
 
 	@Override
 	public List<? extends SymbolInformation> handle(WorkspaceSymbolParams params) {
-		Path root = this.server.getWorkspaceRoot();
-
-		indexer.reset();
-		indexer.scanFiles(root.toFile());
-
 		return indexer.getAllSymbols();
 	}
 
