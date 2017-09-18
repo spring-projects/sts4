@@ -25,7 +25,7 @@ class EmbeddedMappingClass {
 @RequestMapping("/foo-root-mapping")
 class EmbeddedMappingClassWithRootMapping {
 	
-	@RequestMapping("/embedded-foo-mapping")
+	@RequestMapping("/embedded-foo-mapping-with-root")
 	public String foo() {
 		return "foo";
 	}

@@ -122,7 +122,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 	}
 
 	private String getParentPath(Annotation node) {
-		ASTNode parent = node.getParent();
+		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
 		while (parent != null && !(parent instanceof TypeDeclaration)) {
 			parent = parent.getParent();
 		}
