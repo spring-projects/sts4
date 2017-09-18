@@ -28,14 +28,15 @@ public class ComponentSymbolProvider implements SymbolProvider {
 	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
 		try {
 			StringBuilder symbolLabel = new StringBuilder();
-			symbolLabel.append("@Bean");
+			symbolLabel.append("@+ ");
 
 			String beanName = getBeanName(node);
 			String beanType = getBeanType(node);
 
-			symbolLabel.append(' ');
+			symbolLabel.append('\'');
 			symbolLabel.append(beanName);
-			symbolLabel.append(' ');
+			symbolLabel.append('\'');
+			symbolLabel.append(" (@Component) ");
 			symbolLabel.append(beanType);
 
 			SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
