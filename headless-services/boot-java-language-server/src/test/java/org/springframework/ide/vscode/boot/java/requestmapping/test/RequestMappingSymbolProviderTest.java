@@ -83,6 +83,20 @@ public class RequestMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/greeting -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 29));
 	}
 
+	@Test
+	public void testParentRequestMappingSymbol() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
+		indexer.scanFiles(directory);
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass.java");
+		assertEquals(2, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/parent/greeting -- (no method defined)", uriPrefix + "/src/main/java/org/test/ParentMappingClass.java", 7, 1, 7, 29));
+	}
+
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
 			SymbolInformation symbol = iterator.next();

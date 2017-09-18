@@ -13,13 +13,16 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
@@ -35,8 +38,13 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
 		try {
 			String path = getPath(node);
+			String parentPath = getParentPath(node);
 			String method = getMethod(node);
 
+			if (path != null && parentPath != null) {
+				String separator = !parentPath.endsWith("/") && !path.startsWith("/") ? "/" : "";
+				path = parentPath + separator + path;
+			}
 			if (path != null && !path.startsWith("/")) {
 				path = "/" + path;
 			}
@@ -110,6 +118,31 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 			}
 		}
 
+		return null;
+	}
+
+	private String getParentPath(Annotation node) {
+		ASTNode parent = node.getParent();
+		while (parent != null && !(parent instanceof TypeDeclaration)) {
+			parent = parent.getParent();
+		}
+
+		if (parent != null) {
+			TypeDeclaration type = (TypeDeclaration) parent;
+			List<?> modifiers = type.modifiers();
+			Iterator<?> iterator = modifiers.iterator();
+			while (iterator.hasNext()) {
+				Object modifier = iterator.next();
+				if (modifier instanceof Annotation) {
+					Annotation annotation = (Annotation) modifier;
+					ITypeBinding resolvedType = annotation.resolveTypeBinding();
+					String annotationType = resolvedType.getQualifiedName();
+					if (annotationType != null && Constants.SPRING_REQUEST_MAPPING.equals(annotationType)) {
+						return getPath(annotation);
+					}
+				}
+			}
+		}
 		return null;
 	}
 
