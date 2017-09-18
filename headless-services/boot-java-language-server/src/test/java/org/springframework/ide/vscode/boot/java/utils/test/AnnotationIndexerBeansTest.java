@@ -63,6 +63,18 @@ public class AnnotationIndexerBeansTest {
 		assertTrue(containsSymbol(symbols, "@Bean simpleBean org.test.BeanClass", uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java", 8, 1, 8, 8));
 	}
 
+	@Test
+	public void testScanSimpleComponentClass() throws Exception {
+		AnnotationIndexer indexer = new AnnotationIndexer(projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.scanFiles(directory);
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@Bean simpleComponent org.test.SimpleComponent", uriPrefix + "/src/main/java/org/test/SimpleComponent.java", 4, 0, 4, 10));
+	}
+
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
 			SymbolInformation symbol = iterator.next();

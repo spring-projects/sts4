@@ -65,6 +65,7 @@ public class AnnotationIndexer {
 
 	public void reset() {
 		this.symbols.clear();
+		this.symbolsByDoc.clear();
 	}
 
 	public List<? extends SymbolInformation> getAllSymbols() {
@@ -167,7 +168,6 @@ public class AnnotationIndexer {
 	}
 
 	private void extractSymbolInformation(Annotation node, String docURI) throws Exception {
-		System.out.println("annotation found: " + node.toString());
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
