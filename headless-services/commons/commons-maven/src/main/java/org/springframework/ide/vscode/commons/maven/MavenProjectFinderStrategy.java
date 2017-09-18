@@ -40,7 +40,10 @@ public class MavenProjectFinderStrategy implements IJavaProjectFinderStrategy {
 		File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
 		if (pomFile != null) {
 			return cache.get(pomFile, () -> {
-				return new MavenJavaProject(maven, pomFile);
+				System.out.println("create maven project: " + file.getAbsolutePath());
+				MavenJavaProject project = new MavenJavaProject(maven, pomFile);
+				System.out.println("maven project created");
+				return project;
 			});
 		}
 		return null;

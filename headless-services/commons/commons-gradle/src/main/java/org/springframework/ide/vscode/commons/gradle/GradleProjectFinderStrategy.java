@@ -40,7 +40,10 @@ public class GradleProjectFinderStrategy implements IJavaProjectFinderStrategy {
 		File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
 		if (gradlebuild != null) {
 			return cache.get(gradlebuild.getParentFile(), () -> {
-				return new GradleJavaProject(gradle, gradlebuild.getParentFile());
+				System.out.println("create gradle project: " + file.getAbsolutePath());
+				GradleJavaProject project = new GradleJavaProject(gradle, gradlebuild.getParentFile());
+				System.out.println("gradle project created");
+				return project;
 			});
 		}
 		return null;
