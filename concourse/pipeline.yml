@@ -163,6 +163,22 @@ resources:
     secret_access_key: {{s3_prod_secretkey}}
     region_name: {{s3_prod_region}}
     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
+- name: s3-boot-java-fatjar-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/fatjars/snapshots/boot-java-language-server-(.*).jar
+- name: s3-boot-java-fatjar-rc
+  type: s3
+  source:
+    bucket: {{s3_prod_bucket}}
+    access_key_id: {{s3_prod_accesskey}}
+    secret_access_key: {{s3_prod_secretkey}}
+    region_name: {{s3_prod_region}}
+    regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -402,6 +418,10 @@ jobs:
     - put: s3-manifest-yaml-fatjar-rc
       params:
         file: s3-manifest-yaml-fatjar-snapshot/*.jar
+        acl: public-read
+    - put: s3-boot-java-fatjar-rc
+      params:
+        file: s3-boot-java-fatjar-snapshot/*.jar
         acl: public-read
 - name: prepare-manifest-yaml-atom-rc
   serial: true
@@ -718,6 +738,10 @@ jobs:
       - put: s3-bosh-fatjar-snapshot
         params:
           file: out/bosh-language-server-*.jar
+          acl: public-read
+      - put: s3-boot-java-fatjar-snapshot
+        params:
+          file: out/boot-java-language-server-*.jar
           acl: public-read
 - name: build-manifest-yaml-atom-package
   plan:
