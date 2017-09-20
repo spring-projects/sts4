@@ -16,11 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,7 +67,7 @@ public class SpringIndexer {
 		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
 
-		this.symbols = new ArrayList<>();
+		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 	}
 
@@ -113,14 +115,17 @@ public class SpringIndexer {
 
 	public void scanFiles(File directory) {
 		try {
+			System.out.println("scan directory...");
+
 			Map<IJavaProject, List<String>> projects = Files.walk(directory.toPath())
-					.filter(Files::isRegularFile)
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
+					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
 					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new File(javaFile))));
 
-			projects.forEach((project, files) -> scanProject(project, files.toArray(new String[0])));
+			System.out.println("scan directory done!!!");
 
+			projects.forEach((project, files) -> scanProject(project, files.toArray(new String[0])));
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -129,9 +134,14 @@ public class SpringIndexer {
 
 	private void scanProject(IJavaProject project, String[] files) {
 		try {
+			System.out.println("create parser... " + project.getElementName());
 			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			String[] classpathEntries = getClasspathEntries(project);
+			System.out.println("create parser done!!!");
+
+			System.out.println("parse files... " + project.getElementName());
 			scanFiles(parser, files, classpathEntries);
+			System.out.println("parse files done!!!");
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -139,6 +149,7 @@ public class SpringIndexer {
 	}
 
 	private void scanFiles(ASTParser parser, String[] javaFiles, String[] classpathEntries) throws Exception {
+
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 		parser.setCompilerOptions(options);
@@ -154,20 +165,21 @@ public class SpringIndexer {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				String docURI = "file://" + sourceFilePath;
-				scanAST(cu, docURI);
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				scanAST(cu, docURI, docRef);
 			}
 		};
 
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 	}
 
-	private void scanAST(final CompilationUnit cu, final String docURI) {
+	private void scanAST(final CompilationUnit cu, final String docURI, AtomicReference<TextDocument> docRef) {
 		cu.accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI);
+					extractSymbolInformation(node, docURI, docRef);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -179,7 +191,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI);
+					extractSymbolInformation(node, docURI, docRef);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -191,7 +203,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI);
+					extractSymbolInformation(node, docURI, docRef);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -202,16 +214,15 @@ public class SpringIndexer {
 		});
 	}
 
-	private void extractSymbolInformation(Annotation node, String docURI) throws Exception {
+	private void extractSymbolInformation(Annotation node, String docURI, AtomicReference<TextDocument> docRef) throws Exception {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
 			String qualifiedTypeName = typeBinding.getQualifiedName();
 
-			TextDocument doc = createTempTextDocument(docURI);
-
 			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
 			if (provider != null) {
+				TextDocument doc = getTempTextDocument(docURI, docRef);
 				SymbolInformation symbol = provider.getSymbol(node, doc);
 				if (symbol != null) {
 					symbols.add(symbol);
@@ -219,13 +230,22 @@ public class SpringIndexer {
 				}
 			}
 			else {
-				SymbolInformation symbol = provideDefaultSymbol(node, doc);
+				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef);
 				if (symbol != null) {
 					symbols.add(symbol);
 					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
 				}
 			}
 		}
+	}
+
+	private TextDocument getTempTextDocument(String docURI, AtomicReference<TextDocument> docRef) throws Exception {
+		TextDocument doc = docRef.get();
+		if (doc == null) {
+			doc = createTempTextDocument(docURI);
+			docRef.set(doc);
+		}
+		return doc;
 	}
 
 	private TextDocument createTempTextDocument(String docURI) throws Exception {
@@ -236,12 +256,13 @@ public class SpringIndexer {
 		return doc;
 	}
 
-	private SymbolInformation provideDefaultSymbol(Annotation node, TextDocument doc) {
+	private SymbolInformation provideDefaultSymbol(Annotation node, String docURI, AtomicReference<TextDocument> docRef) {
 		try {
 			ITypeBinding type = node.resolveTypeBinding();
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
 				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
+					TextDocument doc = getTempTextDocument(docURI, docRef);
 					SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
 							new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
 					return symbol;
