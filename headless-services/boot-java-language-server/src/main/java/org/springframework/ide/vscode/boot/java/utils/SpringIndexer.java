@@ -157,6 +157,7 @@ public class SpringIndexer {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
+		parser.setIgnoreMethodBodies(true);
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
