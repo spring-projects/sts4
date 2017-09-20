@@ -1,15 +1,17 @@
 {
-  "name": "boot-java",
+  "name": "cf-manifest-yaml",
   "main": "./lib/main",
-  "version": "0.0.10",
-  "description": "Spring Boot support for Atom",
-  "repository": "https://github.com/spring-projects/atom-boot-java",
+  "version": "0.0.9",
+  "description": "Cloud Foundry Deployment Manifest YAML support for Atom",
+  "repository": "https://github.com/spring-projects/atom-cf-manifest-yaml",
   "icon": "icon.png",
   "license": "MIT",
   "engines": {
     "atom": ">=1.17.0"
   },
   "files": [
+    "grammars/",
+    "settings/",
     "lib/",
     "server/",
     "properties.json"

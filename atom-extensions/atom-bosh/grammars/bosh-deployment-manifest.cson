@@ -1,0 +1,8 @@
+'scopeName': 'source.bosh-deployment-manifest'
+'name': 'Bosh-Deployment-Manifest'
+'fileTypes': [
+  'deployment.yml'
+]
+'patterns': [
+  { 'include': 'source.yaml' }
+]

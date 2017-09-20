@@ -1,15 +1,17 @@
 {
-  "name": "boot-java",
+  "name": "concourse-pipeline-yaml",
   "main": "./lib/main",
-  "version": "0.0.10",
-  "description": "Spring Boot support for Atom",
-  "repository": "https://github.com/spring-projects/atom-boot-java",
+  "version": "0.0.9",
+  "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
+  "repository": "https://github.com/spring-projects/atom-concourse",
   "icon": "icon.png",
   "license": "MIT",
   "engines": {
     "atom": ">=1.17.0"
   },
   "files": [
+    "grammars/",
+    "settings/",
     "lib/",
     "server/",
     "properties.json"

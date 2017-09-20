@@ -2,46 +2,45 @@ const path = require('path');
 const { JarLanguageClient } = require('pivotal-atom-languageclient-commons');
 const PROPERTIES = require('../properties.json');
 
-class BootJavaLanguageClient extends JarLanguageClient {
+class ConcourseCiYamlClient extends JarLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
         super(
             PROPERTIES.jarUrl,
             path.join(__dirname, '..', 'server'),
-            'boot-java-language-server.jar'
+            'concourse-language-server.jar'
         );
     }
 
     getGrammarScopes() {
-        return ['source.java']
+        return ['source.concourse-pipeline-yaml','source.concourse-task-yaml'];
     }
 
     getLanguageName() {
-        return 'boot-java'
+        return 'Concourse-Pipeline-YAML';
     }
 
     getServerName() {
-        return 'Spring Boot'
+        return 'Concourse-Pipeline-YAML';
     }
 
     activate() {
+        // replace the example argument 'linter-ruby' with the name of this Atom package
         require('atom-package-deps')
-            .install('boot-java')
+            .install('concourse-pipeline-yaml')
             .then(() => console.debug('All dependencies installed, good to go'));
         super.activate();
     }
 
     launchVmArgs(version) {
         return [
-            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
+            '-Dorg.slf4j.simpleLogger.logFile=concourse-ci-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-            // '-Xdebug',
-            // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n'
         ];
 
     }
 
 }
 
-module.exports = new BootJavaLanguageClient();
+module.exports = new ConcourseCiYamlClient();

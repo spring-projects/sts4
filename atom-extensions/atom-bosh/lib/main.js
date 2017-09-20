@@ -2,46 +2,53 @@ const path = require('path');
 const { JarLanguageClient } = require('pivotal-atom-languageclient-commons');
 const PROPERTIES = require('../properties.json');
 
-class BootJavaLanguageClient extends JarLanguageClient {
+class BoshYamlClient extends JarLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
         super(
             PROPERTIES.jarUrl,
             path.join(__dirname, '..', 'server'),
-            'boot-java-language-server.jar'
-        );
+            'bosh-language-server.jar'
+        ); 
+    }
+
+    postInitialization(server) {
+        this.sendConfig(server);
+        this._disposable.add(atom.config.observe('bosh-yaml', () => this.sendConfig(server)));
     }
 
     getGrammarScopes() {
-        return ['source.java']
+        return ['source.bosh-deployment-manifest', 'source.bosh-cloud-config'];
     }
 
     getLanguageName() {
-        return 'boot-java'
+        return 'Bosh-YAML';
     }
 
     getServerName() {
-        return 'Spring Boot'
+        return 'Bosh-YAML';
     }
 
     activate() {
         require('atom-package-deps')
-            .install('boot-java')
+            .install('bosh-yaml')
             .then(() => console.debug('All dependencies installed, good to go'));
         super.activate();
     }
 
     launchVmArgs(version) {
         return [
-            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
+            '-Dorg.slf4j.simpleLogger.logFile=bosh-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-            // '-Xdebug',
-            // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n'
         ];
 
     }
 
+    sendConfig(server) {
+        server.connection.didChangeConfiguration({ settings: atom.config.get('bosh-yaml') });
+    }
+
 }
 
-module.exports = new BootJavaLanguageClient();
+module.exports = new BoshYamlClient();
