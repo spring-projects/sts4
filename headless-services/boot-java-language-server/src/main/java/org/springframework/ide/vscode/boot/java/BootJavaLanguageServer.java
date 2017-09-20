@@ -130,6 +130,19 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 				"	return new ${SomeData}(${cursor});\n" +
 				"}\n"
 		));
+		snippetManager.add(new JavaSnippet(
+				"GetMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.GetMapping",
+						"org.springframework.web.bind.annotation.RequestParam"
+				),
+				"@GetMapping(value=\"${path}\")\n" +
+				"public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n" +
+				"	return new ${SomeData}(${cursor});\n" +
+				"}"
+		));
 		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
