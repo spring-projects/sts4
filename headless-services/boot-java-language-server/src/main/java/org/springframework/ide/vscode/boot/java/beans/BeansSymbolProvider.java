@@ -10,13 +10,21 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.ParameterizedType;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -24,29 +32,82 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class BeansSymbolProvider implements SymbolProvider {
 
+	private static final String FUNCTION_FUNCTION_TYPE = Function.class.getName();
+	private static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
+	private static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
+
 	@Override
 	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
 		try {
-			StringBuilder symbolLabel = new StringBuilder();
-			symbolLabel.append("@+ ");
-
-			String beanName = getBeanName(node);
-			String beanType = getBeanType(node);
-
-			symbolLabel.append('\'');
-			symbolLabel.append(beanName);
-			symbolLabel.append('\'');
-			symbolLabel.append(" (@Bean) ");
-			symbolLabel.append(beanType);
-
-			SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
-					new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-			return symbol;
+			if (isFunctionBean(node)) {
+				return createFunctionSymbol(node, doc);
+			}
+			else {
+				return createRegularBeanSymbol(node, doc);
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private boolean isFunctionBean(Annotation node) {
+		ASTNode parent = node.getParent();
+		if (parent instanceof MethodDeclaration) {
+			MethodDeclaration method = (MethodDeclaration) parent;
+
+			String returnType = null;
+			if (method.getReturnType2().isParameterizedType()) {
+				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
+				Type type = paramType.getType();
+				ITypeBinding typeBinding = type.resolveBinding();
+				returnType = typeBinding.getBinaryName();
+			}
+			else {
+				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
+			}
+
+			return FUNCTION_FUNCTION_TYPE.equals(returnType) || FUNCTION_CONSUMER_TYPE.equals(returnType)
+					|| FUNCTION_SUPPLIER_TYPE.equals(returnType);
+		}
+		return false;
+	}
+
+	private SymbolInformation createFunctionSymbol(Annotation node, TextDocument doc) throws BadLocationException {
+		StringBuilder symbolLabel = new StringBuilder();
+		symbolLabel.append("@> ");
+
+		String beanName = getBeanName(node);
+		String beanType = getBeanType(node);
+
+		symbolLabel.append('\'');
+		symbolLabel.append(beanName);
+		symbolLabel.append('\'');
+		symbolLabel.append(" (@Bean) ");
+		symbolLabel.append(beanType);
+
+		SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
+				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+		return symbol;
+	}
+
+	private SymbolInformation createRegularBeanSymbol(Annotation node, TextDocument doc) throws BadLocationException {
+		StringBuilder symbolLabel = new StringBuilder();
+		symbolLabel.append("@+ ");
+
+		String beanName = getBeanName(node);
+		String beanType = getBeanType(node);
+
+		symbolLabel.append('\'');
+		symbolLabel.append(beanName);
+		symbolLabel.append('\'');
+		symbolLabel.append(" (@Bean) ");
+		symbolLabel.append(beanType);
+
+		SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
+				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+		return symbol;
 	}
 
 	private String getBeanName(Annotation node) {

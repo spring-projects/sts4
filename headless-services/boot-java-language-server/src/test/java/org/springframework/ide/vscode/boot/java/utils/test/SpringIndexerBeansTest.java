@@ -85,6 +85,18 @@ public class SpringIndexerBeansTest {
 	}
 
 	@Test
+	public void testScanSimpleFunctionBean() throws Exception {
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.scanFiles(directory);
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java");
+		assertEquals(2, symbols.size());
+		assertTrue(containsSymbol(symbols, "@> 'uppercase' (@Bean) Function<String,String>", uriPrefix + "/src/main/java/org/test/FunctionClass.java", 10, 1, 10, 6));
+	}
+
+	@Test
 	public void testScanSimpleComponentClass() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
