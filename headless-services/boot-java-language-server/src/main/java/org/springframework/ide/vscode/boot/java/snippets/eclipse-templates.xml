@@ -1,0 +1,50 @@
+<!-- These are the original templates. This file will be deleted. It just here for 'inspiration' -->
+<templates>
+	<template autoinsert="true"
+		id="org.springframework.ide.eclipse.boot.templates.RequestMapping"
+		name="RequestMapping method" context="boot-members" description="RequestMapping method"
+		enabled="true">${x:import(org.springframework.web.bind.annotation.RequestMapping,
+		org.springframework.web.bind.annotation.RequestMethod,
+		org.springframework.web.bind.annotation.RequestParam)}@RequestMapping(value="${path}",
+		method=RequestMethod.${GET})
+		public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {
+		return new ${SomeData}(${cursor});
+		}
+	</template>
+	<template autoinsert="true"
+		id="org.springframework.ide.eclipse.boot.templates.GetMapping" name="GetMapping method"
+		context="boot-members" description="GetMapping method" enabled="true">
+		${x:import(org.springframework.web.bind.annotation.GetMapping,
+		org.springframework.web.bind.annotation.RequestParam)}@GetMapping(value="${path}")
+		public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param})
+		{
+		return new ${SomeData}(${cursor});
+		}
+	</template>
+	<template autoinsert="true"
+		id="org.springframework.ide.eclipse.boot.templates.PostMapping" name="PostMapping method"
+		context="boot-members" description="PostMapping method" enabled="true">
+		${x:import(org.springframework.web.bind.annotation.PostMapping,
+		org.springframework.web.bind.annotation.RequestBody)}@PostMapping(value="${path}")
+		public ${SomeEnityData} ${postMethodName}(@RequestBody
+		${SomeEnityData} ${entity}) {
+		//TODO: process POST request
+		${cursor}
+		return ${entity};
+		}
+	</template>
+	<template autoinsert="true"
+		id="org.springframework.ide.eclipse.boot.templates.PutMapping" name="PutMapping method"
+		context="boot-members" description="PutMapping method" enabled="true">
+		${x:import(org.springframework.web.bind.annotation.PutMapping,
+		org.springframework.web.bind.annotation.RequestBody,
+		org.springframework.web.bind.annotation.PathVariable)}@PutMapping(value="${path}/{${id}}")
+		public ${SomeEnityData} ${putMethodName}(@PathVariable
+		${pvt:link(String,int,long)} ${id}, @RequestBody ${SomeEnityData}
+		${entity}) {
+		//TODO: process PUT request
+		${cursor}
+		return ${entity};
+		}
+	</template>
+</templates>
