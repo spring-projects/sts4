@@ -11,7 +11,10 @@
 package org.springframework.ide.vscode.boot.java.snippets;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-public interface SnippetContext {
+public interface JavaSnippetContext {
+	JavaSnippetContext BOOT_MEMBERS = (node) -> node instanceof TypeDeclaration;
+
 	boolean appliesTo(ASTNode node);
 }
