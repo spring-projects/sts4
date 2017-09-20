@@ -1,0 +1,76 @@
+{
+  "name": "boot-java",
+  "main": "./lib/main",
+  "version": "0.0.10",
+  "description": "Spring Boot support for Atom",
+  "repository": "https://github.com/spring-projects/atom-boot-java",
+  "icon": "icon.png",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.17.0"
+  },
+  "files": [
+    "lib/",
+    "server/",
+    "properties.json"
+  ],
+  "dependencies": {
+    "atom-package-deps": "^4.6.0",
+    "download": "^6.2.5",
+    "pivotal-atom-languageclient-commons": "0.0.7"
+  },
+  "devDependencies": {
+    "coffeelint": "^1.10.1"
+  },
+  "scripts": {
+    "clean": "rm -fr node_modules",
+    "postinstall": "node script.js"
+  },
+  "package-deps": [
+    "atom-ide-ui"
+  ],
+  "consumedServices": {
+    "linter-indie": {
+      "versions": {
+        "2.0.0": "consumeLinterV2"
+      }
+    },
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "consumeDatatip"
+      }
+    }
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "provideAutocomplete"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "provideCodeFormat"
+      }
+    },
+    "nuclide-definition-provider": {
+      "versions": {
+        "0.0.0": "provideDefinitions"
+      }
+    },
+    "nuclide-find-references.provider": {
+      "versions": {
+        "0.0.0": "provideFindReferences"
+      }
+    },
+    "nuclide-outline-view": {
+      "versions": {
+        "0.0.0": "provideOutlines"
+      }
+    }
+  },
+  "bundledDependencies": [
+    "atom-package-deps",
+    "download",
+    "pivotal-atom-languageclient-commons"
+  ]
+}
