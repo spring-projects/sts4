@@ -11,6 +11,8 @@
 
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
+import java.util.Optional;
+
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
@@ -23,6 +25,7 @@ public interface ICompletionProposal {
 	String getLabel();
 	CompletionItemKind getKind();
 	DocumentEdits getTextEdit();
+	default Optional<DocumentEdits> getAdditionalEdit() { return Optional.empty(); }
 
 	String getDetail();
 	Renderable getDocumentation();

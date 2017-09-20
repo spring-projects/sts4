@@ -15,11 +15,9 @@ import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.boot.java.handlers.SimpleCompletionFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
-import org.springframework.ide.vscode.commons.util.Renderables;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 import com.google.common.base.Supplier;
 
@@ -46,15 +44,14 @@ public class JavaSnippet {
 	}
 
 	public Optional<ICompletionProposal> generateCompletion(Supplier<SnippetBuilder> snippetBuilderFactory,
-			IDocument doc, int offset, ASTNode node, String query) {
+			DocumentRegion query, ASTNode node) {
 
 		if (context.appliesTo(node)) {
 			return Optional.of(
-					SimpleCompletionFactory.simpleProposal(doc,
-							offset,
+					new JavaSnippetCompletion(snippetBuilderFactory,
 							query,
-							kind, template, "Snippet", Renderables.NO_DESCRIPTION
-					).setLabel(name)
+							this
+					)
 			);
 		}
 
@@ -63,6 +60,18 @@ public class JavaSnippet {
 
 	public String getName() {
 		return this.name;
+	}
+
+	public String getTemplate() {
+		return this.template;
+	}
+
+	public  List<String> getImports() {
+		return this.imports;
+	}
+
+	public CompletionItemKind getKind() {
+		return kind;
 	}
 
 }

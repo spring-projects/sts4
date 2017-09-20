@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -34,6 +35,8 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -174,7 +177,19 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
 		item.setDocumentation(toMarkdown(completion.getDocumentation()));
-		adaptEdits(item, doc, completion.getTextEdit());
+		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
+		if (mainEdit.isPresent()) {
+			item.setTextEdit(mainEdit.get());
+			item.setInsertTextFormat(InsertTextFormat.Snippet);
+		} else {
+			item.setInsertText("");
+		}
+
+		completion.getAdditionalEdit().ifPresent(edit -> {
+			adaptEdits(doc, edit).ifPresent(extraEdit -> {
+				item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
+			});
+		});
 	}
 
 	private static String toMarkdown(Renderable r) {
@@ -184,24 +199,28 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private static void adaptEdits(CompletionItem item, TextDocument doc, DocumentEdits edits) throws Exception {
-		TextReplace replaceEdit = edits.asReplacement(doc);
-		if (replaceEdit==null) {
-			//The original edit does nothing.
-			item.setInsertText("");
-		} else {
-			TextDocument newDoc = doc.copy();
-			edits.apply(newDoc);
-			TextEdit vscodeEdit = new TextEdit();
-			vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-			if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
-				vscodeEdit.setNewText(replaceEdit.newText);
+	private static Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
+		try {
+			TextReplace replaceEdit = edits.asReplacement(doc);
+			if (replaceEdit==null) {
+				//The original edit does nothing.
+				return Optional.empty();
 			} else {
-				vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+				TextDocument newDoc = doc.copy();
+				edits.apply(newDoc);
+				TextEdit vscodeEdit = new TextEdit();
+				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
+				if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
+					vscodeEdit.setNewText(replaceEdit.newText);
+				} else {
+					vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+				}
+				//TODO: cursor offset within newText? for now we assume its always at the end.
+				return Optional.of(vscodeEdit);
 			}
-			//TODO: cursor offset within newText? for now we assume its always at the end.
-			item.setTextEdit(vscodeEdit);
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
+		}  catch (Exception e) {
+			Log.log(e);
+			return Optional.empty();
 		}
 	}
 
