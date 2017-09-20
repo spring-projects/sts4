@@ -67,7 +67,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		ASTNode parent = node.getParent();
 		if (parent instanceof TypeDeclaration) {
 			TypeDeclaration type = (TypeDeclaration) parent;
-			String returnType = type.resolveBinding().getQualifiedName();
+			String returnType = type.resolveBinding().getName();
 			return returnType;
 		}
 		return null;

@@ -62,7 +62,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		ASTNode parent = node.getParent();
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) parent;
-			String returnType = method.getReturnType2().resolveBinding().getQualifiedName();
+			String returnType = method.getReturnType2().resolveBinding().getName();
 			return returnType;
 		}
 		return null;

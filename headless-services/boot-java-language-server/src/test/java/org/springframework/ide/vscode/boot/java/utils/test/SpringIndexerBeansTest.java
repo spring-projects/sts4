@@ -81,7 +81,7 @@ public class SpringIndexerBeansTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java");
 		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'simpleBean' (@Bean) org.test.BeanClass", uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java", 8, 1, 8, 8));
+		assertTrue(containsSymbol(symbols, "@+ 'simpleBean' (@Bean) BeanClass", uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java", 8, 1, 8, 8));
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class SpringIndexerBeansTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'simpleComponent' (@Component) org.test.SimpleComponent", uriPrefix + "/src/main/java/org/test/SimpleComponent.java", 4, 0, 4, 10));
+		assertTrue(containsSymbol(symbols, "@+ 'simpleComponent' (@Component) SimpleComponent", uriPrefix + "/src/main/java/org/test/SimpleComponent.java", 4, 0, 4, 10));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
