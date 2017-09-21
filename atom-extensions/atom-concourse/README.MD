@@ -56,17 +56,17 @@ Resource Type declaration? The Atom Outline View (View -> Toggle Outline View) h
 6. Open any `pipeline.yml` or `task.yml` file in Atom observe reconciling, content assist and other IDE features
 
 [linting]:
-https://raw.githubusercontent.com/spring-projects/atom-concourse/f56788acb499bea1282c69bc42a269f7c2c92e32/readme-imgs/linting.png
+https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/linting.png
 
 [ca1]:
-https://raw.githubusercontent.com/spring-projects/atom-concourse/f56788acb499bea1282c69bc42a269f7c2c92e32/readme-imgs/ca1.png
+https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/ca1.png
 
 [ca2]:
-https://raw.githubusercontent.com/spring-projects/atom-concourse/f56788acb499bea1282c69bc42a269f7c2c92e32/readme-imgs/ca2.png
+https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/ca2.png
 
 [hovers]:
-https://raw.githubusercontent.com/spring-projects/atom-concourse/f56788acb499bea1282c69bc42a269f7c2c92e32/readme-imgs/hovers.png
+https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/hovers.png
 
 [outline_view]:
-https://raw.githubusercontent.com/spring-projects/atom-concourse/f56788acb499bea1282c69bc42a269f7c2c92e32/readme-imgs/outline_view.png
+https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/outline_view.png
 
