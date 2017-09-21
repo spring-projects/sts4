@@ -882,7 +882,7 @@ jobs:
   - aggregate:
     - put: s3-boot-java-atom-snapshot
       params:
-        file: out/boot-java-yaml-*.tgz
+        file: out/boot-java-*.tgz
         acl: public-read
     - put: atom-boot-java
       params:
