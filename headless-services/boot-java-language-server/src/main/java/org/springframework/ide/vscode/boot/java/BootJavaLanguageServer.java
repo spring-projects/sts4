@@ -124,7 +124,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 						"org.springframework.web.bind.annotation.RequestMapping",
 						"org.springframework.web.bind.annotation.RequestMethod",
 						"org.springframework.web.bind.annotation.RequestParam"
-			    ),
+				),
 				"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n" +
 				"public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n" +
 				"	return new ${SomeData}(${cursor});\n" +
@@ -141,6 +141,37 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 				"@GetMapping(value=\"${path}\")\n" +
 				"public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n" +
 				"	return new ${SomeData}(${cursor});\n" +
+				"}\n"
+		));
+		snippetManager.add(new JavaSnippet(
+				"PostMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.PostMapping",
+						"org.springframework.web.bind.annotation.RequestBody"
+				),
+				"@PostMapping(value=\"${path}\")\n" +
+				"public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n" +
+				"	//TODO: process POST request\n" +
+				"	${cursor}\n" +
+				"	return ${entity};\n" +
+				"}\n"
+		));
+		snippetManager.add(new JavaSnippet(
+				"PutMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.PutMapping",
+						"org.springframework.web.bind.annotation.RequestBody",
+						"org.springframework.web.bind.annotation.PathVariable"
+				),
+				"@PutMapping(value=\"${path}/{${id}}\")\n" +
+				"public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n" +
+				"	//TODO: process PUT request\n" +
+				"	${cursor}\n" +
+				"	return ${entity};\n" +
 				"}"
 		));
 		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
