@@ -3,18 +3,19 @@ set -e
 set -v
 workdir=`pwd`
 output=$workdir/out
-atom_commons=$workdir/sts4/atom-extensions/atom-commons
-atom_package=$workdir/package_sources
+# atom_commons=$workdir/sts4/atom-extensions/atom-commons
+# atom_package=$workdir/package_sources
+atom_package=$workdir/sts4/atom-extensions/$package_name
 
 url=`cat fatjar/url`
 fatjar_version=`cat fatjar/version`
 
-cd $atom_commons
-npm install
+# cd $atom_commons
+# npm install
 
 cd $atom_package
 
-npm install ${atom_commons}
+# npm install ${atom_commons}
 
 cat > properties.json << EOF
 {

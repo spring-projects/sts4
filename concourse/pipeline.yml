@@ -743,58 +743,58 @@ jobs:
         params:
           file: out/boot-java-language-server-*.jar
           acl: public-read
-- name: build-manifest-yaml-atom-package
-  plan:
-  - aggregate:
-    - get: sts4
-      passed:
-      - atom-language-servers-test
-    - get: atom-cf-manifest-yaml
-      trigger: true
-    - get: s3-manifest-yaml-fatjar-snapshot
-      trigger: true
-      passed:
-      - atom-language-servers-test
-  - task: build-manifest-yaml-atom-package
-    input_mapping:
-      package_sources: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar-snapshot
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: s3-manifest-yaml-atom-snapshot
-    params:
-      file: out/cf-manifest-yaml-*.tgz
-      acl: public-read
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-concourse-atom-package
-  plan:
-  - aggregate:
-    - get: sts4
-      passed:
-      - atom-language-servers-test
-    - get: atom-concourse
-      trigger: true
-    - get: s3-concourse-fatjar-snapshot
-      trigger: true
-      passed:
-      - atom-language-servers-test
-  - task: build-concourse-pipeline-yaml-atom-package
-    input_mapping:
-      package_sources: atom-concourse
-      fatjar: s3-concourse-fatjar-snapshot
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: s3-concourse-atom-snapshot
-    params:
-      file: out/concourse-pipeline-yaml-*.tgz
-      acl: public-read
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+# - name: build-manifest-yaml-atom-package
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#       passed:
+#       - atom-language-servers-test
+#     - get: atom-cf-manifest-yaml
+#       trigger: true
+#     - get: s3-manifest-yaml-fatjar-snapshot
+#       trigger: true
+#       passed:
+#       - atom-language-servers-test
+#   - task: build-manifest-yaml-atom-package
+#     input_mapping:
+#       package_sources: atom-cf-manifest-yaml
+#       fatjar: s3-manifest-yaml-fatjar-snapshot
+#     file: sts4/concourse/tasks/build-atom-package.yml
+#   - put: s3-manifest-yaml-atom-snapshot
+#     params:
+#       file: out/cf-manifest-yaml-*.tgz
+#       acl: public-read
+#   on_failure:
+#     put: slack-notification
+#     params:
+#       text: |
+#          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+# - name: build-concourse-atom-package
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#       passed:
+#       - atom-language-servers-test
+#     - get: atom-concourse
+#       trigger: true
+#     - get: s3-concourse-fatjar-snapshot
+#       trigger: true
+#       passed:
+#       - atom-language-servers-test
+#   - task: build-concourse-pipeline-yaml-atom-package
+#     input_mapping:
+#       package_sources: atom-concourse
+#       fatjar: s3-concourse-fatjar-snapshot
+#     file: sts4/concourse/tasks/build-atom-package.yml
+#   - put: s3-concourse-atom-snapshot
+#     params:
+#       file: out/concourse-pipeline-yaml-*.tgz
+#       acl: public-read
+#   on_failure:
+#     put: slack-notification
+#     params:
+#       text: |
+#          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-bosh-atom-package
   plan:
   - aggregate:
@@ -808,14 +808,15 @@ jobs:
       passed:
       - atom-language-servers-test
   - task: build-bosh-atom-package
+    params:
+      package_name: atom-bosh
     input_mapping:
-      package_sources: atom-bosh
       fatjar: s3-bosh-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
-  - put: s3-bosh-atom-snapshot
-    params:
-      file: out/bosh-yaml-*.tgz
-      acl: public-read  
+  # - put: s3-bosh-atom-snapshot
+  #   params:
+  #     file: out/bosh-yaml-*.tgz
+  #     acl: public-read  
   on_failure:
     put: slack-notification
     params:
