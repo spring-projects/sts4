@@ -67,6 +67,12 @@ resources:
 #     branch: {{branch}}
 #     private_key: {{rsa_id}}
 #     uri: git@github.com:spring-projects/atom-bosh.git
+- name: atom-boot-java
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com/spring-projects/atom-boot-java
 - name: tasks
   type: git
   source:
@@ -203,6 +209,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/atom/snapshots/bosh-yaml-(.*).tgz
+- name: s3-boot-java-atom-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/atom/snapshots/boot-java-(.*).tgz
 - name: vscode-snapshot-website
   type: s3-multi
   source:
@@ -677,6 +691,10 @@ jobs:
       trigger: true
       passed:
       - build-concourse-atom-package
+    - get: s3-boot-java-atom-snapshot
+      trigger: true
+      passed:
+      - build-boot-java-atom-package
   - task: build-website
     file: sts4/concourse/tasks/build-atom-website.yml
   - put: atom-snapshot-website
@@ -834,6 +852,39 @@ jobs:
         file: out/bosh-yaml-*.tgz
         acl: public-read
     - put: atom-bosh
+      params:
+        repository: out/repo
+        rebase: true    
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-boot-java-atom-package
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-boot-java
+    - get: s3-bosh-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-boot-java-atom-package
+    params:
+      package_name: atom-boot-java
+    input_mapping:
+      fatjar: s3-boot-java-fatjar-snapshot
+      release_repo: atom-boot-java
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - aggregate:
+    - put: s3-boot-java-atom-snapshot
+      params:
+        file: out/boot-java-yaml-*.tgz
+        acl: public-read
+    - put: atom-boot-java
       params:
         repository: out/repo
         rebase: true    

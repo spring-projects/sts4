@@ -29,15 +29,19 @@ npm install
 
 cd $workdir
 mkdir -p out/repo
+# enable hidden files for * matcher
+shopt -s dotglob
 cp -a $atom_package/* out/repo
 cp -a release_repo/.git out/repo/.git
+# disable hidden files for * matcher
+shopt -u dotglob
 cp $atom_package/.gitignore-release out/repo/.gitignore
 rm -f out/repo/.gitignore-release
 
 cd out/repo
 
-git config user.email "kdevolder@pivotal.io"
-git config user.name "Kris De Volder"
+git config user.email "aboyko@pivotal.io"
+git config user.name "Alex Boyko"
 
 git add .
 
