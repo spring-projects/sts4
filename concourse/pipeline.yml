@@ -37,36 +37,36 @@ resources:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
-- name: atom-cf-manifest-yaml-out
-  type: git
-  source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
-    uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
+# - name: atom-cf-manifest-yaml-out
+#   type: git
+#   source:
+#     branch: {{branch}}
+#     private_key: {{rsa_id}}
+#     uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
 - name: atom-concourse
   type: git
   source:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-concourse.git
-- name: atom-concourse-out
-  type: git
-  source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
-    uri: git@github.com:spring-projects/atom-concourse.git
+# - name: atom-concourse-out
+#   type: git
+#   source:
+#     branch: {{branch}}
+#     private_key: {{rsa_id}}
+#     uri: git@github.com:spring-projects/atom-concourse.git
 - name: atom-bosh
   type: git
   source:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-bosh.git
-- name: atom-bosh-out
-  type: git
-  source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
-    uri: git@github.com:spring-projects/atom-bosh.git
+# - name: atom-bosh-out
+#   type: git
+#   source:
+#     branch: {{branch}}
+#     private_key: {{rsa_id}}
+#     uri: git@github.com:spring-projects/atom-bosh.git
 - name: tasks
   type: git
   source:
@@ -123,14 +123,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
-- name: s3-manifest-yaml-fatjar-rc
-  type: s3
-  source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
-    regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
+# - name: s3-manifest-yaml-fatjar-rc
+#   type: s3
+#   source:
+#     bucket: {{s3_prod_bucket}}
+#     access_key_id: {{s3_prod_accesskey}}
+#     secret_access_key: {{s3_prod_secretkey}}
+#     region_name: {{s3_prod_region}}
+#     regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
 - name: s3-concourse-fatjar-snapshot
   type: s3
   source:
@@ -139,14 +139,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
-- name: s3-concourse-fatjar-rc
-  type: s3
-  source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
-    regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
+# - name: s3-concourse-fatjar-rc
+#   type: s3
+#   source:
+#     bucket: {{s3_prod_bucket}}
+#     access_key_id: {{s3_prod_accesskey}}
+#     secret_access_key: {{s3_prod_secretkey}}
+#     region_name: {{s3_prod_region}}
+#     regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
 - name: s3-bosh-fatjar-snapshot
   type: s3
   source:
@@ -155,14 +155,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
-- name: s3-bosh-fatjar-rc
-  type: s3
-  source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
-    regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
+# - name: s3-bosh-fatjar-rc
+#   type: s3
+#   source:
+#     bucket: {{s3_prod_bucket}}
+#     access_key_id: {{s3_prod_accesskey}}
+#     secret_access_key: {{s3_prod_secretkey}}
+#     region_name: {{s3_prod_region}}
+#     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
 - name: s3-boot-java-fatjar-snapshot
   type: s3
   source:
@@ -171,14 +171,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/boot-java-language-server-(.*).jar
-- name: s3-boot-java-fatjar-rc
-  type: s3
-  source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
-    regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
+# - name: s3-boot-java-fatjar-rc
+#   type: s3
+#   source:
+#     bucket: {{s3_prod_bucket}}
+#     access_key_id: {{s3_prod_accesskey}}
+#     secret_access_key: {{s3_prod_secretkey}}
+#     region_name: {{s3_prod_region}}
+#     regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -393,93 +393,93 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
-- name: promote-fatjars-to-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: s3-bosh-fatjar-snapshot
-      passed:
-      - build-bosh-atom-package
-    - get: s3-concourse-fatjar-snapshot
-      passed:
-      - build-concourse-atom-package
-    - get: s3-manifest-yaml-fatjar-snapshot
-      passed:
-      - build-manifest-yaml-atom-package
-  - aggregate:
-    - put: s3-bosh-fatjar-rc
-      params:
-        file: s3-bosh-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-concourse-fatjar-rc
-      params:
-        file: s3-concourse-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-manifest-yaml-fatjar-rc
-      params:
-        file: s3-manifest-yaml-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-boot-java-fatjar-rc
-      params:
-        file: s3-boot-java-fatjar-snapshot/*.jar
-        acl: public-read
-- name: prepare-manifest-yaml-atom-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: atom-cf-manifest-yaml
-    - get: s3-manifest-yaml-fatjar-rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    input_mapping:
-      package_sources: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar-rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-cf-manifest-yaml-out
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-concourse-atom-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: atom-concourse
-    - get: s3-concourse-fatjar-rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    input_mapping:
-      package_sources: atom-concourse
-      fatjar: s3-concourse-fatjar-rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-concourse-out
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-bosh-atom-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: atom-bosh
-    - get: s3-bosh-fatjar-rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    input_mapping:
-      package_sources: atom-bosh
-      fatjar: s3-bosh-fatjar-rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-bosh-out
-    params:
-      repository: out/repo
-      rebase: true
+# - name: promote-fatjars-to-rc
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: s3-bosh-fatjar-snapshot
+#       passed:
+#       - build-bosh-atom-package
+#     - get: s3-concourse-fatjar-snapshot
+#       passed:
+#       - build-concourse-atom-package
+#     - get: s3-manifest-yaml-fatjar-snapshot
+#       passed:
+#       - build-manifest-yaml-atom-package
+#   - aggregate:
+#     - put: s3-bosh-fatjar-rc
+#       params:
+#         file: s3-bosh-fatjar-snapshot/*.jar
+#         acl: public-read
+#     - put: s3-concourse-fatjar-rc
+#       params:
+#         file: s3-concourse-fatjar-snapshot/*.jar
+#         acl: public-read
+#     - put: s3-manifest-yaml-fatjar-rc
+#       params:
+#         file: s3-manifest-yaml-fatjar-snapshot/*.jar
+#         acl: public-read
+#     - put: s3-boot-java-fatjar-rc
+#       params:
+#         file: s3-boot-java-fatjar-snapshot/*.jar
+#         acl: public-read
+# - name: prepare-manifest-yaml-atom-rc
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#     - get: atom-cf-manifest-yaml
+#     - get: s3-manifest-yaml-fatjar-rc
+#       trigger: true
+#       passed:
+#       - promote-fatjars-to-rc
+#   - task: build-atom-package
+#     input_mapping:
+#       package_sources: atom-cf-manifest-yaml
+#       fatjar: s3-manifest-yaml-fatjar-rc
+#     file: sts4/concourse/tasks/build-atom-package.yml
+#   - put: atom-cf-manifest-yaml-out
+#     params:
+#       repository: out/repo
+#       rebase: true
+# - name: prepare-concourse-atom-rc
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#     - get: atom-concourse
+#     - get: s3-concourse-fatjar-rc
+#       trigger: true
+#       passed:
+#       - promote-fatjars-to-rc
+#   - task: build-atom-package
+#     input_mapping:
+#       package_sources: atom-concourse
+#       fatjar: s3-concourse-fatjar-rc
+#     file: sts4/concourse/tasks/build-atom-package.yml
+#   - put: atom-concourse-out
+#     params:
+#       repository: out/repo
+#       rebase: true
+# - name: prepare-bosh-atom-rc
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#     - get: atom-bosh
+#     - get: s3-bosh-fatjar-rc
+#       trigger: true
+#       passed:
+#       - promote-fatjars-to-rc
+#   - task: build-atom-package
+#     input_mapping:
+#       package_sources: atom-bosh
+#       fatjar: s3-bosh-fatjar-rc
+#     file: sts4/concourse/tasks/build-atom-package.yml
+#   - put: atom-bosh-out
+#     params:
+#       repository: out/repo
+#       rebase: true
 - name: build-concourse-rc
   plan:
   - aggregate:
@@ -743,58 +743,72 @@ jobs:
         params:
           file: out/boot-java-language-server-*.jar
           acl: public-read
-# - name: build-manifest-yaml-atom-package
-#   plan:
-#   - aggregate:
-#     - get: sts4
-#       passed:
-#       - atom-language-servers-test
-#     - get: atom-cf-manifest-yaml
-#       trigger: true
-#     - get: s3-manifest-yaml-fatjar-snapshot
-#       trigger: true
-#       passed:
-#       - atom-language-servers-test
-#   - task: build-manifest-yaml-atom-package
-#     input_mapping:
-#       package_sources: atom-cf-manifest-yaml
-#       fatjar: s3-manifest-yaml-fatjar-snapshot
-#     file: sts4/concourse/tasks/build-atom-package.yml
-#   - put: s3-manifest-yaml-atom-snapshot
-#     params:
-#       file: out/cf-manifest-yaml-*.tgz
-#       acl: public-read
-#   on_failure:
-#     put: slack-notification
-#     params:
-#       text: |
-#          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-# - name: build-concourse-atom-package
-#   plan:
-#   - aggregate:
-#     - get: sts4
-#       passed:
-#       - atom-language-servers-test
-#     - get: atom-concourse
-#       trigger: true
-#     - get: s3-concourse-fatjar-snapshot
-#       trigger: true
-#       passed:
-#       - atom-language-servers-test
-#   - task: build-concourse-pipeline-yaml-atom-package
-#     input_mapping:
-#       package_sources: atom-concourse
-#       fatjar: s3-concourse-fatjar-snapshot
-#     file: sts4/concourse/tasks/build-atom-package.yml
-#   - put: s3-concourse-atom-snapshot
-#     params:
-#       file: out/concourse-pipeline-yaml-*.tgz
-#       acl: public-read
-#   on_failure:
-#     put: slack-notification
-#     params:
-#       text: |
-#          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-manifest-yaml-atom-package
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-cf-manifest-yaml
+    - get: s3-manifest-yaml-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-manifest-yaml-atom-package
+    params:
+      package_name: atom-cf-manifest-yaml
+    input_mapping:
+      release_repo: atom-cf-manifest-yaml
+      fatjar: s3-manifest-yaml-fatjar-snapshot
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - aggregate:
+    - put: s3-manifest-yaml-atom-snapshot
+      params:
+        file: out/cf-manifest-yaml-*.tgz
+        acl: public-read
+    - put: atom-cf-manifest-yaml
+      params:
+        repository: out/repo
+        rebase: true    
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-concourse-atom-package
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-concourse
+    - get: s3-concourse-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-concourse-pipeline-yaml-atom-package
+    params:
+      package_name: atom-concourse
+    input_mapping:
+      release_repo: atom-concourse
+      fatjar: s3-concourse-fatjar-snapshot
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - aggregate:
+    - put: s3-concourse-atom-snapshot
+      params:
+        file: out/concourse-pipeline-yaml-*.tgz
+        acl: public-read
+    - put: atom-concourse
+      params:
+        repository: out/repo
+        rebase: true    
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-bosh-atom-package
   serial: true
   plan:
