@@ -25,6 +25,28 @@ EOF
 
 npm install
 
+# push code to release repository
+
+cd $workdir
+mkdir -p out/repo
+cp -a $atom_package/* out/repo
+cp -a release_repo/.git out/repo/.git
+cp $atom_package/.gitignore-release out/repo/.gitignore
+rm -f out/repo/.gitignore-release
+
+cd out/repo
+
+git config user.email "kdevolder@pivotal.io"
+git config user.name "Kris De Volder"
+
+git add .
+
+git commit \
+    -m "Publish ${fatjar_version}"
+
+# Publsuh linkable artifact to S3
+
+cd $atom_package
 npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
@@ -38,13 +60,3 @@ length=${#basename}
 newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
 
 cp ${basename} $output/${newName}
-
-git config user.email "kdevolder@pivotal.io"
-git config user.name "Kris De Volder"
-
-git add .
-
-git commit \
-    -m "Use fatjar version ${fatjar_version}"
-
-git clone $atom_package $workdir/out/repo

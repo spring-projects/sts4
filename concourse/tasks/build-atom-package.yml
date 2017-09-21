@@ -1,7 +1,9 @@
 inputs:
 - name: sts4
-- name: package_sources
+- name: release_repo
 - name: fatjar
+params:
+  package_name: atom-bosh
 outputs:
 - name: out
 platform: linux

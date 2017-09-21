@@ -796,13 +796,13 @@ jobs:
 #       text: |
 #          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-bosh-atom-package
+  serial: true
   plan:
   - aggregate:
     - get: sts4
       passed:
       - atom-language-servers-test
     - get: atom-bosh
-      trigger: true
     - get: s3-bosh-fatjar-snapshot
       trigger: true
       passed:
@@ -812,11 +812,17 @@ jobs:
       package_name: atom-bosh
     input_mapping:
       fatjar: s3-bosh-fatjar-snapshot
+      release_repo: atom-bosh
     file: sts4/concourse/tasks/build-atom-package.yml
-  # - put: s3-bosh-atom-snapshot
-  #   params:
-  #     file: out/bosh-yaml-*.tgz
-  #     acl: public-read  
+  - aggregate:
+    - put: s3-bosh-atom-snapshot
+      params:
+        file: out/bosh-yaml-*.tgz
+        acl: public-read
+    - put: atom-bosh
+      params:
+        repository: out/repo
+        rebase: true    
   on_failure:
     put: slack-notification
     params:
