@@ -868,7 +868,7 @@ jobs:
       passed:
       - atom-language-servers-test
     - get: atom-boot-java
-    - get: s3-bosh-fatjar-snapshot
+    - get: s3-boot-java-fatjar-snapshot
       trigger: true
       passed:
       - atom-language-servers-test
