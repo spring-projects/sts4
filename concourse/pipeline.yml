@@ -72,7 +72,7 @@ resources:
   source:
     branch: {{branch}}
     private_key: {{rsa_id}}
-    uri: git@github.com/spring-projects/atom-boot-java
+    uri: git@github.com:spring-projects/atom-boot-java
 - name: tasks
   type: git
   source:
