@@ -10,16 +10,18 @@ import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
-import { TextDocument } from 'vscode';
+import { Range, TextDocument } from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 
 import * as commons from 'commons-vscode';
+
+const MARK_WORD = "highlight";
 
 export function activate(context: VSCode.ExtensionContext) {
 
     let options: commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-boot-java',
         fatJarFile: 'jars/language-server.jar',
         clientOptions: {
@@ -29,5 +31,28 @@ export function activate(context: VSCode.ExtensionContext) {
             }
         }
     };
+
+    const DECORATION = VSCode.window.createTextEditorDecorationType({
+//        textDecoration: "underline",
+        outline: "#BFBF3F dotted thin"
+    });
+    context.subscriptions.push(DECORATION);
+
+    context.subscriptions.push(VSCode.workspace.onDidChangeTextDocument(e => {
+        let editor = VSCode.window.activeTextEditor;
+        if (editor && editor.document == e.document) {
+            let text = e.document.getText();
+            let toMark = text.indexOf(MARK_WORD);
+            if (toMark>=0) {
+                editor.setDecorations(DECORATION, [new Range(
+                    editor.document.positionAt(toMark),
+                    editor.document.positionAt(toMark+MARK_WORD.length)
+                )]);
+            } else {
+                editor.setDecorations(DECORATION, []);
+            }
+        }
+    }));
+
     commons.activate(options, context);
 }
