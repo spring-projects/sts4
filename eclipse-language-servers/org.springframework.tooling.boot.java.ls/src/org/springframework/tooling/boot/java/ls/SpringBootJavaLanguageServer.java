@@ -21,8 +21,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.jdt.launching.IVMInstall;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
@@ -49,8 +47,9 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		commands.add("-Dlsp.lazy.completions.disable=true");
 		commands.add("-Dlsp.completions.indentation.enable=true");
 
-		commands.add("-jar");
-		commands.add(getLanguageServerJARLocation());
+		commands.add("-cp");
+		commands.add(getToolsJAR() + ":" + getLanguageServerJARLocation());
+		commands.add("org.springframework.boot.loader.JarLauncher");
 
 		String workingDir = getWorkingDirLocation();
 
@@ -91,24 +90,33 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 	}
 
 	protected String getJDKLocation() {
-		IVMInstall jdk = JavaRuntime.getDefaultVMInstall();
-		File javaExecutable = StandardVMType.findJavaExecutable(jdk.getInstallLocation());
+		File jre = new File(System.getProperty("java.home"));
+		File javaExecutable = StandardVMType.findJavaExecutable(jre);
 		return javaExecutable.getAbsolutePath();
 	}
 	
+	protected String getToolsJAR() {
+		File jre = new File(System.getProperty("java.home"));
+		return new File(jre.getParent(), "lib" + Path.SEPARATOR + "tools.jar").getAbsolutePath();
+	}
+	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION + "-SNAPSHOT.jar";
+		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		File dataFile = bundle.getDataFile(languageServer);
-//		if (!dataFile.exists()) {
+		String bundleVersion = bundle.getVersion().toString();
+
+		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
+		
+		File dataFile = bundle.getDataFile(languageServerLocalCopy);
+		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
 			try {
-				copyLanguageServerJAR(languageServer);
+				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
-//		}
+		}
 		
 		return dataFile.getAbsolutePath();
 	}
@@ -118,11 +126,11 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		return System.getProperty("user.dir");
 	}
 	
-	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
+	protected void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
 		
-		File dataFile = bundle.getDataFile(languageServerJarName);
+		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 
