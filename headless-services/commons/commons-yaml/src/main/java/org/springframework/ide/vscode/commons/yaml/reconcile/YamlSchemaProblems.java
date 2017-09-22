@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.Q
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
@@ -61,21 +62,7 @@ public class YamlSchemaProblems {
 	);
 
 	public static ProblemType problemType(final String typeName, ProblemSeverity defaultSeverity) {
-
-		return new ProblemType() {
-			@Override
-			public String toString() {
-				return typeName;
-			}
-			@Override
-			public ProblemSeverity getDefaultSeverity() {
-				return defaultSeverity;
-			}
-			@Override
-			public String getCode() {
-				return typeName;
-			}
-		};
+		return ProblemTypes.create(typeName, defaultSeverity);
 	}
 
 	public static ProblemType problemType(final String typeName) {

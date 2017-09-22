@@ -17,6 +17,7 @@ package org.springframework.ide.vscode.commons.languageserver.reconcile;
 public enum ProblemSeverity {
 
 	IGNORE,
+	INFO,
 	WARNING,
 	ERROR;
 

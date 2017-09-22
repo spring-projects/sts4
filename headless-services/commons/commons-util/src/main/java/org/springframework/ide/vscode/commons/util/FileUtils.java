@@ -15,7 +15,7 @@ import java.io.File;
 /**
  * Utilitity methods for working with files
  * 
- * @authro Kris De Volder
+ * @author Kris De Volder
  * @author Alex Boyko
  */
 public class FileUtils {
