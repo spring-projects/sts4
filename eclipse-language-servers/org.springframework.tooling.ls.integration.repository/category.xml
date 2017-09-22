@@ -56,4 +56,8 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.joni">
+		<category name="deps"/>
+	</bundle>
+
 </site>
