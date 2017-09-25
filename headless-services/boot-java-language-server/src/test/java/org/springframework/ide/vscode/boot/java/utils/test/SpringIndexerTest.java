@@ -77,7 +77,7 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		indexer.scanFiles(directory);
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols();
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(8, allSymbols.size());
 
@@ -128,7 +128,7 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI());
 		indexer.scanFiles(directory);
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols();
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(8, allSymbols.size());
 
@@ -142,6 +142,63 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+	}
+
+	@Test
+	public void testFilterSymbolsUsingQueryString() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		indexer.scanFiles(directory);
+
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("mapp");
+
+		assertEquals(6, allSymbols.size());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+	}
+
+	@Test
+	public void testFilterSymbolsUsingQueryStringSplittedResult() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		indexer.scanFiles(directory);
+
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping -- (no method defined)");
+
+		assertEquals(2, allSymbols.size());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+	}
+
+	@Test
+	public void testFilterSymbolsUsingQueryStringFullSymbolString() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		indexer.scanFiles(directory);
+
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)");
+
+		assertEquals(1, allSymbols.size());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

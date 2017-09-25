@@ -103,9 +103,33 @@ public class SpringIndexer {
 		// TODO: update information because of doc change
 	}
 
-	public List<? extends SymbolInformation> getAllSymbols() {
+	public List<? extends SymbolInformation> getAllSymbols(String query) {
 		initialize();
-		return this.symbols;
+		if (query != null && query.length() > 0) {
+			return searchMatchingSymbols(this.symbols, query);
+		}
+		else {
+			return this.symbols;
+		}
+	}
+
+	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
+		return allsymbols.stream()
+				.filter(symbol -> containsCharacters(symbol.getName().toCharArray(), query.toCharArray())).collect(Collectors.toList());
+	}
+
+	private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
+		int symbolindex = 0;
+		int queryindex = 0;
+
+		while (queryindex < queryChars.length && symbolindex < symbolChars.length) {
+			if (symbolChars[symbolindex] == queryChars[queryindex]) {
+				queryindex++;
+			}
+			symbolindex++;
+		}
+
+		return queryindex == queryChars.length;
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String docURI) {

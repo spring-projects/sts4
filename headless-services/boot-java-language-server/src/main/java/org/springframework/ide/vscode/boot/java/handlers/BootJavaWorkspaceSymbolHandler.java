@@ -30,7 +30,7 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
 	@Override
 	public List<? extends SymbolInformation> handle(WorkspaceSymbolParams params) {
-		return indexer.getAllSymbols();
+		return indexer.getAllSymbols(params.getQuery());
 	}
 
 }
