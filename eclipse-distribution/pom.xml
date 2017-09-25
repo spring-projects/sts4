@@ -99,10 +99,10 @@
 		<profile>
 			<id>e47</id>
 			<properties>
-				<dist.target>e4.7</dist.target>
+				<dist.target>e4.7.1</dist.target>
 				<dist.target.major>e4.7</dist.target.major>
 				<dist.platform.name>Oxygen</dist.platform.name>
-				<dist.platform.name.long>Oxygen (4.7)</dist.platform.name.long>
+				<dist.platform.name.long>Oxygen.1a (4.7.1a)</dist.platform.name.long>
 				<dist.platform.id>oxygen</dist.platform.id>
 				<dist.platform.version>4.7</dist.platform.version>
 				<package.qualifierPrefix>e47</package.qualifierPrefix>
@@ -119,9 +119,9 @@
 					<url>http://download.eclipse.org/staging/oxygen/</url>
 				</repository> -->
 				<repository>
-					<id>oxygen-java9-y-builds</id>
+					<id>platform-m-build</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/eclipse/updates/4.7-Y-builds/</url>
+					<url>http://download.eclipse.org/eclipse/updates/4.7-M-builds</url>
 				</repository>
 				<repository>
 					<id>latest-m2e</id>
