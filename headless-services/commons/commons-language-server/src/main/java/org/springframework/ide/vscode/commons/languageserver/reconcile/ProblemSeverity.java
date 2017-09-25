@@ -19,6 +19,7 @@ public enum ProblemSeverity {
 	IGNORE,
 	INFO,
 	WARNING,
+	HINT,
 	ERROR;
 
 }

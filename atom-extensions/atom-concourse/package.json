@@ -7,7 +7,7 @@
   "icon": "icon.png",
   "license": "MIT",
   "engines": {
-    "atom": ">=1.17.0"
+    "atom": ">=1.21.0"
   },
   "files": [
     "grammars/",
@@ -19,7 +19,7 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",
-    "pivotal-atom-languageclient-commons": "0.0.8"
+    "pivotal-atom-languageclient-commons": "0.0.10"
   },
   "devDependencies": {
     "coffeelint": "^1.10.1"
@@ -37,9 +37,9 @@
         "2.0.0": "consumeLinterV2"
       }
     },
-    "nuclide-datatip.provider": {
+    "datatip": {
       "versions": {
-        "0.0.0": "consumeDatatip"
+        "0.1.0": "consumeDatatip"
       }
     }
   },
@@ -49,25 +49,36 @@
         "2.0.0": "provideAutocomplete"
       }
     },
-    "nuclide-code-format.provider": {
+    "code-actions": {
       "versions": {
-        "0.0.0": "provideCodeFormat"
+        "0.1.0": "provideCodeActions"
       }
     },
-    "nuclide-definition-provider": {
+    "code-format.range": {
       "versions": {
-        "0.0.0": "provideDefinitions"
+        "0.1.0": "provideCodeFormat"
       }
     },
-    "nuclide-find-references.provider": {
+    "code-highlight": {
       "versions": {
-        "0.0.0": "provideFindReferences"
+        "0.1.0": "provideCodeHighlight"
       }
     },
-    "nuclide-outline-view": {
+    "definitions": {
       "versions": {
-        "0.0.0": "provideOutlines"
+        "0.1.0": "provideDefinitions"
+      }
+    },
+    "find-references": {
+      "versions": {
+        "0.1.0": "provideFindReferences"
+      }
+    },
+    "outline-view": {
+      "versions": {
+        "0.1.0": "provideOutlines"
       }
     }
   }
+
 }
