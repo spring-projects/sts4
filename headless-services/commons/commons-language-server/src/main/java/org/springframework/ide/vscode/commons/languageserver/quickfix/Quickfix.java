@@ -64,11 +64,9 @@ public class Quickfix<T> {
 
 	private boolean appliesToContext(CodeActionContext context) {
 		if (context!=null) {
-			return context.getDiagnostics().stream().anyMatch(diag -> {
-				boolean okay = this.diagMsg == null || this.diagMsg.equals(diag.getMessage());
-				System.out.println(okay + " <- "+diag);
-				return okay;
-			});
+			return context.getDiagnostics().stream().anyMatch(diag ->
+				this.diagMsg == null || this.diagMsg.equals(diag.getMessage())
+			);
 		}
 		return true;
 	}
