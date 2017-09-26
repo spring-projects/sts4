@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <plugin>
 
-   <extension id="org.springframework.boot.ide" point="org.eclipse.core.runtime.products"> 
+   <extension id="sts4" point="org.eclipse.core.runtime.products"> 
       <product name="%productName" application="org.eclipse.ui.ide.workbench" description="%productBlurb"> 
           <property name="windowImages" value="sts16.png,sts32.png,sts48.png,sts64.png,sts128.png"/> 
           <property name="aboutImage" value="sts_lg.gif"/> 
