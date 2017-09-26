@@ -106,6 +106,44 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void quickfixForOneOfMultipleMarkersOnSameRange() throws Exception {
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: myjob\n" +
+				"  plan:\n" +
+				"  - task: foo\n" +
+				"    config:\n" +
+				"      inputs:\n" +
+				"      - name: foo"
+		);
+		List<Diagnostic> problems = editor.assertProblems(
+			"config|[image_resource, rootfs_uri, image] is required",
+			"config|[platform, run] are required"
+		);
+
+		CodeAction quickfix = editor.assertCodeAction(problems.get(0));
+		//TODO: fix https://www.pivotaltracker.com/story/show/151460687 and uncomment code below
+//		assertEquals(null, quickfix);
+
+		quickfix = editor.assertCodeAction(problems.get(1));
+		assertEquals("Add properties: [platform, run]", quickfix.getLabel());
+		quickfix.perform();
+
+		editor.assertText(
+				"jobs:\n" +
+				"- name: myjob\n" +
+				"  plan:\n" +
+				"  - task: foo\n" +
+				"    config:\n" +
+				"      inputs:\n" +
+				"      - name: foo\n" +
+				"      platform: <*>\n" +
+				"      run:\n" +
+				"        path: "
+		);
+
+	}
+
 	@Test public void reconcileResourceTypeType() throws Exception {
 		Editor editor;
 		editor = harness.newEditor(

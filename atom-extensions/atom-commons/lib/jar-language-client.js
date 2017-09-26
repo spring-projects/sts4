@@ -8,6 +8,7 @@ const net = require('net');
 const rpc = require('vscode-jsonrpc');
 const {AutoLanguageClient, DownloadFile} = require('atom-languageclient');
 const { Disposable } = require('atom');
+import { StsAdapter } from './sts-adapter';
 
 
 export class JarLanguageClient extends AutoLanguageClient {
@@ -52,6 +53,13 @@ export class JarLanguageClient extends AutoLanguageClient {
             });
         });
     }
+
+    // Start adapters that are not shared between servers
+    startExclusiveAdapters(server) {
+        super.startExclusiveAdapters(server);
+        StsAdapter.attach(server.connection);
+    }
+
 
     launchProcess(port) {
         const command = this.findJavaExecutable('java');
