@@ -428,6 +428,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			return DiagnosticSeverity.Warning;
 		case INFO:
 			return DiagnosticSeverity.Information;
+		case HINT:
+			return DiagnosticSeverity.Hint;
 		case IGNORE:
 			return null;
 		default:

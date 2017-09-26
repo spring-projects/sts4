@@ -152,7 +152,8 @@ public abstract class LaunguageServerApp {
 	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
 	 */
 	public void startAsServer() throws IOException, InterruptedException {
-		LOG.info("Starting LS as standlone server");
+		int serverStandalonePort = SERVER_STANDALONE_PORT;
+		LOG.info("Starting LS as standlone server on port "+serverStandalonePort);
 
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = consumer;
@@ -161,7 +162,7 @@ public abstract class LaunguageServerApp {
 
 		SimpleLanguageServer languageServer = createServer();
 		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
-				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), createServerThreads(), wrapper);
+				new InetSocketAddress("localhost", serverStandalonePort), createServerThreads(), wrapper);
 
 		languageServer.connect(launcher.getRemoteProxy());
 		Future<?> future = launcher.startListening();

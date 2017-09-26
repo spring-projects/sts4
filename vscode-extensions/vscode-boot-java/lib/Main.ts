@@ -15,7 +15,7 @@ import { Trace } from 'vscode-jsonrpc';
 
 import * as commons from 'commons-vscode';
 
-const MARK_WORD = "highlight";
+const MARK_WORD = "boot";
 
 export function activate(context: VSCode.ExtensionContext) {
 
@@ -34,6 +34,8 @@ export function activate(context: VSCode.ExtensionContext) {
 
     const DECORATION = VSCode.window.createTextEditorDecorationType({
 //        textDecoration: "underline",
+        gutterIconPath: "/home/kdvolder/git/spring-ide/plugins/org.springframework.ide.eclipse.boot/resources/icons/boot-icon.png",
+        gutterIconSize: "contain",
         outline: "#BFBF3F dotted thin"
     });
     context.subscriptions.push(DECORATION);

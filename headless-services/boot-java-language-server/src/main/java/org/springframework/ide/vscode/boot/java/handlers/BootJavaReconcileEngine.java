@@ -29,13 +29,15 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class BootJavaReconcileEngine implements IReconcileEngine {
 
-	private static final Pattern infoWord = Pattern.compile("information|warning");
+	private static final Pattern infoWord = Pattern.compile("information|warning|hint");
 
 	private static final ProblemType INFO_AVAILABLE = ProblemTypes.create("BootInfoAvailable", ProblemSeverity.INFO);
-	private static final ProblemType WARNING = ProblemTypes.create("BootInfoAvailable", ProblemSeverity.WARNING);
+	private static final ProblemType WARNING = ProblemTypes.create("BootWarning", ProblemSeverity.WARNING);
+	private static final ProblemType HINT = ProblemTypes.create("BootHint", ProblemSeverity.HINT);
 
 	@Override
 	public void reconcile(IDocument _doc, IProblemCollector problemCollector) {
+		//Implement some 'fake' reconciling to experiment with info and warning messages in different environments
 		problemCollector.beginCollecting();
 		DocumentRegion doc = new DocumentRegion(_doc);
 		try {
@@ -51,6 +53,8 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	private ReconcileProblem info(DocumentRegion region) {
 		if (region.toString().contains("info")) {
 			return new ReconcileProblemImpl(INFO_AVAILABLE, "There's dynamic boot info available", region.getStart(), region.getLength());
+		} else if (region.toString().contains("hint")) {
+			return new ReconcileProblemImpl(HINT, "Can you take a hint?", region.getStart(), region.getLength());
 		}
 		return new ReconcileProblemImpl(WARNING, "Be warned!", region.getStart(), region.getLength());
 	}
