@@ -390,7 +390,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 							List<QuickfixData<?>> fixes = problem.getQuickfixes();
 							if (CollectionUtil.hasElements(fixes)) {
 								for (QuickfixData<?> fix : fixes) {
-									quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, rng, fix));
+									quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, d, fix));
 								}
 							}
 							diagnostics.add(d);

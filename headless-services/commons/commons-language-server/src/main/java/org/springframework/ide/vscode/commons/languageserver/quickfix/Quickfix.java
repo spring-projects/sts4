@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.languageserver.quickfix;
 
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
 
 import com.google.common.collect.ImmutableList;
@@ -33,12 +34,15 @@ public class Quickfix<T> {
 	private final String CODE_ACTION_CMD_ID;
 
 	private final Range range;
+	private final String diagMsg;
 	private final QuickfixData<T> data;
 
-	public Quickfix(String CODE_ACTION_CMD_ID, Range range, QuickfixData<T> data) {
+
+	public Quickfix(String CODE_ACTION_CMD_ID, Diagnostic diag, QuickfixData<T> data) {
 		super();
 		this.CODE_ACTION_CMD_ID = CODE_ACTION_CMD_ID;
-		this.range = range;
+		this.range = diag.getRange();
+		this.diagMsg = diag.getMessage();
 		this.data = data;
 	}
 
@@ -55,6 +59,17 @@ public class Quickfix<T> {
 	}
 
 	public boolean appliesTo(Range range, CodeActionContext context) {
-		return range.equals(this.range);
+		return range.equals(this.range) && appliesToContext(context);
+	}
+
+	private boolean appliesToContext(CodeActionContext context) {
+		if (context!=null) {
+			return context.getDiagnostics().stream().anyMatch(diag -> {
+				boolean okay = this.diagMsg == null || this.diagMsg.equals(diag.getMessage());
+				System.out.println(okay + " <- "+diag);
+				return okay;
+			});
+		}
+		return true;
 	}
 }

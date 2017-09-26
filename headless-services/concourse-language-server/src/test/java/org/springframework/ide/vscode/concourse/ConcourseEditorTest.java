@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.InputStream;
@@ -121,11 +122,9 @@ public class ConcourseEditorTest {
 			"config|[platform, run] are required"
 		);
 
-		CodeAction quickfix = editor.assertCodeAction(problems.get(0));
-		//TODO: fix https://www.pivotaltracker.com/story/show/151460687 and uncomment code below
-//		assertEquals(null, quickfix);
+		assertTrue(editor.getCodeActions(problems.get(0)).isEmpty());
 
-		quickfix = editor.assertCodeAction(problems.get(1));
+		CodeAction quickfix = editor.assertCodeAction(problems.get(1));
 		assertEquals("Add properties: [platform, run]", quickfix.getLabel());
 		quickfix.perform();
 
