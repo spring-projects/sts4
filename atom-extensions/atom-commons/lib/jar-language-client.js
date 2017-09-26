@@ -20,6 +20,17 @@ export class JarLanguageClient extends AutoLanguageClient {
         this.serverLauncherJar = serverLauncherJar;
     }
 
+    getInitializeParams(projectPath, process) {
+        const initParams = super.getInitializeParams(projectPath, process);
+        initParams.capabilities = {
+            workspace: {
+                executeCommand: {
+                }
+            }
+        };
+        return initParams;
+    }
+
     startServerProcess () {
         // //TODO: Remove when debugging is over
         atom.config.set('core.debugLSP', true);

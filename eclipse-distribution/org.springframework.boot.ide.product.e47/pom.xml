@@ -74,7 +74,7 @@
 				<configuration>
 					<products>
 						<product>
-							<id>org.springframework.boot.ide</id>
+							<id>org.springframework.boot.ide.branding.sts4</id>
 							<rootFolder>sts-${unqualifiedVersion}.${p2.qualifier}</rootFolder>
 							<rootFolders>
 								<macosx>SpringToolSuite4.app</macosx>
@@ -110,7 +110,7 @@
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
 								    <arg value="Developer ID Application: Trevor Marshall"/>
-								    <arg value="${project.build.directory}/products/org.springframework.boot.ide/macosx/cocoa/x86_64/SpringToolSuite4.app"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app"/>
 								</exec>
 
 							</target>
