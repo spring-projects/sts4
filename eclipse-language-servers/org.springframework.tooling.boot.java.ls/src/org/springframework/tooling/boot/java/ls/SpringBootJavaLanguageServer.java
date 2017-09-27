@@ -101,6 +101,10 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 	}
 	
 	protected String getLanguageServerJARLocation() {
+		String fromSysProp = System.getProperty("boot-java-ls-jar", null);
+		if (fromSysProp!=null) {
+			return fromSysProp;
+		}
 		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
