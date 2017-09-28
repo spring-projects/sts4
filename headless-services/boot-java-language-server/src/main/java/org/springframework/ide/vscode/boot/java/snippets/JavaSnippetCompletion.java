@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.snippets;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
@@ -27,10 +29,12 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 	private DocumentRegion query;
 	private JavaSnippet javaSnippet;
 	private Supplier<SnippetBuilder> snippetBuilderFactory;
+	private CompilationUnit cu;
 
-	public JavaSnippetCompletion(Supplier<SnippetBuilder> snippetBuilderFactory, DocumentRegion query, JavaSnippet javaSnippet) {
+	public JavaSnippetCompletion(Supplier<SnippetBuilder> snippetBuilderFactory, DocumentRegion query, CompilationUnit cu, JavaSnippet javaSnippet) {
 		this.snippetBuilderFactory = snippetBuilderFactory;
 		this.query = query;
+		this.cu = cu;
 		this.javaSnippet = javaSnippet;
 	}
 
@@ -61,8 +65,17 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 
 	@Override
 	public Optional<DocumentEdits> getAdditionalEdit() {
-		DocumentEdits edit = new DocumentEdits(query.getDocument());
-		edit.insert(0, "import my.stuff;\n");
-		return Optional.of(edit );
+		ImportRewrite rewrite =  ImportRewrite.create(cu, true);
+
+		javaSnippet.getImports().ifPresent((imprts ->
+		{
+			for (String imprt : imprts) {
+				rewrite.addImport(imprt);
+			}
+		}));
+
+		DocumentEdits edit = rewrite.createEdit(query.getDocument());
+
+		return Optional.of(edit);
 	}
 }

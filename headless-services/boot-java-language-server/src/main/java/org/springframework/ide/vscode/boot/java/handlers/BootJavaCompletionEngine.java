@@ -75,7 +75,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 			System.out.println("AST node found: " + node.getClass().getName());
 			Collection<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
 			completions.addAll(collectCompletionsForAnnotations(node, offset, document));
-			completions.addAll(snippets.getCompletions(document, offset, node));
+			completions.addAll(snippets.getCompletions(document, offset, node, cu));
 			return completions;
 		}
 

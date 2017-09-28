@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
@@ -46,14 +47,14 @@ public class JavaSnippetManager {
 
 	}
 
-	public Collection<ICompletionProposal> getCompletions(IDocument doc, int offset, ASTNode node) {
+	public Collection<ICompletionProposal> getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu) {
 		Collection<ICompletionProposal> completions = new ArrayList<>();
 
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
 
 		for (JavaSnippet javaSnippet : snippets) {
 			if (FuzzyMatcher.matchScore(query.toString(), javaSnippet.getName()) != 0) {
-				javaSnippet.generateCompletion(snippetBuilderFactory, query, node)
+				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu)
 						.ifPresent((completion) -> completions.add(completion));
 			}
 		}

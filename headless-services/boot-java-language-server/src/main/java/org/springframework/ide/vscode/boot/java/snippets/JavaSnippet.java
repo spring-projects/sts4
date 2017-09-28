@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
@@ -44,12 +45,13 @@ public class JavaSnippet {
 	}
 
 	public Optional<ICompletionProposal> generateCompletion(Supplier<SnippetBuilder> snippetBuilderFactory,
-			DocumentRegion query, ASTNode node) {
+			DocumentRegion query, ASTNode node, CompilationUnit cu) {
 
 		if (context.appliesTo(node)) {
 			return Optional.of(
 					new JavaSnippetCompletion(snippetBuilderFactory,
 							query,
+							cu,
 							this
 					)
 			);
@@ -66,8 +68,8 @@ public class JavaSnippet {
 		return this.template;
 	}
 
-	public  List<String> getImports() {
-		return this.imports;
+	public  Optional<List<String>> getImports() {
+		return Optional.of(this.imports);
 	}
 
 	public CompletionItemKind getKind() {
