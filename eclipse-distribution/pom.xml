@@ -46,7 +46,7 @@
 		<!-- OSX app signing -->
 		<skip.osx.signing>true</skip.osx.signing>
 
-		<dist.name>Spring Boot IDE</dist.name>
+		<dist.name>Spring Tool Suite 4</dist.name>
 
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
