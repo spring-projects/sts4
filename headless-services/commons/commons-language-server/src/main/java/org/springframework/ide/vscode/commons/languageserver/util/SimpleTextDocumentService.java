@@ -310,7 +310,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		}
 		return Mono.fromCallable(() -> {
 			server.waitForReconcile();
-			return documentSymbolHandler.handle(params);
+			List<? extends SymbolInformation> r = documentSymbolHandler.handle(params);
+			//handle it when symbolHandler is sloppy and returns null instead of empty list.
+			return r == null ? ImmutableList.of() : r;
 		})
 		.toFuture()
 		.thenApply(l -> (List<? extends SymbolInformation>)l);
