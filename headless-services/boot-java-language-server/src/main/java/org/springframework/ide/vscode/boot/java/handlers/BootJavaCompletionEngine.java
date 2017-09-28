@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,6 +25,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
+import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -38,10 +40,12 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 
 	private JavaProjectFinder projectFinder;
 	private Map<String, CompletionProvider> completionProviders;
+	private JavaSnippetManager snippets;
 
-	public BootJavaCompletionEngine(JavaProjectFinder projectFinder, Map<String, CompletionProvider> specificProviders) {
+	public BootJavaCompletionEngine(JavaProjectFinder projectFinder, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
 		this.projectFinder = projectFinder;
 		this.completionProviders = specificProviders;
+		this.snippets = snippets;
 	}
 
 	@Override
@@ -69,7 +73,10 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 
 		if (node != null) {
 			System.out.println("AST node found: " + node.getClass().getName());
-			return collectCompletionsForAnnotations(node, offset, document);
+			Collection<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
+			completions.addAll(collectCompletionsForAnnotations(node, offset, document));
+			completions.addAll(snippets.getCompletions(document, offset, node, cu));
+			return completions;
 		}
 
 		return Collections.emptyList();

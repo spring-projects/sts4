@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -29,6 +30,9 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
+import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
+import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -51,6 +55,8 @@ import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFile
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Language Server for Spring Boot Application Properties files
@@ -109,7 +115,66 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(indexProvider));
 
-		return new BootJavaCompletionEngine(javaProjectFinder, providers);
+		JavaSnippetManager snippetManager = new JavaSnippetManager(this::createSnippetBuilder);
+		snippetManager.add(new JavaSnippet(
+				"RequestMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.RequestMapping",
+						"org.springframework.web.bind.annotation.RequestMethod",
+						"org.springframework.web.bind.annotation.RequestParam"
+				),
+				"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n" +
+				"public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n" +
+				"	return new ${SomeData}(${cursor});\n" +
+				"}\n"
+		));
+		snippetManager.add(new JavaSnippet(
+				"GetMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.GetMapping",
+						"org.springframework.web.bind.annotation.RequestParam"
+				),
+				"@GetMapping(value=\"${path}\")\n" +
+				"public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n" +
+				"	return new ${SomeData}(${cursor});\n" +
+				"}\n"
+		));
+		snippetManager.add(new JavaSnippet(
+				"PostMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.PostMapping",
+						"org.springframework.web.bind.annotation.RequestBody"
+				),
+				"@PostMapping(value=\"${path}\")\n" +
+				"public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n" +
+				"	//TODO: process POST request\n" +
+				"	${cursor}\n" +
+				"	return ${entity};\n" +
+				"}\n"
+		));
+		snippetManager.add(new JavaSnippet(
+				"PutMapping method",
+				JavaSnippetContext.BOOT_MEMBERS,
+				CompletionItemKind.Method,
+				ImmutableList.of(
+						"org.springframework.web.bind.annotation.PutMapping",
+						"org.springframework.web.bind.annotation.RequestBody",
+						"org.springframework.web.bind.annotation.PathVariable"
+				),
+				"@PutMapping(value=\"${path}/{${id}}\")\n" +
+				"public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n" +
+				"	//TODO: process PUT request\n" +
+				"	${cursor}\n" +
+				"	return ${entity};\n" +
+				"}"
+		));
+		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
 	protected HoverHandler createHoverHandler(JavaProjectFinder javaProjectFinder) {

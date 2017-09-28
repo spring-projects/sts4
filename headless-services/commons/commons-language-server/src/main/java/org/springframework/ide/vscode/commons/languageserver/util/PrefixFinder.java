@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,4 +32,9 @@ public abstract class PrefixFinder {
 		return getPrefix(doc, offset, 0);
 	}
 	protected abstract boolean isPrefixChar(char c);
+
+	public DocumentRegion getPrefixRegion(IDocument doc, int offset) {
+	   String prefix = getPrefix(doc, offset);
+	   return prefix != null ? new DocumentRegion(doc, offset - prefix.length(), offset) : null;
+	}
 }

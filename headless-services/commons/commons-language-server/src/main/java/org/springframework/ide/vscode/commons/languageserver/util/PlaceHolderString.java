@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.util.Map;
-
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Represents a string with placeholder inside. Provides methods to retrieve
@@ -68,12 +68,12 @@ public class PlaceHolderString {
 
 	}
 
-	private final ImmutableMap<Object, PlaceHolder> placeHolders;
+	private final ImmutableMultimap<Object, PlaceHolder> placeHolders;
 	private final String string;
 
-	public PlaceHolderString(Map<Object, PlaceHolder> placeHolders, String string) {
+	public PlaceHolderString(Multimap<Object, PlaceHolder> placeHolders, String string) {
 		super();
-		this.placeHolders = ImmutableMap.copyOf(placeHolders);
+		this.placeHolders = ImmutableMultimap.copyOf(placeHolders);
 		this.string = string;
 	}
 
@@ -90,7 +90,11 @@ public class PlaceHolderString {
 	}
 
 	public PlaceHolder getPlaceHolder(Object id) {
-		return placeHolders.get(id);
+		ImmutableCollection<PlaceHolder> all = placeHolders.get(id);
+		if (all!=null && !all.isEmpty()) {
+			return all.iterator().next();
+		}
+		return null;
 	}
 
 }
