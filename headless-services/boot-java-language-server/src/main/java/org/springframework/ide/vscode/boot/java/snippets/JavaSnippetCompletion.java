@@ -76,6 +76,6 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 
 		DocumentEdits edit = rewrite.createEdit(query.getDocument());
 
-		return Optional.of(edit);
+		return edit != null ?  Optional.of(edit) : Optional.empty();
 	}
 }
