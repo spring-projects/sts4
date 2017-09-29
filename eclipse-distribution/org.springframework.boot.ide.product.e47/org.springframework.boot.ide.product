@@ -10,6 +10,7 @@
 --launcher.defaultAction
 openFile</programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=1.8
+--add-modules=ALL-SYSTEM
 -Xms40m
 -Xverify:none</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts.icns
