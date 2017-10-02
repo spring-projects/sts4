@@ -12,9 +12,11 @@ package org.springframework.ide.vscode.boot.java;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.InitializedParams;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InitializeResult;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -32,9 +34,10 @@ import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHov
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
-import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
+import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
@@ -47,7 +50,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaPro
 import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -66,6 +68,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class BootJavaLanguageServer extends SimpleLanguageServer {
 
+	public static final String LANGUAGE_SERVER_PROCESS_PROPERTY = "spring-boot-language-server";
+
 	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
 			new MavenProjectFinderStrategy(MavenCore.getDefault()),
 			new GradleProjectFinderStrategy(GradleCore.getDefault()),
@@ -74,9 +78,13 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final SpringIndexer indexer;
+	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		super("vscode-boot-java");
+
+		System.setProperty(LANGUAGE_SERVER_PROCESS_PROPERTY, LANGUAGE_SERVER_PROCESS_PROPERTY);
+
 		SimpleWorkspaceService workspaceService = getWorkspaceService();
 		SimpleTextDocumentService documents = getTextDocumentService();
 
@@ -92,8 +100,15 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
-		HoverHandler hoverInfoProvider = createHoverHandler(javaProjectFinder);
+		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder);
 		documents.onHover(hoverInfoProvider);
+
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider);
+		documents.onDidChangeContent(params -> {
+			TextDocument doc = params.getDocument();
+			liveHoverWatchdog.watchDocument(doc.getUri());
+			liveHoverWatchdog.update(doc.getUri());
+		});
 
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
@@ -112,9 +127,28 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	}
 
 	@Override
-	public void initialized(InitializedParams params) {
-		super.initialized(params);
+	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+		CompletableFuture<InitializeResult> result = super.initialize(params);
+
 		this.indexer.initialize(this.getWorkspaceRoot());
+		this.liveHoverWatchdog.start();
+
+		return result;
+	}
+
+	@Override
+	public void initialized() {
+		// TODO: due to a missing message from lsp4e this "initialized" is not called in the LSP4E case
+		// if this gets fixed, the code should move here (from "initialize" above)
+
+//		this.indexer.initialize(this.getWorkspaceRoot());
+//		this.liveHoverWatchdog.start();
+	}
+
+	@Override
+	public CompletableFuture<Object> shutdown() {
+		liveHoverWatchdog.shutdown();
+		return super.shutdown();
 	}
 
 	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
@@ -184,7 +218,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
-	protected HoverHandler createHoverHandler(JavaProjectFinder javaProjectFinder) {
+	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder) {
 		HashMap<String, HoverProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingHoverProvider());

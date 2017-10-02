@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.value;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -35,27 +34,22 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class ValueHoverProvider implements HoverProvider {
 
-	public static void register(Map<String, HoverProvider> hoverProviders) {
-		ValueHoverProvider provider = new ValueHoverProvider();
-		hoverProviders.put(Constants.SPRING_VALUE, provider);
-	}
-
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc) {
+			TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
 			// case: @Value("prefix<*>")
 			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc, runningApps);
 				}
 			}
 			// case: @Value(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc, runningApps);
 				}
 			}
 		}
@@ -66,7 +60,12 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private CompletableFuture<Hover> provideHover(String value, int offset, int nodeStartOffset, TextDocument doc) {
+	@Override
+	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
+
+	private CompletableFuture<Hover> provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
 			LocalRange range = getPropertyRange(value, offset);
@@ -74,7 +73,7 @@ public class ValueHoverProvider implements HoverProvider {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 
 				if (propertyKey != null) {
-					JSONObject[] allProperties = getPropertiesFromProcesses();
+					JSONObject[] allProperties = getPropertiesFromProcesses(runningApps);
 
 					List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
@@ -114,21 +113,16 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public JSONObject[] getPropertiesFromProcesses() {
+	public JSONObject[] getPropertiesFromProcesses(SpringBootApp[] runningApps) {
 		List<JSONObject> result = new ArrayList<>();
 
 		try {
-			Map<String, SpringBootApp> apps = SpringBootApp.getAllRunningJavaApps();
-			Iterator<SpringBootApp> appsIter = apps.values().iterator();
-			while (appsIter.hasNext()) {
-				SpringBootApp app = appsIter.next();
-				if (app.isSpringBootApp()) {
-					String environment = app.getEnvironment();
-					if (environment != null) {
-						JSONObject env = new JSONObject(environment);
-						if (env != null) {
-							result.add(env);
-						}
+			for (SpringBootApp app : runningApps) {
+				String environment = app.getEnvironment();
+				if (environment != null) {
+					JSONObject env = new JSONObject(environment);
+					if (env != null) {
+						result.add(env);
 					}
 				}
 			}

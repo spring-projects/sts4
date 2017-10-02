@@ -16,6 +16,8 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -23,7 +25,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface HoverProvider {
 
-	CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc);
+	CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, SpringBootApp[] runningApps);
+	Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps);
 
 }

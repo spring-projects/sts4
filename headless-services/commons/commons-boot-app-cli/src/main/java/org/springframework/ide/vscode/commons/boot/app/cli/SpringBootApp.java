@@ -55,6 +55,22 @@ public class SpringBootApp {
 		return result;
 	}
 
+	/**
+	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
+	 */
+	public static Map<String, SpringBootApp> getAllRunningSpringApps() throws Exception {
+		Map<String, SpringBootApp> result = new HashMap<>();
+		List<VirtualMachineDescriptor> list = VirtualMachine.list();
+		for (VirtualMachineDescriptor vmd : list) {
+			SpringBootApp app = new SpringBootApp(vmd);
+			if (app.isSpringBootApp()) {
+				result.put(app.getProcessID(), app);
+			}
+		}
+		
+		return result;
+	}
+
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
@@ -74,6 +90,16 @@ public class SpringBootApp {
 		String classpath = (String) props.get("java.class.path");
 		String[] cpElements = getClasspath(classpath);
 		return contains(cpElements, "spring-boot");
+	}
+	
+	public boolean containsSystemProperty(Object key) {
+		try {
+			Properties props = this.vm.getSystemProperties();
+			return props.containsKey(key);
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 	
 	public String getPort() throws Exception {

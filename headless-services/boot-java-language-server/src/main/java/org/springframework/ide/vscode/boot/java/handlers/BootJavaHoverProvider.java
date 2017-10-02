@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -19,18 +21,26 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NodeFinder;
+import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -68,7 +78,89 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return SimpleTextDocumentService.NO_HOVER;
 	}
 
+	public Range[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
+		List<Range> result = new ArrayList<>();
+		try {
+			IJavaProject project = getProject(document);
+			CompilationUnit cu = parse(document, project);
+
+			cu.accept(new ASTVisitor() {
+				@Override
+				public boolean visit(SingleMemberAnnotation node) {
+					try {
+						extractLiveHints(node, document, runningBootApps, result);
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					return super.visit(node);
+				}
+
+				@Override
+				public boolean visit(NormalAnnotation node) {
+					try {
+						extractLiveHints(node, document, runningBootApps, result);
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					return super.visit(node);
+				}
+
+				@Override
+				public boolean visit(MarkerAnnotation node) {
+					try {
+						extractLiveHints(node, document, runningBootApps, result);
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					return super.visit(node);
+				}
+			});
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return result.toArray(new Range[result.size()]);
+	}
+
+	protected void extractLiveHints(Annotation annotation, TextDocument document, SpringBootApp[] runningApps, List<Range> result) {
+		ITypeBinding type = annotation.resolveTypeBinding();
+		if (type != null) {
+			String qualifiedName = type.getQualifiedName();
+			if (qualifiedName != null) {
+				HoverProvider provider = this.hoverProviders.get(qualifiedName);
+				if (provider != null) {
+					Range range = provider.getLiveHoverHint(annotation, document, runningApps);
+					if (range != null) {
+						result.add(range);
+					}
+				}
+			}
+		}
+	}
+
 	private CompletableFuture<Hover> provideHover(TextDocument document, int offset) throws Exception {
+		IJavaProject project = getProject(document);
+		CompilationUnit cu = parse(document, project);
+
+		ASTNode node = NodeFinder.perform(cu, offset, 0);
+
+		if (node != null) {
+			System.out.println("AST node found: " + node.getClass().getName());
+			return provideHoverForAnnotation(node, offset, document, project);
+		}
+
+		return null;
+	}
+
+	private CompilationUnit parse(TextDocument document, IJavaProject project)
+			throws Exception, BadLocationException {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
@@ -78,7 +170,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
 
-		String[] classpathEntries = getClasspathEntries(document);
+		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
 
@@ -88,17 +180,10 @@ public class BootJavaHoverProvider implements HoverHandler {
 		parser.setSource(document.get(0, document.getLength()).toCharArray());
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-		ASTNode node = NodeFinder.perform(cu, offset, 0);
-
-		if (node != null) {
-			System.out.println("AST node found: " + node.getClass().getName());
-			return provideHoverForAnnotation(node, offset, document);
-		}
-
-		return null;
+		return cu;
 	}
 
-	private CompletableFuture<Hover> provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc) {
+	private CompletableFuture<Hover> provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc, IJavaProject project) {
 		Annotation annotation = null;
 
 		while (node != null && !(node instanceof Annotation)) {
@@ -113,7 +198,8 @@ public class BootJavaHoverProvider implements HoverHandler {
 				if (qualifiedName != null) {
 					HoverProvider provider = this.hoverProviders.get(qualifiedName);
 					if (provider != null) {
-						return provider.provideHover(node, annotation, type, offset, doc);
+						SpringBootApp[] runningApps = getRunningSpringApps(project);
+						return provider.provideHover(node, annotation, type, offset, doc, runningApps);
 					}
 				}
 			}
@@ -122,13 +208,27 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(doc);
+	private IJavaProject getProject(IDocument doc) throws Exception {
+		return this.projectFinder.find(doc);
+	}
+
+	private String[] getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries
 				.filter(path -> path.toFile().exists())
 				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
+	}
+
+	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
+		try {
+			return SpringBootApp.getAllRunningSpringApps().values().stream()
+					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
+					.toArray(SpringBootApp[]::new);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new SpringBootApp[0];
+		}
 	}
 
 }

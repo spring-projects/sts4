@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -31,6 +30,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -40,21 +40,38 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc) {
-		return provideHover(annotation, doc);
+			ITypeBinding type, int offset, TextDocument doc, SpringBootApp[] runningApps) {
+		return provideHover(annotation, doc, runningApps);
 	}
 
-	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc) {
+	@Override
+	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+		try {
+			if (runningApps.length > 0) {
+				// TODO: this check is too simple, we need to do a lot more here
+				// -> check if the running app has a matching request mapping for this annotation
+
+				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				return hoverRange;
+			}
+		}
+		catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
-			JSONObject[] mappings = getRequestMappingsFromProcesses();
+			JSONObject[] mappings = getRequestMappingsFromProcesses(runningApps);
 
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
 			for (int i = 0; i < mappings.length; i++) {
 				addHoverContent(mappings[i], hoverContent, annotation);
 			}
-
 
 			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 			Hover hover = new Hover();
@@ -109,21 +126,16 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return mappingPath != null ? key.contains(mappingPath) : false;
 	}
 
-	public JSONObject[] getRequestMappingsFromProcesses() {
+	public JSONObject[] getRequestMappingsFromProcesses(SpringBootApp[] runningApps) {
 		List<JSONObject> result = new ArrayList<>();
 
 		try {
-			Map<String, SpringBootApp> apps = SpringBootApp.getAllRunningJavaApps();
-			Iterator<SpringBootApp> appsIter = apps.values().iterator();
-			while (appsIter.hasNext()) {
-				SpringBootApp app = appsIter.next();
-				if (app.isSpringBootApp()) {
-					String mappings = app.getRequestMappings();
-					if (mappings != null) {
-						JSONObject requestMappings = new JSONObject(mappings);
-						if (requestMappings != null) {
-							result.add(requestMappings);
-						}
+			for (SpringBootApp app : runningApps) {
+				String mappings = app.getRequestMappings();
+				if (mappings != null) {
+					JSONObject requestMappings = new JSONObject(mappings);
+					if (requestMappings != null) {
+						result.add(requestMappings);
 					}
 				}
 			}
