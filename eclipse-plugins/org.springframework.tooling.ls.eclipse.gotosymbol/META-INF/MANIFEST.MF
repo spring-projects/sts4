@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Gotosymbol
+Bundle-Name: Goto Symbol Popup
 Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.gotosymbol;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.0.10.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.lsp4e,
@@ -21,3 +21,4 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Pivotal, Inc.
