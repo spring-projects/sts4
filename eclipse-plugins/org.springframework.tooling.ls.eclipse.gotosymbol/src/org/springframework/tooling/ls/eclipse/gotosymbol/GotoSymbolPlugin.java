@@ -8,18 +8,24 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
+package org.springframework.tooling.ls.eclipse.gotosymbol;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleContext;
 
-import java.util.Collection;
+public class GotoSymbolPlugin extends AbstractUIPlugin {
 
-import org.eclipse.lsp4j.SymbolInformation;
+	private static GotoSymbolPlugin instance;
 
-/**
- * An SymbolsProvider can fetch symbols from a service (typically, a language server
- * operation is used to fetch symbol data. This operation may be slow and should be
- * called only from a background job.
- */
-public interface SymbolsProvider {
-	String getName();
-	Collection<SymbolInformation> fetchFor(String query) throws Exception;
+	public GotoSymbolPlugin() {
+	}
+	
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		this.instance = this;
+	}
+
+	public static GotoSymbolPlugin getInstance() {
+		return instance;
+	}
 }

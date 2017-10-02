@@ -11,66 +11,88 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.handlers;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
-import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialog;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
 
-import com.google.common.collect.ImmutableList;
-
-/**
- * Our sample handler extends AbstractHandler, an IHandler base class.
- * @see org.eclipse.core.commands.IHandler
- * @see org.eclipse.core.commands.AbstractHandler
- */
 @SuppressWarnings("restriction")
 public class GotoSymbolHandler extends AbstractHandler {
+	
+	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
+
+	private static void debug(String string) {
+		if (DEBUG) {
+			System.out.println(string);
+		}
+	}
+	private static GotoSymbolDialogModel currentDialog = null;
+
+	public GotoSymbolHandler() {
+		debug("Creating GotoSymbolHandler");
+	}
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		System.out.println("GotoSymbolHandler.execute");
-		IEditorPart part = HandlerUtil.getActiveEditor(event);
-		if (part instanceof ITextEditor) {
-			final ITextEditor textEditor = (ITextEditor) part;
-			Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
-					LSPEclipseUtils.getDocument(textEditor),
-					capabilities -> Boolean.TRUE.equals(capabilities.getDocumentSymbolProvider()));
-			if (infos.isEmpty()) {
-				return null;
-			}
-			// TODO maybe consider better strategy such as iterating on all LS until we have a good result
-			LSPDocumentInfo info = infos.iterator().next();
-			final Shell shell = HandlerUtil.getActiveShell(event);
-			DocumentSymbolParams params = new DocumentSymbolParams(
-					new TextDocumentIdentifier(info.getFileUri().toString()));
-			CompletableFuture<List<? extends SymbolInformation>> symbols = info.getLanguageClient()
-					.getTextDocumentService().documentSymbol(params);
-			
-			symbols.thenAccept((List<? extends SymbolInformation> t) -> {
-				shell.getDisplay().asyncExec(() -> {
-					List<SymbolInformation> allSymbols = ImmutableList.copyOf(t);
-					GotoSymbolDialogModel model = new GotoSymbolDialogModel(query -> allSymbols);
-					GotoSymbolDialog dialog = new GotoSymbolDialog(shell, textEditor, model);
-					dialog.open();
+		debug(">>>GotoSymbolHandler.execute");
+		if (currentDialog!=null) {
+			debug("GotoSymbolDialog already open: send 'toggle' signal");
+			currentDialog.toggleSymbolsProvider();
+		} else {
+			IEditorPart part = HandlerUtil.getActiveEditor(event);
+			if (part instanceof ITextEditor) {
+				final Shell shell = HandlerUtil.getActiveShell(event);
+				final ITextEditor textEditor = (ITextEditor) part;
+				
+				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InFileSymbolsProvider.createFor(textEditor), InWorkspaceSymbolsProvider.createFor(event))
+				.setOkHandler(symbolInformation -> {
+					if (symbolInformation!=null) {
+						Location location = symbolInformation.getLocation();
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						LSPEclipseUtils.openInEditor(location, page);
+					}
+					return true;
 				});
-			});
+				GotoSymbolDialog dialog = new GotoSymbolDialog(shell, textEditor, model, /*alignRight*/ false);
+				currentDialog = model;
+				dialog.open();
+				debug("GotoSymbolDialog opened");
+				dialog.getShell().addDisposeListener(de -> {
+					debug("GotoSymbolDialog closed!");
+					currentDialog = null;
+				});
+			}
+			debug("<<<GotoSymbolHandler.execute");
+		}
+		return null;
+	}
+
+	private String getKeybindings(ExecutionEvent event) {
+		Command invokingCommand = event.getCommand();
+		IBindingService service = PlatformUI.getWorkbench().getService(IBindingService.class);
+		TriggerSequence[] bindings = service.getActiveBindingsFor(invokingCommand.getId());
+		if (bindings!=null && bindings.length>0) {
+			return bindings[0].toString();
 		}
 		return null;
 	}
@@ -78,18 +100,18 @@ public class GotoSymbolHandler extends AbstractHandler {
 	@Override
 	public boolean isEnabled() {
 		boolean r = _isEnabled();
-		System.out.println("isEnabled = "+r);
 		return r;
 	}
 	public boolean _isEnabled() {
-
 		IWorkbenchPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
 		if (part instanceof ITextEditor) {
+			debug("activePart instanceof ITextEditor");
 			List<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
 					LSPEclipseUtils.getDocument((ITextEditor) part),
 					(capabilities) -> Boolean.TRUE.equals(capabilities.getDocumentSymbolProvider()));
 			return !infos.isEmpty();
 		}
+		debug("activePart not ITextEditor: "+part);
 		return false;
 	}
 }
