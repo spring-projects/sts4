@@ -76,7 +76,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleConfigurationClass() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.scanFiles(directory);
+		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java");
@@ -88,7 +88,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleFunctionBean() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.scanFiles(directory);
+		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java");
@@ -100,7 +100,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleComponentClass() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.scanFiles(directory);
+		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");

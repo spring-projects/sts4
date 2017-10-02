@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.InitializedParams;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -72,6 +73,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	});
 
 	private final VscodeCompletionEngineAdapter completionEngine;
+	private final SpringIndexer indexer;
 
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		super("vscode-boot-java");
@@ -96,18 +98,23 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 
-		SpringIndexer indexer = createAnnotationIndexer(this, javaProjectFinder);
+		indexer = createAnnotationIndexer(this, javaProjectFinder);
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
-
 	}
 
 	public void setMaxCompletionsNumber(int number) {
 		completionEngine.setMaxCompletions(number);
+	}
+
+	@Override
+	public void initialized(InitializedParams params) {
+		super.initialized(params);
+		this.indexer.initialize(this.getWorkspaceRoot());
 	}
 
 	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {

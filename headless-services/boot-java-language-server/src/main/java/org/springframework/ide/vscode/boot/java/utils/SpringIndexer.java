@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,32 +72,19 @@ public class SpringIndexer {
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 	}
 
-	public void initialize() {
+	public void initialize(final Path workspaceRoot) {
 		synchronized(this) {
 			if (this.initializeTask == null) {
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
 					@Override
 					public void run() {
 						System.out.println("start initial scan...");
-						Path workspaceRoot = server.getWorkspaceRoot();
-						reset();
 						scanFiles(workspaceRoot.toFile());
 						System.out.println("initial scan done...!!!");
 					}
 				});
 			}
 		}
-
-		try {
-			this.initializeTask.get();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void reset() {
-		this.symbols.clear();
-		this.symbolsByDoc.clear();
 	}
 
 	public void updateDocument(String docURI) {
@@ -104,18 +92,45 @@ public class SpringIndexer {
 	}
 
 	public List<? extends SymbolInformation> getAllSymbols(String query) {
-		initialize();
-		if (query != null && query.length() > 0) {
-			return searchMatchingSymbols(this.symbols, query);
+		if (initializeTask != null) {
+			try {
+				initializeTask.get();
+				if (query != null && query.length() > 0) {
+					return searchMatchingSymbols(this.symbols, query);
+				} else {
+					return this.symbols;
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
 		}
-		else {
-			return this.symbols;
+		return null;
+	}
+
+	public List<? extends SymbolInformation> getSymbols(String docURI) {
+		if (initializeTask != null) {
+			try {
+				initializeTask.get();
+				return this.symbolsByDoc.get(docURI);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
 		}
+		return null;
 	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
-		return allsymbols.stream()
-				.filter(symbol -> containsCharacters(symbol.getName().toCharArray(), query.toCharArray())).collect(Collectors.toList());
+		if (initializeTask != null) {
+			try {
+				initializeTask.get();
+				return allsymbols.stream()
+						.filter(symbol -> containsCharacters(symbol.getName().toCharArray(), query.toCharArray()))
+						.collect(Collectors.toList());
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
 	private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
@@ -132,12 +147,7 @@ public class SpringIndexer {
 		return queryindex == queryChars.length;
 	}
 
-	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		initialize();
-		return this.symbolsByDoc.get(docURI);
-	}
-
-	public void scanFiles(File directory) {
+	private void scanFiles(File directory) {
 		try {
 			System.out.println("scan directory...");
 

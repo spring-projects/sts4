@@ -75,7 +75,7 @@ public class RequestMappingSymbolProviderTest {
 
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
-		indexer.scanFiles(directory);
+		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
@@ -89,7 +89,7 @@ public class RequestMappingSymbolProviderTest {
 
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
-		indexer.scanFiles(directory);
+		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass.java");
