@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
@@ -37,6 +38,7 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
@@ -447,7 +449,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 	}
 
-	public LanguageClient getClient() {
+	public STS4LanguageClient getClient() {
 		return client;
 	}
 
@@ -458,6 +460,14 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public void setTestListener(LanguageServerTestListener languageServerTestListener) {
 		Assert.isLegal(this.testListener==null);
 		testListener = languageServerTestListener;
+	}
+
+	protected void highlighWith(TextDocument doc, Function<TextDocument, List<Range>> wordHighlighter) {
+		List<Range> highlights = wordHighlighter.apply(doc);
+		if (highlights==null) {
+			highlights = ImmutableList.of();
+		}
+		client.highlight(new HighlightParams(doc.getId(), highlights));
 	}
 
 

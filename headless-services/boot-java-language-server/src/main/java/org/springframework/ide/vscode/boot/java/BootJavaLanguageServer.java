@@ -92,6 +92,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			validateWith(doc.getId(), reconcileEngine);
+			highlighWith(doc, new WordHighlighter(this, "foo"));
 		});
 
 		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectFinder, indexProvider);

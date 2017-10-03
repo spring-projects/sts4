@@ -25,6 +25,9 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
  */
 public interface STS4LanguageClient extends LanguageClient {
 
+	@JsonNotification("sts/highlight")
+	void highlight(HighlightParams highlights);
+
 	@JsonNotification("sts/progress")
 	void progress(ProgressParams progressEvent);
 

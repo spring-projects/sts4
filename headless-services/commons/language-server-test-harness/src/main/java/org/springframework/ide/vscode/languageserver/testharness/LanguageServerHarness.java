@@ -75,6 +75,7 @@ import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -232,7 +233,6 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 				@Override
 				public void progress(ProgressParams progressEvent) {
 					// TODO Auto-generated method stub
-
 				}
 
 				@Override
@@ -244,6 +244,11 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 						}
 					}
 					return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
+				}
+
+				@Override
+				public void highlight(HighlightParams highlights) {
+					// TODO Auto-generated method stub
 				}
 			});
 

@@ -10,11 +10,12 @@ import * as FS from 'fs';
 import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
+import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Range } from 'vscode-languageclient';
 import { TextDocument, OutputChannel, Disposable, window } from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
+import {HighlightService, HighlightParams} from './highlight-service';
 
 let p2c = P2C.createConverter();
 
@@ -145,16 +146,22 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     }
 
     let progressNotification = new NotificationType<ProgressParams,void>("sts/progress");
+    let highlightNotification = new NotificationType<HighlightParams,void>("sts/highlight");
     let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void,void>("sts/moveCursor");
 
     let disposable = client.start();
 
     let progressService = new ProgressService();
+    let highlightService = new HighlightService();
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
+    context.subscriptions.push(highlightService);
     return  client.onReady().then(() => {
         client.onNotification(progressNotification, (params: ProgressParams) => {
             progressService.handle(params);
+        });
+        client.onNotification(highlightNotification, (params: HighlightParams) => {
+            highlightService.handle(params);
         });
         client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
             let editors = VSCode.window.visibleTextEditors;
