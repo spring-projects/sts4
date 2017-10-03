@@ -14,16 +14,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.google.common.collect.ImmutableList;
@@ -42,7 +38,7 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 		super();
 		this.info = target;
 	}
-
+	
 	@Override
 	public Collection<SymbolInformation> fetchFor(String query) throws Exception {
 		DocumentSymbolParams params = new DocumentSymbolParams(
@@ -50,7 +46,6 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 		CompletableFuture<List<? extends SymbolInformation>> symbolsFuture = info.getLanguageClient()
 				.getTextDocumentService().documentSymbol(params);
 		List<? extends SymbolInformation> symbols = symbolsFuture.get();
-		Thread.sleep(2000);
 		return symbols == null ? ImmutableList.of() : ImmutableList.copyOf(symbols);
 	}
 
