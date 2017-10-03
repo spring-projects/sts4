@@ -28,7 +28,6 @@
 
 	<modules>
 		<module>../eclipse-extensions/org.springframework.boot.ide.main.feature</module>
-		<module>../eclipse-extensions/org.springframework.tooling.ls.eclipse.gotosymbol</module>
 		
 		<module>org.springframework.boot.ide.branding</module>
 		<module>org.springframework.boot.ide.branding.feature</module>
