@@ -295,4 +295,13 @@ public class DocumentRegion implements CharSequence {
 	public Range asRange() throws BadLocationException {
 		return doc.toRange(asRegion());
 	}
+
+	public DocumentRegion leadingWhitespace() {
+		int howMany = 0;
+		int len = length();
+		while (howMany<len && Character.isWhitespace(charAt(howMany))) {
+			howMany++;
+		}
+		return subSequence(0, howMany);
+	}
 }
