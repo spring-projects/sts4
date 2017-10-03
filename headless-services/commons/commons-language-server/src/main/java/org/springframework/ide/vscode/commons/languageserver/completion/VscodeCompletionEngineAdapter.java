@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -228,14 +229,17 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
 		// and do some kind of 'inverse magic' here.
 		//See here: https://github.com/Microsoft/language-server-protocol/issues/83
-		int referenceLine = start.getLine();
-		int referenceLineIndent = doc.getLineIndentation(referenceLine);
-		int vscodeMagicIndent = Math.min(start.getCharacter(), referenceLineIndent);
-		return vscodeMagicIndent>0
-				? StringUtil.stripIndentation(vscodeMagicIndent, newText)
-				: newText;
+		IndentUtil indenter = new IndentUtil(doc);
+		try {
+			String refIndent = indenter.getReferenceIndent(doc.toOffset(start), doc);
+			if (!refIndent.isEmpty()) {
+				return  StringUtil.stripIndentation(refIndent, newText);
+			}
+		} catch (BadLocationException e) {
+			Log.log(e);
+		}
+		return newText;
 	}
-
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletion(CompletionItem unresolved) {

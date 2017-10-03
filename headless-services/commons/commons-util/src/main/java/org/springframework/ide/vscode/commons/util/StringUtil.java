@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Strings;
+
 public class StringUtil {
 	public static boolean hasText(String name) {
 		return name!=null && !name.trim().equals("");
@@ -153,7 +155,7 @@ public class StringUtil {
 	 * Note: this method only deals with spaces its not suitable for strings
 	 * which use tabs for indentation.
 	 */
-	public static String stripIndentation(int indent, String indentedText) {
+	public static String stripIndentation(String indent, String indentedText) {
 		StringBuilder out = new StringBuilder();
 		boolean first = true;
 		Matcher matcher = NEWLINE.matcher(indentedText);
@@ -179,9 +181,13 @@ public class StringUtil {
 		return out.toString();
 	}
 
-	public static String stripIndentationFromLine(int indent, String line) {
+	public static String stripIndentation(int indent, String indentedText) {
+		return stripIndentation(Strings.repeat(" ", indent), indentedText);
+	}
+
+	public static String stripIndentationFromLine(String indent, String line) {
 		int start = 0;
-		while (start<line.length() && start < indent && line.charAt(start)==' ') {
+		while (start<line.length() && start < indent.length() && line.charAt(start)==indent.charAt(start)) {
 			start++;
 		}
 		return line.substring(start);

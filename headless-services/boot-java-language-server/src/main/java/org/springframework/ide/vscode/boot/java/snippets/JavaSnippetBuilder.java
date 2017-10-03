@@ -14,8 +14,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.completion.IndentUtil;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 import com.google.common.base.Supplier;
 
@@ -34,8 +36,14 @@ public class JavaSnippetBuilder{
 	}
 
 	public DocumentEdits createEdit(DocumentRegion query, String template) {
-		DocumentEdits edit = new DocumentEdits(query.getDocument());
-		edit.replace(query.getStart(), query.getEnd(), createSnippet(template));
+		IDocument doc = query.getDocument();
+		IndentUtil indentUtil = new IndentUtil(doc);
+
+		DocumentEdits edit = new DocumentEdits(doc);
+		String snippet = createSnippet(template);
+
+		String indentedSnippet = indentUtil.applyIndentation(snippet, indentUtil.getReferenceIndent(query.getStart(), doc)) ;
+		edit.replace(query.getStart(), query.getEnd(), indentedSnippet);
 		return edit;
 	}
 
