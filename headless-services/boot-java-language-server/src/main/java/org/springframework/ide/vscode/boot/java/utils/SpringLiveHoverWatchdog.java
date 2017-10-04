@@ -10,15 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -80,7 +83,7 @@ public class SpringLiveHoverWatchdog {
 			TextDocument doc = this.server.getTextDocumentService().get(docURI);
 			if (doc != null) {
 				Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
-				publishLiveHints(ranges);
+				publishLiveHints(docURI, ranges);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,15 +98,9 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
-	private void publishLiveHints(Range[] ranges) {
-		for (Range range : ranges) {
-			int startLine = range.getStart().getLine();
-			int startChar = range.getStart().getCharacter();
-			int endLine = range.getEnd().getLine();
-			int endChar = range.getEnd().getCharacter();
-
-			System.out.println("live hover information at: " + startLine + ":" + startChar + " - " + endLine + ":" + endChar);
-		}
+	private void publishLiveHints(String docURI, Range[] ranges) {
+		System.out.println(" PUBLISH LIVE HOVER HINTS !!! " + ranges.length);
+		server.getClient().highlight(new HighlightParams(new TextDocumentIdentifier(docURI), Arrays.asList(ranges)));
 	}
 
 	private void cleanupLiveHints(String docURI) {
