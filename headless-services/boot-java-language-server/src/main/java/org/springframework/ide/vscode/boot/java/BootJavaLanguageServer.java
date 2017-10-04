@@ -44,6 +44,7 @@ import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesPro
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
+import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaProjectFinder;
@@ -80,6 +81,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final SpringIndexer indexer;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 
+	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
+
 	public BootJavaLanguageServer(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		super("vscode-boot-java");
 
@@ -106,8 +109,12 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			liveHoverWatchdog.watchDocument(doc.getUri());
-			liveHoverWatchdog.update(doc.getUri());
+			if (testHightlighter!=null) {
+				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
+			} else {
+				liveHoverWatchdog.watchDocument(doc.getUri());
+				liveHoverWatchdog.update(doc.getUri());
+			}
 		});
 
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
