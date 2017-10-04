@@ -18,7 +18,6 @@ import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
-import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 
 /**
  * Static helper methods for attaching LiveExps to SWT widgets.

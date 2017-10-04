@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.springframework.ide.eclipse.boot.util.Log;
+import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
@@ -79,7 +79,7 @@ public class GotoSymbolDialogModel {
 					status.setValue("No symbol provider");
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 				status.setValue(ExceptionUtil.getMessage(e));
 			}
 			return ImmutableSet.of();

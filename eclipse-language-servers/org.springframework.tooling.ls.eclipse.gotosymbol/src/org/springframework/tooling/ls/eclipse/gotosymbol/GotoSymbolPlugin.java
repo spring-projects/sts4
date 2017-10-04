@@ -9,6 +9,7 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol;
+
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -22,10 +23,11 @@ public class GotoSymbolPlugin extends AbstractUIPlugin {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		this.instance = this;
+		instance = this;
 	}
 
 	public static GotoSymbolPlugin getInstance() {
 		return instance;
 	}
+
 }

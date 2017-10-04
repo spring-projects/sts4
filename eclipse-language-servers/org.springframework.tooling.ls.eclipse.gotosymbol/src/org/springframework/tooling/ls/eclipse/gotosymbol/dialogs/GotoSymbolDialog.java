@@ -14,15 +14,9 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.util.Geometry;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -31,11 +25,9 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -46,7 +38,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.springframework.ide.eclipse.boot.util.Log;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springframework.tooling.ls.eclipse.gotosymbol.util.SwtConnect;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
@@ -55,14 +46,6 @@ import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 @SuppressWarnings("restriction")
 public class GotoSymbolDialog extends PopupDialog {
 	
-	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
-
-	private static void debug(String string) {
-		if (DEBUG) {
-			System.out.println(string);
-		}
-	}
-
 	private static class SymbolsContentProvider implements ITreeContentProvider {
 		
 		@Override
