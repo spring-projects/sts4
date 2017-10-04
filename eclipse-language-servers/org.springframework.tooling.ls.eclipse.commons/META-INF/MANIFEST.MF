@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse Language Server Commons
+Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.commons;singleton:=true
+Bundle-Version: 4.0.0.qualifier
+Bundle-Activator: org.springframework.tooling.ls.eclipse.commons.LsEclipseCommonsActivator
+Bundle-Vendor: Pivotal, Inc.
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.lsp4e;bundle-version="0.3.0",
+ org.eclipse.lsp4j.jsonrpc,
+ org.eclipse.lsp4j,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jface.text,
+ com.google.guava
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Export-Package: org.springframework.tooling.ls.eclipse.commons

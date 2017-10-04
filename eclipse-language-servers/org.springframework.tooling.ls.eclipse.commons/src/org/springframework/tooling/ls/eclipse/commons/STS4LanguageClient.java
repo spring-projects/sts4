@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,15 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
-package org.springframework.ide.vscode.commons.languageserver;
+package org.springframework.tooling.ls.eclipse.commons;
 
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 
 /**
  * Some 'custom' extensions to standard LSP {@link LanguageClient}.
@@ -28,10 +26,10 @@ public interface STS4LanguageClient extends LanguageClient {
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);
 
-	@JsonNotification("sts/progress")
-	void progress(ProgressParams progressEvent);
-
-	@JsonRequest("sts/moveCursor")
-	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
+// TODO: @JsonNotification("sts/progress")
+//	void progress(ProgressParams progressEvent);
+//
+// TODO: @JsonRequest("sts/moveCursor")
+//	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
 
 }

@@ -26,4 +26,11 @@
 		unpack="false">
 	</plugin>
 
+	<plugin
+		id="org.springframework.tooling.ls.eclipse.commons"
+		download-size="0"
+		install-size="0"
+		version="0.0.0"
+		unpack="false">
+	</plugin>
 </feature>

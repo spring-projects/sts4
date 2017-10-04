@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.lsp4j,
  org.eclipse.ui.workbench,
  org.eclipse.jface,
- org.eclipse.xtext.xbase.lib
+ org.eclipse.xtext.xbase.lib,
+ org.springframework.tooling.ls.eclipse.commons
 Import-Package: com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
  org.eclipse.lsp4j.jsonrpc.messages;version="0.1.0.v20170117-0759",

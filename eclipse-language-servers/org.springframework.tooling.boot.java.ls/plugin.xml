@@ -7,6 +7,7 @@
       <server
             class="org.springframework.tooling.boot.java.ls.DelegatingStreamConnectionProvider"
             id="org.eclipse.languageserver.languages.springbootjava"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="Spring Boot Java Language Server">
       </server>
       <contentTypeMapping

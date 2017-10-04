@@ -12,6 +12,7 @@ package org.springframework.tooling.boot.java.ls;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -57,38 +58,6 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		setWorkingDirectory(workingDir);
 	}
 	
-	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
-		if (message instanceof NotificationMessage) {
-			NotificationMessage notificationMessage = (NotificationMessage) message;
-			if ("sts/progress".equals(notificationMessage.getMethod())) {
-				JsonObject params = (JsonObject) notificationMessage.getParams();
-				String status = params.has("statusMsg") ? params.get("statusMsg").getAsString() : "";
-				showStatusMessage(status);
-			}
-		}
-	}
-	
-	private void showStatusMessage(final String status) {
-		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				IStatusLineManager statusLineManager = getStatusLineManager();
-				if (statusLineManager != null) {
-					statusLineManager.setMessage(status);
-				}
-			}
-		});
-	}
-	
-	private IStatusLineManager getStatusLineManager() {
-		try {
-			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getEditorSite().getActionBars().getStatusLineManager();
-		}
-		catch (NullPointerException e) {
-			return null;
-		}
-	}
-
 	protected String getJDKLocation() {
 		File jre = new File(System.getProperty("java.home"));
 		File javaExecutable = StandardVMType.findJavaExecutable(jre);

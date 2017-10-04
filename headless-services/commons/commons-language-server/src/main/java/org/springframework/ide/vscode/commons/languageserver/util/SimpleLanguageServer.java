@@ -459,5 +459,4 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		Assert.isLegal(this.testListener==null);
 		testListener = languageServerTestListener;
 	}
-
 }

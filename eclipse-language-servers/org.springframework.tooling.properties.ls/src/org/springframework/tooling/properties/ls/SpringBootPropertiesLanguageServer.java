@@ -12,6 +12,7 @@ package org.springframework.tooling.properties.ls;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -58,7 +59,8 @@ public class SpringBootPropertiesLanguageServer extends ProcessStreamConnectionP
 		setWorkingDirectory(workingDir);
 	}
 	
-	public void handleMessage(Message message, LanguageServer languageServer, String rootPath) {
+	@Override
+	public void handleMessage(Message message, LanguageServer languageServer, URI rootPath) {
 		if (message instanceof NotificationMessage) {
 			NotificationMessage notificationMessage = (NotificationMessage) message;
 			if ("sts/progress".equals(notificationMessage.getMethod())) {
