@@ -42,7 +42,13 @@ public class JavaSnippetBuilder{
 		DocumentEdits edit = new DocumentEdits(doc);
 		String snippet = createSnippet(template);
 
-		String indentedSnippet = indentUtil.applyIndentation(snippet, indentUtil.getReferenceIndent(query.getStart(), doc)) ;
+		String referenceIndent = indentUtil.getReferenceIndent(query.getStart(), doc);
+
+		if (!referenceIndent.contains("\t")) {
+			snippet = indentUtil.covertTabsToSpace(snippet);
+		}
+		String indentedSnippet = indentUtil.applyIndentation(snippet, referenceIndent);
+
 		edit.replace(query.getStart(), query.getEnd(), indentedSnippet);
 		return edit;
 	}

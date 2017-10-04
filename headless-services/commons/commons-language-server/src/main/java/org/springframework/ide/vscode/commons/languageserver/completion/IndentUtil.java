@@ -15,8 +15,6 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 
-import com.google.common.base.Strings;
-
 /**
  * Helper methods to manipulate indentation levels in yaml content.
  *
@@ -53,4 +51,8 @@ public class IndentUtil {
 		return queryPrefix.leadingWhitespace().toString();
 	}
 
+
+	public String covertTabsToSpace(String snippet) {
+		return snippet.replaceAll("\\t", "    ");
+	}
 }
