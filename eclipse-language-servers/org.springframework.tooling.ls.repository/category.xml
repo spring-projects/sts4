@@ -8,6 +8,10 @@
 
 	<category-def name="deps" label="Dependencies"/>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.eclipse.lsp4e">
 		<category name="deps"/>
 	</bundle>

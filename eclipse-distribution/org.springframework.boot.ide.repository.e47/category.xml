@@ -75,4 +75,40 @@
 		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
 	</feature>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<feature id="tm-feature">
+		<category name="Uncategorized"/>
+	</feature>
+
+	<bundle id="org.eclipse.lsp4e">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j.jsonrpc">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.xtext.xbase.lib">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="com.google.gson">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.jcodings">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.joni">
+		<category name="Uncategorized"/>
+	</bundle>
+
 </site>

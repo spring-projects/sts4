@@ -28,6 +28,10 @@
 
 	<category-def name="deps" label="Dependencies"/>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="deps"/>
+	</bundle>
+
 	<feature id="tm-feature">
 		<category name="deps"/>
 	</feature>

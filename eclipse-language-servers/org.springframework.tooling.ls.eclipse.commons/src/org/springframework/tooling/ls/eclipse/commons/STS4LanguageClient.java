@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 /**

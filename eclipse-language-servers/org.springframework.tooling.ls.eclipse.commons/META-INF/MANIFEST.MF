@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse Language Server Commons
 Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.commons;singleton:=true
 Bundle-Version: 4.0.0.qualifier
-Bundle-Activator: org.springframework.tooling.ls.eclipse.commons.LsEclipseCommonsActivator
 Bundle-Vendor: Pivotal, Inc.
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
