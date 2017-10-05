@@ -13,6 +13,8 @@ import { StsAdapter } from './sts-adapter';
 
 export class JarLanguageClient extends AutoLanguageClient {
 
+    DEBUG = false;
+
     constructor(serverDownloadUrl, serverHome, serverLauncherJar) {
         super();
 
@@ -38,6 +40,10 @@ export class JarLanguageClient extends AutoLanguageClient {
 
         let childProcess;
 
+        if (this.DEBUG) {
+            return this.connectToLS();
+        }
+
         return new Promise((resolve, reject) => {
             let basePort = Math.floor(Math.random() * 10000) + 40000;
             PortFinder.getPort({port: basePort}, (err, port) => {
@@ -54,10 +60,28 @@ export class JarLanguageClient extends AutoLanguageClient {
         });
     }
 
+    connectToLS() {
+        return new Promise(resolve => {
+            this.socket = net.connect({
+                port: 5007
+            });
+            resolve({
+                pid: -1,
+                kill: function() {
+                    console.log('fake shutdown');
+                }
+            })
+        });
+    }
+
     // Start adapters that are not shared between servers
     startExclusiveAdapters(server) {
         super.startExclusiveAdapters(server);
-        StsAdapter.attach(server.connection);
+
+        const stsAdapter = this.createStsAdapter() || new StsAdapter();
+        server.connection._onRequest({method: 'sts/moveCursor'}, params => stsAdapter.onMoveCursor(params));
+        server.connection._onNotification({method: 'sts/progress'}, params => stsAdapter.onProgress(params));
+        server.connection._onNotification({method: 'sts/highlight'}, params => stsAdapter.onHighlight(params));
     }
 
 
@@ -202,8 +226,14 @@ export class JarLanguageClient extends AutoLanguageClient {
     // Late wire-up of listeners after initialize method has been sent
     postInitialization(server) {
         server.disposable.add(new Disposable(() => {
-            this.server.close()
+            if (this.server) {
+                this.server.close()
+            }
         }));
+    }
+
+    createStsAdapter() {
+
     }
 
 }
