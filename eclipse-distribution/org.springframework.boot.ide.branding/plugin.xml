@@ -11,16 +11,16 @@
           <property name="preferenceCustomization" value="plugin_customization.ini"/> 
           <property
                 name="startupForegroundColor"
-                value="33302D"/>
+                value="445F78"/>
           <property
                 name="versionForegroundColor"
-                value="33302D"/>
+                value="445F78"/>
           <property
                 name="startupMessageRect"
-                value="23,176,550,18"/>
+                value="175,280,520,18"/>
           <property
                 name="startupProgressRect"
-                value="23,194,550,14"/>
+                value="175,300,520,14"/>
           <property
                 name="versionRect"
                 value="550,30" />
