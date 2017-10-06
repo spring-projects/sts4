@@ -34,10 +34,10 @@ class ManifestYamlLanguageClient extends JarLanguageClient {
     }
 
     launchVmArgs(version) {
-        return [
+        return Promise.resolve([
             '-Dorg.slf4j.simpleLogger.logFile=manifest-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-        ];
+        ]);
 
     }
 

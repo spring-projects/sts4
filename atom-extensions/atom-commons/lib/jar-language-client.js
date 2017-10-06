@@ -86,15 +86,17 @@ export class JarLanguageClient extends AutoLanguageClient {
 
 
     launchProcess(port) {
-        const command = this.findJavaExecutable('java');
+        const command = this.findJavaFile('bin', this.correctBinname('java'));
 
         return this.compatibleJavaVersion(command).then(version => {
             if (version) {
-                var args = this.launchVmArgs(version);
-                if (version >= 9) {
-                    args.push('--add-modules=java.se.ee');
-                }
-                return this.getOrInstallLauncher().then(launcher => this.doLaunchProcess(command, launcher, port, args));
+                return this.launchVmArgs(version).then(args => {
+                    if (version >= 9) {
+                        args.push('--add-modules=java.se.ee');
+                    }
+                    args.push(`-Dserver.port=${port}`);
+                    return this.getOrInstallLauncher().then(launcher => this.doLaunchProcess(command, launcher, port, args));
+                });
             } else {
                 this.logger.error('Java executable is not Java 8 or higher');
             }
@@ -102,20 +104,18 @@ export class JarLanguageClient extends AutoLanguageClient {
     }
 
     launchVmArgs(version) {
-        return [];
+        return Promise.resolve([]);
     }
 
     doLaunchProcess(javaExecutable, launcher, port, args=[]) {
         let vmArgs = args.concat([
-            `-Dserver.port=${port}`,
             // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
             '-Dlsp.lazy.completions.disable=true',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
-            '-jar',
-            launcher
+            launcher.endsWith('.jar') ? `-jar ${launcher}` : launcher,
         ]);
-        this.logger.debug(`starting "${javaExecutable} ${vmArgs.join(' ')}"`);
+        this.logger.debug(`starting "${javaExecutable} ${vmArgs.join('\n')}"`);
         return cp.spawn(javaExecutable, vmArgs, { cwd: this.serverHome })
     }
 
@@ -171,16 +171,15 @@ export class JarLanguageClient extends AutoLanguageClient {
         })
     }
 
-    findJavaExecutable(binname) {
-        binname = this.correctBinname(binname);
+    findJavaFile(folders, file) {
 
-        // First search each JAVA_HOME bin folder
+        // First search each JAVA_HOME folder
         if (process.env['JAVA_HOME']) {
             let workspaces = process.env['JAVA_HOME'].split(path.delimiter);
             for (let i = 0; i < workspaces.length; i++) {
-                let binpath = path.join(workspaces[i], 'bin', binname);
-                if (fs.existsSync(binpath)) {
-                    return binpath;
+                let filepath = path.join(workspaces[i], folders, file);
+                if (fs.existsSync(filepath)) {
+                    return filepath;
                 }
             }
         }
@@ -189,9 +188,9 @@ export class JarLanguageClient extends AutoLanguageClient {
         if (process.env['PATH']) {
             let pathparts = process.env['PATH'].split(path.delimiter);
             for (let i = 0; i < pathparts.length; i++) {
-                let binpath = path.join(pathparts[i], binname);
-                if (fs.existsSync(binpath)) {
-                    return binpath;
+                let filepath = path.join(pathparts[i], file);
+                if (fs.existsSync(filepath)) {
+                    return filepath;
                 }
             }
         }

@@ -15,7 +15,7 @@ class BootJavaLanguageClient extends JarLanguageClient {
             path.join(__dirname, '..', 'server'),
             'boot-java-language-server.jar'
         );
-        this.DEBUG = true;
+        // this.DEBUG = true;
     }
 
     getGrammarScopes() {
@@ -37,14 +37,20 @@ class BootJavaLanguageClient extends JarLanguageClient {
         super.activate();
     }
 
-    compatibleJavaVersion(javaExecutablePath) {
-        return super.compatibleJavaVersion(javaExecutablePath).then(version => {
-            this.fileExists(`${javaExecutablePath}/bin/${this.correctBinname('javac')}`).then(exists => {
-                if (!exists) {
+    getOrInstallLauncher() {
+        return Promise.resolve('org.springframework.boot.loader.JarLauncher');
+    }
+
+    launchVmArgs(version) {
+        return super.getOrInstallLauncher().then(lsJar => {
+            const toolsJar = this.findJavaFile('lib', 'tools.jar');
+            return this.fileExists(toolsJar).then(toolsJarExists => {
+                if (!toolsJarExists) {
+                    // Notify the user that tool.jar is not found
                     const notification = atom.notifications.addWarning(`"Boot-Java" Package Functionality Limited`, {
                         dismissable: true,
-                        detail: 'No JDK found',
-                        description: 'JAVA_HOME environment variable does not point to JDK hence Boot Hints are unavailable',
+                        detail: 'No tools.jar found',
+                        description: 'JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable',
                         buttons: [{
                             text: 'OK',
                             onDidClick: () => {
@@ -53,20 +59,16 @@ class BootJavaLanguageClient extends JarLanguageClient {
                         }],
                     });
                 }
+                return [
+                    // '-Xdebug',
+                    // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
+                    '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
+                    '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+                    '-cp',
+                    `${toolsJarExists ? `${toolsJar}:` : ''}${lsJar}`
+                ];
             });
-            return version;
         });
-    }
-
-
-    launchVmArgs(version) {
-        return [
-            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-            // '-Xdebug',
-            // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n'
-        ];
-
     }
 
     createStsAdapter() {

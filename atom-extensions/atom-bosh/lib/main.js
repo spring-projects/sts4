@@ -38,10 +38,10 @@ class BoshYamlClient extends JarLanguageClient {
     }
 
     launchVmArgs(version) {
-        return [
+        return Promise.resolve([
             '-Dorg.slf4j.simpleLogger.logFile=bosh-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-        ];
+        ]);
 
     }
 
