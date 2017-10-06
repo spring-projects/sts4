@@ -24,7 +24,7 @@ openFile</programArgs>
       </vmArgsLin>
    </launcherArgs>
 
-   <windowImages i16="/org.springframework.boot.ide.branding/sts16.png" i32="/org.springframework.boot.ide.branding/sts32.png" i48="/orgorg.springframework.boot.ide.branding/sts48.png" i64="/org.springframework.boot.ide.branding/sts64.png" i128="/org.springframework.boot.ide.branding/sts128.png"/>
+   <windowImages i16="/org.springframework.boot.ide.branding/sts4-16.png" i32="/org.springframework.boot.ide.branding/sts4-32.png" i48="/orgorg.springframework.boot.ide.branding/sts4-48.png" i64="/org.springframework.boot.ide.branding/sts4-64.png" i128="/org.springframework.boot.ide.branding/sts4-128.png"/>
 
    <splash
       startupProgressRect="0,225,455,15"
@@ -32,13 +32,13 @@ openFile</programArgs>
       startupForegroundColor="c1d72e" />
 
    <launcher name="SpringToolSuite4">
-      <macosx icon="../org.springframework.boot.ide.branding/sts.icns"/>
+      <macosx icon="../org.springframework.boot.ide.branding/sts4.icns"/>
       <solaris/>
       <win useIco="true">
-         <ico path="../org.springframework.boot.ide.branding/sts.ico"/>
+         <ico path="../org.springframework.boot.ide.branding/sts4.ico"/>
          <bmp/>
       </win>
-      <linux icon="../org.springframework.boot.ide.branding/sts.xpm"/>
+      <linux icon="../org.springframework.boot.ide.branding/sts4.xpm"/>
    </launcher>
 
    <vm>
