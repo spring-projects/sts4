@@ -129,9 +129,14 @@
 					<url>http://download.eclipse.org/technology/m2e/releases</url>
 				</repository>
 				<repository>
+					<id>latest-m2e-milestones</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/technology/m2e/milestones/1.8/</url>
+				</repository>
+				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170818183741/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>
