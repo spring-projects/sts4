@@ -62,9 +62,14 @@ public class SpringBootApp {
 		Map<String, SpringBootApp> result = new HashMap<>();
 		List<VirtualMachineDescriptor> list = VirtualMachine.list();
 		for (VirtualMachineDescriptor vmd : list) {
-			SpringBootApp app = new SpringBootApp(vmd);
-			if (app.isSpringBootApp()) {
-				result.put(app.getProcessID(), app);
+			try {
+				SpringBootApp app = new SpringBootApp(vmd);
+				if (app.isSpringBootApp()) {
+					result.put(app.getProcessID(), app);
+				}
+			}
+			catch (Exception e) {
+				System.err.println("cannot attach to app: " + vmd.id());
 			}
 		}
 		
