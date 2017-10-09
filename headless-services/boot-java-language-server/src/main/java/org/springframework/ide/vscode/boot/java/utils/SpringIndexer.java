@@ -49,8 +49,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * @author Martin Lippert
  */
@@ -89,8 +87,19 @@ public class SpringIndexer {
 		}
 	}
 
-	public void updateDocument(String docURI) {
-		// TODO: update information because of doc change
+	public void updateDocument(String docURI, String content) {
+		if (docURI.endsWith(".java")) {
+			try {
+				IJavaProject project = projectFinder.find(new File(new URI(docURI)));
+				if (project != null) {
+					String[] classpathEntries = getClasspathEntries(project);
+					scanFile(docURI, content, classpathEntries);
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public List<? extends SymbolInformation> getAllSymbols(String query) {
@@ -184,6 +193,34 @@ public class SpringIndexer {
 		}
 	}
 
+	private void scanFile(String docURI, String content, String[] classpathEntries) throws Exception {
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		Map<String, String> options = JavaCore.getOptions();
+		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+		parser.setCompilerOptions(options);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setStatementsRecovery(true);
+		parser.setBindingsRecovery(true);
+		parser.setResolveBindings(true);
+
+		String[] sourceEntries = new String[] {};
+		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
+
+		String unitName = docURI.substring(docURI.lastIndexOf("/"));
+		parser.setUnitName(unitName);
+		parser.setSource(content.toCharArray());
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		if (cu != null) {
+			List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
+			symbols.removeAll(oldSymbols);
+
+			AtomicReference<TextDocument> docRef = new AtomicReference<>();
+			scanAST(cu, docURI, docRef, content);
+		}
+	}
+
 	private void scanFiles(ASTParser parser, String[] javaFiles, String[] classpathEntries) throws Exception {
 
 		Map<String, String> options = JavaCore.getOptions();
@@ -203,20 +240,20 @@ public class SpringIndexer {
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				String docURI = "file://" + sourceFilePath;
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-				scanAST(cu, docURI, docRef);
+				scanAST(cu, docURI, docRef, null);
 			}
 		};
 
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 	}
 
-	private void scanAST(final CompilationUnit cu, final String docURI, AtomicReference<TextDocument> docRef) {
+	private void scanAST(final CompilationUnit cu, final String docURI, AtomicReference<TextDocument> docRef, final String content) {
 		cu.accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef);
+					extractSymbolInformation(node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -228,7 +265,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef);
+					extractSymbolInformation(node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -240,7 +277,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef);
+					extractSymbolInformation(node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -251,7 +288,7 @@ public class SpringIndexer {
 		});
 	}
 
-	private void extractSymbolInformation(Annotation node, String docURI, AtomicReference<TextDocument> docRef) throws Exception {
+	private void extractSymbolInformation(Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
@@ -259,7 +296,7 @@ public class SpringIndexer {
 
 			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
 			if (provider != null) {
-				TextDocument doc = getTempTextDocument(docURI, docRef);
+				TextDocument doc = getTempTextDocument(docURI, docRef, content);
 				SymbolInformation symbol = provider.getSymbol(node, doc);
 				if (symbol != null) {
 					symbols.add(symbol);
@@ -267,7 +304,7 @@ public class SpringIndexer {
 				}
 			}
 			else {
-				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef);
+				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef, content);
 				if (symbol != null) {
 					symbols.add(symbol);
 					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
@@ -276,30 +313,32 @@ public class SpringIndexer {
 		}
 	}
 
-	private TextDocument getTempTextDocument(String docURI, AtomicReference<TextDocument> docRef) throws Exception {
+	private TextDocument getTempTextDocument(String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		TextDocument doc = docRef.get();
 		if (doc == null) {
-			doc = createTempTextDocument(docURI);
+			doc = createTempTextDocument(docURI, content);
 			docRef.set(doc);
 		}
 		return doc;
 	}
 
-	private TextDocument createTempTextDocument(String docURI) throws Exception {
-		Path path = Paths.get(new URI(docURI));
-		String content = new String(Files.readAllBytes(path));
+	private TextDocument createTempTextDocument(String docURI, String content) throws Exception {
+		if (content == null) {
+			Path path = Paths.get(new URI(docURI));
+			content = new String(Files.readAllBytes(path));
+		}
 
 		TextDocument doc = new TextDocument(docURI, LanguageId.PLAINTEXT, 0, content);
 		return doc;
 	}
 
-	private SymbolInformation provideDefaultSymbol(Annotation node, String docURI, AtomicReference<TextDocument> docRef) {
+	private SymbolInformation provideDefaultSymbol(Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) {
 		try {
 			ITypeBinding type = node.resolveTypeBinding();
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
 				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-					TextDocument doc = getTempTextDocument(docURI, docRef);
+					TextDocument doc = getTempTextDocument(docURI, docRef, content);
 					SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
 							new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
 					return symbol;

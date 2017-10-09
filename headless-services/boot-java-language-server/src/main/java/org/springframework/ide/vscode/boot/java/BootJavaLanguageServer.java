@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -109,7 +110,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			if (testHightlighter!=null) {
+			if (testHightlighter != null) {
 				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
 			} else {
 				liveHoverWatchdog.watchDocument(doc.getUri());
@@ -121,12 +122,19 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onReferences(referencesHandler);
 
 		indexer = createAnnotationIndexer(this, javaProjectFinder);
+		documents.onDidSave(params -> {
+			String docURI = params.getDocument().getId().getUri();
+			String content = params.getDocument().get();
+			indexer.updateDocument(docURI, content);
+		});
+
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
+
 	}
 
 	public void setMaxCompletionsNumber(int number) {

@@ -14,12 +14,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
@@ -139,6 +141,42 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+	}
+
+	@Test
+	public void testUpdateChangedDocument() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+
+		// create initial index content
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		indexer.initialize(directory.toPath());
+
+		// update document and update index
+		String changedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
+		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
+		indexer.updateDocument(changedDocURI, newContent);
+
+		// check for updated index per document
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+		assertEquals(2, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED -- (no method defined)", changedDocURI, 6, 1, 6, 36));
+		assertTrue(containsSymbol(symbols, "@/mapping2 -- (no method defined)", changedDocURI, 11, 1, 11, 28));
+
+		// check for updated index in all symbols
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		assertEquals(8, allSymbols.size());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+
+		assertTrue(containsSymbol(allSymbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 36));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
