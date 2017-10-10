@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,7 +47,8 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager.Listener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -57,7 +59,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class SpringIndexer {
 
 	private SimpleLanguageServer server;
-	private JavaProjectFinder projectFinder;
+	private JavaProjectManager projectManager;
 	private Map<String, SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
@@ -65,38 +67,47 @@ public class SpringIndexer {
 
 	private CompletableFuture<Void> initializeTask;
 
-	private final Thread updateWorker;
-	private final BlockingQueue<UpdateItem> updateQueue;
+	private Thread updateWorker;
+	private BlockingQueue<UpdateItem> updateQueue;
 
-	public SpringIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
+	private AtomicBoolean initializing = new AtomicBoolean(false);
+
+	private final Listener projectListener = new Listener() {
+
+		@Override
+		public void created(IJavaProject project) {
+			refresh();
+		}
+
+		@Override
+		public void changed(IJavaProject project) {
+			refresh();
+		}
+
+		@Override
+		public void deleted(IJavaProject project) {
+			refresh();
+		}
+
+	};
+
+	public SpringIndexer(SimpleLanguageServer server, JavaProjectManager projectManager, Map<String, SymbolProvider> specificProviders) {
 		this.server = server;
-		this.projectFinder = projectFinder;
+		this.projectManager = projectManager;
 		this.symbolProviders = specificProviders;
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 
-		this.updateQueue = new LinkedBlockingQueue<>();
-		this.updateWorker = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					while (true) {
-						UpdateItem updateItem = updateQueue.take();
-						scanFile(updateItem.getDocURI(), updateItem.getContent(), updateItem.getClasspathEntries());
-						updateItem.getFuture().complete(null);
-					}
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}, "Spring Annotation Index Update Worker");
 	}
 
 	public CompletableFuture<Void> initialize(final Path workspaceRoot) {
 		synchronized(this) {
 			if (this.initializeTask == null) {
+				initializing.set(true);
+				if (projectManager != null) {
+					projectManager.addListener(projectListener);
+				}
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
 					@Override
 					public void run() {
@@ -104,12 +115,44 @@ public class SpringIndexer {
 						scanFiles(workspaceRoot.toFile());
 						System.out.println("initial scan done...!!!");
 
+						SpringIndexer.this.updateQueue = new LinkedBlockingQueue<>();
+						SpringIndexer.this.updateWorker = new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									while (true) {
+										UpdateItem updateItem = updateQueue.take();
+										scanFile(updateItem.getDocURI(), updateItem.getContent(), updateItem.getClasspathEntries());
+										updateItem.getFuture().complete(null);
+									}
+								}
+								catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						}, "Spring Annotation Index Update Worker");
+
 						updateWorker.start();
+						initializing.set(false);
 					}
 				});
 			}
 
 			return this.initializeTask;
+		}
+	}
+
+	public boolean isInitializing() {
+		return initializing.get();
+	}
+
+	private void refresh() {
+		synchronized (this) {
+			shutdown();
+			initializeTask = null;
+			symbols.clear();
+			symbolsByDoc.clear();
+			initialize(server.getWorkspaceRoot());
 		}
 	}
 
@@ -119,8 +162,12 @@ public class SpringIndexer {
 				initializeTask.cancel(true);
 			}
 
-			if (updateWorker.isAlive()) {
+			if (updateWorker != null && updateWorker.isAlive()) {
 				updateWorker.interrupt();
+			}
+
+			if (projectManager != null) {
+				projectManager.removeListener(projectListener);
 			}
 		}
 		catch (Exception e) {
@@ -133,7 +180,7 @@ public class SpringIndexer {
 			try {
 				initializeTask.get();
 
-				IJavaProject project = projectFinder.find(new File(new URI(docURI)));
+				IJavaProject project = projectManager.find(new File(new URI(docURI)));
 				if (project != null) {
 					String[] classpathEntries = getClasspathEntries(project);
 
@@ -216,7 +263,7 @@ public class SpringIndexer {
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
-					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new File(javaFile))));
+					.collect(Collectors.groupingBy((javaFile) -> projectManager.find(new File(javaFile))));
 
 			System.out.println("scan directory done!!!");
 

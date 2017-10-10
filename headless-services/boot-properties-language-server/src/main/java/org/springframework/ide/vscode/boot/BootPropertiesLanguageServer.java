@@ -20,22 +20,15 @@ import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoP
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
-import org.springframework.ide.vscode.commons.gradle.GradleCore;
-import org.springframework.ide.vscode.commons.gradle.GradleProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
-import org.springframework.ide.vscode.commons.languageserver.java.DefaultJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.IJavaProjectFinderStrategy;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.maven.JavaProjectWithClasspathFileFinderStrategy;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.maven.MavenProjectFinderStrategy;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -60,12 +53,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
-	public static final JavaProjectFinder DEFAULT_PROJECT_FINDER = new DefaultJavaProjectFinder(new IJavaProjectFinderStrategy[] {
-			new MavenProjectFinderStrategy(MavenCore.getDefault()),
-			new GradleProjectFinderStrategy(GradleCore.getDefault()),
-			new JavaProjectWithClasspathFileFinderStrategy()
-	});
-
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
 
@@ -73,7 +60,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 		public boolean includeDeindentedProposals() { return false; };
 	};
 	// Shared:
-	private final JavaProjectFinder javaProjectFinder;
+	private final JavaProjectManager javaProjectManager;
 	private final SpringPropertyIndexProvider indexProvider;
 	private final TypeUtilProvider typeUtilProvider;
 	private final VscodeCompletionEngineAdapter completionEngine;
@@ -88,12 +75,12 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private final YamlStructureProvider yamlStructureProvider= YamlStructureProvider.DEFAULT;
 	private YamlAssistContextProvider yamlAssistContextProvider;
 
-	public BootPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder javaProjectFinder) {
+	public BootPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectManager javaProjectManager) {
 		super("vscode-boot-properties");
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.javaProjectFinder = javaProjectFinder;
-		this.completionFactory = new PropertyCompletionFactory(javaProjectFinder);
+		this.javaProjectManager = javaProjectManager;
+		this.completionFactory = new PropertyCompletionFactory(javaProjectManager);
 		this.yamlAssistContextProvider = new YamlAssistContextProvider() {
 			@Override
 			public YamlAssistContext getGlobalAssistContext(YamlDocument ydoc) {
@@ -123,7 +110,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	}
 
 	private ICompletionEngine getCompletionEngine() {
-		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
+		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectManager);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
 		return (IDocument document, int offset) -> {
 			String uri = document.getUri();
@@ -139,7 +126,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	}
 
 	protected HoverInfoProvider getHoverProvider() {
-		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
+		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectManager);
 		HoverInfoProvider ymlHovers = new YamlHoverInfoProvider(parser, yamlStructureProvider, yamlAssistContextProvider);
 
 		return (IDocument document, int offset) -> {

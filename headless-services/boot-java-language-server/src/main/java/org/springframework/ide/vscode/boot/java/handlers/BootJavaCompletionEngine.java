@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -38,12 +38,12 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class BootJavaCompletionEngine implements ICompletionEngine {
 
-	private JavaProjectFinder projectFinder;
+	private JavaProjectManager projectManager;
 	private Map<String, CompletionProvider> completionProviders;
 	private JavaSnippetManager snippets;
 
-	public BootJavaCompletionEngine(JavaProjectFinder projectFinder, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
-		this.projectFinder = projectFinder;
+	public BootJavaCompletionEngine(JavaProjectManager projectManager, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
+		this.projectManager = projectManager;
 		this.completionProviders = specificProviders;
 		this.snippets = snippets;
 	}
@@ -108,7 +108,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 	}
 
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(doc);
+		IJavaProject project = this.projectManager.find(doc);
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries

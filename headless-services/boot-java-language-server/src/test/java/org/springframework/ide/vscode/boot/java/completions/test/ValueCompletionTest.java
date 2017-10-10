@@ -25,7 +25,8 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -38,7 +39,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ValueCompletionTest {
 
-	protected final JavaProjectFinder javaProjectFinder = new JavaProjectFinder() {
+	protected final JavaProjectManager javaProjectFinder = new AbstractJavaProjectManager() {
 		@Override
 		public boolean isProjectRoot(File file) {
 			return false;

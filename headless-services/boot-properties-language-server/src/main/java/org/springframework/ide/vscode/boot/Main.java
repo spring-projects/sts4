@@ -15,9 +15,15 @@ import java.io.IOException;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectManager;
+import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFileManager;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -31,10 +37,15 @@ public class Main {
 		
 	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(() -> {
-			JavaProjectFinder javaProjectFinder = BootPropertiesLanguageServer.DEFAULT_PROJECT_FINDER;
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
-			SimpleLanguageServer server = new BootPropertiesLanguageServer(indexProvider, typeUtilProvider, javaProjectFinder);
+			CompositeJavaProjectManager javaProjectManager = new CompositeJavaProjectManager(new JavaProjectManager[] {
+					new MavenProjectManager(MavenCore.getDefault()),
+					new GradleProjectManager(GradleCore.getDefault()),
+					new JavaProjectWithClasspathFileManager()
+			});
+			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectManager);
+			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectManager.find(doc));
+			SimpleLanguageServer server = new BootPropertiesLanguageServer(indexProvider, typeUtilProvider, javaProjectManager);
+			javaProjectManager.setFileObserver(server.getWorkspaceService());
 			indexProvider.setProgressService(server.getProgressService());
 			return server;
 		});

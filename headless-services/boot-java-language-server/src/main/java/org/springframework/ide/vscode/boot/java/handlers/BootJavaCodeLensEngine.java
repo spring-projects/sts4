@@ -19,7 +19,7 @@ import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -30,9 +30,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class BootJavaCodeLensEngine {
 
 	private final SimpleLanguageServer server;
-	private final JavaProjectFinder projectFinder;
+	private final JavaProjectManager projectFinder;
 
-	public BootJavaCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaCodeLensEngine(SimpleLanguageServer server, JavaProjectManager projectFinder) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 	}

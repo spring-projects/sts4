@@ -33,5 +33,9 @@ public class MavenJavaProject implements IJavaProject {
 	public MavenProjectClasspath getClasspath() {
 		return classpath;
 	}
+	
+	void update(MavenCore maven, File pom) {
+		this.classpath = new MavenProjectClasspath(maven, pom);
+	}
 
 }

@@ -36,7 +36,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -49,11 +49,11 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class BootJavaHoverProvider implements HoverHandler {
 
-	private JavaProjectFinder projectFinder;
+	private JavaProjectManager projectFinder;
 	private SimpleLanguageServer server;
 	private Map<String, HoverProvider> hoverProviders;
 
-	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, HoverProvider> specificProviders) {
+	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectManager projectFinder, Map<String, HoverProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;

@@ -66,5 +66,10 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 			return false;
 		return true;
 	}
+	
+	void update(File cpFile) {
+		this.cpFile = cpFile;
+		this.classpath = new FileClasspath(Paths.get(cpFile.toURI()));
+	}
 
 }

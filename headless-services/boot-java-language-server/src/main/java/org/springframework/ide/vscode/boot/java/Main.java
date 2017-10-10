@@ -13,22 +13,33 @@ package org.springframework.ide.vscode.boot.java;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectManager;
+import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFileManager;
 
 /**
  * Starts up Language Server process
- * 
+ *
  * @author Martin Lippert
  */
 public class Main {
-		
+
 	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(() -> {
-			JavaProjectFinder javaProjectFinder = BootJavaLanguageServer.DEFAULT_PROJECT_FINDER;
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-			SimpleLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexProvider);
+			CompositeJavaProjectManager javaProjectManager = new CompositeJavaProjectManager(new JavaProjectManager[] {
+					new MavenProjectManager(MavenCore.getDefault()),
+					new GradleProjectManager(GradleCore.getDefault()),
+					new JavaProjectWithClasspathFileManager()
+			});
+			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectManager);
+			SimpleLanguageServer server = new BootJavaLanguageServer(javaProjectManager, indexProvider);
+			javaProjectManager.setFileObserver(server.getWorkspaceService());
 			return server;
 		});
 	}

@@ -12,8 +12,10 @@ package org.springframework.ide.vscode.commons.gradle;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,6 +23,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager.Listener;
+import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 /**
  * Tests covering Gradle project data
@@ -54,5 +59,40 @@ public class GradleProjectTest {
 		List<String> resources = project.getClasspath().getClasspathResources().collect(Collectors.toList());
 		assertArrayEquals(new String[] {"test-resource-1.txt"}, resources.toArray(new String[resources.size()]));
 	}
+	
+	@Test
+	public void testGradleFileChanges() throws Exception {
+		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/empty-gradle-project").toURI());
+		File gradleFile = testProjectPath.resolve(GradleCore.GRADLE_BUILD_FILE).toFile();
+		GradleProjectManager manager = new GradleProjectManager(GradleCore.getDefault());
+		BasicFileObserver fileObserver = new BasicFileObserver();
+		manager.setFileObserver(fileObserver);
+		IJavaProject[] projectChanged = new IJavaProject[] { null };
+		IJavaProject[] projectDeleted = new IJavaProject[] { null };
+		manager.addListener(new Listener() {
+			@Override
+			public void created(IJavaProject project) {}
+
+			@Override
+			public void changed(IJavaProject project) {
+				projectChanged[0] = project;
+			}
+			@Override
+			public void deleted(IJavaProject project) {
+				projectDeleted[0] = project;
+			}
+		});
+		
+		// Get the project from cache
+		GradleJavaProject cachedProject = manager.find(gradleFile);
+		assertNotNull(cachedProject);
+		
+		fileObserver.notifyFileChanged(gradleFile.toURI().toString());
+		assertEquals(cachedProject, projectChanged[0]);
+		
+		fileObserver.notifyFileDeleted(gradleFile.toURI().toString());
+		assertEquals(cachedProject, projectDeleted[0]);
+	}
+
 
 }

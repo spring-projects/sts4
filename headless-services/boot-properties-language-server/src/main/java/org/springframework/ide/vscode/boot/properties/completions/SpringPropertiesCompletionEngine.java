@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;;
 
@@ -37,10 +37,10 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine {
 	 * Constructor used in 'production'. Wires up stuff properly for running inside a normal
 	 * Eclipse runtime.
 	 */
-	public SpringPropertiesCompletionEngine(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder projectFinder) {
+	public SpringPropertiesCompletionEngine(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectManager projectManager) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.completionFactory = new PropertyCompletionFactory(projectFinder);
+		this.completionFactory = new PropertyCompletionFactory(projectManager);
 	}
 
 	/**

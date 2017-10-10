@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.gradle;
 import java.io.File;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Implementation of Gradle Java project
@@ -31,6 +32,14 @@ public class GradleJavaProject implements IJavaProject {
 	@Override
 	public GradleProjectClasspath getClasspath() {
 		return classpath;
+	}
+	
+	void update(GradleCore gradle, File projectDir) {
+		try {
+			this.classpath = new GradleProjectClasspath(gradle, projectDir);
+		} catch (GradleException e) {
+			Log.log(e);
+		}
 	}
 
 }

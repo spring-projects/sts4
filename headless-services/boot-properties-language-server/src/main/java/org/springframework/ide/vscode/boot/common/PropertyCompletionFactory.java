@@ -19,7 +19,7 @@ import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -113,9 +113,9 @@ public class PropertyCompletionFactory {
 		return proposal;
 	}
 
-	private JavaProjectFinder documentContextFinder;
+	private JavaProjectManager documentContextFinder;
 
-	public PropertyCompletionFactory(JavaProjectFinder documentContextFinder) {
+	public PropertyCompletionFactory(JavaProjectManager documentContextFinder) {
 		this.documentContextFinder = documentContextFinder;
 	}
 

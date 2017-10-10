@@ -22,7 +22,8 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -40,7 +41,7 @@ public class BootPropertiesLanguageServerTest {
 	}
 
 	private LanguageServerHarness newHarness() throws Exception {
-		JavaProjectFinder nullJavaProjectFinder = new JavaProjectFinder() {
+		JavaProjectManager nullJavaProjectFinder = new AbstractJavaProjectManager() {
 			@Override
 			public boolean isProjectRoot(File file) {
 				return false;

@@ -28,7 +28,8 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -45,7 +46,7 @@ public abstract class AbstractPropsEditorTest {
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	protected PropertyIndexHarness md;
-	protected final JavaProjectFinder javaProjectFinder = new JavaProjectFinder() {
+	protected final JavaProjectManager javaProjectFinder = new AbstractJavaProjectManager() {
 		@Override
 		public boolean isProjectRoot(File file) {
 			return false;
