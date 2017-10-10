@@ -29,8 +29,9 @@ export interface ActivatorOptions {
     TRACE?: boolean;
     extensionId: string;
     clientOptions: LanguageClientOptions;
-    fatJarFile: string;
+    launcher: (context: VSCode.ExtensionContext) => string;
     jvmHeap?: string;
+    classpath?: (context: VSCode.ExtensionContext) => string[];
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
@@ -40,7 +41,6 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
         return connectToLS(context, options);
     } else {
         let clientOptions = options.clientOptions;
-        let fatJarFile = Path.resolve(context.extensionPath, options.fatJarFile);
 
         var log_output = VSCode.window.createOutputChannel(options.extensionId + "-debug-log");
         log("Activating '" + options.extensionId + "' extension");
@@ -57,7 +57,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
             }
         }
 
-        let javaExecutablePath = findJavaExecutable('java');
+        let javaExecutablePath = findJvmFile('bin', correctBinname('java'));
 
         if (javaExecutablePath == null) {
             VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
@@ -84,15 +84,25 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 writer: socket
                             });
                         }).listen(port, () => {
-                            let options = {
+                            let processLaunchoptions = {
                                 cwd: VSCode.workspace.rootPath
                             };
                             let child: ChildProcess.ChildProcess;
-                            let args = [
-                                '-Dserver.port=' + port,
-                                '-jar',
-                                fatJarFile,
+                            const args = [
+                                '-Dserver.port=' + port
                             ];
+                            if (options.classpath) {
+                                const classpath = options.classpath(context);
+                                if (classpath) {
+                                    args.push('-cp');
+                                    args.push(classpath.join(':'));
+                                }
+                            }
+                            const launcher = options.launcher(context);
+                            if (launcher.endsWith('.jar')) {
+                                args.push('-jar');
+                            }
+                            args.push(options.launcher(context));
                             if (jvmHeap) {
                                 args.unshift("-Xmx"+jvmHeap);
                             }
@@ -102,7 +112,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             log("CMD = " + javaExecutablePath + ' ' + args.join(' '));
 
                             // Start the child java process
-                            child = ChildProcess.execFile(javaExecutablePath, args, options);
+                            child = ChildProcess.execFile(javaExecutablePath, args, processLaunchoptions);
                             child.stdout.on('data', (data) => {
                                 log("" + data);
                             });
@@ -187,16 +197,14 @@ function isJava8(javaExecutablePath: string): Promise<boolean> {
     });
 }
 
-function findJavaExecutable(binname: string) {
-    binname = correctBinname(binname);
-
+export function findJvmFile(folderPath: string, file: string): string {
     // First search each JAVA_HOME bin folder
     if (process.env['JAVA_HOME']) {
         let workspaces = process.env['JAVA_HOME'].split(Path.delimiter);
         for (let i = 0; i < workspaces.length; i++) {
-            let binpath = Path.join(workspaces[i], 'bin', binname);
-            if (FS.existsSync(binpath)) {
-                return binpath;
+            let filePath = Path.join(workspaces[i], folderPath, file);
+            if (FS.existsSync(filePath)) {
+                return filePath;
             }
         }
     }
@@ -205,15 +213,12 @@ function findJavaExecutable(binname: string) {
     if (process.env['PATH']) {
         let pathparts = process.env['PATH'].split(Path.delimiter);
         for (let i = 0; i < pathparts.length; i++) {
-            let binpath = Path.join(pathparts[i], binname);
-            if (FS.existsSync(binpath)) {
-                return binpath;
+            let filePath = Path.join(pathparts[i], file);
+            if (FS.existsSync(filePath)) {
+                return filePath;
             }
         }
     }
-
-    // Else return the binary name directly (this will likely always fail downstream) 
-    return null;
 }
 
 function correctBinname(binname: string) {

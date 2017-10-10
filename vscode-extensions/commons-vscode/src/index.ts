@@ -1,3 +1,3 @@
-import {activate, ActivatorOptions} from './launch-util';
+import {activate, findJvmFile, ActivatorOptions} from './launch-util';
 
-export {activate, ActivatorOptions};
+export {activate, findJvmFile, ActivatorOptions};

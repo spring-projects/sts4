@@ -31,7 +31,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG : false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-manifest-yaml',
-        fatJarFile: 'jars/language-server.jar',
+        launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
         jvmHeap: '64m',
         clientOptions: {
             documentSelector: ["manifest-yaml"]
