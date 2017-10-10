@@ -3977,6 +3977,90 @@ public class ConcourseEditorTest {
 		editor.assertProblems(/*NONE*/);
 	}
 
+	@Test public void cfResourceSourceCompletions() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				//Snippet:
+				"api: $1\n" +
+				"    username: $2\n" +
+				"    password: $3\n" +
+				"    organization: $4\n" +
+				"    space: $5<*>"
+				, // non-snippet:
+				"api: <*>",
+				"organization: <*>",
+				"password: <*>",
+				"space: <*>",
+				"username: <*>"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: {{cf_api}}\n" +
+				"    username: {{cf_user}}\n" +
+				"    password: {{cf_password}}\n" +
+				"    organization: {{cf_org}}\n" +
+				"    space: {{cf_space}}\n" +
+				"    <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
+				"skip_cert_check: <*>"
+		);
+	}
+
+	@Test public void cfResourceSourceHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: {{cf_api}}\n" +
+				"    username: {{cf_user}}\n" +
+				"    password: {{cf_password}}\n" +
+				"    organization: {{cf_org}}\n" +
+				"    space: {{cf_space}}\n" +
+				"    skip_cert_check: true<*>"
+		);
+		editor.assertHoverContains("api", "address of the Cloud Controller");
+		editor.assertHoverContains("username", "username used to authenticate");
+		editor.assertHoverContains("password", "password used to authenticate");
+		editor.assertHoverContains("organization", "organization to push");
+		editor.assertHoverContains("space", "space to push");
+		editor.assertHoverContains("skip_cert_check", "Check the validity of the CF SSL cert");
+	}
+
+	@Test public void cfPutParamsHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"jobs:\n" +
+				"- name: deploy-stuff\n" +
+				"  plan:\n" +
+				"  - put: pws\n" +
+				"    params:\n" +
+				"      manifest: repo/manifest.yml\n" +
+				"      path: out/*.jar\n" +
+				"      current_app_name: the-name\n" +
+				"      environment_variables:\n" +
+				"        key: value\n" +
+				"        key2: value2\n"
+		);
+		editor.assertHoverContains("manifest", "Path to a application manifest file");
+		editor.assertHoverContains("path", "Path to the application to push");
+		editor.assertHoverContains("current_app_name", "zero-downtime deploy");
+		editor.assertHoverContains("environment_variables", "Environment variables");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

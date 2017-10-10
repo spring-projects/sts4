@@ -621,7 +621,31 @@ public class PipelineYmlSchema implements YamlSchema {
 			//put params deliberately left empty
 
 			resourceTypes.def("time", source, get, put);
+		}
+		//cloudfoundry:
+		{
+			YAtomicType t_cf_api_url = f.yatomic("CFApiUrl");
+			t_cf_api_url.addHints("https://api.run.pivotal.io");
+			t_cf_api_url.parseWith(ValueParsers.NE_STRING);
 
+			AbstractType source = f.ybean("CloudFoundrySource");
+			addProp(source, "api", t_cf_api_url).isRequired(true);
+			addProp(source, "username", t_ne_string).isRequired(true);
+			addProp(source, "password", t_ne_string).isRequired(true);
+			addProp(source, "organization", t_ne_string).isRequired(true);
+			addProp(source, "space", t_ne_string).isRequired(true);
+			addProp(source, "skip_cert_check", t_ne_string);
+
+			AbstractType get = f.ybean("CloudFoundryGetParams");
+			//get params deliberately left empty
+
+			AbstractType put = f.ybean("CloudFoundryPutParams");
+			addProp(put, "manifest", t_ne_string).isRequired(true);
+			addProp(put, "path", t_ne_string);
+			addProp(put, "current_app_name", t_ne_string);
+			addProp(put, "environment_variables", t_string_params);
+
+			resourceTypes.def("cf", source, get, put);
 		}
 	}
 

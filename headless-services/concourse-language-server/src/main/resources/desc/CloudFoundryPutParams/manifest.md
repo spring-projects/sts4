@@ -1,0 +1,1 @@
+*Required*. Path to a application manifest file.
