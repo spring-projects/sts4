@@ -99,7 +99,7 @@
 		<profile>
 			<id>e47</id>
 			<properties>
-				<dist.target>e4.7.1</dist.target>
+				<dist.target>e4.7.1a</dist.target>
 				<dist.target.major>e4.7</dist.target.major>
 				<dist.platform.name>Oxygen</dist.platform.name>
 				<dist.platform.name.long>Oxygen.1a (4.7.1a)</dist.platform.name.long>
