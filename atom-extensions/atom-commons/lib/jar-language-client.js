@@ -113,8 +113,11 @@ export class JarLanguageClient extends AutoLanguageClient {
             '-Dlsp.lazy.completions.disable=true',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
-            launcher.endsWith('.jar') ? `-jar ${launcher}` : launcher,
         ]);
+        if (launcher.endsWith('.jar')) {
+            vmArgs.push('-jar');
+        }
+        vmArgs.push(launcher);
         this.logger.debug(`starting "${javaExecutable} ${vmArgs.join('\n')}"`);
         return cp.spawn(javaExecutable, vmArgs, { cwd: this.serverHome })
     }
