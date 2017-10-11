@@ -44,30 +44,28 @@ class BootJavaLanguageClient extends JarLanguageClient {
     launchVmArgs(version) {
         return super.getOrInstallLauncher().then(lsJar => {
             const toolsJar = this.findJavaFile('lib', 'tools.jar');
-            return this.fileExists(toolsJar).then(toolsJarExists => {
-                if (!toolsJarExists) {
-                    // Notify the user that tool.jar is not found
-                    const notification = atom.notifications.addWarning(`"Boot-Java" Package Functionality Limited`, {
-                        dismissable: true,
-                        detail: 'No tools.jar found',
-                        description: 'JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable',
-                        buttons: [{
-                            text: 'OK',
-                            onDidClick: () => {
-                                notification.dismiss()
-                            },
-                        }],
-                    });
-                }
-                return [
-                    // '-Xdebug',
-                    // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
-                    '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
-                    '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-                    '-cp',
-                    `${toolsJarExists ? `${toolsJar}:` : ''}${lsJar}`
-                ];
-            });
+            if (!toolsJar) {
+                // Notify the user that tool.jar is not found
+                const notification = atom.notifications.addWarning(`"Boot-Java" Package Functionality Limited`, {
+                    dismissable: true,
+                    detail: 'No tools.jar found',
+                    description: 'JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable',
+                    buttons: [{
+                        text: 'OK',
+                        onDidClick: () => {
+                            notification.dismiss()
+                        },
+                    }],
+                });
+            }
+            return [
+                '-Xdebug',
+                '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
+                '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
+                '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+                '-cp',
+                `${toolsJar ? `${toolsJar}:` : ''}${lsJar}`
+            ];
         });
     }
 
