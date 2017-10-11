@@ -11,7 +11,7 @@ const { Disposable } = require('atom');
 import { StsAdapter } from './sts-adapter';
 
 
-export class JarLanguageClient extends AutoLanguageClient {
+export class JavaProcessLanguageClient extends AutoLanguageClient {
 
     DEBUG = false;
 
@@ -88,17 +88,25 @@ export class JarLanguageClient extends AutoLanguageClient {
     launchProcess(port) {
         const command = this.findJavaFile('bin', this.correctBinname('java'));
 
-        return this.compatibleJavaVersion(command).then(version => {
+        return this.javaVesrion(command).then(version => {
             if (version) {
                 return this.launchVmArgs(version).then(args => {
-                    if (version >= 9) {
-                        args.push('--add-modules=java.se.ee');
-                    }
                     args.push(`-Dserver.port=${port}`);
                     return this.getOrInstallLauncher().then(launcher => this.doLaunchProcess(command, launcher, port, args));
                 });
             } else {
                 this.logger.error('Java executable is not Java 8 or higher');
+                const notification = atom.notifications.addError('Cannot start Language Server', {
+                    dismissable: true,
+                    detail: 'No compatible Java Runtime Environment found',
+                    description: 'The Java Runtime Environment is either below version "1.8" or is missing from the system',
+                    buttons: [{
+                        text: 'OK',
+                        onDidClick: () => {
+                            notification.dismiss()
+                        },
+                    }],
+                });
             }
         });
     }
@@ -209,18 +217,16 @@ export class JarLanguageClient extends AutoLanguageClient {
             return binname;
     }
 
-    compatibleJavaVersion(javaExecutablePath) {
+    javaVesrion(javaExecutablePath) {
         return new Promise((resolve, reject) => {
             cp.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-                cp.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-                    if (stderr.indexOf('1.8') >= 0) {
-                        resolve(8);
-                    } else if (stderr.indexOf('java version "9"') >= 0) {
-                        resolve(9);
-                    } else {
-                        resolve(0);
-                    }
-                });
+                if (stderr.indexOf('1.8') >= 0) {
+                    resolve(8);
+                } else if (stderr.indexOf('java version "9"') >= 0) {
+                    resolve(9);
+                } else {
+                    resolve(0);
+                }
             });
         });
     }

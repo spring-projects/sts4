@@ -1,8 +1,8 @@
 const path = require('path');
-const { JarLanguageClient } = require('pivotal-atom-languageclient-commons');
+const { JavaProcessLanguageClient } = require('pivotal-atom-languageclient-commons');
 const PROPERTIES = require('../properties.json');
 
-class ManifestYamlLanguageClient extends JarLanguageClient {
+class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator

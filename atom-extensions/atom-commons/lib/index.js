@@ -1,4 +1,4 @@
-import { JarLanguageClient } from './jar-language-client';
+import { JavaProcessLanguageClient } from './jave-process-language-client';
 import { StsAdapter } from './sts-adapter';
 
-export { JarLanguageClient, StsAdapter };
+export { JavaProcessLanguageClient, StsAdapter };

@@ -1,12 +1,12 @@
 const path = require('path');
-const { JarLanguageClient, StsAdapter } = require('pivotal-atom-languageclient-commons');
+const { JavaProcessLanguageClient, StsAdapter } = require('pivotal-atom-languageclient-commons');
 const { Convert } = require('atom-languageclient');
 const PROPERTIES = require('../properties.json');
 
 const BOOT_DATA_MARKER_TYPE = 'BootApp-Hint';
 const BOOT_HINT_GUTTER_NAME = 'boot-hint-gutter';
 
-class BootJavaLanguageClient extends JarLanguageClient {
+class BootJavaLanguageClient extends JavaProcessLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
