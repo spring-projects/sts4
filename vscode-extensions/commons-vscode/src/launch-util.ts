@@ -66,12 +66,12 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
         log("Found java exe: " + javaExecutablePath);
 
 
-        return isJava8(javaExecutablePath).then(eight => {
-            if (!eight) {
-                VSCode.window.showErrorMessage('Java-based Language Server requires Java 8 (using ' + javaExecutablePath + ')');
+        return javaVersion(javaExecutablePath).then(version => {
+            if (!version) {
+                VSCode.window.showErrorMessage('Java-based Language Server requires Java 8 or higher (using ' + javaExecutablePath + ')');
                 return;
             }
-            log("isJavaEight => true");
+            log("isJavaEightOrHigher => true");
 
             function createServer(): Promise<StreamInfo> {
                 return new Promise((resolve, reject) => {
@@ -188,11 +188,16 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     });
 }
 
-function isJava8(javaExecutablePath: string): Promise<boolean> {
+function javaVersion(javaExecutablePath: string): Promise<number> {
     return new Promise((resolve, reject) => {
-        let result = ChildProcess.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-            let eight = stderr.indexOf('1.8') >= 0;
-            resolve(eight);
+        ChildProcess.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
+            if (stderr.indexOf('1.8') >= 0) {
+                resolve(8);
+            } else if (stderr.indexOf('java version "9"') >= 0) {
+                resolve(9);
+            } else {
+                resolve(0);
+            }
         });
     });
 }
