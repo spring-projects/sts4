@@ -214,7 +214,9 @@ public class SpringIndexer {
 
 		if (cu != null) {
 			List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
-			symbols.removeAll(oldSymbols);
+			if (oldSymbols != null) {
+				symbols.removeAll(oldSymbols);
+			}
 
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 			scanAST(cu, docURI, docRef, content);
