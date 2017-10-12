@@ -120,6 +120,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 	private void addHoverContent(AppMappings appMappings,  List<Either<String, MarkedString>> hoverContent, Annotation annotation) throws Exception {
 		Iterator<String> keys = appMappings.mappings.keys();
+		String processId = appMappings.app.getProcessID();
+		String processName = appMappings.app.getProcessName();
 		while (keys.hasNext()) {
 			String key = keys.next();
 			if (doesMatch(annotation, key)) {
@@ -131,7 +133,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				StringBuilder builder = new StringBuilder();
 
 				if (url != null) {
-					builder.append("Navigate to mapping: ");
+					builder.append("Path: ");
 					builder.append("[");
 					builder.append(path);
 					builder.append("]");
@@ -139,14 +141,14 @@ public class RequestMappingHoverProvider implements HoverProvider {
 					builder.append(url);
 					builder.append(")");
 				} else {
-					builder.append("Unable to resolve URL for path mapping: " + key);
+					builder.append("Unable to resolve URL for path: " + key);
 				}
 
 				hoverContent.add(Either.forLeft(builder.toString()));
-
-//				hoverContent.add(Either.forLeft(" PORT : " + port));
 			}
 		}
+		hoverContent.add(Either.forLeft("Process ID: " + processId));
+		hoverContent.add(Either.forLeft("Process Name: " + processName));
 	}
 
 	private boolean doesMatch(Annotation annotation, String key) {
