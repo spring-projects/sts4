@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -65,12 +67,13 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
-			JSONObject[] mappings = getRequestMappingsFromProcesses(runningApps);
+
+			Optional<AppMappings>  val =  getRequestMappingsForAnnotation(annotation, runningApps);
 
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
-			for (int i = 0; i < mappings.length; i++) {
-				addHoverContent(mappings[i], hoverContent, annotation);
+			if (val.isPresent()) {
+				addHoverContent(val.get(), hoverContent, annotation);
 			}
 
 			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
@@ -88,13 +91,60 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private void addHoverContent(JSONObject jsonObject, List<Either<String, MarkedString>> hoverContent, Annotation annotation) {
-		Iterator<String> keys = jsonObject.keys();
+	private Optional<AppMappings> getRequestMappingsForAnnotation(Annotation annotation,
+			SpringBootApp[] runningApps) {
+
+		try {
+			SpringBootApp foundApp = null;
+			JSONObject requestMappings = null;
+			for (SpringBootApp app : runningApps) {
+				String mappings = app.getRequestMappings();
+				if (doesMatch(annotation, mappings)) {
+					 requestMappings = new JSONObject(mappings);
+					 foundApp = app;
+					 break;
+				}
+			}
+			if (foundApp != null && requestMappings != null) {
+				return Optional.of(new AppMappings(requestMappings, foundApp));
+			}
+		}
+		catch (Exception e) {
+			Log.log(e);
+		}
+
+		return Optional.empty();
+
+
+	}
+
+	private void addHoverContent(AppMappings appMappings,  List<Either<String, MarkedString>> hoverContent, Annotation annotation) throws Exception {
+		Iterator<String> keys = appMappings.mappings.keys();
 		while (keys.hasNext()) {
 			String key = keys.next();
 			if (doesMatch(annotation, key)) {
-				hoverContent.add(Either.forLeft(key + " - [url of the mapping](http://localhost:8080/path)"));
-				hoverContent.add(Either.forLeft(jsonObject.get(key).toString()));
+				String path = UrlUtil.extractPath(key);
+				String port = appMappings.app.getPort();
+				String host = appMappings.app.getHost();
+
+				String url = UrlUtil.createUrl(host, port, path);
+				StringBuilder builder = new StringBuilder();
+
+				if (url != null) {
+					builder.append("Navigate to mapping: ");
+					builder.append("[");
+					builder.append(path);
+					builder.append("]");
+					builder.append("(");
+					builder.append(url);
+					builder.append(")");
+				} else {
+					builder.append("Unable to resolve URL for path mapping: " + key);
+				}
+
+				hoverContent.add(Either.forLeft(builder.toString()));
+
+//				hoverContent.add(Either.forLeft(" PORT : " + port));
 			}
 		}
 	}
@@ -145,6 +195,18 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		}
 
 		return result.toArray(new JSONObject[result.size()]);
+	}
+
+	static class AppMappings {
+
+		public final JSONObject mappings;
+		public final SpringBootApp app;
+
+		public AppMappings(JSONObject mapping, SpringBootApp app) {
+			this.mappings = mapping;
+			this.app = app;
+		}
+
 	}
 
 }

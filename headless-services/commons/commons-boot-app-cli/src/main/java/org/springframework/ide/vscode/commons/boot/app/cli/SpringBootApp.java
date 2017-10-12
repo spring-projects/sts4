@@ -316,4 +316,17 @@ public class SpringBootApp {
 		return null;
 	}
 
+	public String getHost() throws Exception {
+		String jmxConnect = this.vm.startLocalManagementAgent();
+
+		JMXConnector jmxConnector = null;
+		try {
+			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+			return serviceUrl.getHost();
+		}
+		finally {
+			if (jmxConnector != null) jmxConnector.close();
+		}
+	}
+
 }
