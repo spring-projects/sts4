@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -162,7 +161,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	@Override
 	public CompletableFuture<Object> shutdown() {
-		liveHoverWatchdog.shutdown();
+		this.liveHoverWatchdog.shutdown();
+		this.indexer.shutdown();
+
 		return super.shutdown();
 	}
 

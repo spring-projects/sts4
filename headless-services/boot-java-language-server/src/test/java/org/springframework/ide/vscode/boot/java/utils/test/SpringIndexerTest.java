@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -158,7 +160,9 @@ public class SpringIndexerTest {
 		// update document and update index
 		String changedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
 		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
-		indexer.updateDocument(changedDocURI, newContent);
+		CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent);
+
+		updateFuture.get(5, TimeUnit.SECONDS);
 
 		// check for updated index per document
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);

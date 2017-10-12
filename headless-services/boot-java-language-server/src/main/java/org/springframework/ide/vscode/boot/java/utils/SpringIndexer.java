@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +65,9 @@ public class SpringIndexer {
 
 	private CompletableFuture<Void> initializeTask;
 
+	private final Thread updateWorker;
+	private final BlockingQueue<UpdateItem> updateQueue;
+
 	public SpringIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
@@ -70,9 +75,26 @@ public class SpringIndexer {
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
+
+		this.updateQueue = new LinkedBlockingQueue<>();
+		this.updateWorker = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while (true) {
+						UpdateItem updateItem = updateQueue.take();
+						scanFile(updateItem.getDocURI(), updateItem.getContent(), updateItem.getClasspathEntries());
+						updateItem.getFuture().complete(null);
+					}
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, "Spring Annotation Index Update Worker");
 	}
 
-	public void initialize(final Path workspaceRoot) {
+	public CompletableFuture<Void> initialize(final Path workspaceRoot) {
 		synchronized(this) {
 			if (this.initializeTask == null) {
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
@@ -81,31 +103,59 @@ public class SpringIndexer {
 						System.out.println("start initial scan...");
 						scanFiles(workspaceRoot.toFile());
 						System.out.println("initial scan done...!!!");
+
+						updateWorker.start();
 					}
 				});
 			}
+
+			return this.initializeTask;
 		}
 	}
 
-	public void updateDocument(String docURI, String content) {
-		if (docURI.endsWith(".java")) {
+	public void shutdown() {
+		try {
+			if (this.initializeTask != null) {
+				initializeTask.cancel(true);
+			}
+
+			if (updateWorker.isAlive()) {
+				updateWorker.interrupt();
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public CompletableFuture<Void> updateDocument(String docURI, String content) {
+		if (docURI.endsWith(".java") && initializeTask != null) {
 			try {
+				initializeTask.get();
+
 				IJavaProject project = projectFinder.find(new File(new URI(docURI)));
 				if (project != null) {
 					String[] classpathEntries = getClasspathEntries(project);
-					scanFile(docURI, content, classpathEntries);
+
+					CompletableFuture<Void> future = new CompletableFuture<>();
+					UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries, future);
+					updateQueue.put(updateItem);
+					return future;
 				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+
+		return null;
 	}
 
 	public List<? extends SymbolInformation> getAllSymbols(String query) {
 		if (initializeTask != null) {
 			try {
 				initializeTask.get();
+
 				if (query != null && query.length() > 0) {
 					return searchMatchingSymbols(this.symbols, query);
 				} else {
@@ -362,4 +412,39 @@ public class SpringIndexer {
 				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
 	}
 
+	/**
+	 * inner class to capture items for the update worker
+	 */
+	private static class UpdateItem {
+
+		private final String docURI;
+		private final  String content;
+		private final String[] classpathEntries;
+
+		private final CompletableFuture<Void> future;
+
+		public UpdateItem(String docURI, String content, String[] classpathEntries, CompletableFuture<Void> future) {
+			this.docURI = docURI;
+			this.content = content;
+			this.classpathEntries = classpathEntries;
+			this.future = future;
+		}
+
+		public String getDocURI() {
+			return docURI;
+		}
+
+		public String getContent() {
+			return content;
+		}
+
+		public String[] getClasspathEntries() {
+			return classpathEntries;
+		}
+
+		public CompletableFuture<Void> getFuture() {
+			return future;
+		}
+
+	}
 }
