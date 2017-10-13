@@ -19,11 +19,14 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -31,6 +34,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.java.parser.JLRMethodParser;
+import org.springframework.ide.vscode.commons.java.parser.JLRMethodParser.JLRMethod;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -58,7 +63,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			}
 		}
 		catch (BadLocationException e) {
-			e.printStackTrace();
+			Log.log(e);
 		}
 
 		return null;
@@ -67,13 +72,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
-
-			Optional<AppMappings>  val =  getRequestMappingsForAnnotation(annotation, runningApps);
-
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
+			Optional<RequestMappingMethod> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+
 			if (val.isPresent()) {
-				addHoverContent(val.get(), hoverContent, annotation);
+				addHoverContent(val.get(), hoverContent);
 			}
 
 			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
@@ -83,75 +87,107 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			hover.setRange(hoverRange);
 
 			return CompletableFuture.completedFuture(hover);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Log.log(e);
 		}
 
 		return null;
 	}
 
-	private Optional<AppMappings> getRequestMappingsForAnnotation(Annotation annotation,
+	private Optional<RequestMappingMethod> getRequestMappingMethodFromRunningApp(Annotation annotation,
 			SpringBootApp[] runningApps) {
 
 		try {
-			SpringBootApp foundApp = null;
-			JSONObject requestMappings = null;
 			for (SpringBootApp app : runningApps) {
 				String mappings = app.getRequestMappings();
-				if (doesMatch(annotation, mappings)) {
-					 requestMappings = new JSONObject(mappings);
-					 foundApp = app;
-					 break;
+				JSONObject requestMappings = new JSONObject(mappings);
+
+				String rawPath = getRawPath(annotation, requestMappings);
+				if (rawPath != null) {
+					String path = UrlUtil.extractPath(rawPath);
+					if (path != null) {
+						String rawMethod = getRawMethod(annotation, requestMappings);
+						JLRMethod parsedMethod = JLRMethodParser.parse(rawMethod);
+						if (methodMatchesAnnotation(annotation, parsedMethod)) {
+							return Optional.of(new RequestMappingMethod(path, parsedMethod, app));
+						}
+					}
 				}
 			}
-			if (foundApp != null && requestMappings != null) {
-				return Optional.of(new AppMappings(requestMappings, foundApp));
-			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			Log.log(e);
 		}
-
 		return Optional.empty();
-
-
 	}
 
-	private void addHoverContent(AppMappings appMappings,  List<Either<String, MarkedString>> hoverContent, Annotation annotation) throws Exception {
-		Iterator<String> keys = appMappings.mappings.keys();
-		String processId = appMappings.app.getProcessID();
-		String processName = appMappings.app.getProcessName();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			if (doesMatch(annotation, key)) {
-				String path = UrlUtil.extractPath(key);
-				String port = appMappings.app.getPort();
-				String host = appMappings.app.getHost();
+	private boolean methodMatchesAnnotation(Annotation annotation, JLRMethod requestMappingMethod) {
+		String rqClassName = requestMappingMethod.getFQClassName();
+		String rqMethod = requestMappingMethod.getMethodName();
 
-				String url = UrlUtil.createUrl(host, port, path);
-				StringBuilder builder = new StringBuilder();
-
-				if (url != null) {
-					builder.append("Path: ");
-					builder.append("[");
-					builder.append(path);
-					builder.append("]");
-					builder.append("(");
-					builder.append(url);
-					builder.append(")");
-				} else {
-					builder.append("Unable to resolve URL for path: " + key);
-				}
-
-				hoverContent.add(Either.forLeft(builder.toString()));
-			}
+		ASTNode parent = annotation.getParent();
+		if (parent instanceof MethodDeclaration) {
+			MethodDeclaration methodDec = (MethodDeclaration) parent;
+			IMethodBinding binding = methodDec.resolveBinding();
+			return binding.getDeclaringClass().getQualifiedName().equals(rqClassName) &&
+					binding.getName().equals(rqMethod);
+		} else if (parent instanceof TypeDeclaration) {
+			TypeDeclaration typeDec = (TypeDeclaration) parent;
+			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
 		}
+		return false;
+	}
+
+	private void addHoverContent(RequestMappingMethod mappingMethod, List<Either<String, MarkedString>> hoverContent) throws Exception {
+		String processId = mappingMethod.app.getProcessID();
+		String processName = mappingMethod.app.getProcessName();
+		String path = mappingMethod.requestMappingPath;
+
+		StringBuilder builder = new StringBuilder();
+
+		String port = mappingMethod.app.getPort();
+		String host = mappingMethod.app.getHost();
+		String url = UrlUtil.createUrl(host, port, path);
+
+		builder.append("Path: ");
+		builder.append("[");
+		builder.append(path);
+		builder.append("]");
+		builder.append("(");
+		builder.append(url);
+		builder.append(")");
+
+		hoverContent.add(Either.forLeft(builder.toString()));
 		hoverContent.add(Either.forLeft("Process ID: " + processId));
 		hoverContent.add(Either.forLeft("Process Name: " + processName));
 	}
 
-	private boolean doesMatch(Annotation annotation, String key) {
+	private String getRawMethod(Annotation annotation, JSONObject mappings) {
+		Iterator<String> keys = mappings.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			if (matchesAnnotation(annotation, key)) {
+				Object ob= mappings.get(key);
+				if (ob instanceof JSONObject) {
+					JSONObject methodMap = (JSONObject) ob;
+					return methodMap.getString("method");
+				}
+			}
+		}
+		return null;
+	}
+
+	private String getRawPath(Annotation annotation, JSONObject mappings) {
+		Iterator<String> keys = mappings.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			if (matchesAnnotation(annotation, key)) {
+				return key;
+			}
+		}
+		return null;
+	}
+
+	private boolean matchesAnnotation(Annotation annotation, String jsonKey) {
 		String mappingPath = null;
 		if (annotation instanceof SingleMemberAnnotation) {
 			Expression valueContent = ((SingleMemberAnnotation) annotation).getValue();
@@ -175,7 +211,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		}
 
-		return mappingPath != null ? key.contains(mappingPath) : false;
+		return jsonKey.contains(mappingPath);
 	}
 
 	public JSONObject[] getRequestMappingsFromProcesses(SpringBootApp[] runningApps) {
@@ -193,22 +229,22 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			Log.log(e);
 		}
 
 		return result.toArray(new JSONObject[result.size()]);
 	}
 
-	static class AppMappings {
+	static class RequestMappingMethod {
 
-		public final JSONObject mappings;
 		public final SpringBootApp app;
+		public final String requestMappingPath;
+		public final JLRMethod requestMappingMethod;
 
-		public AppMappings(JSONObject mapping, SpringBootApp app) {
-			this.mappings = mapping;
+		public RequestMappingMethod(String requestMappingPath, JLRMethod requestMappingMethod, SpringBootApp app) {
+			this.requestMappingPath = requestMappingPath;
+			this.requestMappingMethod = requestMappingMethod;
 			this.app = app;
 		}
-
 	}
-
 }

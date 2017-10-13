@@ -169,6 +169,19 @@ public class SpringBootApp {
 		return null;
 	}
 	
+	public Object getRequestMapping(String rawKey) throws Exception {
+		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
+		if (result == null) {
+			result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
+		}
+
+		if (result instanceof HashMap<?, ?>) {
+			return ((HashMap<?, ?>) result).get(rawKey);
+		}
+		
+		return null;
+	}
+	
 	public String getAutoConfigReport() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
 		if (result != null) {
@@ -318,15 +331,8 @@ public class SpringBootApp {
 
 	public String getHost() throws Exception {
 		String jmxConnect = this.vm.startLocalManagementAgent();
-
-		JMXConnector jmxConnector = null;
-		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
-			return serviceUrl.getHost();
-		}
-		finally {
-			if (jmxConnector != null) jmxConnector.close();
-		}
+		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+		return serviceUrl.getHost();
 	}
 
 }
