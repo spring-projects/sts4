@@ -55,11 +55,11 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
-				// TODO: this check is too simple, we need to do a lot more here
-				// -> check if the running app has a matching request mapping for this annotation
-
-				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				return hoverRange;
+				Optional<RequestMappingMethod> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+				if (val.isPresent()) {
+					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+					return hoverRange;
+				}
 			}
 		}
 		catch (BadLocationException e) {
