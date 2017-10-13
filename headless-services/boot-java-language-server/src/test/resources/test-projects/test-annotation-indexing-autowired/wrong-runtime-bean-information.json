@@ -1,0 +1,35 @@
+[
+    {
+        "context": "application",
+        "parent": null,
+        "beans": [
+            {
+                "bean": "dependencyA",
+                "aliases": [],
+                "scope": "singleton",
+                "type": "org.test.DependencyA",
+                "resource": "file [/Users/mlippert/Entwicklung/vmware/projects/sts4/headless-services/boot-java-language-server/src/test/resources/test-projects/test-annotation-indexing-autowired/target/classes/org/test/DependencyA.class]",
+                "dependencies": []
+            },
+            {
+                "bean": "dependencyB",
+                "aliases": [],
+                "scope": "singleton",
+                "type": "org.test.DependencyB",
+                "resource": "file [/Users/mlippert/Entwicklung/vmware/projects/sts4/headless-services/boot-java-language-server/src/test/resources/test-projects/test-annotation-indexing-autowired/target/classes/org/test/DependencyB.class]",
+                "dependencies": []
+            },
+            {
+                "bean": "myAutowiredComponent",
+                "aliases": [],
+                "scope": "singleton",
+                "type": "org.test.SomeRandomOtherType",
+                "resource": "file [/Users/mlippert/Entwicklung/vmware/projects/sts4/headless-services/boot-java-language-server/src/test/resources/test-projects/test-annotation-indexing-autowired/target/classes/org/test/MyAutowiredComponent.class]",
+                "dependencies": [
+                    "dependencyA",
+                    "dependencyB"
+                ]
+            }
+        ]
+    }
+]
