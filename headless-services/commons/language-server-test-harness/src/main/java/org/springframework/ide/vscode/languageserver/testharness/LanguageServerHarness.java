@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,10 +48,13 @@ import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandCapabilities;
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.FileChangeType;
+import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -304,6 +308,21 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 			getServer().getTextDocumentService().didChange(didChange);
 		}
 		return documents.get(uri);
+	}
+
+	public synchronized void changeFile(String uri) {
+		FileEvent fileEvent = new FileEvent(uri, FileChangeType.Changed);
+		getServer().getWorkspaceService().didChangeWatchedFiles(new DidChangeWatchedFilesParams(Arrays.asList(fileEvent)));
+	}
+
+	public synchronized void createFile(String uri) {
+		FileEvent fileEvent = new FileEvent(uri, FileChangeType.Created);
+		getServer().getWorkspaceService().didChangeWatchedFiles(new DidChangeWatchedFilesParams(Arrays.asList(fileEvent)));
+	}
+
+	public synchronized void deleteFile(String uri) {
+		FileEvent fileEvent = new FileEvent(uri, FileChangeType.Deleted);
+		getServer().getWorkspaceService().didChangeWatchedFiles(new DidChangeWatchedFilesParams(Arrays.asList(fileEvent)));
 	}
 
 	public TextDocumentInfo changeDocument(String uri, String newContent) throws Exception {

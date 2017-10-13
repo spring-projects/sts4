@@ -10,6 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.net.URI;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 /**
  * Basic implementation of File Observer interface
  * 
@@ -18,52 +32,65 @@ package org.springframework.ide.vscode.commons.util;
  */
 public class BasicFileObserver implements FileObserver {
 	
-	private ListenerList<FileListener> listeners = new ListenerList<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> createRegistry = new ConcurrentHashMap<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> deleteRegistry = new ConcurrentHashMap<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> changeRegistry = new ConcurrentHashMap<>(); 
+	
+	@Override
+	public String onFileCreated(List<String> globPattern, Consumer<String> handler) {
+		return registerFileListener(createRegistry, globPattern, handler);
+	}
 
 	@Override
-	public void addListener(FileListener listener) {
-		listeners.add(listener);
+	public String onFileChanged(List<String> globPattern, Consumer<String> handler) {
+		return registerFileListener(changeRegistry, globPattern, handler);
 	}
 
 	@Override
-	public void removeListener(FileListener listener) {
-		listeners.remove(listener);
+	public String onFileDeleted(List<String> globPattern, Consumer<String> handler) {
+		return registerFileListener(deleteRegistry, globPattern, handler);
+	}
+
+	@Override
+	public boolean unsubscribe(String subscriptionId) {
+		if (createRegistry.remove(subscriptionId) != null) {
+			return true;
+		}
+		if (changeRegistry.remove(subscriptionId) != null) {
+			return true;
+		}
+		if (deleteRegistry.remove(subscriptionId) != null) {
+			return true;
+		}
+		return false;
 	}
 	
-	public void notifyFileChanged(String uri) {
-		listeners.forEach(l -> {
-			try {
-				if (l.accept(uri)) {
-					l.changed(uri);
-				}
-			} catch (Throwable t) {
-				Log.log(t);
-			}
-		});
+	private static String registerFileListener(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> registry, List<String> globPattern, Consumer<String> handler) {
+		String subscriptionId = UUID.randomUUID().toString();
+		registry.put(subscriptionId, ImmutablePair.of(globPattern.stream().map(g -> FileSystems.getDefault().getPathMatcher("glob:" + g)).collect(Collectors.toList()), handler));
+		return subscriptionId;
 	}
 	
-	public void notifyFileCreated(String uri) {
-		listeners.forEach(l -> {
-			try {
-				if (l.accept(uri)) {
-					l.created(uri);
-				}
-			} catch (Throwable t) {
-				Log.log(t);
-			}
-		});
+	final public void notifyFileCreated(String uri) {
+		notify(createRegistry, uri);
 	}
 	
-	public void notifyFileDeleted(String uri) {
-		listeners.forEach(l -> {
-			try {
-				if (l.accept(uri)) {
-					l.deleted(uri);
-				}
-			} catch (Throwable t) {
-				Log.log(t);
-			}
-		});
+	final public void notifyFileChanged(String uri) {
+		notify(changeRegistry, uri);
 	}
 	
+	final public void notifyFileDeleted(String uri) {
+		notify(deleteRegistry, uri);
+	}
+	
+	private static void notify(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> registry, String uri) {
+		Path path = Paths.get(URI.create(uri));
+		registry.values().stream()
+			.filter(pair -> pair.left.stream()
+					.filter(matcher -> matcher.matches(path))
+					.findFirst()
+					.isPresent())
+			.forEach(pair -> pair.right.accept(uri));
+	}
+
 }

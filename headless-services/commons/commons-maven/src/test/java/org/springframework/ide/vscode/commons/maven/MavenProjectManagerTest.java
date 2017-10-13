@@ -19,13 +19,13 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager.Listener;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectManager;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 /**
- * Tests for {@link MavenProjectManager}
+ * Tests for {@link MavenProjectCache}
  * 
  * @author Alex Boyko
  *
@@ -36,12 +36,11 @@ public class MavenProjectManagerTest {
 	public void testPomFileChanges() throws Exception {
 		Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/empty-boot-project-with-classpath-file").toURI());
 		File pomFile = testProjectPath.resolve(MavenCore.POM_XML).toFile();
-		MavenProjectManager manager = new MavenProjectManager(MavenCore.getDefault());
 		BasicFileObserver fileObserver = new BasicFileObserver();
-		manager.setFileObserver(fileObserver);
+		MavenProjectCache cache = new MavenProjectCache(fileObserver, MavenCore.getDefault());
 		IJavaProject[] projectChanged = new IJavaProject[] { null };
 		IJavaProject[] projectDeleted = new IJavaProject[] { null };
-		manager.addListener(new Listener() {
+		cache.addListener(new Listener() {
 			@Override
 			public void created(IJavaProject project) {}
 
@@ -56,7 +55,7 @@ public class MavenProjectManagerTest {
 		});
 		
 		// Get the project from cache
-		MavenJavaProject cachedProject = manager.find(pomFile);
+		MavenJavaProject cachedProject = cache.project(pomFile);
 		assertNotNull(cachedProject);
 		
 		fileObserver.notifyFileChanged(pomFile.toURI().toString());

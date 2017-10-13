@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager.Listener;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 /**
@@ -64,9 +64,8 @@ public class GradleProjectTest {
 	public void testGradleFileChanges() throws Exception {
 		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/empty-gradle-project").toURI());
 		File gradleFile = testProjectPath.resolve(GradleCore.GRADLE_BUILD_FILE).toFile();
-		GradleProjectManager manager = new GradleProjectManager(GradleCore.getDefault());
 		BasicFileObserver fileObserver = new BasicFileObserver();
-		manager.setFileObserver(fileObserver);
+		GradleProjectCache manager = new GradleProjectCache(fileObserver, GradleCore.getDefault());
 		IJavaProject[] projectChanged = new IJavaProject[] { null };
 		IJavaProject[] projectDeleted = new IJavaProject[] { null };
 		manager.addListener(new Listener() {
@@ -84,7 +83,7 @@ public class GradleProjectTest {
 		});
 		
 		// Get the project from cache
-		GradleJavaProject cachedProject = manager.find(gradleFile);
+		GradleJavaProject cachedProject = manager.project(gradleFile);
 		assertNotNull(cachedProject);
 		
 		fileObserver.notifyFileChanged(gradleFile.toURI().toString());

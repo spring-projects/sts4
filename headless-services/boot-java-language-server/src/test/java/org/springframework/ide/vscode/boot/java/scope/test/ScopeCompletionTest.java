@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -24,8 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectManager;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -38,7 +39,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ScopeCompletionTest {
 
-	protected final JavaProjectManager javaProjectFinder = new AbstractJavaProjectManager() {
+	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new JavaProjectFinder() {
 		@Override
 		public boolean isProjectRoot(File file) {
 			return false;
@@ -51,7 +52,7 @@ public class ScopeCompletionTest {
 		public IJavaProject find(IDocument doc) {
 			return getTestProject();
 		}
-	};
+	}));
 
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private PropertyIndexHarness indexHarness;

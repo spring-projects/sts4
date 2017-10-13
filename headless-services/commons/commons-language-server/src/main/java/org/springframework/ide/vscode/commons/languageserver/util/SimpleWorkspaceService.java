@@ -28,17 +28,18 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
-public class SimpleWorkspaceService implements WorkspaceService, FileObserver {
+public class SimpleWorkspaceService implements WorkspaceService {
 
 	private SimpleLanguageServer server;
 
 	private ListenerList<Settings> configurationListeners = new ListenerList<>();
 	private ExecuteCommandHandler executeCommandHandler;
 	private WorkspaceSymbolHandler workspaceSymbolHandler;
-	private org.springframework.ide.vscode.commons.util.ListenerList<FileListener> fileListeners = new org.springframework.ide.vscode.commons.util.ListenerList<>();
+	private SimpleServerFileObserver fileObserver;
 
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
 		this.server = server;
+		this.fileObserver = new SimpleServerFileObserver(server);
 	}
 
 	@Override
@@ -62,32 +63,29 @@ public class SimpleWorkspaceService implements WorkspaceService, FileObserver {
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-		params.getChanges().forEach(event -> fileListeners.forEach(listener -> {
+		params.getChanges().forEach(event -> {
 			try {
 				String uri = event.getUri();
 				if (uri != null) {
-					if (listener.accept(event.getUri())) {
-						switch (event.getType()) {
-						case Created:
-							listener.created(uri);
-							break;
-						case Changed:
-							listener.changed(uri);
-							break;
-						case Deleted:
-							listener.deleted(uri);
-							break;
-						default:
-							Log.log("Uknown file change type '" + event.getType() + "' for file: " + uri);
-							break;
-
-						}
+					switch (event.getType()) {
+					case Created:
+						fileObserver.notifyFileCreated(uri);
+						break;
+					case Changed:
+						fileObserver.notifyFileChanged(uri);
+						break;
+					case Deleted:
+						fileObserver.notifyFileDeleted(uri);
+						break;
+					default:
+						Log.log("Uknown file change type '" + event.getType() + "' for file: " + uri);
+						break;
 					}
 				}
 			} catch (Throwable t) {
 				Log.log(t);
 			}
-		}));
+		});
 	}
 
 	@Override
@@ -116,14 +114,12 @@ public class SimpleWorkspaceService implements WorkspaceService, FileObserver {
 		return this.workspaceSymbolHandler != null;
 	}
 
-	@Override
-	public void addListener(FileListener listener) {
-		fileListeners.add(listener);
+	public FileObserver getFileObserver() {
+		return fileObserver;
 	}
 
-	@Override
-	public void removeListener(FileListener listener) {
-		fileListeners.remove(listener);
+	public void dispose() {
+		fileObserver.dispose();
 	}
 
 }

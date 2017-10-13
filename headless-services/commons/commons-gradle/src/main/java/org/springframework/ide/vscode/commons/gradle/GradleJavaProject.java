@@ -23,10 +23,18 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class GradleJavaProject implements IJavaProject {
 	
+	private GradleCore gradle;
 	private GradleProjectClasspath classpath;
+	private File projectDir;
 	
 	public GradleJavaProject(GradleCore gradle, File projectDir) throws GradleException {
+		this.gradle = gradle;
+		this.projectDir = projectDir;
 		this.classpath = new GradleProjectClasspath(gradle, projectDir);
+	}
+	
+	public File getLocation() {
+		return projectDir;
 	}
 
 	@Override
@@ -34,7 +42,7 @@ public class GradleJavaProject implements IJavaProject {
 		return classpath;
 	}
 	
-	void update(GradleCore gradle, File projectDir) {
+	void update() {
 		try {
 			this.classpath = new GradleProjectClasspath(gradle, projectDir);
 		} catch (GradleException e) {

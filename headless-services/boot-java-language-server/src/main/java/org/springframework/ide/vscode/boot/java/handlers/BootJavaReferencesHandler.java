@@ -28,7 +28,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -40,13 +40,13 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class BootJavaReferencesHandler implements ReferencesHandler {
 
-	private JavaProjectManager projectManager;
+	private JavaProjectFinder projectFinder;
 	private SimpleLanguageServer server;
 	private Map<String, ReferenceProvider> referenceProviders;
 
-	public BootJavaReferencesHandler(SimpleLanguageServer server, JavaProjectManager projectManager, Map<String, ReferenceProvider> specificProviders) {
+	public BootJavaReferencesHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
 		this.server = server;
-		this.projectManager = projectManager;
+		this.projectFinder = projectFinder;
 		this.referenceProviders = specificProviders;
 	}
 
@@ -124,7 +124,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectManager.find(doc);
+		IJavaProject project = this.projectFinder.find(doc);
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries

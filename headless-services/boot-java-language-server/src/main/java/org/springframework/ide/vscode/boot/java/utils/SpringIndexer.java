@@ -44,12 +44,13 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager.Listener;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -58,8 +59,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringIndexer {
 
-	private SimpleLanguageServer server;
-	private JavaProjectManager projectManager;
+	private BootJavaLanguageServer server;
+	private JavaProjectFinder projectFinder;
 	private Map<String, SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
@@ -91,9 +92,9 @@ public class SpringIndexer {
 
 	};
 
-	public SpringIndexer(SimpleLanguageServer server, JavaProjectManager projectManager, Map<String, SymbolProvider> specificProviders) {
+	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
 		this.server = server;
-		this.projectManager = projectManager;
+		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
@@ -105,8 +106,8 @@ public class SpringIndexer {
 		synchronized(this) {
 			if (this.initializeTask == null) {
 				initializing.set(true);
-				if (projectManager != null) {
-					projectManager.addListener(projectListener);
+				if (server.getProjectObserver() != null) {
+					server.getProjectObserver().addListener(projectListener);
 				}
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
 					@Override
@@ -125,6 +126,9 @@ public class SpringIndexer {
 										scanFile(updateItem.getDocURI(), updateItem.getContent(), updateItem.getClasspathEntries());
 										updateItem.getFuture().complete(null);
 									}
+								}
+								catch (InterruptedException e) {
+									// ignore
 								}
 								catch (Exception e) {
 									e.printStackTrace();
@@ -152,6 +156,7 @@ public class SpringIndexer {
 			initializeTask = null;
 			symbols.clear();
 			symbolsByDoc.clear();
+			Log.info("Rebuilding SpringIndexer...");
 			initialize(server.getWorkspaceRoot());
 		}
 	}
@@ -166,8 +171,8 @@ public class SpringIndexer {
 				updateWorker.interrupt();
 			}
 
-			if (projectManager != null) {
-				projectManager.removeListener(projectListener);
+			if (server.getProjectObserver() != null) {
+				server.getProjectObserver().removeListener(projectListener);
 			}
 		}
 		catch (Exception e) {
@@ -180,7 +185,7 @@ public class SpringIndexer {
 			try {
 				initializeTask.get();
 
-				IJavaProject project = projectManager.find(new File(new URI(docURI)));
+				IJavaProject project = projectFinder.find(new File(new URI(docURI)));
 				if (project != null) {
 					String[] classpathEntries = getClasspathEntries(project);
 
@@ -263,7 +268,7 @@ public class SpringIndexer {
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
-					.collect(Collectors.groupingBy((javaFile) -> projectManager.find(new File(javaFile))));
+					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new File(javaFile))));
 
 			System.out.println("scan directory done!!!");
 

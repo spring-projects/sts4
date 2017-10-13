@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -44,15 +45,24 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -69,10 +79,11 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final SpringIndexer indexer;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
+	private final CompositeProjectOvserver projectObserver;
 
 	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
 
-	public BootJavaLanguageServer(JavaProjectManager javaProjectManager, SpringPropertyIndexProvider indexProvider) {
+	public BootJavaLanguageServer(CompositeJavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		super("vscode-boot-java");
 
 		System.setProperty(LANGUAGE_SERVER_PROCESS_PROPERTY, LANGUAGE_SERVER_PROCESS_PROPERTY);
@@ -86,13 +97,13 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			validateWith(doc.getId(), reconcileEngine);
 		});
 
-		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectManager, indexProvider);
+		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectFinder, indexProvider);
 		completionEngine = createCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
-		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectManager);
+		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder);
 		documents.onHover(hoverInfoProvider);
 
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider);
@@ -106,10 +117,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			}
 		});
 
-		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectManager);
+		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 
-		indexer = createAnnotationIndexer(this, javaProjectManager);
+		indexer = createAnnotationIndexer(this, javaProjectFinder);
 		documents.onDidSave(params -> {
 			String docURI = params.getDocument().getId().getUri();
 			String content = params.getDocument().get();
@@ -119,10 +130,18 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer));
 
-		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectManager);
+		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
+		// Initialize project finders, project caches and project observers
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(getWorkspaceService().getFileObserver(), MavenCore.getDefault());
+		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
+
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(getWorkspaceService().getFileObserver(), GradleCore.getDefault());
+		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
+
+		projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 	}
 
 	public void setMaxCompletionsNumber(int number) {
@@ -156,7 +175,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return super.shutdown();
 	}
 
-	protected ICompletionEngine createCompletionEngine(JavaProjectManager javaProjectManager, SpringPropertyIndexProvider indexProvider) {
+	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(indexProvider));
@@ -220,10 +239,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 				"	return ${entity};\n" +
 				"}"
 		));
-		return new BootJavaCompletionEngine(javaProjectManager, providers, snippetManager);
+		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
-	protected BootJavaHoverProvider createHoverHandler(JavaProjectManager javaProjectFinder) {
+	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder) {
 		HashMap<String, HoverProvider> providers = new HashMap<>();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
@@ -241,7 +260,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers);
 	}
 
-	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectManager projectManager) {
+	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
@@ -253,19 +272,22 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_BEAN, new BeansSymbolProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-		return new SpringIndexer(this, projectManager, providers);
+		return new SpringIndexer(this, projectFinder, providers);
 	}
 
-	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectManager projectManager) {
+	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValuePropertyReferencesProvider(server));
 
-		return new BootJavaReferencesHandler(server, projectManager, providers);
+		return new BootJavaReferencesHandler(server, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine(SimpleLanguageServer server, JavaProjectManager projectFinder) {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		return new BootJavaCodeLensEngine(server, projectFinder);
 	}
 
+	public ProjectObserver getProjectObserver() {
+		return projectObserver;
+	}
 
 }

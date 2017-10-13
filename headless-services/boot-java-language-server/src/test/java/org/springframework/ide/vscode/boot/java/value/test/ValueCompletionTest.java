@@ -15,6 +15,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -25,8 +27,8 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectManager;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -38,21 +40,6 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  * @author Martin Lippert
  */
 public class ValueCompletionTest {
-
-	protected final JavaProjectManager javaProjectFinder = new AbstractJavaProjectManager() {
-		@Override
-		public boolean isProjectRoot(File file) {
-			return false;
-		}
-		@Override
-		public IJavaProject find(File file) {
-			return null;
-		}
-		@Override
-		public IJavaProject find(IDocument doc) {
-			return getTestProject();
-		}
-	};
 
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private IJavaProject testProject;
@@ -69,7 +56,24 @@ public class ValueCompletionTest {
 		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexHarness.getIndexProvider());
+				BootJavaLanguageServer server = new BootJavaLanguageServer(
+						new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new AbstractJavaProjectFinder() {
+							@Override
+							public boolean isProjectRoot(File file) {
+								return false;
+							}
+
+							@Override
+							public IJavaProject find(File file) {
+								return null;
+							}
+
+							@Override
+							public IJavaProject find(IDocument doc) {
+								return getTestProject();
+							}
+						}))),
+						indexHarness.getIndexProvider());
 				return server;
 			}
 		}) {

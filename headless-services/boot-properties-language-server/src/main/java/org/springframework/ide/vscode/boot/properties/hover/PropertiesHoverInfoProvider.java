@@ -14,7 +14,7 @@ package org.springframework.ide.vscode.boot.properties.hover;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
@@ -25,9 +25,9 @@ public class PropertiesHoverInfoProvider implements HoverInfoProvider {
 	
 	private SpringPropertyIndexProvider indexProvider;
 	private TypeUtilProvider typeUtilProvider;
-	private JavaProjectManager projectFinder;
+	private JavaProjectFinder projectFinder;
 	
-	public PropertiesHoverInfoProvider(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectManager projectFinder) {
+	public PropertiesHoverInfoProvider(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder projectFinder) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
 		this.projectFinder = projectFinder;

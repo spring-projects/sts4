@@ -45,12 +45,8 @@ import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentHoverProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectManager;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -62,22 +58,19 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ComponentHoverProviderTest {
 
-	private JavaProjectManager projectManager;
+	private CompositeJavaProjectFinder projectFinder;
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private PropertyIndexHarness indexHarness;
-	private BasicFileObserver fileObserver;
 
 	@Before
 	public void setup() throws Exception {
-		projectManager = new CompositeJavaProjectManager(new JavaProjectManager[] {new MavenProjectManager(MavenCore.getDefault())});
-		fileObserver = new BasicFileObserver();
-		projectManager.setFileObserver(fileObserver);
+		projectFinder = new CompositeJavaProjectFinder();
 
 		indexHarness = new PropertyIndexHarness();
 		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
 			@Override
 			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(projectManager, indexHarness.getIndexProvider());
+				BootJavaLanguageServer server = new BootJavaLanguageServer(projectFinder, indexHarness.getIndexProvider());
 				return server;
 			}
 		}) {
@@ -94,7 +87,7 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		IJavaProject project = projectManager.find(directory);
+		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
 
 		CompilationUnit cu = parse(document, project);
@@ -120,7 +113,7 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
-		IJavaProject project = projectManager.find(directory);
+		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
 
 		CompilationUnit cu = parse(document, project);
@@ -141,7 +134,7 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		IJavaProject project = projectManager.find(directory);
+		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
 
 		CompilationUnit cu = parse(document, project);

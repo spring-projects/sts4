@@ -13,30 +13,30 @@ package org.springframework.tooling.boot.java.ls;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
-import org.eclipse.lsp4j.jsonrpc.messages.Message;
-import org.eclipse.lsp4j.jsonrpc.messages.NotificationMessage;
-import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
-
-import com.google.gson.JsonObject;
 
 /**
  * @author Martin Lippert
  */
 @SuppressWarnings("restriction")
 public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvider {
+	
+	private ResourceListener fResourceListener;
 
 	public SpringBootJavaLanguageServer() {
 		List<String> commands = new ArrayList<>();
@@ -105,6 +105,46 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+		if (fResourceListener != null) {
+			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
+			fResourceListener = null;
+		}
+	}
+
+	@Override
+	public Object getInitializationOptions(URI rootPath) {
+		installResourceChangeListener(rootPath);
+		return super.getInitializationOptions(rootPath);
+	}
+
+	private void installResourceChangeListener(URI rootPath) {
+		if (rootPath == null || fResourceListener != null) {
+			return;
+		}
+
+		IContainer[] containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(rootPath);
+		if (containers.length == 0) {
+			return;
+		}
+
+		for (IContainer c : containers) {
+			if (!(c instanceof IProject)) {
+				continue;
+			}
+			IProject project = (IProject) c;
+			fResourceListener = new ResourceListener("org.eclipse.languageserver.languages.springbootjava", project, Arrays.asList(
+					FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
+					FileSystems.getDefault().getPathMatcher("glob:**/build.gradle")
+			));
+			project.getWorkspace().addResourceChangeListener(fResourceListener);
+
+			break;
+		}
 	}
 
 }

@@ -77,6 +77,10 @@ public class MavenProjectClasspath extends JandexClasspath {
 		}
 	}
 	
+	public File getPomFile() {
+		return pom;
+	}
+	
 	public boolean exists() {
 		return pom.exists();
 	}

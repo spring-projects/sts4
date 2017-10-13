@@ -13,6 +13,7 @@ package org.springframework.tooling.boot.java.ls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
 
@@ -41,7 +42,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			this.provider = new SpringBootJavaLanguageServer();
 		}
 	}
-	
+		
+	@Override
+	public Object getInitializationOptions(URI rootUri) {
+		return provider.getInitializationOptions(rootUri);
+	}
+
 	@Override
 	public void start() throws IOException {
 		this.provider.start();

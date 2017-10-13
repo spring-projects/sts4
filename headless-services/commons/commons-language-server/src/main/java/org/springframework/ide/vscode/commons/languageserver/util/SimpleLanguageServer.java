@@ -103,6 +103,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	private boolean hasExecuteCommandSupport;
 
+	private boolean hasFileWatcherRegistrationSupport;
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
@@ -175,6 +177,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		}
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
+		this.hasFileWatcherRegistrationSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
 		Log.debug("workspaceRoot = "+workspaceRoot);
 		Log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		Log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
@@ -295,6 +298,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 
 	@Override
 	public CompletableFuture<Object> shutdown() {
+		getWorkspaceService().dispose();
 		return CompletableFuture.completedFuture(new Object());
 	}
 
@@ -458,5 +462,9 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public void setTestListener(LanguageServerTestListener languageServerTestListener) {
 		Assert.isLegal(this.testListener==null);
 		testListener = languageServerTestListener;
+	}
+
+	public boolean canRegisterFileWatchersDynamically() {
+		return hasFileWatcherRegistrationSupport;
 	}
 }

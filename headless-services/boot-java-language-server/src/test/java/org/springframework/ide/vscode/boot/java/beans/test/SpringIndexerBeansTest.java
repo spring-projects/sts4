@@ -29,10 +29,7 @@ import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.Constants;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectManager;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectManager;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectManager;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
@@ -43,7 +40,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 public class SpringIndexerBeansTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
-	private JavaProjectManager projectManager;
+	private CompositeJavaProjectFinder projectManager;
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
 	private PropertyIndexHarness indexHarness;
 
@@ -53,7 +50,7 @@ public class SpringIndexerBeansTest {
 		symbolProviders.put(Constants.SPRING_BEAN, new BeansSymbolProvider());
 		symbolProviders.put(Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-		projectManager = new CompositeJavaProjectManager(new JavaProjectManager[] {new MavenProjectManager(MavenCore.getDefault())});
+		projectManager = new CompositeJavaProjectFinder();
 
 		indexHarness = new PropertyIndexHarness();
 		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {

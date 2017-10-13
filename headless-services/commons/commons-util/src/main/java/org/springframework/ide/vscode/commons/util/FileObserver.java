@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 /**
  * Object able to add/remove {@link FileListener} objects and fire events via these listeners
  * 
@@ -18,15 +21,12 @@ package org.springframework.ide.vscode.commons.util;
  */
 public interface FileObserver {
 	
-	public interface FileListener {
-		boolean accept(String uri);
-		void changed(String uri);
-		void deleted(String uri);
-		void created(String uri);
-	}
+	String onFileCreated(List<String> globPattern, Consumer<String> handler);
 	
-	void addListener(FileListener listener);
+	String onFileChanged(List<String> globPattern, Consumer<String> handler);
 	
-	void removeListener(FileListener listener);
-
+	String onFileDeleted(List<String> globPattern, Consumer<String> handler);
+	
+	boolean unsubscribe(String subscriptionId);
+	
 }
