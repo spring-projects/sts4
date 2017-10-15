@@ -98,7 +98,7 @@ public class AutowiredHoverProviderTest {
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
 		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
 
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, new String[] {beansJSON});
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
 		assertNotNull(hint);
 
 		assertEquals(11, hint.getStart().getLine());
@@ -122,10 +122,10 @@ public class AutowiredHoverProviderTest {
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, new String[] {});
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, (String)null);
 		assertNull(hint);
 	}
-/**
+
 	@Test
 	public void testNoLiveHoverHintForAutowiredOnConstructorWithWrongLiveAppData() throws Exception {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
@@ -141,12 +141,12 @@ public class AutowiredHoverProviderTest {
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
+		String beansJSON = new String(Files.readAllBytes(new File(directory, "wrong-runtime-bean-information.json").toPath()));
 
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, new String[] {beansJSON});
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
 		assertNull(hint);
 	}
-*/
+
 	private TextDocument createTempTextDocument(String docURI) throws Exception {
 		Path path = Paths.get(new URI(docURI));
 		String content = new String(Files.readAllBytes(path));
