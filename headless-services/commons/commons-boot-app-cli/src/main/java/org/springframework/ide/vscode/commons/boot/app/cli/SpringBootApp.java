@@ -89,6 +89,12 @@ public class SpringBootApp {
 		return vmd.displayName();
 	}
 	
+	public String getHost() throws Exception {
+		String jmxConnect = this.vm.startLocalManagementAgent();
+		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+		return serviceUrl.getHost();
+	}
+	
 	public boolean isSpringBootApp() throws Exception {
 		Properties props = this.vm.getSystemProperties();
 
@@ -164,19 +170,6 @@ public class SpringBootApp {
 		if (result != null) {
 			String mappings = new ObjectMapper().writeValueAsString(result);
 			return mappings;
-		}
-		
-		return null;
-	}
-	
-	public Object getRequestMapping(String rawKey) throws Exception {
-		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
-		if (result == null) {
-			result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
-		}
-
-		if (result instanceof HashMap<?, ?>) {
-			return ((HashMap<?, ?>) result).get(rawKey);
 		}
 		
 		return null;
@@ -328,11 +321,4 @@ public class SpringBootApp {
 		
 		return null;
 	}
-
-	public String getHost() throws Exception {
-		String jmxConnect = this.vm.startLocalManagementAgent();
-		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
-		return serviceUrl.getHost();
-	}
-
 }
