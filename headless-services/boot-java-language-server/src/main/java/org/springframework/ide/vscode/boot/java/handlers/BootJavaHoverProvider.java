@@ -52,11 +52,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private JavaProjectFinder projectFinder;
 	private SimpleLanguageServer server;
 	private Map<String, HoverProvider> hoverProviders;
+	private RunningAppProvider runningAppProvider;
 
-	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, HoverProvider> specificProviders) {
+	public BootJavaHoverProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;
+		this.runningAppProvider = runningAppProvider;
 	}
 
 	@Override
@@ -222,7 +224,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
 		try {
-			return SpringBootApp.getAllRunningSpringApps().values().stream()
+			return runningAppProvider.getAllRunningSpringApps().stream()
 					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
 					.toArray(SpringBootApp[]::new);
 		} catch (Exception e) {

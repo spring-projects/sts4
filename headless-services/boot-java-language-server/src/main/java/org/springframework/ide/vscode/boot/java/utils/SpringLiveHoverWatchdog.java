@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -35,12 +36,15 @@ public class SpringLiveHoverWatchdog {
 	private final Set<String> watchedDocs;
 	private final SimpleLanguageServer server;
 	private final BootJavaHoverProvider hoverProvider;
+	private RunningAppProvider runningAppProvider;
 
 	private final Timer timer;
 
-	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider) {
+
+	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.hoverProvider = hoverProvider;
+		this.runningAppProvider = runningAppProvider;
 		this.watchedDocs = new ConcurrentSkipListSet<>();
 
 		this.timer = new Timer();
@@ -76,7 +80,7 @@ public class SpringLiveHoverWatchdog {
 
 	public void update(String docURI) {
 		try {
-			SpringBootApp[] runningBootApps = SpringBootApp.getAllRunningSpringApps().values().stream()
+			SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().stream()
 					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
 					.toArray(SpringBootApp[]::new);
 

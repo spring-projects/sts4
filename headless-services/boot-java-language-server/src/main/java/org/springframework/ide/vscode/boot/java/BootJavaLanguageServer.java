@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbol
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
@@ -84,6 +85,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
 
 	public BootJavaLanguageServer(CompositeJavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
+		this(javaProjectFinder, indexProvider, RunningAppProvider.DEFAULT);
+	}
+
+	public BootJavaLanguageServer(CompositeJavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider, RunningAppProvider runningAppProvider) {
 		super("vscode-boot-java");
 
 		System.setProperty(LANGUAGE_SERVER_PROCESS_PROPERTY, LANGUAGE_SERVER_PROCESS_PROPERTY);
@@ -103,10 +108,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
-		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder);
+		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder, runningAppProvider);
 		documents.onHover(hoverInfoProvider);
 
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider);
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, runningAppProvider);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (testHightlighter != null) {
@@ -242,7 +247,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
-	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder) {
+	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder, RunningAppProvider runningAppProvider) {
 		HashMap<String, HoverProvider> providers = new HashMap<>();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
@@ -257,7 +262,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentHoverProvider());
 
-		return new BootJavaHoverProvider(this, javaProjectFinder, providers);
+		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
