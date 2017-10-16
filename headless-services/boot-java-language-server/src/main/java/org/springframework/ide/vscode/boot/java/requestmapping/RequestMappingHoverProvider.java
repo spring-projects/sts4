@@ -211,7 +211,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		}
 
-		return jsonKey.contains(mappingPath);
+		return mappingPath != null ? jsonKey.contains(mappingPath) : false;
 	}
 
 	public JSONObject[] getRequestMappingsFromProcesses(SpringBootApp[] runningApps) {
