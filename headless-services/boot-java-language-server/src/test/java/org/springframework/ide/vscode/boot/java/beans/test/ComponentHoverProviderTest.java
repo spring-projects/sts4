@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.autowired.test;
+package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,8 +41,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
+import org.springframework.ide.vscode.boot.java.beans.ComponentHoverProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectManager;
@@ -60,7 +60,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 /**
  * @author Martin Lippert
  */
-public class AutowiredHoverProviderTest {
+public class ComponentHoverProviderTest {
 
 	private JavaProjectManager projectManager;
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
@@ -89,33 +89,33 @@ public class AutowiredHoverProviderTest {
 	}
 
 	@Test
-	public void testLiveHoverHintForAutowiredOnConstructor() throws Exception {
+	public void testLiveHoverHintForAutomaicallywiredConstructor() throws Exception {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
 		harness.intialize(directory);
 
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
+		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
 		IJavaProject project = projectManager.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
 
 		CompilationUnit cu = parse(document, project);
 
-		int offset = document.toOffset(new Position(11, 4));
+		int offset = document.toOffset(new Position(4, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
+		ComponentHoverProvider provider = new ComponentHoverProvider();
+		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath()));
 
 		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
 		assertNotNull(hint);
 
-		assertEquals(11, hint.getStart().getLine());
-		assertEquals(1, hint.getStart().getCharacter());
-		assertEquals(11, hint.getEnd().getLine());
-		assertEquals(11, hint.getEnd().getCharacter());
+		assertEquals(10, hint.getStart().getLine());
+		assertEquals(8, hint.getStart().getCharacter());
+		assertEquals(10, hint.getEnd().getLine());
+		assertEquals(37, hint.getEnd().getCharacter());
 	}
 
 	@Test
-	public void testNoLiveHoverHintForAutowiredOnConstructorWithNoLiveAppData() throws Exception {
+	public void testNoLiveHoverHintForComponentWhenAutowiredAnnotationIsUsed() throws Exception {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
 		harness.intialize(directory);
 
@@ -125,51 +125,32 @@ public class AutowiredHoverProviderTest {
 
 		CompilationUnit cu = parse(document, project);
 
-		int offset = document.toOffset(new Position(11, 4));
+		int offset = document.toOffset(new Position(5, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, (String)null);
-		assertNull(hint);
-	}
-
-	@Test
-	public void testNoLiveHoverHintForAutowiredOnConstructorWithWrongLiveAppData() throws Exception {
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
-		harness.intialize(directory);
-
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
-		IJavaProject project = projectManager.find(directory);
-		TextDocument document = createTempTextDocument(docURI);
-
-		CompilationUnit cu = parse(document, project);
-
-		int offset = document.toOffset(new Position(11, 4));
-		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
-
-		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "wrong-runtime-bean-information.json").toPath()));
+		ComponentHoverProvider provider = new ComponentHoverProvider();
+		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
 
 		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
 		assertNull(hint);
 	}
 
 	@Test
-	public void testLiveHoverContentForAutowiredOnConstructor() throws Exception {
+	public void testLiveHoverContentForAutomaicallywiredConstructor() throws Exception {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
 		harness.intialize(directory);
 
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
+		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
 		IJavaProject project = projectManager.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
 
 		CompilationUnit cu = parse(document, project);
 
-		int offset = document.toOffset(new Position(11, 4));
+		int offset = document.toOffset(new Position(4, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
+		ComponentHoverProvider provider = new ComponentHoverProvider();
+		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath()));
 
 		SpringBootAppProvider bootApp = new SpringBootAppProvider() {
 			@Override
@@ -187,19 +168,20 @@ public class AutowiredHoverProviderTest {
 				return beansJSON;
 			}
 		};
-		CompletableFuture<Hover> hoverFuture = provider.provideHover(null, (Annotation)node, null, offset, document, new SpringBootAppProvider[] {bootApp});
+		CompletableFuture<Hover> hoverFuture = provider.provideHover(null, (Annotation) node, null, 0, document, new SpringBootAppProvider[] {bootApp});
 		Hover hover = hoverFuture.get();
+
 		assertNotNull(hover);
 
-		assertEquals(11, hover.getRange().getStart().getLine());
-		assertEquals(1, hover.getRange().getStart().getCharacter());
-		assertEquals(11, hover.getRange().getEnd().getLine());
-		assertEquals(11, hover.getRange().getEnd().getCharacter());
+		assertEquals(10, hover.getRange().getStart().getLine());
+		assertEquals(8, hover.getRange().getStart().getCharacter());
+		assertEquals(10, hover.getRange().getEnd().getLine());
+		assertEquals(37, hover.getRange().getEnd().getCharacter());
 
 		List<Either<String, MarkedString>> contents = hover.getContents();
 		assertEquals(6, contents.size());
 
-		assertTrue(contents.get(0).getLeft().contains("myAutowiredComponent"));
+		assertTrue(contents.get(0).getLeft().contains("myAutomaticallyWiredComponent"));
 		assertTrue(contents.get(2).getLeft().contains("dependencyA"));
 		assertTrue(contents.get(3).getLeft().contains("dependencyB"));
 		assertTrue(contents.get(4).getLeft().contains("test process id"));

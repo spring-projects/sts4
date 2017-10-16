@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.hover.test;
+package org.springframework.ide.vscode.boot.java.value.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
