@@ -16,14 +16,15 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
- * Java project finder. Able to find a java project for a file or document
- *
+ * Java project finder provides a means to obtain the project context associated with
+ * a document location.
+ *  *
  * @author Alex Boyko
+ * @author Kris De Volder
  */
 public interface JavaProjectFinder {
 	
 	IJavaProject find(IDocument doc);
 	IJavaProject find(File file);
-	boolean isProjectRoot(File file);
 	
 }

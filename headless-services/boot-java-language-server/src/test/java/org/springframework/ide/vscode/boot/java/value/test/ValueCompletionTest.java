@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
@@ -29,7 +28,6 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -53,29 +51,17 @@ public class ValueCompletionTest {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
 
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(
-						new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new AbstractJavaProjectFinder() {
+		harness = new LanguageServerHarness<BootJavaLanguageServer>(() -> {
+			BootJavaLanguageServer server = new BootJavaLanguageServer(
+					new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new AbstractJavaProjectFinder() {
 							@Override
-							public boolean isProjectRoot(File file) {
-								return false;
-							}
-
-							@Override
-							public IJavaProject find(File file) {
-								return null;
-							}
-
-							@Override
-							public IJavaProject find(IDocument doc) {
+							public IJavaProject find(File doc) {
 								return getTestProject();
 							}
-						}))),
-						indexHarness.getIndexProvider());
-				return server;
-			}
+					}))),
+					indexHarness.getIndexProvider()
+			);
+			return server;
 		}) {
 			@Override
 			protected String getFileExtension() {

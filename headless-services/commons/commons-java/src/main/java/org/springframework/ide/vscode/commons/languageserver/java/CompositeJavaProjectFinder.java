@@ -26,7 +26,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Alex Boyko
  *
  */
-public class CompositeJavaProjectFinder implements JavaProjectFinder {
+public class CompositeJavaProjectFinder extends AbstractJavaProjectFinder {
 	
 	private final List<JavaProjectFinder> projectFinders;
 	
@@ -47,18 +47,7 @@ public class CompositeJavaProjectFinder implements JavaProjectFinder {
 	}
 	
 	@Override
-	public IJavaProject find(IDocument doc) {
-		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Objects::nonNull).findFirst().orElse(null);
-	}
-
-	@Override
 	public IJavaProject find(File file) {
 		return projectFinders.stream().map(finder -> finder.find(file)).filter(Objects::nonNull).findFirst().orElse(null);
 	}
-
-	@Override
-	public boolean isProjectRoot(File file) {
-		return projectFinders.stream().filter(finder -> finder.isProjectRoot(file)) != null;
-	}
-
 }

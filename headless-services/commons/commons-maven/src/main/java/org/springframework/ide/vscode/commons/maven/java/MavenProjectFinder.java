@@ -36,10 +36,4 @@ public class MavenProjectFinder extends AbstractJavaProjectFinder {
 		File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
 		return cache.project(pomFile);
 	}
-
-	@Override
-	public boolean isProjectRoot(File file) {
-		return FileUtils.findFile(file, MavenCore.POM_XML, false) != null;
-	}
-
 }

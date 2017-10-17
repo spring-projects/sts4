@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public abstract class AbstractJavaProjectFinder implements JavaProjectFinder {
 
 	@Override
-	public IJavaProject find(IDocument doc) {
+	public final IJavaProject find(IDocument doc) {
 		try {
 			String uriStr = doc.getUri();
 			if (StringUtil.hasText(uriStr)) {

@@ -87,8 +87,8 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
+		IJavaProject project = projectFinder.find(document);
 
 		CompilationUnit cu = parse(document, project);
 
@@ -113,8 +113,8 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
-		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
+		IJavaProject project = projectFinder.find(document);
 
 		CompilationUnit cu = parse(document, project);
 
@@ -134,8 +134,8 @@ public class ComponentHoverProviderTest {
 		harness.intialize(directory);
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		IJavaProject project = projectFinder.find(directory);
 		TextDocument document = createTempTextDocument(docURI);
+		IJavaProject project = projectFinder.find(document);
 
 		CompilationUnit cu = parse(document, project);
 

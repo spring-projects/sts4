@@ -36,10 +36,4 @@ public class GradleProjectFinder extends AbstractJavaProjectFinder {
 		File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
 		return cache.project(gradlebuild);
 	}
-
-	@Override
-	public boolean isProjectRoot(File file) {
-		return FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE, false) != null;
-	}
-
 }

@@ -38,10 +38,4 @@ public class JavaProjectWithClasspathFileFinder extends AbstractJavaProjectFinde
 		File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
 		return cache.project(cpFile);
 	}
-
-	@Override
-	public boolean isProjectRoot(File file) {
-		return FileUtils.findFile(file, MavenCore.CLASSPATH_TXT, false) != null;
-	}
-
 }
