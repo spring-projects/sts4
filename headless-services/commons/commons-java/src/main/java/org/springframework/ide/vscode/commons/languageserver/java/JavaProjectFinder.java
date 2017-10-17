@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 
 import java.io.File;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -24,7 +25,6 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public interface JavaProjectFinder {
 	
-	IJavaProject find(IDocument doc);
-	IJavaProject find(File file);
+	IJavaProject find(TextDocumentIdentifier doc);
 	
 }

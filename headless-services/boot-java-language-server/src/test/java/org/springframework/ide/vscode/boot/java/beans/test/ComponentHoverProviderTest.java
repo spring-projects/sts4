@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +89,7 @@ public class ComponentHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(document);
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
 
 		CompilationUnit cu = parse(document, project);
 
@@ -114,7 +115,7 @@ public class ComponentHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(document);
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
 
 		CompilationUnit cu = parse(document, project);
 
@@ -135,7 +136,7 @@ public class ComponentHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(document);
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
 
 		CompilationUnit cu = parse(document, project);
 

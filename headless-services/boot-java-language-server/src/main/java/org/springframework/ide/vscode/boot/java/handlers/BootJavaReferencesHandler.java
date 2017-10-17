@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -124,7 +125,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(doc);
+		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries

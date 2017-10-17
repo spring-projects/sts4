@@ -14,27 +14,28 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
- * Abstract implementation of Java project finder interface
+ * File-based abstract implementation of JavaProjectFinder.
+ * <p>
+ * Note that implementations derived from this class have a built-in 
+ * limitation that they only work for documents stored on disk.
  * 
  * @author Alex Boyko
- *
+ * @author Kris De Volder
  */
-public abstract class AbstractJavaProjectFinder implements JavaProjectFinder {
+public abstract class FileBasedJavaProjectFinder implements JavaProjectFinder {
 
 	@Override
-	public final IJavaProject find(IDocument doc) {
+	public final IJavaProject find(TextDocumentIdentifier doc) {
 		try {
 			String uriStr = doc.getUri();
 			if (StringUtil.hasText(uriStr)) {
 				URI uri = new URI(uriStr);
-				// TODO: This only work with File uri. Should it work with others
-				// too?
 				if (uri.getScheme().equalsIgnoreCase("file")) {
 					File file = new File(uri).getAbsoluteFile();
 					return find(file);
@@ -46,5 +47,7 @@ public abstract class AbstractJavaProjectFinder implements JavaProjectFinder {
 		}
 		return null;
 	}
+
+	protected abstract IJavaProject find(File file);
 
 }

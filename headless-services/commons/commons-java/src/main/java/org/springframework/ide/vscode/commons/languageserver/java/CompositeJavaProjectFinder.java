@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -26,7 +27,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Alex Boyko
  *
  */
-public class CompositeJavaProjectFinder extends AbstractJavaProjectFinder {
+public class CompositeJavaProjectFinder implements JavaProjectFinder {
 	
 	private final List<JavaProjectFinder> projectFinders;
 	
@@ -47,7 +48,7 @@ public class CompositeJavaProjectFinder extends AbstractJavaProjectFinder {
 	}
 	
 	@Override
-	public IJavaProject find(File file) {
-		return projectFinders.stream().map(finder -> finder.find(file)).filter(Objects::nonNull).findFirst().orElse(null);
+	public IJavaProject find(TextDocumentIdentifier doc) {
+		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Objects::nonNull).findFirst().orElse(null);
 	}
 }

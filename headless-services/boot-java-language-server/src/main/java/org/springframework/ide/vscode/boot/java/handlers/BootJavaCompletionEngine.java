@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -108,7 +109,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 	}
 
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(doc);
+		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries

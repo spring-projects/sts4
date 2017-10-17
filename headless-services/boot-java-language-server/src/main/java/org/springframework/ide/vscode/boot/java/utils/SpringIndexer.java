@@ -44,6 +44,7 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -185,7 +186,7 @@ public class SpringIndexer {
 			try {
 				initializeTask.get();
 
-				IJavaProject project = projectFinder.find(new File(new URI(docURI)));
+				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
 				if (project != null) {
 					String[] classpathEntries = getClasspathEntries(project);
 
@@ -268,7 +269,7 @@ public class SpringIndexer {
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
-					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new File(javaFile))));
+					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new TextDocumentIdentifier(new File(javaFile).toURI().toString()))));
 
 			System.out.println("scan directory done!!!");
 

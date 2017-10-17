@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -211,7 +212,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	private IJavaProject getProject(IDocument doc) throws Exception {
-		return this.projectFinder.find(doc);
+		return this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 	}
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {

@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -53,7 +53,7 @@ public class ValueCompletionTest {
 
 		harness = new LanguageServerHarness<BootJavaLanguageServer>(() -> {
 			BootJavaLanguageServer server = new BootJavaLanguageServer(
-					new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new AbstractJavaProjectFinder() {
+					new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new FileBasedJavaProjectFinder() {
 							@Override
 							public IJavaProject find(File doc) {
 								return getTestProject();

@@ -22,13 +22,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness.ItemConfigurer;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -47,9 +48,9 @@ public abstract class AbstractPropsEditorTest {
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	protected PropertyIndexHarness md;
-	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new AbstractJavaProjectFinder() {
+	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new JavaProjectFinder() {
 		@Override
-		public IJavaProject find(File doc) {
+		public IJavaProject find(TextDocumentIdentifier doc) {
 			return getTestProject();
 		}
 	}));

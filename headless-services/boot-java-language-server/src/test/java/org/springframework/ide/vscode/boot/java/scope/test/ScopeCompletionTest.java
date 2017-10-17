@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.AbstractJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -39,7 +39,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ScopeCompletionTest {
 
-	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList((JavaProjectFinder)new AbstractJavaProjectFinder() {
+	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList((JavaProjectFinder)new FileBasedJavaProjectFinder() {
 		@Override
 		public IJavaProject find(File doc) {
 			return getTestProject();

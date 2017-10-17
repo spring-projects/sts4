@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot;
 
 import java.io.IOException;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
@@ -33,7 +34,7 @@ public class Main {
 		LaunguageServerApp.start(() -> {
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(doc));
+			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())));
 			SimpleLanguageServer server = new BootPropertiesLanguageServer(indexProvider, typeUtilProvider, javaProjectFinder);
 			indexProvider.setProgressService(server.getProgressService());
 			return server;
