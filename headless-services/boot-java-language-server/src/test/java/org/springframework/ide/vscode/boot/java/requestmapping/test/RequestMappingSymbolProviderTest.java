@@ -18,20 +18,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.Constants;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
@@ -39,37 +36,23 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 public class RequestMappingSymbolProviderTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
-	private CompositeJavaProjectFinder projectManager;
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
-	private PropertyIndexHarness indexHarness;
+	private BootLanguageServerHarness harness;
+	private JavaProjectFinder projectFinder;
 
 	@Before
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
 		symbolProviders.put(Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 
-		projectManager = new CompositeJavaProjectFinder();
-
-		indexHarness = new PropertyIndexHarness();
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(projectManager, indexHarness.getIndexProvider());
-				return server;
-			}
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		harness = new BootLanguageServerHarness();
+		projectFinder = harness.getProjectFinder();
 	}
 
 	@Test
 	public void testSimpleRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
 
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectManager, symbolProviders);
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 		indexer.initialize(directory.toPath());
 
@@ -83,7 +66,7 @@ public class RequestMappingSymbolProviderTest {
 	public void testParentRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
 
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectManager, symbolProviders);
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 		indexer.initialize(directory.toPath());
 

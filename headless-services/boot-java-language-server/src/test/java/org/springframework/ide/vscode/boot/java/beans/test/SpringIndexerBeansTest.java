@@ -30,7 +30,9 @@ import org.springframework.ide.vscode.boot.java.beans.Constants;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
@@ -40,9 +42,8 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 public class SpringIndexerBeansTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
-	private CompositeJavaProjectFinder projectManager;
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
-	private PropertyIndexHarness indexHarness;
+	private BootLanguageServerHarness harness;
+	private JavaProjectFinder projectFinder;
 
 	@Before
 	public void setup() throws Exception {
@@ -50,27 +51,14 @@ public class SpringIndexerBeansTest {
 		symbolProviders.put(Constants.SPRING_BEAN, new BeansSymbolProvider());
 		symbolProviders.put(Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-		projectManager = new CompositeJavaProjectFinder();
-
-		indexHarness = new PropertyIndexHarness();
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(projectManager, indexHarness.getIndexProvider());
-				return server;
-			}
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		harness = new BootLanguageServerHarness();
+		projectFinder = harness.getProjectFinder();
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI()));
 	}
 
 	@Test
 	public void testScanSimpleConfigurationClass() throws Exception {
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectManager, symbolProviders);
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(directory.toPath());
 
@@ -82,7 +70,7 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleFunctionBean() throws Exception {
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectManager, symbolProviders);
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(directory.toPath());
 
@@ -94,7 +82,7 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleComponentClass() throws Exception {
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectManager, symbolProviders);
+		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(directory.toPath());
 

@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
@@ -47,36 +48,18 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 public class SpringIndexerTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
-	private CompositeJavaProjectFinder projectFinder;
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
-	private PropertyIndexHarness indexHarness;
-	private SpringIndexer indexer;
+
+	private SpringIndexer indexer() {
+		return harness.getServer().getSpringIndexer();
+	}
+
 
 	@Before
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
 		symbolProviders.put(Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-
-		projectFinder = new CompositeJavaProjectFinder();
-
-		indexHarness = new PropertyIndexHarness();
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(projectFinder, indexHarness.getIndexProvider()) {
-					@Override
-					protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectManager) {
-						return indexer = new SpringIndexer((BootJavaLanguageServer) server, projectFinder, symbolProviders);
-					}
-				};
-				return server;
-			}
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		harness = new BootLanguageServerHarness();
 	}
 
 	@Test
@@ -85,7 +68,7 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
 		assertEquals(8, allSymbols.size());
 
@@ -108,19 +91,19 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
+		List<? extends SymbolInformation> symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
 		assertEquals(4, symbols.size());
 		assertTrue(containsSymbol(symbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
 		assertTrue(containsSymbol(symbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(symbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 
-		symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
+		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
 		assertEquals(2, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
 		assertTrue(containsSymbol(symbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
 
-		symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java");
+		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java");
 		assertEquals(2, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(symbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
@@ -132,7 +115,7 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
 		assertEquals(8, allSymbols.size());
 
@@ -157,18 +140,18 @@ public class SpringIndexerTest {
 		// update document and update index
 		String changedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
 		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
-		CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent);
+		CompletableFuture<Void> updateFuture = indexer().updateDocument(changedDocURI, newContent);
 
 		updateFuture.get(5, TimeUnit.SECONDS);
 
 		// check for updated index per document
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+		List<? extends SymbolInformation> symbols = indexer().getSymbols(changedDocURI);
 		assertEquals(2, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED -- (no method defined)", changedDocURI, 6, 1, 6, 36));
 		assertTrue(containsSymbol(symbols, "@/mapping2 -- (no method defined)", changedDocURI, 11, 1, 11, 28));
 
 		// check for updated index in all symbols
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 		assertEquals(8, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
@@ -189,7 +172,7 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("mapp");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("mapp");
 
 		assertEquals(6, allSymbols.size());
 
@@ -209,7 +192,7 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping -- (no method defined)");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("@/foo-root-mapping -- (no method defined)");
 
 		assertEquals(2, allSymbols.size());
 
@@ -225,7 +208,7 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)");
 
 		assertEquals(1, allSymbols.size());
 
@@ -257,18 +240,18 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 		assertEquals(8, allSymbols.size());
 
 		File pomFile = directory.toPath().resolve(MavenCore.POM_XML).toFile();
 
-		assertFalse(indexer.isInitializing());
+		assertFalse(indexer().isInitializing());
 		harness.changeFile(pomFile.toURI().toString());
 		// Refresh in progress
-		assertTrue(indexer.isInitializing());
+		assertTrue(indexer().isInitializing());
 
-		allSymbols = indexer.getAllSymbols("");
-		assertFalse(indexer.isInitializing());
+		allSymbols = indexer().getAllSymbols("");
+		assertFalse(indexer().isInitializing());
 		assertEquals(8, allSymbols.size());
 	}
 

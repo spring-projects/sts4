@@ -24,9 +24,18 @@ public interface ProjectObserver {
 		void created(IJavaProject project);
 		void changed(IJavaProject project);
 		void deleted(IJavaProject project);
-	}
-	
+	}	
 	void addListener(Listener listener);
 	void removeListener(Listener listener);
+
+	ProjectObserver NULL = new ProjectObserver() {
+		@Override
+		public void addListener(Listener listener) {
+		}
+
+		@Override
+		public void removeListener(Listener listener) {
+		}
+	};
 
 }

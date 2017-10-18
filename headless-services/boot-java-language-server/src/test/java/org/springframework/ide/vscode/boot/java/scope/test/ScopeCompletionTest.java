@@ -13,69 +13,39 @@ package org.springframework.ide.vscode.boot.java.scope.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
  */
 public class ScopeCompletionTest {
 
-	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList((JavaProjectFinder)new FileBasedJavaProjectFinder() {
-		@Override
-		public IJavaProject find(File doc) {
-			return getTestProject();
-		}
-	}));
-
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
-	private PropertyIndexHarness indexHarness;
-	private IJavaProject testProject;
-
+	private BootLanguageServerHarness harness;
 	private Editor editor;
-
 
 	@Before
 	public void setup() throws Exception {
-		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		indexHarness = new PropertyIndexHarness();
-
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexHarness.getIndexProvider());
-				return server;
-			}
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
+		harness = BootLanguageServerHarness.createMocked();
+		harness.useProject(testProject);
 		harness.intialize(null);
 	}
 
-	private IJavaProject getTestProject() {
-		return testProject;
-	}
+//	private IJavaProject getTestProject() {
+//		return testProject;
+//	}
 
 	@Test
 	public void testEmptyBracketsCompletion() throws Exception {

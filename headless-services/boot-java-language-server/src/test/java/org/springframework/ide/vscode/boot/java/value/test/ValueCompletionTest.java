@@ -11,26 +11,23 @@
 package org.springframework.ide.vscode.boot.java.value.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerParams;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
@@ -39,7 +36,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ValueCompletionTest {
 
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
+	private BootLanguageServerHarness harness;
 	private IJavaProject testProject;
 
 	private Editor editor;
@@ -50,24 +47,15 @@ public class ValueCompletionTest {
 	public void setup() throws Exception {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		indexHarness = new PropertyIndexHarness();
-
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(() -> {
-			BootJavaLanguageServer server = new BootJavaLanguageServer(
-					new CompositeJavaProjectFinder(new ArrayList<>(Collections.singleton(new FileBasedJavaProjectFinder() {
-							@Override
-							public IJavaProject find(File doc) {
-								return getTestProject();
-							}
-					}))),
-					indexHarness.getIndexProvider()
-			);
-			return server;
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		//Somewhat strange test setup, with a project context finder that finds the test project,
+		// but doesn't use it in the indexProvider.
+		BootJavaLanguageServerParams params = new BootJavaLanguageServerParams(
+				d -> getTestProject(),
+				ProjectObserver.NULL,
+				indexHarness.getIndexProvider(),
+				RunningAppProvider.DEFAULT
+		);
+		harness = new BootLanguageServerHarness(params);
 		harness.intialize(null);
 	}
 
@@ -297,7 +285,9 @@ public class ValueCompletionTest {
 		for (String expectedCompleted : completedAnnotations) {
 			Editor clonedEditor = editor.clone();
 			clonedEditor.apply(completions.get(i++));
-			assertTrue(clonedEditor.getText().contains(expectedCompleted));
+			if (!clonedEditor.getText().contains(expectedCompleted)) {
+				fail("Not found '"+expectedCompleted+"' in \n"+clonedEditor.getText());
+			}
 		}
 
 		assertEquals(i, completions.size());

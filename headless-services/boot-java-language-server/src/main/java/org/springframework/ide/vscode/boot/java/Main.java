@@ -26,9 +26,12 @@ public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start(() -> {
+
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-			SimpleLanguageServer server = new BootJavaLanguageServer(javaProjectFinder, indexProvider);
+			SimpleLanguageServer server = new BootJavaLanguageServer(
+					BootJavaLanguageServerParams.createDefault()
+			);
 			return server;
 		});
 	}

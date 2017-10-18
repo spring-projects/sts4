@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -613,4 +612,5 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 	public S getServer() {
 		return server;
 	}
+
 }

@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -41,16 +40,15 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentHoverProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
@@ -59,27 +57,13 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ComponentHoverProviderTest {
 
-	private CompositeJavaProjectFinder projectFinder;
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
-	private PropertyIndexHarness indexHarness;
+	private JavaProjectFinder projectFinder;
+	private BootLanguageServerHarness harness;
 
 	@Before
 	public void setup() throws Exception {
-		projectFinder = new CompositeJavaProjectFinder();
-
-		indexHarness = new PropertyIndexHarness();
-		harness = new LanguageServerHarness<BootJavaLanguageServer>(new Callable<BootJavaLanguageServer>() {
-			@Override
-			public BootJavaLanguageServer call() throws Exception {
-				BootJavaLanguageServer server = new BootJavaLanguageServer(projectFinder, indexHarness.getIndexProvider());
-				return server;
-			}
-		}) {
-			@Override
-			protected String getFileExtension() {
-				return ".java";
-			}
-		};
+		harness = new BootLanguageServerHarness();
+		projectFinder = (d) -> harness.getProjectFinder().find(d);
 	}
 
 	@Test

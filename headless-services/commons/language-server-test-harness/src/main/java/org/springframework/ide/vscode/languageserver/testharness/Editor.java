@@ -798,5 +798,4 @@ public class Editor {
 		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
 
-
 }
