@@ -128,6 +128,15 @@ public class Editor {
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
 	}
+	public Editor(LanguageServerHarness harness, TextDocumentInfo doc, String contents, LanguageId languageId) throws Exception {
+		this.harness = harness;
+		this.languageId = LanguageId.of(languageId.getId()); // So we can catch bugs that use == for langauge id comparison.
+		EditorState state = new EditorState(contents);
+		this.doc = harness.openDocument(doc);
+		this.selectionStart = state.selectionStart;
+		this.selectionEnd = state.selectionEnd;
+		this.ignoredTypes = new HashSet<>();
+	}
 
 	/**
 	 * Check that a 'expectedProblems' are found by the reconciler. Expected problems are

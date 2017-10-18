@@ -43,8 +43,12 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 
 
 	public static BootLanguageServerHarness createMocked() throws Exception {
+		return createMocked(RunningAppProvider.DEFAULT);
+	}
+
+	public static BootLanguageServerHarness createMocked(RunningAppProvider provider) throws Exception {
 		PropertyIndexHarness indexHarness = new PropertyIndexHarness();
-		BootLanguageServerHarness harness = new BootLanguageServerHarness(new BootJavaLanguageServerParams(indexHarness.getProjectFinder(), ProjectObserver.NULL, indexHarness.getIndexProvider(), RunningAppProvider.DEFAULT));
+		BootLanguageServerHarness harness = new BootLanguageServerHarness(new BootJavaLanguageServerParams(indexHarness.getProjectFinder(), ProjectObserver.NULL, indexHarness.getIndexProvider(), provider));
 		harness.indexHarness = indexHarness;
 		return harness;
 	}

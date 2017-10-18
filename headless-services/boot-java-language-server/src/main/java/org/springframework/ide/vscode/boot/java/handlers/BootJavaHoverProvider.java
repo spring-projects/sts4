@@ -42,6 +42,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -94,7 +95,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						extractLiveHints(node, document, runningBootApps, result);
 					}
 					catch (Exception e) {
-						e.printStackTrace();
+						Log.log(e);
 					}
 
 					return super.visit(node);
@@ -106,7 +107,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						extractLiveHints(node, document, runningBootApps, result);
 					}
 					catch (Exception e) {
-						e.printStackTrace();
+						Log.log(e);
 					}
 
 					return super.visit(node);
@@ -118,7 +119,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						extractLiveHints(node, document, runningBootApps, result);
 					}
 					catch (Exception e) {
-						e.printStackTrace();
+						Log.log(e);
 					}
 
 					return super.visit(node);
@@ -126,7 +127,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 			});
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			Log.log(e);
 		}
 
 		return result.toArray(new Range[result.size()]);
@@ -229,7 +230,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
 					.toArray(SpringBootApp[]::new);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.log(e);
 			return new SpringBootApp[0];
 		}
 	}
