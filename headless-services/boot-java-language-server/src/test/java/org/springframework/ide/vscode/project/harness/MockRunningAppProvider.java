@@ -84,6 +84,11 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
+		public MockAppBuilder host(String host) throws Exception {
+			when(app.getHost()).thenReturn(host);
+			return this;
+		}
+
 		public MockAppBuilder isSpringBootApp(boolean isBoot) throws Exception {
 			when(app.isSpringBootApp()).thenReturn(isBoot);
 			return this;
@@ -100,6 +105,9 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
+		/**
+		 * Builds the mock app and adds it to the app provider
+		 */
 		public void build() {
 			runningAppProvider.mockedApps.add(app);
 		}
