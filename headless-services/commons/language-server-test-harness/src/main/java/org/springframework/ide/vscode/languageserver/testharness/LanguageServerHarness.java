@@ -14,6 +14,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -631,12 +632,17 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		}
 	}
 
+	/**
+	 * Creates an editor for the given file URI. Note that the file URI must have "file" scheme
+	 * @param docUri
+	 * @param languageId
+	 * @return
+	 * @throws Exception
+	 */
 	public Editor newEditorFromFileUri(String docUri, LanguageId languageId) throws Exception {
 		URI fileUri = new URI(docUri);
-		if (fileUri.getScheme() == null || !fileUri.getScheme().contains("file") ) {
-			throw new Exception("Document URI to be opened needs to have a 'file' scheme: " + docUri);
-		}
-
+		assertTrue("Document URI is missing 'file' scheme: " + docUri,
+				fileUri.getScheme() != null && fileUri.getScheme().contains("file"));
 
 		Path path = Paths.get(fileUri);
 		String content = new String(Files.readAllBytes(path));
