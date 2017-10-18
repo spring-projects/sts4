@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
 import org.junit.Before;
@@ -121,5 +123,28 @@ public class RequestMappingLiveHoverTest {
 
 	}
 
+	@Test
+	public void testNoLiveHoverNoRunningApp() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+		harness.intialize(directory);
+
+		assertTrue("Expected no mock running boot apps, but found: " + mockAppProvider.mockedApps,
+				mockAppProvider.mockedApps.isEmpty());
+
+		Editor editorWithMethodLiveHover = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editorWithMethodLiveHover.assertNoHover("@RequestMapping(\"/hello\")");
+
+		editorWithMethodLiveHover.assertNoHover("@RequestMapping(\"/goodbye\")");
+
+		docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/HelloWorldController.java";
+
+		Editor editorWithTypeLiveHover = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editorWithTypeLiveHover.assertNoHover("@RequestMapping(\"/hello-world\")");
+
+	}
 
 }
