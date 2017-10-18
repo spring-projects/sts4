@@ -17,10 +17,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -446,6 +448,25 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		return editor;
 	}
 
+
+	public synchronized Editor newEditor(LanguageId languageId, String contents, String resourceUri) throws Exception {
+		TextDocumentInfo doc = docFromResource(contents, resourceUri, languageId);
+		Editor editor = new Editor(this, doc, contents, languageId);
+		activeEditors.add(editor);
+		return editor;
+	}
+
+	public synchronized TextDocumentInfo docFromResource(String contents, String resourceUri, LanguageId languageId) throws Exception {
+		TextDocumentItem doc = new TextDocumentItem();
+		doc.setLanguageId(languageId.getId());
+		doc.setText(contents);
+		doc.setUri(resourceUri);
+		doc.setVersion(getFirstVersion());
+		TextDocumentInfo docinfo = new TextDocumentInfo(doc);
+		documents.put(docinfo.getUri(), docinfo);
+		return docinfo;
+	}
+
 	public synchronized TextDocumentInfo createWorkingCopy(String contents, LanguageId languageId) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
 		doc.setLanguageId(languageId.getId());
@@ -608,6 +629,18 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 			}
 			return newEditor(IOUtil.toString(is));
 		}
+	}
+
+	public Editor newEditorFromFileUri(String docUri, LanguageId languageId) throws Exception {
+		URI fileUri = new URI(docUri);
+		if (fileUri.getScheme() == null || !fileUri.getScheme().contains("file") ) {
+			throw new Exception("Document URI to be opened needs to have a 'file' scheme: " + docUri);
+		}
+
+
+		Path path = Paths.get(fileUri);
+		String content = new String(Files.readAllBytes(path));
+		return newEditor(languageId, content, docUri);
 	}
 
 	public S getServer() {
