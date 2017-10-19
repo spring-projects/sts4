@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
@@ -32,8 +33,11 @@ public class MavenProjectFinder extends FileBasedJavaProjectFinder {
 	}
 
 	@Override
-	public IJavaProject find(File file) {
+	public Optional<IJavaProject> find(File file) {
 		File pomFile = FileUtils.findFile(file, MavenCore.POM_XML);
-		return cache.project(pomFile);
+		if (pomFile!=null) {
+			return Optional.ofNullable(cache.project(pomFile));
+		}
+		return Optional.empty();
 	}
 }

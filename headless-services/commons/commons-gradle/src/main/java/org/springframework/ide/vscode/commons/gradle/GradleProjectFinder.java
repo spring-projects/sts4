@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
@@ -32,8 +33,8 @@ public class GradleProjectFinder extends FileBasedJavaProjectFinder {
 	}
 
 	@Override
-	public IJavaProject find(File file) {
+	public Optional<IJavaProject> find(File file) {
 		File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
-		return cache.project(gradlebuild);
+		return Optional.ofNullable(cache.project(gradlebuild));
 	}
 }

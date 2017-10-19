@@ -14,11 +14,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -29,7 +29,6 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -50,8 +49,8 @@ public abstract class AbstractPropsEditorTest {
 	protected PropertyIndexHarness md;
 	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new JavaProjectFinder() {
 		@Override
-		public IJavaProject find(TextDocumentIdentifier doc) {
-			return getTestProject();
+		public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+			return Optional.ofNullable(getTestProject());
 		}
 	}));
 			

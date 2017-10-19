@@ -125,7 +125,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
+		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
 		IClasspath classpath = project.getClasspath();
 		Stream<Path> classpathEntries = classpath.getClasspathEntries();
 		return classpathEntries

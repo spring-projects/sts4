@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -186,9 +187,9 @@ public class SpringIndexer {
 			try {
 				initializeTask.get();
 
-				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
-				if (project != null) {
-					String[] classpathEntries = getClasspathEntries(project);
+				Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
+				if (maybeProject.isPresent()) {
+					String[] classpathEntries = getClasspathEntries(maybeProject.get());
 
 					CompletableFuture<Void> future = new CompletableFuture<>();
 					UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries, future);
@@ -265,7 +266,7 @@ public class SpringIndexer {
 		try {
 			System.out.println("scan directory...");
 
-			Map<IJavaProject, List<String>> projects = Files.walk(directory.toPath())
+			Map<Optional<IJavaProject>, List<String>> projects = Files.walk(directory.toPath())
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
@@ -273,7 +274,7 @@ public class SpringIndexer {
 
 			System.out.println("scan directory done!!!");
 
-			projects.forEach((project, files) -> scanProject(project, files.toArray(new String[0])));
+			projects.forEach((maybeProject, files) -> maybeProject.ifPresent(project -> scanProject(project, files.toArray(new String[0]))));
 		}
 		catch (Exception e) {
 			e.printStackTrace();

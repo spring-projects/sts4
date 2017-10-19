@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -31,7 +32,7 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 public abstract class FileBasedJavaProjectFinder implements JavaProjectFinder {
 
 	@Override
-	public final IJavaProject find(TextDocumentIdentifier doc) {
+	public final Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		try {
 			String uriStr = doc.getUri();
 			if (StringUtil.hasText(uriStr)) {
@@ -45,9 +46,9 @@ public abstract class FileBasedJavaProjectFinder implements JavaProjectFinder {
 		catch (URISyntaxException e) {
 			Log.log(e);
 		}
-		return null;
+		return Optional.empty();
 	}
 
-	protected abstract IJavaProject find(File file);
+	protected abstract Optional<IJavaProject> find(File file);
 
 }

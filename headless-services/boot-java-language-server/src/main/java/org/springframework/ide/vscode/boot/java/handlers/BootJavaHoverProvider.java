@@ -213,7 +213,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	private IJavaProject getProject(IDocument doc) throws Exception {
-		return this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
+		return this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
 	}
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {

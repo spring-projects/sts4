@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.FileBasedJavaProjectFinder;
@@ -34,8 +35,11 @@ public class JavaProjectWithClasspathFileFinder extends FileBasedJavaProjectFind
 	}
 
 	@Override
-	public IJavaProject find(File file) {
+	public Optional<IJavaProject> find(File file) {
 		File cpFile = FileUtils.findFile(file, MavenCore.CLASSPATH_TXT);
-		return cache.project(cpFile);
+		if (cpFile!=null) {
+			return Optional.ofNullable(cache.project(cpFile));
+		}
+		return Optional.empty();
 	}
 }

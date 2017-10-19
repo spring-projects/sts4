@@ -52,15 +52,13 @@ class PropertiesHoverCalculator {
 	
 	private FuzzyMap<PropertyInfo> index;
 	private TypeUtil typeUtil;
-	private IJavaProject project;
 	private IDocument doc;
 	private int offset;
 	private AntlrParser parser;
 	
-	PropertiesHoverCalculator(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, IJavaProject project, IDocument doc, int offset) {
+	PropertiesHoverCalculator(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, IDocument doc, int offset) {
 		this.index = index;
 		this.typeUtil = typeUtil;
-		this.project = project;
 		this.doc = doc;
 		this.offset = offset;
 		this.parser = new AntlrParser();

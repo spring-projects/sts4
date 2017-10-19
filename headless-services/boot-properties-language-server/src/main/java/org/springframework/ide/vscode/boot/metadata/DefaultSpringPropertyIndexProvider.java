@@ -11,6 +11,8 @@
 
 package org.springframework.ide.vscode.boot.metadata;
 
+import java.util.Optional;
+
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -33,9 +35,9 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
-		IJavaProject jp = javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()));
-		if (jp!=null) {
-			return indexManager.get(jp, progressService);
+		Optional<IJavaProject> jp = javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()));
+		if (jp.isPresent()) {
+			return indexManager.get(jp.get(), progressService);
 		}
 		return EMPTY_INDEX;
 	}

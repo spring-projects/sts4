@@ -11,9 +11,12 @@
 
 package org.springframework.ide.vscode.boot.properties.hover;
 
+import java.util.Optional;
+
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -37,10 +40,6 @@ public class PropertiesHoverInfoProvider implements HoverInfoProvider {
 	@Override
 	public Tuple2<Renderable, IRegion> getHoverInfo(IDocument document, int offset) throws Exception {
 		return new PropertiesHoverCalculator(indexProvider.getIndex(document),
-				typeUtilProvider.getTypeUtil(document), projectFinder.find(new TextDocumentIdentifier(document.getUri())), document, offset).calculate();
+					typeUtilProvider.getTypeUtil(document), document, offset).calculate();
 	}
-	
-
-
-
 }

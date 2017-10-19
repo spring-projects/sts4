@@ -15,6 +15,7 @@ import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
@@ -52,7 +53,7 @@ public class ValueCompletionTest {
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		harness = BootLanguageServerHarness.builder()
 				.mockDefaults()
-				.projectFinder(d -> getTestProject())
+				.projectFinder(d -> Optional.ofNullable(getTestProject()))
 				.build();
 		indexHarness = harness.getPropertyIndexHarness();
 		harness.intialize(null);

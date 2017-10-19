@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
-import java.io.File;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Java project finder provides a means to obtain the project context associated with
@@ -25,6 +25,15 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public interface JavaProjectFinder {
 	
-	IJavaProject find(TextDocumentIdentifier doc);
+	Optional<IJavaProject> find(TextDocumentIdentifier doc);
 	
+	default JavaProjectFinder filter(Predicate<IJavaProject> acceptWhen) {
+		return doc -> this.find(doc).flatMap(jp -> {
+			if (acceptWhen.test(jp)) {
+				return Optional.of(jp);
+			}
+			return Optional.empty();
+		});
+	}
+
 }

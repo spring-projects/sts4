@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.project.harness;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.boot.configurationmetadata.Deprecation;
@@ -563,7 +564,7 @@ public class PropertyIndexHarness {
 	}
 
 	public JavaProjectFinder getProjectFinder() {
-		return (doc) -> testProject;
+		return (doc) -> Optional.ofNullable(testProject);
 	}
 
 }

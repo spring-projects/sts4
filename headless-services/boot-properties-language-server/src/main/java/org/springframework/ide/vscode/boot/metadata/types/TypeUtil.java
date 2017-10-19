@@ -130,6 +130,10 @@ public class TypeUtil {
 	}
 
 
+	public TypeUtil(Optional<IJavaProject> maybeProject) {
+		this(maybeProject.orElse(null));
+	}
+
 	private static final Map<String, String> PRIMITIVE_TYPE_NAMES = new HashMap<>();
 	private static final Map<String, Type> PRIMITIVE_TO_BOX_TYPE = new HashMap<>();
 	static {

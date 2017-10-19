@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -41,20 +40,16 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
@@ -77,7 +72,7 @@ public class AutowiredHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 
 		CompilationUnit cu = parse(document, project);
 
@@ -103,7 +98,7 @@ public class AutowiredHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 
 		CompilationUnit cu = parse(document, project);
 
@@ -122,7 +117,7 @@ public class AutowiredHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 
 		CompilationUnit cu = parse(document, project);
 
@@ -143,7 +138,7 @@ public class AutowiredHoverProviderTest {
 
 		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
 		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI));
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 
 		CompilationUnit cu = parse(document, project);
 

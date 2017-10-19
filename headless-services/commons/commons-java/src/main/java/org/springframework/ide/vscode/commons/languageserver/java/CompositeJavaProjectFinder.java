@@ -10,16 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Composite project manager that acts a single project manager but consissts of many project managers
@@ -48,7 +47,8 @@ public class CompositeJavaProjectFinder implements JavaProjectFinder {
 	}
 	
 	@Override
-	public IJavaProject find(TextDocumentIdentifier doc) {
+	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Objects::nonNull).findFirst().orElse(null);
 	}
+
 }
