@@ -48,7 +48,6 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -72,6 +71,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final SpringIndexer indexer;
+	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final ProjectObserver projectObserver;
 
@@ -82,6 +82,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	public BootJavaLanguageServer(LSFactory<BootJavaLanguageServerParams> _params) {
 		super("vscode-boot-java");
 		BootJavaLanguageServerParams serverParams = _params.create(this);
+
+		propertyIndexProvider = serverParams.indexProvider;
 
 		System.setProperty(LANGUAGE_SERVER_PROCESS_PROPERTY, LANGUAGE_SERVER_PROCESS_PROPERTY);
 
@@ -95,7 +97,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			validateWith(doc.getId(), reconcileEngine);
 		});
 
-		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectFinder, serverParams.indexProvider);
+		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectFinder, propertyIndexProvider);
 		completionEngine = createCompletionEngineAdapter(this, bootCompletionEngine);
 		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
@@ -286,9 +288,11 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return projectFinder;
 	}
 
-
 	public SpringIndexer getSpringIndexer() {
 		return indexer;
 	}
 
+	public SpringPropertyIndexProvider getSpringPropertyIndexProvider() {
+		return propertyIndexProvider;
+	}
 }

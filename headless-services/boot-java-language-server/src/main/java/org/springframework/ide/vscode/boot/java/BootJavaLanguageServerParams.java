@@ -54,7 +54,7 @@ public class BootJavaLanguageServerParams {
 			return new BootJavaLanguageServerParams(
 					javaProjectFinder,
 					projectObserver,
-					new DefaultSpringPropertyIndexProvider(javaProjectFinder),
+					new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver),
 					RunningAppProvider.DEFAULT
 			);
 		};

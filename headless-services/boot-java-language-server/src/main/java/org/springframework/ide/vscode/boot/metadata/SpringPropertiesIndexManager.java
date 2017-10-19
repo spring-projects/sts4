@@ -16,6 +16,8 @@ import java.util.Map;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 
 /**
@@ -31,7 +33,31 @@ public class SpringPropertiesIndexManager {
 	private Map<IJavaProject, SpringPropertyIndex> indexes = null;
 	private static int progressIdCt = 0;
 
-	public SpringPropertiesIndexManager() {
+	public SpringPropertiesIndexManager(ProjectObserver projectObserver) {
+		if (projectObserver != null) {
+			projectObserver.addListener(new Listener() {
+
+				@Override
+				public void created(IJavaProject project) {
+					// ignore
+				}
+
+				@Override
+				public void changed(IJavaProject project) {
+					invalidateIndex(project);
+				}
+
+				@Override
+				public void deleted(IJavaProject project) {
+					invalidateIndex(project);
+				}
+
+			});
+		}
+	}
+
+	public synchronized SpringPropertyIndex invalidateIndex(IJavaProject project) {
+		return indexes.remove(project);
 	}
 
 	public synchronized FuzzyMap<ConfigurationMetadataProperty> get(IJavaProject project, ProgressService progressService) {
@@ -45,17 +71,17 @@ public class SpringPropertiesIndexManager {
 			if (progressService != null) {
 				progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
 			}
-			
+
 			index = new SpringPropertyIndex(project.getClasspath());
 			indexes.put(project, index);
-			
+
 			if (progressService != null) {
 				progressService.progressEvent(progressId, null);
 			}
 		}
 		return index;
 	}
-	
+
 	private static synchronized String getProgressId() {
 		return DefaultSpringPropertyIndexProvider.class.getName()+ (progressIdCt++);
 	}
