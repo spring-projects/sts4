@@ -9,7 +9,9 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+**/target/*.jar
+**/jars/*.jar
+eclipse-language-servers/**/*.jar
 *.war
 *.ear
 # Exceptions
