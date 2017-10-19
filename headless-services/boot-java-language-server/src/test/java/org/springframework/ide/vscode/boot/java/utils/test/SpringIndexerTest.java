@@ -59,7 +59,7 @@ public class SpringIndexerTest {
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
 		symbolProviders.put(Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-		harness = new BootLanguageServerHarness();
+		harness = BootLanguageServerHarness.builder().build();
 	}
 
 	@Test

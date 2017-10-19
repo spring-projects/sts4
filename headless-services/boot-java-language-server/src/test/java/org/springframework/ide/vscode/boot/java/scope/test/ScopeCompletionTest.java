@@ -21,7 +21,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -38,7 +37,7 @@ public class ScopeCompletionTest {
 	@Before
 	public void setup() throws Exception {
 		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		harness = BootLanguageServerHarness.createMocked();
+		harness = BootLanguageServerHarness.builder().mockDefaults().build();
 		harness.useProject(testProject);
 		harness.intialize(null);
 	}

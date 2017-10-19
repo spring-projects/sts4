@@ -45,17 +45,16 @@ public class ValueCompletionTest {
 
 	@Before
 	public void setup() throws Exception {
+		//Somewhat strange test setup, test provides a specific test project.
+		// The context finder finds this test project,
+		// But it is not used in the indexProvider.
+		//This is a bit odd... but we preserved the strangeness how it was.
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		indexHarness = new PropertyIndexHarness();
-		//Somewhat strange test setup, with a project context finder that finds the test project,
-		// but doesn't use it in the indexProvider.
-		BootJavaLanguageServerParams params = new BootJavaLanguageServerParams(
-				d -> getTestProject(),
-				ProjectObserver.NULL,
-				indexHarness.getIndexProvider(),
-				RunningAppProvider.DEFAULT
-		);
-		harness = new BootLanguageServerHarness(params);
+		harness = BootLanguageServerHarness.builder()
+				.mockDefaults()
+				.projectFinder(d -> getTestProject())
+				.build();
+		indexHarness = harness.getPropertyIndexHarness();
 		harness.intialize(null);
 	}
 

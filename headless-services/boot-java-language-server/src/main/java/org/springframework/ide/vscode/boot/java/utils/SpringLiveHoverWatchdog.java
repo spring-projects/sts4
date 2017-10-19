@@ -103,7 +103,6 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	private void publishLiveHints(String docURI, Range[] ranges) {
-		System.out.println(" PUBLISH LIVE HOVER HINTS !!! " + ranges.length);
 		server.getClient().highlight(new HighlightParams(new TextDocumentIdentifier(docURI), Arrays.asList(ranges)));
 	}
 

@@ -66,7 +66,7 @@ public class AutowiredHoverProviderTest {
 
 	@Before
 	public void setup() throws Exception {
-		harness = new BootLanguageServerHarness();
+		harness = BootLanguageServerHarness.builder().build();
 		projectFinder = harness.getProjectFinder();
 	}
 

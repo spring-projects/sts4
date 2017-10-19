@@ -50,7 +50,6 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
 /**
  * @author Martin Lippert
@@ -62,8 +61,8 @@ public class ComponentHoverProviderTest {
 
 	@Before
 	public void setup() throws Exception {
-		harness = new BootLanguageServerHarness();
-		projectFinder = (d) -> harness.getProjectFinder().find(d);
+		harness = BootLanguageServerHarness.builder().build();
+		projectFinder = harness.getProjectFinder();
 	}
 
 	@Test

@@ -14,12 +14,21 @@ import java.util.Collection;
 
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 
-public class RunningAppProvider {
+import com.google.common.collect.ImmutableList;
 
-	public static final RunningAppProvider DEFAULT = new RunningAppProvider();
+public interface RunningAppProvider {
 
-	public Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return SpringBootApp.getAllRunningSpringApps().values();
-	}
+	public static final RunningAppProvider DEFAULT = new RunningAppProvider() {
+		@Override public Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
+			return SpringBootApp.getAllRunningSpringApps().values();
+		}
+	};
 
+	public static final RunningAppProvider NULL = new RunningAppProvider() {
+		@Override public Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
+			return ImmutableList.of();
+		}
+	};
+
+	Collection<SpringBootApp> getAllRunningSpringApps() throws Exception;
 }

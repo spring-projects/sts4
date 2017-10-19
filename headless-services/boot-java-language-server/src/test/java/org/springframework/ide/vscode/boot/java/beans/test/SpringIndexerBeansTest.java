@@ -51,7 +51,7 @@ public class SpringIndexerBeansTest {
 		symbolProviders.put(Constants.SPRING_BEAN, new BeansSymbolProvider());
 		symbolProviders.put(Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
 
-		harness = new BootLanguageServerHarness();
+		harness = BootLanguageServerHarness.builder().build();
 		projectFinder = harness.getProjectFinder();
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI()));
 	}
