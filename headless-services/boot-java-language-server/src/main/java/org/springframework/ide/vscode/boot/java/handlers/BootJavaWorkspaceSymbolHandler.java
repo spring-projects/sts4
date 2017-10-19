@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 
@@ -22,15 +23,22 @@ import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbo
  */
 public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 
-	private SpringIndexer indexer;
+	private final SpringIndexer indexer;
+	private final LiveAppURLSymbolProvider liveAppSymbolProvider;
 
-	public BootJavaWorkspaceSymbolHandler(SpringIndexer indexer) {
+	public BootJavaWorkspaceSymbolHandler(SpringIndexer indexer, LiveAppURLSymbolProvider liveAppSymbolProvider) {
 		this.indexer = indexer;
+		this.liveAppSymbolProvider = liveAppSymbolProvider;
 	}
 
 	@Override
 	public List<? extends SymbolInformation> handle(WorkspaceSymbolParams params) {
-		return indexer.getAllSymbols(params.getQuery());
+		if (params.getQuery() != null && params.getQuery().startsWith("//")) {
+			return liveAppSymbolProvider.getSymbols(params.getQuery());
+		}
+		else {
+			return indexer.getAllSymbols(params.getQuery());
+		}
 	}
 
 }
