@@ -35,7 +35,6 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class SpringBootApp {
 	
 	private VirtualMachine vm;
@@ -320,5 +319,10 @@ public class SpringBootApp {
 		}
 		
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		return "SpringBootApp [" +vmd.id() + ", "+vmd.displayName()+"]";
 	}
 }
