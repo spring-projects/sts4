@@ -57,7 +57,10 @@ public class SpringPropertiesIndexManager {
 	}
 
 	public synchronized SpringPropertyIndex invalidateIndex(IJavaProject project) {
-		return indexes.remove(project);
+		if (indexes != null) {
+			return indexes.remove(project);
+		}
+		return null;
 	}
 
 	public synchronized FuzzyMap<ConfigurationMetadataProperty> get(IJavaProject project, ProgressService progressService) {
