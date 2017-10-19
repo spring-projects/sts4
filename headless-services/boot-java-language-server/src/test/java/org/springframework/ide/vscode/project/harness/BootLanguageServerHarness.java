@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
-import java.util.concurrent.Callable;
-
 import org.junit.Assert;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerParams;
@@ -70,6 +68,11 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 
 		public Builder projectFinder(JavaProjectFinder projectFinder) {
 			this.projectFinder = projectFinder;
+			return this;
+		}
+
+		public Builder propertyIndexProvider(SpringPropertyIndexProvider propertyIndexProvider) {
+			this.indexProvider = propertyIndexProvider;
 			return this;
 		}
 	}

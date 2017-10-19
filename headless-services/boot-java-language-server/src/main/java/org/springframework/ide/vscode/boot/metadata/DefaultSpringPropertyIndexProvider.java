@@ -18,6 +18,7 @@ import org.springframework.boot.configurationmetadata.ConfigurationMetadataPrope
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -26,13 +27,18 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	private static final FuzzyMap<ConfigurationMetadataProperty> EMPTY_INDEX = new SpringPropertyIndex(null);
 
 	private JavaProjectFinder javaProjectFinder;
-	private SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager();
+	private SpringPropertiesIndexManager indexManager;
 
 	private ProgressService progressService = (id, msg) -> {
 		/* ignore */ };
 
-	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder) {
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver) {
 		this.javaProjectFinder = javaProjectFinder;
+		this.indexManager = new SpringPropertiesIndexManager(projectObserver);
+	}
+
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder) {
+		this(javaProjectFinder, null);
 	}
 
 	@Override
