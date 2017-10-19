@@ -14,7 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.FileSystems;
+import java.util.Arrays;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
 
 /**
@@ -31,6 +36,7 @@ import org.eclipse.lsp4e.server.StreamConnectionProvider;
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
 	
 	private StreamConnectionProvider provider;
+	private ResourceListener fResourceListener;
 	
 	public DelegatingStreamConnectionProvider() {
 		String port = System.getProperty("boot-java-ls-port");
@@ -45,6 +51,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		
 	@Override
 	public Object getInitializationOptions(URI rootUri) {
+		installResourceChangeListener(rootUri);
 		return provider.getInitializationOptions(rootUri);
 	}
 
@@ -66,6 +73,34 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	@Override
 	public void stop() {
 		this.provider.stop();
+		if (fResourceListener != null) {
+			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
+			fResourceListener = null;
+		}
 	}
 
+	private void installResourceChangeListener(URI rootPath) {
+		if (rootPath == null || fResourceListener != null) {
+			return;
+		}
+
+		IContainer[] containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(rootPath);
+		if (containers.length == 0) {
+			return;
+		}
+
+		for (IContainer c : containers) {
+			if (!(c instanceof IProject)) {
+				continue;
+			}
+			IProject project = (IProject) c;
+			fResourceListener = new ResourceListener("org.eclipse.languageserver.languages.springbootjava", project, Arrays.asList(
+					FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
+					FileSystems.getDefault().getPathMatcher("glob:**/build.gradle")
+			));
+			project.getWorkspace().addResourceChangeListener(fResourceListener);
+
+			break;
+		}
+	}
 }
