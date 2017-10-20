@@ -45,8 +45,10 @@ public class SpringBootAppTest {
 	@BeforeClass
 	public static void setupClass() throws Exception {
 		testAppRunner = startTestApplication(SpringBootAppTest.class.getResource("/"+appName+"-0.0.1-SNAPSHOT.jar"));
-		testApp = getAppContaining(appName);
-		assertNotNull(testApp);
+		ACondition.waitFor(TIMEOUT, () -> {
+			testApp = getAppContaining(appName);
+			assertNotNull(testApp);
+		});
 	}
 
 	private static AsyncProcess startTestApplication(URL jarUrl) throws Exception {
