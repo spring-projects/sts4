@@ -42,10 +42,10 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  * @author Martin Lippert
  */
 public class SpringBootApp {
-	
+
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
-	
+
 	/**
 	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
 	 */
@@ -56,7 +56,7 @@ public class SpringBootApp {
 			SpringBootApp app = new SpringBootApp(vmd);
 			result.put(app.getProcessID(), app);
 		}
-		
+
 		return result;
 	}
 
@@ -77,7 +77,7 @@ public class SpringBootApp {
 				System.err.println("cannot attach to app: " + vmd.id());
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -85,29 +85,29 @@ public class SpringBootApp {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
 	}
-	
+
 	public String getProcessID() {
 		return vmd.id();
 	}
-	
+
 	public String getProcessName() {
 		return vmd.displayName();
 	}
-	
+
 	public String getHost() throws Exception {
 		String jmxConnect = this.vm.startLocalManagementAgent();
 		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
 		return serviceUrl.getHost();
 	}
-	
+
 	public boolean isSpringBootApp() throws Exception {
 		return (isSpringBootAppClasspath() || isSpringBootAppSysprops());
 	}
-	
+
 	private boolean isSpringBootAppSysprops() {
 		try {
 			Properties sysprops = this.vm.getSystemProperties();
-			return sysprops.getProperty("sts4.languageserver.name") == null 
+			return sysprops.getProperty("sts4.languageserver.name") == null
 				&& sysprops.getProperty("java.protocol.handler.pkgs").equals("org.springframework.boot.loader");
 		} catch (Exception e) {
 			Log.log(e);
@@ -127,7 +127,7 @@ public class SpringBootApp {
 		return false;
 	}
 
-	
+
 	public boolean containsSystemProperty(Object key) {
 		try {
 			Properties props = this.vm.getSystemProperties();
@@ -137,7 +137,7 @@ public class SpringBootApp {
 			return false;
 		}
 	}
-	
+
 	public String getPort() throws Exception {
 		String jmxConnect = this.vm.startLocalManagementAgent();
 
@@ -151,7 +151,7 @@ public class SpringBootApp {
 			if (jmxConnector != null) jmxConnector.close();
 		}
 	}
-	
+
 	public String getEnvironment() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=environmentEndpoint", "Data");
 		if (result != null) {
@@ -167,14 +167,14 @@ public class SpringBootApp {
 
 		return null;
 	}
-	
+
 	public String getBeans() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=beansEndpoint", "Data");
 		if (result != null) {
 			String beans = new ObjectMapper().writeValueAsString(result);
 			return beans;
 		}
-		
+
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Beans", "beans");
 		if (result != null) {
 			String beans = new ObjectMapper().writeValueAsString(result);
@@ -183,7 +183,7 @@ public class SpringBootApp {
 
 		return null;
 	}
-	
+
 	public String getRequestMappings() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
 		if (result != null) {
@@ -196,10 +196,10 @@ public class SpringBootApp {
 			String mappings = new ObjectMapper().writeValueAsString(result);
 			return mappings;
 		}
-		
+
 		return null;
 	}
-	
+
 	public String getAutoConfigReport() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
 		if (result != null) {
@@ -215,7 +215,7 @@ public class SpringBootApp {
 
 		return null;
 	}
-	
+
 	protected Object getActuatorDataFromAttribute(String actuatorID, String attribute) throws Exception {
 		String jmxConnect = this.vm.startLocalManagementAgent();
 
@@ -224,7 +224,7 @@ public class SpringBootApp {
 			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
 			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-			
+
 			try {
 				ObjectName objectName = new ObjectName(actuatorID);
 				Object result = connection.getAttribute(objectName, "Data");
@@ -247,7 +247,7 @@ public class SpringBootApp {
 			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
 			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-			
+
 			try {
 				ObjectName objectName = new ObjectName(actuatorID);
 				Object result = connection.invoke(objectName, operation, null, null);
@@ -280,31 +280,31 @@ public class SpringBootApp {
 				classpathElements.add(classpathElement);
 			}
 		}
-		return (String[]) classpathElements.toArray(new String[classpathElements.size()]);
+		return classpathElements.toArray(new String[classpathElements.size()]);
 	}
 
 	protected String getPort(JMXConnector jmxConnector) throws Exception {
 		MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-		
+
 		String port = getPortViaAdmin(connection);
 		if (port != null) {
 			return port;
 		}
-		
+
 		port = getPortViaActuator(connection);
 		if (port != null) {
 			return port;
 		}
-		
+
 		port = getPortViaTomcatBean(connection);
 		return port;
 	}
-	
+
 	protected String getPortViaAdmin(MBeanServerConnection connection) throws Exception {
 		try {
 			String DEFAULT_OBJECT_NAME = "org.springframework.boot:type=Admin,name=SpringApplication";
 			ObjectName objectName = new ObjectName(DEFAULT_OBJECT_NAME);
-	
+
 			Object o = connection.invoke(objectName,"getProperty", new String[] {"local.server.port"}, new String[] {String.class.getName()});
 			return o.toString();
 		}
@@ -354,7 +354,7 @@ public class SpringBootApp {
 	protected String getPortViaTomcatBean(MBeanServerConnection connection) throws Exception {
 		try {
 			Set<ObjectName> queryNames = connection.queryNames(null, null);
-			
+
 			for (ObjectName objectName : queryNames) {
 				if (objectName.toString().startsWith("Tomcat") && objectName.toString().contains("type=Connector")) {
 					Object result = connection.getAttribute(objectName, "localPort");
@@ -395,5 +395,5 @@ public class SpringBootApp {
 		System.out.println("}");
 	}
 
-	
+
 }
