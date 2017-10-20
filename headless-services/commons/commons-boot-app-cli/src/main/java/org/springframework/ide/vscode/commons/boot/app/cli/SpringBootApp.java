@@ -26,6 +26,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -292,10 +294,33 @@ public class SpringBootApp {
 		if (environment != null) {
 			JSONObject env = new JSONObject(environment);
 			if (env != null) {
-				JSONObject portsObject = env.getJSONObject("server.ports");
+				JSONObject portsObject = env.optJSONObject("server.ports");
 				if (portsObject != null) {
-					String portValue = portsObject.get("local.server.port").toString();
-					return portValue;
+					String portValue = portsObject.optString("local.server.port");
+					if (portValue!=null) {
+						return portValue;
+					}
+				}
+				//Not found as direct property value... in Boot 2.0 we must look inside the 'propertySources'.
+				//Similar... but structure is more complex.
+				JSONArray propertySources = env.optJSONArray("propertySources");
+				if (propertySources!=null) {
+					for (Object _source : propertySources) {
+						if (_source instanceof JSONObject) {
+							JSONObject source = (JSONObject) _source;
+							String sourceName = source.optString("name");
+							if ("server.ports".equals(sourceName)) {
+								JSONObject props = source.optJSONObject("properties");
+								JSONObject valueObject = props.optJSONObject("local.server.port");
+								if (valueObject!=null) {
+									String portValue = valueObject.optString("value");
+									if (portValue!=null) {
+										return portValue;
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -317,7 +342,6 @@ public class SpringBootApp {
 		}
 		catch (InstanceNotFoundException e) {
 		}
-		
 		return null;
 	}
 
