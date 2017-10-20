@@ -82,10 +82,10 @@ public class SpringBootAppTest {
 	}
 
 	@Test public void dumpJvmInfo() throws Exception {
-//		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
-//		testApp.dumpJvmInfo();
-		SpringBootApp app = getAppContaining("language-server.jar");
-		app.dumpJvmInfo();
+		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
+		testApp.dumpJvmInfo();
+//		SpringBootApp app = getAppContaining("language-server.jar");
+//		app.dumpJvmInfo();
 	}
 
 	@Test public void getAllBootApps() throws Exception {
@@ -99,7 +99,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			int port = Integer.parseInt(testApp.getPort());
 			assertTrue(port > 0);
-			System.out.println("port = "+port);
+//			System.out.println("port = "+port);
 		});
 	}
 
@@ -108,7 +108,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String host = testApp.getHost();
 			assertTrue(StringUtil.hasText(host));
-			System.out.println("host = "+host);
+//			System.out.println("host = "+host);
 		});
 	}
 
@@ -117,7 +117,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String env = testApp.getEnvironment();
 			assertNonEmptyJsonObject(env);
-			System.out.println("env = "+env);
+//			System.out.println("env = "+env);
 		});
 	}
 
@@ -126,7 +126,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String beans = testApp.getBeans();
 			assertNonEmptyJsonObject(beans);
-			System.out.println("beans = "+beans);
+//			System.out.println("beans = "+beans);
 		});
 	}
 
@@ -135,7 +135,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String result = testApp.getRequestMappings();
 			assertNonEmptyJsonObject(result);
-			System.out.println("requestMappings = "+result);
+//			System.out.println("requestMappings = "+result);
 		});
 	}
 
@@ -144,7 +144,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String result = testApp.getAutoConfigReport();
 			assertNonEmptyJsonObject(result);
-			System.out.println("autoconfreport = "+result);
+//			System.out.println("autoconfreport = "+result);
 		});
 	}
 
