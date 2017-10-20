@@ -34,6 +34,7 @@ public class SpringBootAppTest {
 	
 //	private static final String appName = "actuator-client-15-test-subject"; // Boot 1.5 test app
 	private static final String appName = "actuator-client-20-test-subject"; //Boot 2.0 test app
+//	private static final String appName = "actuator-client-20-thin-test-subject"; //Boot 2.0 test app with THIN launcher
 	
 	private static final Duration TIMEOUT = Duration.ofSeconds(30); // in CI build starting the app takes longer than 10s sometimes.
 	//Output from CI build: Started ActuatorClientTestSubjectApplication in 22.962 seconds (JVM running for 26.028)
@@ -76,6 +77,14 @@ public class SpringBootAppTest {
 		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
 		Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
 		assertTrue(myProcess.isPresent());
+	}
+	
+	@Test
+	public void dumpJvmInfo() throws Exception {
+		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
+		testApp.dumpJvmInfo();
+//		SpringBootApp app = getAppContaining("language-server.jar");
+//		app.dumpJvmInfo();
 	}
 
 	@Ignore //Failing... not sure how to fix.

@@ -11,10 +11,13 @@
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -349,4 +352,27 @@ public class SpringBootApp {
 	public String toString() {
 		return "SpringBootApp [" +vmd.id() + ", "+vmd.displayName()+"]";
 	}
+
+	/**
+	 * For testing / investigation purposes. Dumps out as much information as possible
+	 * that can be onbtained from the jvm, without accessing JMX.
+	 */
+	public void dumpJvmInfo() throws IOException {
+		System.out.println("--- vm infos ----");
+		System.out.println("id = "+vm.id());
+		System.out.println("displayName = "+vmd.displayName());
+		dump("agentProperties", vm.getAgentProperties());
+		dump("systemProps", vm.getSystemProperties());
+		System.out.println("-----------------");
+	}
+
+	private void dump(String name, Properties props) {
+		System.out.println(name + " = {");
+		for (Entry<Object, Object> prop : props.entrySet()) {
+			System.out.println("  "+prop.getKey()+" = "+prop.getValue());
+		}
+		System.out.println("}");
+	}
+
+	
 }
