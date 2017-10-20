@@ -59,7 +59,8 @@ public abstract class LaunguageServerApp {
 	private static final String STANDALONE_STARTUP = "standalone-startup";
 	private static final int SERVER_STANDALONE_PORT = 5007;
 
-	public static void start(Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
+	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
+		System.setProperty("sts4.languageserver.name", name); //makes it easy to recognize language server processes.
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override
 			protected SimpleLanguageServer createServer() {
@@ -251,6 +252,5 @@ public abstract class LaunguageServerApp {
 	}
 
 	protected abstract SimpleLanguageServer createServer();
-
 
 }

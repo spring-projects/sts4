@@ -31,7 +31,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class Main {
 		
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> {
+		LaunguageServerApp.start("boot-properties", () -> {
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
 			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())));

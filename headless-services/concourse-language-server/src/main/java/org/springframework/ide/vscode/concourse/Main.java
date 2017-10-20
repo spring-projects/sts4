@@ -20,6 +20,6 @@ public class Main {
 	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.DEFAULT;
 
    	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> new ConcourseLanguageServer(OPTIONS));
+		LaunguageServerApp.start("concourse", () -> new ConcourseLanguageServer(OPTIONS));
 	}
 }

@@ -28,7 +28,7 @@ public class Main {
 			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
 		}
 		System.err.println("Redirecting log output to: "+logfile);
-		LaunguageServerApp.start(ManifestYamlLanguageServer::new);
+		LaunguageServerApp.start("cloudfoundry", ManifestYamlLanguageServer::new);
 	}
 
 }

@@ -25,7 +25,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start(() -> {
+		LaunguageServerApp.start("boot-java", () -> {
 
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
