@@ -35,7 +35,7 @@ public class SpringBootAppTest {
 //	private static final String appName = "actuator-client-15-test-subject"; // Boot 1.5 test app
 	private static final String appName = "actuator-client-20-test-subject"; //Boot 2.0 test app
 	
-	private static final Duration TIMEOUT = Duration.ofSeconds(10);
+	private static final Duration TIMEOUT = Duration.ofSeconds(20); // in CI build starting the app takes longer than 10s sometimes.
 	private static AsyncProcess testAppRunner;
 	private static SpringBootApp testApp;
 	
