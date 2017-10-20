@@ -31,17 +31,17 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.test.ACondition;
 
 public class SpringBootAppTest {
-	
+
 //	private static final String appName = "actuator-client-15-test-subject"; // Boot 1.5 test app
 	private static final String appName = "actuator-client-20-test-subject"; //Boot 2.0 test app
 //	private static final String appName = "actuator-client-20-thin-test-subject"; //Boot 2.0 test app with THIN launcher
-	
+
 	private static final Duration TIMEOUT = Duration.ofSeconds(30); // in CI build starting the app takes longer than 10s sometimes.
 	//Output from CI build: Started ActuatorClientTestSubjectApplication in 22.962 seconds (JVM running for 26.028)
 
 	private static AsyncProcess testAppRunner;
 	private static SpringBootApp testApp;
-	
+
 	@BeforeClass
 	public static void setupClass() throws Exception {
 		testAppRunner = startTestApplication(SpringBootAppTest.class.getResource("/"+appName+"-0.0.1-SNAPSHOT.jar"));
@@ -52,11 +52,11 @@ public class SpringBootAppTest {
 	private static AsyncProcess startTestApplication(URL jarUrl) throws Exception {
 		File jarFile = new File(jarUrl.toURI());
 		return new AsyncProcess(
-				new File("."), 
+				new File("."),
 				new ExternalCommand(
-					"java", 
-					"-Dserver.port=0", //let spring boot pick randomized free port 
-					"-jar", 
+					"java",
+					"-Dserver.port=0", //let spring boot pick randomized free port
+					"-jar",
 					jarFile.getAbsolutePath()
 				),
 				false
@@ -66,7 +66,7 @@ public class SpringBootAppTest {
 	private static SpringBootApp getAppContaining(String nameFragment) throws Exception {
 		return SpringBootApp.getAllRunningJavaApps().values().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() throws Exception {
 		testAppRunner.kill();
@@ -78,27 +78,25 @@ public class SpringBootAppTest {
 		Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
 		assertTrue(myProcess.isPresent());
 	}
-	
-	@Test
-	public void dumpJvmInfo() throws Exception {
-		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
-		testApp.dumpJvmInfo();
-//		SpringBootApp app = getAppContaining("language-server.jar");
-//		app.dumpJvmInfo();
+
+	@Test public void dumpJvmInfo() throws Exception {
+//		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
+//		testApp.dumpJvmInfo();
+		SpringBootApp app = getAppContaining("language-server.jar");
+		app.dumpJvmInfo();
 	}
 
-	@Ignore //Failing... not sure how to fix.
 	@Test public void getAllBootApps() throws Exception {
 		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningSpringApps();
 		Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
 		assertTrue(myProcess.isPresent());
 	}
-	
+
 	@Test
 	public void getPort() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
 			int port = Integer.parseInt(testApp.getPort());
-			assertTrue(port > 0); 
+			assertTrue(port > 0);
 			System.out.println("port = "+port);
 		});
 	}
@@ -106,7 +104,7 @@ public class SpringBootAppTest {
 	@Test
 	public void getHost() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String host = testApp.getHost(); 
+			String host = testApp.getHost();
 			assertTrue(StringUtil.hasText(host));
 			System.out.println("host = "+host);
 		});
@@ -115,7 +113,7 @@ public class SpringBootAppTest {
 	@Test
 	public void getEnvironment() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String env = testApp.getEnvironment(); 
+			String env = testApp.getEnvironment();
 			assertNonEmptyJsonObject(env);
 			System.out.println("env = "+env);
 		});
@@ -124,7 +122,7 @@ public class SpringBootAppTest {
 	@Test
 	public void getBeans() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String beans = testApp.getBeans(); 
+			String beans = testApp.getBeans();
 			assertNonEmptyJsonObject(beans);
 			System.out.println("beans = "+beans);
 		});
@@ -133,7 +131,7 @@ public class SpringBootAppTest {
 	@Test
 	public void getRequestMappings() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String result = testApp.getRequestMappings(); 
+			String result = testApp.getRequestMappings();
 			assertNonEmptyJsonObject(result);
 			System.out.println("requestMappings = "+result);
 		});
@@ -142,7 +140,7 @@ public class SpringBootAppTest {
 	@Test
 	public void getAutoConfigReport() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String result = testApp.getAutoConfigReport(); 
+			String result = testApp.getAutoConfigReport();
 			assertNonEmptyJsonObject(result);
 			System.out.println("autoconfreport = "+result);
 		});

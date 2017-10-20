@@ -56,11 +56,12 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
  */
 public abstract class LaunguageServerApp {
 
+	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
 	private static final String STANDALONE_STARTUP = "standalone-startup";
 	private static final int SERVER_STANDALONE_PORT = 5007;
 
 	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
-		System.setProperty("sts4.languageserver.name", name); //makes it easy to recognize language server processes.
+		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override
 			protected SimpleLanguageServer createServer() {

@@ -32,6 +32,7 @@ import javax.management.remote.JMXServiceURL;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.commons.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.tools.attach.VirtualMachine;
@@ -100,12 +101,32 @@ public class SpringBootApp {
 	}
 	
 	public boolean isSpringBootApp() throws Exception {
-		Properties props = this.vm.getSystemProperties();
-
-		String classpath = (String) props.get("java.class.path");
-		String[] cpElements = getClasspath(classpath);
-		return contains(cpElements, "spring-boot");
+		return (isSpringBootAppClasspath() || isSpringBootAppSysprops());
 	}
+	
+	private boolean isSpringBootAppSysprops() {
+		try {
+			Properties sysprops = this.vm.getSystemProperties();
+			return sysprops.getProperty("sts4.languageserver.name") == null 
+				&& sysprops.getProperty("java.protocol.handler.pkgs").equals("org.springframework.boot.loader");
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return false;
+	}
+
+	private boolean isSpringBootAppClasspath() {
+		try {
+			Properties props = this.vm.getSystemProperties();
+			String classpath = (String) props.get("java.class.path");
+			String[] cpElements = getClasspath(classpath);
+			return contains(cpElements, "spring-boot");
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return false;
+	}
+
 	
 	public boolean containsSystemProperty(Object key) {
 		try {
