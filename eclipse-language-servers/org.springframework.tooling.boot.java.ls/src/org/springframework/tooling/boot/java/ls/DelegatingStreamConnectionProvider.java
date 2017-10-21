@@ -16,11 +16,18 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.jsonrpc.messages.Message;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 /**
  * if the system property "boot-java-ls-port" exists, delegate to the socket-based
@@ -37,6 +44,14 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	
 	private StreamConnectionProvider provider;
 	private ResourceListener fResourceListener;
+	private LanguageServer languageServer;
+	
+	private final IPropertyChangeListener configListener = new IPropertyChangeListener() {
+		@Override
+		public void propertyChange(PropertyChangeEvent event) {
+			sendConfiguration();
+		}
+	};
 	
 	public DelegatingStreamConnectionProvider() {
 		String port = System.getProperty("boot-java-ls-port");
@@ -51,7 +66,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		
 	@Override
 	public Object getInitializationOptions(URI rootUri) {
-		installResourceChangeListener(rootUri);
 		return provider.getInitializationOptions(rootUri);
 	}
 
@@ -77,30 +91,38 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
 			fResourceListener = null;
 		}
+		BootJavaLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
 	}
 
-	private void installResourceChangeListener(URI rootPath) {
-		if (rootPath == null || fResourceListener != null) {
-			return;
-		}
-
-		IContainer[] containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(rootPath);
-		if (containers.length == 0) {
-			return;
-		}
-
-		for (IContainer c : containers) {
-			if (!(c instanceof IProject)) {
-				continue;
+	@Override
+	public void handleMessage(Message message, LanguageServer languageServer, URI rootURI) {
+		if (message instanceof ResponseMessage) {
+			ResponseMessage responseMessage = (ResponseMessage)message;
+			if (responseMessage.getResult() instanceof InitializeResult) {
+				this.languageServer = languageServer;
+				
+				sendConfiguration();
+				
+				// Add config listener
+				BootJavaLanguageServerPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(configListener);
+				
+				// Add resource listener
+				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
+						FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
+						FileSystems.getDefault().getPathMatcher("glob:**/build.gradle")
+				)));
 			}
-			IProject project = (IProject) c;
-			fResourceListener = new ResourceListener("org.eclipse.languageserver.languages.springbootjava", project, Arrays.asList(
-					FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
-					FileSystems.getDefault().getPathMatcher("glob:**/build.gradle")
-			));
-			project.getWorkspace().addResourceChangeListener(fResourceListener);
-
-			break;
 		}
 	}
+	
+	private void sendConfiguration() {
+		Map<String, Object> settings = new HashMap<>();
+		Map<String, Object> bootJavaObj = new HashMap<>();
+		Map<String, Object> bootHint = new HashMap<>();
+		bootHint.put("on", BootJavaLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_BOOT_HINTS));
+		bootJavaObj.put("boot-hints", bootHint);
+		settings.put("boot-java", bootJavaObj);
+		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+	}
+	
 }

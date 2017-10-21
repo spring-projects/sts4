@@ -42,5 +42,20 @@
             contentTypeId="org.eclipse.jdt.core.javaSource">
       </participant>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.springsource.ide.eclipse.commons.preferencePage"
+            class="org.springframework.tooling.boot.java.ls.BootJavaPreferencesPage"
+            id="org.springframework.tooling.boot.java.ls.page1"
+            name="Boot Java Language Server Extension">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.springframework.tooling.boot.java.ls.PrefsInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

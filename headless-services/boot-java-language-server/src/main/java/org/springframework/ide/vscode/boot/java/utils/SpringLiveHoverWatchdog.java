@@ -38,7 +38,9 @@ public class SpringLiveHoverWatchdog {
 	private final BootJavaHoverProvider hoverProvider;
 	private RunningAppProvider runningAppProvider;
 
-	private final Timer timer;
+	private boolean highlightsEnabled = true;
+
+	private Timer timer;
 
 
 	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider, RunningAppProvider runningAppProvider) {
@@ -46,23 +48,29 @@ public class SpringLiveHoverWatchdog {
 		this.hoverProvider = hoverProvider;
 		this.runningAppProvider = runningAppProvider;
 		this.watchedDocs = new ConcurrentSkipListSet<>();
-
-		this.timer = new Timer();
 	}
 
 	public void start() {
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				update();
-			}
-		};
+		if (highlightsEnabled && timer == null) {
+			this.timer = new Timer();
 
-		timer.scheduleAtFixedRate(task, 0, POLLING_INTERVAL_MILLISECONDS);
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					update();
+				}
+			};
+
+			timer.scheduleAtFixedRate(task, 0, POLLING_INTERVAL_MILLISECONDS);
+		}
 	}
 
 	public void shutdown() {
-		timer.cancel();
+		if (timer != null) {
+			timer.cancel();
+			timer = null;
+			watchedDocs.forEach(uri -> cleanupLiveHints(uri));
+		}
 	}
 
 	public void watchDocument(String docURI) {
@@ -79,18 +87,20 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	public void update(String docURI) {
-		try {
-			SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().stream()
-					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
-					.toArray(SpringBootApp[]::new);
+		if (highlightsEnabled) {
+			try {
+				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().stream()
+						.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
+						.toArray(SpringBootApp[]::new);
 
-			TextDocument doc = this.server.getTextDocumentService().get(docURI);
-			if (doc != null) {
-				Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
-				publishLiveHints(docURI, ranges);
+				TextDocument doc = this.server.getTextDocumentService().get(docURI);
+				if (doc != null) {
+					Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
+					publishLiveHints(docURI, ranges);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -107,11 +117,25 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	private void cleanupLiveHints(String docURI) {
-		// TODO: send client a message to cleanup live hover diagnostics data
+		publishLiveHints(docURI, new Range[0]);
 	}
 
 	private void cleanupResources() {
 		// TODO: close and cleanup open JMX connections and cached data
+	}
+
+	public void enableHighlights() {
+		if (!highlightsEnabled) {
+			highlightsEnabled = true;
+			start();
+		}
+	}
+
+	public void disableHighlights() {
+		if (highlightsEnabled) {
+			highlightsEnabled = false;
+			shutdown();
+		}
 	}
 
 }

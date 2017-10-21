@@ -25,6 +25,19 @@
   "activationEvents": [
     "onLanguage:java"
   ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Boot-Java Configuration",
+      "properties": {
+        "boot-java.boot-hints.on": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable Spring running Boot application live hints decorators in the source code"
+        }
+      }
+    }
+  },
   "main": "./out/lib/Main",
   "scripts": {
     "prepublish": "tsc -p .",

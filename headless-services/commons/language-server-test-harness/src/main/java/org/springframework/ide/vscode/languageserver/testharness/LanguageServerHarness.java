@@ -50,6 +50,7 @@ import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -88,6 +89,7 @@ import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -647,6 +649,10 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		Path path = Paths.get(fileUri);
 		String content = new String(Files.readAllBytes(path));
 		return newEditor(languageId, content, docUri);
+	}
+
+	public void changeConfiguration(Settings settings) {
+		server.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}
 
 	public S getServer() {

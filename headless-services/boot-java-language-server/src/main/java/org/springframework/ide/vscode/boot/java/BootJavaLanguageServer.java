@@ -74,14 +74,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final ProjectObserver projectObserver;
+	private final BootJavaConfig config;
 
 	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
 
 	private JavaProjectFinder projectFinder;
 
 	public BootJavaLanguageServer(LSFactory<BootJavaLanguageServerParams> _params) {
-		super("vscode-boot-java");
+		super("boot-java");
 		BootJavaLanguageServerParams serverParams = _params.create(this);
+
+		this.config = new BootJavaConfig();
 
 		propertyIndexProvider = serverParams.indexProvider;
 
@@ -133,6 +136,15 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
+
+		workspaceService.onDidChangeConfiguraton(settings -> {
+			config.handleConfigurationChange(settings);
+			if (config.isBootHintsEnabled()) {
+				liveHoverWatchdog.enableHighlights();
+			} else {
+				liveHoverWatchdog.disableHighlights();
+			}
+		});
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
@@ -294,5 +306,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	public SpringPropertyIndexProvider getSpringPropertyIndexProvider() {
 		return propertyIndexProvider;
+	}
+
+	public BootJavaConfig getConfig() {
+		return config;
 	}
 }

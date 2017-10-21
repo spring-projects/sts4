@@ -20,7 +20,7 @@ export function activate(context: VSCode.ExtensionContext) {
     let options: commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
-        extensionId: 'vscode-boot-java',
+        extensionId: 'boot-java',
         launcher: (context: VSCode.ExtensionContext) => 'org.springframework.boot.loader.JarLauncher',
         classpath: (context: VSCode.ExtensionContext) => {
             const classpath = [
@@ -37,7 +37,7 @@ export function activate(context: VSCode.ExtensionContext) {
         clientOptions: {
             documentSelector: ['java'],
             synchronize: {
-                configurationSection: 'vscode-boot-java'
+                configurationSection: 'boot-java'
             }
         }
     };

@@ -10,14 +10,22 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.java.ls;
 
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+
 /**
- * @author Martin Lippert
+ * Preferences initializer for Boot-Java LS extension
+ * 
+ * @author Alex Boyko
+ *
  */
-public class Constants {
-	
-	public static final String PLUGIN_ID = "org.springframework.tooling.boot.java.ls";
-	public static final String LANGUAGE_SERVER_VERSION = "0.0.10-SNAPSHOT.jar";
-	
-	public static final String PREF_BOOT_HINTS = "boot-java.boot-hints.on";
+public class PrefsInitializer extends AbstractPreferenceInitializer {
+
+	public PrefsInitializer() {
+	}
+
+	@Override
+	public void initializeDefaultPreferences() {
+		BootJavaLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_BOOT_HINTS, true);
+	}
 
 }

@@ -18,6 +18,15 @@ class BootJavaLanguageClient extends JavaProcessLanguageClient {
         // this.DEBUG = true;
     }
 
+    postInitialization(server) {
+        this.sendConfig(server);
+        this._disposable.add(atom.config.observe('boot-java', () => this.sendConfig(server)));
+    }
+
+    sendConfig(server) {
+        server.connection.didChangeConfiguration({ settings: {'boot-java': atom.config.get('boot-java') }});
+    }
+
     getGrammarScopes() {
         return ['source.java']
     }
@@ -44,7 +53,7 @@ class BootJavaLanguageClient extends JavaProcessLanguageClient {
     launchVmArgs(version) {
         return super.getOrInstallLauncher().then(lsJar => {
             const toolsJar = this.findJavaFile('lib', 'tools.jar');
-            if (!toolsJar) {
+            if (version < 9 && !toolsJar) {
                 // Notify the user that tool.jar is not found
                 const notification = atom.notifications.addWarning(`"Boot-Java" Package Functionality Limited`, {
                     dismissable: true,

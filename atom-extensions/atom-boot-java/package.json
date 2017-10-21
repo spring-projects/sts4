@@ -14,6 +14,13 @@
     "server/",
     "properties.json"
   ],
+  "configSchema": {
+    "boot-hints.on": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable/Disable Spring running Boot application live hints decorators in the source code"
+    }
+  },
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",

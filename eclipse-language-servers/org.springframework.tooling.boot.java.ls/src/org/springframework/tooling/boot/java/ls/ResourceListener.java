@@ -10,25 +10,20 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.java.ls;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.lsp4e.LanguageServersRegistry;
-import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
-import org.eclipse.lsp4e.ProjectSpecificLanguageServerWrapper;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
+import org.eclipse.lsp4j.services.LanguageServer;
 
 /**
  * Resource listener for LSP4E taken from CPP-LS
@@ -37,35 +32,29 @@ import org.eclipse.lsp4j.FileEvent;
  * @author Alex Boyko
  *
  */
-@SuppressWarnings("restriction")
 public class ResourceListener implements IResourceChangeListener {
 	
-	private final String lsId;
-	private final IProject fProject;
+	private final LanguageServer server;
 	private List<PathMatcher> pathMatchers;
 
-	ResourceListener(String lsId, IProject project, List<PathMatcher> pathMatchers) {
-		this.lsId = lsId;
-		fProject = project;
+	ResourceListener(LanguageServer server, List<PathMatcher> pathMatchers) {
+		this.server = server;
 		this.pathMatchers = pathMatchers;
 	}
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		LanguageServerDefinition definition = LanguageServersRegistry.getInstance().getDefinition(lsId);
-		ProjectSpecificLanguageServerWrapper wrapper = getLanguageSeverWrapper(definition);
-		if (event.getType() != IResourceChangeEvent.POST_CHANGE || !isRelevantDelta(event.getDelta())
-				|| wrapper == null) {
+		if (event.getType() != IResourceChangeEvent.POST_CHANGE || !isRelevantDelta(event.getDelta())) {
 			return;
 		}
 
-		sendFileEvents(wrapper, createFileEventsFromResourceEvent(event));
+		sendFileEvents(createFileEventsFromResourceEvent(event));
 	}
 
-	private static void sendFileEvents(ProjectSpecificLanguageServerWrapper wrapper, List<FileEvent> fileEvents) {
+	private void sendFileEvents(List<FileEvent> fileEvents) {
 		if (!fileEvents.isEmpty()) {
 			DidChangeWatchedFilesParams params = new DidChangeWatchedFilesParams(fileEvents);
-			wrapper.getServer().getWorkspaceService().didChangeWatchedFiles(params);
+			server.getWorkspaceService().didChangeWatchedFiles(params);
 		}
 	}
 
@@ -89,15 +78,6 @@ public class ResourceListener implements IResourceChangeListener {
 
 	private boolean isApplicableFile(IFile resource) {
 		return pathMatchers.stream().filter(m -> m.matches(resource.getLocation().toFile().toPath())).findFirst().isPresent();
-	}
-
-	private ProjectSpecificLanguageServerWrapper getLanguageSeverWrapper(LanguageServerDefinition definition) {
-		try {
-			return LanguageServiceAccessor.getLSWrapperForConnection(fProject, definition);
-		} catch (IOException e) {
-			// Do nothing
-			return null;
-		}
 	}
 
 	private static boolean isRelevantDelta(IResourceDelta delta) {
