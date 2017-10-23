@@ -116,8 +116,10 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			try {
 				for (SpringBootApp app : runningApps) {
 					String autoConfigRecord = app.getAutoConfigReport();
-					JSONObject autoConfigJson = new JSONObject(autoConfigRecord);
-					return Optional.of(getConditionFromPositiveMatches(annotation, autoConfigJson));
+					if (autoConfigRecord != null) {
+						JSONObject autoConfigJson = new JSONObject(autoConfigRecord);
+						return Optional.of(getConditionFromPositiveMatches(annotation, autoConfigJson));
+					}
 				}
 			} catch (Exception e) {
 				Log.log(e);
