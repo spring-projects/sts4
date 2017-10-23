@@ -105,6 +105,11 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
+		public MockAppBuilder getAutoConfigReport(String autoConfigReport) throws Exception {
+			when(app.getAutoConfigReport()).thenReturn(autoConfigReport);
+			return this;
+		}
+
 		/**
 		 * Builds the mock app and adds it to the app provider
 		 */
