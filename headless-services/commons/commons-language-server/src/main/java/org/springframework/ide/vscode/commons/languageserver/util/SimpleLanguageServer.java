@@ -148,12 +148,12 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 					(String)params.getArguments().get(0), params.getArguments().get(1)
 			);
 			return quickfixResolve(quickfixParams)
-			.then((QuickfixEdit edit) -> {
+			.flatMap((QuickfixEdit edit) -> {
 				Mono<ApplyWorkspaceEditResponse> applyEdit = Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit.workspaceEdit)));
 				Mono<Object> moveCursor = edit.cursorMovement==null
 						? Mono.just(new ApplyWorkspaceEditResponse(true))
 						: Mono.fromFuture(client.moveCursor(edit.cursorMovement));
-				return applyEdit.then(r -> r.getApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
+				return applyEdit.flatMap(r -> r.getApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
 			})
 			.toFuture();
 		}
@@ -411,7 +411,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 //			}
 			engine.reconcile(doc, problems);
 		})
-		.otherwise(error -> {
+		.onErrorResume(error -> {
 			Log.log(error);
 			return Mono.empty();
 		})
