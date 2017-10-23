@@ -12,9 +12,7 @@ package org.springframework.ide.vscode.boot.java;
 
 import java.io.IOException;
 
-import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 /**
@@ -26,9 +24,6 @@ public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		LaunguageServerApp.start("boot-java", () -> {
-
-			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
 			SimpleLanguageServer server = new BootJavaLanguageServer(
 					BootJavaLanguageServerParams.createDefault()
 			);
