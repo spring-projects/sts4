@@ -1,18 +1,11 @@
 package example;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class HelloConfig2 {
-
-	@Bean
-	@ConditionalOnBean
-	public Hello hi() {
-		return null;
-	}
+public class ConditionalOnMissingBeanConfig {
 	
 	@Bean
 	@ConditionalOnMissingBean

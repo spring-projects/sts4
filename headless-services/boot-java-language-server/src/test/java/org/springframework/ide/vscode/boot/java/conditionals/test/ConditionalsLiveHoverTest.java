@@ -43,7 +43,7 @@ public class ConditionalsLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloConfig.java";
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/ConditionalOnMissingBeanConfig.java";
 
 		harness.intialize(directory);
 
@@ -59,7 +59,7 @@ public class ConditionalsLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloConfig2.java";
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/ConditionalOnBeanConfig.java";
 
 
 		// Build a mock running boot app
@@ -70,7 +70,7 @@ public class ConditionalsLiveHoverTest {
 			.processId("22022")
 			.host("cfapps.io")
 			.processName("test-conditionals-live-hover")
-			.getAutoConfigReport("{\"positiveMatches\":{\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
+			.getAutoConfigReport("{\"positiveMatches\":{\"ConditionalOnBeanConfig#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
 			.build();
 
 		harness.intialize(directory);
@@ -87,13 +87,13 @@ public class ConditionalsLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
-		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/HelloConfig.java";
+		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/ConditionalOnMissingBeanConfig.java";
 
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).containsLanguageServerProcessPropery(false).port("1111")
 				.processId("22022").host("cfapps.io").processName("test-conditionals-live-hover")
 				.getAutoConfigReport(
-						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 
 		harness.intialize(directory);
