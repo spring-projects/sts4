@@ -108,7 +108,9 @@ public class SpringBootApp {
 		try {
 			Properties sysprops = this.vm.getSystemProperties();
 			return sysprops.getProperty("sts4.languageserver.name") == null
-				&& sysprops.getProperty("java.protocol.handler.pkgs").equals("org.springframework.boot.loader");
+				// Note: java.protocol.handler.pkgs may be not be in system properties, and result in NPE (at least in Mac OS)
+			    // To avoid NPE, just reversed the equality check
+				&& "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
 		} catch (Exception e) {
 			Log.log(e);
 		}
