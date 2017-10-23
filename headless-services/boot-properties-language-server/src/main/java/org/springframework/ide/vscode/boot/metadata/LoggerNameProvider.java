@@ -45,7 +45,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2()))
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
-		.flatMap(l -> Flux.fromIterable(l))
+		.flatMapIterable(l -> l)
 		.map(t -> t.getT1());
 	}
 
