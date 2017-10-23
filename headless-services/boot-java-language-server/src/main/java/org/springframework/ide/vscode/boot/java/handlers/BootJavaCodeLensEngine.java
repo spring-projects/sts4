@@ -16,9 +16,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
-import org.eclipse.lsp4j.Command;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -58,7 +55,7 @@ public class BootJavaCodeLensEngine {
 
 	private CompletableFuture<List<? extends CodeLens>> provideCodeLenses(TextDocument doc) {
 		List<CodeLens> result = new ArrayList<>();
-
+/**
 		CodeLens codeLens = new CodeLens();
 
 		Range range = new Range();
@@ -71,7 +68,7 @@ public class BootJavaCodeLensEngine {
 
 		codeLens.setData("some data");
 
-		result.add(codeLens);
+		result.add(codeLens); */
 		return CompletableFuture.completedFuture(result);
 	}
 
