@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
@@ -83,51 +84,52 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	public Range[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
 		List<Range> result = new ArrayList<>();
-		try {
-			IJavaProject project = getProject(document);
-			CompilationUnit cu = parse(document, project);
 
-			cu.accept(new ASTVisitor() {
-				@Override
-				public boolean visit(SingleMemberAnnotation node) {
-					try {
-						extractLiveHints(node, document, runningBootApps, result);
-					}
-					catch (Exception e) {
-						Log.log(e);
-					}
+		getProject(document).ifPresent(project -> {
+			try {
+				CompilationUnit cu = parse(document, project);
 
-					return super.visit(node);
-				}
+				cu.accept(new ASTVisitor() {
+					@Override
+					public boolean visit(SingleMemberAnnotation node) {
+						try {
+							extractLiveHints(node, document, runningBootApps, result);
+						}
+						catch (Exception e) {
+							Log.log(e);
+						}
 
-				@Override
-				public boolean visit(NormalAnnotation node) {
-					try {
-						extractLiveHints(node, document, runningBootApps, result);
-					}
-					catch (Exception e) {
-						Log.log(e);
+						return super.visit(node);
 					}
 
-					return super.visit(node);
-				}
+					@Override
+					public boolean visit(NormalAnnotation node) {
+						try {
+							extractLiveHints(node, document, runningBootApps, result);
+						}
+						catch (Exception e) {
+							Log.log(e);
+						}
 
-				@Override
-				public boolean visit(MarkerAnnotation node) {
-					try {
-						extractLiveHints(node, document, runningBootApps, result);
-					}
-					catch (Exception e) {
-						Log.log(e);
+						return super.visit(node);
 					}
 
-					return super.visit(node);
-				}
-			});
-		}
-		catch (Exception e) {
-			Log.log(e);
-		}
+					@Override
+					public boolean visit(MarkerAnnotation node) {
+						try {
+							extractLiveHints(node, document, runningBootApps, result);
+						}
+						catch (Exception e) {
+							Log.log(e);
+						}
+
+						return super.visit(node);
+					}
+				});
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		});
 
 		return result.toArray(new Range[result.size()]);
 	}
@@ -149,16 +151,14 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	private CompletableFuture<Hover> provideHover(TextDocument document, int offset) throws Exception {
-		IJavaProject project = getProject(document);
-		CompilationUnit cu = parse(document, project);
-
-		ASTNode node = NodeFinder.perform(cu, offset, 0);
-
-		if (node != null) {
-			System.out.println("AST node found: " + node.getClass().getName());
-			return provideHoverForAnnotation(node, offset, document, project);
+		IJavaProject project = getProject(document).orElse(null);
+		if (project!=null) {
+			CompilationUnit cu = parse(document, project);
+			ASTNode node = NodeFinder.perform(cu, offset, 0);
+			if (node != null) {
+				return provideHoverForAnnotation(node, offset, document, project);
+			}
 		}
-
 		return null;
 	}
 
@@ -211,8 +211,8 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private IJavaProject getProject(IDocument doc) throws Exception {
-		return this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
+	private Optional<IJavaProject> getProject(IDocument doc) {
+		return this.projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 	}
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {
