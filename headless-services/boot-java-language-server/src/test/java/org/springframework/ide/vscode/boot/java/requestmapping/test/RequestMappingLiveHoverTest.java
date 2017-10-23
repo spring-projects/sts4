@@ -49,7 +49,6 @@ public class RequestMappingLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder()
 			.isSpringBootApp(true)
-			.containsLanguageServerProcessPropery(false)
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
@@ -82,7 +81,6 @@ public class RequestMappingLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder()
 			.isSpringBootApp(true)
-			.containsLanguageServerProcessPropery(false)
 			.port("999")
 			.processId("76543")
 			.host("cfapps.io")

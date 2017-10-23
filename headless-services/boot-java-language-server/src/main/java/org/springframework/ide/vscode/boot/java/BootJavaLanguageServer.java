@@ -68,8 +68,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class BootJavaLanguageServer extends SimpleLanguageServer {
 
-	public static final String LANGUAGE_SERVER_PROCESS_PROPERTY = "spring-boot-language-server";
-
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final SpringIndexer indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
@@ -88,8 +86,6 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		this.config = new BootJavaConfig();
 
 		propertyIndexProvider = serverParams.indexProvider;
-
-		System.setProperty(LANGUAGE_SERVER_PROCESS_PROPERTY, LANGUAGE_SERVER_PROCESS_PROPERTY);
 
 		JavaProjectFinder javaProjectFinder = serverParams.projectFinder;
 		SimpleWorkspaceService workspaceService = getWorkspaceService();

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.mockito.Mockito;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -91,12 +90,6 @@ public class MockRunningAppProvider {
 
 		public MockAppBuilder isSpringBootApp(boolean isBoot) throws Exception {
 			when(app.isSpringBootApp()).thenReturn(isBoot);
-			return this;
-		}
-
-		public MockAppBuilder containsLanguageServerProcessPropery(boolean hasProperty) {
-			when(app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
-					.thenReturn(hasProperty);
 			return this;
 		}
 

@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -89,10 +88,7 @@ public class SpringLiveHoverWatchdog {
 	public void update(String docURI) {
 		if (highlightsEnabled) {
 			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().stream()
-						.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
-						.toArray(SpringBootApp[]::new);
-
+				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 				TextDocument doc = this.server.getTextDocumentService().get(docURI);
 				if (doc != null) {
 					Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);

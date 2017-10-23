@@ -225,9 +225,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
 		try {
-			return runningAppProvider.getAllRunningSpringApps().stream()
-					.filter((app) -> !app.containsSystemProperty(BootJavaLanguageServer.LANGUAGE_SERVER_PROCESS_PROPERTY))
-					.toArray(SpringBootApp[]::new);
+			return runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 		} catch (Exception e) {
 			Log.log(e);
 			return new SpringBootApp[0];

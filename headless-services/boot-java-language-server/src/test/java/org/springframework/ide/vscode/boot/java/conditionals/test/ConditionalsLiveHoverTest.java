@@ -65,7 +65,6 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder()
 			.isSpringBootApp(true)
-			.containsLanguageServerProcessPropery(false)
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
@@ -90,7 +89,7 @@ public class ConditionalsLiveHoverTest {
 		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/ConditionalOnMissingBeanConfig.java";
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).containsLanguageServerProcessPropery(false).port("1111")
+		mockAppProvider.builder().isSpringBootApp(true).port("1111")
 				.processId("22022").host("cfapps.io").processName("test-conditionals-live-hover")
 				.getAutoConfigReport(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
