@@ -10,11 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+
 import org.junit.Before;
+import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 public class ConditionalsLiveHoverTest {
 
@@ -30,4 +38,47 @@ public class ConditionalsLiveHoverTest {
 				.build();
 	}
 
+	@Test
+	public void testNoLiveHoverNoRunningApp() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloConfig.java";
+
+		harness.intialize(directory);
+
+		assertTrue("Expected no mock running boot apps, but found: " + mockAppProvider.mockedApps,
+				mockAppProvider.mockedApps.isEmpty());
+
+		Editor editorWithMethodLiveHover = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editorWithMethodLiveHover.assertNoHover("@ConditionalOnMissingBean");
+	}
+
+	@Test
+	public void testLiveHoverConditionalOnMissingBean() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloConfig.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.containsLanguageServerProcessPropery(false)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-conditionals-live-hover")
+			.getAutoConfigReport("{\"positiveMatches\":{\"HelloConfig#mising\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHoverContains("@ConditionalOnMissingBean", "Condition: OnBeanCondition\n" +
+				"\n" +
+				"Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans");
+
+	}
 }
