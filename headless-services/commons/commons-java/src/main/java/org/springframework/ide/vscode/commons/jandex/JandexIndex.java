@@ -221,8 +221,9 @@ public class JandexIndex {
 								// If not found look at indices owned by this
 								// JandexIndex instance
 								.orElseGet(() -> streamOfIndices()
-										.map(e -> Tuples.of(e.getT1(), e.getT2().getClassByName(fqName)))
-										.filter(e -> e.getT2() != null).map(e -> createType(e)).findFirst()
+										.map(e -> Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName))))
+										.filter(t -> t.getT2().isPresent())
+										.map(e -> createType(Tuples.of(e.getT1(), e.getT2().get()))).findFirst()
 										.orElse(null));
 
 	}
