@@ -50,7 +50,7 @@ public class SpringLiveHoverWatchdog {
 		this.watchedDocs = new ConcurrentSkipListSet<>();
 	}
 
-	public void start() {
+	public synchronized void start() {
 		if (highlightsEnabled && timer == null) {
 			this.timer = new Timer();
 
@@ -65,7 +65,7 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
-	public void shutdown() {
+	public synchronized void shutdown() {
 		if (timer != null) {
 			timer.cancel();
 			timer = null;
@@ -124,14 +124,14 @@ public class SpringLiveHoverWatchdog {
 		// TODO: close and cleanup open JMX connections and cached data
 	}
 
-	public void enableHighlights() {
+	public synchronized void enableHighlights() {
 		if (!highlightsEnabled) {
 			highlightsEnabled = true;
 			start();
 		}
 	}
 
-	public void disableHighlights() {
+	public synchronized void disableHighlights() {
 		if (highlightsEnabled) {
 			highlightsEnabled = false;
 			shutdown();
