@@ -106,17 +106,6 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder, serverParams.runningAppProvider);
 		documents.onHover(hoverInfoProvider);
 
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider);
-		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			if (testHightlighter != null) {
-				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
-			} else {
-				liveHoverWatchdog.watchDocument(doc.getUri());
-				liveHoverWatchdog.update(doc.getUri());
-			}
-		});
-
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
 		documents.onReferences(referencesHandler);
 
@@ -134,6 +123,20 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
+		projectFinder = serverParams.projectFinder;
+		projectObserver = serverParams.projectObserver;
+
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider, projectFinder, projectObserver);
+		documents.onDidChangeContent(params -> {
+			TextDocument doc = params.getDocument();
+			if (testHightlighter != null) {
+				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
+			} else {
+				liveHoverWatchdog.watchDocument(doc.getUri());
+				liveHoverWatchdog.update(doc.getUri());
+			}
+		});
+
 		workspaceService.onDidChangeConfiguraton(settings -> {
 			config.handleConfigurationChange(settings);
 			if (config.isBootHintsEnabled()) {
@@ -143,8 +146,6 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			}
 		});
 
-		projectFinder = serverParams.projectFinder;
-		projectObserver = serverParams.projectObserver;
 	}
 
 	public void setMaxCompletionsNumber(int number) {
@@ -156,7 +157,6 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		CompletableFuture<InitializeResult> result = super.initialize(params);
 
 		this.indexer.initialize(this.getWorkspaceRoot());
-		this.liveHoverWatchdog.start();
 
 		return result;
 	}

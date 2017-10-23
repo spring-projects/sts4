@@ -15,14 +15,19 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -41,16 +46,49 @@ public class SpringLiveHoverWatchdog {
 
 	private Timer timer;
 
+	private JavaProjectFinder projectFinder;
 
-	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider, RunningAppProvider runningAppProvider) {
+	private void refreshEnablement() {
+		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.stream());
+		if (shouldEnable) {
+			start();
+		} else {
+			shutdown();
+		}
+	}
+
+	private boolean hasInterestingProject(Stream<String> uris) {
+		return uris.anyMatch(uri -> projectFinder.find(new TextDocumentIdentifier(uri)).isPresent());
+	}
+
+	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider, RunningAppProvider runningAppProvider, JavaProjectFinder projectFinder, ProjectObserver projectChanges) {
 		this.server = server;
 		this.hoverProvider = hoverProvider;
 		this.runningAppProvider = runningAppProvider;
+		this.projectFinder = projectFinder;
 		this.watchedDocs = new ConcurrentSkipListSet<>();
+		projectChanges.addListener(new ProjectObserver.Listener() {
+
+			@Override
+			public void deleted(IJavaProject project) {
+				refreshEnablement();
+			}
+
+			@Override
+			public void created(IJavaProject project) {
+				refreshEnablement();
+			}
+
+			@Override
+			public void changed(IJavaProject project) {
+				refreshEnablement();
+			}
+		});
 	}
 
-	public synchronized void start() {
+	private synchronized void start() {
 		if (highlightsEnabled && timer == null) {
+			Log.info("Starting SpringLiveHoverWatchdog");
 			this.timer = new Timer();
 
 			TimerTask task = new TimerTask() {
@@ -66,23 +104,26 @@ public class SpringLiveHoverWatchdog {
 
 	public synchronized void shutdown() {
 		if (timer != null) {
+			Log.info("Shutting down SpringLiveHoverWatchdog");
 			timer.cancel();
 			timer = null;
 			watchedDocs.forEach(uri -> cleanupLiveHints(uri));
 		}
 	}
 
-	public void watchDocument(String docURI) {
+	public synchronized void watchDocument(String docURI) {
 		this.watchedDocs.add(docURI);
+		refreshEnablement();
 	}
 
-	public void unwatchDocument(String docURI) {
+	public synchronized void unwatchDocument(String docURI) {
 		this.watchedDocs.remove(docURI);
 		cleanupLiveHints(docURI);
 
 		if (watchedDocs.size() == 0) {
 			cleanupResources();
 		}
+		refreshEnablement();
 	}
 
 	public void update(String docURI) {
@@ -123,14 +164,14 @@ public class SpringLiveHoverWatchdog {
 	public synchronized void enableHighlights() {
 		if (!highlightsEnabled) {
 			highlightsEnabled = true;
-			start();
+			refreshEnablement();
 		}
 	}
 
 	public synchronized void disableHighlights() {
 		if (highlightsEnabled) {
 			highlightsEnabled = false;
-			shutdown();
+			refreshEnablement();
 		}
 	}
 
