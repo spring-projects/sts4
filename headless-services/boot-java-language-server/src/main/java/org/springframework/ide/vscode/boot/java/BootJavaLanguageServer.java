@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
+import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
@@ -262,6 +263,14 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentHoverProvider());
+
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
