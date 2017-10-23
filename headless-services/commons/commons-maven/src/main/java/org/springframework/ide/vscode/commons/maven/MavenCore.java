@@ -94,7 +94,7 @@ public class MavenCore {
 					if (javaVersion == null) {
 						javaVersion = "8";
 					}
-					URL javadocUrl = new URL("http://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
+					URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
 					return new HtmlJavadocProvider((type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER.sourceUrl(javadocUrl, type));
 				} catch (MalformedURLException e) {
 					Log.log(e);
