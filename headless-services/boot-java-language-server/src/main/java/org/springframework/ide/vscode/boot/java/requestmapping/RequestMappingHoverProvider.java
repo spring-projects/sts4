@@ -100,16 +100,17 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		try {
 			for (SpringBootApp app : runningApps) {
 				String mappings = app.getRequestMappings();
-				JSONObject requestMappings = new JSONObject(mappings);
-
-				String rawPath = getRawPath(annotation, requestMappings);
-				if (rawPath != null) {
-					String path = UrlUtil.extractPath(rawPath);
-					if (path != null) {
-						String rawMethod = getRawMethod(annotation, requestMappings);
-						JLRMethod parsedMethod = JLRMethodParser.parse(rawMethod);
-						if (methodMatchesAnnotation(annotation, parsedMethod)) {
-							return Optional.of(new RequestMappingMethod(path, parsedMethod, app));
+				if (mappings!=null) {
+					JSONObject requestMappings = new JSONObject(mappings);
+					String rawPath = getRawPath(annotation, requestMappings);
+					if (rawPath != null) {
+						String path = UrlUtil.extractPath(rawPath);
+						if (path != null) {
+							String rawMethod = getRawMethod(annotation, requestMappings);
+							JLRMethod parsedMethod = JLRMethodParser.parse(rawMethod);
+							if (methodMatchesAnnotation(annotation, parsedMethod)) {
+								return Optional.of(new RequestMappingMethod(path, parsedMethod, app));
+							}
 						}
 					}
 				}
