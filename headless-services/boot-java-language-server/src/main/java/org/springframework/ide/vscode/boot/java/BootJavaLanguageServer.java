@@ -262,13 +262,24 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentHoverProvider());
 
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE, new ConditionalsLiveHoverProvider());
       	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_CLASS, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_NOT_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_ENDPOINT, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_EXPRESSION, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JAVA, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JNDI, new ConditionalsLiveHoverProvider());
+      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_SINGLE_CANDIDATE, new ConditionalsLiveHoverProvider());
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
