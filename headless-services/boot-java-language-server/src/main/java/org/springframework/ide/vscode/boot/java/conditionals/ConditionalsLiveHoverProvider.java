@@ -121,7 +121,10 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 					String autoConfigRecord = app.getAutoConfigReport();
 					if (autoConfigRecord != null) {
 						JSONObject autoConfigJson = new JSONObject(autoConfigRecord);
-						return Optional.of(getConditionFromPositiveMatches(annotation, autoConfigJson));
+						List<RunningAppConditional> conditionalsFromPositiveMatches = getConditionals(annotation, autoConfigJson);
+						if(!conditionalsFromPositiveMatches.isEmpty()) {
+							return Optional.of(conditionalsFromPositiveMatches);
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -137,7 +140,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		 * @return non-null list of conditionals parsed from an autoconfig report. List
 		 *         may be empty.
 		 */
-		private List<RunningAppConditional> getConditionFromPositiveMatches(Annotation annotation,
+		private List<RunningAppConditional> getConditionals(Annotation annotation,
 				JSONObject autoConfigJson) {
 			List<RunningAppConditional> conditions = new ArrayList<>();
 
