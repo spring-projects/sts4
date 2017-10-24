@@ -12,22 +12,26 @@ package org.springframework.ide.vscode.boot.java.profiles;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Kris De Volder
@@ -74,14 +78,65 @@ public class ActiveProfilesProvider implements HoverProvider {
 
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
-		try {
-			if (runningApps.length > 0) {
-				Name node = annotation.getTypeName();
-				return ImmutableList.of(doc.toRange(node.getStartPosition(), node.getLength()));
-			}
-		} catch (BadLocationException e) {
-			Log.log(e);
+		if (runningApps.length > 0) {
+			Builder<Range> ranges = ImmutableList.builder();
+			nameRange(doc, annotation).ifPresent(ranges::add);
+
+			Set<String> allActiveProfiles = getAllActiveProfiles(runningApps);
+			annotation.accept(new ASTVisitor() {
+				@Override
+				public boolean visit(StringLiteral node) {
+					String value = node.getLiteralValue();
+					if (value!=null && allActiveProfiles.contains(value)) {
+						rangeOf(doc, node).ifPresent(ranges::add);
+					}
+					return true;
+				}
+			});
+			return ranges.build();
 		}
 		return ImmutableList.of();
+	}
+
+	private static Set<String> getAllActiveProfiles(SpringBootApp[] runningApps) {
+		ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+		for (SpringBootApp app : runningApps) {
+			List<String> profiles = app.getActiveProfiles();
+			if (profiles!=null) {
+				builder.addAll(app.getActiveProfiles());
+			}
+		}
+		return builder.build();
+	}
+
+	private static Optional<Range> nameRange(TextDocument doc, Annotation annotation) {
+		try {
+			int start = annotation.getTypeName().getStartPosition();
+			int len = annotation.getTypeName().getLength();
+			if (doc.getSafeChar(start-1)=='@') {
+				start--; len++;
+			}
+			return Optional.of(doc.toRange(start, len));
+		} catch (Exception e) {
+			Log.log(e);
+			return Optional.empty();
+		}
+	}
+
+	private static Optional<Range> rangeOf(TextDocument doc, StringLiteral node) {
+		try {
+			int start = node.getStartPosition();
+			int end = start + node.getLength();
+			if (doc.getSafeChar(start)=='"') {
+				start++;
+			}
+			if (doc.getSafeChar(end-1)=='"') {
+				end--;
+			}
+			return Optional.of(doc.toRange(start, end-start));
+		} catch (Exception e) {
+			Log.log(e);
+			return Optional.empty();
+		}
 	}
 }

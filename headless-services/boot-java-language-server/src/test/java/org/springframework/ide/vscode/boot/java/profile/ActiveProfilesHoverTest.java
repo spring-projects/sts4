@@ -60,17 +60,20 @@ public class ActiveProfilesHoverTest {
 				"public class LocalConfig {\n" +
 				"}"
 		);
-		editor.assertHoverContains("@Profile", "testing-profile");
-		editor.assertHoverContains("@Profile", "local-profile");
-		editor.assertHoverContains("@Profile", "foo.bar.RunningApp");
-		editor.assertHoverContains("@Profile", "22022");
 
-		//TODO:
-//		editor.assertHighlights(
-//				"@Profile", "local-profile", "testing-profile"
-//		);
+		String[] hoverSites = {
+				"@Profile", "local-profile", "testing-profile"
+		};
+		editor.assertHighlights(
+				hoverSites
+		);
+		for (String hoverOver : hoverSites) {
+			editor.assertHoverContains(hoverOver, "testing-profile");
+			editor.assertHoverContains(hoverOver, "local-profile");
+			editor.assertHoverContains(hoverOver, "foo.bar.RunningApp");
+			editor.assertHoverContains(hoverOver, "22022");
+		}
 	}
-
 
 	@Test
 	public void testActiveProfileHover_Unknown() throws Exception {
@@ -97,6 +100,41 @@ public class ActiveProfilesHoverTest {
 				"}"
 		);
 		editor.assertHoverContains("@Profile", "Process [PID=22022, name=`foo.bar.RunningApp`] : _Unknown_");
+		editor.assertHighlights("@Profile");
+	}
+
+	@Test
+	public void testActiveProfileHoverMixedKnownAndUnknown() throws Exception {
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("22022")
+			.processName("foo.bar.NoActuatorApp")
+			.profilesUnknown()
+			.build();
+
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("3456")
+			.processName("foo.bar.NormalApp")
+			.profiles("fancy")
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"@Profile({\"unknown\", \"inactive\", \"fancy\"})\n" +
+				"public class LocalConfig {\n" +
+				"\n" +
+				"}"
+		);
+
+		editor.assertHighlights("@Profile", "fancy");
+		editor.assertHoverContains("@Profile", "Unknown");
+		editor.assertHoverContains("@Profile", "fancy");
 	}
 
 	@Test
@@ -114,5 +152,6 @@ public class ActiveProfilesHoverTest {
 				"}"
 		);
 		editor.assertNoHover("@Profile");
+		editor.assertHighlights(/*NONE*/);
 	}
 }
