@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.profile;
 import java.time.Duration;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
