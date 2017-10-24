@@ -11,12 +11,14 @@
 
 package org.springframework.ide.vscode.languageserver.testharness;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +28,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -46,11 +52,13 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
+import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Flux;
 
@@ -109,8 +117,21 @@ public class Editor {
 			return p1.getCharacter() - p2.getCharacter();
 		}
 	};
+	private static final Comparator<Range> RANGE_COMPARATOR = new Comparator<Range>() {
+		@Override
+		public int compare(Range o1, Range o2) {
+			int diff = compare(o1.getStart(), o2.getStart());
+			if (diff!=0) return diff;
+			return compare(o1.getEnd(), o2.getEnd());
+		}
+		private int compare(Position p1, Position p2) {
+			int d = p1.getLine() - p2.getLine();
+			if (d!=0) return d;
+			return p1.getCharacter() - p2.getCharacter();
+		}
+	};
 
-	private LanguageServerHarness harness;
+	private LanguageServerHarness<?> harness;
 	private TextDocumentInfo doc;
 
 	private int selectionEnd;
@@ -189,6 +210,19 @@ public class Editor {
 		}
 		return buf.toString();
 	}
+
+
+	public List<Range> assertHighlights(String... expectedHighlights) throws Exception {
+		HighlightParams highlights = harness.getHighlights(doc);
+		List<Range> ranges = new ArrayList<>(highlights.getRanges());
+		Collections.sort(ranges, RANGE_COMPARATOR);
+		List<String> actualHighlights = ranges.stream()
+			.map(this::getText)
+			.collect(Collectors.toList());
+		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
+		return ranges;
+	}
+
 
 	/**
 	 * Get the editor text, with cursor markers inserted (for easy textual comparison
@@ -806,5 +840,4 @@ public class Editor {
 	public void setCursor(Position position) {
 		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
-
 }

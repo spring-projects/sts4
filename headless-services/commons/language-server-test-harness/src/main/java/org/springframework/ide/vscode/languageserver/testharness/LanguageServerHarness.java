@@ -24,8 +24,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +36,10 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -99,6 +104,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 import reactor.core.publisher.Mono;
 
@@ -116,6 +123,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 	private InitializeResult initResult;
 
 	private Map<String,TextDocumentInfo> documents = new HashMap<>();
+	private Multimap<String, CompletableFuture<HighlightParams>> highlights = MultimapBuilder.hashKeys().linkedListValues().build();
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 	private List<Editor> activeEditors = new ArrayList<>();
 
@@ -124,6 +132,8 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		this.factory = factory;
 		this.defaultLanguageId = defaultLanguageId;
 	}
+
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMinutes(1000);
 
 	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);
@@ -176,6 +186,21 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		this.diagnostics.put(diags.getUri(), diags);
 	}
 
+	private void receiveHighlights(HighlightParams highlights) {
+		Collection<CompletableFuture<HighlightParams>>requestors = ImmutableList.of();
+		synchronized (this) {
+			String uri = highlights.getDoc().getUri();
+			if (uri!=null) {
+				requestors = ImmutableList.copyOf(this.highlights.get(uri));
+				//Carefull!! Must make a copy above. Because the returned collection is cleared when we call removeAll below.
+				this.highlights.removeAll(uri); //futures can only be completed once, so no point holding any longer
+			}
+		}
+		for (CompletableFuture<HighlightParams> future : requestors) {
+			future.complete(highlights);
+		}
+	}
+
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
 		server = factory.call();
 		int parentPid = random.nextInt(40000)+1000;
@@ -221,6 +246,11 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 				}
 
 				@Override
+				public void highlight(HighlightParams highlights) {
+					receiveHighlights(highlights);
+				}
+
+				@Override
 				public void logMessage(MessageParams message) {
 					// TODO Auto-generated method stub
 
@@ -253,11 +283,6 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 						}
 					}
 					return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
-				}
-
-				@Override
-				public void highlight(HighlightParams highlights) {
-					// TODO Auto-generated method stub
 				}
 			});
 
@@ -370,6 +395,16 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) throws Exception {
 		this.getServer().waitForReconcile();
 		return diagnostics.get(doc.getUri());
+	}
+
+	public synchronized Future<HighlightParams> getHighlightsFuture(TextDocumentInfo doc) {
+		CompletableFuture<HighlightParams> future = new CompletableFuture<HighlightParams>();
+		highlights.put(doc.getUri(), future);
+		return future;
+	}
+
+	public HighlightParams getHighlights(TextDocumentInfo doc) throws Exception {
+		return getHighlightsFuture(doc).get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	public static Condition<Diagnostic> isDiagnosticWithSeverity(DiagnosticSeverity severity) {

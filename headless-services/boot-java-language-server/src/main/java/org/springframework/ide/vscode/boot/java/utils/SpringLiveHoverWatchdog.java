@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Timer;
@@ -35,8 +36,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringLiveHoverWatchdog {
 
-	private static final int POLLING_INTERVAL_MILLISECONDS = 5000;
 
+	public static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
+
+	private final long POLLING_INTERVAL_MILLISECONDS;
 	private final Set<String> watchedDocs;
 	private final SimpleLanguageServer server;
 	private final BootJavaHoverProvider hoverProvider;
@@ -61,7 +64,15 @@ public class SpringLiveHoverWatchdog {
 		return uris.anyMatch(uri -> projectFinder.find(new TextDocumentIdentifier(uri)).isPresent());
 	}
 
-	public SpringLiveHoverWatchdog(SimpleLanguageServer server, BootJavaHoverProvider hoverProvider, RunningAppProvider runningAppProvider, JavaProjectFinder projectFinder, ProjectObserver projectChanges) {
+	public SpringLiveHoverWatchdog(
+			SimpleLanguageServer server,
+			BootJavaHoverProvider hoverProvider,
+			RunningAppProvider runningAppProvider,
+			JavaProjectFinder projectFinder,
+			ProjectObserver projectChanges,
+			Duration pollingInterval
+	) {
+		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
 		this.server = server;
 		this.hoverProvider = hoverProvider;
 		this.runningAppProvider = runningAppProvider;

@@ -10,10 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.time.Duration;
 import java.util.Arrays;
 
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.BootProjectUtil;
+import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
@@ -36,17 +38,21 @@ public class BootJavaLanguageServerParams {
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
 	public final RunningAppProvider runningAppProvider;
+	public final Duration watchDogInterval;
 
 	public BootJavaLanguageServerParams(
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
-			RunningAppProvider runningAppProvider) {
+			RunningAppProvider runningAppProvider,
+			Duration watchDogInterval
+	) {
 		super();
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
 		this.runningAppProvider = runningAppProvider;
+		this.watchDogInterval = watchDogInterval;
 	}
 
 	public static LSFactory<BootJavaLanguageServerParams> createDefault() {
@@ -66,7 +72,8 @@ public class BootJavaLanguageServerParams {
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver),
-					RunningAppProvider.DEFAULT
+					RunningAppProvider.DEFAULT,
+					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
 	}

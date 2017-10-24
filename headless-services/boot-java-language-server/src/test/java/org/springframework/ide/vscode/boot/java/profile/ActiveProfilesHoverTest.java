@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.profile;
 
+import java.time.Duration;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -31,6 +33,7 @@ public class ActiveProfilesHoverTest {
 		harness = BootLanguageServerHarness.builder()
 				.mockDefaults()
 				.runningAppProvider(mockAppProvider.provider)
+				.watchDogInterval(Duration.ofMillis(100))
 				.build();
 		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 		harness.intialize(null);
@@ -60,6 +63,10 @@ public class ActiveProfilesHoverTest {
 		editor.assertHoverContains("@Profile", "local-profile");
 		editor.assertHoverContains("@Profile", "foo.bar.RunningApp");
 		editor.assertHoverContains("@Profile", "22022");
+
+		editor.assertHighlights(
+				"@Profile(\"local\")"
+		);
 	}
 
 

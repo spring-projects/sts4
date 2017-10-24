@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
+import java.time.Duration;
+
 import org.junit.Assert;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerParams;
@@ -46,6 +48,7 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 		private SpringPropertyIndexProvider indexProvider = null;
 		private RunningAppProvider runningAppProvider = null;
 		private PropertyIndexHarness indexHarness = null;
+		private Duration watchDogInterval = null;
 
 		public BootLanguageServerHarness build() throws Exception {
 			BootLanguageServerHarness harness = new BootLanguageServerHarness(this);
@@ -75,6 +78,11 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 			this.indexProvider = propertyIndexProvider;
 			return this;
 		}
+
+		public Builder watchDogInterval(Duration watchDogInterval) {
+			this.watchDogInterval = watchDogInterval;
+			return this;
+		}
 	}
 
 	/**
@@ -88,7 +96,8 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 						builder.projectFinder==null?defaults.projectFinder:builder.projectFinder,
 						builder.projectObserver==null?defaults.projectObserver:builder.projectObserver,
 						builder.indexProvider==null?defaults.indexProvider:builder.indexProvider,
-						builder.runningAppProvider==null?defaults.runningAppProvider:builder.runningAppProvider
+						builder.runningAppProvider==null?defaults.runningAppProvider:builder.runningAppProvider,
+						builder.watchDogInterval==null?defaults.watchDogInterval:builder.watchDogInterval
 				);
 			};
 			return new BootJavaLanguageServer(params);

@@ -127,7 +127,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
 
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider, projectFinder, projectObserver);
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider, projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (testHightlighter != null) {
