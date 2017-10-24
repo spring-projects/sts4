@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,9 +142,9 @@ public class BootJavaHoverProvider implements HoverHandler {
 			if (qualifiedName != null) {
 				HoverProvider provider = this.hoverProviders.get(qualifiedName);
 				if (provider != null) {
-					Range range = provider.getLiveHoverHint(annotation, document, runningApps);
-					if (range != null) {
-						result.add(range);
+					Collection<Range> hints = provider.getLiveHoverHints(annotation, document, runningApps);
+					if (hints!=null) {
+						result.addAll(hints);
 					}
 				}
 			}

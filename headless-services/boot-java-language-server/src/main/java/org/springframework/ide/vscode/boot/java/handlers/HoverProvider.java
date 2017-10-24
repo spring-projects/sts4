@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -20,12 +21,14 @@ import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * @author Martin Lippert
  */
 public interface HoverProvider {
 
 	CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, SpringBootApp[] runningApps);
-	Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps);
+	Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps);
 
 }

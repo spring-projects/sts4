@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +62,7 @@ public class ValueHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		return null;
 	}
 

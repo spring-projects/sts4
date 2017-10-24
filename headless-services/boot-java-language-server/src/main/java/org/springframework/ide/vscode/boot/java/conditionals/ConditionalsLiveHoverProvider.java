@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.conditionals;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,8 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  *
  * Provides live hovers and hints for @ConditionalOn... Spring Boot annotations from running
@@ -48,14 +51,14 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
 				ConditionalParserFromRunningApp parser = new ConditionalParserFromRunningApp();
 				Optional<List<RunningAppConditional>> val = parser.parse(annotation, runningApps);
 				if (val.isPresent()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-					return hoverRange;
+					return ImmutableList.of(hoverRange);
 				}
 			}
 		} catch (BadLocationException e) {

@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.profiles;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -71,14 +73,15 @@ public class ActiveProfilesProvider implements HoverProvider {
 	}
 
 	@Override
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
-				return doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				Name node = annotation.getTypeName();
+				return ImmutableList.of(doc.toRange(node.getStartPosition(), node.getLength()));
 			}
 		} catch (BadLocationException e) {
 			Log.log(e);
 		}
-		return null;
+		return ImmutableList.of();
 	}
 }

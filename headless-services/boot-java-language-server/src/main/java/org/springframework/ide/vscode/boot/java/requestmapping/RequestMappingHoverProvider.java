@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,8 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * @author Martin Lippert
  */
@@ -52,13 +55,13 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
 				Optional<RequestMappingMethod> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 				if (val.isPresent()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-					return hoverRange;
+					return ImmutableList.of(hoverRange);
 				}
 			}
 		}

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,6 +35,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -94,7 +97,7 @@ public class ComponentHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			for (SpringBootApp bootApp : runningApps) {
 				try {
@@ -102,7 +105,7 @@ public class ComponentHoverProvider implements HoverProvider {
 					if (liveBeans != null && liveBeans.length() > 0) {
 						Range range = getLiveHoverHint(annotation, doc, liveBeans);
 						if (range != null) {
-							return range;
+							return ImmutableList.of(range);
 						}
 					}
 				}
