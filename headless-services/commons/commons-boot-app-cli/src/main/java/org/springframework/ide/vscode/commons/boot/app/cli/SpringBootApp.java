@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,11 +29,11 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
@@ -101,16 +100,17 @@ public class SpringBootApp {
 	}
 
 	public boolean isSpringBootApp() throws Exception {
-		return (isSpringBootAppClasspath() || isSpringBootAppSysprops());
+		return !containsSystemProperty("sts4.languageserver.name")
+				&& (
+						isSpringBootAppClasspath() ||
+						isSpringBootAppSysprops()
+				);
 	}
 
 	private boolean isSpringBootAppSysprops() {
 		try {
 			Properties sysprops = this.vm.getSystemProperties();
-			return sysprops.getProperty("sts4.languageserver.name") == null
-				// Note: java.protocol.handler.pkgs may be not be in system properties, and result in NPE (at least in Mac OS)
-			    // To avoid NPE, just reversed the equality check
-				&& "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
+			return "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
 		} catch (Exception e) {
 			Log.log(e);
 		}
@@ -373,7 +373,7 @@ public class SpringBootApp {
 
 	@Override
 	public String toString() {
-		return "SpringBootApp [" +vmd.id() + ", "+vmd.displayName()+"]";
+		return "Process [id=" +getProcessID() + ", name=`"+getProcessName()+"`]";
 	}
 
 	/**
@@ -395,6 +395,33 @@ public class SpringBootApp {
 			System.out.println("  "+prop.getKey()+" = "+prop.getValue());
 		}
 		System.out.println("}");
+	}
+
+	public List<String> getActiveProfiles() {
+		try {
+			String _env = getEnvironment();
+			if (_env != null) {
+				JSONObject env = new JSONObject(_env);
+				Object _profiles = env.opt("activeProfiles"); //Boot 2.0
+				if (_profiles==null) {
+					_profiles = env.opt("profiles"); //Boot 1.5
+				}
+				if (_profiles instanceof JSONArray) {
+					@SuppressWarnings("unchecked")
+					JSONArray profiles = (JSONArray) _profiles;
+					ImmutableList.Builder<String> list = ImmutableList.builder();
+					for (Object object : profiles) {
+						if (object instanceof String) {
+							list.add((String) object);
+						}
+					}
+					return list.build();
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return null;
 	}
 
 

@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.profiles.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
@@ -256,6 +257,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING, new RequestMappingHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING, new RequestMappingHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING, new RequestMappingHoverProvider());
+		providers.put(ActiveProfilesProvider.ANNOTATION, new ActiveProfilesProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentHoverProvider());

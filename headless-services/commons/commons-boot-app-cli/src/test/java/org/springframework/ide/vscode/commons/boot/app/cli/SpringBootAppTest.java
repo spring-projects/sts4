@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,18 +18,20 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.AsyncProcess;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.test.ACondition;
+
+import com.google.common.collect.ImmutableList;
 
 public class SpringBootAppTest {
 
@@ -38,6 +41,8 @@ public class SpringBootAppTest {
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(30); // in CI build starting the app takes longer than 10s sometimes.
 	//Output from CI build: Started ActuatorClientTestSubjectApplication in 22.962 seconds (JVM running for 26.028)
+
+	private static final List<String> TEST_PROFILES = ImmutableList.of("testing", "funny", "cameleon");
 
 	private static AsyncProcess testAppRunner;
 	private static SpringBootApp testApp;
@@ -59,7 +64,8 @@ public class SpringBootAppTest {
 					"java",
 					"-Dserver.port=0", //let spring boot pick randomized free port
 					"-jar",
-					jarFile.getAbsolutePath()
+					jarFile.getAbsolutePath(),
+					"--spring.profiles.active="+StringUtil.collectionToCommaDelimitedString(TEST_PROFILES)
 				),
 				false
 		);
@@ -117,7 +123,7 @@ public class SpringBootAppTest {
 		ACondition.waitFor(TIMEOUT, () -> {
 			String env = testApp.getEnvironment();
 			assertNonEmptyJsonObject(env);
-//			System.out.println("env = "+env);
+			System.out.println("env = "+new JSONObject(env).toString(3));
 		});
 	}
 
@@ -145,6 +151,14 @@ public class SpringBootAppTest {
 			String result = testApp.getAutoConfigReport();
 			assertNonEmptyJsonObject(result);
 //			System.out.println("autoconfreport = "+result);
+		});
+	}
+
+	@Test
+	public void getProfiles() throws Exception {
+		ACondition.waitFor(TIMEOUT, () -> {
+			List<String> result = testApp.getActiveProfiles();
+			assertEquals(ImmutableList.copyOf(TEST_PROFILES), result);
 		});
 	}
 

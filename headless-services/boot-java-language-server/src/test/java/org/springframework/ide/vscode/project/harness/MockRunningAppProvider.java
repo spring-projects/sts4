@@ -20,6 +20,9 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness.Builder;
+
+import com.google.common.collect.ImmutableList;
 
 public class MockRunningAppProvider {
 
@@ -102,6 +105,20 @@ public class MockRunningAppProvider {
 			when(app.getAutoConfigReport()).thenReturn(autoConfigReport);
 			return this;
 		}
+
+		public MockAppBuilder profiles(String... names) {
+			when(app.getActiveProfiles()).thenReturn(ImmutableList.copyOf(names));
+			return this;
+		}
+
+		public MockAppBuilder profilesUnknown() {
+			//Note, technically, we don't have to program the mock for this case as it will return
+			// null by default. But it makes test code more readable. Also... how we represent the
+			// 'unknown' case may change in the future and having this method will help fix the tests.
+			when(app.getActiveProfiles()).thenReturn(null);
+			return this;
+		}
+
 
 		/**
 		 * Builds the mock app and adds it to the app provider
