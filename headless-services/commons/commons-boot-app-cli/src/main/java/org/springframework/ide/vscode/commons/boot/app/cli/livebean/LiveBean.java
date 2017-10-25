@@ -15,29 +15,9 @@ import org.json.JSONObject;
 
 /**
  * @author Martin Lippert
+ * @author Kris De Volder
  */
 public class LiveBean {
-
-	public static LiveBean parse(JSONObject beansJSON) {
-		String id = beansJSON.optString("bean");
-		String type = beansJSON.optString("type");
-		String scope = beansJSON.optString("scope");
-		String resource = beansJSON.optString("resource");
-
-		JSONArray aliasesJSON = beansJSON.getJSONArray("aliases");
-		String[] aliases = new String[aliasesJSON.length()];
-		for (int i = 0; i < aliasesJSON.length(); i++) {
-			aliases[i] = aliasesJSON.optString(i);
-		}
-
-		JSONArray dependenciesJSON = beansJSON.getJSONArray("dependencies");
-		String[] dependencies = new String[dependenciesJSON.length()];
-		for (int i = 0; i < dependenciesJSON.length(); i++) {
-			dependencies[i] = dependenciesJSON.optString(i);
-		}
-
-		return new LiveBean(id, aliases, scope, type, resource, dependencies);
-	}
 
 	private final String id;
 	private final String[] aliases;

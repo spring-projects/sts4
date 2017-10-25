@@ -42,10 +42,9 @@ import com.google.common.collect.ImmutableList;
 public class SpringBootAppTest {
 
 	private static final String[] appNames = {
+			"actuator-client-15-test-subject", // Boot 1.5 test app
 			"actuator-client-20-test-subject", //Boot 2.0 test app
 			"actuator-client-20-thin-test-subject", // Like the Boot 2.0 app, but packaged with thin launcher instead of fatjar
-			"actuator-client-15-test-subject" // Boot 1.5 test app
-			//Note there is a practical limit to how many test apps you can add here because all are run simultaneously.
 	};
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(60); // in CI build starting the app takes a while, starting several in parallel takes even longer
@@ -134,16 +133,11 @@ public class SpringBootAppTest {
 		}
 	}
 
-	private Collection<SpringBootApp> getTestApps() {
-		return Arrays.asList(appNames).stream()
+	private Collection<SpringBootApp> getTestApps() throws Exception {
+		return ACondition.waitForValue(TIMEOUT, () -> Arrays.asList(appNames).stream()
 				.map(this::getAppContaining)
-				.collect(Collectors.toList());
-	}
-
-	@Before
-	public void ensureTestAppsAvailable() throws Exception {
-		//To avoid race condition when JMX connector fails if trying to attach to quickly after starting apps
-		ACondition.waitFor(TIMEOUT, () -> getTestApps());
+				.collect(Collectors.toList())
+		);
 	}
 
 	@Test

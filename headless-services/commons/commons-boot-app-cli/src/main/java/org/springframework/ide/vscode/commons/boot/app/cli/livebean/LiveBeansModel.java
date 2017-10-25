@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
@@ -27,35 +27,121 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
  */
 public class LiveBeansModel {
 
-	public static LiveBeansModel parse(String json) {
-		LiveBeansModel model = new LiveBeansModel();
-		if (StringUtil.hasText(json)) {
-			try {
-				JSONArray mainArray = new JSONArray(json);
+	interface Parser {
+		LiveBeansModel parse(String json) throws Exception;
+	}
 
-				for (int i = 0; i < mainArray.length(); i++) {
-					JSONObject appContext = mainArray.getJSONObject(i);
-					if (appContext == null) continue;
+	private static class Boot15Parser implements Parser {
+		@Override
+		public LiveBeansModel parse(String json) throws Exception {
+			LiveBeansModel model = new LiveBeansModel();
+			JSONArray mainArray = new JSONArray(json);
+			for (int i = 0; i < mainArray.length(); i++) {
+				JSONObject appContext = mainArray.getJSONObject(i);
+				if (appContext == null) continue;
 
-					JSONArray beansArray = appContext.optJSONArray("beans");
-					if (beansArray == null) continue;
+				JSONArray beansArray = appContext.optJSONArray("beans");
+				if (beansArray == null) continue;
 
-					for (int j = 0; j < beansArray.length(); j++) {
-						JSONObject beanObject = beansArray.getJSONObject(j);
-						if (beanObject == null) continue;
+				for (int j = 0; j < beansArray.length(); j++) {
+					JSONObject beanObject = beansArray.getJSONObject(j);
+					if (beanObject == null) continue;
 
-						LiveBean bean = LiveBean.parse(beanObject);
-						if (bean != null) {
-							model.add(bean);
-						}
+					LiveBean bean = parseBean(beanObject);
+					if (bean != null) {
+						model.add(bean);
 					}
 				}
 			}
-			catch (JSONException e) {
-				e.printStackTrace();
+			return model;
+		}
+		private LiveBean parseBean(JSONObject beansJSON) {
+			String id = beansJSON.optString("bean");
+			String type = beansJSON.optString("type");
+			String scope = beansJSON.optString("scope");
+			String resource = beansJSON.optString("resource");
+
+			JSONArray aliasesJSON = beansJSON.getJSONArray("aliases");
+			String[] aliases = new String[aliasesJSON.length()];
+			for (int i = 0; i < aliasesJSON.length(); i++) {
+				aliases[i] = aliasesJSON.optString(i);
+			}
+
+			JSONArray dependenciesJSON = beansJSON.getJSONArray("dependencies");
+			String[] dependencies = new String[dependenciesJSON.length()];
+			for (int i = 0; i < dependenciesJSON.length(); i++) {
+				dependencies[i] = dependenciesJSON.optString(i);
+			}
+
+			return new LiveBean(id, aliases, scope, type, resource, dependencies);
+		}
+
+	}
+
+	private static class Boot20Parser implements Parser {
+		@Override
+		public LiveBeansModel parse(String json) throws Exception {
+			LiveBeansModel model = new LiveBeansModel();
+			JSONObject mainObject = new JSONObject(json);
+			JSONObject beansObject = mainObject.getJSONObject("beans");
+			for (String id : beansObject.keySet()) {
+				JSONObject beanObject = beansObject.getJSONObject(id);
+				System.out.println(beanObject.toString(3));
+				LiveBean bean = parseBean(id, beanObject);
+				if (bean!=null) {
+					model.add(bean);
+				}
+			}
+			return model;
+		}
+
+		private LiveBean parseBean(String id, JSONObject beansJSON) {
+			String type = beansJSON.optString("type");
+			String scope = beansJSON.optString("scope");
+			String resource = beansJSON.optString("resource");
+
+			JSONArray aliasesJSON = beansJSON.getJSONArray("aliases");
+			String[] aliases = new String[aliasesJSON.length()];
+			for (int i = 0; i < aliasesJSON.length(); i++) {
+				aliases[i] = aliasesJSON.optString(i);
+			}
+
+			JSONArray dependenciesJSON = beansJSON.getJSONArray("dependencies");
+			String[] dependencies = new String[dependenciesJSON.length()];
+			for (int i = 0; i < dependenciesJSON.length(); i++) {
+				dependencies[i] = dependenciesJSON.optString(i);
+			}
+
+			return new LiveBean(id, aliases, scope, type, resource, dependencies);
+		}
+	}
+
+	private static final Parser[] PARSERS = {
+			new Boot15Parser(),
+			new Boot20Parser(),
+	};
+
+	public static LiveBeansModel parse(String json) {
+		List<Exception> exceptions = new ArrayList<>(PARSERS.length);
+		if (StringUtil.hasText(json)) {
+			for (Parser parser : PARSERS) {
+				try {
+					LiveBeansModel model = parser.parse(json);
+					if (model==null) {
+						throw new NullPointerException("Parser returned a null model (it should not!)");
+					}
+					return model; //good!
+				} catch (Exception e) {
+					exceptions.add(e);
+				}
 			}
 		}
-		return model;
+		//Only getting here if none of the parsers worked... So if at least one parser works,
+		// we won't log any exceptions.
+		for (Exception e : exceptions) {
+			Log.log(e);
+		}
+		return new LiveBeansModel(); // allways return at least an empty model.
 	}
 
 	private final ConcurrentMap<String, List<LiveBean>> beansViaType;
