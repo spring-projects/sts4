@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.profiles.ActiveProfilesProvider;
+import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
@@ -118,7 +119,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		});
 
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
-		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer));
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer, new LiveAppURLSymbolProvider(serverParams.runningAppProvider)));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
