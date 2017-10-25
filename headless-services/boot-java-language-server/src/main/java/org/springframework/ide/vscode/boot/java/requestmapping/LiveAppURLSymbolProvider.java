@@ -48,17 +48,7 @@ public class LiveAppURLSymbolProvider {
 
 			for (SpringBootApp app : runningApps) {
 				try {
-					String mappings = app.getRequestMappings();
-					JSONObject requestMappings = new JSONObject(mappings);
-					Iterator<String> keys = requestMappings.keys();
-					while (keys.hasNext()) {
-						String key = keys.next();
-						String path = UrlUtil.extractPath(key);
-						if (path != null) {
-							String url = UrlUtil.createUrl(app.getHost(), app.getPort(), path);
-							result.add(new SymbolInformation(url, SymbolKind.File, new Location(url, new Range(new Position(0, 0), new Position(0, 1)))));
-						}
-					}
+					collectLiveAppSymbols(result, app);
 				}
 				catch (Exception e) {
 					Log.log(e);
@@ -69,6 +59,23 @@ public class LiveAppURLSymbolProvider {
 		}
 
 		return result;
+	}
+
+	private void collectLiveAppSymbols(List<SymbolInformation> result, SpringBootApp app) throws Exception {
+		String mappings = app.getRequestMappings();
+		JSONObject requestMappings = new JSONObject(mappings);
+		Iterator<String> keys = requestMappings.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			String extractedPath = UrlUtil.extractPath(key);
+			if (extractedPath != null) {
+				String[] splitPath = UrlUtil.splitPath(extractedPath);
+				for (String path : splitPath) {
+					String url = UrlUtil.createUrl(app.getHost(), app.getPort(), path);
+					result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1)))));
+				}
+			}
+		}
 	}
 
 }

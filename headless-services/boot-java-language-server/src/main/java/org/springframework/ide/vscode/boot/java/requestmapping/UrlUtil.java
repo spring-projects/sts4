@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -62,6 +65,34 @@ public class UrlUtil {
 			}
 		}
 		return null;
+	}
+
+
+	public static String[] splitPath(String path) {
+		if (path.contains("||")) {
+			List<String> result = new ArrayList<>();
+
+			String basePath = path.substring(0, path.indexOf("||")).trim();
+			result.add(basePath);
+
+			if (basePath.lastIndexOf('/') > 0) {
+				basePath = basePath.substring(0, basePath.lastIndexOf('/'));
+			}
+
+			String additionalPaths = path.substring(path.indexOf("||"));
+			StringTokenizer tokenizer = new StringTokenizer(additionalPaths, "||");
+			while (tokenizer.hasMoreTokens()) {
+				String token = tokenizer.nextToken().trim();
+				if (token.length() > 0) {
+					result.add(basePath + "/" + token);
+				}
+			}
+
+			return result.toArray(new String[result.size()]);
+		}
+		else {
+			return new String[] {path};
+		}
 	}
 
 }

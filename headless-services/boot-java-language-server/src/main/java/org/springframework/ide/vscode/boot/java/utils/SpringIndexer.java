@@ -204,7 +204,7 @@ public class SpringIndexer {
 		return null;
 	}
 
-	public List<? extends SymbolInformation> getAllSymbols(String query) {
+	public List<SymbolInformation> getAllSymbols(String query) {
 		if (initializeTask != null) {
 			try {
 				initializeTask.get();
