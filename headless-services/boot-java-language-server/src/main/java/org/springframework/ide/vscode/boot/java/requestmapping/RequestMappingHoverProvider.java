@@ -58,7 +58,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
-				Optional<RequestMappingMethod> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+				Optional<List<RequestMappingMethod>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 				if (val.isPresent()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 					return ImmutableList.of(hoverRange);
@@ -77,7 +77,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		try {
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
-			Optional<RequestMappingMethod> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+			Optional<List<RequestMappingMethod>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 
 			if (val.isPresent()) {
 				addHoverContent(val.get(), hoverContent);
@@ -97,13 +97,14 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private Optional<RequestMappingMethod> getRequestMappingMethodFromRunningApp(Annotation annotation,
+	private Optional<List<RequestMappingMethod>> getRequestMappingMethodFromRunningApp(Annotation annotation,
 			SpringBootApp[] runningApps) {
 
 		try {
+			List<RequestMappingMethod> methods = new ArrayList<>();
 			for (SpringBootApp app : runningApps) {
 				String mappings = app.getRequestMappings();
-				if (mappings!=null) {
+				if (mappings != null) {
 					JSONObject requestMappings = new JSONObject(mappings);
 					String rawPath = getRawPath(annotation, requestMappings);
 					if (rawPath != null) {
@@ -112,11 +113,15 @@ public class RequestMappingHoverProvider implements HoverProvider {
 							String rawMethod = getRawMethod(annotation, requestMappings);
 							JLRMethod parsedMethod = JLRMethodParser.parse(rawMethod);
 							if (methodMatchesAnnotation(annotation, parsedMethod)) {
-								return Optional.of(new RequestMappingMethod(path, parsedMethod, app));
+								methods.add(new RequestMappingMethod(path, parsedMethod, app));
 							}
 						}
 					}
 				}
+			}
+
+			if (!methods.isEmpty()) {
+				return Optional.of(methods);
 			}
 		} catch (Exception e) {
 			Log.log(e);
@@ -141,28 +146,37 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return false;
 	}
 
-	private void addHoverContent(RequestMappingMethod mappingMethod, List<Either<String, MarkedString>> hoverContent) throws Exception {
-		String processId = mappingMethod.app.getProcessID();
-		String processName = mappingMethod.app.getProcessName();
-		String path = mappingMethod.requestMappingPath;
+	private void addHoverContent(List<RequestMappingMethod> mappingMethods, List<Either<String, MarkedString>> hoverContent)
+			throws Exception {
+		for (int i = 0; i < mappingMethods.size() ; i++) {
+			RequestMappingMethod method = mappingMethods.get(i);
+			String processId = method.app.getProcessID();
+			String processName = method.app.getProcessName();
+			String path = method.requestMappingPath;
 
-		StringBuilder builder = new StringBuilder();
+			StringBuilder builder = new StringBuilder();
 
-		String port = mappingMethod.app.getPort();
-		String host = mappingMethod.app.getHost();
-		String url = UrlUtil.createUrl(host, port, path);
+			String port = method.app.getPort();
+			String host = method.app.getHost();
+			String url = UrlUtil.createUrl(host, port, path);
 
-		builder.append("Path: ");
-		builder.append("[");
-		builder.append(path);
-		builder.append("]");
-		builder.append("(");
-		builder.append(url);
-		builder.append(")");
+			builder.append("Path: ");
+			builder.append("[");
+			builder.append(path);
+			builder.append("]");
+			builder.append("(");
+			builder.append(url);
+			builder.append(")");
 
-		hoverContent.add(Either.forLeft(builder.toString()));
-		hoverContent.add(Either.forLeft("Process ID: " + processId));
-		hoverContent.add(Either.forLeft("Process Name: " + processName));
+			hoverContent.add(Either.forLeft(builder.toString()));
+			hoverContent.add(Either.forLeft("Process ID: " + processId));
+			hoverContent.add(Either.forLeft("Process Name: " + processName));
+			if (i < mappingMethods.size()  - 1) {
+				// Three dashes == line separator in Markdown
+				hoverContent.add(Either.forLeft("---"));
+			}
+		}
+
 	}
 
 	private String getRawMethod(Annotation annotation, JSONObject mappings) {
@@ -170,7 +184,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		while (keys.hasNext()) {
 			String key = keys.next();
 			if (matchesAnnotation(annotation, key)) {
-				Object ob= mappings.get(key);
+				Object ob = mappings.get(key);
 				if (ob instanceof JSONObject) {
 					JSONObject methodMap = (JSONObject) ob;
 					return methodMap.getString("method");
@@ -196,18 +210,18 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		if (annotation instanceof SingleMemberAnnotation) {
 			Expression valueContent = ((SingleMemberAnnotation) annotation).getValue();
 			if (valueContent instanceof StringLiteral) {
-				mappingPath = ((StringLiteral)valueContent).getLiteralValue();
+				mappingPath = ((StringLiteral) valueContent).getLiteralValue();
 			}
 		}
 		else if (annotation instanceof NormalAnnotation) {
 			List<?> values = ((NormalAnnotation) annotation).values();
 			for (Object value : values) {
 				if (value instanceof MemberValuePair) {
-					String name = ((MemberValuePair)value).getName().toString();
+					String name = ((MemberValuePair) value).getName().toString();
 					if (name != null && name.equals("value")) {
-						Expression valueContent = ((MemberValuePair)value).getValue();
+						Expression valueContent = ((MemberValuePair) value).getValue();
 						if (valueContent instanceof StringLiteral) {
-							mappingPath = ((StringLiteral)valueContent).getLiteralValue();
+							mappingPath = ((StringLiteral) valueContent).getLiteralValue();
 						}
 					}
 				}
