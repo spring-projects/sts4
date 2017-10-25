@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
- * Composite project manager that acts a single project manager but consissts of many project managers
+ * Composite project manager that acts a single project manager but consists of many project managers
  * 
  * @author Alex Boyko
  *

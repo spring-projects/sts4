@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.autowired;
 
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+
 /**
  * @author Martin Lippert
  */
 public interface SpringBootAppProvider {
 
-	public String getBeans() throws Exception;
+	public LiveBeansModel getBeans() throws Exception;
 	public String getProcessID();
 	public String getProcessName();
 

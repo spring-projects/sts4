@@ -8,16 +8,19 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.autowired;
+package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
  * @author Martin Lippert
@@ -26,32 +29,32 @@ public class LiveBeansModel {
 
 	public static LiveBeansModel parse(String json) {
 		LiveBeansModel model = new LiveBeansModel();
+		if (StringUtil.hasText(json)) {
+			try {
+				JSONArray mainArray = new JSONArray(json);
 
-		try {
-			JSONArray mainArray = new JSONArray(json);
+				for (int i = 0; i < mainArray.length(); i++) {
+					JSONObject appContext = mainArray.getJSONObject(i);
+					if (appContext == null) continue;
 
-			for (int i = 0; i < mainArray.length(); i++) {
-				JSONObject appContext = mainArray.getJSONObject(i);
-				if (appContext == null) continue;
+					JSONArray beansArray = appContext.optJSONArray("beans");
+					if (beansArray == null) continue;
 
-				JSONArray beansArray = appContext.optJSONArray("beans");
-				if (beansArray == null) continue;
+					for (int j = 0; j < beansArray.length(); j++) {
+						JSONObject beanObject = beansArray.getJSONObject(j);
+						if (beanObject == null) continue;
 
-				for (int j = 0; j < beansArray.length(); j++) {
-					JSONObject beanObject = beansArray.getJSONObject(j);
-					if (beanObject == null) continue;
-
-					LiveBean bean = LiveBean.parse(beanObject);
-					if (bean != null) {
-						model.add(bean);
+						LiveBean bean = LiveBean.parse(beanObject);
+						if (bean != null) {
+							model.add(bean);
+						}
 					}
 				}
 			}
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
-		catch (JSONException e) {
-			e.printStackTrace();
-		}
-
 		return model;
 	}
 
@@ -83,6 +86,14 @@ public class LiveBeansModel {
 		if (name != null) {
 			beansViaName.computeIfAbsent(name, (n) -> new ArrayList<>()).add(bean);
 		}
+	}
+
+	public Stream<LiveBean> getAllBeans() {
+		return beansViaName.values().stream().flatMap(Collection::stream);
+	}
+
+	public boolean isEmpty() {
+		return !getAllBeans().findAny().isPresent();
 	}
 
 }

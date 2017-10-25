@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.autowired;
+package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

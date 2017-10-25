@@ -26,9 +26,11 @@ import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.AsyncProcess;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
@@ -37,11 +39,8 @@ import org.springframework.ide.vscode.commons.util.test.ACondition;
 
 import com.google.common.collect.ImmutableList;
 
-import junit.framework.AssertionFailedError;
-
 public class SpringBootAppTest {
 
-//	private static final String appName = "actuator-client-15-test-subject"; // Boot 1.5 test app
 	private static final String[] appNames = {
 			"actuator-client-20-test-subject", //Boot 2.0 test app
 			"actuator-client-20-thin-test-subject", // Like the Boot 2.0 app, but packaged with thin launcher instead of fatjar
@@ -59,7 +58,7 @@ public class SpringBootAppTest {
 	public static void setupClass() throws Exception {
 		testAppRunners = Arrays.asList(appNames).stream().map(appName -> {
 			try {
-				return startTestApplication(SpringBootAppTest.class.getResource("/"+appName+"-0.0.1-SNAPSHOT.jar"));
+				return startTestApplication(SpringBootAppTest.class.getResource("/boot-apps/"+appName+"-0.0.1-SNAPSHOT.jar"));
 			} catch (Exception e) {
 				throw ExceptionUtil.unchecked(e);
 			}
@@ -141,6 +140,12 @@ public class SpringBootAppTest {
 				.collect(Collectors.toList());
 	}
 
+	@Before
+	public void ensureTestAppsAvailable() throws Exception {
+		//To avoid race condition when JMX connector fails if trying to attach to quickly after starting apps
+		ACondition.waitFor(TIMEOUT, () -> getTestApps());
+	}
+
 	@Test
 	public void getHost() throws Exception {
 		for (SpringBootApp testApp : getTestApps()) {
@@ -169,8 +174,8 @@ public class SpringBootAppTest {
 		for (SpringBootApp testApp : getTestApps()) {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
-					String beans = testApp.getBeans();
-					assertNonEmptyJsonObject(beans);
+					LiveBeansModel beansModel = testApp.getBeans();
+					assertTrue(beansModel.getAllBeans().findAny().isPresent());
 		//			System.out.println("beans = "+beans);
 				});
 			} catch (Throwable e) {

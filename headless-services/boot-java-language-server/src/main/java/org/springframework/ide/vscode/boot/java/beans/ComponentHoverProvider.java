@@ -26,12 +26,12 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.autowired.Constants;
-import org.springframework.ide.vscode.boot.java.autowired.LiveBean;
-import org.springframework.ide.vscode.boot.java.autowired.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProviderImpl;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -68,8 +68,8 @@ public class ComponentHoverProvider implements HoverProvider {
 					List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 					for (SpringBootAppProvider bootApp : runningApps) {
 						try {
-							String liveBeans = bootApp.getBeans();
-							if (liveBeans != null && liveBeans.length() > 0) {
+							LiveBeansModel liveBeans = bootApp.getBeans();
+							if (liveBeans != null && !liveBeans.isEmpty()) {
 								addLiveHoverContent(typeDecl, doc, liveBeans, bootApp, hoverContent);
 							}
 						}
@@ -101,8 +101,8 @@ public class ComponentHoverProvider implements HoverProvider {
 		try {
 			for (SpringBootApp bootApp : runningApps) {
 				try {
-					String liveBeans = bootApp.getBeans();
-					if (liveBeans != null && liveBeans.length() > 0) {
+					LiveBeansModel liveBeans = bootApp.getBeans();
+					if (liveBeans != null && !liveBeans.isEmpty()) {
 						Range range = getLiveHoverHint(annotation, doc, liveBeans);
 						if (range != null) {
 							return ImmutableList.of(range);
@@ -121,13 +121,11 @@ public class ComponentHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, String liveBeansJSON) {
+	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, LiveBeansModel beansModel) {
 		try {
 			TypeDeclaration type = findDeclaredType(annotation);
-			if (type != null && liveBeansJSON != null) {
+			if (type != null && beansModel != null) {
 				String typeName = type.resolveBinding().getQualifiedName();
-
-				LiveBeansModel beansModel = LiveBeansModel.parse(liveBeansJSON);
 				LiveBean[] beansOfType = beansModel.getBeansOfType(typeName);
 
 				if (beansOfType.length > 0) {
@@ -160,11 +158,9 @@ public class ComponentHoverProvider implements HoverProvider {
 	}
 
 
-	public void addLiveHoverContent(TypeDeclaration declaringType, TextDocument doc, String liveBeansJSON, SpringBootAppProvider bootApp, List<Either<String, MarkedString>> hoverContent) {
+	public void addLiveHoverContent(TypeDeclaration declaringType, TextDocument doc, LiveBeansModel beansModel, SpringBootAppProvider bootApp, List<Either<String, MarkedString>> hoverContent) {
 		String type = declaringType.resolveBinding().getQualifiedName();
-		if (type != null && liveBeansJSON != null) {
-
-			LiveBeansModel beansModel = LiveBeansModel.parse(liveBeansJSON);
+		if (type != null && beansModel != null) {
 			LiveBean[] beansOfType = beansModel.getBeansOfType(type);
 
 			if (beansOfType.length > 0) {
