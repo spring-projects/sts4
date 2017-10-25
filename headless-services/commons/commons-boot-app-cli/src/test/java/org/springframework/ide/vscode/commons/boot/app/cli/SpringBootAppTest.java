@@ -12,48 +12,67 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.AsyncProcess;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.test.ACondition;
 
 import com.google.common.collect.ImmutableList;
 
+import junit.framework.AssertionFailedError;
+
 public class SpringBootAppTest {
 
 //	private static final String appName = "actuator-client-15-test-subject"; // Boot 1.5 test app
-	private static final String appName = "actuator-client-20-test-subject"; //Boot 2.0 test app
-//	private static final String appName = "actuator-client-20-thin-test-subject"; //Boot 2.0 test app with THIN launcher
+	private static final String[] appNames = {
+			"actuator-client-20-test-subject", //Boot 2.0 test app
+			"actuator-client-20-thin-test-subject", // Like the Boot 2.0 app, but packaged with thin launcher instead of fatjar
+			"actuator-client-15-test-subject" // Boot 1.5 test app
+			//Note there is a practical limit to how many test apps you can add here because all are run simultaneously.
+	};
 
-	private static final Duration TIMEOUT = Duration.ofSeconds(30); // in CI build starting the app takes longer than 10s sometimes.
-	//Output from CI build: Started ActuatorClientTestSubjectApplication in 22.962 seconds (JVM running for 26.028)
+	private static final Duration TIMEOUT = Duration.ofSeconds(60); // in CI build starting the app takes a while, starting several in parallel takes even longer
 
 	private static final List<String> TEST_PROFILES = ImmutableList.of("testing", "funny", "cameleon");
 
-	private static AsyncProcess testAppRunner;
-	private static SpringBootApp testApp;
+	private static List<AsyncProcess> testAppRunners;
 
 	@BeforeClass
 	public static void setupClass() throws Exception {
-		testAppRunner = startTestApplication(SpringBootAppTest.class.getResource("/"+appName+"-0.0.1-SNAPSHOT.jar"));
-		ACondition.waitFor(TIMEOUT, () -> {
-			testApp = getAppContaining(appName);
-			assertNotNull(testApp);
-		});
+		testAppRunners = Arrays.asList(appNames).stream().map(appName -> {
+			try {
+				return startTestApplication(SpringBootAppTest.class.getResource("/"+appName+"-0.0.1-SNAPSHOT.jar"));
+			} catch (Exception e) {
+				throw ExceptionUtil.unchecked(e);
+			}
+		})
+		.collect(Collectors.toList());
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		for (AsyncProcess process : testAppRunners) {
+			process.kill();
+		}
+		testAppRunners = null;
 	}
 
 	private static AsyncProcess startTestApplication(URL jarUrl) throws Exception {
@@ -71,95 +90,126 @@ public class SpringBootAppTest {
 		);
 	}
 
-	private static SpringBootApp getAppContaining(String nameFragment) throws Exception {
-		return SpringBootApp.getAllRunningJavaApps().values().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+	private SpringBootApp getAppContaining(String nameFragment) {
+		try {
+			return SpringBootApp.getAllRunningJavaApps().values().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+		} catch (Exception e) {
+			throw ExceptionUtil.unchecked(e);
+		}
 	}
 
-	@AfterClass
-	public static void tearDownClass() throws Exception {
-		testAppRunner.kill();
+	@Ignore @Test public void dumpJvmInfo() throws Exception {
+		//Ignored because this test may have timing issues. Still useful to
+		// run locally and inspect dump results, but may need some tweaking.
+		for (String appName : appNames) {
+			SpringBootApp testApp = getAppContaining(appName);
+			testApp.dumpJvmInfo();
+			System.out.println("======================================");
+		}
 	}
 
-	@Test
-	public void getAllJavaApps() throws Exception {
+	@Test public void getAllJavaApps() throws Exception {
 		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
-		Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
-		assertTrue(myProcess.isPresent());
-	}
-
-	@Test public void dumpJvmInfo() throws Exception {
-		ACondition.waitFor(TIMEOUT, this::getRequestMappings);
-		testApp.dumpJvmInfo();
-//		SpringBootApp app = getAppContaining("language-server.jar");
-//		app.dumpJvmInfo();
+		for (String appName : appNames) {
+			Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			assertTrue(appName, myProcess.isPresent());
+		}
 	}
 
 	@Test public void getAllBootApps() throws Exception {
 		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningSpringApps();
-		Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
-		assertTrue(myProcess.isPresent());
+		for (String appName : appNames) {
+			Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			assertTrue(myProcess.isPresent());
+		}
 	}
 
 	@Test
 	public void getPort() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			int port = Integer.parseInt(testApp.getPort());
-			assertTrue(port > 0);
-//			System.out.println("port = "+port);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			ACondition.waitFor(TIMEOUT, () -> {
+				int port = Integer.parseInt(testApp.getPort());
+				assertTrue(port > 0);
+//				System.out.println("port = "+port);
+			});
+		}
+	}
+
+	private Collection<SpringBootApp> getTestApps() {
+		return Arrays.asList(appNames).stream()
+				.map(this::getAppContaining)
+				.collect(Collectors.toList());
 	}
 
 	@Test
 	public void getHost() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			String host = testApp.getHost();
-			assertTrue(StringUtil.hasText(host));
-//			System.out.println("host = "+host);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			System.err.println("getHost for "+testApp);
+			ACondition.waitFor(TIMEOUT, () -> {
+				String host = testApp.getHost();
+				assertTrue(StringUtil.hasText(host));
+				System.out.println("host = "+host);
+			});
+		}
 	}
 
 	@Test
 	public void getEnvironment() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			String env = testApp.getEnvironment();
-			assertNonEmptyJsonObject(env);
-			System.out.println("env = "+new JSONObject(env).toString(3));
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			ACondition.waitFor(TIMEOUT, () -> {
+				String env = testApp.getEnvironment();
+				assertNonEmptyJsonObject(env);
+				System.out.println("env = "+new JSONObject(env).toString(3));
+			});
+		}
 	}
 
 	@Test
 	public void getBeans() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			String beans = testApp.getBeans();
-			assertNonEmptyJsonObject(beans);
-//			System.out.println("beans = "+beans);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			try {
+				ACondition.waitFor(TIMEOUT, () -> {
+					String beans = testApp.getBeans();
+					assertNonEmptyJsonObject(beans);
+		//			System.out.println("beans = "+beans);
+				});
+			} catch (Throwable e) {
+				//Make it easier to identify the culprit of failing test
+				throw new RuntimeException("Failed for: "+testApp.getProcessName(), e);
+			}
+		}
 	}
 
 	@Test
 	public void getRequestMappings() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			String result = testApp.getRequestMappings();
-			assertNonEmptyJsonObject(result);
-//			System.out.println("requestMappings = "+result);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			ACondition.waitFor(TIMEOUT, () -> {
+				String result = testApp.getRequestMappings();
+				assertNonEmptyJsonObject(result);
+	//			System.out.println("requestMappings = "+result);
+			});
+		}
 	}
 
 	@Test
 	public void getAutoConfigReport() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			String result = testApp.getAutoConfigReport();
-			assertNonEmptyJsonObject(result);
-//			System.out.println("autoconfreport = "+result);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			ACondition.waitFor(TIMEOUT, () -> {
+				String result = testApp.getAutoConfigReport();
+				assertNonEmptyJsonObject(result);
+	//			System.out.println("autoconfreport = "+result);
+			});
+		}
 	}
 
 	@Test
 	public void getProfiles() throws Exception {
-		ACondition.waitFor(TIMEOUT, () -> {
-			List<String> result = testApp.getActiveProfiles();
-			assertEquals(ImmutableList.copyOf(TEST_PROFILES), result);
-		});
+		for (SpringBootApp testApp : getTestApps()) {
+			ACondition.waitFor(TIMEOUT, () -> {
+				List<String> result = testApp.getActiveProfiles();
+				assertEquals(ImmutableList.copyOf(TEST_PROFILES), result);
+			});
+		}
 	}
 
 	private void assertNonEmptyJsonObject(String jsonData) {
