@@ -160,9 +160,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			String host = method.app.getHost();
 			String url = UrlUtil.createUrl(host, port, path);
 
-			builder.append("Path: ");
 			builder.append("[");
-			builder.append(path);
+			builder.append(url);
 			builder.append("]");
 			builder.append("(");
 			builder.append(url);

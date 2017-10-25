@@ -62,7 +62,7 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello-world\")", "Path: [/hello-world](http://cfapps.io:1111/hello-world)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/hello-world\")", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
 				"\n" +
 				"Process ID: 22022\n" +
 				"\n" +
@@ -94,13 +94,13 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello\")", "Path: [/hello](http://cfapps.io:999/hello)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
 				"\n" +
 				"Process ID: 76543\n" +
 				"\n" +
 				"Process Name: test-request-mapping-live-hover");
 
-		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "Path: [/goodbye](http://cfapps.io:999/goodbye)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "[http://cfapps.io:999/goodbye](http://cfapps.io:999/goodbye)\n" +
 				"\n" +
 				"Process ID: 76543\n" +
 				"\n" +
@@ -179,7 +179,7 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello\")", "Path: [/hello](http://cfapps.io:1000/hello)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:1000/hello](http://cfapps.io:1000/hello)\n" +
 				"\n" +
 				"Process ID: 70000\n" +
 				"\n" +
@@ -187,7 +187,7 @@ public class RequestMappingLiveHoverTest {
 				"\n" +
 				"---\n" +
 				"\n" +
-				"Path: [/hello](http://cfapps.io:1001/hello)\n" +
+				"[http://cfapps.io:1001/hello](http://cfapps.io:1001/hello)\n" +
               	"\n" +
               	"Process ID: 80000\n" +
               	"\n" +
@@ -195,7 +195,7 @@ public class RequestMappingLiveHoverTest {
 				"\n" +
 				"---\n" +
 				"\n" +
-				"Path: [/hello](http://cfapps.io:1002/hello)\n" +
+				"[http://cfapps.io:1002/hello](http://cfapps.io:1002/hello)\n" +
               	"\n" +
               	"Process ID: 90000\n" +
               	"\n" +
