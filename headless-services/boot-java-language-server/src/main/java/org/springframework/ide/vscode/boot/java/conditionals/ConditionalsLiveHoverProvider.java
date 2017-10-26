@@ -39,8 +39,8 @@ import com.google.common.collect.ImmutableList;
 
 /**
  *
- * Provides live hovers and hints for @ConditionalOn... Spring Boot annotations from running
- * spring boot apps.
+ * Provides live hovers and hints for @ConditionalOn... Spring Boot annotations
+ * from running spring boot apps.
  */
 public class ConditionalsLiveHoverProvider implements HoverProvider {
 
@@ -100,12 +100,8 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			RunningAppConditional condition = conditions.get(i);
 			hoverContent.add(Either.forLeft("Condition: " + condition.condition));
 			hoverContent.add(Either.forLeft("Message: " + condition.message));
-
-			// If there is more than one instances show process information
-			if (conditions.size() > 1) {
-				hoverContent.add(Either.forLeft("Process ID: " + condition.app.getProcessID()));
-				hoverContent.add(Either.forLeft("Process Name: " + condition.app.getProcessName()));
-			}
+			hoverContent.add(Either
+					.forLeft("Process " + condition.app.getProcessID() + ": " + condition.app.getProcessName()));
 
 			if (i < conditions.size() - 1) {
 				hoverContent.add(Either.forLeft("---"));
