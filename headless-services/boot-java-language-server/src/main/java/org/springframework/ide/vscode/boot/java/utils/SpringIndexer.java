@@ -264,15 +264,11 @@ public class SpringIndexer {
 
 	private void scanFiles(File directory) {
 		try {
-			System.out.println("scan directory...");
-
 			Map<Optional<IJavaProject>, List<String>> projects = Files.walk(directory.toPath())
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
 					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new TextDocumentIdentifier(new File(javaFile).toURI().toString()))));
-
-			System.out.println("scan directory done!!!");
 
 			projects.forEach((maybeProject, files) -> maybeProject.ifPresent(project -> scanProject(project, files.toArray(new String[0]))));
 		}
@@ -283,14 +279,10 @@ public class SpringIndexer {
 
 	private void scanProject(IJavaProject project, String[] files) {
 		try {
-			System.out.println("create parser... " + project.getElementName());
 			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			String[] classpathEntries = getClasspathEntries(project);
-			System.out.println("create parser done!!!");
 
-			System.out.println("parse files... " + project.getElementName());
 			scanFiles(parser, files, classpathEntries);
-			System.out.println("parse files done!!!");
 		}
 		catch (Exception e) {
 			e.printStackTrace();

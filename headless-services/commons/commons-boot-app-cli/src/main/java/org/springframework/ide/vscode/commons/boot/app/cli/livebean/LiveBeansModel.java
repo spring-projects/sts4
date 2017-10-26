@@ -13,8 +13,6 @@ package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import org.json.JSONArray;
@@ -22,10 +20,50 @@ import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+
 /**
  * @author Martin Lippert
+ * @author Kris De Volder
  */
 public class LiveBeansModel {
+
+	public static class Builder {
+		private final ImmutableListMultimap.Builder<String, LiveBean> beansViaName = ImmutableListMultimap.builder();
+		private final ImmutableListMultimap.Builder<String, LiveBean> beansViaType = ImmutableListMultimap.builder();
+		private final ImmutableListMultimap.Builder<String, LiveBean> beansViaDependency = ImmutableListMultimap.builder();
+
+		public LiveBeansModel build() {
+			return new LiveBeansModel(beansViaName.build(), beansViaType.build(), beansViaDependency.build());
+		}
+
+		public void add(LiveBean bean) {
+			String type = bean.getType();
+			if (type != null) {
+				beansViaType.put(type, bean);
+			}
+
+			String name = bean.getId();
+			if (name != null) {
+				beansViaName.put(name, bean);
+			}
+
+			String[] deps = bean.getDependencies();
+			if (deps!=null) {
+				for (String dep : deps) {
+					beansViaDependency.put(dep, bean);
+				}
+			}
+		}
+
+	}
+
+	public static LiveBeansModel.Builder builder() {
+		return new Builder();
+	}
 
 	interface Parser {
 		LiveBeansModel parse(String json) throws Exception;
@@ -34,7 +72,7 @@ public class LiveBeansModel {
 	private static class Boot15Parser implements Parser {
 		@Override
 		public LiveBeansModel parse(String json) throws Exception {
-			LiveBeansModel model = new LiveBeansModel();
+			Builder model = LiveBeansModel.builder();
 			JSONArray mainArray = new JSONArray(json);
 			for (int i = 0; i < mainArray.length(); i++) {
 				JSONObject appContext = mainArray.getJSONObject(i);
@@ -53,7 +91,7 @@ public class LiveBeansModel {
 					}
 				}
 			}
-			return model;
+			return model.build();
 		}
 		private LiveBean parseBean(JSONObject beansJSON) {
 			String id = beansJSON.optString("bean");
@@ -81,7 +119,7 @@ public class LiveBeansModel {
 	private static class Boot20Parser implements Parser {
 		@Override
 		public LiveBeansModel parse(String json) throws Exception {
-			LiveBeansModel model = new LiveBeansModel();
+			Builder model = LiveBeansModel.builder();
 			JSONObject mainObject = new JSONObject(json);
 			JSONObject beansObject = mainObject.getJSONObject("beans");
 			for (String id : beansObject.keySet()) {
@@ -92,7 +130,7 @@ public class LiveBeansModel {
 					model.add(bean);
 				}
 			}
-			return model;
+			return model.build();
 		}
 
 		private LiveBean parseBean(String id, JSONObject beansJSON) {
@@ -141,45 +179,36 @@ public class LiveBeansModel {
 		for (Exception e : exceptions) {
 			Log.log(e);
 		}
-		return new LiveBeansModel(); // allways return at least an empty model.
+		return LiveBeansModel.builder().build(); // allways return at least an empty model.
 	}
 
-	private final ConcurrentMap<String, List<LiveBean>> beansViaType;
-	private final ConcurrentMap<String, List<LiveBean>> beansViaName;
+	private final ImmutableListMultimap<String, LiveBean> beansViaType;
+	private final ImmutableListMultimap<String, LiveBean> beansViaName;
+	private final ImmutableListMultimap<String, LiveBean> beansViaDependency;
 
-	protected LiveBeansModel() {
-		this.beansViaType = new ConcurrentHashMap<>();
-		this.beansViaName = new ConcurrentHashMap<>();
+	protected LiveBeansModel(
+			ImmutableListMultimap<String, LiveBean> beansViaName,
+			ImmutableListMultimap<String, LiveBean> beansViaType,
+			ImmutableListMultimap<String, LiveBean> beansViaDependency) {
+		this.beansViaName = beansViaName;
+		this.beansViaType = beansViaType;
+		this.beansViaDependency = beansViaDependency;
 	}
 
-	public LiveBean[] getBeansOfType(String fullyQualifiedType) {
-		List<LiveBean> result = beansViaType.get(fullyQualifiedType);
-		return result != null ? result.toArray(new LiveBean[result.size()]) : new LiveBean[0];
+	public List<LiveBean> getBeansOfType(String fullyQualifiedType) {
+		return beansViaType.get(fullyQualifiedType);
 	}
 
-	public LiveBean[] getBeansOfName(String beanName) {
-		List<LiveBean> result = beansViaName.get(beanName);
-		return result != null ? result.toArray(new LiveBean[result.size()]) : new LiveBean[0];
+	public List<LiveBean> getBeansOfName(String beanName) {
+		return beansViaName.get(beanName);
 	}
 
-	protected void add(LiveBean bean) {
-		String type = bean.getType();
-		if (type != null) {
-			beansViaType.computeIfAbsent(type, (t) -> new ArrayList<>()).add(bean);
-		}
-
-		String name = bean.getId();
-		if (name != null) {
-			beansViaName.computeIfAbsent(name, (n) -> new ArrayList<>()).add(bean);
-		}
-	}
-
-	public Stream<LiveBean> getAllBeans() {
-		return beansViaName.values().stream().flatMap(Collection::stream);
+	public List<LiveBean> getBeansDependingOn(String beanName) {
+		return beansViaDependency.get(beanName);
 	}
 
 	public boolean isEmpty() {
-		return !getAllBeans().findAny().isPresent();
+		return beansViaName.isEmpty(); //Assumes every bean has a name.
 	}
 
 }
