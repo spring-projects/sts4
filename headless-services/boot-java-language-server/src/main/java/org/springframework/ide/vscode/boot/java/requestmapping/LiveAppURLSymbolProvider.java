@@ -11,15 +11,15 @@
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
-import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -44,7 +44,12 @@ public class LiveAppURLSymbolProvider {
 			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 			for (SpringBootApp app : runningApps) {
 				try {
-					collectLiveAppSymbols(result, app);
+					String host = app.getHost();
+					String port = app.getPort();
+					Stream<String> urls = app.getRequestMappings().stream()
+							.flatMap(rm -> Arrays.stream(rm.getSplitPath()))
+							.map(path -> UrlUtil.createUrl(host, port, path));
+					urls.forEach(url -> result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1))))));
 				}
 				catch (Exception e) {
 					Log.log(e);
@@ -55,23 +60,6 @@ public class LiveAppURLSymbolProvider {
 		}
 
 		return result;
-	}
-
-	private void collectLiveAppSymbols(List<SymbolInformation> result, SpringBootApp app) throws Exception {
-		String mappings = app.getRequestMappings();
-		JSONObject requestMappings = new JSONObject(mappings);
-		Iterator<String> keys = requestMappings.keys();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			String extractedPath = UrlUtil.extractPath(key);
-			if (extractedPath != null) {
-				String[] splitPath = UrlUtil.splitPath(extractedPath);
-				for (String path : splitPath) {
-					String url = UrlUtil.createUrl(app.getHost(), app.getPort(), path);
-					result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1)))));
-				}
-			}
-		}
 	}
 
 }

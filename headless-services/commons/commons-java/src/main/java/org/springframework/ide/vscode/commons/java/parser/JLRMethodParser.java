@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java.parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -32,6 +34,8 @@ public class JLRMethodParser {
 
 		private String fqClass;
 		private String methodName;
+		private String returnType;
+		private String[] parameters;
 
 		//TODO: parsing arguments to handle overloading
 
@@ -49,6 +53,7 @@ public class JLRMethodParser {
 			while (modifiersEnd<pieces.length && isModifier(pieces[modifiersEnd])) {
 				modifiersEnd++;
 			}
+			returnType = pieces[modifiersEnd];
 			if (pieces.length>=modifiersEnd+2) {
 				methodString = pieces[modifiersEnd+1];
 				int methodNameEnd = methodString.indexOf('(');
@@ -63,6 +68,55 @@ public class JLRMethodParser {
 					}
 				}
 			}
+			
+			int parametersStart = rawString.indexOf('(');
+			int parametersEnd = rawString.indexOf(')');
+			if (parametersStart < parametersEnd) {
+				String parametersString = rawString.substring(parametersStart + 1, parametersEnd);
+				this.parameters = parseParameters(parametersString);
+			} else {
+				this.parameters = new String[0];
+			}
+		}
+		
+		private String[] parseParameters(String parameterString) {
+			List<String> parameters = new ArrayList<>();
+			int openTemplateParameters = 0;
+			StringBuilder currentParameter = new StringBuilder();
+			for (int i = 0; i < parameterString.length(); i++) {
+				char ch = parameterString.charAt(i);
+				switch (ch) {
+				case '.':
+					currentParameter.append(ch);
+					break;
+				case '<':
+					openTemplateParameters++;
+					currentParameter.append(ch);
+					break;
+				case '>':	
+					openTemplateParameters--;
+					currentParameter.append(ch);
+					break;
+				case ','	:
+					if (openTemplateParameters == 0) {
+						if (currentParameter.length() != 0) {
+							parameters.add(currentParameter.toString());
+							currentParameter = new StringBuilder();
+						}
+					} else {
+						currentParameter.append(ch);
+					}
+					break;
+				default:
+					if (Character.isJavaIdentifierPart(ch)) {
+						currentParameter.append(ch);
+					}
+				}
+			}
+			if (currentParameter.length() > 0) {
+				parameters.add(currentParameter.toString());
+			}
+			return parameters.toArray(new String[parameters.size()]);
 		}
 
 		@Override
@@ -76,6 +130,14 @@ public class JLRMethodParser {
 
 		public String getMethodName() {
 			return methodName;
+		}
+		
+		public String getReturnType() {
+			return returnType;
+		}
+		
+		public String[] getParameters() {
+			return parameters;
 		}
 
 	}

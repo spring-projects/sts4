@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.AsyncProcess;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -139,8 +141,8 @@ public class SpringBootAppTest {
 	@Test
 	public void getRequestMappings() throws Exception {
 		ACondition.waitFor(TIMEOUT, () -> {
-			String result = testApp.getRequestMappings();
-			assertNonEmptyJsonObject(result);
+			Collection<RequestMapping> result = testApp.getRequestMappings();
+			assertTrue(result != null && !result.isEmpty());
 //			System.out.println("requestMappings = "+result);
 		});
 	}

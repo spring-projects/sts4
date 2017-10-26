@@ -37,6 +37,11 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<artifactId>commons-java</artifactId>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 </project>
