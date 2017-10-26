@@ -98,8 +98,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			List<Either<String, MarkedString>> hoverContent) throws Exception {
 		for (int i = 0; i < conditions.size(); i++) {
 			RunningAppConditional condition = conditions.get(i);
-			hoverContent.add(Either.forLeft("Condition: " + condition.condition));
-			hoverContent.add(Either.forLeft("Message: " + condition.message));
+			hoverContent.add(Either.forLeft(condition.message));
 			hoverContent.add(Either
 					.forLeft("Process " + condition.app.getProcessID() + ": " + condition.app.getProcessName()));
 
