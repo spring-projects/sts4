@@ -96,9 +96,20 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 	private void addHoverContent(List<RunningAppConditional> conditions,
 			List<Either<String, MarkedString>> hoverContent) throws Exception {
-		for (RunningAppConditional condition : conditions) {
+		for (int i = 0; i < conditions.size(); i++) {
+			RunningAppConditional condition = conditions.get(i);
 			hoverContent.add(Either.forLeft("Condition: " + condition.condition));
 			hoverContent.add(Either.forLeft("Message: " + condition.message));
+
+			// If there is more than one instances show process information
+			if (conditions.size() > 1) {
+				hoverContent.add(Either.forLeft("Process ID: " + condition.app.getProcessID()));
+				hoverContent.add(Either.forLeft("Process Name: " + condition.app.getProcessName()));
+			}
+
+			if (i < conditions.size() - 1) {
+				hoverContent.add(Either.forLeft("---"));
+			}
 		}
 	}
 
@@ -117,15 +128,20 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		public Optional<List<RunningAppConditional>> parse(Annotation annotation, SpringBootApp[] runningApps) {
 
 			try {
+				List<RunningAppConditional> allConditionals = new ArrayList<>();
 				for (SpringBootApp app : runningApps) {
 					String autoConfigRecord = app.getAutoConfigReport();
 					if (autoConfigRecord != null) {
 						JSONObject autoConfigJson = new JSONObject(autoConfigRecord);
-						List<RunningAppConditional> conditionalsFromPositiveMatches = getConditionals(annotation, autoConfigJson);
-						if(!conditionalsFromPositiveMatches.isEmpty()) {
-							return Optional.of(conditionalsFromPositiveMatches);
+						List<RunningAppConditional> conditionalsFromPositiveMatches = getConditionals(app, annotation,
+								autoConfigJson);
+						if (!conditionalsFromPositiveMatches.isEmpty()) {
+							allConditionals.addAll(conditionalsFromPositiveMatches);
 						}
 					}
+				}
+				if (!allConditionals.isEmpty()) {
+					return Optional.of(allConditionals);
 				}
 			} catch (Exception e) {
 				Log.log(e);
@@ -135,12 +151,13 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 		/**
 		 *
+		 * @param app
 		 * @param annotation
 		 * @param autoConfigJson
 		 * @return non-null list of conditionals parsed from an autoconfig report. List
 		 *         may be empty.
 		 */
-		private List<RunningAppConditional> getConditionals(Annotation annotation,
+		private List<RunningAppConditional> getConditionals(SpringBootApp app, Annotation annotation,
 				JSONObject autoConfigJson) {
 			List<RunningAppConditional> conditions = new ArrayList<>();
 
@@ -152,7 +169,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 						JSONArray matchList = (JSONArray) positiveMatches.get(positiveMatchKey);
 						matchList.forEach((match) -> {
 							if (match instanceof JSONObject) {
-								getMatchedCondition((JSONObject) match, annotation)
+								getMatchedCondition(app, (JSONObject) match, annotation)
 										.ifPresent((condition) -> conditions.add(condition));
 							}
 						});
@@ -203,13 +220,14 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			return false;
 		}
 
-		protected Optional<RunningAppConditional> getMatchedCondition(JSONObject conditionJson, Annotation annotation) {
+		protected Optional<RunningAppConditional> getMatchedCondition(SpringBootApp app, JSONObject conditionJson,
+				Annotation annotation) {
 			if (conditionJson != null) {
 				String condition = (String) conditionJson.get("condition");
 				String message = (String) conditionJson.get("message");
 				String annotationName = annotation.resolveTypeBinding().getName();
 				if (message.contains(annotationName)) {
-					return Optional.of(new RunningAppConditional(condition, message));
+					return Optional.of(new RunningAppConditional(app, condition, message));
 				}
 			}
 			return Optional.empty();
@@ -220,10 +238,12 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 		public final String condition;
 		public final String message;
+		public final SpringBootApp app;
 
-		public RunningAppConditional(String condition, String message) {
+		public RunningAppConditional(SpringBootApp app, String condition, String message) {
 			this.condition = condition;
 			this.message = message;
+			this.app = app;
 		}
 	}
 }
