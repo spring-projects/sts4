@@ -17,6 +17,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,13 +83,34 @@ public class GradleProjectClasspath extends JandexClasspath {
 					}
 				}) };
 	}
+	
+	public EclipseProject getRootProject() {
+		EclipseProject root = this.gradleProject;
+		while(root.getParent() != null) {
+			root = root.getParent();
+		}
+		return root;
+	}
 
 	@Override
 	public Stream<Path> getClasspathEntries() throws Exception {
-		return Stream.concat(gradleProject.getClasspath().stream().map(dep -> dep.getFile().toPath()),
-				gradleProject.getProjectDependencies().stream().map(project -> new File(project.getPath()).toPath()));
+		EclipseProject root = getRootProject();
+		List<Path> classpathList = Stream.concat(gradleProject.getClasspath().stream().map(dep -> dep.getFile().toPath()),
+				gradleProject.getProjectDependencies().stream()
+					.map(d -> findPeer(root, d.getTargetProject().getName()))
+					.filter(o -> o.isPresent())
+					.map(o -> o.get())
+					.map(p -> p.getProjectDirectory().toPath().resolve(p.getOutputLocation().getPath()))
+			)
+			.collect(Collectors.toList());
+		
+		return classpathList.stream();
 	}
-
+	
+	private Optional<? extends EclipseProject> findPeer(EclipseProject root, String name) {
+		return root.getChildren().stream().filter(p -> p.getName().equals(name)).findFirst();
+	}
+	
 	@Override
 	public Stream<String> getClasspathResources() {
 		return gradleProject.getSourceDirectories().stream().map(sourceDirectory -> sourceDirectory.getDirectory()).flatMap(folder -> {
