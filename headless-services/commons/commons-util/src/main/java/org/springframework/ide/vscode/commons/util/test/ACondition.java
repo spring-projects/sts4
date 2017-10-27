@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.commons.util.test;
 
 import java.time.Duration;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
@@ -43,6 +45,15 @@ public class ACondition {
 			}
 		} while (System.currentTimeMillis()-startTime < timeout_millis);
 		throw ExceptionUtil.exception(lastException);
+	}
+
+	/**
+	 * Retries fecthing a value until it succeeds without an error, or until timeout exceeded.
+	 */
+	public static <T> T waitForValue(Duration timeout, Callable<T> provider) throws Exception {
+		AtomicReference<T> result = new AtomicReference<>(null);
+		waitFor(timeout, () -> result.set(provider.call()));
+		return result.get();
 	}
 	
 }

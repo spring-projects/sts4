@@ -136,6 +136,66 @@ public class ConditionalsLiveHoverTest {
 				+ "Message: @ConditionalOnExpression (#{true}) resulted in true");
 	}
 
+
+	@Test
+	public void testMultipleAppsLiveHover() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath()
+				+ "/src/main/java/example/ConditionalOnMissingBeanConfig.java";
+
+		// Build a mock running boot app
+		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+				.processName("test-conditionals-live-hover")
+				.getAutoConfigReport(
+						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+				.build();
+
+		mockAppProvider.builder().isSpringBootApp(true).port("1001").processId("80000").host("cfapps.io")
+		.processName("test-conditionals-live-hover")
+		.getAutoConfigReport(
+				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+		.build();
+
+		mockAppProvider.builder().isSpringBootApp(true).port("1002").processId("90000").host("cfapps.io")
+		.processName("test-conditionals-live-hover")
+		.getAutoConfigReport(
+				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+		.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+
+
+		editor.assertHoverContains("@ConditionalOnMissingBean", "Condition: OnBeanCondition\n" + "\n"
+				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+				"\n" +
+				"Process ID: 70000\n" +
+				"\n" +
+				"Process Name: test-conditionals-live-hover\n" +
+				"\n" +
+				"---\n" +
+				"\n" +
+				"Condition: OnBeanCondition\n" + "\n"
+				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+              	"\n" +
+              	"Process ID: 80000\n" +
+              	"\n" +
+				"Process Name: test-conditionals-live-hover\n" +
+				"\n" +
+				"---\n" +
+				"\n" +
+				"Condition: OnBeanCondition\n" + "\n"
+				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+              	"\n" +
+              	"Process ID: 90000\n" +
+              	"\n" +
+				"Process Name: test-conditionals-live-hover");
+
+	}
+
 //	@Test
 //	public void testMultipleLiveHoverHints() throws Exception {
 //

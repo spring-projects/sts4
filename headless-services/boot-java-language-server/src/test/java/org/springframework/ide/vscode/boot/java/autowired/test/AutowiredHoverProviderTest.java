@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -82,7 +83,7 @@ public class AutowiredHoverProviderTest {
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
 		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
 
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
 		assertNotNull(hint);
 
 		assertEquals(11, hint.getStart().getLine());
@@ -106,7 +107,7 @@ public class AutowiredHoverProviderTest {
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, (String)null);
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(null));
 		assertNull(hint);
 	}
 
@@ -127,7 +128,7 @@ public class AutowiredHoverProviderTest {
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
 		String beansJSON = new String(Files.readAllBytes(new File(directory, "wrong-runtime-bean-information.json").toPath()));
 
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, beansJSON);
+		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
 		assertNull(hint);
 	}
 
@@ -146,7 +147,7 @@ public class AutowiredHoverProviderTest {
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
 		AutowiredHoverProvider provider = new AutowiredHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
+		LiveBeansModel beansModel = LiveBeansModel.parse(new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath())));
 
 		SpringBootAppProvider bootApp = new SpringBootAppProvider() {
 			@Override
@@ -160,8 +161,8 @@ public class AutowiredHoverProviderTest {
 			}
 
 			@Override
-			public String getBeans() throws Exception {
-				return beansJSON;
+			public LiveBeansModel getBeans() throws Exception {
+				return beansModel;
 			}
 		};
 		CompletableFuture<Hover> hoverFuture = provider.provideHover(null, (Annotation)node, null, offset, document, new SpringBootAppProvider[] {bootApp});

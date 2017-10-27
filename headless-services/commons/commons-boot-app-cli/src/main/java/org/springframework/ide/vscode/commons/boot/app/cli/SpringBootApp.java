@@ -34,7 +34,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -174,7 +176,7 @@ public class SpringBootApp {
 		return null;
 	}
 
-	public String getBeans() throws Exception {
+	private String getBeansJson() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=beansEndpoint", "Data");
 		if (result != null) {
 			String beans = new ObjectMapper().writeValueAsString(result);
@@ -187,6 +189,14 @@ public class SpringBootApp {
 			return beans;
 		}
 
+		return null;
+	}
+
+	public LiveBeansModel getBeans() throws Exception {
+		String json = getBeansJson();
+		if (StringUtil.hasText(json)) {
+			return LiveBeansModel.parse(json);
+		}
 		return null;
 	}
 

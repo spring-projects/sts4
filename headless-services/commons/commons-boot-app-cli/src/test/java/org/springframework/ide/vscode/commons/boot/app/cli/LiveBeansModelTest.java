@@ -8,15 +8,16 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.autowired.test;
+package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.InputStream;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.autowired.LiveBean;
-import org.springframework.ide.vscode.boot.java.autowired.LiveBeansModel;
-import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 
 /**
  * @author Martin Lippert
@@ -25,7 +26,7 @@ public class LiveBeansModelTest {
 
 	@Test
 	public void testSimpleModel() throws Exception {
-		String json = IOUtils.toString(ProjectsHarness.class.getResourceAsStream("/live-beans-models/simple-live-beans-model.json"));
+		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/simple-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
 		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
@@ -49,7 +50,7 @@ public class LiveBeansModelTest {
 
 	@Test
 	public void testEmptyModel() throws Exception {
-		String json = IOUtils.toString(ProjectsHarness.class.getResourceAsStream("/live-beans-models/empty-live-beans-model.json"));
+		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/empty-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
 		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
@@ -58,11 +59,15 @@ public class LiveBeansModelTest {
 
 	@Test
 	public void testTotallyEmptyModel() throws Exception {
-		String json = IOUtils.toString(ProjectsHarness.class.getResourceAsStream("/live-beans-models/totally-empty-live-beans-model.json"));
+		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/totally-empty-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
 		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
 		assertEquals(0, bean.length);
+	}
+
+	private InputStream getResourceAsStream(String string) {
+		return LiveBeansModelTest.class.getResourceAsStream(string);
 	}
 
 }

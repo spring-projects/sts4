@@ -14,14 +14,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
- * Composite project manager that acts a single project manager but consissts of many project managers
+ * Composite project manager that acts a single project manager but consists of many project managers
  * 
  * @author Alex Boyko
  *
@@ -48,7 +47,7 @@ public class CompositeJavaProjectFinder implements JavaProjectFinder {
 	
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Optional::isPresent).findFirst().orElse(null);
+		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Optional::isPresent).findFirst().orElseGet(() -> Optional.empty());
 	}
 
 }

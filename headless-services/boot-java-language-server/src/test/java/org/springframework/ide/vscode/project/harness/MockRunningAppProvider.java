@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -67,7 +68,7 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder beans(String beans) throws Exception {
-			when(app.getBeans()).thenReturn(beans);
+			when(app.getBeans()).thenReturn(LiveBeansModel.parse(beans));
 			return this;
 		}
 

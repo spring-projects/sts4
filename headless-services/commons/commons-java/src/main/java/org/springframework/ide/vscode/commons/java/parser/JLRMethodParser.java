@@ -108,15 +108,24 @@ public class JLRMethodParser {
 					}
 					break;
 				default:
-					if (Character.isJavaIdentifierPart(ch)) {
-						currentParameter.append(ch);
-					}
+					currentParameter.append(ch);
 				}
 			}
 			if (currentParameter.length() > 0) {
 				parameters.add(currentParameter.toString());
 			}
-			return parameters.toArray(new String[parameters.size()]);
+			return parameters.stream()
+					.map(p -> {
+						int genericStart = p.indexOf('<');
+						int genericEnd = p.lastIndexOf('>');
+						if (genericStart < genericEnd) {
+							return p.substring(0, genericStart) + p.substring(genericEnd + 1);
+						} else {
+							return p;
+						}
+					})
+					.map(p -> p.replaceAll("\\.\\.\\.", "[]"))
+					.toArray(String[]::new);
 		}
 
 		@Override

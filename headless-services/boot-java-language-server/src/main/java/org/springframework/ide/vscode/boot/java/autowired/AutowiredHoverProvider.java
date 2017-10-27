@@ -25,6 +25,8 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -54,8 +56,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 			for (SpringBootAppProvider bootApp : runningApps) {
 				try {
-					String liveBeans = bootApp.getBeans();
-					if (liveBeans != null && liveBeans.length() > 0) {
+					LiveBeansModel liveBeans = bootApp.getBeans();
+					if (liveBeans != null && !liveBeans.isEmpty()) {
 						addLiveHoverContent(annotation, doc, liveBeans, bootApp, hoverContent);
 					}
 				}
@@ -85,8 +87,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 		try {
 			for (SpringBootApp bootApp : runningApps) {
 				try {
-					String liveBeans = bootApp.getBeans();
-					if (liveBeans != null && liveBeans.length() > 0) {
+					LiveBeansModel liveBeans = bootApp.getBeans();
+					if (liveBeans != null && !liveBeans.isEmpty()) {
 						Range range = getLiveHoverHint(annotation, doc, liveBeans);
 						if (range != null) {
 							return ImmutableList.of(range);
@@ -105,14 +107,11 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, String liveBeansJSON) {
+	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, LiveBeansModel beansModel) {
 		try {
 			String type = findDeclaredType(annotation);
-			if (type != null && liveBeansJSON != null) {
-
-				LiveBeansModel beansModel = LiveBeansModel.parse(liveBeansJSON);
+			if (type != null && beansModel != null) {
 				LiveBean[] beansOfType = beansModel.getBeansOfType(type);
-
 				if (beansOfType.length > 0) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 					return hoverRange;
@@ -126,11 +125,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public void addLiveHoverContent(Annotation annotation, TextDocument doc, String liveBeansJSON, SpringBootAppProvider bootApp, List<Either<String, MarkedString>> hoverContent) {
+	public void addLiveHoverContent(Annotation annotation, TextDocument doc, LiveBeansModel beansModel, SpringBootAppProvider bootApp, List<Either<String, MarkedString>> hoverContent) {
 		String type = findDeclaredType(annotation);
-		if (type != null && liveBeansJSON != null) {
-
-			LiveBeansModel beansModel = LiveBeansModel.parse(liveBeansJSON);
+		if (type != null && beansModel != null) {
 			LiveBean[] beansOfType = beansModel.getBeansOfType(type);
 
 			if (beansOfType.length > 0) {

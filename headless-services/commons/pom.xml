@@ -85,6 +85,7 @@
 		<reactor-version>3.0.5.RELEASE</reactor-version>
 		<reactor-netty>0.6.0.RELEASE</reactor-netty>
 		<cloudfoundry-client-version>2.4.0.RELEASE</cloudfoundry-client-version>
+		<commons-io-version>2.4</commons-io-version>
 	</properties>
 
 	<build>
