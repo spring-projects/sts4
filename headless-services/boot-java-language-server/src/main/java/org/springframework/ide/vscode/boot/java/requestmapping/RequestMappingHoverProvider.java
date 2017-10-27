@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -139,8 +140,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		for (int i = 0; i < mappingMethods.size(); i++) {
 			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
 
-			String processId = mappingMethod.getT2().getProcessID();
-			String processName = mappingMethod.getT2().getProcessName();
+			SpringBootApp app = mappingMethod.getT2();
 			String port = mappingMethod.getT2().getPort();
 			String host = mappingMethod.getT2().getHost();
 
@@ -161,8 +161,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			 renderableUrls.remove(renderableUrls.size() - 1);
 
 			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
-			hoverContent.add(Either.forLeft("Process ID: " + processId));
-			hoverContent.add(Either.forLeft("Process Name: " + processName));
+			hoverContent.add(Either.forLeft(HoverContentUtils.getProcessInformation(app)));
 			if (i < mappingMethods.size() - 1) {
 				// Three dashes == line separator in Markdown
 				hoverContent.add(Either.forLeft("---"));
