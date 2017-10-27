@@ -603,6 +603,12 @@ public class Editor {
 		assertContains(snippet, hoverString(hover));
 	}
 
+	public void assertTrimmedHover(String hoverOver, String expectedHover) throws Exception {
+		int hoverPosition = getHoverPosition(hoverOver,1);
+		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
+		assertEquals(expectedHover.trim(), hoverString(hover).trim());
+	}
+
 	public void assertNoHover(String hoverOver) throws Exception {
 		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));

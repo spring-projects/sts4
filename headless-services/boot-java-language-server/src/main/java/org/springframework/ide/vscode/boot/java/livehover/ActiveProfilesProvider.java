@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.profiles;
+package org.springframework.ide.vscode.boot.java.livehover;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +32,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
+
+import static org.springframework.ide.vscode.boot.java.livehover.ASTUtils.*;
 
 /**
  * @author Kris De Volder
@@ -107,20 +109,6 @@ public class ActiveProfilesProvider implements HoverProvider {
 			}
 		}
 		return builder.build();
-	}
-
-	private static Optional<Range> nameRange(TextDocument doc, Annotation annotation) {
-		try {
-			int start = annotation.getTypeName().getStartPosition();
-			int len = annotation.getTypeName().getLength();
-			if (doc.getSafeChar(start-1)=='@') {
-				start--; len++;
-			}
-			return Optional.of(doc.toRange(start, len));
-		} catch (Exception e) {
-			Log.log(e);
-			return Optional.empty();
-		}
 	}
 
 	private static Optional<Range> rangeOf(TextDocument doc, StringLiteral node) {

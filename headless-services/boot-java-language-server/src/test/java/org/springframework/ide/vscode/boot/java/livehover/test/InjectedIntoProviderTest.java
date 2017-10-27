@@ -89,19 +89,16 @@ public class InjectedIntoProviderTest {
 				"}\n"
 		);
 		editor.assertHighlights("@Component");
-		editor.assertHoverExactText("@Component",
-				"**Injection report for `com.example.FooImplementation'**\n" +
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
 				"\n" +
 				"Process [PID=111, name=`the-app`]:\n" +
 				"\n" +
-				"Bean with id: `fooImplementation`\n" +
-				"**Not injected anywhere**\n"
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] exists but is **Not injected anywhere**\n"
 		);
 	}
 
 	@Test public void componentWithOneInjection() throws Exception {
-		//Like componentWithNoInjections but checks whether we are properly using the bean id
-		// to determine injections.
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("fooImplementation")
@@ -111,6 +108,65 @@ public class InjectedIntoProviderTest {
 				.add(LiveBean.builder()
 						.id("myController")
 						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n"
+		);
+	}
+
+	@Test public void componentWithMultipleInjections() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
 						.dependencies("fooImplementation")
 						.build()
 				)
@@ -137,16 +193,234 @@ public class InjectedIntoProviderTest {
 				"}\n"
 		);
 		editor.assertHighlights("@Component");
-		editor.assertHoverExactText("@Component",
-				"**Injection report for `com.example.FooImplementation'**\n" +
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
 				"\n" +
 				"Process [PID=111, name=`the-app`]:\n" +
 				"\n" +
-				"Bean with id: `fooImplementation`\n" +
-				"injected into:\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- com.example.MyController\n"
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
 		);
+	}
+
+	@Test public void componentWithMultipleInjectionsAndMultipleProcesses() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.build();
+		for (int i = 1; i <= 2; i++) {
+			mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("100"+i)
+			.processName("app-instance-"+i)
+			.beans(beans)
+			.build();
+		}
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=1001, name=`app-instance-1`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n" +
+				"\n" +
+				"Process [PID=1002, name=`app-instance-2`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
+		);
+	}
+
+	@Test public void onlyShowInfoForRelevantBeanId() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("alternateFooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("alternateFooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertHoverExactText("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]"
+		);
+	}
+
+	@Test public void explicitComponentId() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("alternateFooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("alternateFooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component(\"alternateFooImplementation\")\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
+		);
+	}
+
+	@Test public void hoHoversWhenRunningAppDoesntHaveTheComponent() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("whateverBean")
+						.type("com.example.UnrelatedComponent")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.UnrelatedComponent")
+						.dependencies("whateverBean")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("unrelated-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights(/*MONE*/);
+		editor.assertNoHover("@Component");
 	}
 
 	@Test public void hoHoversWhenNoRunningApps() throws Exception {
