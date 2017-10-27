@@ -159,7 +159,17 @@ There are two styles of entries:
 	@Override
 	public String[] getSplitPath() {
 		String paths = requestPathSupplier.get();
-		return Arrays.stream(paths.split("\\|\\|")).map(s -> s.trim()).toArray(String[]::new);
+		return Arrays.stream(paths.split("\\|\\|"))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.map(s -> {
+					if (s.charAt(0) != '/') {
+						return '/' + s;
+					} else {
+						return s;
+					}
+				})
+				.toArray(String[]::new);
 	}
 
 	@Override

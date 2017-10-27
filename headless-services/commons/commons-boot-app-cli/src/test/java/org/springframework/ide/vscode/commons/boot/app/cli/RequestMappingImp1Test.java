@@ -38,21 +38,21 @@ public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathSimpleCase() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath/mypath || mypath.json", null);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json]}", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(2, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
-		assertEquals("/superpath/mypath.json", splitPath[1]);
+		assertEquals("/mypath.json", splitPath[1]);
 	}
 
 	@Test
 	public void testSplitPathMultipleCases() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath/mypath || mypath.json || somethingelse.what", null);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json || somethingelse.what]}", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(3, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
-		assertEquals("/superpath/mypath.json", splitPath[1]);
-		assertEquals("/superpath/somethingelse.what", splitPath[2]);
+		assertEquals("/mypath.json", splitPath[1]);
+		assertEquals("/somethingelse.what", splitPath[2]);
 	}
 
 }
