@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -100,7 +101,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			RunningAppConditional condition = conditions.get(i);
 			hoverContent.add(Either.forLeft(condition.message));
 			hoverContent.add(Either
-					.forLeft("Process " + condition.app.getProcessID() + ": " + condition.app.getProcessName()));
+					.forLeft(HoverContentUtils.getProcessInformation(condition.app)));
 
 			if (i < conditions.size() - 1) {
 				hoverContent.add(Either.forLeft("---"));
