@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.livehover.InjectedIntoProvider;
 import org.springframework.ide.vscode.boot.java.profiles.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
@@ -261,7 +262,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(ActiveProfilesProvider.ANNOTATION, new ActiveProfilesProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new InjectedIntoProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());

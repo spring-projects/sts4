@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.Arrays;
 
 /**
  * @author Martin Lippert
@@ -25,6 +24,34 @@ public class LiveBean {
 	private final String type;
 	private final String resource;
 	private final String[] dependencies;
+
+	public static class Builder {
+		private String id;
+		private String[] aliases = {};
+		private String scope;
+		private String type;
+		private String resource;
+		private String[] dependencies = {};
+
+		public LiveBean build() {
+			return new LiveBean(id, aliases, scope, type, resource, dependencies);
+		}
+
+		public Builder id(String id) {
+			this.id = id;
+			return this;
+		}
+
+		public Builder type(String type) {
+			this.type = type;
+			return this;
+		}
+
+		public Builder dependencies(String... deps) {
+			this.dependencies = deps;
+			return this;
+		}
+	}
 
 	protected LiveBean(String id, String[] aliases, String scope, String type, String resource, String[] dependencies) {
 		super();
@@ -58,6 +85,15 @@ public class LiveBean {
 
 	public String[] getDependencies() {
 		return dependencies;
+	}
+
+	@Override
+	public String toString() {
+		return "LiveBean [id=" + id + ", type=" + type + ", dependencies=" + Arrays.toString(dependencies) + "]";
+	}
+
+	public static Builder builder() {
+		return new Builder();
 	}
 
 }

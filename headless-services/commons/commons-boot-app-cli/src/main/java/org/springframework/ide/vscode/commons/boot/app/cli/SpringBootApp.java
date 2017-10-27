@@ -188,12 +188,14 @@ public class SpringBootApp {
 		return null;
 	}
 
-	public LiveBeansModel getBeans() throws Exception {
-		String json = getBeansJson();
-		if (StringUtil.hasText(json)) {
+	public LiveBeansModel getBeans() {
+		try {
+			String json = getBeansJson();
 			return LiveBeansModel.parse(json);
+		} catch (Exception e) {
+			Log.log(e);
+			return LiveBeansModel.builder().build();
 		}
-		return null;
 	}
 
 	public String getRequestMappings() throws Exception {

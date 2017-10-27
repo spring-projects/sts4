@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.profile;
+package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import java.time.Duration;
 

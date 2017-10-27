@@ -68,7 +68,11 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder beans(String beans) throws Exception {
-			when(app.getBeans()).thenReturn(LiveBeansModel.parse(beans));
+			return beans(LiveBeansModel.parse(beans));
+		}
+
+		public MockAppBuilder beans(LiveBeansModel beans) {
+			when(app.getBeans()).thenReturn(beans);
 			return this;
 		}
 

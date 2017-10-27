@@ -40,7 +40,7 @@ public class LiveBeansModel {
 			return new LiveBeansModel(beansViaName.build(), beansViaType.build(), beansViaDependency.build());
 		}
 
-		public void add(LiveBean bean) {
+		public Builder add(LiveBean bean) {
 			String type = bean.getType();
 			if (type != null) {
 				beansViaType.put(type, bean);
@@ -57,6 +57,7 @@ public class LiveBeansModel {
 					beansViaDependency.put(dep, bean);
 				}
 			}
+			return this;
 		}
 
 	}
