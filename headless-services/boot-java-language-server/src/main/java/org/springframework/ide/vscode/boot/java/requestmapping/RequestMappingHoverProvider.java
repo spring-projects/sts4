@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -144,7 +145,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			String port = mappingMethod.getT2().getPort();
 			String host = mappingMethod.getT2().getHost();
 
-			 List<Renderable> renderableUrls = Arrays.stream(mappingMethod.getT1().getSplitPath()).map(path -> {
+			 List<Renderable> renderableUrls = Arrays.stream(mappingMethod.getT1().getSplitPath()).flatMap(path -> {
 				String url = UrlUtil.createUrl(host, port, path);
 				StringBuilder builder = new StringBuilder();
 				builder.append("[");
@@ -153,9 +154,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				builder.append("(");
 				builder.append(url);
 				builder.append(")");
-				return Renderables.concat(Renderables.text(builder.toString()), Renderables.lineBreak());
+				return Stream.of(Renderables.text(builder.toString()), Renderables.lineBreak());
 			})
 			.collect(Collectors.toList());
+
+			 // Remove the last line break
+			 renderableUrls.remove(renderableUrls.size() - 1);
 
 			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
 			hoverContent.add(Either.forLeft("Process ID: " + processId));

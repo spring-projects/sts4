@@ -62,7 +62,7 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello-world\")", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
 				"\n" +
 				"Process ID: 22022\n" +
 				"\n" +
@@ -310,7 +310,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)\n" +
+		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)  \n" +
 				"[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
 				"\n" +
 				"Process ID: 76543\n" +
