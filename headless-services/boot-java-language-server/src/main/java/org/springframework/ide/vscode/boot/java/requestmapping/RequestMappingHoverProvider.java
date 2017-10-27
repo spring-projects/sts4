@@ -14,15 +14,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -32,6 +31,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -54,8 +55,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
-				Optional<List<Tuple2<RequestMapping, SpringBootApp>>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
-				if (val.isPresent()) {
+				List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+				if (!val.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 					return ImmutableList.of(hoverRange);
 				}
@@ -73,10 +74,10 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		try {
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 
-			Optional<List<Tuple2<RequestMapping, SpringBootApp>>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+			List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 
-			if (val.isPresent()) {
-				addHoverContent(val.get(), hoverContent);
+			if (!val.isEmpty()) {
+				addHoverContent(val, hoverContent);
 			}
 
 			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
@@ -93,11 +94,11 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private Optional<List<Tuple2<RequestMapping, SpringBootApp>>> getRequestMappingMethodFromRunningApp(Annotation annotation,
+	private List<Tuple2<RequestMapping, SpringBootApp>> getRequestMappingMethodFromRunningApp(Annotation annotation,
 			SpringBootApp[] runningApps) {
 
+		List<Tuple2<RequestMapping, SpringBootApp>> results = new ArrayList<>();
 		try {
-			List<Tuple2<RequestMapping, SpringBootApp>> results = new ArrayList<>();
 			for (SpringBootApp app : runningApps) {
 				Collection<RequestMapping> mappings = app.getRequestMappings();
 				if (mappings != null && !mappings.isEmpty()) {
@@ -108,11 +109,10 @@ public class RequestMappingHoverProvider implements HoverProvider {
 							.findFirst().ifPresent(t -> results.add(t));
 				}
 			}
-			return Optional.of(results);
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Optional.empty();
+		return results;
 	}
 
 	private boolean methodMatchesAnnotation(Annotation annotation, RequestMapping rm) {
@@ -128,9 +128,9 @@ public class RequestMappingHoverProvider implements HoverProvider {
 							.map(t -> t.getTypeDeclaration().getQualifiedName())
 							.toArray(String[]::new),
 						rm.getMethodParameters());
-		} else if (parent instanceof TypeDeclaration) {
-			TypeDeclaration typeDec = (TypeDeclaration) parent;
-			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
+//		} else if (parent instanceof TypeDeclaration) {
+//			TypeDeclaration typeDec = (TypeDeclaration) parent;
+//			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
 		}
 		return false;
 	}
@@ -143,25 +143,21 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			String processName = mappingMethod.getT2().getProcessName();
 			String port = mappingMethod.getT2().getPort();
 			String host = mappingMethod.getT2().getHost();
-			StringBuilder builder = new StringBuilder();
 
-			Arrays.stream(mappingMethod.getT1().getSplitPath()).forEach(path -> {
-
+			 List<Renderable> renderableUrls = Arrays.stream(mappingMethod.getT1().getSplitPath()).map(path -> {
 				String url = UrlUtil.createUrl(host, port, path);
-
-				if (builder.length() > 0) {
-					builder.append("\n");
-				}
+				StringBuilder builder = new StringBuilder();
 				builder.append("[");
 				builder.append(url);
 				builder.append("]");
 				builder.append("(");
 				builder.append(url);
 				builder.append(")");
+				return Renderables.concat(Renderables.text(builder.toString()), Renderables.lineBreak());
+			})
+			.collect(Collectors.toList());
 
-			});
-
-			hoverContent.add(Either.forLeft(builder.toString()));
+			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
 			hoverContent.add(Either.forLeft("Process ID: " + processId));
 			hoverContent.add(Either.forLeft("Process Name: " + processName));
 			if (i < mappingMethods.size() - 1) {
