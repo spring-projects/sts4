@@ -169,7 +169,7 @@ public class SpringBootAppTest {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
 					LiveBeansModel beansModel = testApp.getBeans();
-					assertTrue(beansModel.getAllBeans().findAny().isPresent());
+					assertFalse(beansModel.isEmpty());
 		//			System.out.println("beans = "+beans);
 				});
 			} catch (Throwable e) {

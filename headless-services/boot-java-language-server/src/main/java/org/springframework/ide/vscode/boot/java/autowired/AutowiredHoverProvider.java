@@ -111,8 +111,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 		try {
 			String type = findDeclaredType(annotation);
 			if (type != null && beansModel != null) {
-				LiveBean[] beansOfType = beansModel.getBeansOfType(type);
-				if (beansOfType.length > 0) {
+				List<LiveBean> beansOfType = beansModel.getBeansOfType(type);
+				if (!beansOfType.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 					return hoverRange;
 				}
@@ -128,9 +128,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 	public void addLiveHoverContent(Annotation annotation, TextDocument doc, LiveBeansModel beansModel, SpringBootAppProvider bootApp, List<Either<String, MarkedString>> hoverContent) {
 		String type = findDeclaredType(annotation);
 		if (type != null && beansModel != null) {
-			LiveBean[] beansOfType = beansModel.getBeansOfType(type);
+			List<LiveBean> beansOfType = beansModel.getBeansOfType(type);
 
-			if (beansOfType.length > 0) {
+			if (!beansOfType.isEmpty()) {
 				String processId = bootApp.getProcessID();
 				String processName = bootApp.getProcessName();
 
@@ -142,7 +142,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 						hoverContent.add(Either.forLeft("injected beans:"));
 
 						for (String dependency : dependencies) {
-							LiveBean[] dependencyBeans = beansModel.getBeansOfName(dependency);
+							List<LiveBean> dependencyBeans = beansModel.getBeansOfName(dependency);
 							for (LiveBean dependencyBean : dependencyBeans) {
 								hoverContent.add(Either.forLeft("- '" + dependencyBean.getId() + "' - from: " + dependencyBean.getResource()));
 							}

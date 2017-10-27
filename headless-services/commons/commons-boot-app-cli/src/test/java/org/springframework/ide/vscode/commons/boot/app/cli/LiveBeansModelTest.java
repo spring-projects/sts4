@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class LiveBeansModelTest {
 		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/simple-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
-		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
+		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA").toArray(new LiveBean[0]);
 		assertEquals(1, bean.length);
 		assertEquals("dependencyA", bean[0].getId());
 		assertEquals("singleton", bean[0].getScope());
@@ -38,7 +39,7 @@ public class LiveBeansModelTest {
 		assertEquals(0, bean[0].getAliases().length);
 		assertEquals(0, bean[0].getDependencies().length);
 
-		bean = model.getBeansOfName("dependencyB");
+		bean = model.getBeansOfName("dependencyB").toArray(new LiveBean[0]);
 		assertEquals(1, bean.length);
 		assertEquals("dependencyB", bean[0].getId());
 		assertEquals("singleton", bean[0].getScope());
@@ -53,8 +54,8 @@ public class LiveBeansModelTest {
 		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/empty-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
-		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
-		assertEquals(0, bean.length);
+		List<LiveBean> bean = model.getBeansOfType("org.test.DependencyA");
+		assertEquals(0, bean.size());
 	}
 
 	@Test
@@ -62,8 +63,8 @@ public class LiveBeansModelTest {
 		String json = IOUtils.toString(getResourceAsStream("/live-beans-models/totally-empty-live-beans-model.json"));
 		LiveBeansModel model = LiveBeansModel.parse(json);
 
-		LiveBean[] bean = model.getBeansOfType("org.test.DependencyA");
-		assertEquals(0, bean.length);
+		List<LiveBean> bean = model.getBeansOfType("org.test.DependencyA");
+		assertEquals(0, bean.size());
 	}
 
 	private InputStream getResourceAsStream(String string) {
