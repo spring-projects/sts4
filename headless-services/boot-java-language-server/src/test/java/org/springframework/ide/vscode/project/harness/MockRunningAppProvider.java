@@ -19,9 +19,9 @@ import java.util.Collection;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness.Builder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -102,7 +102,8 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder getRequestMappings(String mappings) throws Exception {
-			when(app.getRequestMappings()).thenReturn(mappings);
+			Collection<RequestMapping> requestMappings = SpringBootApp.parseRequestMappingsJson(mappings);
+			when(app.getRequestMappings()).thenReturn(requestMappings);
 			return this;
 		}
 

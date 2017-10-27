@@ -62,7 +62,7 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello-world\")", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
 				"\n" +
 				"Process ID: 22022\n" +
 				"\n" +
@@ -132,6 +132,555 @@ public class RequestMappingLiveHoverTest {
 
 	}
 
+	@Test
+	public void testSimpleMethodHoverHintMethod1() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.DeleteMapping;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+            		"@DeleteMapping(\"/greetings\")\n" +
+            		"public void deleteGreetings() {\n" +
+            		"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@DeleteMapping(\"/greetings\")", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+
+	@Test
+	public void testDeleteMappingHoverHintMethod2() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.DeleteMapping;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+            		"@DeleteMapping(\"/greetings\")\n" +
+            		"public void deleteGreetings(int n) {\n" +
+            		"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertNoHover("@DeleteMapping(\"/greetings\")");
+
+	}
+
+
+
+
+	@Test
+	public void testNoHoverHintMethod() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/greetings],methods=[PUT]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.updateGreetings()\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                "import java.lang.String;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.PutMapping;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@PutMapping(\"/greetings\")\n" +
+                "public String updateGreetings(int n) {\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertNoHover("@PutMapping(\"/greetings\")");
+
+	}
+
+	@Test
+	public void testMultiPathMappingHoverHintMethod1() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/greetings || /hello],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.greetings()\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)\n" +
+                "public String greetings() {\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)  \n" +
+				"[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testMethodMatchingHoverHintMethod1() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public org.springframework.http.ResponseEntity<?> com.example.RestApi.find(java.lang.String,java.util.Date,java.lang.String)\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                	"import java.util.Date;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public ResponseEntity<?> find(String p1, Date p2, String p3) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testMethodMatchingHoverHintMethod2() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.lang.String>)\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                	"import java.util.Map;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String p1, Map<String, String> p2) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testMethodMatchingHoverHintMethod3() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Integer>>)\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                "import java.lang.Integer;\n" +
+                	"import java.util.Map;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String p1, Map<String, Map<String, Integer>> p2) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testWildCardMethodMatchingHoverHint() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, ? extends java.lang.Integer>>)\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                "import java.lang.Integer;\n" +
+                	"import java.util.Map;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String p1, Map<String, Map<String, ? extends Integer>> p2) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testArrayMethodMatchingHoverHint() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[])\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String[] p) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testMultiDimensionalArrayMethodMatchingHoverHint() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[][])\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String[][] p) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
+
+	@Test
+	public void testVarArgsMethodMatchingHoverHint() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("999")
+			.processId("76543")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.getRequestMappings(
+				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String...)\"}}")
+		.	build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                "\n" +
+                	"import org.springframework.http.ResponseEntity;\n" +
+                "import java.lang.String;\n" +
+                "import org.springframework.stereotype.Controller;\n" +
+                "import org.springframework.web.bind.annotation.RequestMapping;\n" +
+                "import org.springframework.web.bind.annotation.RequestMethod.*;\n" +
+                "\n" +
+                "@Controller\n" +
+                "public class RestApi {\n" +
+                "\n" +
+                "@RequestMapping(value=\"/find\", method=GET)\n" +
+                "public Object set(String... p) {\n" +
+                "return null;\n" +
+        			"}\n" +
+				"\n" +
+                "}",
+        docUri);
+
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+				"\n" +
+				"Process ID: 76543\n" +
+				"\n" +
+				"Process Name: test-request-mapping-live-hover");
+
+	}
 
 	@Test
 	public void testMultipleAppsLiveHover() throws Exception {

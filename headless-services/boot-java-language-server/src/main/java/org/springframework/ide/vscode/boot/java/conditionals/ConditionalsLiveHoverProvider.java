@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -39,8 +40,8 @@ import com.google.common.collect.ImmutableList;
 
 /**
  *
- * Provides live hovers and hints for @ConditionalOn... Spring Boot annotations from running
- * spring boot apps.
+ * Provides live hovers and hints for @ConditionalOn... Spring Boot annotations
+ * from running spring boot apps.
  */
 public class ConditionalsLiveHoverProvider implements HoverProvider {
 
@@ -98,14 +99,9 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			List<Either<String, MarkedString>> hoverContent) throws Exception {
 		for (int i = 0; i < conditions.size(); i++) {
 			RunningAppConditional condition = conditions.get(i);
-			hoverContent.add(Either.forLeft("Condition: " + condition.condition));
-			hoverContent.add(Either.forLeft("Message: " + condition.message));
-
-			// If there is more than one instances show process information
-			if (conditions.size() > 1) {
-				hoverContent.add(Either.forLeft("Process ID: " + condition.app.getProcessID()));
-				hoverContent.add(Either.forLeft("Process Name: " + condition.app.getProcessName()));
-			}
+			hoverContent.add(Either.forLeft(condition.message));
+			hoverContent.add(Either
+					.forLeft(HoverContentUtils.getProcessInformation(condition.app)));
 
 			if (i < conditions.size() - 1) {
 				hoverContent.add(Either.forLeft("---"));

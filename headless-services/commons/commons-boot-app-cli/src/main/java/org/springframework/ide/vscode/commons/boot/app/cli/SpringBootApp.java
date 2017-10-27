@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +32,8 @@ import javax.management.remote.JMXServiceURL;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -198,17 +202,29 @@ public class SpringBootApp {
 		}
 	}
 
-	public String getRequestMappings() throws Exception {
+	public static Collection<RequestMapping> parseRequestMappingsJson(String json) {
+		JSONObject obj = new JSONObject(json);
+		Iterator<String> keys = obj.keys();
+		List<RequestMapping> result = new ArrayList<>();
+		while (keys.hasNext()) {
+			String rawKey = keys.next();
+			JSONObject value = obj.getJSONObject(rawKey);
+			result.add(new RequestMappingImpl1(rawKey, value));
+		}
+		return result;
+	}
+
+	public Collection<RequestMapping> getRequestMappings() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
 		if (result != null) {
 			String mappings = new ObjectMapper().writeValueAsString(result);
-			return mappings;
+			return parseRequestMappingsJson(mappings);
 		}
 
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
 		if (result != null) {
 			String mappings = new ObjectMapper().writeValueAsString(result);
-			return mappings;
+			return parseRequestMappingsJson(mappings);
 		}
 
 		return null;
@@ -435,5 +451,6 @@ public class SpringBootApp {
 		}
 		return null;
 	}
+
 
 }

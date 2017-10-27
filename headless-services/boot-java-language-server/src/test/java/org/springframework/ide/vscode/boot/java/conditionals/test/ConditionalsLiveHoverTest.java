@@ -74,9 +74,10 @@ public class ConditionalsLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@ConditionalOnBean", "Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'");
-
+		editor.assertHoverContains("@ConditionalOnBean",
+				"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\n" +
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 	}
 
 	@Test
@@ -97,8 +98,9 @@ public class ConditionalsLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@ConditionalOnMissingBean", "Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans");
+		editor.assertHoverContains("@ConditionalOnMissingBean", "@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n"+
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 
 	}
 
@@ -120,20 +122,26 @@ public class ConditionalsLiveHoverTest {
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
-		editor.assertHoverContains("@ConditionalOnBean", "Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'");
+		editor.assertHoverContains("@ConditionalOnBean", "@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\n"	+
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 
-		editor.assertHoverContains("@ConditionalOnWebApplication", "Condition: OnWebApplicationCondition\n" + "\n"
-				+ "Message: @ConditionalOnWebApplication (required) found StandardServletEnvironment");
+		editor.assertHoverContains("@ConditionalOnWebApplication", "@ConditionalOnWebApplication (required) found StandardServletEnvironment\n"+
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 
 		editor.assertHoverContains("@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)",
-				"Condition: OnJavaCondition\n" + "\n" + "Message: @ConditionalOnJava (1.8 or newer) found 1.8");
+				"@ConditionalOnJava (1.8 or newer) found 1.8\n" +
+						"\n" +
+						"Process 22022: test-conditionals-live-hover");
 
-		editor.assertHoverContains("@ConditionalOnMissingClass", "Condition: OnClassCondition\n" + "\n"
-				+ "Message: @ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class");
+		editor.assertHoverContains("@ConditionalOnMissingClass", "@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\n"	+
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 
-		editor.assertHoverContains("@ConditionalOnExpression", "Condition: OnExpressionCondition\n" + "\n"
-				+ "Message: @ConditionalOnExpression (#{true}) resulted in true");
+		editor.assertHoverContains("@ConditionalOnExpression", "@ConditionalOnExpression (#{true}) resulted in true\n"	+
+				"\n" +
+				"Process 22022: test-conditionals-live-hover");
 	}
 
 
@@ -169,30 +177,21 @@ public class ConditionalsLiveHoverTest {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
 
-		editor.assertHoverContains("@ConditionalOnMissingBean", "Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+		editor.assertHoverContains("@ConditionalOnMissingBean", "@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
 				"\n" +
-				"Process ID: 70000\n" +
-				"\n" +
-				"Process Name: test-conditionals-live-hover\n" +
+				"Process 70000: test-conditionals-live-hover\n" +
 				"\n" +
 				"---\n" +
 				"\n" +
-				"Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+				"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
               	"\n" +
-              	"Process ID: 80000\n" +
-              	"\n" +
-				"Process Name: test-conditionals-live-hover\n" +
+              	"Process 80000: test-conditionals-live-hover\n" +
 				"\n" +
 				"---\n" +
 				"\n" +
-				"Condition: OnBeanCondition\n" + "\n"
-				+ "Message: @ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
+				"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" +
               	"\n" +
-              	"Process ID: 90000\n" +
-              	"\n" +
-				"Process Name: test-conditionals-live-hover");
+				"Process 90000: test-conditionals-live-hover");
 
 	}
 

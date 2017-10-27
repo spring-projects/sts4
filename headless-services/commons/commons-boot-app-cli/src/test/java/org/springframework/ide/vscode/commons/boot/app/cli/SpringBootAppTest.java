@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.AsyncProcess;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
@@ -183,9 +183,9 @@ public class SpringBootAppTest {
 	public void getRequestMappings() throws Exception {
 		for (SpringBootApp testApp : getTestApps()) {
 			ACondition.waitFor(TIMEOUT, () -> {
-				String result = testApp.getRequestMappings();
-				assertNonEmptyJsonObject(result);
-	//			System.out.println("requestMappings = "+result);
+				Collection<RequestMapping> result = testApp.getRequestMappings();
+				assertTrue(result != null && !result.isEmpty());
+//				System.out.println("requestMappings = "+result);
 			});
 		}
 	}

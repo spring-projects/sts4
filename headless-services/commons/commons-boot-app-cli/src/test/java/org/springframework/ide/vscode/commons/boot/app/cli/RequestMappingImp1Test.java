@@ -8,51 +8,51 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.requestmapping.test;
+package org.springframework.ide.vscode.commons.boot.app.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.requestmapping.UrlUtil;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
 
 /**
  * @author Martin Lippert
  */
-public class UrlUtilTest {
+public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathWithoutDuplicate() {
-		String path = "/superpath";
-		String[] splitPath = UrlUtil.splitPath(path);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath", null);
+		String[] splitPath = rm.getSplitPath();
 		assertEquals(1, splitPath.length);
 		assertEquals("/superpath", splitPath[0]);
 	}
 
 	@Test
 	public void testSplitPathSimpleCaseWithEmptyOr() {
-		String path = "/superpath/mypath || ";
-		String[] splitPath = UrlUtil.splitPath(path);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath/mypath || ", null);
+		String[] splitPath = rm.getSplitPath();
 		assertEquals(1, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
 	}
 
 	@Test
 	public void testSplitPathSimpleCase() {
-		String path = "/superpath/mypath || mypath.json";
-		String[] splitPath = UrlUtil.splitPath(path);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json]}", null);
+		String[] splitPath = rm.getSplitPath();
 		assertEquals(2, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
-		assertEquals("/superpath/mypath.json", splitPath[1]);
+		assertEquals("/mypath.json", splitPath[1]);
 	}
 
 	@Test
 	public void testSplitPathMultipleCases() {
-		String path = "/superpath/mypath || mypath.json || somethingelse.what";
-		String[] splitPath = UrlUtil.splitPath(path);
+		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json || somethingelse.what]}", null);
+		String[] splitPath = rm.getSplitPath();
 		assertEquals(3, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
-		assertEquals("/superpath/mypath.json", splitPath[1]);
-		assertEquals("/superpath/somethingelse.what", splitPath[2]);
+		assertEquals("/mypath.json", splitPath[1]);
+		assertEquals("/somethingelse.what", splitPath[2]);
 	}
 
 }

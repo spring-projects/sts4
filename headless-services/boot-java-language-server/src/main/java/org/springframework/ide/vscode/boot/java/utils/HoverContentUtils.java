@@ -8,30 +8,14 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.requestmapping;
+package org.springframework.ide.vscode.boot.java.utils;
 
-public class UrlUtil {
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 
-	/**
-	 * Creates http URL string based on host, port and path
-	 * @param host
-	 * @param port
-	 * @param path
-	 * @return the resultant URL
-	 */
-	public static String createUrl(String host, String port, String path) {
-		if (path==null) {
-			path = "";
-		}
-		if (host!=null) {
-			if (port != null) {
-				if (!path.startsWith("/")) {
-					path = "/" +path;
-				}
-				return "http://"+host+":"+port+path;
-			}
-		}
-		return null;
+public class HoverContentUtils {
+
+	public static String getProcessInformation(SpringBootApp app) {
+		return "Process " + app.getProcessID() + ": " + app.getProcessName();
 	}
 
 }
