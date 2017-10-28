@@ -95,16 +95,13 @@ public class GradleProjectClasspath extends JandexClasspath {
 	@Override
 	public Stream<Path> getClasspathEntries() throws Exception {
 		EclipseProject root = getRootProject();
-		List<Path> classpathList = Stream.concat(gradleProject.getClasspath().stream().map(dep -> dep.getFile().toPath()),
+		return Stream.concat(gradleProject.getClasspath().stream().map(dep -> dep.getFile().toPath()),
 				gradleProject.getProjectDependencies().stream()
 					.map(d -> findPeer(root, d.getTargetProject().getName()))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
 					.map(p -> p.getProjectDirectory().toPath().resolve(p.getOutputLocation().getPath()))
-			)
-			.collect(Collectors.toList());
-		
-		return classpathList.stream();
+			);
 	}
 	
 	private Optional<? extends EclipseProject> findPeer(EclipseProject root, String name) {
