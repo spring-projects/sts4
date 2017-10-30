@@ -133,7 +133,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
-	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(1000);
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(3000); //TODO: why does it need to be this long, that's fishy!
 
 	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);
