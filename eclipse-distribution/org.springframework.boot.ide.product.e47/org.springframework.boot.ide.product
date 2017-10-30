@@ -46,6 +46,7 @@ openFile</programArgs>
 
    <features>
       <feature id="org.eclipse.platform" installMode="root"/>
+      <feature id="org.eclipse.pde" installMode="root"/>
 
       <feature id="org.eclipse.buildship" installMode="root"/>
       <feature id="org.eclipse.egit" installMode="root"/>
