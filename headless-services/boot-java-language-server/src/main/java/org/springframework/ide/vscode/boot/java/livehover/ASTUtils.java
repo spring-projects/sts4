@@ -17,12 +17,15 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class ASTUtils {
@@ -75,4 +78,31 @@ public class ASTUtils {
 
 		return constructors.toArray(new MethodDeclaration[constructors.size()]);
 	}
+
+	public static LiveBean getDefinedBean(Annotation annotation) {
+		TypeDeclaration declaringType = ASTUtils.findDeclaringType(annotation);
+		if (declaringType != null) {
+			ITypeBinding beanType = declaringType.resolveBinding();
+			if (beanType != null) {
+				String id = getBeanId(annotation, beanType);
+				if (StringUtil.hasText(id)) {
+					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
+				}
+			}
+		}
+		return null;
+	}
+
+	public static String getBeanId(Annotation annotation, ITypeBinding beanType) {
+		Optional<String> explicitId = ASTUtils.getValueAttribute(annotation);
+		if (explicitId.isPresent()) {
+			return explicitId.get();
+		}
+		String typeName = beanType.getName();
+		if (StringUtil.hasText(typeName)) {
+			return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
+		}
+		return null;
+	}
+
 }
