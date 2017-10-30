@@ -10,16 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -35,34 +43,34 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class RequestMappingSymbolProvider implements SymbolProvider {
 
 	@Override
-	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
 		try {
-			String path = getPath(node);
-			String parentPath = getParentPath(node);
-			String method = getMethod(node);
+			Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
+			String[] path = getPath(node);
+			String[] parentPath = getParentPath(node);
+			String[] method = getMethod(node);
 
-			if (path != null && parentPath != null) {
-				String separator = !parentPath.endsWith("/") && !path.startsWith("/") ? "/" : "";
-				path = parentPath + separator + path;
-			}
-			if (path != null && !path.startsWith("/")) {
-				path = "/" + path;
-			}
+			String methodStr = method == null || method.length == 0 ? "(no method defined)" : String.join(",", method);
 
-			String symbolLabel = "@" + path + " -- " + method;
-
-			SymbolInformation symbol = new SymbolInformation(symbolLabel, SymbolKind.Interface,
-					new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-			return symbol;
-		}
-		catch (Exception e) {
+			return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
+					.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
+							.filter(Objects::nonNull).map(p -> {
+								String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
+								String resultPath = parent + separator + p;
+								return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
+							}))
+					.map(p -> "@" + p + " -- " + methodStr)
+					.map(symbolLabel -> new SymbolInformation(symbolLabel, SymbolKind.Interface, location))
+					.collect(Collectors.toList());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 
-	private String getMethod(Annotation node) {
+	private String[] getMethod(Annotation node) {
+		String[] methods = null;
+
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -73,25 +81,26 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && valueName.equals("method")) {
 						Expression expression = pair.getValue();
-						if (expression instanceof QualifiedName) {
-							QualifiedName qualifiedName = (QualifiedName) expression;
-							return qualifiedName.getName().toString();
-						}
+						methods = getExpressionValueAsArray(expression);
+						break;
 					}
 				}
 			}
+		} else if (node instanceof SingleMemberAnnotation) {
+			methods = getRequestMethod((SingleMemberAnnotation)node);
 		}
 
-		String type = node.getTypeName().toString();
-		if (type != null && type.endsWith("Mapping") && !type.startsWith("Request")) {
-			String method = type.substring(0, type.length() - 7).toUpperCase();
-			return method;
+		if (methods == null && node.getParent() instanceof MethodDeclaration) {
+			Annotation parentAnnotation = getParentAnnotation(node);
+			if (parentAnnotation != null) {
+				methods = getMethod(parentAnnotation);
+			}
 		}
 
-		return "(no method defined)";
+		return methods;
 	}
 
-	private String getPath(Annotation node) {
+	private String[] getPath(Annotation node) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -102,26 +111,25 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && (valueName.equals("value") || valueName.equals("path"))) {
 						Expression expression = pair.getValue();
-						if (expression instanceof StringLiteral) {
-							StringLiteral literal = (StringLiteral) expression;
-							return literal.getLiteralValue();
-						}
+						return getExpressionValueAsArray(expression);
 					}
 				}
 			}
 		} else if (node.isSingleMemberAnnotation()) {
 			SingleMemberAnnotation singleNode = (SingleMemberAnnotation) node;
 			Expression expression = singleNode.getValue();
-			if (expression instanceof StringLiteral) {
-				StringLiteral literal = (StringLiteral) expression;
-				return literal.getLiteralValue();
-			}
+			return getExpressionValueAsArray(expression);
 		}
 
 		return null;
 	}
 
-	private String getParentPath(Annotation node) {
+	private String[] getParentPath(Annotation node) {
+		Annotation parentAnnotation = getParentAnnotation(node);
+		return parentAnnotation == null ? null : getPath(parentAnnotation);
+	}
+
+	private Annotation getParentAnnotation(Annotation node) {
 		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
 		while (parent != null && !(parent instanceof TypeDeclaration)) {
 			parent = parent.getParent();
@@ -138,9 +146,55 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					ITypeBinding resolvedType = annotation.resolveTypeBinding();
 					String annotationType = resolvedType.getQualifiedName();
 					if (annotationType != null && Constants.SPRING_REQUEST_MAPPING.equals(annotationType)) {
-						return getPath(annotation);
+						return annotation;
 					}
 				}
+			}
+		}
+		return null;
+	}
+
+	private String[] getRequestMethod(SingleMemberAnnotation annotation) {
+		ITypeBinding type = annotation.resolveTypeBinding();
+		if (type != null) {
+			switch (type.getQualifiedName()) {
+			case Constants.SPRING_GET_MAPPING:
+				return new String[] { "GET" };
+			case Constants.SPRING_POST_MAPPING:
+				return new String[] { "POST" };
+			case Constants.SPRING_DELETE_MAPPING:
+				return new String[] { "DELETE" };
+			case Constants.SPRING_PUT_MAPPING:
+				return new String[] { "PUT" };
+			case Constants.SPRING_PATCH_MAPPING:
+				return new String[] { "PATCH" };
+			}
+		}
+		return null;
+	}
+
+	private static String getExpressionValueAsString(Expression exp) {
+		if (exp instanceof StringLiteral) {
+			return ((StringLiteral) exp).getLiteralValue();
+		} else if (exp instanceof QualifiedName) {
+			return getExpressionValueAsString(((QualifiedName) exp).getName());
+		} else if (exp instanceof SimpleName) {
+			return ((SimpleName) exp).getIdentifier();
+		} else {
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static String[] getExpressionValueAsArray(Expression exp) {
+		if (exp instanceof ArrayInitializer) {
+			ArrayInitializer array = (ArrayInitializer) exp;
+			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e))
+					.filter(Objects::nonNull).toArray(String[]::new);
+		} else {
+			String rm = getExpressionValueAsString(exp);
+			if (rm != null) {
+				return new String[] { rm };
 			}
 		}
 		return null;

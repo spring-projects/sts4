@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.util.Collection;
+
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -19,6 +21,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface SymbolProvider {
 
-	SymbolInformation getSymbol(Annotation node, TextDocument doc);
+	Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc);
 
 }
