@@ -38,10 +38,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
-/**
- * @author Martin Lippert
- */
-public class ComponentHoverProvider implements HoverProvider {
+public class ComponentInjectionsHoverProvider implements HoverProvider {
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
@@ -211,5 +208,4 @@ public class ComponentHoverProvider implements HoverProvider {
 
 		return null;
 	}
-
 }

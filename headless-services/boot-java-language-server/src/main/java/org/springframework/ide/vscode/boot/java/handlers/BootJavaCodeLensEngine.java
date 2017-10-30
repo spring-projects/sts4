@@ -27,11 +27,11 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class BootJavaCodeLensEngine {
 
 	private final SimpleLanguageServer server;
-	private final JavaProjectFinder projectFinder;
+//	private final JavaProjectFinder projectFinder;
 
 	public BootJavaCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		this.server = server;
-		this.projectFinder = projectFinder;
+//		this.projectFinder = projectFinder;
 	}
 
 	public CompletableFuture<List<? extends CodeLens>> createCodeLenses(CodeLensParams params) {

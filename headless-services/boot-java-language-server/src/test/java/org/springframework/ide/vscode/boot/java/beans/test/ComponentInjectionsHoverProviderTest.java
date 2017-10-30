@@ -41,7 +41,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentHoverProvider;
+import org.springframework.ide.vscode.boot.java.beans.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -55,7 +55,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 /**
  * @author Martin Lippert
  */
-public class ComponentHoverProviderTest {
+public class ComponentInjectionsHoverProviderTest {
 
 	private JavaProjectFinder projectFinder;
 	private BootLanguageServerHarness harness;
@@ -80,7 +80,7 @@ public class ComponentHoverProviderTest {
 		int offset = document.toOffset(new Position(4, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		ComponentHoverProvider provider = new ComponentHoverProvider();
+		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
 		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath()));
 
 		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
@@ -106,7 +106,7 @@ public class ComponentHoverProviderTest {
 		int offset = document.toOffset(new Position(5, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		ComponentHoverProvider provider = new ComponentHoverProvider();
+		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
 		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
 
 		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
@@ -127,7 +127,7 @@ public class ComponentHoverProviderTest {
 		int offset = document.toOffset(new Position(4, 2));
 		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
 
-		ComponentHoverProvider provider = new ComponentHoverProvider();
+		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
 		LiveBeansModel beansModel = LiveBeansModel.parse(new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath())));
 
 		SpringBootAppProvider bootApp = new SpringBootAppProvider() {

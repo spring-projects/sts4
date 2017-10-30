@@ -13,13 +13,10 @@ package org.springframework.ide.vscode.project.harness;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -27,7 +24,7 @@ import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
-import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
+import org.springframework.ide.vscode.commons.util.IOUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -35,8 +32,6 @@ import com.google.common.io.Files;
 
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
-
-import org.springframework.ide.vscode.commons.util.IOUtil;
 
 /**
  * Test projects harness

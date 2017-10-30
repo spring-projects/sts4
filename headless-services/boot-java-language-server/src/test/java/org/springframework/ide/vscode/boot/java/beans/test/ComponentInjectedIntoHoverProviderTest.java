@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.livehover.test;
+package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertTrue;
 
@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 
-public class InjectedIntoProviderTest {
+public class ComponentInjectedIntoHoverProviderTest {
 
 	private static final ProjectCustomizer FOO_INTERFACE = (CustomizableProjectContent p) -> {
 		p.createType("com.examle.Foo",
@@ -384,7 +384,7 @@ public class InjectedIntoProviderTest {
 		);
 	}
 
-	@Test public void hoHoversWhenRunningAppDoesntHaveTheComponent() throws Exception {
+	@Test public void noHoversWhenRunningAppDoesntHaveTheComponent() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("whateverBean")
@@ -423,7 +423,7 @@ public class InjectedIntoProviderTest {
 		editor.assertNoHover("@Component");
 	}
 
-	@Test public void hoHoversWhenNoRunningApps() throws Exception {
+	@Test public void noHoversWhenNoRunningApps() throws Exception {
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package com.example;\n" +
 				"\n" +

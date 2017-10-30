@@ -26,8 +26,9 @@ public class ASTUtils {
 		try {
 			int start = annotation.getTypeName().getStartPosition();
 			int len = annotation.getTypeName().getLength();
-			if (doc.getSafeChar(start-1)=='@') {
-				start--; len++;
+			if (doc.getSafeChar(start - 1) == '@') {
+				start--;
+				len++;
 			}
 			return Optional.of(doc.toRange(start, len));
 		} catch (Exception e) {
@@ -47,6 +48,5 @@ public class ASTUtils {
 		}
 		return Optional.empty();
 	}
-
 
 }

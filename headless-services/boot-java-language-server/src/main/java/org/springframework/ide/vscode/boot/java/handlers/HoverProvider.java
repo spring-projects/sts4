@@ -21,8 +21,6 @@ import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * @author Martin Lippert
  */
