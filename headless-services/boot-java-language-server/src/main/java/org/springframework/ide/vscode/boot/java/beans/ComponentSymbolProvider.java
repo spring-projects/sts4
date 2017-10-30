@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -25,7 +28,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class ComponentSymbolProvider implements SymbolProvider {
 
 	@Override
-	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
 		try {
 			StringBuilder symbolLabel = new StringBuilder();
 			symbolLabel.append("@+ ");
@@ -41,7 +44,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 
 			SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
 					new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-			return symbol;
+			return Collections.singleton(symbol);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

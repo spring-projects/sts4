@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -37,13 +39,13 @@ public class BeansSymbolProvider implements SymbolProvider {
 	private static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
 
 	@Override
-	public SymbolInformation getSymbol(Annotation node, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
 		try {
 			if (isFunctionBean(node)) {
-				return createFunctionSymbol(node, doc);
+				return Collections.singleton(createFunctionSymbol(node, doc));
 			}
 			else {
-				return createRegularBeanSymbol(node, doc);
+				return Collections.singleton(createRegularBeanSymbol(node, doc));
 			}
 		}
 		catch (Exception e) {

@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -396,10 +397,12 @@ public class SpringIndexer {
 			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
 			if (provider != null) {
 				TextDocument doc = getTempTextDocument(docURI, docRef, content);
-				SymbolInformation symbol = provider.getSymbol(node, doc);
-				if (symbol != null) {
-					symbols.add(symbol);
-					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+				Collection<SymbolInformation> sbls = provider.getSymbols(node, doc);
+				if (sbls != null) {
+					sbls.forEach(symbol -> {
+						symbols.add(symbol);
+						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					});
 				}
 			}
 			else {
