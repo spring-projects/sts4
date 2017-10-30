@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.autowired;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.Optionals;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -92,7 +95,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 			StringBuilder hover = new StringBuilder();
 
-			LiveBean definedBean = ASTUtils.getDefinedBean(annotation);
+			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
 
 				hover.append("**Injection report for " + LiveHoverUtils.showBean(definedBean) + "**\n\n");
@@ -124,6 +127,31 @@ public class AutowiredHoverProvider implements HoverProvider {
 			}
 		}
 		return null;
+	}
+
+	private LiveBean getDefinedBean(Annotation annotation) {
+		TypeDeclaration declaringType = ASTUtils.findDeclaringType(annotation);
+		if (declaringType != null) {
+			ITypeBinding beanType = declaringType.resolveBinding();
+			if (beanType != null) {
+				String id = getBeanId(annotation, beanType);
+				if (StringUtil.hasText(id)) {
+					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
+				}
+			}
+		}
+		return null;
+	}
+
+	private String getBeanId(Annotation annotation, ITypeBinding beanType) {
+		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString)
+		.orElseGet(() ->  {
+			String typeName = beanType.getName();
+			if (StringUtil.hasText(typeName)) {
+				return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
+			}
+			return null;
+		});
 	}
 
 	private void addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {

@@ -14,11 +14,18 @@ import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 
 public class LiveHoverUtils {
 
 	public static String showBean(LiveBean bean) {
-		return "Bean [id: " + bean.getId() + ", type: `" + bean.getType() + "`]";
+		StringBuilder buf = new StringBuilder("Bean [id: " + bean.getId());
+		String type = bean.getType();
+		if (type!=null) {
+			buf.append(", type: `"+type+"`");
+		}
+		buf.append(']');
+		return buf.toString();
 	}
 
 	public static String niceAppName(SpringBootApp app) {
@@ -30,8 +37,16 @@ public class LiveHoverUtils {
 	}
 
 	public static Stream<LiveBean> findRelevantBeans(SpringBootApp app, LiveBean definedBean) {
-		return app.getBeans().getBeansOfName(definedBean.getId()).stream()
-				.filter(bean -> definedBean.getType().equals(bean.getType()));
+		LiveBeansModel beansModel = app.getBeans();
+		if (beansModel!=null) {
+			Stream<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId()).stream();
+			String type = definedBean.getType();
+			if (type!=null) {
+				relevantBeans = relevantBeans.filter(bean -> type.equals(bean.getType()));
+			}
+			return relevantBeans;
+		}
+		return Stream.empty();
 	}
 
 }

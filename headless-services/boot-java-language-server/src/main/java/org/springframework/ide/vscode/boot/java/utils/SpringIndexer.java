@@ -105,6 +105,9 @@ public class SpringIndexer {
 	}
 
 	public CompletableFuture<Void> initialize(final Path workspaceRoot) {
+		if (workspaceRoot==null) {
+			return CompletableFuture.completedFuture(null);
+		}
 		synchronized(this) {
 			if (this.initializeTask == null) {
 				initializing.set(true);
@@ -114,9 +117,7 @@ public class SpringIndexer {
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
 					@Override
 					public void run() {
-						System.out.println("start initial scan...");
 						scanFiles(workspaceRoot.toFile());
-						System.out.println("initial scan done...!!!");
 
 						SpringIndexer.this.updateQueue = new LinkedBlockingQueue<>();
 						SpringIndexer.this.updateWorker = new Thread(new Runnable() {

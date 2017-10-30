@@ -20,7 +20,6 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
@@ -35,6 +34,8 @@ import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
+import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
@@ -262,6 +263,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentInjectionsHoverProvider());
+		providers.put(BeanInjectedIntoHoverProvider.ANNOTATION, new BeanInjectedIntoHoverProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());

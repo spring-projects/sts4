@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.beans;
+package org.springframework.ide.vscode.boot.java.livehover;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,16 +20,10 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.springframework.ide.vscode.boot.java.autowired.Constants;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.livehover.ASTUtils;
-import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
@@ -38,14 +32,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
-public class ComponentInjectionsHoverProvider implements HoverProvider {
+public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
 
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		// Highlight if any running app contains an instance of this component
 		try {
 			if (runningApps.length > 0) {
-				LiveBean definedBean = ASTUtils.getDefinedBean(annotation);
+				LiveBean definedBean = getDefinedBean(annotation);
 				if (definedBean != null) {
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
@@ -66,7 +60,7 @@ public class ComponentInjectionsHoverProvider implements HoverProvider {
 			TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 
-			LiveBean definedBean = ASTUtils.getDefinedBean(annotation);
+			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
 				StringBuilder hover = new StringBuilder();
 				hover.append("**Injection report for " + LiveHoverUtils.showBean(definedBean) + "**\n\n");
@@ -86,7 +80,7 @@ public class ComponentInjectionsHoverProvider implements HoverProvider {
 
 						for (LiveBean bean : relevantBeans) {
 							addInjectedInto(definedBean, hover, beans, bean);
-							addAutomaticallyWired(hover, annotation, beans, bean);
+							addAutomaticallyWiredContructor(hover, annotation, beans, bean);
 						}
 					}
 				}
@@ -100,13 +94,21 @@ public class ComponentInjectionsHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private void addInjectedInto(LiveBean definedBean, StringBuilder hover, LiveBeansModel beans, LiveBean bean) {
+	protected abstract LiveBean getDefinedBean(Annotation annotation);
+
+	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+		//This doesn't really belong here, but it accomodates Martin's additional logic to handle implicitly
+		//@Autowired constructor.
+		//This does nothing by default as its really only relevant to @Component annotation report.
+	}
+
+	protected void addInjectedInto(LiveBean definedBean, StringBuilder hover, LiveBeansModel beans, LiveBean bean) {
 		hover.append("\n\n");
 		List<LiveBean> dependers = beans.getBeansDependingOn(bean.getId());
 		if (dependers.isEmpty()) {
 			hover.append(LiveHoverUtils.showBean(bean) + " exists but is **Not injected anywhere**\n");
 		} else {
-			hover.append(LiveHoverUtils.showBean(definedBean) + " injected into:\n\n");
+			hover.append(LiveHoverUtils.showBean(bean) + " injected into:\n\n");
 			boolean firstDependency = true;
 			for (LiveBean dependingBean : dependers) {
 				if (!firstDependency) {
@@ -117,45 +119,4 @@ public class ComponentInjectionsHoverProvider implements HoverProvider {
 			}
 		}
 	}
-
-	private void addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
-		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
-		if (typeDecl != null) {
-			MethodDeclaration[] constructors = ASTUtils.findConstructors(typeDecl);
-
-			if (constructors != null && constructors.length == 1 && !hasAutowiredAnnotation(constructors[0])) {
-				String[] dependencies = bean.getDependencies();
-
-				if (dependencies != null && dependencies.length > 0) {
-					hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
-
-					boolean firstDependency = true;
-					for (String injectedBean : dependencies) {
-						if (!firstDependency) {
-							hover.append("\n");
-						}
-						List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
-						for (LiveBean dependencyBean : dependencyBeans) {
-							hover.append("- " + LiveHoverUtils.showBean(dependencyBean));
-						}
-						firstDependency = false;
-					}
-				}
-			}
-		}
-	}
-
-	private boolean hasAutowiredAnnotation(MethodDeclaration constructor) {
-		List<?> modifiers = constructor.modifiers();
-		for (Object modifier : modifiers) {
-			if (modifier instanceof MarkerAnnotation) {
-				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null && typeBinding.getQualifiedName().equals(Constants.SPRING_AUTOWIRED)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 }

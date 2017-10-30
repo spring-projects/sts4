@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.beans.test;
+package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.Assert.assertTrue;
 
@@ -29,7 +29,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCus
 
 public class ComponentInjectionsHoverProviderTest {
 
-	private static final ProjectCustomizer FOO_INTERFACE = (CustomizableProjectContent p) -> {
+	private static final ProjectCustomizer EXTRA_TYPES = (CustomizableProjectContent p) -> {
 		p.createType("com.examle.Foo",
 				"package com.example;\n" +
 				"\n" +
@@ -68,9 +68,9 @@ public class ComponentInjectionsHoverProviderTest {
 				.watchDogInterval(Duration.ofMillis(100))
 				.build();
 
-		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
+		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", EXTRA_TYPES);
 		assertTrue(jp.getClasspath().findType("com.example.Foo").exists());
-		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
+		harness.useProject(jp);
 		harness.intialize(null);
 	}
 

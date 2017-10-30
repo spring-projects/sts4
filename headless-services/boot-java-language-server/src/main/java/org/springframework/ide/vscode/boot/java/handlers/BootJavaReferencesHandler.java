@@ -93,7 +93,6 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		ASTNode node = NodeFinder.perform(cu, offset, 0);
 
 		if (node != null) {
-			System.out.println("AST node found: " + node.getClass().getName());
 			return provideReferencesForAnnotation(node, offset, document);
 		}
 
