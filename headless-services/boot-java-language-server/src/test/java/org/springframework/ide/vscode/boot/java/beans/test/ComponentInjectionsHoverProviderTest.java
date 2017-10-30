@@ -10,201 +10,563 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
+import java.time.Duration;
 
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.NodeFinder;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.MarkedString;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.autowired.SpringBootAppProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentInjectionsHoverProvider;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 
-/**
- * @author Martin Lippert
- */
 public class ComponentInjectionsHoverProviderTest {
 
-	private JavaProjectFinder projectFinder;
+	private static final ProjectCustomizer FOO_INTERFACE = (CustomizableProjectContent p) -> {
+		p.createType("com.examle.Foo",
+				"package com.example;\n" +
+				"\n" +
+				"public interface Foo {\n" +
+				"	void doSomeFoo();\n" +
+				"}\n"
+		);
+
+		p.createType("com.examle.DependencyA",
+				"package com.example;\n" +
+				"\n" +
+				"public class DependencyA {\n" +
+				"}\n"
+		);
+
+		p.createType("com.examle.DependencyB",
+				"package com.example;\n" +
+				"\n" +
+				"public class DependencyB {\n" +
+				"}\n"
+		);
+
+	};
+
 	private BootLanguageServerHarness harness;
+	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
+
+	private MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootLanguageServerHarness.builder().build();
-		projectFinder = harness.getProjectFinder();
+		mockAppProvider = new MockRunningAppProvider();
+		harness = BootLanguageServerHarness.builder()
+				.mockDefaults()
+				.runningAppProvider(mockAppProvider.provider)
+				.watchDogInterval(Duration.ofMillis(100))
+				.build();
+
+		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
+		assertTrue(jp.getClasspath().findType("com.example.Foo").exists());
+		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
+		harness.intialize(null);
 	}
 
 	@Test
-	public void testLiveHoverHintForAutomaicallywiredConstructor() throws Exception {
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
-		harness.intialize(directory);
+	public void componentWithNoInjections() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
 
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
-
-		CompilationUnit cu = parse(document, project);
-
-		int offset = document.toOffset(new Position(4, 2));
-		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
-
-		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath()));
-
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
-		assertNotNull(hint);
-
-		assertEquals(10, hint.getStart().getLine());
-		assertEquals(8, hint.getStart().getCharacter());
-		assertEquals(10, hint.getEnd().getLine());
-		assertEquals(37, hint.getEnd().getCharacter());
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] exists but is **Not injected anywhere**\n"
+		);
 	}
 
 	@Test
-	public void testNoLiveHoverHintForComponentWhenAutowiredAnnotationIsUsed() throws Exception {
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
-		harness.intialize(directory);
+	public void componentWithOneInjection() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
 
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutowiredComponent.java";
-		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
-
-		CompilationUnit cu = parse(document, project);
-
-		int offset = document.toOffset(new Position(5, 2));
-		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
-
-		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
-		String beansJSON = new String(Files.readAllBytes(new File(directory, "runtime-bean-information.json").toPath()));
-
-		Range hint = provider.getLiveHoverHint((Annotation)node, document, LiveBeansModel.parse(beansJSON));
-		assertNull(hint);
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n"
+		);
 	}
 
 	@Test
-	public void testLiveHoverContentForAutomaicallywiredConstructor() throws Exception {
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-autowired/").toURI());
-		harness.intialize(directory);
+	public void componentWithMultipleInjections() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
 
-		String docURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/MyAutomaticallyWiredComponent.java";
-		TextDocument document = createTempTextDocument(docURI);
-		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(docURI)).get();
-
-		CompilationUnit cu = parse(document, project);
-
-		int offset = document.toOffset(new Position(4, 2));
-		ASTNode node = NodeFinder.perform(cu, offset, 0).getParent();
-
-		ComponentInjectionsHoverProvider provider = new ComponentInjectionsHoverProvider();
-		LiveBeansModel beansModel = LiveBeansModel.parse(new String(Files.readAllBytes(new File(directory, "runtime-bean-information-automatically-wired.json").toPath())));
-
-		SpringBootAppProvider bootApp = new SpringBootAppProvider() {
-			@Override
-			public String getProcessName() {
-				return "test process name";
-			}
-
-			@Override
-			public String getProcessID() {
-				return "test process id";
-			}
-
-			@Override
-			public LiveBeansModel getBeans() throws Exception {
-				return beansModel;
-			}
-		};
-		CompletableFuture<Hover> hoverFuture = provider.provideHover(null, (Annotation) node, null, 0, document, new SpringBootAppProvider[] {bootApp});
-		Hover hover = hoverFuture.get();
-
-		assertNotNull(hover);
-
-		assertEquals(10, hover.getRange().getStart().getLine());
-		assertEquals(8, hover.getRange().getStart().getCharacter());
-		assertEquals(10, hover.getRange().getEnd().getLine());
-		assertEquals(37, hover.getRange().getEnd().getCharacter());
-
-		List<Either<String, MarkedString>> contents = hover.getContents();
-		assertEquals(6, contents.size());
-
-		assertTrue(contents.get(0).getLeft().contains("myAutomaticallyWiredComponent"));
-		assertTrue(contents.get(2).getLeft().contains("dependencyA"));
-		assertTrue(contents.get(3).getLeft().contains("dependencyB"));
-		assertTrue(contents.get(4).getLeft().contains("test process id"));
-		assertTrue(contents.get(5).getLeft().contains("test process name"));
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
+		);
 	}
 
-	private TextDocument createTempTextDocument(String docURI) throws Exception {
-		Path path = Paths.get(new URI(docURI));
-		String content = new String(Files.readAllBytes(path));
+	@Test
+	public void componentWithMultipleInjectionsAndMultipleProcesses() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.build();
+		for (int i = 1; i <= 2; i++) {
+			mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("100"+i)
+			.processName("app-instance-"+i)
+			.beans(beans)
+			.build();
+		}
 
-		TextDocument doc = new TextDocument(docURI, LanguageId.PLAINTEXT, 0, content);
-		return doc;
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=1001, name=`app-instance-1`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n" +
+				"\n" +
+				"Process [PID=1002, name=`app-instance-2`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
+		);
 	}
 
-	private CompilationUnit parse(TextDocument document, IJavaProject project)
-			throws Exception, BadLocationException {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
-		parser.setCompilerOptions(options);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setStatementsRecovery(true);
-		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(true);
+	@Test
+	public void onlyShowInfoForRelevantBeanId() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("alternateFooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("alternateFooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
 
-		String[] classpathEntries = getClasspathEntries(project);
-		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
-
-		String docURI = document.getUri();
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-		parser.setUnitName(unitName);
-		parser.setSource(document.get(0, document.getLength()).toCharArray());
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-		return cu;
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertHoverExactText("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: myController, type: `com.example.MyController`]"
+		);
 	}
 
-	private String[] getClasspathEntries(IJavaProject project) throws Exception {
-		IClasspath classpath = project.getClasspath();
-		Stream<Path> classpathEntries = classpath.getClasspathEntries();
-		return classpathEntries
-				.filter(path -> path.toFile().exists())
-				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
+	@Test
+	public void explicitComponentId() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("alternateFooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.OtherBean")
+						.dependencies("alternateFooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component(\"alternateFooImplementation\")\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean [id: otherBean, type: `com.example.OtherBean`]\n"
+		);
 	}
 
+	@Test
+	public void noHoversWhenRunningAppDoesntHaveTheComponent() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("whateverBean")
+						.type("com.example.UnrelatedComponent")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.UnrelatedComponent")
+						.dependencies("whateverBean")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("unrelated-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights(/*MONE*/);
+		editor.assertNoHover("@Component");
+	}
+
+	@Test
+	public void noHoversWhenNoRunningApps() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights(/*MONE*/);
+		editor.assertNoHover("@Component");
+	}
+
+	@Test
+	public void componentWithAutomaticallyWiredConstructorInjections() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("autowiredClass")
+						.type("com.example.AutowiredClass")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AutowiredClass {\n" +
+				"\n" +
+				"	public AutowiredClass(DependencyA depA, DependencyB depB) {\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n" +
+				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
+				"\n" +
+				"- Bean [id: dependencyA, type: `com.example.DependencyA`]\n" +
+				"- Bean [id: dependencyB, type: `com.example.DependencyB`]\n"
+		);
+	}
+
+	@Test
+	public void componentWithAutowiredConstructorNoAdditionalHovers() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("autowiredClass")
+						.type("com.example.AutowiredClass")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AutowiredClass {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"	public AutowiredClass(DependencyA depA, DependencyB depB) {\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n"
+		);
+	}
 
 }

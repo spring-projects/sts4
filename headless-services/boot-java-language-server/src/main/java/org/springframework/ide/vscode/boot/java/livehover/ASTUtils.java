@@ -10,12 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -49,4 +54,25 @@ public class ASTUtils {
 		return Optional.empty();
 	}
 
+	public static TypeDeclaration findDeclaringType(Annotation annotation) {
+		ASTNode node = annotation;
+		while (node != null && !(node instanceof TypeDeclaration)) {
+			node = node.getParent();
+		}
+
+		return node != null ? (TypeDeclaration) node : null;
+	}
+
+	public static MethodDeclaration[] findConstructors(TypeDeclaration typeDecl) {
+		List<MethodDeclaration> constructors = new ArrayList<>();
+
+		MethodDeclaration[] methods = typeDecl.getMethods();
+		for (MethodDeclaration methodDeclaration : methods) {
+			if (methodDeclaration.isConstructor()) {
+				constructors.add(methodDeclaration);
+			}
+		}
+
+		return constructors.toArray(new MethodDeclaration[constructors.size()]);
+	}
 }

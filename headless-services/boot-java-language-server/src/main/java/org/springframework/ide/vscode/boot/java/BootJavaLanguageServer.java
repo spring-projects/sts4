@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentInjectedIntoHoverProvider;
+import org.springframework.ide.vscode.boot.java.beans.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
@@ -261,7 +261,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(ActiveProfilesProvider.ANNOTATION, new ActiveProfilesProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentInjectedIntoHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentInjectionsHoverProvider());
 
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL, new ConditionalsLiveHoverProvider());
 		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());
