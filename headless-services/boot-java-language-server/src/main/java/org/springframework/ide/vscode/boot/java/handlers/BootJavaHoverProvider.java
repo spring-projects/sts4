@@ -35,17 +35,22 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.livehover.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -135,16 +140,24 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return result.toArray(new Range[result.size()]);
 	}
 
-	protected void extractLiveHints(Annotation annotation, TextDocument document, SpringBootApp[] runningApps, List<Range> result) {
+	protected void extractLiveHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, List<Range> result) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
 			String qualifiedName = type.getQualifiedName();
 			if (qualifiedName != null) {
 				HoverProvider provider = this.hoverProviders.get(qualifiedName);
 				if (provider != null) {
-					Collection<Range> hints = provider.getLiveHoverHints(annotation, document, runningApps);
-					if (hints!=null) {
-						result.addAll(hints);
+					if (runningApps.length>0) {
+						getProject(doc).ifPresent(project -> {
+							if (hasActuatorDependency(project)) {
+								Collection<Range> hints = provider.getLiveHoverHints(annotation, doc, runningApps);
+								if (hints!=null) {
+									result.addAll(hints);
+								}
+							} else {
+								ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
+							}
+						});
 					}
 				}
 			}
@@ -203,13 +216,45 @@ public class BootJavaHoverProvider implements HoverHandler {
 					HoverProvider provider = this.hoverProviders.get(qualifiedName);
 					if (provider != null) {
 						SpringBootApp[] runningApps = getRunningSpringApps(project);
-						return provider.provideHover(node, annotation, type, offset, doc, runningApps);
+						if (runningApps.length>0) {
+							if (hasActuatorDependency(project)) {
+								return provider.provideHover(node, annotation, type, offset, doc, runningApps);
+							} else {
+								DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
+								if (region.containsOffset(offset)) {
+									return actuatorWarning(project);
+								}
+							}
+						}
 					}
 				}
 			}
 		}
-
 		return null;
+	}
+
+	private CompletableFuture<Hover> actuatorWarning(IJavaProject project) {
+		String hoverText =
+				"**No live hover information available**.\n"+
+				"\n" +
+				"Live hover providers use various `spring-boot-actuator` endpoints to retrieve information. "+
+				"Consider adding `spring-boot-actuator` as a dependency to your project `"+project.getElementName()+"`";
+		return CompletableFuture.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hoverText))));
+	}
+
+	private boolean hasActuatorDependency(IJavaProject project) {
+		try {
+			IClasspath classpath = project.getClasspath();
+			if (classpath!=null) {
+				return classpath.getClasspathEntries().anyMatch(cpe -> {
+					String name = cpe.getFileName().toString();
+					return name.startsWith("spring-boot-actuator-");
+				});
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+		return false;
 	}
 
 	private Optional<IJavaProject> getProject(IDocument doc) {

@@ -27,21 +27,27 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class ASTUtils {
 
+	public static DocumentRegion nameRegion(TextDocument doc, Annotation annotation) {
+		int start = annotation.getTypeName().getStartPosition();
+		int end = start + annotation.getTypeName().getLength();
+		if (doc.getSafeChar(start - 1) == '@') {
+			start--;
+		}
+		return new DocumentRegion(doc, start, end);
+	}
+
+
 	public static Optional<Range> nameRange(TextDocument doc, Annotation annotation) {
 		try {
-			int start = annotation.getTypeName().getStartPosition();
-			int len = annotation.getTypeName().getLength();
-			if (doc.getSafeChar(start - 1) == '@') {
-				start--;
-				len++;
-			}
-			return Optional.of(doc.toRange(start, len));
+			return Optional.of(nameRegion(doc, annotation).asRange());
 		} catch (Exception e) {
 			Log.log(e);
 			return Optional.empty();

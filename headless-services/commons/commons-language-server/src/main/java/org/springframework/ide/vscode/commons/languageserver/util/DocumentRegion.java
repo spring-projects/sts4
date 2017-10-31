@@ -130,6 +130,19 @@ public class DocumentRegion implements CharSequence {
 		}
 	}
 
+	/**
+	 * Determines whether this range contains a given (absolute) offset.
+	 * <p>
+	 * Note that even a empty region will be treated as containing at least the
+	 * starting offset.
+	 * <p>
+	 * In other words, the 'end' position is considered as being contained in the
+	 * region.
+	 */
+	public boolean containsOffset(int absoluteOffset) {
+		return absoluteOffset>=start && absoluteOffset <= end;
+	}
+
 	@Override
 	public int length() {
 		return end-start;
@@ -304,4 +317,5 @@ public class DocumentRegion implements CharSequence {
 		}
 		return subSequence(0, howMany);
 	}
+
 }

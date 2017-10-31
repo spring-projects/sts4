@@ -35,5 +35,4 @@ public class Futures {
 		f.completeExceptionally(e);
 		return f;
 	}
-
 }

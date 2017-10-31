@@ -612,7 +612,8 @@ public class Editor {
 	public void assertNoHover(String hoverOver) throws Exception {
 		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
-		assertTrue(hover.getContents().isEmpty());
+		List<Either<String, MarkedString>> contents = hover.getContents();
+		assertTrue(contents.toString(), contents.isEmpty());
 	}
 
 	/**
