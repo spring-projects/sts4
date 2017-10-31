@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
+import org.springframework.ide.vscode.commons.boot.app.cli.RunningAppConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -227,19 +228,6 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 				}
 			}
 			return Optional.empty();
-		}
-	}
-
-	public static class RunningAppConditional {
-
-		public final String condition;
-		public final String message;
-		public final SpringBootApp app;
-
-		public RunningAppConditional(SpringBootApp app, String condition, String message) {
-			this.condition = condition;
-			this.message = message;
-			this.app = app;
 		}
 	}
 }
