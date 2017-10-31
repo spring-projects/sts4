@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;

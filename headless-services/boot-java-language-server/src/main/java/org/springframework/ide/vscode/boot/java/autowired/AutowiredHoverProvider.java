@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.autowired;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -24,14 +23,13 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.livehover.ASTUtils;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.commons.util.Optionals;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 

@@ -70,6 +70,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	final private SimpleLanguageServer server;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
+	private ListenerList<TextDocument> documentCloseListeners = new ListenerList<>();
 
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
@@ -201,6 +202,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 					// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
 					// document go 'out of scope'.
 					publishDiagnostics(params.getTextDocument(), ImmutableList.of());
+					documentCloseListeners.fire(doc.getDocument());
 					documents.remove(url);
 				} else {
 					Log.warn("Close event ignored! Assuming document still open because openCount = "+doc.getOpenCount());
@@ -217,6 +219,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public void onDidChangeContent(Consumer<TextDocumentContentChange> l) {
 		documentChangeListeners.add(l);
+	}
+
+	public void onDidClose(Consumer<TextDocument> l) {
+		documentCloseListeners.add(l);
 	}
 
 	public void onDidSave(Consumer<TextDocumentSaveChange> l) {
