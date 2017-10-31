@@ -31,7 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.RunningAppConditional;
+import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -57,7 +57,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		try {
 			if (runningApps.length > 0) {
 				ConditionalParserFromRunningApp parser = new ConditionalParserFromRunningApp();
-				Optional<List<RunningAppConditional>> val = parser.parse(annotation, runningApps);
+				Optional<List<LiveConditional>> val = parser.parse(annotation, runningApps);
 				if (val.isPresent()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 					return ImmutableList.of(hoverRange);
@@ -76,7 +76,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		try {
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
 			ConditionalParserFromRunningApp parser = new ConditionalParserFromRunningApp();
-			Optional<List<RunningAppConditional>> val = parser.parse(annotation, runningApps);
+			Optional<List<LiveConditional>> val = parser.parse(annotation, runningApps);
 
 			if (val.isPresent()) {
 				addHoverContent(val.get(), hoverContent);
@@ -96,10 +96,10 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private void addHoverContent(List<RunningAppConditional> conditions,
+	private void addHoverContent(List<LiveConditional> conditions,
 			List<Either<String, MarkedString>> hoverContent) throws Exception {
 		for (int i = 0; i < conditions.size(); i++) {
-			RunningAppConditional condition = conditions.get(i);
+			LiveConditional condition = conditions.get(i);
 			hoverContent.add(Either.forLeft(condition.message));
 			hoverContent.add(Either
 					.forLeft(HoverContentUtils.getProcessInformation(condition.app)));
@@ -122,15 +122,15 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	 */
 	public static class ConditionalParserFromRunningApp {
 
-		public Optional<List<RunningAppConditional>> parse(Annotation annotation, SpringBootApp[] runningApps) {
+		public Optional<List<LiveConditional>> parse(Annotation annotation, SpringBootApp[] runningApps) {
 
 			try {
-				List<RunningAppConditional> allConditionals = new ArrayList<>();
+				List<LiveConditional> allConditionals = new ArrayList<>();
 				for (SpringBootApp app : runningApps) {
 					String autoConfigRecord = app.getAutoConfigReport();
 					if (autoConfigRecord != null) {
 						JSONObject autoConfigJson = new JSONObject(autoConfigRecord);
-						List<RunningAppConditional> conditionalsFromPositiveMatches = getConditionals(app, annotation,
+						List<LiveConditional> conditionalsFromPositiveMatches = getConditionals(app, annotation,
 								autoConfigJson);
 						if (!conditionalsFromPositiveMatches.isEmpty()) {
 							allConditionals.addAll(conditionalsFromPositiveMatches);
@@ -154,9 +154,9 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		 * @return non-null list of conditionals parsed from an autoconfig report. List
 		 *         may be empty.
 		 */
-		private List<RunningAppConditional> getConditionals(SpringBootApp app, Annotation annotation,
+		private List<LiveConditional> getConditionals(SpringBootApp app, Annotation annotation,
 				JSONObject autoConfigJson) {
-			List<RunningAppConditional> conditions = new ArrayList<>();
+			List<LiveConditional> conditions = new ArrayList<>();
 
 			getPositiveMatches(autoConfigJson).ifPresent((positiveMatches) -> {
 				Iterator<String> pMKeys = positiveMatches.keys();
@@ -217,14 +217,14 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			return false;
 		}
 
-		protected Optional<RunningAppConditional> getMatchedCondition(SpringBootApp app, JSONObject conditionJson,
+		protected Optional<LiveConditional> getMatchedCondition(SpringBootApp app, JSONObject conditionJson,
 				Annotation annotation) {
 			if (conditionJson != null) {
 				String condition = (String) conditionJson.get("condition");
 				String message = (String) conditionJson.get("message");
 				String annotationName = annotation.resolveTypeBinding().getName();
 				if (message.contains(annotationName)) {
-					return Optional.of(new RunningAppConditional(app, condition, message));
+					return Optional.of(new LiveConditional(app, condition, message));
 				}
 			}
 			return Optional.empty();

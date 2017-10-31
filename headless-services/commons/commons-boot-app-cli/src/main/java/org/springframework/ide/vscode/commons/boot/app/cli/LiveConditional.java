@@ -12,13 +12,13 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 
-public class RunningAppConditional {
+public class LiveConditional {
 
 	public final String condition;
 	public final String message;
 	public final SpringBootApp app;
 
-	public RunningAppConditional(SpringBootApp app, String condition, String message) {
+	public LiveConditional(SpringBootApp app, String condition, String message) {
 		this.condition = condition;
 		this.message = message;
 		this.app = app;
