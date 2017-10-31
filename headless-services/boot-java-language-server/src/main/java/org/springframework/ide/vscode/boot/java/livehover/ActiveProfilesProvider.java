@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import static org.springframework.ide.vscode.boot.java.utils.ASTUtils.*;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -32,8 +35,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
-
-import static org.springframework.ide.vscode.boot.java.livehover.ASTUtils.*;
 
 /**
  * @author Kris De Volder
@@ -88,7 +89,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 			annotation.accept(new ASTVisitor() {
 				@Override
 				public boolean visit(StringLiteral node) {
-					String value = node.getLiteralValue();
+					String value = ASTUtils.getLiteralValue(node);
 					if (value!=null && allActiveProfiles.contains(value)) {
 						rangeOf(doc, node).ifPresent(ranges::add);
 					}

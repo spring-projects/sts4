@@ -133,7 +133,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
-	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(6_000); //TODO: why does it need to be this long, that's fishy!
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(1_000); //TODO: why does it need to be this long, that's fishy!
 
 	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);
@@ -520,7 +520,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		return 1;
 	}
 
-	protected String createTempUri() throws Exception {
+	public String createTempUri() throws Exception {
 		return File.createTempFile("workingcopy", getFileExtension()).toURI().toString();
 	}
 

@@ -20,21 +20,18 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -81,7 +78,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && valueName.equals("method")) {
 						Expression expression = pair.getValue();
-						methods = getExpressionValueAsArray(expression);
+						methods = ASTUtils.getExpressionValueAsArray(expression);
 						break;
 					}
 				}
@@ -111,14 +108,14 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && (valueName.equals("value") || valueName.equals("path"))) {
 						Expression expression = pair.getValue();
-						return getExpressionValueAsArray(expression);
+						return ASTUtils.getExpressionValueAsArray(expression);
 					}
 				}
 			}
 		} else if (node.isSingleMemberAnnotation()) {
 			SingleMemberAnnotation singleNode = (SingleMemberAnnotation) node;
 			Expression expression = singleNode.getValue();
-			return getExpressionValueAsArray(expression);
+			return ASTUtils.getExpressionValueAsArray(expression);
 		}
 
 		return null;
@@ -168,33 +165,6 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 				return new String[] { "PUT" };
 			case Constants.SPRING_PATCH_MAPPING:
 				return new String[] { "PATCH" };
-			}
-		}
-		return null;
-	}
-
-	private static String getExpressionValueAsString(Expression exp) {
-		if (exp instanceof StringLiteral) {
-			return ((StringLiteral) exp).getLiteralValue();
-		} else if (exp instanceof QualifiedName) {
-			return getExpressionValueAsString(((QualifiedName) exp).getName());
-		} else if (exp instanceof SimpleName) {
-			return ((SimpleName) exp).getIdentifier();
-		} else {
-			return null;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static String[] getExpressionValueAsArray(Expression exp) {
-		if (exp instanceof ArrayInitializer) {
-			ArrayInitializer array = (ArrayInitializer) exp;
-			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e))
-					.filter(Objects::nonNull).toArray(String[]::new);
-		} else {
-			String rm = getExpressionValueAsString(exp);
-			if (rm != null) {
-				return new String[] { rm };
 			}
 		}
 		return null;

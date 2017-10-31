@@ -8,27 +8,27 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.livehover;
+package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class ASTUtils {
@@ -81,7 +81,7 @@ public class ASTUtils {
 	 */
 	public static Optional<String> getFirstString(Expression exp) {
 		if (exp instanceof StringLiteral) {
-			return Optional.ofNullable(((StringLiteral) exp).getLiteralValue());
+			return Optional.ofNullable(getLiteralValue((StringLiteral) exp));
 		} else if (exp instanceof ArrayInitializer) {
 			ArrayInitializer array = (ArrayInitializer) exp;
 			Object objs = array.getStructuralProperty(ArrayInitializer.EXPRESSIONS_PROPERTY);
@@ -133,6 +133,40 @@ public class ASTUtils {
 		ASTNode parent = annotation.getParent();
 		if (parent instanceof TypeDeclaration) {
 			return (TypeDeclaration)parent;
+		}
+		return null;
+	}
+
+	public static String getLiteralValue(StringLiteral node) {
+		synchronized (node.getAST()) {
+			return node.getLiteralValue();
+		}
+	}
+
+	public static String getExpressionValueAsString(Expression exp) {
+		if (exp instanceof StringLiteral) {
+			return getLiteralValue((StringLiteral) exp);
+		} else if (exp instanceof QualifiedName) {
+			return getExpressionValueAsString(((QualifiedName) exp).getName());
+		} else if (exp instanceof SimpleName) {
+			return ((SimpleName) exp).getIdentifier();
+		} else {
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public
+	static String[] getExpressionValueAsArray(Expression exp) {
+		if (exp instanceof ArrayInitializer) {
+			ArrayInitializer array = (ArrayInitializer) exp;
+			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e))
+					.filter(Objects::nonNull).toArray(String[]::new);
+		} else {
+			String rm = getExpressionValueAsString(exp);
+			if (rm != null) {
+				return new String[] { rm };
+			}
 		}
 		return null;
 	}

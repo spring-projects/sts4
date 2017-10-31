@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
@@ -77,6 +78,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final ProjectObserver projectObserver;
 	private final BootJavaConfig config;
+	private final CompilationUnitCache cuCache;
 
 	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
 
@@ -87,6 +89,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		BootJavaLanguageServerParams serverParams = _params.create(this);
 
 		this.config = new BootJavaConfig();
+
+		projectFinder = serverParams.projectFinder;
+		projectObserver = serverParams.projectObserver;
+		cuCache = new CompilationUnitCache(projectFinder, getWorkspaceService().getFileObserver(), projectObserver);
 
 		propertyIndexProvider = serverParams.indexProvider;
 
@@ -126,9 +132,6 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		projectFinder = serverParams.projectFinder;
-		projectObserver = serverParams.projectObserver;
-
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider, projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
@@ -137,6 +140,14 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			} else {
 				liveHoverWatchdog.watchDocument(doc.getUri());
 				liveHoverWatchdog.update(doc.getUri());
+			}
+		});
+
+		documents.onDidClose(doc -> {
+			if (testHightlighter != null) {
+				getClient().highlight(new HighlightParams(doc.getId(), testHightlighter.apply(doc)));
+			} else {
+				liveHoverWatchdog.unwatchDocument(doc.getUri());
 			}
 		});
 
@@ -177,6 +188,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	public CompletableFuture<Object> shutdown() {
 		this.liveHoverWatchdog.shutdown();
 		this.indexer.shutdown();
+		this.cuCache.dispose();
 
 		return super.shutdown();
 	}
@@ -331,5 +343,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	public BootJavaConfig getConfig() {
 		return config;
+	}
+
+	public CompilationUnitCache getCompilationUnitCache() {
+		return cuCache;
 	}
 }
