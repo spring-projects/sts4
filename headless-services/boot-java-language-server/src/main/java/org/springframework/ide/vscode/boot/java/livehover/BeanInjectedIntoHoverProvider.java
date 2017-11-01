@@ -14,13 +14,12 @@ import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.util.Optionals;
 
 public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProvider {
-
-	public static final String ANNOTATION = "org.springframework.context.annotation.Bean";
 
 	@Override
 	protected LiveBean getDefinedBean(Annotation annotation) {

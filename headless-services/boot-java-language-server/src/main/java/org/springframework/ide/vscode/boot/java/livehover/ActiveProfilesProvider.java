@@ -41,8 +41,6 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ActiveProfilesProvider implements HoverProvider {
 
-	public static final String ANNOTATION = "org.springframework.context.annotation.Profile";
-
 	@Override
 	public CompletableFuture<Hover> provideHover(
 			ASTNode node,

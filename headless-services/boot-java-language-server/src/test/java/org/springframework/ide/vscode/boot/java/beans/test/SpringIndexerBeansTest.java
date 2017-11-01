@@ -22,9 +22,9 @@ import java.util.Map;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.Constants;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -43,8 +43,8 @@ public class SpringIndexerBeansTest {
 	@Before
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
-		symbolProviders.put(Constants.SPRING_BEAN, new BeansSymbolProvider());
-		symbolProviders.put(Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
+		symbolProviders.put(Annotations.BEAN, new BeansSymbolProvider());
+		symbolProviders.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
 		harness = BootLanguageServerHarness.builder().build();
 		projectFinder = harness.getProjectFinder();
