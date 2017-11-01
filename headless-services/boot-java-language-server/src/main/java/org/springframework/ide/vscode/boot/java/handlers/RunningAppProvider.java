@@ -18,17 +18,8 @@ import com.google.common.collect.ImmutableList;
 
 public interface RunningAppProvider {
 
-	public static final RunningAppProvider DEFAULT = new RunningAppProvider() {
-		@Override public Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-			return SpringBootApp.getAllRunningSpringApps().values();
-		}
-	};
-
-	public static final RunningAppProvider NULL = new RunningAppProvider() {
-		@Override public Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-			return ImmutableList.of();
-		}
-	};
+	public static final RunningAppProvider DEFAULT = SpringBootApp::getAllRunningSpringApps;
+	public static final RunningAppProvider NULL = () -> ImmutableList.of();
 
 	Collection<SpringBootApp> getAllRunningSpringApps() throws Exception;
 }

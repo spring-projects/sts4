@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
-import java.util.Map;
+import java.util.Collection;
 
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class SpringBootAppCLI {
 
 	public static void main(String[] args) throws Exception {
-		Map<String, SpringBootApp> allRunningJavaApps = SpringBootApp.getAllRunningJavaApps();
-		for (SpringBootApp app : allRunningJavaApps.values()) {
+		Collection<SpringBootApp> allRunningJavaApps = SpringBootApp.getAllRunningJavaApps();
+		for (SpringBootApp app : allRunningJavaApps) {
 			if (app.isSpringBootApp()) {
 				printBootAppDetails(app);
 			}

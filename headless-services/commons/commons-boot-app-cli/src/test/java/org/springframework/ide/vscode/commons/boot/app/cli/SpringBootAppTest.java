@@ -90,7 +90,7 @@ public class SpringBootAppTest {
 
 	private SpringBootApp getAppContaining(String nameFragment) {
 		try {
-			return SpringBootApp.getAllRunningJavaApps().values().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+			return SpringBootApp.getAllRunningJavaApps().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
 		}
@@ -107,17 +107,17 @@ public class SpringBootAppTest {
 	}
 
 	@Test public void getAllJavaApps() throws Exception {
-		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
+		Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
 		for (String appName : appNames) {
-			Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			Optional<SpringBootApp> myProcess = allApps.stream().filter(app -> app.getProcessName().contains(appName)).findAny();
 			assertTrue(appName, myProcess.isPresent());
 		}
 	}
 
 	@Test public void getAllBootApps() throws Exception {
-		Map<String, SpringBootApp> allApps = SpringBootApp.getAllRunningSpringApps();
+		Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningSpringApps();
 		for (String appName : appNames) {
-			Optional<SpringBootApp> myProcess = allApps.values().stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			Optional<SpringBootApp> myProcess = allApps.stream().filter(app -> app.getProcessName().contains(appName)).findAny();
 			assertTrue(myProcess.isPresent());
 		}
 	}

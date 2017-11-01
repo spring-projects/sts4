@@ -22,6 +22,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
@@ -32,13 +35,17 @@ import javax.management.remote.JMXServiceURL;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -51,44 +58,65 @@ public class SpringBootApp {
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
-	/**
-	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
-	 */
-	public static Map<String, SpringBootApp> getAllRunningJavaApps() throws Exception {
-		Map<String, SpringBootApp> result = new HashMap<>();
-		List<VirtualMachineDescriptor> list = VirtualMachine.list();
-		for (VirtualMachineDescriptor vmd : list) {
-			SpringBootApp app = new SpringBootApp(vmd);
-			result.put(app.getProcessID(), app);
-		}
-
-		return result;
-	}
-
-	/**
-	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
-	 */
-	public static Map<String, SpringBootApp> getAllRunningSpringApps() throws Exception {
-		Map<String, SpringBootApp> result = new HashMap<>();
-		List<VirtualMachineDescriptor> list = VirtualMachine.list();
-		for (VirtualMachineDescriptor vmd : list) {
-			try {
-				SpringBootApp app = new SpringBootApp(vmd);
-				if (app.isSpringBootApp()) {
-					result.put(app.getProcessID(), app);
+	private static Callable<Collection<SpringBootApp>> cached(Callable<Collection<SpringBootApp>> provider) {
+		LoadingCache<Object, CompletableFuture<Collection<SpringBootApp>>> cache = CacheBuilder.newBuilder()
+		.expireAfterWrite(500, TimeUnit.MILLISECONDS)
+		.removalListener(removalNotification -> {
+			 @SuppressWarnings("unchecked")
+			CompletableFuture<Collection<SpringBootApp>> removed = (CompletableFuture<Collection<SpringBootApp>>) removalNotification.getValue();
+			if (!removed.isCompletedExceptionally()) {
+				try {
+					Collection<SpringBootApp> apps = removed.get();
+					for (SpringBootApp springBootApp : apps) {
+						springBootApp.dispose();
+					}
+				} catch (Exception e) {
+					Log.log(e);
 				}
 			}
-			catch (Exception e) {
-				System.err.println("cannot attach to app: " + vmd.id());
+		})
+		.build(new CacheLoader<Object, CompletableFuture<Collection<SpringBootApp>>>() {
+			@Override public CompletableFuture<Collection<SpringBootApp>> load(Object key) {
+				try {
+					return CompletableFuture.completedFuture(provider.call());
+				} catch (Throwable e) {
+					return Futures.error(e);
+				}
 			}
-		}
+		});
+		return () -> {
+			Object key = SpringBootApp.class; //This key really doesn't matter, as long as we use the same non-null object each time.
+			return cache.get(key).get();
+		};
+	}
 
-		return result;
+
+	private static Collection<SpringBootApp> fetchRunningJavaApps() throws Exception {
+		List<VirtualMachineDescriptor> list = VirtualMachine.list();
+		ImmutableList.Builder<SpringBootApp> apps = ImmutableList.builder();
+		for (VirtualMachineDescriptor vmd : list) {
+			apps.add(new SpringBootApp(vmd));
+		}
+		return apps.build();
+	}
+
+	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
+		return cachedJavaAppsGetter.call();
+	}
+
+	private static Callable<Collection<SpringBootApp>> cachedJavaAppsGetter = cached(SpringBootApp::fetchRunningJavaApps);
+
+	/**
+	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
+	 */
+	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
+		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
 	}
 
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
+		System.err.println("SpringBootApp created: "+this);
 	}
 
 	public String getProcessID() {
@@ -105,7 +133,7 @@ public class SpringBootApp {
 		return serviceUrl.getHost();
 	}
 
-	public boolean isSpringBootApp() throws Exception {
+	public boolean isSpringBootApp() {
 		return !containsSystemProperty("sts4.languageserver.name")
 				&& (
 						isSpringBootAppClasspath() ||
@@ -435,7 +463,6 @@ public class SpringBootApp {
 					_profiles = env.opt("profiles"); //Boot 1.5
 				}
 				if (_profiles instanceof JSONArray) {
-					@SuppressWarnings("unchecked")
 					JSONArray profiles = (JSONArray) _profiles;
 					ImmutableList.Builder<String> list = ImmutableList.builder();
 					for (Object object : profiles) {
@@ -450,6 +477,20 @@ public class SpringBootApp {
 			Log.log(e);
 		}
 		return null;
+	}
+
+	public void dispose() {
+		if (vm!=null) {
+			System.err.println("SpringBootApp disposed: "+this);
+			try {
+				vm.detach();
+			} catch (Exception e) {
+			}
+			vm = null;
+		}
+		if (vmd!=null) {
+			vmd = null;
+		}
 	}
 
 

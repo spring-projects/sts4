@@ -314,7 +314,7 @@ jobs:
       trigger: true
     - get: maven-cache
   - task: build-boot-java-vsix-snapshot
-    attempts: 3 #Because its a bit flaky with the maven bits
+    #attempts: 3 #Because its a bit flaky with the maven bits
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-boot-java
