@@ -2,7 +2,6 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,8 +18,8 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
@@ -28,32 +27,26 @@ import com.google.common.cache.CacheBuilder;
 
 public final class CompilationUnitCache {
 
-	private static final String GLOB_ALL_JAVA_FILES = "**/*.java";
-
 	private JavaProjectFinder projectFinder;
-	private FileObserver fileObserver;
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
 	private Cache<IJavaProject, Set<URI>> projectToDocs;
-	private String fileChangeSubscription;
-	private String fileDeletedSubscription;
 	private ProjectObserver.Listener projectListener;
 
 	private ReadLock readLock;
 	private WriteLock writeLock;
 
-	public CompilationUnitCache(JavaProjectFinder projectFinder, FileObserver fileObserver, ProjectObserver projectObserver) {
+	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleTextDocumentService documentService, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
-		this.fileObserver = fileObserver;
 		this.projectObserver = projectObserver;
 		projectListener = new CUProjectListener();
 
 		uriToCu = CacheBuilder.newBuilder().build();
 		projectToDocs = CacheBuilder.newBuilder().build();
 
-		if (this.fileObserver != null) {
-			fileChangeSubscription = this.fileObserver.onFileChanged(Collections.singletonList(GLOB_ALL_JAVA_FILES), (uri) -> invalidateCuForJavaFile(uri));
-			fileDeletedSubscription = this.fileObserver.onFileDeleted(Collections.singletonList(GLOB_ALL_JAVA_FILES), (uri) -> invalidateCuForJavaFile(uri));
+		if (documentService != null) {
+			documentService.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
+			documentService.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
 		}
 
 		if (this.projectObserver != null) {
@@ -66,10 +59,6 @@ public final class CompilationUnitCache {
 	}
 
 	public void dispose() {
-		if (fileObserver != null) {
-			fileObserver.unsubscribe(fileChangeSubscription);
-			fileObserver.unsubscribe(fileDeletedSubscription);
-		}
 		if (projectObserver != null) {
 			projectObserver.removeListener(projectListener);
 		}

@@ -63,7 +63,7 @@ public class CompilationUnitCacheTest {
 	}
 
 	@Test
-	public void cu_cache_invalidated_by_file_change() throws Exception {
+	public void cu_cache_invalidated_by_doc_change() throws Exception {
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -71,10 +71,12 @@ public class CompilationUnitCacheTest {
 				"public class SomeClass {\n" +
 				"\n" +
 				"}\n");
+
+		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
 		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
 		assertNotNull(cu);
 
-		harness.changeFile(doc.getUri());
+		harness.changeDocument(doc.getUri(), 0, 0, "     ");
 		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
@@ -84,7 +86,7 @@ public class CompilationUnitCacheTest {
 	}
 
 	@Test
-	public void cu_cache_invalidated_by_file_removal() throws Exception {
+	public void cu_cache_invalidated_by_doc_close() throws Exception {
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -92,10 +94,12 @@ public class CompilationUnitCacheTest {
 				"public class SomeClass {\n" +
 				"\n" +
 				"}\n");
+
+		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
 		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
 		assertNotNull(cu);
 
-		harness.deleteFile(doc.getUri());
+		harness.closeDocument(doc.getId());
 		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
