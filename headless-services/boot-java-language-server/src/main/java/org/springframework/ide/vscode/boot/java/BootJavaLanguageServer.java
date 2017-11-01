@@ -92,7 +92,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
-		cuCache = new CompilationUnitCache(projectFinder, getWorkspaceService().getFileObserver(), projectObserver);
+		cuCache = new CompilationUnitCache(projectFinder, getTextDocumentService(), projectObserver);
 
 		propertyIndexProvider = serverParams.indexProvider;
 

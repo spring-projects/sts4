@@ -58,6 +58,7 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandCapabilities;
@@ -78,6 +79,7 @@ import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
@@ -298,6 +300,13 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 			getServer().getTextDocumentService().didOpen(didOpen);
 		}
 		return documentInfo;
+	}
+
+	public void closeDocument(TextDocumentIdentifier id) {
+		DidCloseTextDocumentParams didClose = new DidCloseTextDocumentParams(id);
+		if (getServer() != null) {
+			getServer().getTextDocumentService().didClose(didClose);
+		}
 	}
 
 	public TextDocumentInfo openDocument(File file, String languageId) throws Exception {
