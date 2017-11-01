@@ -25,7 +25,8 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
-	@Override protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+	@Override
+	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
 		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
 		if (typeDecl != null) {
 			MethodDeclaration[] constructors = ASTUtils.findConstructors(typeDecl);

@@ -38,10 +38,10 @@ public class LiveHoverUtils {
 
 	public static Stream<LiveBean> findRelevantBeans(SpringBootApp app, LiveBean definedBean) {
 		LiveBeansModel beansModel = app.getBeans();
-		if (beansModel!=null) {
+		if (beansModel != null) {
 			Stream<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId()).stream();
 			String type = definedBean.getType();
-			if (type!=null) {
+			if (type != null) {
 				relevantBeans = relevantBeans.filter(bean -> type.equals(bean.getType()));
 			}
 			return relevantBeans;
