@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -43,43 +42,29 @@ public class AutowiredHoverProvider implements HoverProvider {
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
-			for (SpringBootApp bootApp : runningApps) {
-				try {
-					LiveBeansModel liveBeans = bootApp.getBeans();
-					if (liveBeans != null && !liveBeans.isEmpty()) {
-						Range range = getLiveHoverHint(annotation, doc, liveBeans);
-						if (range != null) {
-							return ImmutableList.of(range);
+			LiveBean definedBean = getDefinedBean(annotation);
+			if (definedBean != null) {
+				for (SpringBootApp app : runningApps) {
+					try {
+						List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean).collect(Collectors.toList());
+
+						if (!relevantBeans.isEmpty()) {
+							for (LiveBean bean : relevantBeans) {
+								String[] dependencies = bean.getDependencies();
+								if (dependencies != null && dependencies.length > 0) {
+									Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+									return ImmutableList.of(hoverRange);
+								}
+							}
 						}
 					}
-				}
-				catch (Exception e) {
-					Log.log(e);
+					catch (Exception e) {
+						Log.log(e);
+					}
 				}
 			}
 		}
 		catch (Exception e) {
-			Log.log(e);
-		}
-
-		return null;
-	}
-
-	public Range getLiveHoverHint(Annotation annotation, TextDocument doc, LiveBeansModel beansModel) {
-		try {
-			TypeDeclaration declaringType = ASTUtils.findDeclaringType(annotation);
-			if (declaringType != null) {
-				String type = declaringType.resolveBinding().getQualifiedName();
-				if (type != null && beansModel != null) {
-					List<LiveBean> beansOfType = beansModel.getBeansOfType(type);
-					if (!beansOfType.isEmpty()) {
-						Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-						return hoverRange;
-					}
-				}
-			}
-		}
-		catch (BadLocationException e) {
 			Log.log(e);
 		}
 
@@ -99,6 +84,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 				hover.append("**Injection report for " + LiveHoverUtils.showBean(definedBean) + "**\n\n");
 
 				boolean hasInterestingApp = false;
+				boolean hasAutowiring = false;
+
 				for (SpringBootApp app : runningApps) {
 					LiveBeansModel beans = app.getBeans();
 					List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean).collect(Collectors.toList());
@@ -113,11 +100,11 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 						for (LiveBean bean : relevantBeans) {
 							hover.append("\n\n");
-							addAutomaticallyWired(hover, annotation, beans, bean);
+							hasAutowiring |= addAutomaticallyWired(hover, annotation, beans, bean);
 						}
 					}
 				}
-				if (hasInterestingApp) {
+				if (hasInterestingApp && hasAutowiring) {
 					System.out.println(hover);
 					return CompletableFuture
 							.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hover.toString()))));
@@ -132,7 +119,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		if (declaringType != null) {
 			ITypeBinding beanType = declaringType.resolveBinding();
 			if (beanType != null) {
-				String id = getBeanId(annotation, beanType);
+				String id = getBeanId(declaringType, beanType);
 				if (StringUtil.hasText(id)) {
 					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
 				}
@@ -141,38 +128,36 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private String getBeanId(Annotation annotation, ITypeBinding beanType) {
-		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString)
-		.orElseGet(() ->  {
-			String typeName = beanType.getName();
-			if (StringUtil.hasText(typeName)) {
-				return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
-			}
-			return null;
-		});
+	private String getBeanId(TypeDeclaration declaringType, ITypeBinding beanType) {
+		// TODO: take specific bean declarations into account like @Component at declaring type
+		String typeName = beanType.getName();
+		if (StringUtil.hasText(typeName)) {
+			return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
+		}
+		return null;
 	}
 
-	private void addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
-		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
-		if (typeDecl != null) {
-			String[] dependencies = bean.getDependencies();
+	private boolean addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+		boolean result = false;
+		String[] dependencies = bean.getDependencies();
 
-			if (dependencies != null && dependencies.length > 0) {
-				hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
+		if (dependencies != null && dependencies.length > 0) {
+			result = true;
+			hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
 
-				boolean firstDependency = true;
-				for (String injectedBean : dependencies) {
-					if (!firstDependency) {
-						hover.append("\n");
-					}
-					List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
-					for (LiveBean dependencyBean : dependencyBeans) {
-						hover.append("- " + LiveHoverUtils.showBean(dependencyBean));
-					}
-					firstDependency = false;
+			boolean firstDependency = true;
+			for (String injectedBean : dependencies) {
+				if (!firstDependency) {
+					hover.append("\n");
 				}
+				List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
+				for (LiveBean dependencyBean : dependencyBeans) {
+					hover.append("- " + LiveHoverUtils.showBean(dependencyBean));
+				}
+				firstDependency = false;
 			}
 		}
+		return result;
 	}
 
 }

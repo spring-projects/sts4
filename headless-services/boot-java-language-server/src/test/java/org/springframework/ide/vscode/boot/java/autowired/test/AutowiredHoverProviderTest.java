@@ -194,4 +194,49 @@ public class AutowiredHoverProviderTest {
 		editor.assertNoHover("@Autowired");
 	}
 
+	@Test
+	public void noHoversWhenRunningAppDoesntHaveDependenciesForTheAutowiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("autowiredClass")
+						.type("com.example.AutowiredClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AutowiredClass {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"	public AutowiredClass(DependencyA depA, DependencyB depB) {\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component");
+		editor.assertNoHover("@Autowired");
+	}
+
 }
