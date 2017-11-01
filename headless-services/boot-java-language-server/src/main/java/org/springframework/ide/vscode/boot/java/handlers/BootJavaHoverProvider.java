@@ -145,7 +145,8 @@ public class BootJavaHoverProvider implements HoverHandler {
 									result.addAll(hints);
 								}
 							} else {
-								ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
+								//Do nothing... we don't want a highlight for the 'no actuator warning'
+								//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
 							}
 						});
 					}

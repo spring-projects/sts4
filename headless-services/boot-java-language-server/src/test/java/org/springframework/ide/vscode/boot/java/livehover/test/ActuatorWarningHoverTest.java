@@ -67,7 +67,7 @@ public class ActuatorWarningHoverTest {
 				"}"
 		);
 
-		editor.assertHighlights("@Profile");
+		editor.assertHighlights(/*NONE*/);
 		editor.assertHoverContains("@Profile", "No live hover information");
 		editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency to your project `"+projectName+"`");
 	}
@@ -168,7 +168,7 @@ public class ActuatorWarningHoverTest {
 				"	}\n" +
 				"}"
 		);
-		editor.assertHighlights("@Bean");
+		editor.assertHighlights(/*NONE*/);
 		editor.assertHoverContains("@Bean", "No live hover information");
 		editor.assertNoHover("the-bean-name");
 	}
