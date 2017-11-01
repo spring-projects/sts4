@@ -80,7 +80,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final BootJavaConfig config;
 	private final CompilationUnitCache cuCache;
 
-	private final WordHighlighter testHightlighter = null; //new WordHighlighter("foo");
+	private final WordHighlighter testHightlighter = null; // new WordHighlighter("foo");
 
 	private JavaProjectFinder projectFinder;
 
@@ -112,7 +112,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
-		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder, serverParams.runningAppProvider);
+		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder,
+				serverParams.runningAppProvider);
 		documents.onHover(hoverInfoProvider);
 
 		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
@@ -126,13 +127,15 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		});
 
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
-		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer, new LiveAppURLSymbolProvider(serverParams.runningAppProvider)));
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
+				new LiveAppURLSymbolProvider(serverParams.runningAppProvider)));
 
 		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
 		documents.onCodeLens(codeLensHandler::createCodeLenses);
 		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider, projectFinder, projectObserver, serverParams.watchDogInterval);
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider,
+				projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (testHightlighter != null) {
@@ -177,11 +180,12 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	@Override
 	public void initialized() {
-		// TODO: due to a missing message from lsp4e this "initialized" is not called in the LSP4E case
+		// TODO: due to a missing message from lsp4e this "initialized" is not called in
+		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)
 
-//		this.indexer.initialize(this.getWorkspaceRoot());
-//		this.liveHoverWatchdog.start();
+		// this.indexer.initialize(this.getWorkspaceRoot());
+		// this.liveHoverWatchdog.start();
 	}
 
 	@Override
@@ -193,135 +197,147 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return super.shutdown();
 	}
 
-	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder, SpringPropertyIndexProvider indexProvider) {
+	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder,
+			SpringPropertyIndexProvider indexProvider) {
 		Map<String, CompletionProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(indexProvider));
+		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
+				new ScopeCompletionProcessor());
+		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
+				new ValueCompletionProcessor(indexProvider));
 
 		JavaSnippetManager snippetManager = new JavaSnippetManager(this::createSnippetBuilder);
-		snippetManager.add(new JavaSnippet(
-				"RequestMapping method",
-				JavaSnippetContext.BOOT_MEMBERS,
+		snippetManager.add(
+				new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+						ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
+								"org.springframework.web.bind.annotation.RequestMethod",
+								"org.springframework.web.bind.annotation.RequestParam"),
+						"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
+								+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
+								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+		snippetManager
+				.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+						ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
+								"org.springframework.web.bind.annotation.RequestParam"),
+						"@GetMapping(value=\"${path}\")\n"
+								+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
+								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+		snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
 				CompletionItemKind.Method,
-				ImmutableList.of(
-						"org.springframework.web.bind.annotation.RequestMapping",
-						"org.springframework.web.bind.annotation.RequestMethod",
-						"org.springframework.web.bind.annotation.RequestParam"
-				),
-				"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n" +
-				"public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n" +
-				"	return new ${SomeData}(${cursor});\n" +
-				"}\n"
-		));
-		snippetManager.add(new JavaSnippet(
-				"GetMapping method",
-				JavaSnippetContext.BOOT_MEMBERS,
+				ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
+						"org.springframework.web.bind.annotation.RequestBody"),
+				"@PostMapping(value=\"${path}\")\n"
+						+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
+						+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
+		snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
 				CompletionItemKind.Method,
-				ImmutableList.of(
-						"org.springframework.web.bind.annotation.GetMapping",
-						"org.springframework.web.bind.annotation.RequestParam"
-				),
-				"@GetMapping(value=\"${path}\")\n" +
-				"public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n" +
-				"	return new ${SomeData}(${cursor});\n" +
-				"}\n"
-		));
-		snippetManager.add(new JavaSnippet(
-				"PostMapping method",
-				JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of(
-						"org.springframework.web.bind.annotation.PostMapping",
-						"org.springframework.web.bind.annotation.RequestBody"
-				),
-				"@PostMapping(value=\"${path}\")\n" +
-				"public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n" +
-				"	//TODO: process POST request\n" +
-				"	${cursor}\n" +
-				"	return ${entity};\n" +
-				"}\n"
-		));
-		snippetManager.add(new JavaSnippet(
-				"PutMapping method",
-				JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of(
-						"org.springframework.web.bind.annotation.PutMapping",
+				ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
 						"org.springframework.web.bind.annotation.RequestBody",
-						"org.springframework.web.bind.annotation.PathVariable"
-				),
-				"@PutMapping(value=\"${path}/{${id}}\")\n" +
-				"public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n" +
-				"	//TODO: process PUT request\n" +
-				"	${cursor}\n" +
-				"	return ${entity};\n" +
-				"}"
-		));
+						"org.springframework.web.bind.annotation.PathVariable"),
+				"@PutMapping(value=\"${path}/{${id}}\")\n"
+						+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
+						+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
 		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
 	}
 
-	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder, RunningAppProvider runningAppProvider) {
+	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
+			RunningAppProvider runningAppProvider) {
 		HashMap<String, HoverProvider> providers = new HashMap<>();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING, new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING, new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING, new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING, new RequestMappingHoverProvider());
-		providers.put(ActiveProfilesProvider.ANNOTATION, new ActiveProfilesProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+				new RequestMappingHoverProvider());
+		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.autowired.Constants.SPRING_AUTOWIRED, new AutowiredHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentInjectionsHoverProvider());
-		providers.put(BeanInjectedIntoHoverProvider.ANNOTATION, new BeanInjectedIntoHoverProvider());
+		providers.put(Annotations.AUTOWIRED, new AutowiredHoverProvider());
+		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider());
+		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_CLASS, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM, new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_NOT_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_ENDPOINT, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_EXPRESSION, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JAVA, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JNDI, new ConditionalsLiveHoverProvider());
-      	providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_SINGLE_CANDIDATE, new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_CLASS,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION,
+				new ConditionalsLiveHoverProvider());
+		providers.put(
+				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_NOT_WEB_APPLICATION,
+				new ConditionalsLiveHoverProvider());
+		providers.put(
+				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR,
+				new ConditionalsLiveHoverProvider());
+		providers.put(
+				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_ENDPOINT,
+				new ConditionalsLiveHoverProvider());
+		providers.put(
+				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_EXPRESSION,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JAVA,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JNDI,
+				new ConditionalsLiveHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_SINGLE_CANDIDATE,
+				new ConditionalsLiveHoverProvider());
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING, new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+				new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+				new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+				new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+				new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+				new RequestMappingSymbolProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+				new RequestMappingSymbolProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_BEAN, new BeansSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.beans.Constants.SPRING_COMPONENT, new ComponentSymbolProvider());
+		providers.put(Annotations.BEAN, new BeansSymbolProvider());
+		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
 		return new SpringIndexer(this, projectFinder, providers);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValuePropertyReferencesProvider(server));
+		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
+				new ValuePropertyReferencesProvider(server));
 
 		return new BootJavaReferencesHandler(server, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SimpleLanguageServer server,
+			JavaProjectFinder projectFinder) {
 		return new BootJavaCodeLensEngine(server, projectFinder);
 	}
 

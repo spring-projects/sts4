@@ -17,7 +17,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.springframework.ide.vscode.boot.java.autowired.Constants;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
@@ -58,7 +58,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		for (Object modifier : modifiers) {
 			if (modifier instanceof MarkerAnnotation) {
 				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null && typeBinding.getQualifiedName().equals(Constants.SPRING_AUTOWIRED)) {
+				if (typeBinding != null && typeBinding.getQualifiedName().equals(Annotations.AUTOWIRED)) {
 					return true;
 				}
 			}
