@@ -60,6 +60,11 @@ public class LiveConditionalParser {
 		return Optional.empty();
 	}
 
+	/**
+	 * Fetches the "positiveMatches" element in the autoconfig report that contains conditional information.
+	 * @param positiveMatchKey
+	 * @return
+	 */
 	private Optional<JSONObject> getPositiveMatchesJson(String autoConfigReport) {
 		JSONObject autoConfigJson = new JSONObject(autoConfigReport);
 
@@ -78,6 +83,10 @@ public class LiveConditionalParser {
 		return Optional.empty();
 	}
 
+	/**
+	 * Fetches all the conditionals listed in the the "positiveMatches" element in the autoconfig report.
+	 *
+	 */
 	private List<LiveConditional> getConditionalsFromPositiveMatches(String autoconfigReport) {
 		List<LiveConditional> conditions = new ArrayList<>();
 

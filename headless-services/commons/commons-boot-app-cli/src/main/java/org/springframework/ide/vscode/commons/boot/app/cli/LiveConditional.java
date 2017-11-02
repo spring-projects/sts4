@@ -66,6 +66,12 @@ public class LiveConditional {
 			return this;
 		}
 
+		/**
+		 * This is a JSON key in "positiveMatches" element in the autoconfig report that contains information regarding
+		 * the method that the conditional is applied to.
+		 * @param positiveMatchKey
+		 * @return
+		 */
 		public LiveConditionalBuilder positiveMatchKey(String positiveMatchKey) {
 			conditional.positiveMatchKey = positiveMatchKey;
 			return this;
