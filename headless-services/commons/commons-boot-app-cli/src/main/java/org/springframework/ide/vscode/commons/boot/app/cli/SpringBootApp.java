@@ -86,12 +86,6 @@ public class SpringBootApp {
 	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
 		return cache.getAllRunningJavaApps();
 	}
-
-	private String show(String msg, String value) {
-		System.err.println(msg+value);
-		return value;
-	}
-
 	/**
 	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
 	 */
@@ -102,7 +96,7 @@ public class SpringBootApp {
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
-		System.err.println("SpringBootApp created: "+this);
+		Log.info("SpringBootApp created: "+this);
 	}
 
 	public String getProcessID() {
@@ -460,7 +454,7 @@ public class SpringBootApp {
 
 	public void dispose() {
 		if (vm!=null) {
-			System.err.println("SpringBootApp disposed: "+this);
+			Log.info("SpringBootApp disposed: "+this);
 			try {
 				vm.detach();
 			} catch (Exception e) {
