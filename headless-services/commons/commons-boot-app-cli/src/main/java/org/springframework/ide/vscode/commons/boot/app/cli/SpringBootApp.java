@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -61,7 +62,7 @@ public class SpringBootApp {
 	private VirtualMachineDescriptor vmd;
 	private Supplier<String> jmxConnect;
 
-	private static final Cache<String, String> pidToJmxConnectUrl = CacheBuilder.newBuilder().build();
+	private static final Cache<VirtualMachineDescriptor, String> pidToJmxConnectUrl = CacheBuilder.newBuilder().build();
 
 	private static Callable<Collection<SpringBootApp>> cached(Callable<Collection<SpringBootApp>> provider) {
 		LoadingCache<Object, CompletableFuture<Collection<SpringBootApp>>> cache = CacheBuilder.newBuilder()
@@ -102,6 +103,12 @@ public class SpringBootApp {
 		for (VirtualMachineDescriptor vmd : list) {
 			apps.add(new SpringBootApp(vmd));
 		}
+
+		// Invalidate part of pidToJmxConnectUrl cache to remove old processes
+		Set<VirtualMachineDescriptor> oldProcesses = new HashSet<>(pidToJmxConnectUrl.asMap().keySet());
+		oldProcesses.removeAll(list);
+		pidToJmxConnectUrl.invalidateAll(oldProcesses);
+
 		return apps.build();
 	}
 
@@ -134,9 +141,10 @@ public class SpringBootApp {
 	}
 
 	private String getJmxConnectUrl() {
-		String pid = getProcessID();
 		try {
-			return pidToJmxConnectUrl.get(pid, () -> vm.startLocalManagementAgent());
+			return pidToJmxConnectUrl.get(vmd, () -> {
+				return vm.startLocalManagementAgent();
+			});
 		} catch (ExecutionException e) {
 			Log.log(e);
 			return null;
