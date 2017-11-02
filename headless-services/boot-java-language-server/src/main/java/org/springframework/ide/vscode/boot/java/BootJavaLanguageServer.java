@@ -263,45 +263,41 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider());
 		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL,
+		providers.put(Annotations.CONDITIONAL,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN,
+		providers.put(Annotations.CONDITIONAL_ON_BEAN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN,
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY,
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE,
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS,
+		providers.put(Annotations.CONDITIONAL_ON_CLASS,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_CLASS,
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM,
+		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION,
+		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_NOT_WEB_APPLICATION,
+		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_ENDPOINT,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_EXPRESSION,
+		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JAVA,
+		providers.put(Annotations.CONDITIONAL_ON_JAVA,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JNDI,
+		providers.put(Annotations.CONDITIONAL_ON_JNDI,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_SINGLE_CANDIDATE,
+		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE,
 				new ConditionalsLiveHoverProvider());
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
