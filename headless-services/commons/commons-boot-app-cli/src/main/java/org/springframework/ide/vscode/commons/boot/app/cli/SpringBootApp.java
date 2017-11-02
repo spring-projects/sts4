@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -60,63 +61,21 @@ public class SpringBootApp {
 
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
-	private Supplier<String> jmxConnect;
 
-	private static final Cache<VirtualMachineDescriptor, String> pidToJmxConnectUrl = CacheBuilder.newBuilder().build();
-
-	private static Callable<Collection<SpringBootApp>> cached(Callable<Collection<SpringBootApp>> provider) {
-		LoadingCache<Object, CompletableFuture<Collection<SpringBootApp>>> cache = CacheBuilder.newBuilder()
-		.expireAfterWrite(500, TimeUnit.MILLISECONDS)
-		.removalListener(removalNotification -> {
-			 @SuppressWarnings("unchecked")
-			CompletableFuture<Collection<SpringBootApp>> removed = (CompletableFuture<Collection<SpringBootApp>>) removalNotification.getValue();
-			if (!removed.isCompletedExceptionally()) {
-				try {
-					Collection<SpringBootApp> apps = removed.get();
-					for (SpringBootApp springBootApp : apps) {
-						springBootApp.dispose();
-					}
-				} catch (Exception e) {
-					Log.log(e);
-				}
-			}
-		})
-		.build(new CacheLoader<Object, CompletableFuture<Collection<SpringBootApp>>>() {
-			@Override public CompletableFuture<Collection<SpringBootApp>> load(Object key) {
-				try {
-					return CompletableFuture.completedFuture(provider.call());
-				} catch (Throwable e) {
-					return Futures.error(e);
-				}
-			}
-		});
-		return () -> {
-			Object key = SpringBootApp.class; //This key really doesn't matter, as long as we use the same non-null object each time.
-			return cache.get(key).get();
-		};
-	}
-
-
-	private static Collection<SpringBootApp> fetchRunningJavaApps() throws Exception {
-		List<VirtualMachineDescriptor> list = VirtualMachine.list();
-		ImmutableList.Builder<SpringBootApp> apps = ImmutableList.builder();
-		for (VirtualMachineDescriptor vmd : list) {
-			apps.add(new SpringBootApp(vmd));
+	private final Supplier<String> jmxConnect = Suppliers.memoize(() -> {
+		try {
+			return vm.startLocalManagementAgent();
+		} catch (Exception e) {
+			Log.log(e);
+			return null;
 		}
+	});
 
-		// Invalidate part of pidToJmxConnectUrl cache to remove old processes
-		Set<VirtualMachineDescriptor> oldProcesses = new HashSet<>(pidToJmxConnectUrl.asMap().keySet());
-		oldProcesses.removeAll(list);
-		pidToJmxConnectUrl.invalidateAll(oldProcesses);
-
-		return apps.build();
-	}
+	private static SpringBootAppCache cache = new SpringBootAppCache();
 
 	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
-		return cachedJavaAppsGetter.call();
+		return cache.getAllRunningJavaApps();
 	}
-
-	private static Callable<Collection<SpringBootApp>> cachedJavaAppsGetter = cached(SpringBootApp::fetchRunningJavaApps);
 
 	/**
 	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
@@ -128,7 +87,6 @@ public class SpringBootApp {
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
-		this.jmxConnect = Suppliers.memoize(() -> getJmxConnectUrl());
 		System.err.println("SpringBootApp created: "+this);
 	}
 
@@ -138,17 +96,6 @@ public class SpringBootApp {
 
 	public String getProcessName() {
 		return vmd.displayName();
-	}
-
-	private String getJmxConnectUrl() {
-		try {
-			return pidToJmxConnectUrl.get(vmd, () -> {
-				return vm.startLocalManagementAgent();
-			});
-		} catch (ExecutionException e) {
-			Log.log(e);
-			return null;
-		}
 	}
 
 	public String getHost() throws Exception {
