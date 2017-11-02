@@ -14,16 +14,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
@@ -43,6 +42,9 @@ import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -57,6 +59,9 @@ public class SpringBootApp {
 
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
+	private Supplier<String> jmxConnect;
+
+	private static final Cache<String, String> pidToJmxConnectUrl = CacheBuilder.newBuilder().build();
 
 	private static Callable<Collection<SpringBootApp>> cached(Callable<Collection<SpringBootApp>> provider) {
 		LoadingCache<Object, CompletableFuture<Collection<SpringBootApp>>> cache = CacheBuilder.newBuilder()
@@ -116,6 +121,7 @@ public class SpringBootApp {
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
+		this.jmxConnect = Suppliers.memoize(() -> getJmxConnectUrl());
 		System.err.println("SpringBootApp created: "+this);
 	}
 
@@ -127,9 +133,18 @@ public class SpringBootApp {
 		return vmd.displayName();
 	}
 
+	private String getJmxConnectUrl() {
+		String pid = getProcessID();
+		try {
+			return pidToJmxConnectUrl.get(pid, () -> vm.startLocalManagementAgent());
+		} catch (ExecutionException e) {
+			Log.log(e);
+			return null;
+		}
+	}
+
 	public String getHost() throws Exception {
-		String jmxConnect = this.vm.startLocalManagementAgent();
-		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
 		return serviceUrl.getHost();
 	}
 
@@ -175,11 +190,9 @@ public class SpringBootApp {
 	}
 
 	public String getPort() throws Exception {
-		String jmxConnect = this.vm.startLocalManagementAgent();
-
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
 			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 			return getPort(jmxConnector);
 		}
@@ -275,11 +288,9 @@ public class SpringBootApp {
 	}
 
 	protected Object getActuatorDataFromAttribute(String actuatorID, String attribute) throws Exception {
-		String jmxConnect = this.vm.startLocalManagementAgent();
-
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
 			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
@@ -298,11 +309,9 @@ public class SpringBootApp {
 	}
 
 	protected Object getActuatorDataFromOperation(String actuatorID, String operation) throws Exception {
-		String jmxConnect = this.vm.startLocalManagementAgent();
-
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect);
+			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
 			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
