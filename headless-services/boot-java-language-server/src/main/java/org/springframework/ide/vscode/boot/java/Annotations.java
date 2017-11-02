@@ -21,6 +21,13 @@ public class Annotations {
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
+	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
+	public static final String SPRING_GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";
+	public static final String SPRING_POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping";
+	public static final String SPRING_PUT_MAPPING = "org.springframework.web.bind.annotation.PutMapping";
+	public static final String SPRING_DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
+	public static final String SPRING_PATCH_MAPPING = "org.springframework.web.bind.annotation.PatchMapping";
+
 	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
 	public static final String CONDITIONAL_ON_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnBean";
 	public static final String CONDITIONAL_ON_MISSING_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean";

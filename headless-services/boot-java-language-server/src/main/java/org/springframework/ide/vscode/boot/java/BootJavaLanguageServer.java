@@ -245,17 +245,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+		providers.put(Annotations.SPRING_REQUEST_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+		providers.put(Annotations.SPRING_GET_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+		providers.put(Annotations.SPRING_POST_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+		providers.put(Annotations.SPRING_PUT_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+		providers.put(Annotations.SPRING_DELETE_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+		providers.put(Annotations.SPRING_PATCH_MAPPING,
 				new RequestMappingHoverProvider());
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
@@ -305,17 +305,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+		providers.put(Annotations.SPRING_REQUEST_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+		providers.put(Annotations.SPRING_GET_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+		providers.put(Annotations.SPRING_POST_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+		providers.put(Annotations.SPRING_PUT_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+		providers.put(Annotations.SPRING_DELETE_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+		providers.put(Annotations.SPRING_PATCH_MAPPING,
 				new RequestMappingSymbolProvider());
 
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());
