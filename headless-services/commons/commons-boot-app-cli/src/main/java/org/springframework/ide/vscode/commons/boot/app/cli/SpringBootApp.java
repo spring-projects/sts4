@@ -62,19 +62,34 @@ public class SpringBootApp {
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
+	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
+
 	private final Supplier<String> jmxConnect = Suppliers.memoize(() -> {
+		String address = null;
 		try {
-			return vm.startLocalManagementAgent();
+			address = vm.getAgentProperties().getProperty(LOCAL_CONNECTOR_ADDRESS);
 		} catch (Exception e) {
-			Log.log(e);
-			return null;
+			//ignore
 		}
+		if (address==null) {
+			try {
+				address = vm.startLocalManagementAgent();
+			} catch (IOException e) {
+				Log.log(e);
+			}
+		}
+		return address;
 	});
 
 	private static SpringBootAppCache cache = new SpringBootAppCache();
 
 	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
 		return cache.getAllRunningJavaApps();
+	}
+
+	private String show(String msg, String value) {
+		System.err.println(msg+value);
+		return value;
 	}
 
 	/**
