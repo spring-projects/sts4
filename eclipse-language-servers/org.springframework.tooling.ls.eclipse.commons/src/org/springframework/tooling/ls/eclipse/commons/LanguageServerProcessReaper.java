@@ -1,19 +1,21 @@
 /*******************************************************************************
- * Copyright (c) 2017 Spring IDE Developers
+ * Copyright (c) 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Spring IDE Developers - initial API and implementation
+ *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.cloudfoundry.manifest.ls;
+package org.springframework.tooling.ls.eclipse.commons;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 
 /**
  * A 'last resort cleanup' utility for LSP server processes. This class, when instantiated
@@ -41,6 +43,19 @@ public class LanguageServerProcessReaper extends Thread {
 	private static void debug(String string) {
 		if (DEBUG) {
 			System.out.println("LanguageServerProcessReaper: "+string);
+		}
+	}
+
+	public static Process getProcess(ProcessStreamConnectionProvider connectionProvider) {
+		try {
+			//The super class is doesn't provide a way to get at the process without using reflection...
+			// This method can be removed if / when the super-class provides a getProcess method we can call.
+			Field processField = ProcessStreamConnectionProvider.class.getDeclaredField("process");
+			processField.setAccessible(true);
+			Process process = (Process) processField.get(connectionProvider);
+			return process;
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			return null;
 		}
 	}
 
