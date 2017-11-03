@@ -43,7 +43,7 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		
 		commands.add("-Dlsp.lazy.completions.disable=true");
 		commands.add("-Dlsp.completions.indentation.enable=true");
-
+		commands.add("-Xmx100m");
 		commands.add("-cp");
 		commands.add(getToolsJAR() + ":" + getLanguageServerJARLocation());
 		commands.add("org.springframework.boot.loader.JarLauncher");
