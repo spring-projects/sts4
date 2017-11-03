@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.time.Duration;
 
+import org.eclipse.lsp4j.Hover;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
@@ -67,7 +69,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getLiveConditionals(
+				.positiveMatchesJsonForLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnBeanConfig#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
 				.build();
 
@@ -91,7 +93,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getLiveConditionals(
+				.positiveMatchesJsonForLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 
@@ -114,7 +116,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getLiveConditionals(
+				.positiveMatchesJsonForLiveConditionals(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
 
@@ -144,10 +146,10 @@ public class ConditionalsLiveHoverTest {
 				"Process 22022: test-conditionals-live-hover");
 	}
 
-
 	@Test
-	public void testMultipleAppsLiveHover() throws Exception {
+	public void testMultipleAppInstances() throws Exception {
 
+		// Test that live hover shows information for multiple app instances
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
 		String docUri = "file://" + directory.getAbsolutePath()
@@ -156,21 +158,21 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getLiveConditionals(
+				.positiveMatchesJsonForLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 
 		mockAppProvider.builder().isSpringBootApp(true).port("1001").processId("80000").host("cfapps.io")
-		.processName("test-conditionals-live-hover")
-		.getLiveConditionals(
-				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
-		.build();
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+				.build();
 
 		mockAppProvider.builder().isSpringBootApp(true).port("1002").processId("90000").host("cfapps.io")
-		.processName("test-conditionals-live-hover")
-		.getLiveConditionals(
-				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
-		.build();
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
+				.build();
 
 		harness.intialize(directory);
 
@@ -195,73 +197,120 @@ public class ConditionalsLiveHoverTest {
 
 	}
 
-//	@Test
-//	public void testMultipleLiveHoverHints() throws Exception {
-//
-//		File directory = new File(
-//				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
-//		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/MultipleConditionals.java";
-//
-//		// Build a mock running boot app
-//		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
-//				.processName("test-conditionals-live-hover")
-//				.getAutoConfigReport(
-//						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
-//				.build();
-//
-//		harness.intialize(directory);
-//
-//		Editor editor = harness.newEditor(LanguageId.JAVA, "package example;\n" +
-//				"\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnJava;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;\n" +
-//				"import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;\n" +
-//				"import org.springframework.context.annotation.Bean;\n" +
-//				"import org.springframework.context.annotation.Configuration;\n" +
-//				"\n" +
-//				"@Configuration\n" +
-//				"public class MultipleConditionals {\n" +
-//				"\n" +
-//				"	@Bean\n" +
-//				"	@ConditionalOnBean\n" +
-//				"	@ConditionalOnWebApplication\n" +
-//				"	@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)\n" +
-//				"	@ConditionalOnMissingClass\n" +
-//				"	@ConditionalOnExpression\n" +
-//				"	public Hello hi() {\n" +
-//				"		return null;\n" +
-//				"	}\n" +
-//				"	\n" +
-//				"	@Bean\n" +
-//				"	@ConditionalOnMissingBean\n" +
-//				"	@ConditionalOnNotWebApplication\n" +
-//				"	public Hello missing() {\n" +
-//				"		return null;\n" +
-//				"	}\n" +
-//				"}");
-//
-////		editor.assertHoverContains("@ConditionalOnBean", "Condition: OnBeanCondition\n" + "\n"
-////				+ "Message: @ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'");
-////
-////		editor.assertHoverContains("@ConditionalOnWebApplication", "Condition: OnWebApplicationCondition\n" + "\n"
-////				+ "Message: @ConditionalOnWebApplication (required) found StandardServletEnvironment");
-////
-////		editor.assertHoverContains("@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)",
-////				"Condition: OnJavaCondition\n" + "\n" + "Message: @ConditionalOnJava (1.8 or newer) found 1.8");
-////
-////		editor.assertHoverContains("@ConditionalOnMissingClass", "Condition: OnClassCondition\n" + "\n"
-////				+ "Message: @ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class");
-////
-////		editor.assertHoverContains("@ConditionalOnExpression", "Condition: OnExpressionCondition\n" + "\n"
-////				+ "Message: @ConditionalOnExpression (#{true}) resulted in true");
-//
-//		editor.assertHighlights("@ConditionalOnBean", "@ConditionalOnWebApplication",
-//				"@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)", "@ConditionalOnMissingClass",
-//				"@ConditionalOnExpression");
-//
-//	}
+	@Test
+	public void testMultipleConditionalsSameMethod() throws Exception {
+
+		// Tests something like this:
+//		@Bean
+//		@ConditionalOnBean
+//		@ConditionalOnWebApplication
+//		@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)
+//		@ConditionalOnMissingClass
+//		@ConditionalOnExpression
+//		public Hello hi() {
+//			return null;
+//		}
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/MultipleConditionals.java";
+
+		// Build a mock running boot app
+		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
+				.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+
+		// IMPORTANT: test EXACT text to ensure that multiple conditionals on the same method do not show
+		// up while
+		// hovering over only one of the conditional annotations
+		editor.assertHoverExactText("@ConditionalOnBean",
+				"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\n" + "\n"
+						+ "Process 70000: test-conditionals-live-hover");
+
+		editor.assertHoverExactText("@ConditionalOnWebApplication",
+				"@ConditionalOnWebApplication (required) found StandardServletEnvironment\n" + "\n"
+						+ "Process 70000: test-conditionals-live-hover");
+
+		editor.assertHoverExactText("@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)",
+				"@ConditionalOnJava (1.8 or newer) found 1.8\n" + "\n" + "Process 70000: test-conditionals-live-hover");
+
+		editor.assertHoverExactText("@ConditionalOnMissingClass",
+				"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\n"
+						+ "\n" + "Process 70000: test-conditionals-live-hover");
+
+		editor.assertHoverExactText("@ConditionalOnExpression", "@ConditionalOnExpression (#{true}) resulted in true\n"
+				+ "\n" + "Process 70000: test-conditionals-live-hover");
+	}
+
+	@Test
+	public void PT152535713testMultipleLiveHoverHints() throws Exception {
+
+		// Tests fix for PT152535713. Ensure that in a method with multiple
+		// conditionals,
+		// hovering over any one conditional annotation only shows content for that
+		// conditional
+		// and not any of the other ones
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath()
+				+ "/src/main/java/example/MultipleConditionalsPT152535713.java";
+
+		// Build a mock running boot app
+		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"MultipleConditionalsPT152535713#hi\":[{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"}]}}")
+				.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+
+		editor.assertHoverExactText("@ConditionalOnWebApplication",
+				"@ConditionalOnWebApplication (required) found StandardServletEnvironment\n" + "\n"
+						+ "Process 70000: test-conditionals-live-hover");
+
+		editor.assertHoverExactText("@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)",
+				"@ConditionalOnJava (1.8 or newer) found 1.8\n" + "\n" + "Process 70000: test-conditionals-live-hover");
+
+		// Test that the hovers dont have extra information of the other conditionals:
+		Hover hover = editor.getHover("@ConditionalOnWebApplication");
+		String hoverContent = editor.hoverString(hover);
+		assertFalse(hoverContent.contains("@ConditionalOnJava"));
+
+		hover = editor.getHover("@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)");
+		hoverContent = editor.hoverString(hover);
+		assertFalse(hoverContent.contains("@ConditionalOnWebApplication"));
+	}
+
+	@Test
+	public void testHighlights() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/MultipleConditionals.java";
+
+		// Build a mock running boot app
+		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
+				.build();
+
+		harness.intialize(directory);
+
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+
+		editor.assertHighlights("@ConditionalOnBean", "@ConditionalOnWebApplication",
+				"@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)", "@ConditionalOnMissingClass",
+				"@ConditionalOnExpression");
+
+	}
 }

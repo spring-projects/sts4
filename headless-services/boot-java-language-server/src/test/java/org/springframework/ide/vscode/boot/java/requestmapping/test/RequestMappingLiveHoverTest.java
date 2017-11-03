@@ -55,7 +55,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.build();
 
@@ -85,7 +85,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 		.	build();
 
@@ -143,7 +143,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
 		.	build();
 
@@ -189,7 +189,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
 		.	build();
 
@@ -235,7 +235,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/greetings],methods=[PUT]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.updateGreetings()\"}}")
 		.	build();
 
@@ -279,7 +279,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/greetings || /hello],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.greetings()\"}}")
 		.	build();
 
@@ -326,7 +326,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public org.springframework.http.ResponseEntity<?> com.example.RestApi.find(java.lang.String,java.util.Date,java.lang.String)\"}}")
 		.	build();
 
@@ -376,7 +376,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.lang.String>)\"}}")
 		.	build();
 
@@ -426,7 +426,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Integer>>)\"}}")
 		.	build();
 
@@ -477,7 +477,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, ? extends java.lang.Integer>>)\"}}")
 		.	build();
 
@@ -528,7 +528,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[])\"}}")
 		.	build();
 
@@ -577,7 +577,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[][])\"}}")
 		.	build();
 
@@ -626,7 +626,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String...)\"}}")
 		.	build();
 
@@ -674,7 +674,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 		.	build();
 
@@ -686,7 +686,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 		.	build();
 
@@ -698,7 +698,7 @@ public class RequestMappingLiveHoverTest {
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
-			.getRequestMappings(
+			.requestMappings(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 		.	build();
 		harness.intialize(directory);

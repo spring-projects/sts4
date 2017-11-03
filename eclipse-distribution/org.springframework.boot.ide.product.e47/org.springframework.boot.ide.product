@@ -13,7 +13,7 @@ openFile</programArgs>
 --add-modules=ALL-SYSTEM
 -Xms40m
 -Xverify:none</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts.icns
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
          <argsX86_64>-Xmx1200m</argsX86_64>
       </vmArgsMac>
       <vmArgsWin>

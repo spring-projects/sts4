@@ -105,19 +105,19 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
-		public MockAppBuilder getRequestMappings(String mappings) throws Exception {
+		public MockAppBuilder requestMappings(String mappings) throws Exception {
 			Collection<RequestMapping> requestMappings = SpringBootApp.parseRequestMappingsJson(mappings);
 			when(app.getRequestMappings()).thenReturn(requestMappings);
 			return this;
 		}
 
-		public MockAppBuilder getAutoConfigReport(String autoConfigReport) throws Exception {
+		public MockAppBuilder autoConfigReport(String autoConfigReport) throws Exception {
 			when(app.getAutoConfigReport()).thenReturn(autoConfigReport);
 			return this;
 		}
 
-		public MockAppBuilder getLiveConditionals(String autoConfigReport) throws Exception{
-			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(autoConfigReport, processId, processName));
+		public MockAppBuilder positiveMatchesJsonForLiveConditionals(String rawJson) throws Exception{
+			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(rawJson, processId, processName));
 			return this;
 		}
 
