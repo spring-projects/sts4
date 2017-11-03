@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -233,6 +234,24 @@ public class SpringBootApp {
 		}
 
 		return null;
+	}
+
+	public Optional<List<LiveConditional>> getLiveConditionals() throws Exception {
+		return getLiveConditionals(getAutoConfigReport(), getProcessID(), getProcessName());
+	}
+
+	/**
+	 * Publicly visible so that it can be tested via a mock app
+	 *
+	 * @param autoConfigReport
+	 * @param processId
+	 * @param processName
+	 * @return
+	 * @throws Exception
+	 */
+	public static Optional<List<LiveConditional>> getLiveConditionals(String autoConfigReport, String processId,
+			String processName) {
+		return new LiveConditionalParser(autoConfigReport, processId, processName).parse();
 	}
 
 	public String getAutoConfigReport() throws Exception {

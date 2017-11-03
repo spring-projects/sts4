@@ -15,7 +15,11 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 public class HoverContentUtils {
 
 	public static String getProcessInformation(SpringBootApp app) {
-		return "Process " + app.getProcessID() + ": " + app.getProcessName();
+		return getProcessInformation(app.getProcessID(), app.getProcessName());
+	}
+
+	public static String getProcessInformation(String processId, String processName) {
+		return "Process " + processId + ": " + processName;
 	}
 
 }

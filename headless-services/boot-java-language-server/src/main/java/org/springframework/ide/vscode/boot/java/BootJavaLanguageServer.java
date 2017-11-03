@@ -245,17 +245,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+		providers.put(Annotations.SPRING_REQUEST_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+		providers.put(Annotations.SPRING_GET_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+		providers.put(Annotations.SPRING_POST_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+		providers.put(Annotations.SPRING_PUT_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+		providers.put(Annotations.SPRING_DELETE_MAPPING,
 				new RequestMappingHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+		providers.put(Annotations.SPRING_PATCH_MAPPING,
 				new RequestMappingHoverProvider());
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
@@ -263,45 +263,41 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider());
 		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider());
 
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL,
+		providers.put(Annotations.CONDITIONAL,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_BEAN,
+		providers.put(Annotations.CONDITIONAL_ON_BEAN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_BEAN,
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_PROPERTY,
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_RESOURCE,
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLASS,
+		providers.put(Annotations.CONDITIONAL_ON_CLASS,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_MISSING_CLASS,
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_CLOUD_PLATFORM,
+		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_WEB_APPLICATION,
+		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_NOT_WEB_APPLICATION,
+		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_ENDPOINT,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT,
 				new ConditionalsLiveHoverProvider());
-		providers.put(
-				org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR,
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_EXPRESSION,
+		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JAVA,
+		providers.put(Annotations.CONDITIONAL_ON_JAVA,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_JNDI,
+		providers.put(Annotations.CONDITIONAL_ON_JNDI,
 				new ConditionalsLiveHoverProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.conditionals.Constants.CONDITIONAL_ON_SINGLE_CANDIDATE,
+		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE,
 				new ConditionalsLiveHoverProvider());
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
@@ -309,17 +305,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		HashMap<String, SymbolProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_REQUEST_MAPPING,
+		providers.put(Annotations.SPRING_REQUEST_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_GET_MAPPING,
+		providers.put(Annotations.SPRING_GET_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_POST_MAPPING,
+		providers.put(Annotations.SPRING_POST_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PUT_MAPPING,
+		providers.put(Annotations.SPRING_PUT_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_DELETE_MAPPING,
+		providers.put(Annotations.SPRING_DELETE_MAPPING,
 				new RequestMappingSymbolProvider());
-		providers.put(org.springframework.ide.vscode.boot.java.requestmapping.Constants.SPRING_PATCH_MAPPING,
+		providers.put(Annotations.SPRING_PATCH_MAPPING,
 				new RequestMappingSymbolProvider());
 
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());

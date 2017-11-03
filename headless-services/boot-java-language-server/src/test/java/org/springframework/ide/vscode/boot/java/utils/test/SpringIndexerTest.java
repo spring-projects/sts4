@@ -27,9 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.boot.java.requestmapping.Constants;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -53,7 +53,7 @@ public class SpringIndexerTest {
 	@Before
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
-		symbolProviders.put(Constants.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
+		symbolProviders.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		harness = BootLanguageServerHarness.builder().build();
 	}
 

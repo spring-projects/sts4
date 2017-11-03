@@ -30,6 +30,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -142,7 +143,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 					Annotation annotation = (Annotation) modifier;
 					ITypeBinding resolvedType = annotation.resolveTypeBinding();
 					String annotationType = resolvedType.getQualifiedName();
-					if (annotationType != null && Constants.SPRING_REQUEST_MAPPING.equals(annotationType)) {
+					if (annotationType != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotationType)) {
 						return annotation;
 					}
 				}
@@ -155,15 +156,15 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
 			switch (type.getQualifiedName()) {
-			case Constants.SPRING_GET_MAPPING:
+			case Annotations.SPRING_GET_MAPPING:
 				return new String[] { "GET" };
-			case Constants.SPRING_POST_MAPPING:
+			case Annotations.SPRING_POST_MAPPING:
 				return new String[] { "POST" };
-			case Constants.SPRING_DELETE_MAPPING:
+			case Annotations.SPRING_DELETE_MAPPING:
 				return new String[] { "DELETE" };
-			case Constants.SPRING_PUT_MAPPING:
+			case Annotations.SPRING_PUT_MAPPING:
 				return new String[] { "PUT" };
-			case Constants.SPRING_PATCH_MAPPING:
+			case Annotations.SPRING_PATCH_MAPPING:
 				return new String[] { "PATCH" };
 			}
 		}

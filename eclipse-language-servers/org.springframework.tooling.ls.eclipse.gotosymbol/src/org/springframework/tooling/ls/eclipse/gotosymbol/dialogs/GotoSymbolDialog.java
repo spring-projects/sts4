@@ -14,9 +14,13 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -70,6 +74,21 @@ public class GotoSymbolDialog extends PopupDialog {
 				return model.getSymbols().getValues().toArray();
 			}
 			return null;
+		}
+	}
+	
+	private static class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
+		@Override
+		protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
+				throws CoreException, BadLocationException {
+			int maxSeverity = -1;
+			for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {
+				int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+				if (offset != -1) {
+					maxSeverity = Math.max(maxSeverity, marker.getAttribute(IMarker.SEVERITY, -1));
+				}
+			}
+			return maxSeverity;
 		}
 	}
 
@@ -222,7 +241,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(viewer.getControl());
 		viewer.setContentProvider(new SymbolsContentProvider());
-		viewer.setLabelProvider(new SymbolsLabelProvider());
+		viewer.setLabelProvider(new GotoSymbolsLabelProvider());
 		viewer.setUseHashlookup(true);
 		disposables.add(model.getSymbols().onChange(UIValueListener.from((e, v) -> {
 			viewer.refresh();

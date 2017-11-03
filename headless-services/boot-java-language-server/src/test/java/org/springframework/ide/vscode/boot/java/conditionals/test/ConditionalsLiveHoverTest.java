@@ -67,7 +67,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getAutoConfigReport(
+				.getLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnBeanConfig#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
 				.build();
 
@@ -91,7 +91,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getAutoConfigReport(
+				.getLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 
@@ -114,7 +114,7 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getAutoConfigReport(
+				.getLiveConditionals(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
 
@@ -156,19 +156,19 @@ public class ConditionalsLiveHoverTest {
 		// Build a mock running boot app
 		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
 				.processName("test-conditionals-live-hover")
-				.getAutoConfigReport(
+				.getLiveConditionals(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 
 		mockAppProvider.builder().isSpringBootApp(true).port("1001").processId("80000").host("cfapps.io")
 		.processName("test-conditionals-live-hover")
-		.getAutoConfigReport(
+		.getLiveConditionals(
 				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 		.build();
 
 		mockAppProvider.builder().isSpringBootApp(true).port("1002").processId("90000").host("cfapps.io")
 		.processName("test-conditionals-live-hover")
-		.getAutoConfigReport(
+		.getLiveConditionals(
 				"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 		.build();
 

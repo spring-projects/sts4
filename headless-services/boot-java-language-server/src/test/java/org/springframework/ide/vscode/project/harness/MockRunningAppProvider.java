@@ -19,8 +19,8 @@ import java.util.Collection;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -57,6 +57,8 @@ public class MockRunningAppProvider {
 	public static class MockAppBuilder {
 		public final SpringBootApp app = mock(SpringBootApp.class);
 		private MockRunningAppProvider runningAppProvider;
+		private String processId;
+		private String processName;
 
 		public MockAppBuilder(MockRunningAppProvider runningAppProvider) {
 			this.runningAppProvider = runningAppProvider;
@@ -77,11 +79,13 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder processId(String processId) {
+			this.processId = processId;
 			when(app.getProcessID()).thenReturn(processId);
 			return this;
 		}
 
 		public MockAppBuilder processName(String name) {
+			this.processName = name;
 			when(app.getProcessName()).thenReturn(name);
 			return this;
 		}
@@ -109,6 +113,11 @@ public class MockRunningAppProvider {
 
 		public MockAppBuilder getAutoConfigReport(String autoConfigReport) throws Exception {
 			when(app.getAutoConfigReport()).thenReturn(autoConfigReport);
+			return this;
+		}
+
+		public MockAppBuilder getLiveConditionals(String autoConfigReport) throws Exception{
+			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(autoConfigReport, processId, processName));
 			return this;
 		}
 
