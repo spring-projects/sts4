@@ -288,4 +288,29 @@ public class ConditionalsLiveHoverTest {
 		hoverContent = editor.hoverString(hover);
 		assertFalse(hoverContent.contains("@ConditionalOnWebApplication"));
 	}
+
+	@Test
+	public void testHighlights() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
+		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/MultipleConditionals.java";
+
+		// Build a mock running boot app
+		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+				.processName("test-conditionals-live-hover")
+				.positiveMatchesJsonForLiveConditionals(
+						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
+				.build();
+
+		harness.intialize(directory);
+
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+
+		editor.assertHighlights("@ConditionalOnBean", "@ConditionalOnWebApplication",
+				"@ConditionalOnJava(value=ConditionalOnJava.JavaVersion.EIGHT)", "@ConditionalOnMissingClass",
+				"@ConditionalOnExpression");
+
+	}
 }
