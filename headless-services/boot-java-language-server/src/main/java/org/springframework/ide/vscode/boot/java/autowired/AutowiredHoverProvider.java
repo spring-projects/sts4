@@ -22,7 +22,9 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -106,7 +108,6 @@ public class AutowiredHoverProvider implements HoverProvider {
 					}
 				}
 				if (hasInterestingApp && hasAutowiring) {
-					System.out.println(hover);
 					return CompletableFuture
 							.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hover.toString()))));
 				}
@@ -115,25 +116,31 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private LiveBean getDefinedBean(Annotation annotation) {
-		TypeDeclaration declaringType = ASTUtils.findDeclaringType(annotation);
+	private LiveBean getDefinedBean(Annotation autowiredAnnotation) {
+		TypeDeclaration declaringType = ASTUtils.findDeclaringType(autowiredAnnotation);
 		if (declaringType != null) {
-			ITypeBinding beanType = declaringType.resolveBinding();
-			if (beanType != null) {
-				String id = getBeanId(declaringType, beanType);
-				if (StringUtil.hasText(id)) {
-					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
+			for (Annotation annotation : ASTUtils.getAnnotations(declaringType)) {
+				String annotationType = ASTUtils.getAnnotationType(annotation);
+				switch (annotationType) {
+				case Annotations.COMPONENT:
+					return ComponentInjectionsHoverProvider.getDefinedBeanForComponent(annotation);
+				default:
+					break;
 				}
 			}
-		}
-		return null;
-	}
-
-	private String getBeanId(TypeDeclaration declaringType, ITypeBinding beanType) {
-		// TODO: take specific bean declarations into account like @Component at declaring type
-		String typeName = beanType.getName();
-		if (StringUtil.hasText(typeName)) {
-			return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
+			//TODO: handler below is an attempt to do something that may work in many cases, but is probably
+			// missing logics for special cases where annotation attributes on the declaring type matter.
+			ITypeBinding beanType = declaringType.resolveBinding();
+			if (beanType!=null) {
+				String beanTypeName = beanType.getName();
+				if (StringUtil.hasText(beanTypeName)) {
+					return LiveBean.builder()
+							.id(Character.toLowerCase(beanTypeName.charAt(0)) + beanTypeName.substring(1))
+							.type(beanTypeName)
+							.build();
+				}
+			}
+			return null;
 		}
 		return null;
 	}

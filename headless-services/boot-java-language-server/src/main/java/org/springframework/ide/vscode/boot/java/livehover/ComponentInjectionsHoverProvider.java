@@ -68,6 +68,11 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	@Override
 	protected LiveBean getDefinedBean(Annotation annotation) {
+		return getDefinedBeanForComponent(annotation);
+	}
+
+	public static LiveBean getDefinedBeanForComponent(Annotation annotation) {
+		//Move to ASTUtils?
 		TypeDeclaration declaringType = ASTUtils.getAnnotatedType(annotation);
 		if (declaringType != null) {
 			ITypeBinding beanType = declaringType.resolveBinding();
@@ -81,7 +86,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		return null;
 	}
 
-	private String getBeanId(Annotation annotation, ITypeBinding beanType) {
+	private static String getBeanId(Annotation annotation, ITypeBinding beanType) {
 		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString)
 		.orElseGet(() ->  {
 			String typeName = beanType.getName();

@@ -11,14 +11,17 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -31,6 +34,8 @@ import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 public class ASTUtils {
 
@@ -161,8 +166,7 @@ public class ASTUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public
-	static String[] getExpressionValueAsArray(Expression exp) {
+	public static String[] getExpressionValueAsArray(Expression exp) {
 		if (exp instanceof ArrayInitializer) {
 			ArrayInitializer array = (ArrayInitializer) exp;
 			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e))
@@ -172,6 +176,30 @@ public class ASTUtils {
 			if (rm != null) {
 				return new String[] { rm };
 			}
+		}
+		return null;
+	}
+
+
+	public static Collection<Annotation> getAnnotations(TypeDeclaration declaringType) {
+		Object modifiersObj = declaringType.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
+		if (modifiersObj instanceof List) {
+			ImmutableList.Builder<Annotation> annotations = ImmutableList.builder();
+			for (Object node : (List<?>)modifiersObj) {
+				if (node instanceof Annotation) {
+					annotations.add((Annotation) node);
+				}
+			}
+			return annotations.build();
+		}
+		return ImmutableList.of();
+	}
+
+
+	public static String getAnnotationType(Annotation annotation) {
+		ITypeBinding binding = annotation.resolveTypeBinding();
+		if (binding!=null) {
+			return binding.getQualifiedName();
 		}
 		return null;
 	}

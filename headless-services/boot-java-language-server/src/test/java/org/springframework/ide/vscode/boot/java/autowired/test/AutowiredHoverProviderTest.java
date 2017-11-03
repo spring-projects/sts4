@@ -241,4 +241,67 @@ public class AutowiredHoverProviderTest {
 		editor.assertNoHover("@Autowired");
 	}
 
+	@Test public void bug_152553935() throws Exception {
+		//https://www.pivotaltracker.com/story/show/152553935
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("defaultFoo")
+						.type("com.example.FooImplementation")
+						.dependencies("defaultFoo")
+						.dependencies("otherBean")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("otherBean")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+
+		Editor editor = harness.newEditor(
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.scheduling.TaskScheduler;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component(\"defaultFoo\")\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"	\n" +
+				"	private TaskScheduler scheduler;\n" +
+				"	\n" +
+				"	@Autowired Foo self;\n" +
+				"		\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		scheduler.scheduleWithFixedDelay(() -> {\n" +
+				"			System.out.println(\"Doo Done done!\");\n" +
+				"		}, 1000);\n" +
+				"		System.out.println(\"Foo do do do do!\");\n" +
+				"	}\n" +
+				"\n" +
+				"	@Autowired\n" +
+				"	public void setScheduler(TaskScheduler scheduler) {\n" +
+				"		this.scheduler = scheduler;\n" +
+				"	}\n" +
+				"\n" +
+				"}"
+		);
+		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
+		for (int i = 1; i <= 2; i++) {
+			editor.assertHoverContains("@Autowired", 1,
+					"Bean [id: defaultFoo, type: `com.example.FooImplementation`] got autowired with:\n" +
+					"\n" +
+					"- Bean: otherBean  \n" +
+					"  Type: `com.example.DependencyA`");
+		}
+	}
+
 }

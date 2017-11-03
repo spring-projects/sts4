@@ -87,7 +87,6 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					}
 				}
 				if (hasInterestingApp) {
-					System.out.println(hover);
 					return CompletableFuture
 							.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hover.toString()))));
 				}
