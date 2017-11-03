@@ -79,6 +79,26 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.core">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.livexp">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="io.projectreactor.reactor-core">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<feature id="tm-feature">
 		<category name="Uncategorized"/>
 	</feature>

@@ -32,6 +32,26 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.core">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.livexp">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="io.projectreactor.reactor-core">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams">
+		<category name="deps"/>
+	</bundle>
+
 	<feature id="tm-feature">
 		<category name="deps"/>
 	</feature>
