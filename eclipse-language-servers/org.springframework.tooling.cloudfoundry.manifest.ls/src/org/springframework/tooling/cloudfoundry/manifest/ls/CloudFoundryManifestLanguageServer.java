@@ -13,7 +13,6 @@ package org.springframework.tooling.cloudfoundry.manifest.ls;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -32,6 +31,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerProcessReaper;
 
 /**
  * @author Martin Lippert
@@ -93,7 +93,7 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	public void stop() {
 		removeLanguageServer(this);
 		super.stop();
-		processReaper.removeProcess(this.getProcess());
+		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
 	}
 	
 	@Override
@@ -120,22 +120,9 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	@Override
 	public void start() throws IOException {
 		super.start();
-		processReaper.addProcess(getProcess());
+		processReaper.addProcess(LanguageServerProcessReaper.getProcess(this));
 	}
 	
-	private Process getProcess() {
-		try {
-			//The super class is doesn't provide a way to get at the process without using reflection...
-			// This method can be removed if / when the super-class provides a getProcess method we can call.
-			Field processField = ProcessStreamConnectionProvider.class.getDeclaredField("process");
-			processField.setAccessible(true);
-			Process process = (Process) processField.get(this);
-			return process;
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			return null;
-		}
-	}
-
 	protected String getLanguageServerJARLocation() {
 		String languageServer = "manifest-yaml-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 

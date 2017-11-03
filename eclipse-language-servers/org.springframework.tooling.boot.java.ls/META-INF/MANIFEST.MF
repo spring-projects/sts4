@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.ui.workbench,
  org.eclipse.jface,
  org.eclipse.xtext.xbase.lib,
- org.springframework.tooling.ls.eclipse.commons,
+ org.springframework.tooling.ls.eclipse.commons;bundle-version="0.0.10",
  org.eclipse.core.resources,
  org.eclipse.ui
 Import-Package: com.google.gson;version="2.7.0",

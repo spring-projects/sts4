@@ -11,6 +11,7 @@
 package org.springframework.tooling.boot.java.ls;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -23,12 +24,15 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.osgi.framework.Bundle;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerProcessReaper;
 
 /**
  * @author Martin Lippert
  */
 @SuppressWarnings("restriction")
 public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvider {
+	
+	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 	
 	public SpringBootJavaLanguageServer() {
 		List<String> commands = new ArrayList<>();
@@ -48,6 +52,18 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 
 		setCommands(commands);
 		setWorkingDirectory(workingDir);
+	}
+	
+	@Override
+	public void start() throws IOException {
+		super.start();
+		processReaper.addProcess(LanguageServerProcessReaper.getProcess(this));
+	}
+	
+	@Override
+	public void stop() {
+		super.stop();
+		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
 	}
 	
 	protected String getJDKLocation() {
