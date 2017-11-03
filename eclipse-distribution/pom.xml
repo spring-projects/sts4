@@ -113,16 +113,16 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/releases/oxygen/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>staging</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/staging/oxygen/</url>
-				</repository>
-				<repository>
+				</repository> -->
+<!--				<repository>
 					<id>platform-m-build</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/eclipse/updates/4.7-M-builds</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>latest-m2e</id>
 					<layout>p2</layout>
