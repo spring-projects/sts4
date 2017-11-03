@@ -185,7 +185,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						SpringBootApp[] runningApps = getRunningSpringApps(project);
 						if (runningApps.length>0) {
 							if (hasActuatorDependency(project)) {
-								return provider.provideHover(node, annotation, type, offset, doc, runningApps);
+								return provider.provideHover(node, annotation, type, offset, doc, project, runningApps);
 							} else {
 								DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
 								if (region.containsOffset(offset)) {

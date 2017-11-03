@@ -127,8 +127,10 @@ public class AutowiredHoverProviderTest {
 				"\n" +
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
 				"\n" +
-				"- Bean [id: dependencyA, type: `com.example.DependencyA`]\n" +
-				"- Bean [id: dependencyB, type: `com.example.DependencyB`]\n"
+				"- Bean: dependencyA  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: dependencyB  \n" +
+				"  Type: `com.example.DependencyB`\n"
 		);
 	}
 

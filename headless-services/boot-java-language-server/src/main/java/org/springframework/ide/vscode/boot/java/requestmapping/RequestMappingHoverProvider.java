@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -49,7 +50,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc, SpringBootApp[] runningApps) {
+			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return provideHover(annotation, doc, runningApps);
 	}
 

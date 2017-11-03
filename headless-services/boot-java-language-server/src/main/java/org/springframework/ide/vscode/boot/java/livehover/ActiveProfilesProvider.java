@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
-import static org.springframework.ide.vscode.boot.java.utils.ASTUtils.*;
+import static org.springframework.ide.vscode.boot.java.utils.ASTUtils.nameRange;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +29,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -47,7 +48,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 			Annotation annotation,
 			ITypeBinding type,
 			int offset,
-			TextDocument doc, SpringBootApp[] runningApps
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps
 	) {
 		if (runningApps.length>0) {
 			StringBuilder markdown = new StringBuilder();

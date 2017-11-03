@@ -12,9 +12,12 @@ package org.springframework.ide.vscode.boot.java.livehover;
 
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class LiveHoverUtils {
 
@@ -26,6 +29,28 @@ public class LiveHoverUtils {
 		}
 		buf.append(']');
 		return buf.toString();
+	}
+
+	public static String showBeanWithResource(LiveBean bean, String indentStr, IJavaProject project) {
+		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
+		StringBuilder buf = new StringBuilder("Bean: ");
+		buf.append(bean.getId());
+		String type = bean.getType();
+		if (type!=null) {
+			buf.append(newline);
+			buf.append("Type: `"+type+"`");
+		}
+		String resource = bean.getResource();
+		if (StringUtil.hasText(resource)) {
+			buf.append(newline);
+			buf.append("Resource: ");
+			buf.append(showResource(resource, project));
+		}
+		return buf.toString();
+	}
+
+	public static String showResource(String resource, IJavaProject project) {
+		return new SpringResource(resource, project).toMarkdown();
 	}
 
 	public static String niceAppName(SpringBootApp app) {

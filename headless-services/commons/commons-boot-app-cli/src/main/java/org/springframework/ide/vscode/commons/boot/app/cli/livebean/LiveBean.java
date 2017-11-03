@@ -51,6 +51,20 @@ public class LiveBean {
 			this.dependencies = deps;
 			return this;
 		}
+
+		private Builder resource(String resource) {
+			this.resource = resource;
+			return this;
+		}
+
+		public Builder fileResource(String path) {
+			return resource("file ["+path+"]");
+		}
+
+		public Builder classpathResource(String path) {
+			return resource("class path resource ["+path+"]");
+		}
+
 	}
 
 	protected LiveBean(String id, String[] aliases, String scope, String type, String resource, String[] dependencies) {

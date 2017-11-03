@@ -28,6 +28,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -73,7 +74,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, SpringBootApp[] runningApps) {
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 
 			StringBuilder hover = new StringBuilder();
@@ -100,7 +101,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 						for (LiveBean bean : relevantBeans) {
 							hover.append("\n\n");
-							hasAutowiring |= addAutomaticallyWired(hover, annotation, beans, bean);
+							hasAutowiring |= addAutomaticallyWired(hover, annotation, beans, bean, project);
 						}
 					}
 				}
@@ -137,7 +138,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private boolean addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+	private boolean addAutomaticallyWired(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
 		boolean result = false;
 		String[] dependencies = bean.getDependencies();
 
@@ -152,7 +153,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 				}
 				List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
 				for (LiveBean dependencyBean : dependencyBeans) {
-					hover.append("- " + LiveHoverUtils.showBean(dependencyBean));
+					hover.append("- " + LiveHoverUtils.showBeanWithResource(dependencyBean, "  ", project));
 				}
 				firstDependency = false;
 			}

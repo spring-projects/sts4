@@ -28,6 +28,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -58,7 +59,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, SpringBootApp[] runningApps) {
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 
 			LiveBean definedBean = getDefinedBean(annotation);
@@ -80,7 +81,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 						hover.append(LiveHoverUtils.niceAppName(app) + ":");
 
 						for (LiveBean bean : relevantBeans) {
-							addInjectedInto(definedBean, hover, beans, bean);
+							addInjectedInto(definedBean, hover, beans, bean, project);
 							addAutomaticallyWiredContructor(hover, annotation, beans, bean);
 						}
 					}
@@ -103,7 +104,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		//This does nothing by default as its really only relevant to @Component annotation report.
 	}
 
-	protected void addInjectedInto(LiveBean definedBean, StringBuilder hover, LiveBeansModel beans, LiveBean bean) {
+	protected void addInjectedInto(LiveBean definedBean, StringBuilder hover, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
 		hover.append("\n\n");
 		List<LiveBean> dependers = beans.getBeansDependingOn(bean.getId());
 		if (dependers.isEmpty()) {
@@ -115,7 +116,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				if (!firstDependency) {
 					hover.append("\n");
 				}
-				hover.append("- " + LiveHoverUtils.showBean(dependingBean));
+				hover.append("- " + LiveHoverUtils.showBeanWithResource(dependingBean, "  ", project));
 				firstDependency = false;
 			}
 		}

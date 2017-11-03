@@ -12,12 +12,15 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -213,8 +216,123 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean [id: myController, type: `hello.MyController`]\n"
+				"- Bean: myController  \n" +
+				"  Type: `hello.MyController`\n"
 		);
+	}
+
+	@Test
+	public void beanWithFileResource() throws Exception {
+		Path of = getOutputFolder();
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.fileResource("should/not/matter")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("hello.MyController")
+						.fileResource(of+"/hello/MyController.class")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo() {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injection report for Bean [id: fooImplementation]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean: myController  \n" +
+				"  Type: `hello.MyController`  \n" +
+				"  Resource: `hello/MyController.class`"
+		);
+	}
+
+	@Test
+	public void beanWithClasspathResource() throws Exception {
+		Path of = getOutputFolder();
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.fileResource("should/not/matter")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("hello.MyController")
+						.classpathResource("hello/MyController.class")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo() {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injection report for Bean [id: fooImplementation]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean: myController  \n" +
+				"  Type: `hello.MyController`  \n" +
+				"  Resource: `hello/MyController.class`"
+		);
+	}
+
+	private Path getOutputFolder() {
+		return harness.getProjectFinder().find(null).get().getClasspath().getOutputFolder();
 	}
 
 	@Test
@@ -269,8 +387,10 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean [id: myController, type: `hello.MyController`]\n" +
-				"- Bean [id: otherBean, type: `hello.OtherBean`]\n"
+				"- Bean: myController  \n" +
+				"  Type: `hello.MyController`\n" +
+				"- Bean: otherBean  \n" +
+				"  Type: `hello.OtherBean`\n"
 		);
 	}
 

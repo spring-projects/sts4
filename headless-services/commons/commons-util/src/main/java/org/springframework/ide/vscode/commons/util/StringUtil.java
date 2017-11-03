@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -207,5 +208,13 @@ public class StringUtil {
 		}
 		pieces.add(string.substring(start));
 		return pieces.toArray(new String[pieces.size()]);
+	}
+
+	public static Optional<String> findFirst(String searchIn, Pattern pattern) {
+		Matcher matcher = pattern.matcher(searchIn);
+		if (matcher.find()) {
+			return Optional.of(searchIn.substring(matcher.start(), matcher.end()));
+		}
+		return Optional.empty();
 	}
 }

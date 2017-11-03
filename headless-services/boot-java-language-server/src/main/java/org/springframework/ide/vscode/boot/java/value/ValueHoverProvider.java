@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -37,7 +38,7 @@ public class ValueHoverProvider implements HoverProvider {
 
 	@Override
 	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, SpringBootApp[] runningApps) {
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 
 		try {
 			// case: @Value("prefix<*>")
