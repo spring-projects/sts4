@@ -550,7 +550,7 @@ public class Editor {
 		assertContains(snippet, hoverString(hover));
 	}
 
-	protected String hoverString(Hover hover) {
+	public String hoverString(Hover hover) {
 		StringBuilder buf = new StringBuilder();
 		boolean first = true;
 		for (Either<String, MarkedString> block : hover.getContents()) {
@@ -642,6 +642,14 @@ public class Editor {
 		}
 		Hover hover = harness.getHover(doc, doc.toPosition(pos));
 		assertEquals(expectedHover, hoverString(hover));
+	}
+
+	public Hover getHover(String afterString) throws Exception {
+		int pos = getRawText().indexOf(afterString);
+		if (pos>=0) {
+			pos += afterString.length();
+		}
+		return harness.getHover(doc, doc.toPosition(pos));
 	}
 
 	public CompletionItem assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {

@@ -132,6 +132,13 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	 */
 	protected boolean matchesAnnotation(Annotation annotation, LiveConditional liveConditional) {
 
+		// First check that the annotation matches the live conditional annotation
+		String annotationName = annotation.resolveTypeBinding().getName();
+		if (!liveConditional.getMessage().contains(annotationName)) {
+			return false;
+		}
+
+		// Check that Java type in annotation in editor matches Java information in the live Conditional
 		ASTNode parent = annotation.getParent();
 		String rawJsonKey = liveConditional.getPositiveMatchKey();
 
