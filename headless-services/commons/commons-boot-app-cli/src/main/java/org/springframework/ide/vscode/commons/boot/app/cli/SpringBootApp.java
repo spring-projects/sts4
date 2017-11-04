@@ -65,6 +65,8 @@ public class SpringBootApp {
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
+	private Boolean isSpringBootApp;
+
 	private final Supplier<String> jmxConnect = Suppliers.memoize(() -> {
 		String address = null;
 		try {
@@ -114,33 +116,31 @@ public class SpringBootApp {
 	}
 
 	public boolean isSpringBootApp() {
-		return !containsSystemProperty("sts4.languageserver.name")
-				&& (
-						isSpringBootAppClasspath() ||
-						isSpringBootAppSysprops()
-				);
+		if (isSpringBootApp==null) {
+			try {
+				isSpringBootApp = !containsSystemProperty("sts4.languageserver.name")
+					&& (
+							isSpringBootAppClasspath() ||
+							isSpringBootAppSysprops()
+					);
+			} catch (Exception e) {
+				Log.log(e);
+				return false;
+			}
+		}
+		return isSpringBootApp;
 	}
 
-	private boolean isSpringBootAppSysprops() {
-		try {
-			Properties sysprops = this.vm.getSystemProperties();
-			return "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return false;
+	private boolean isSpringBootAppSysprops() throws IOException {
+		Properties sysprops = this.vm.getSystemProperties();
+		return "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
 	}
 
-	private boolean isSpringBootAppClasspath() {
-		try {
-			Properties props = this.vm.getSystemProperties();
-			String classpath = (String) props.get("java.class.path");
-			String[] cpElements = getClasspath(classpath);
-			return contains(cpElements, "spring-boot");
-		} catch (Exception e) {
-			Log.log(e);
-		}
-		return false;
+	private boolean isSpringBootAppClasspath() throws IOException {
+		Properties props = this.vm.getSystemProperties();
+		String classpath = (String) props.get("java.class.path");
+		String[] cpElements = getClasspath(classpath);
+		return contains(cpElements, "spring-boot");
 	}
 
 

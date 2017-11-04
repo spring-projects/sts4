@@ -50,7 +50,8 @@ public class SimpleWorkspaceService implements WorkspaceService {
 		}
 		return Mono.fromCallable(() -> {
 			server.waitForReconcile();
-			return workspaceSymbolHandler.handle(params);
+			List<? extends SymbolInformation> symbols = workspaceSymbolHandler.handle(params);
+			return symbols==null ? ImmutableList.of() : symbols;
 		})
 		.toFuture()
 		.thenApply(l -> (List<? extends SymbolInformation>)l);

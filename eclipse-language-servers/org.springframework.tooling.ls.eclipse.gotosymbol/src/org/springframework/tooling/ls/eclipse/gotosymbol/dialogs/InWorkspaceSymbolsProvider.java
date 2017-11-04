@@ -13,7 +13,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
@@ -31,10 +31,14 @@ import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 @SuppressWarnings("restriction")
 public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
+	private static final int MAX_RESULTS = 200;
 	
 	private List<LanguageServer> languageServers;
 
@@ -58,19 +62,22 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		//  - producing results per server so don't have to wait for one slow server to see the rest.
 		//However it will also add complexity to the code that consumes this and at this time we only
 		// really use this with a single language server anyways.
+		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
+		
 		ImmutableList.Builder<SymbolInformation> allSymbols = ImmutableList.builder();
-		for (LanguageServer server : this.languageServers) {
-			try {
-				WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
-				List<? extends SymbolInformation> symbolsFuture = 
-						server.getWorkspaceService().symbol(params)
-						.get(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-				allSymbols.addAll(symbolsFuture);
-			} catch (Exception e) {
-				GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
-			}
-		}
-		return allSymbols.build();
+		Flux<SymbolInformation> symbols = Flux.fromIterable(this.languageServers)
+		.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
+					.timeout(TIMEOUT)
+					.doOnError(e -> log(e))
+					.onErrorReturn(ImmutableList.of())
+					.flatMapMany(Flux::fromIterable)
+		);
+		//Consider letting the Flux go out from here instead of blocking and collecting elements.
+		return symbols.take(MAX_RESULTS).collect(Collectors.toList()).block();
+	}
+	
+	private static void log(Throwable e) {
+		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 	}
 	
 	public static InWorkspaceSymbolsProvider createFor(ExecutionEvent event) {
