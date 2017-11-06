@@ -14,7 +14,7 @@
 	</parent>
 
 	<properties>
-		<gradle-tooling.version>3.3</gradle-tooling.version>
+		<gradle-tooling.version>4.3</gradle-tooling.version>
 	</properties>
 
 	<repositories>

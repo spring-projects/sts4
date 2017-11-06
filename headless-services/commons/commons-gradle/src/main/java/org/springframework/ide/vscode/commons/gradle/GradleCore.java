@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.gradle.tooling.GradleConnectionException;
@@ -20,6 +21,7 @@ import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Gradle API tooling utility
@@ -72,9 +74,12 @@ public class GradleCore {
 			 */
 			((DefaultGradleConnector) gradleConnector).daemonMaxIdleTime(1, TimeUnit.SECONDS);
 			configuration.configure(gradleConnector);
+			// Use patched Gradle 4.3 distribution as a workaround for https://github.com/gradle/gradle/issues/2483
+			gradleConnector.useDistribution(URI.create("http://s3-test.spring.io/sts4/custom-gradle-builds/gradle-4.3-build.zip"));
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
 		} catch (GradleConnectionException e) {
+			Log.log(e);
 			throw new GradleException(e);
 		} finally {
 			if (connection != null) {
