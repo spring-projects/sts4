@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
+import java.nio.file.Path;
 import java.time.Duration;
 
 import org.junit.Assert;
@@ -123,4 +124,10 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 	public void useProject(IJavaProject p) throws Exception {
 		indexHarness.useProject(p);
 	}
+
+	public Path getOutputFolder() {
+		return getProjectFinder().find(null).get().getClasspath().getOutputFolder();
+	}
+
+
 }

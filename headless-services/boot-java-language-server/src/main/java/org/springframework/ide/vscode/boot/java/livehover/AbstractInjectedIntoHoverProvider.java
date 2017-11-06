@@ -82,7 +82,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 						for (LiveBean bean : relevantBeans) {
 							addInjectedInto(definedBean, hover, beans, bean, project);
-							addAutomaticallyWiredContructor(hover, annotation, beans, bean);
+							addAutomaticallyWiredContructor(hover, annotation, beans, bean, project);
 						}
 					}
 				}
@@ -97,7 +97,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 	protected abstract LiveBean getDefinedBean(Annotation annotation);
 
-	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
 		//This doesn't really belong here, but it accomodates Martin's additional logic to handle implicitly
 		//@Autowired constructor.
 		//This does nothing by default as its really only relevant to @Component annotation report.

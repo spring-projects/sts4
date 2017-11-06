@@ -14,13 +14,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -223,7 +221,7 @@ public class BeanInjectedIntoHoverProviderTest {
 
 	@Test
 	public void beanWithFileResource() throws Exception {
-		Path of = getOutputFolder();
+		Path of = harness.getOutputFolder();
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("fooImplementation")
@@ -278,7 +276,6 @@ public class BeanInjectedIntoHoverProviderTest {
 
 	@Test
 	public void beanWithClasspathResource() throws Exception {
-		Path of = getOutputFolder();
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("fooImplementation")
@@ -329,10 +326,6 @@ public class BeanInjectedIntoHoverProviderTest {
 				"  Type: `hello.MyController`  \n" +
 				"  Resource: `hello/MyController.class`"
 		);
-	}
-
-	private Path getOutputFolder() {
-		return harness.getProjectFinder().find(null).get().getClasspath().getOutputFolder();
 	}
 
 	@Test

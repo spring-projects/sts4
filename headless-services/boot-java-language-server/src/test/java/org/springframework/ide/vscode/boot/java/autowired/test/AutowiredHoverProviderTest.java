@@ -89,11 +89,13 @@ public class AutowiredHoverProviderTest {
 				.add(LiveBean.builder()
 						.id("dependencyA")
 						.type("com.example.DependencyA")
+						.fileResource(harness.getOutputFolder() + "/com/example/DependencyA.class")
 						.build()
 				)
 				.add(LiveBean.builder()
 						.id("dependencyB")
 						.type("com.example.DependencyB")
+						.classpathResource("com/example/DependencyB.class")
 						.build()
 				)
 				.build();
@@ -128,9 +130,11 @@ public class AutowiredHoverProviderTest {
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
 				"\n" +
 				"- Bean: dependencyA  \n" +
-				"  Type: `com.example.DependencyA`\n" +
+				"  Type: `com.example.DependencyA`  \n" +
+				"  Resource: `com/example/DependencyA.class`\n" +
 				"- Bean: dependencyB  \n" +
-				"  Type: `com.example.DependencyB`\n"
+				"  Type: `com.example.DependencyB`  \n" +
+				"  Resource: `com/example/DependencyB.class`\n"
 		);
 	}
 

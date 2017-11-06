@@ -21,12 +21,13 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
 	@Override
-	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean) {
+	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
 		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
 		if (typeDecl != null) {
 			MethodDeclaration[] constructors = ASTUtils.findConstructors(typeDecl);
@@ -44,7 +45,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 						}
 						List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
 						for (LiveBean dependencyBean : dependencyBeans) {
-							hover.append("- " + LiveHoverUtils.showBean(dependencyBean));
+							hover.append("- " + LiveHoverUtils.showBeanWithResource(dependencyBean, "  ", project));
 						}
 						firstDependency = false;
 					}
