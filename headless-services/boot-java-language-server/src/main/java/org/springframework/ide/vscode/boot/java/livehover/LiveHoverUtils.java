@@ -54,7 +54,11 @@ public class LiveHoverUtils {
 	}
 
 	public static String niceAppName(SpringBootApp app) {
-		return "Process [PID=" + app.getProcessID() + ", name=`" + app.getProcessName() + "`]";
+		return niceAppName(app.getProcessID() ,app.getProcessName());
+	}
+
+	public static String niceAppName(String processId, String processName) {
+		return "Process [PID=" + processId + ", name=`" + processName + "`]";
 	}
 
 	public static boolean hasRelevantBeans(SpringBootApp app, LiveBean definedBean) {
