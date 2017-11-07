@@ -28,7 +28,7 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
+import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -162,7 +162,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			 renderableUrls.remove(renderableUrls.size() - 1);
 
 			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
-			hoverContent.add(Either.forLeft(HoverContentUtils.getProcessInformation(app)));
+			hoverContent.add(Either.forLeft(LiveHoverUtils.niceAppName(app)));
 			if (i < mappingMethods.size() - 1) {
 				// Three dashes == line separator in Markdown
 				hoverContent.add(Either.forLeft("---"));

@@ -27,7 +27,7 @@ import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.utils.HoverContentUtils;
+import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -115,7 +115,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		for (int i = 0; i < conditionals.size(); i++) {
 			LiveConditional conditional = conditionals.get(i);
 			hoverContent.add(Either.forLeft(conditional.getMessage()));
-			hoverContent.add(Either.forLeft(HoverContentUtils.getProcessInformation(conditional.getProcessId(), conditional.getProcessName())));
+			hoverContent.add(Either.forLeft(LiveHoverUtils.niceAppName(conditional.getProcessId(), conditional.getProcessName())));
 
 			if (i < conditionals.size() - 1) {
 				hoverContent.add(Either.forLeft("---"));
