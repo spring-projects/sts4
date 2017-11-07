@@ -3,6 +3,7 @@ inputs:
 - name: s3-bosh-atom-snapshot
 - name: s3-concourse-atom-snapshot
 - name: s3-manifest-yaml-atom-snapshot
+- name: s3-boot-java-atom-snapshot
 outputs:
 - name: website
 platform: linux
