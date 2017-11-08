@@ -82,6 +82,10 @@ class BootJavaLanguageClient extends JavaProcessLanguageClient {
         return new BootStsAdapter();
     }
 
+    filterChangeWatchedFiles(filePath) {
+        return filePath.endsWith('.gradle') || filePath.endsWith('/pom.xml');
+    }
+
 }
 
 class BootStsAdapter extends StsAdapter {
