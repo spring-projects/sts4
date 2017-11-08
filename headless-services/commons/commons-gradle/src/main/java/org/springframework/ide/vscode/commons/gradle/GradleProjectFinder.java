@@ -11,6 +11,10 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -25,6 +29,11 @@ import org.springframework.ide.vscode.commons.util.FileUtils;
  */
 public class GradleProjectFinder extends FileBasedJavaProjectFinder {
 	
+	private static List<PathMatcher> PATH_MATCHERS = Arrays.asList(
+			FileSystems.getDefault().getPathMatcher("glob:**/" + GradleCore.GRADLE_BUILD_FILE),
+			FileSystems.getDefault().getPathMatcher("glob:" + GradleCore.GLOB_GRADLE_FILE)
+		);
+	
 	private GradleProjectCache cache;
 	
 	public GradleProjectFinder(GradleProjectCache cache) {
@@ -34,7 +43,6 @@ public class GradleProjectFinder extends FileBasedJavaProjectFinder {
 
 	@Override
 	public Optional<IJavaProject> find(File file) {
-		File gradlebuild = FileUtils.findFile(file, GradleCore.GRADLE_BUILD_FILE);
-		return Optional.ofNullable(cache.project(gradlebuild));
+		return FileUtils.findFile(file, PATH_MATCHERS, true).map(f -> cache.project(f));
 	}
 }

@@ -11,6 +11,11 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.io.File;
+import java.nio.file.PathMatcher;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Utilitity methods for working with files
@@ -41,6 +46,22 @@ public class FileUtils {
 			}
 		}
 		return null;
+	}
+	
+	public static Optional<File> findFile(File folder, List<PathMatcher> matchers, boolean recursiveUp) {
+		if (folder != null && folder.exists()) {
+			Optional<File> found = (folder.isDirectory() ? Arrays.stream(folder.listFiles()) : Stream.of(folder))
+					.map(f -> f.toPath())
+					.filter(p -> matchers.stream().filter(m -> m.matches(p)).findFirst().isPresent())
+					.findFirst()
+					.map(p -> p.toFile());
+			if (found.isPresent()) {
+				return found;
+			} else {
+				return recursiveUp ? findFile(folder.getParentFile(), matchers, recursiveUp) : found;
+			}
+		}
+		return Optional.empty();
 	}
 
 }

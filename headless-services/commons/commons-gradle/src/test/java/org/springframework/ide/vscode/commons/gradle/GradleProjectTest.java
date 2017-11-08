@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -93,5 +94,26 @@ public class GradleProjectTest {
 		assertEquals(cachedProject, projectDeleted[0]);
 	}
 
+	@Test
+	public void findGradleProjectWithStandardBuildFile() throws Exception {
+		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(new BasicFileObserver(), GradleCore.getDefault()));
+		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-1/src/main/java/Library.java").toURI());
+		Optional<IJavaProject> project = finder.find(sourceFile);
+		assertTrue(project.isPresent());
+		assertTrue(project.get() instanceof GradleJavaProject);
+		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
+		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-1").toURI()), gradleProject.getLocation());
+	}
 
+	@Test
+	public void findGradleProjectWithNonStandardBuildFile() throws Exception {
+		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(new BasicFileObserver(), GradleCore.getDefault()));
+		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-2/src/main/java/Library.java").toURI());
+		Optional<IJavaProject> project = finder.find(sourceFile);
+		assertTrue(project.isPresent());
+		assertTrue(project.get() instanceof GradleJavaProject);
+		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
+		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), gradleProject.getLocation());
+	}
+	
 }

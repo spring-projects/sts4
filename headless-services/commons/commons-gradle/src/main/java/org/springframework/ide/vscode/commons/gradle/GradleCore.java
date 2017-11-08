@@ -42,6 +42,8 @@ public class GradleCore {
 	}
 	
 	static final String GRADLE_BUILD_FILE = "build.gradle";
+
+	static final String GLOB_GRADLE_FILE = "**/*.gradle";
 	
 	private static GradleCore defaultInstance = null;
 	
