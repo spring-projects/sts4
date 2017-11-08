@@ -37,5 +37,10 @@ public class MavenJavaProject implements IJavaProject {
 	void update(MavenCore maven) {
 		this.classpath = new MavenProjectClasspath(maven, classpath.getPomFile());
 	}
+	
+	@Override
+	public String toString() {
+		return "MavenJavaProject("+classpath.getName()+")";
+	}
 
 }

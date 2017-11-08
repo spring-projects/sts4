@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,8 +29,11 @@ import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -55,7 +59,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleConfigurationClass() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java");
@@ -63,11 +67,21 @@ public class SpringIndexerBeansTest {
 		assertTrue(containsSymbol(symbols, "@+ 'simpleBean' (@Bean) BeanClass", uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java", 8, 1, 8, 8));
 	}
 
+	private Collection<WorkspaceFolder> wsFolder(File directory) {
+		if (directory!=null) {
+			return ImmutableList.of(new WorkspaceFolder(
+					directory.toURI().toString(),
+					directory.getName()
+			));
+		}
+		return ImmutableList.of();
+	}
+
 	@Test
 	public void testScanSimpleFunctionBean() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java");
@@ -79,7 +93,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleComponentClass() throws Exception {
 		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");

@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
@@ -77,8 +78,6 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
 	protected final LazyCompletionResolver completionResolver = createCompletionResolver();
-
-    private Path workspaceRoot;
 
 	private SimpleTextDocumentService tds;
 
@@ -173,12 +172,12 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		if (rootPath==null) {
 			Log.debug("workspaceRoot NOT SET");
 		} else {
-			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
+			this.getWorkspaceService().setRoot(Paths.get(rootPath));
 		}
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
 		this.hasFileWatcherRegistrationSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
-		Log.debug("workspaceRoot = "+workspaceRoot);
+		Log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
 		Log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		Log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
@@ -307,9 +306,28 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		System.exit(0);
 	}
 
-	public Path getWorkspaceRoot() {
-		return workspaceRoot;
+	public Collection<WorkspaceFolder> getWorkspaceRoots() {
+		return getWorkspaceService().getWorkspaceRoots();
 	}
+
+//	/**
+//	 * Deprecated, shouldn't use and should be removed. Anyone calling this
+//	 * will have problems handling multi-root workspaces.
+//	 * <p>
+//	 * Use getWorkspaceRoots instead.
+//	 */
+//	@Deprecated
+//	public Path getWorkspaceRoot() {
+//		try {
+//			Optional<WorkspaceFolder> firstRoot = getWorkspaceRoots().stream().findFirst();
+//			if (firstRoot.isPresent()) {
+//				return new File(new URI(firstRoot.get().getUri())).toPath();
+//			}
+//		} catch (Exception e) {
+//			Log.log(e);
+//		}
+//		return null;
+//	}
 
 	@Override
 	public synchronized SimpleTextDocumentService getTextDocumentService() {
