@@ -65,17 +65,15 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
-		assertEquals(8, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
 		assertTrue(containsSymbol(allSymbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
 	}
 
@@ -87,10 +85,9 @@ public class SpringIndexerTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
-		assertEquals(4, symbols.size());
+		assertEquals(3, symbols.size());
 		assertTrue(containsSymbol(symbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(symbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(symbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 
 		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
@@ -99,8 +96,7 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(symbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
 
 		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java");
-		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
+		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
 	}
 
@@ -112,17 +108,15 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
-		assertEquals(8, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath() + "/test-annotation-indexing";
 
 		assertTrue(containsSymbol(allSymbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
 	}
 
@@ -147,17 +141,15 @@ public class SpringIndexerTest {
 
 		// check for updated index in all symbols
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
-		assertEquals(8, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
 		assertTrue(containsSymbol(allSymbols, "@SpringBootApplication", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 36));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 4, 0, 4, 30));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage -- (no method defined)", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
 	}
 
@@ -169,12 +161,11 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("mapp");
 
-		assertEquals(6, allSymbols.size());
+		assertEquals(5, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
@@ -189,11 +180,10 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("@/foo-root-mapping -- (no method defined)");
 
-		assertEquals(2, allSymbols.size());
+		assertEquals(1, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 24, 0, 24, 36));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 	}
 
@@ -236,7 +226,7 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
-		assertEquals(8, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		File pomFile = directory.toPath().resolve(MavenCore.POM_XML).toFile();
 
@@ -247,7 +237,7 @@ public class SpringIndexerTest {
 
 		allSymbols = indexer().getAllSymbols("");
 		assertFalse(indexer().isInitializing());
-		assertEquals(8, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 	}
 
 }

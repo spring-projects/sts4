@@ -42,26 +42,28 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 
 	@Override
 	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
-		try {
-			Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
-			String[] path = getPath(node);
-			String[] parentPath = getParentPath(node);
-			String[] method = getMethod(node);
+		if (node.getParent() instanceof MethodDeclaration) {
+			try {
+				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
+				String[] path = getPath(node);
+				String[] parentPath = getParentPath(node);
+				String[] method = getMethod(node);
 
-			String methodStr = method == null || method.length == 0 ? "(no method defined)" : String.join(",", method);
+				String methodStr = method == null || method.length == 0 ? "(no method defined)" : String.join(",", method);
 
-			return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
-					.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
-							.filter(Objects::nonNull).map(p -> {
-								String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
-								String resultPath = parent + separator + p;
-								return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
-							}))
-					.map(p -> "@" + p + " -- " + methodStr)
-					.map(symbolLabel -> new SymbolInformation(symbolLabel, SymbolKind.Interface, location))
-					.collect(Collectors.toList());
-		} catch (Exception e) {
-			e.printStackTrace();
+				return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
+						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
+								.filter(Objects::nonNull).map(p -> {
+									String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
+									String resultPath = parent + separator + p;
+									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
+								}))
+						.map(p -> "@" + p + " -- " + methodStr)
+						.map(symbolLabel -> new SymbolInformation(symbolLabel, SymbolKind.Interface, location))
+						.collect(Collectors.toList());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}

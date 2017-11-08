@@ -55,8 +55,7 @@ public class RequestMappingSymbolProviderTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass.java");
-		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/parent -- GET,POST,DELETE", uriPrefix + "/src/main/java/org/test/ParentMappingClass.java", 5, 0, 5, 58));
+		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/parent/greeting -- GET", uriPrefix + "/src/main/java/org/test/ParentMappingClass.java", 8, 1, 8, 47));
 	}
 
