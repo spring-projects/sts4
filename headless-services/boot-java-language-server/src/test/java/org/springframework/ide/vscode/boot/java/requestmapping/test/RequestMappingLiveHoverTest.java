@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.requestmapping.test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.time.Duration;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,7 @@ public class RequestMappingLiveHoverTest {
 		mockAppProvider = new MockRunningAppProvider();
 		harness = BootLanguageServerHarness.builder()
 				.runningAppProvider(mockAppProvider.provider)
+				.watchDogInterval(Duration.ofMillis(100))
 				.build();
 	}
 
