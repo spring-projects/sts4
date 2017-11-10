@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
+import org.springframework.ide.vscode.boot.java.beans.test.SpringIndexerHarness.TestSymbolInfo;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -53,14 +54,45 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleConfigurationClass() throws Exception {
-		SpringIndexer indexer = new SpringIndexer(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(directory.toPath());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java");
-		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'simpleBean' (@Bean) BeanClass", uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java", 8, 1, 8, 8));
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java",
+				symbol("@Configuration", "@Configuration"),
+				symbol("@Bean", "@+ 'simpleBean' (@Bean) BeanClass")
+		);
+	}
+
+	@Test
+	public void testScanSpecialConfigurationClass() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(directory.toPath());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = uriPrefix + "/src/main/java/org/test/SpecialConfiguration.java";
+		indexer.assertDocumentSymbols(docUri,
+				symbol("@Configuration", "@Configuration"),
+
+				// @Bean("implicitNamedBean")
+				symbol("implicitNamedBean", "@+ 'implicitNamedBean' (@Bean) BeanClass"),
+
+				// @Bean(value="valueBean")
+				symbol("valueBean", "@+ 'valueBean' (@Bean) BeanClass"),
+
+				// @Bean(value= {"valueBean1", "valueBean2"})
+				symbol("valueBean1", "@+ 'valueBean1' (@Bean) BeanClass"),
+				symbol("valueBean2", "@+ 'valueBean2' (@Bean) BeanClass"),
+
+				// @Bean(name="namedBean")
+				symbol("namedBean", "@+ 'namedBean' (@Bean) BeanClass"),
+
+				// @Bean(name= {"namedBean1", "namedBean2"})
+				symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
+				symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
+		);
 	}
 
 	@Test
@@ -87,6 +119,9 @@ public class SpringIndexerBeansTest {
 		assertTrue(containsSymbol(symbols, "@+ 'simpleComponent' (@Component) SimpleComponent", uriPrefix + "/src/main/java/org/test/SimpleComponent.java", 4, 0, 4, 10));
 	}
 
+	////////////////////////////////
+	// harness code
+
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
 			SymbolInformation symbol = iterator.next();
@@ -104,4 +139,7 @@ public class SpringIndexerBeansTest {
 		return false;
 	}
 
+	private TestSymbolInfo symbol(String coveredText, String label) {
+		return new TestSymbolInfo(coveredText, label);
+	}
 }

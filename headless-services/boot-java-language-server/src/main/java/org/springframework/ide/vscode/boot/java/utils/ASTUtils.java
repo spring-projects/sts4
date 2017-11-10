@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -31,6 +32,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -47,7 +49,6 @@ public class ASTUtils {
 		return new DocumentRegion(doc, start, end);
 	}
 
-
 	public static Optional<Range> nameRange(TextDocument doc, Annotation annotation) {
 		try {
 			return Optional.of(nameRegion(doc, annotation).asRange());
@@ -55,6 +56,24 @@ public class ASTUtils {
 			Log.log(e);
 			return Optional.empty();
 		}
+	}
+
+	public static DocumentRegion stringRegion(TextDocument doc, StringLiteral node) {
+		DocumentRegion nodeRegion = nodeRegion(doc, node);
+		if (nodeRegion.startsWith("\"")) {
+			nodeRegion = nodeRegion.subSequence(1);
+		}
+		if (nodeRegion.endsWith("\"")) {
+			nodeRegion = nodeRegion.subSequence(0, nodeRegion.getLength()-1);
+		}
+		return nodeRegion;
+	}
+
+
+	public static DocumentRegion nodeRegion(TextDocument doc, ASTNode node) {
+		int start = node.getStartPosition();
+		int end = start + node.getLength();
+		return new DocumentRegion(doc, start, end);
 	}
 
 	public static Optional<Expression> getAttribute(Annotation annotation, String name) {
@@ -179,6 +198,22 @@ public class ASTUtils {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static List<StringLiteral> getExpressionValueAsListOfLiterals(Expression exp) {
+		if (exp instanceof ArrayInitializer) {
+			ArrayInitializer array = (ArrayInitializer) exp;
+			return ((List<Expression>) array.expressions()).stream()
+					.flatMap(e -> e instanceof StringLiteral
+							? Stream.of((StringLiteral)e)
+							: Stream.empty()
+					)
+					.collect(CollectorUtil.toImmutableList());
+		} else if (exp instanceof StringLiteral){
+			return ImmutableList.of((StringLiteral)exp);
+		}
+		return ImmutableList.of();
+	}
+
 
 	public static Collection<Annotation> getAnnotations(TypeDeclaration declaringType) {
 		Object modifiersObj = declaringType.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
@@ -202,5 +237,7 @@ public class ASTUtils {
 		}
 		return null;
 	}
+
+
 
 }

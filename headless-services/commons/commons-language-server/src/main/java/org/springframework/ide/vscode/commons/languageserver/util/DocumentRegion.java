@@ -34,7 +34,7 @@ import org.springframework.ide.vscode.commons.util.text.Region;
  *
  * @author Kris De Volder
  */
-public class DocumentRegion implements CharSequence {
+public class DocumentRegion implements CharSequence, IRegion {
 	final IDocument doc;
 	final int start;
 	final int end;
@@ -279,6 +279,7 @@ public class DocumentRegion implements CharSequence {
 		return offset-start;
 	}
 
+	@Override
 	public int getLength() {
 		return length();
 	}
@@ -289,6 +290,20 @@ public class DocumentRegion implements CharSequence {
 		if (myLen>=strLen) {
 			for (int i = 0; i < strLen; i++) {
 				if (charAt(myLen-strLen+i)!=string.charAt(i)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public boolean startsWith(CharSequence string) {
+		int myLen = length();
+		int strLen = string.length();
+		if (myLen>=strLen) {
+			for (int i = 0; i < strLen; i++) {
+				if (charAt(i)!=string.charAt(i)) {
 					return false;
 				}
 			}
@@ -317,5 +332,11 @@ public class DocumentRegion implements CharSequence {
 		}
 		return subSequence(0, howMany);
 	}
+
+	@Override
+	public int getOffset() {
+		return getStart();
+	}
+
 
 }

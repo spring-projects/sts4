@@ -117,7 +117,7 @@ public class Editor {
 			return p1.getCharacter() - p2.getCharacter();
 		}
 	};
-	private static final Comparator<Range> RANGE_COMPARATOR = new Comparator<Range>() {
+	public static final Comparator<Range> RANGE_COMPARATOR = new Comparator<Range>() {
 		@Override
 		public int compare(Range o1, Range o2) {
 			int diff = compare(o1.getStart(), o2.getStart());
