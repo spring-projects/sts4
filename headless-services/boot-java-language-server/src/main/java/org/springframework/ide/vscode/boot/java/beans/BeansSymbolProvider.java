@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,13 +27,19 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
 /**
  * @author Martin Lippert
+ * @author Kris De Volder
  */
 public class BeansSymbolProvider implements SymbolProvider {
 
@@ -42,22 +47,6 @@ public class BeansSymbolProvider implements SymbolProvider {
 	private static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
 	private static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
-
-	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
-		try {
-			if (isFunctionBean(node)) {
-				return Collections.singleton(createFunctionSymbol(node, doc));
-			}
-			else {
-				return createRegularBeanSymbols(node, doc);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		return ImmutableList.of();
-	}
 
 	private boolean isFunctionBean(Annotation node) {
 		ASTNode parent = node.getParent();
@@ -81,51 +70,70 @@ public class BeansSymbolProvider implements SymbolProvider {
 		return false;
 	}
 
-	private SymbolInformation createFunctionSymbol(Annotation node, TextDocument doc) throws BadLocationException {
-		StringBuilder symbolLabel = new StringBuilder();
-		symbolLabel.append("@> ");
+//	private SymbolInformation createFunctionSymbol(Annotation node, TextDocument doc) throws BadLocationException {
+//		StringBuilder symbolLabel = new StringBuilder();
+//		symbolLabel.append("@> ");
+//
+//		String beanName = getBeanName(node);
+//		String beanType = getBeanType(node);
+//
+//		symbolLabel.append('\'');
+//		symbolLabel.append(beanName);
+//		symbolLabel.append('\'');
+//		symbolLabel.append(" (@Bean) ");
+//		symbolLabel.append(beanType);
+//
+//		SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
+//				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+//		return symbol;
+//	}
 
-		String beanName = getBeanName(node);
+	@Override
+	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
+		boolean isFunction = isFunctionBean(node);
+		ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
 		String beanType = getBeanType(node);
-
-		symbolLabel.append('\'');
-		symbolLabel.append(beanName);
-		symbolLabel.append('\'');
-		symbolLabel.append(" (@Bean) ");
-		symbolLabel.append(beanType);
-
-		SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
-				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-		return symbol;
+		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
+			try {
+				symbols.add(new SymbolInformation(
+						beanLabel(isFunction, nameAndRegion.getT1(), beanType),
+						SymbolKind.Interface,
+						new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))
+				));
+			} catch (BadLocationException e) {
+				Log.log(e);
+			}
+		}
+		return symbols.build();
 	}
 
-	private Collection<SymbolInformation> createRegularBeanSymbols(Annotation node, TextDocument doc) throws BadLocationException {
-
+	Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
 		Collection<StringLiteral> beanNameNodes = getBeanNameLiterals(node);
 		if (beanNameNodes!=null && !beanNameNodes.isEmpty()) {
-			ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
+			ImmutableList.Builder<Tuple2<String,DocumentRegion>> namesAndRegions = ImmutableList.builder();
 			for (StringLiteral nameNode : beanNameNodes) {
 				String name = ASTUtils.getLiteralValue(nameNode);
-				String type = getBeanType(node);
-				symbols.add(new SymbolInformation(
-						beanLabel(name, type),
-						SymbolKind.Interface,
-						new Location(doc.getUri(), doc.toRange(ASTUtils.stringRegion(doc, nameNode)))
+				namesAndRegions.add(Tuples.of(name, ASTUtils.stringRegion(doc, nameNode)));
+			}
+			return namesAndRegions.build();
+		} else {
+			ASTNode parent = node.getParent();
+			if (parent instanceof MethodDeclaration) {
+				MethodDeclaration method = (MethodDeclaration) parent;
+				return ImmutableList.of(Tuples.of(
+						method.getName().toString(),
+						ASTUtils.nameRegion(doc, node)
 				));
 			}
-			return symbols.build();
-		} else {
-			return ImmutableList.of(new SymbolInformation(
-					beanLabel(getBeanName(node), getBeanType(node)),
-					SymbolKind.Interface,
-					new Location(doc.getUri(), doc.toRange(ASTUtils.nameRegion(doc, node)))
-			));
+			return ImmutableList.of();
 		}
 	}
 
-	protected String beanLabel(String beanName, String beanType) {
+	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType) {
 		StringBuilder symbolLabel = new StringBuilder();
-		symbolLabel.append("@+ ");
+		symbolLabel.append('@');
+		symbolLabel.append(isFunctionBean ? '>' : '+');
+		symbolLabel.append(' ');
 		symbolLabel.append('\'');
 		symbolLabel.append(beanName);
 		symbolLabel.append('\'');
@@ -141,15 +149,6 @@ public class BeansSymbolProvider implements SymbolProvider {
 			});
 		}
 		return literals.build();
-	}
-
-	protected String getBeanName(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			return method.getName().toString();
-		}
-		return null;
 	}
 
 	protected String getBeanType(Annotation node) {
