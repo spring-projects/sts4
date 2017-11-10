@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class GotoSymbolDialogModel {
 
-	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
+	private static final boolean DEBUG = false;//(""+Platform.getLocation()).contains("kdvolder");
 	private static void debug(String string) {
 		if (DEBUG) {
 			System.out.println(string);

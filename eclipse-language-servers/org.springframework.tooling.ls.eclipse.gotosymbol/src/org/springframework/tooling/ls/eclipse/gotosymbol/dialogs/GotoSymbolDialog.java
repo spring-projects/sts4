@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -275,7 +276,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		
 		Label statusLabel = new Label(dialogArea, SWT.NONE);
 		statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		SwtConnect.connect(statusLabel, model.getStatus());
+		SwtConnect.connect(statusLabel, model.getStatus(), Duration.ofMillis(500));
 		
 		viewer.setInput(model);
 		return dialogArea;
