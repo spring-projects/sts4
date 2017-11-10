@@ -99,7 +99,7 @@ public class SpringLiveHoverWatchdog {
 
 	private synchronized void start() {
 		if (highlightsEnabled && timer == null) {
-			Log.info("Starting SpringLiveHoverWatchdog");
+			Log.debug("Starting SpringLiveHoverWatchdog");
 			this.timer = new Timer();
 
 			TimerTask task = new TimerTask() {
