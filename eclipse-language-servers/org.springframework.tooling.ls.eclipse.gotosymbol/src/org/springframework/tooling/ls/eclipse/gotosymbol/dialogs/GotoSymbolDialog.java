@@ -43,9 +43,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
-import org.springframework.tooling.ls.eclipse.gotosymbol.util.SwtConnect;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
+import org.springsource.ide.eclipse.commons.livexp.ui.util.SwtConnect;
 
 @SuppressWarnings("restriction")
 public class GotoSymbolDialog extends PopupDialog {
