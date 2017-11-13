@@ -36,6 +36,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 				String[] dependencies = bean.getDependencies();
 
 				if (dependencies != null && dependencies.length > 0) {
+					hover.append("\n\n");
 					hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
 
 					boolean firstDependency = true;
