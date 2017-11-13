@@ -522,6 +522,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"Process [PID=111, name=`the-app`]:\n" +
 				"\n" +
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n" +
+				"\n\n" +
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
 				"\n" +
 				"- Bean: dependencyA  \n" +
