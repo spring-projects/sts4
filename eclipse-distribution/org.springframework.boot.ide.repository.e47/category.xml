@@ -79,15 +79,15 @@
 		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
 	</bundle>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons.ui">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
-	</bundle>
-
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
 		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.core">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.ui">
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
 
