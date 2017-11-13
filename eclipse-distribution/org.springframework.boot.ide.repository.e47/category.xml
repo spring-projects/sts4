@@ -95,6 +95,10 @@
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
