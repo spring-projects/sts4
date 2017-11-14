@@ -261,7 +261,7 @@ public class SpringBootApp {
 			return report;
 		}
 
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Autoconfig", "getEvaluationReport");
+		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Conditions", "getEvaluationReport");
 		if (result != null) {
 			String report = new ObjectMapper().writeValueAsString(result);
 			return report;

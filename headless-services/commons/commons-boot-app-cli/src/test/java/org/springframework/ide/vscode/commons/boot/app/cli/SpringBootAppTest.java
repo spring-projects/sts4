@@ -20,7 +20,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -193,11 +192,15 @@ public class SpringBootAppTest {
 	@Test
 	public void getAutoConfigReport() throws Exception {
 		for (SpringBootApp testApp : getTestApps()) {
-			ACondition.waitFor(TIMEOUT, () -> {
-				String result = testApp.getAutoConfigReport();
-				assertNonEmptyJsonObject(result);
-	//			System.out.println("autoconfreport = "+result);
-			});
+			try {
+				ACondition.waitFor(TIMEOUT, () -> {
+					String result = testApp.getAutoConfigReport();
+					assertNonEmptyJsonObject(result);
+		//			System.out.println("autoconfreport = "+result);
+				});
+			} catch (Exception e) {
+				throw new RuntimeException("Failed for: "+testApp, e);
+			}
 		}
 	}
 
