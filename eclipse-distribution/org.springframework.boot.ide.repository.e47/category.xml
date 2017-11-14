@@ -37,10 +37,10 @@
 		<category name="Extensions / Spring IDE" />
 	</feature>
 
-	<feature
+<!--	<feature
 		id="org.springframework.boot.ide.main.feature.source" version="0.0.0">
 		<category name="Resources / Spring IDE" />
-	</feature>
+	</feature> -->
 
 <!--	<feature
 		id="org.springframework.ide.eclipse.boot.feature.source" version="0.0.0">
