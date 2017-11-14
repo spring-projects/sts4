@@ -77,11 +77,10 @@ openFile</programArgs>
       <feature id="net.mihai-nita.ansicon" installMode="root"/>
 
       <feature id="org.springsource.ide.eclipse.commons.quicksearch.feature" installMode="root"/>
-      <feature id="org.springframework.ide.eclipse.boot.feature" installMode="root"/>
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
 
       <feature id="org.springframework.boot.ide.branding.feature" installMode="root"/>
-<!--      <feature id="org.springframework.boot.ide.main.feature" installMode="root"/> -->
+      <feature id="org.springframework.boot.ide.main.feature" installMode="root"/>
 
 <!--     <feature id="org.springframework.tooling.properties.ls.feature" installMode="root"/> -->
       <feature id="org.springframework.tooling.boot.java.ls.feature" installMode="root"/>
