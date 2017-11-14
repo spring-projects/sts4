@@ -18,12 +18,13 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 public class JavaProjectWithClasspathFileCache extends AbstractFileToProjectCache<JavaProjectWithClasspathFile> {
 
 	public JavaProjectWithClasspathFileCache(FileObserver fileObserver) {
-		super(fileObserver);
+		super(fileObserver, false, null);
 	}
 
 	@Override
-	protected void update(JavaProjectWithClasspathFile project) {
-		project.update();
+	protected boolean update(JavaProjectWithClasspathFile project) {
+		 project.update();
+		 return true;
 	}
 
 	@Override

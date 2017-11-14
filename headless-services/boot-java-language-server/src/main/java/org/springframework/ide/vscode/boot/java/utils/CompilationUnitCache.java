@@ -133,7 +133,7 @@ public final class CompilationUnitCache {
 			return new String[0];
 		} else {
 			IClasspath classpath = project.getClasspath();
-			Stream<Path> classpathEntries = classpath.getClasspathEntries();
+			Stream<Path> classpathEntries = classpath.getClasspathEntries().stream();
 			return classpathEntries
 					.filter(path -> path.toFile().exists())
 					.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);

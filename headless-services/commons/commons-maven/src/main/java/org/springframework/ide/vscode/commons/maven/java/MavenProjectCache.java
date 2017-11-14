@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -25,19 +26,24 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 
 	private MavenCore maven;
 	
-	public MavenProjectCache(FileObserver fileObserver, MavenCore maven) {
-		super(fileObserver);
+	public MavenProjectCache(FileObserver fileObserver, MavenCore maven, boolean asyncUpdate, Path projectCacheFolder) {
+		super(fileObserver, asyncUpdate, projectCacheFolder);
 		this.maven = maven;
 	}
 
 	@Override
-	protected void update(MavenJavaProject project) {
-		project.update(maven);
+	protected boolean update(MavenJavaProject project) {
+		return project.update();
 	}
 
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
-		return new MavenJavaProject(maven, pomFile);
+		MavenJavaProject mavenJavaProject = new MavenJavaProject(maven, pomFile,
+				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder));
+		if (mavenJavaProject.getClasspath().isCached()) {
+			performUpdate(mavenJavaProject, asyncUpdate);
+		}
+		return mavenJavaProject;
 	}
 
 }

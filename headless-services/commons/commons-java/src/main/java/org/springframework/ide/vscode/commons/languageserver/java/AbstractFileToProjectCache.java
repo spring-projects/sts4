@@ -11,14 +11,16 @@
 package org.springframework.ide.vscode.commons.languageserver.java;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
- * Cache fo java projects. The key for the cache is a "project" specific file
+ * Cache for java projects. The key for the cache is a "project" specific file
  * 
  * @author Alex Boyko
  *
@@ -28,19 +30,26 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	
 	private String changeSubscription;
 	private String deleteSubscription;
-	
-	public AbstractFileToProjectCache(FileObserver fileObserver) {
+	protected boolean asyncUpdate;
+	protected final Path projectCacheFolder;
+	private boolean alwaysFireEventOnFileChanged;
+
+	public AbstractFileToProjectCache(FileObserver fileObserver, boolean asyncUpdate, Path projectCacheFolder) {
 		super(fileObserver);
+		this.projectCacheFolder = projectCacheFolder;
+		this.asyncUpdate = asyncUpdate;
+	}
+	
+	
+	final public void setAlwaysFireEventOnFileChanged(boolean alwaysFireEventOnFileChanged) {
+		this.alwaysFireEventOnFileChanged = alwaysFireEventOnFileChanged;
 	}
 
 	@Override
 	protected void attachListeners(File file, P project) {
 		super.attachListeners(file, project);
 		List<String> globPattern = Arrays.asList(file.toString());
-		changeSubscription = getFileObserver().onFileChanged(globPattern, (uri) -> {
-			update(project);
-			notifyProjectChanged(project);
-		});
+		changeSubscription = getFileObserver().onFileChanged(globPattern, (uri) -> performUpdate(project, asyncUpdate));
 		deleteSubscription = getFileObserver().onFileDeleted(globPattern, (uri) -> {
 			cache.invalidate(file);
 			notifyProjectDeleted(project);
@@ -49,6 +58,20 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 		});
 	}
 	
-	abstract protected void update(P project);
+	final protected void performUpdate(P project, boolean async) {
+		if (async) {
+			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> {
+				if (changed || alwaysFireEventOnFileChanged) {
+					notifyProjectChanged(project);
+				}
+			});
+		} else {
+			if (update(project) || alwaysFireEventOnFileChanged) {
+				notifyProjectChanged(project);
+			}
+		}
+	}
+	
+	abstract protected boolean update(P project);
 	
 }

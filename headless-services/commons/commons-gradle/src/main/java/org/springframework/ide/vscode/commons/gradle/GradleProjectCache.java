@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
 import org.springframework.ide.vscode.commons.util.FileObserver;
@@ -25,19 +26,25 @@ public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaPro
 
 	private GradleCore gradle;
 	
-	public GradleProjectCache(FileObserver fileObserver, GradleCore gradle) {
-		super(fileObserver);
+	public GradleProjectCache(FileObserver fileObserver, GradleCore gradle, boolean asyncUpdate, Path projectCacheFolder) {
+		super(fileObserver, asyncUpdate, projectCacheFolder);
 		this.gradle = gradle;
 	}
 	
 	@Override
-	protected void update(GradleJavaProject project) {
-		project.update();
+	protected boolean update(GradleJavaProject project) {
+		return project.update();
 	}
 
 	@Override
 	protected GradleJavaProject createProject(File gradleBuild) throws Exception {
-		return new GradleJavaProject(gradle, gradleBuild.getParentFile());
+		File gradleFile = gradleBuild.getParentFile();
+		GradleJavaProject gradleJavaProject = new GradleJavaProject(gradle, gradleFile,
+				projectCacheFolder == null ? null : gradleFile.toPath().resolve(projectCacheFolder));
+		if (gradleJavaProject.getClasspath().isCached()) {
+			performUpdate(gradleJavaProject, asyncUpdate);
+		}
+		return gradleJavaProject;
 	}
 
 }

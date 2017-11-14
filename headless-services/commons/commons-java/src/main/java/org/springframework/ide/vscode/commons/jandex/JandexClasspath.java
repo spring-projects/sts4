@@ -35,7 +35,7 @@ public abstract class JandexClasspath implements IClasspath {
 	protected JandexIndex createIndex() {
 		Stream<Path> classpathEntries = Stream.empty();
 		try {
-			classpathEntries = getClasspathEntries();
+			classpathEntries = getClasspathEntries().stream();
 		} catch (Exception e) {
 			Log.log(e);
 		}

@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
@@ -36,6 +37,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Classpath for a maven project
@@ -81,6 +83,10 @@ public class MavenProjectClasspath extends JandexClasspath {
 		return pom;
 	}
 	
+	MavenCore maven() {
+		return maven;
+	}
+	
 	public boolean exists() {
 		return pom.exists();
 	}
@@ -91,11 +97,13 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 
 	@Override
-	public Stream<Path> getClasspathEntries() throws Exception {
+	public ImmutableList<Path> getClasspathEntries() throws Exception {
 //		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
 //			return artifact.getFile().toPath();
 //		}), projectResolvedOutput());
-		return Stream.concat(projectDependencies().stream().map(a -> a.getFile().toPath()), projectOutput().stream().map(f -> f.toPath()));
+		ImmutableList<Path> classpathEntries = ImmutableList.copyOf(Stream.concat(projectDependencies().stream().map(a -> a.getFile().toPath()),
+				projectOutput().stream().map(f -> f.toPath())).collect(Collectors.toList()));
+		return classpathEntries;
 	}
 	
 	private Set<Artifact> projectDependencies() {
@@ -123,12 +131,12 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	@Override
-	public Stream<String> getClasspathResources() {
+	public ImmutableList<String> getClasspathResources() {
 		MavenProject project = projectSupplier.get();
 		if (project == null) {
-			return Stream.empty();
+			return ImmutableList.of();
 		}
-		return project.getBuild().getResources().stream().flatMap(resource -> {
+		return ImmutableList.copyOf(project.getBuild().getResources().stream().filter(resource -> new File(resource.getDirectory()).exists()).flatMap(resource -> {
 			DirectoryScanner scanner = new DirectoryScanner();
 			scanner.setBasedir(resource.getDirectory());
 			if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
@@ -140,7 +148,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 			scanner.setCaseSensitive(false);
 			scanner.scan();
 			return Arrays.stream(scanner.getIncludedFiles());
-		});
+		}).toArray(String[]::new));
 	}
 
 	/*
@@ -251,6 +259,22 @@ public class MavenProjectClasspath extends JandexClasspath {
 				return null;
 			});
 		}
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof MavenProjectClasspath) {
+			MavenProjectClasspath other = (MavenProjectClasspath) obj;
+			try {
+				if (pom.equals(other.pom)
+						&& projectSupplier.get().equals(other.projectSupplier.get())) {
+					return super.equals(obj);
+				}
+			} catch (Throwable t) {
+				Log.log(t);
+			}
+		}
+		return false;
 	}
 
 }

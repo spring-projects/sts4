@@ -10,27 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
+import java.nio.file.Path;
 
-public interface IJavaProject extends IJavaElement {
+/**
+ * Abstract java project. Has a folder to store some project calculated data to speed up access
+ * 
+ * @author Alex Boyko
+ *
+ */
+public abstract class AbstractJavaProject implements IJavaProject {
 	
-	final static String PROJECT_CACHE_FOLDER = ".sts4-cache";
+	final protected Path projectDataCache;
 	
-	IClasspath getClasspath();
-
-	@Override
-	default String getElementName() {
-		return getClasspath().getName();
+	public AbstractJavaProject(Path projectDataCache) {
+		this.projectDataCache = projectDataCache;
 	}
 
-	@Override
-	default IJavadoc getJavaDoc() {
-		return null;
-	}
-
-	@Override
-	default boolean exists() {
-		return getClasspath().exists();
-	}
-	
 }

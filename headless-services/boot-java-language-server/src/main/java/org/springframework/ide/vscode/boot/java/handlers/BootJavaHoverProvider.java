@@ -213,7 +213,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		try {
 			IClasspath classpath = project.getClasspath();
 			if (classpath!=null) {
-				return classpath.getClasspathEntries().anyMatch(cpe -> {
+				return classpath.getClasspathEntries().stream().anyMatch(cpe -> {
 					String name = cpe.getFileName().toString();
 					return name.startsWith("spring-boot-actuator-");
 				});
