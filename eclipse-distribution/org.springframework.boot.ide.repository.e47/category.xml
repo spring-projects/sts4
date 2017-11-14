@@ -22,6 +22,11 @@
 	<category-def name="Integrations / Spring IDE" label="Integrations / Spring IDE" />
 	<category-def name="Resources / Spring IDE" label="Resources / Spring IDE" />
 
+<!--	<feature
+		id="org.springframework.boot.ide.main.feature" version="0.0.0">
+		<category name="Extensions / Spring IDE" />
+	</feature> -->
+
 	<feature
 		id="org.springframework.ide.eclipse.boot.feature" version="0.0.0">
 		<category name="Extensions / Spring IDE" />
@@ -31,6 +36,11 @@
 		id="org.springframework.ide.eclipse.boot.dash.feature" version="0.0.0">
 		<category name="Extensions / Spring IDE" />
 	</feature>
+
+<!--	<feature
+		id="org.springframework.boot.ide.main.feature.source" version="0.0.0">
+		<category name="Resources / Spring IDE" />
+	</feature> -->
 
 	<feature
 		id="org.springframework.ide.eclipse.boot.feature.source" version="0.0.0">
@@ -106,7 +116,7 @@
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
-
+<!--
 	<bundle id="io.projectreactor.reactor-core">
 		<category name="Uncategorized"/>
 	</bundle>
@@ -114,7 +124,7 @@
 	<bundle id="org.reactivestreams.reactive-streams">
 		<category name="Uncategorized"/>
 	</bundle>
-
+-->
 	<bundle id="org.dadacoalition.yedit">
 		<category name="Uncategorized"/>
 	</bundle>
