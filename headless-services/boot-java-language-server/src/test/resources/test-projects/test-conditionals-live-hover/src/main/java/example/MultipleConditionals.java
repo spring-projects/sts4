@@ -22,11 +22,4 @@ public class MultipleConditionals {
 	public Hello hi() {
 		return null;
 	}
-	
-	@Bean
-	@ConditionalOnMissingBean
-	@ConditionalOnNotWebApplication
-	public Hello missing() {
-		return null;
-	}
 }

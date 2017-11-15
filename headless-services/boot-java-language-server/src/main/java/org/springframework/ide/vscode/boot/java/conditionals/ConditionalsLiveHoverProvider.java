@@ -140,18 +140,18 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 		// Check that Java type in annotation in editor matches Java information in the live Conditional
 		ASTNode parent = annotation.getParent();
-		String rawJsonKey = liveConditional.getPositiveMatchKey();
+		String typeInfo = liveConditional.getTypeInfo();
 
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration methodDec = (MethodDeclaration) parent;
 			IMethodBinding binding = methodDec.resolveBinding();
 			String annotationDeclaringClassName = binding.getDeclaringClass().getName();
 			String annotationMethodName = binding.getName();
-			return rawJsonKey.contains(annotationDeclaringClassName) && rawJsonKey.contains(annotationMethodName);
+			return typeInfo.contains(annotationDeclaringClassName) && typeInfo.contains(annotationMethodName);
 		} else if (parent instanceof TypeDeclaration) {
 			TypeDeclaration typeDec = (TypeDeclaration) parent;
 			String annotationDeclaringClassName = typeDec.resolveBinding().getName();
-			return rawJsonKey.contains(annotationDeclaringClassName);
+			return typeInfo.contains(annotationDeclaringClassName);
 		}
 		return false;
 	}

@@ -116,7 +116,7 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
-		public MockAppBuilder positiveMatchesJsonForLiveConditionals(String rawJson) throws Exception{
+		public MockAppBuilder conditionalsJson(String rawJson) throws Exception{
 			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(rawJson, processId, processName));
 			return this;
 		}
