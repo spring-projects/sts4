@@ -98,6 +98,10 @@ public class GotoSymbolDialogModel {
 			dependsOn(unfilteredSymbols);
 		}
 		
+		private boolean containsCharactersCaseInsensitive(String symbol, String query) {
+			return containsCharacters(symbol.toLowerCase().toCharArray(), query.toLowerCase().toCharArray());
+		}
+		
 		private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
 			int symbolindex = 0;
 			int queryindex = 0;
@@ -114,9 +118,8 @@ public class GotoSymbolDialogModel {
 
 		@Override
 		protected ImmutableSet<SymbolInformation> compute() {
-			char[] query = searchBox.getValue().toCharArray();
 			ImmutableSet.Builder<SymbolInformation> builder = ImmutableSet.builder();
-			unfilteredSymbols.getValues().stream().filter(sym -> containsCharacters(sym.getName().toCharArray(), query)).forEach(builder::add);
+			unfilteredSymbols.getValues().stream().filter(sym -> containsCharactersCaseInsensitive(sym.getName(), searchBox.getValue())).forEach(builder::add);
 			return builder.build();
 		}
 	};
