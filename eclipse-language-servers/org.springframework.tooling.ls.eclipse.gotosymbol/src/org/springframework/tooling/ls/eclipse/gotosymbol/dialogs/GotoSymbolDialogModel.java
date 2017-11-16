@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class GotoSymbolDialogModel {
 
+	private static final String SEARCH_BOX_HINT_MESSAGE = "@/ -> request mappings, @+ -> beans, @> -> functions, @ -> all spring elements";
 	private static final boolean DEBUG = false;//(""+Platform.getLocation()).contains("kdvolder");
 	private static void debug(String string) {
 		if (DEBUG) {
@@ -148,6 +149,10 @@ public class GotoSymbolDialogModel {
 
 	public LiveVariable<String> getSearchBox() {
 		return searchBox;
+	}
+	
+	public String getSearchBoxHintMessage() {
+		return SEARCH_BOX_HINT_MESSAGE;
 	}
 
 	public LiveExpression<String> getStatus() {
