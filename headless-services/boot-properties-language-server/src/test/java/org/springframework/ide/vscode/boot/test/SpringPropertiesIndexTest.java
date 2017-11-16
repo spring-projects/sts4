@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils.test;
+package org.springframework.ide.vscode.boot.test;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
@@ -20,41 +20,41 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
- * Tests for Spring properties index in Boot Java server
- *
+ * Tests for Boot properties index
+ * 
  * @author Alex Boyko
  *
  */
-public class SpringPropertyIndexTest {
-
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
+public class SpringPropertiesIndexTest {
+	
+	private LanguageServerHarness<BootPropertiesLanguageServer> harness;
 
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootLanguageServerHarness.builder().build();
+		harness = new LanguageServerHarness<>(() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createTestDefault()));
 	}
 
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServer().getSpringPropertyIndexProvider();
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI()));
+		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServer().getPropertiesIndexProvider();
 
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI());
 
-		File javaFile = new File(directory, "/src/main/java/org/test/SimpleMappingClass.java");
+		File javaFile = new File(directory, "/src/main/java/demo/Application.java");
 
 		TextDocument doc = new TextDocument(javaFile.toURI().toString(), LanguageId.JAVA);
 

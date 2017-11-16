@@ -10,15 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.Log;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties
@@ -30,41 +32,68 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class SpringPropertiesIndexManager extends ListenerManager<Listener<SpringPropertiesIndexManager>> {
 
-	private Map<IJavaProject, SpringPropertyIndex> indexes = null;
+	private Cache<IJavaProject, SpringPropertyIndex> indexes;
 	private final ValueProviderRegistry valueProviders;
 	private static int progressIdCt = 0;
 
-	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders) {
+	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders, ProjectObserver projectObserver) {
 		this.valueProviders = valueProviders;
+		this.indexes = CacheBuilder.newBuilder().build();
+		if (projectObserver != null) {
+			projectObserver.addListener(new ProjectObserver.Listener() {
+
+				@Override
+				public void created(IJavaProject project) {
+					// ignore
+				}
+
+				@Override
+				public void changed(IJavaProject project) {
+					indexes.invalidate(project);
+				}
+
+				@Override
+				public void deleted(IJavaProject project) {
+					indexes.invalidate(project);
+				}
+
+			});
+		}
+
 	}
 
-	public synchronized FuzzyMap<PropertyInfo> get(IJavaProject project, ProgressService progressService) {
-		if (indexes==null) {
-			indexes = new HashMap<>();
+	public synchronized SpringPropertyIndex get(IJavaProject project, ProgressService progressService) {
+		try {
+			return indexes.get(project, () -> initIndex(project, progressService));
+		} catch (ExecutionException e) {
+			Log.log(e);
+			return null;
 		}
-		SpringPropertyIndex index = indexes.get(project);
-		if (index==null) {
-			Log.info("Indexing Spring Boot Properties for "+project.getElementName());
-			String progressId = getProgressId();
-			if (progressService != null) {
-				progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
-			}
-			
-			index = new SpringPropertyIndex(valueProviders, project.getClasspath());
-			indexes.put(project, index);
-			
-			if (progressService != null) {
-				progressService.progressEvent(progressId, null);
-			}
-			Log.info("Indexing Spring Boot Properties for "+project.getElementName()+" DONE");
-			Log.info("Indexed "+index.size()+" properties.");
+	}
+	
+	private SpringPropertyIndex initIndex(IJavaProject project, ProgressService progressService) {
+		Log.info("Indexing Spring Boot Properties for "+project.getElementName());
+
+		String progressId = getProgressId();
+		if (progressService != null) {
+			progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
 		}
+		
+		SpringPropertyIndex index = new SpringPropertyIndex(valueProviders, project.getClasspath());
+		
+		if (progressService != null) {
+			progressService.progressEvent(progressId, null);
+		}
+		
+		Log.info("Indexing Spring Boot Properties for "+project.getElementName()+" DONE");
+		Log.info("Indexed "+index.size()+" properties.");
+		
 		return index;
 	}
 
 	public synchronized void clear() {
 		if (indexes!=null) {
-			indexes.clear();
+			indexes.invalidateAll();
 			for (Listener<SpringPropertiesIndexManager> l : getListeners()) {
 				l.changed(this);
 			}

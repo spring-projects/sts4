@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
-
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -23,24 +20,17 @@ import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoP
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
-import org.springframework.ide.vscode.commons.gradle.GradleCore;
-import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
-import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
-import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -72,8 +62,8 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 		public boolean includeDeindentedProposals() { return false; };
 	};
 	// Shared:
-	private final CompositeProjectOvserver projectObserver;
-	private final CompositeJavaProjectFinder javaProjectFinder;
+	private final ProjectObserver projectObserver;
+	private final JavaProjectFinder javaProjectFinder;
 	private final SpringPropertyIndexProvider indexProvider;
 	private final TypeUtilProvider typeUtilProvider;
 	private final VscodeCompletionEngineAdapter completionEngine;
@@ -88,11 +78,16 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private final YamlStructureProvider yamlStructureProvider= YamlStructureProvider.DEFAULT;
 	private YamlAssistContextProvider yamlAssistContextProvider;
 
-	public BootPropertiesLanguageServer(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, CompositeJavaProjectFinder javaProjectFinder) {
+	public BootPropertiesLanguageServer(LSFactory<BootPropertiesLanguageServerParams> _params) {
 		super("vscode-boot-properties");
-		this.indexProvider = indexProvider;
-		this.typeUtilProvider = typeUtilProvider;
-		this.javaProjectFinder = javaProjectFinder;
+		
+		BootPropertiesLanguageServerParams serverParams = _params.create(this);
+
+		this.indexProvider = serverParams.indexProvider;
+		this.typeUtilProvider = serverParams.typeUtilProvider;
+		this.javaProjectFinder = serverParams.projectFinder;
+		this.projectObserver = serverParams.projectObserver;
+		
 		this.completionFactory = new PropertyCompletionFactory(javaProjectFinder);
 		this.yamlAssistContextProvider = new YamlAssistContextProvider() {
 			@Override
@@ -119,17 +114,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 		HoverInfoProvider hoverInfoProvider = getHoverProvider();
 		hoverEngine = new VscodeHoverEngineAdapter(this, hoverInfoProvider);
-		documents.onHover(hoverEngine::getHover);
-		
-		// Initialize project finders, project caches and project observers
-		MavenProjectCache mavenProjectCache = new MavenProjectCache(getWorkspaceService().getFileObserver(), MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
-		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
-
-		GradleProjectCache gradleProjectCache = new GradleProjectCache(getWorkspaceService().getFileObserver(), GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
-		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
-
-		projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
-
+		documents.onHover(hoverEngine::getHover);		
 	}
 
 	private ICompletionEngine getCompletionEngine() {
@@ -196,5 +181,9 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	public ProjectObserver getProjectObserver() {
 		return projectObserver;
+	}
+	
+	public SpringPropertyIndexProvider getPropertiesIndexProvider() {
+		return indexProvider;
 	}
 }
