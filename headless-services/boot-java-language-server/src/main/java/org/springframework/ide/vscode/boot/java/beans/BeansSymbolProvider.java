@@ -89,7 +89,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 //	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, TextDocument doc) {
 		boolean isFunction = isFunctionBean(node);
 		ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
 		String beanType = getBeanType(node);

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
+import java.util.function.Consumer;
+
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
@@ -37,5 +39,30 @@ public interface ProjectObserver {
 		public void removeListener(Listener listener) {
 		}
 	};
+
+	/**
+	 * Convenience method to create a listener that does the same thing regardless of
+	 * whether a project was created / changed / deleted.
+	 */
+	static Listener onAny(Consumer<IJavaProject> doit) {
+		return new Listener() {
+			@Override
+			public void created(IJavaProject project) {
+				doit.accept(project);
+			}
+			
+
+			@Override
+			public void changed(IJavaProject project) {
+				doit.accept(project);
+			}
+
+			@Override
+			public void deleted(IJavaProject project) {
+				doit.accept(project);
+			}
+			
+		};
+	}
 
 }

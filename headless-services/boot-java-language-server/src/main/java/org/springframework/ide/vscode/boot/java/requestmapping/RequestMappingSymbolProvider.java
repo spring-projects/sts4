@@ -41,7 +41,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class RequestMappingSymbolProvider implements SymbolProvider {
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, TextDocument doc) {
 		if (node.getParent() instanceof MethodDeclaration) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));

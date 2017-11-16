@@ -217,4 +217,15 @@ public class StringUtil {
 		}
 		return Optional.empty();
 	}
+
+	/**
+	 * Obtains the 'simple' unqualified name from a fully qualified name.
+	 */
+	public static String simpleName(String fullyQualifiedName) {
+		int dot = fullyQualifiedName.lastIndexOf('.');
+		if (dot>=0) {
+			return fullyQualifiedName.substring(dot+1);
+		}
+		return fullyQualifiedName;
+	}
 }

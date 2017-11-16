@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareFactoryManager;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
@@ -304,9 +305,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	}
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
-		HashMap<String, SymbolProvider> providers = new HashMap<>();
-		providers.put(Annotations.SPRING_REQUEST_MAPPING,
-				new RequestMappingSymbolProvider());
+		AnnotationHierarchyAwareFactoryManager<SymbolProvider> providers = new AnnotationHierarchyAwareFactoryManager<>();
+		providers.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(Annotations.SPRING_GET_MAPPING,
 				new RequestMappingSymbolProvider());
 		providers.put(Annotations.SPRING_POST_MAPPING,
@@ -319,7 +319,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 				new RequestMappingSymbolProvider());
 
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());
-		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
+		providers.putFactory(Annotations.COMPONENT, ComponentSymbolProvider::new);
 
 		return new SpringIndexer(this, projectFinder, providers);
 	}

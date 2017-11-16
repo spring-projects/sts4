@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties
@@ -43,6 +44,7 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		}
 		SpringPropertyIndex index = indexes.get(project);
 		if (index==null) {
+			Log.info("Indexing Spring Boot Properties for "+project.getElementName());
 			String progressId = getProgressId();
 			if (progressService != null) {
 				progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
@@ -54,6 +56,8 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 			if (progressService != null) {
 				progressService.progressEvent(progressId, null);
 			}
+			Log.info("Indexing Spring Boot Properties for "+project.getElementName()+" DONE");
+			Log.info("Indexed "+index.size()+" properties.");
 		}
 		return index;
 	}

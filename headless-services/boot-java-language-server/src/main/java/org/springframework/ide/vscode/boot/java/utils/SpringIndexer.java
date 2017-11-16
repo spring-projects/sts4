@@ -48,6 +48,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareFactoryManager;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -64,7 +65,7 @@ public class SpringIndexer {
 
 	private BootJavaLanguageServer server;
 	private JavaProjectFinder projectFinder;
-	private Map<String, SymbolProvider> symbolProviders;
+	private AnnotationHierarchyAwareFactoryManager<SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
 	private ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
@@ -95,7 +96,7 @@ public class SpringIndexer {
 
 	};
 
-	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, Map<String, SymbolProvider> specificProviders) {
+	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareFactoryManager<SymbolProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
@@ -392,20 +393,19 @@ public class SpringIndexer {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
-			String qualifiedTypeName = typeBinding.getQualifiedName();
-
-			SymbolProvider provider = symbolProviders.get(qualifiedTypeName);
-			if (provider != null) {
+			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
+			if (!providers.isEmpty()) {
 				TextDocument doc = getTempTextDocument(docURI, docRef, content);
-				Collection<SymbolInformation> sbls = provider.getSymbols(node, doc);
-				if (sbls != null) {
-					sbls.forEach(symbol -> {
-						symbols.add(symbol);
-						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
-					});
+				for (SymbolProvider provider : providers) {
+					Collection<SymbolInformation> sbls = provider.getSymbols(node, typeBinding, doc);
+					if (sbls != null) {
+						sbls.forEach(symbol -> {
+							symbols.add(symbol);
+							symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+						});
+					}
 				}
-			}
-			else {
+			} else {
 				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef, content);
 				if (symbol != null) {
 					symbols.add(symbol);

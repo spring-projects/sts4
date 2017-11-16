@@ -62,8 +62,6 @@ public class SpringResource {
 		Path path = Paths.get(pathStr);
 		IClasspath classpath = project.getClasspath();
 		Path outputFolder = classpath.getOutputFolder();
-		System.out.println("outf = "+outputFolder);
-		System.out.println("path = "+pathStr);
 		if (path.startsWith(outputFolder)) {
 			return outputFolder.relativize(path).toString();
 		}
