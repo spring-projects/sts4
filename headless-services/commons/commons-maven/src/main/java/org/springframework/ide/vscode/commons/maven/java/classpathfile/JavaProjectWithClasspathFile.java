@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -67,8 +68,18 @@ public class JavaProjectWithClasspathFile implements IJavaProject {
 		return true;
 	}
 	
-	void update() {
-		this.classpath = new FileClasspath(Paths.get(cpFile.toURI()));
+	CompletableFuture<Boolean> update() {
+		return CompletableFuture.supplyAsync(() -> doUpdate());
+	}
+	
+	private synchronized boolean doUpdate() {
+		FileClasspath newClasspath = new FileClasspath(Paths.get(cpFile.toURI()));
+		if (newClasspath.equals(classpath)) {
+			return false;
+		} else {
+			this.classpath = newClasspath;
+			return true;
+		}
 	}
 
 }

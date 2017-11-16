@@ -237,6 +237,8 @@ public class GotoSymbolDialog extends PopupDialog {
 //			}
 //		});
 		pattern.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		pattern.setMessage(model.getSearchBoxHintMessage());
+
 		SwtConnect.connect(pattern, model.getSearchBox());
 
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);

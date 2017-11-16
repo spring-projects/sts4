@@ -251,7 +251,7 @@ public class SpringBootApp {
 	 */
 	public static Optional<List<LiveConditional>> getLiveConditionals(String autoConfigReport, String processId,
 			String processName) {
-		return new LiveConditionalParser(autoConfigReport, processId, processName).parse();
+		return LiveConditionalParser.parse(autoConfigReport, processId, processName);
 	}
 
 	public String getAutoConfigReport() throws Exception {

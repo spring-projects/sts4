@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
@@ -25,6 +26,7 @@ import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconci
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
@@ -120,10 +122,10 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine::getHover);
 		
 		// Initialize project finders, project caches and project observers
-		MavenProjectCache mavenProjectCache = new MavenProjectCache(getWorkspaceService().getFileObserver(), MavenCore.getDefault());
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(getWorkspaceService().getFileObserver(), MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-		GradleProjectCache gradleProjectCache = new GradleProjectCache(getWorkspaceService().getFileObserver(), GradleCore.getDefault());
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(getWorkspaceService().getFileObserver(), GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
 		projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));

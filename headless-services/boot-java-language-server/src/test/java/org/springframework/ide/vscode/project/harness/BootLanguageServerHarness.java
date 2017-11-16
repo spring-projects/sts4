@@ -43,7 +43,7 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 
 	public static class Builder {
 
-		LSFactory<BootJavaLanguageServerParams> defaultsFactory = BootJavaLanguageServerParams.createDefault();
+		LSFactory<BootJavaLanguageServerParams> defaultsFactory = BootJavaLanguageServerParams.createTestDefault();
 		private JavaProjectFinder projectFinder = null;
 		private ProjectObserver projectObserver = null;
 		private SpringPropertyIndexProvider indexProvider = null;
@@ -92,7 +92,7 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 	private BootLanguageServerHarness(Builder builder) throws Exception {
 		super(() -> {
 			LSFactory<BootJavaLanguageServerParams> params = (server) -> {
-				BootJavaLanguageServerParams defaults = BootJavaLanguageServerParams.createDefault().create(server);
+				BootJavaLanguageServerParams defaults = BootJavaLanguageServerParams.createTestDefault().create(server);
 				return new BootJavaLanguageServerParams(
 						builder.projectFinder==null?defaults.projectFinder:builder.projectFinder,
 						builder.projectObserver==null?defaults.projectObserver:builder.projectObserver,

@@ -111,12 +111,7 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
-		public MockAppBuilder autoConfigReport(String autoConfigReport) throws Exception {
-			when(app.getAutoConfigReport()).thenReturn(autoConfigReport);
-			return this;
-		}
-
-		public MockAppBuilder positiveMatchesJsonForLiveConditionals(String rawJson) throws Exception{
+		public MockAppBuilder liveConditionalsJson(String rawJson) throws Exception{
 			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(rawJson, processId, processName));
 			return this;
 		}

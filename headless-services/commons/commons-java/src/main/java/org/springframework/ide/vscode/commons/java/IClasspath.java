@@ -12,7 +12,8 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.nio.file.Path;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -46,12 +47,12 @@ public interface IClasspath {
 	 * @return collection of classpath entries in a form file/folder paths
 	 * @throws Exception
 	 */
-	Stream<Path> getClasspathEntries() throws Exception;
+	ImmutableList<Path> getClasspathEntries() throws Exception;
 
 	/**
 	 * Classpath resources paths relative to the source folder path
 	 * @return classpath resource relative paths
 	 */
-	Stream<String> getClasspathResources();
-	
+	ImmutableList<String> getClasspathResources();
+
 }

@@ -16,7 +16,7 @@ public class LiveConditional {
 	private String message;
 	private String processId;
 	private String processName;
-	private String positiveMatchKey;
+	private String typeInfo;
 
 	public LiveConditional() {
 
@@ -38,8 +38,8 @@ public class LiveConditional {
 		return processName;
 	}
 
-	public String getPositiveMatchKey() {
-		return positiveMatchKey;
+	public String getTypeInfo() {
+		return typeInfo;
 	}
 
 	public static class LiveConditionalBuilder {
@@ -67,13 +67,31 @@ public class LiveConditional {
 		}
 
 		/**
-		 * This is a JSON key in "positiveMatches" element in the autoconfig report that contains information regarding
-		 * the method that the conditional is applied to.
-		 * @param positiveMatchKey
+		 * Type information for which a conditional is applied to.
+		 * <p/>
+		 *
+		 * Example:
+		 * <p/>
+		 * For this class:
+		 * <p/>
+         * "@ConditionalOnClass(name="java.lang.String2")
+         * public class MyConditionalComponent {
+         * }"
+         * <p/>
+         * This is the "real" autoconfig JSON:
+         * <p/>
+		 * "negativeMatches": { "MyConditionalComponent": { "notMatched": [ {
+		 * "condition": "OnClassCondition", "message": "@ConditionalOnClass did not find
+		 * required class 'java.lang.String2'" } ], "matched": [] }
+		 * <p/>
+		 * In this example, "MyConditionalComponent" information in the JSON indicates the type where the conditional is being applied to.
+		 * <p/>
+		 * Type info can also contain method information if a conditional annotation is applied to a method. Example: MyConditionalComponent#myBean)
+		 * @param typeInfo
 		 * @return
 		 */
-		public LiveConditionalBuilder positiveMatchKey(String positiveMatchKey) {
-			conditional.positiveMatchKey = positiveMatchKey;
+		public LiveConditionalBuilder typeInfo(String typeInfo) {
+			conditional.typeInfo = typeInfo;
 			return this;
 		}
 

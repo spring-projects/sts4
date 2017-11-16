@@ -13,11 +13,14 @@ package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -37,15 +40,15 @@ public class FileClasspath implements IClasspath {
 	}
 
 	@Override
-	public Stream<Path> getClasspathEntries() throws Exception {
-		return Stream.concat(MavenCore.readClassPathFile(classpathFilePath),
+	public ImmutableList<Path> getClasspathEntries() throws Exception {
+		return ImmutableList.copyOf(Stream.concat(MavenCore.readClassPathFile(classpathFilePath),
 				Stream.of(classpathFilePath.getParent().resolve("target/classes"),
-						classpathFilePath.getParent().resolve("target/test-classes")));
+						classpathFilePath.getParent().resolve("target/test-classes"))).collect(Collectors.toList()));
 	}
 
 	@Override
-	public Stream<String> getClasspathResources() {
-		return Stream.empty();
+	public ImmutableList<String> getClasspathResources() {
+		return ImmutableList.of();
 	}
 	
 	@Override

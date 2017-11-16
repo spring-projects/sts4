@@ -11,9 +11,10 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
+import java.nio.file.Path;
 
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
+import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 
 /**
  * Implementation of Gradle Java project
@@ -21,16 +22,18 @@ import org.springframework.ide.vscode.commons.util.Log;
  * @author Alex Boyko
  *
  */
-public class GradleJavaProject implements IJavaProject {
+public class GradleJavaProject extends AbstractJavaProject {
 	
-	private GradleCore gradle;
-	private GradleProjectClasspath classpath;
+	private DelegatingCachedClasspath<GradleProjectClasspath> classpath;
 	private File projectDir;
 	
-	public GradleJavaProject(GradleCore gradle, File projectDir) throws GradleException {
-		this.gradle = gradle;
+	public GradleJavaProject(GradleCore gradle, File projectDir, Path projectDataCache) {
+		super(projectDataCache);
 		this.projectDir = projectDir;
-		this.classpath = new GradleProjectClasspath(gradle, projectDir);
+		this.classpath = new DelegatingCachedClasspath<GradleProjectClasspath>(
+				() -> new GradleProjectClasspath(gradle, projectDir),
+				projectDataCache == null ? null : projectDataCache.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile()
+			);
 	}
 	
 	public File getLocation() {
@@ -38,16 +41,13 @@ public class GradleJavaProject implements IJavaProject {
 	}
 
 	@Override
-	public GradleProjectClasspath getClasspath() {
+	public DelegatingCachedClasspath<GradleProjectClasspath> getClasspath() {
 		return classpath;
 	}
 	
-	void update() {
-		try {
-			this.classpath = new GradleProjectClasspath(gradle, projectDir);
-		} catch (GradleException e) {
-			Log.log(e);
-		}
+	boolean update() {
+		return classpath.update();
 	}
+	
 
 }

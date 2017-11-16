@@ -55,6 +55,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -242,27 +243,13 @@ public class SpringIndexer {
 			try {
 				initializeTask.get();
 				return allsymbols.stream()
-						.filter(symbol -> containsCharacters(symbol.getName().toCharArray(), query.toCharArray()))
+						.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), query))
 						.collect(Collectors.toList());
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
 		return null;
-	}
-
-	private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
-		int symbolindex = 0;
-		int queryindex = 0;
-
-		while (queryindex < queryChars.length && symbolindex < symbolChars.length) {
-			if (symbolChars[symbolindex] == queryChars[queryindex]) {
-				queryindex++;
-			}
-			symbolindex++;
-		}
-
-		return queryindex == queryChars.length;
 	}
 
 	private void scanFiles(File directory) {
@@ -456,7 +443,7 @@ public class SpringIndexer {
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
-		Stream<Path> classpathEntries = classpath.getClasspathEntries();
+		Stream<Path> classpathEntries = classpath.getClasspathEntries().stream();
 		return classpathEntries
 				.filter(path -> path.toFile().exists())
 				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);

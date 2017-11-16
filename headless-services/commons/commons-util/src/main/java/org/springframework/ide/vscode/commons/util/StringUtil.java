@@ -228,4 +228,22 @@ public class StringUtil {
 		}
 		return fullyQualifiedName;
 	}
+	
+	public static boolean containsCharactersCaseInsensitive(String value, String query) {
+		return containsCharacters(value.toLowerCase().toCharArray(), query.toLowerCase().toCharArray());
+	}
+
+	public static boolean containsCharacters(char[] valChars, char[] queryChars) {
+		int symbolindex = 0;
+		int queryindex = 0;
+
+		while (queryindex < queryChars.length && symbolindex < valChars.length) {
+			if (valChars[symbolindex] == queryChars[queryindex]) {
+				queryindex++;
+			}
+			symbolindex++;
+		}
+
+		return queryindex == queryChars.length;
+	}
 }

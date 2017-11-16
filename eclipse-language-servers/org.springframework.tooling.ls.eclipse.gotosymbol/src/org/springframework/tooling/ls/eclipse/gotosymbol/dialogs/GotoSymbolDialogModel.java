@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class GotoSymbolDialogModel {
 
+	private static final String SEARCH_BOX_HINT_MESSAGE = "@/ -> request mappings, @+ -> beans, @> -> functions, @ -> all spring elements";
 	private static final boolean DEBUG = false;//(""+Platform.getLocation()).contains("kdvolder");
 	private static void debug(String string) {
 		if (DEBUG) {
@@ -97,6 +98,10 @@ public class GotoSymbolDialogModel {
 			dependsOn(unfilteredSymbols);
 		}
 		
+		private boolean containsCharactersCaseInsensitive(String symbol, String query) {
+			return containsCharacters(symbol.toLowerCase().toCharArray(), query.toLowerCase().toCharArray());
+		}
+		
 		private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
 			int symbolindex = 0;
 			int queryindex = 0;
@@ -113,9 +118,8 @@ public class GotoSymbolDialogModel {
 
 		@Override
 		protected ImmutableSet<SymbolInformation> compute() {
-			char[] query = searchBox.getValue().toCharArray();
 			ImmutableSet.Builder<SymbolInformation> builder = ImmutableSet.builder();
-			unfilteredSymbols.getValues().stream().filter(sym -> containsCharacters(sym.getName().toCharArray(), query)).forEach(builder::add);
+			unfilteredSymbols.getValues().stream().filter(sym -> containsCharactersCaseInsensitive(sym.getName(), searchBox.getValue())).forEach(builder::add);
 			return builder.build();
 		}
 	};
@@ -148,6 +152,10 @@ public class GotoSymbolDialogModel {
 
 	public LiveVariable<String> getSearchBox() {
 		return searchBox;
+	}
+	
+	public String getSearchBoxHintMessage() {
+		return SEARCH_BOX_HINT_MESSAGE;
 	}
 
 	public LiveExpression<String> getStatus() {
