@@ -125,7 +125,6 @@ public class LiveBeansModel {
 			JSONObject beansObject = mainObject.getJSONObject("beans");
 			for (String id : beansObject.keySet()) {
 				JSONObject beanObject = beansObject.getJSONObject(id);
-				System.out.println(beanObject.toString(3));
 				LiveBean bean = parseBean(id, beanObject);
 				if (bean!=null) {
 					model.add(bean);
