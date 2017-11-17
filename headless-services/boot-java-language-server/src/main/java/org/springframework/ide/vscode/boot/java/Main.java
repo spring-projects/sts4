@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("boot-java", () -> {
+		LaunguageServerApp.start("boot-java-language-server", () -> {
 			SimpleLanguageServer server = new BootJavaLanguageServer(
 					BootJavaLanguageServerParams.createDefault()
 			);

@@ -24,7 +24,7 @@ import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 public class Main {
 		
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("boot-properties",
+		LaunguageServerApp.start("boot-properties-language-server",
 				() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createDefault()));
 	}
 
