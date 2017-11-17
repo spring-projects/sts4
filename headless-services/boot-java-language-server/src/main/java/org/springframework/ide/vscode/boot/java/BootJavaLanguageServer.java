@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareFactoryManager;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
@@ -56,6 +59,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
@@ -174,13 +178,17 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		CompletableFuture<InitializeResult> result = super.initialize(params);
 
-		this.indexer.initialize(this.getWorkspaceRoot());
+		this.indexer.initialize(getWorkspaceRoots());
 
 		return result;
 	}
 
 	@Override
 	public void initialized() {
+		Registration registration = new Registration(WorkspaceFoldersProposedService.CAPABILITY_ID, WorkspaceFoldersProposedService.CAPABILITY_NAME, null);
+		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
+		getClient().registerCapability(registrationParams);
+
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)
@@ -360,4 +368,5 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	public CompilationUnitCache getCompilationUnitCache() {
 		return cuCache;
 	}
+
 }

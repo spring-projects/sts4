@@ -177,7 +177,7 @@ public abstract class LaunguageServerApp {
 	 * @return
 	 */
     protected ExecutorService createServerThreads() {
-		return Executors.newSingleThreadExecutor();
+		return Executors.newCachedThreadPool();
 	}
 
 	private <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress, ExecutorService executorService, Function<MessageConsumer, MessageConsumer> wrapper) throws IOException {

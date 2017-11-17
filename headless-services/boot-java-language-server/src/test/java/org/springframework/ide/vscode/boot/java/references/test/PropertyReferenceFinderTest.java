@@ -13,16 +13,21 @@ package org.springframework.ide.vscode.boot.java.references.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -34,7 +39,7 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "test.property");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
 
 		assertNotNull(resultFuture);
 		List<? extends Location> locations = resultFuture.get();
@@ -49,12 +54,22 @@ public class PropertyReferenceFinderTest {
 		assertEquals(13, location.getRange().getEnd().getCharacter());
 	}
 
+	private Collection<WorkspaceFolder> wsFolder(Path directory) {
+		if (directory!=null) {
+			return ImmutableList.of(new WorkspaceFolder(
+					directory.toUri().toString(),
+					directory.getFileName().toString()
+			));
+		}
+		return ImmutableList.of();
+	}
+
 	@Test
 	public void testFindReferenceAtBeginningYMLFile() throws Exception {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-yml/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "test.property");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
 
 		assertNotNull(resultFuture);
 		List<? extends Location> locations = resultFuture.get();
@@ -74,7 +89,7 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "server.port");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "server.port");
 
 		assertNotNull(resultFuture);
 		List<? extends Location> locations = resultFuture.get();
@@ -94,7 +109,7 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/multiple-files/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "appl1.prop");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
 
 		assertNotNull(resultFuture);
 		List<? extends Location> locations = resultFuture.get();
@@ -121,14 +136,14 @@ public class PropertyReferenceFinderTest {
 		assertEquals(1, location.getRange().getEnd().getLine());
 		assertEquals(10, location.getRange().getEnd().getCharacter());
 	}
-	
+
 	private Location getLocation(List<? extends Location> locations, URI docURI) {
 		for (Location location : locations) {
 			if (docURI.toString().equals(location.getUri())) {
 				return location;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -137,7 +152,7 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/mixed-multiple-files/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(root, "appl1.prop");
+		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
 
 		assertNotNull(resultFuture);
 		List<? extends Location> locations = resultFuture.get();

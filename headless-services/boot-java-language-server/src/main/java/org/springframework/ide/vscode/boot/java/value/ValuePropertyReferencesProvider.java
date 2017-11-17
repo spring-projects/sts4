@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -94,7 +95,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			if (range != null) {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 				if (propertyKey != null && propertyKey.length() > 0) {
-					return findReferencesFromPropertyFiles(languageServer.getWorkspaceRoot(), propertyKey);
+					return findReferencesFromPropertyFiles(languageServer.getWorkspaceRoots(), propertyKey);
 				}
 			}
 		}
@@ -105,21 +106,26 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	public CompletableFuture<List<? extends Location>> findReferencesFromPropertyFiles(Path workspaceRoot,
-			String propertyKey) {
+	public CompletableFuture<List<? extends Location>> findReferencesFromPropertyFiles(
+			Collection<WorkspaceFolder> workspaceRoots,
+			String propertyKey
+	) {
+		for (WorkspaceFolder workspaceFolder : workspaceRoots) {
+			try {
+				Path workspaceRoot = Paths.get(new URI(workspaceFolder.getUri()));
+				try (Stream<Path> walk = Files.walk(workspaceRoot)) {
+					List<Location> locations = walk
+							.filter(path -> isPropertiesFile(path))
+							.filter(path -> path.toFile().isFile())
+							.map(path -> findReferences(path, propertyKey))
+							.flatMap(Collection::stream)
+							.collect(Collectors.toList());
 
-		try (Stream<Path> walk = Files.walk(workspaceRoot)) {
-			List<Location> locations = walk
-					.filter(path -> isPropertiesFile(path))
-					.filter(path -> path.toFile().isFile())
-					.map(path -> findReferences(path, propertyKey))
-					.flatMap(Collection::stream)
-					.collect(Collectors.toList());
-
-			return CompletableFuture.completedFuture(locations);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
+					return CompletableFuture.completedFuture(locations);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		return null;

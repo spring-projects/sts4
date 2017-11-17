@@ -48,4 +48,9 @@ public class MavenJavaProject extends AbstractJavaProject {
 		return classpath.update();
 	}
 	
+	@Override
+	public String toString() {
+		return "MavenJavaProject("+classpath.getName()+")";
+	}
+
 }
