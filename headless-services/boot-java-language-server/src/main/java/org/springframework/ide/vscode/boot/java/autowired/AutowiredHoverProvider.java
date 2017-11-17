@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
@@ -41,6 +42,7 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class AutowiredHoverProvider implements HoverProvider {
+
 
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
@@ -120,12 +122,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 		TypeDeclaration declaringType = ASTUtils.findDeclaringType(autowiredAnnotation);
 		if (declaringType != null) {
 			for (Annotation annotation : ASTUtils.getAnnotations(declaringType)) {
-				String annotationType = ASTUtils.getAnnotationType(annotation);
-				switch (annotationType) {
-				case Annotations.COMPONENT:
+				if (AnnotationHierarchies.isSubtypeOf(annotation, Annotations.COMPONENT)) {
 					return ComponentInjectionsHoverProvider.getDefinedBeanForComponent(annotation);
-				default:
-					break;
 				}
 			}
 			//TODO: handler below is an attempt to do something that may work in many cases, but is probably

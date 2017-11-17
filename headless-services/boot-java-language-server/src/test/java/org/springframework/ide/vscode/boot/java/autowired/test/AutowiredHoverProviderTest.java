@@ -308,4 +308,58 @@ public class AutowiredHoverProviderTest {
 		}
 	}
 
+	@Test public void bug_152621242_autowired_constructor_on_a_controller() throws Exception {
+		//https://www.pivotaltracker.com/story/show/152621242
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("com.example.MyController")
+						.dependencies("restTemplate")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("restTemplate")
+						.type("org.springframework.web.client.RestTemplate")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+
+		Editor editor = harness.newEditor(
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"import org.springframework.stereotype.Controller;\n" +
+				"import org.springframework.web.client.RestTemplate;\n" +
+				"\n" +
+				"@Controller\n" +
+				"public class MyController {\n" +
+				"\n" +
+				"	private RestTemplate restClient;\n" +
+				"\n" +
+				"	@Autowired\n" +
+				"	public MyController(RestTemplate restClient) {\n" +
+				"		this.restClient = restClient;\n" +
+				"	}\n" +
+				"	\n" +
+				"}"
+		);
+		editor.assertHighlights(/* not yet: "@Controller",*/ "@Autowired");
+		for (int i = 1; i <= 2; i++) {
+			editor.assertHoverContains("@Autowired", 1,
+					"Bean [id: myController, type: `com.example.MyController`] got autowired with:\n" +
+					"\n" +
+					"- Bean: restTemplate  \n" +
+					"  Type: `org.springframework.web.client.RestTemplate`");
+		}
+
+	}
+
 }

@@ -13,10 +13,17 @@ package org.springframework.ide.vscode.boot.java.annotations;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.springframework.ide.vscode.commons.util.Log;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -27,44 +34,76 @@ import com.google.common.collect.ImmutableList;
 
  * @author Kris De Volder
  */
-public class AnnotationHierarchies {
+public abstract class AnnotationHierarchies {
 
-	protected boolean ignoreAnnotation(String fqname) {
+	/**
+	 * Note: this cacehe is not just for efficiency! Without it, we also get into trouble accessing the
+	 * AST on multiple threads. AST's coming from CompilationUnit cache should not be accessed on multiple
+	 * threads.
+	 */
+	private static Cache<ITypeBinding, Collection<ITypeBinding>> supertypes = CacheBuilder.newBuilder()
+			.weakKeys()
+			.expireAfterWrite(30, TimeUnit.SECONDS)
+			.build();
+
+	private AnnotationHierarchies() {
+	}
+
+	protected static boolean ignoreAnnotation(String fqname) {
 		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
 		//safe to ignore any type defined by the JRE since it can't possibly be inheriting from a spring annotation.
 	};
 
-	public Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
-		IAnnotationBinding[] annotations = typeBinding.getAnnotations();
-		if (annotations!=null && annotations.length!=0) {
-			ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
-			for (IAnnotationBinding ab : annotations) {
-				ITypeBinding sa = ab.getAnnotationType();
-				if (sa!=null) {
-					if (!ignoreAnnotation(sa.getQualifiedName())) {
-						superAnnotations.add(sa);
+	public static Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
+		try {
+			return supertypes.get(typeBinding, () -> {
+				IAnnotationBinding[] annotations = typeBinding.getAnnotations();
+				if (annotations!=null && annotations.length!=0) {
+					ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
+					for (IAnnotationBinding ab : annotations) {
+						ITypeBinding sa = ab.getAnnotationType();
+						if (sa!=null) {
+							if (!ignoreAnnotation(sa.getQualifiedName())) {
+								superAnnotations.add(sa);
+							}
+						}
 					}
+					return superAnnotations.build();
 				}
-			}
-			return superAnnotations.build();
+				return ImmutableList.of();
+			});
+		} catch (ExecutionException e) {
+			Log.log(e);
+			return ImmutableList.of();
 		}
-		return ImmutableList.of();
 	}
 
-	public Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
+	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
 		Set<String> seen = new HashSet<>();
 		findTransitiveSupers(typeBinding, seen);
 		return seen;
 	}
 
-	private void findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
+	public static Stream<String> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
 		String qname = typeBinding.getQualifiedName();
 		if (seen.add(qname)) {
-			for (ITypeBinding superBinding : getDirectSuperAnnotations(typeBinding)) {
-				findTransitiveSupers(superBinding, seen);
-			}
+			return Stream.concat(
+				Stream.of(qname),
+				getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding ->
+					findTransitiveSupers(superBinding, seen)
+				)
+			);
 		}
+		return Stream.empty();
 	}
 
+	public static boolean isSubtypeOf(Annotation annotation, String fqAnnotationTypeName) {
+		ITypeBinding annotationType = annotation.resolveTypeBinding();
+		if (annotationType!=null) {
+			return findTransitiveSupers(annotationType, new HashSet<>())
+					.anyMatch(superType -> superType.equals(fqAnnotationTypeName));
+		}
+		return false;
+	}
 
 }

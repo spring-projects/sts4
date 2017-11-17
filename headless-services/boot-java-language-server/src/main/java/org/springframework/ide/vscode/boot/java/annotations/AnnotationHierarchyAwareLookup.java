@@ -47,8 +47,6 @@ public class AnnotationHierarchyAwareLookup<T> {
 		}
 	}
 
-	private AnnotationHierarchies annotationHierarchies = new AnnotationHierarchies();
-
 	/**
 	 * Associates fq anotation type name to a Binding.
 	 */
@@ -119,7 +117,7 @@ public class AnnotationHierarchyAwareLookup<T> {
 				isOverriding = binding.isOverriding;
 			}
 			if (!isOverriding) {
-				for (ITypeBinding superAnnotation : annotationHierarchies.getDirectSuperAnnotations(typeBinding)) {
+				for (ITypeBinding superAnnotation : AnnotationHierarchies.getDirectSuperAnnotations(typeBinding)) {
 					findElements(superAnnotation, seen, superResult -> {
 						requestor.accept(superResult);
 						requestor.accept(Tuples.of(qname, superResult.getT2()));
