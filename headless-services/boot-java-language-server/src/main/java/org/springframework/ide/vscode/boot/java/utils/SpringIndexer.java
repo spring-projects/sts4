@@ -54,6 +54,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -105,12 +106,13 @@ public class SpringIndexer {
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 
+		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
+			System.err.println("Workspace roots have changed!");
+			refresh();
+		});
 	}
 
-	public CompletableFuture<Void> initialize(final Path workspaceRoot) {
-		if (workspaceRoot==null) {
-			return CompletableFuture.completedFuture(null);
-		}
+	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
 		synchronized(this) {
 			if (this.initializeTask == null) {
 				initializing.set(true);
@@ -120,7 +122,9 @@ public class SpringIndexer {
 				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
 					@Override
 					public void run() {
-						scanFiles(workspaceRoot.toFile());
+						for (WorkspaceFolder root : workspaceRoots) {
+							scanFiles(root);
+						}
 
 						SpringIndexer.this.updateQueue = new LinkedBlockingQueue<>();
 						SpringIndexer.this.updateWorker = new Thread(new Runnable() {
@@ -141,13 +145,12 @@ public class SpringIndexer {
 								}
 							}
 						}, "Spring Annotation Index Update Worker");
-
 						updateWorker.start();
 						initializing.set(false);
 					}
+
 				});
 			}
-
 			return this.initializeTask;
 		}
 	}
@@ -163,7 +166,7 @@ public class SpringIndexer {
 			symbols.clear();
 			symbolsByDoc.clear();
 			Log.info("Rebuilding SpringIndexer...");
-			initialize(server.getWorkspaceRoot());
+			initialize(server.getWorkspaceRoots());
 		}
 	}
 
@@ -252,9 +255,9 @@ public class SpringIndexer {
 		return null;
 	}
 
-	private void scanFiles(File directory) {
+	private void scanFiles(WorkspaceFolder directory) {
 		try {
-			Map<Optional<IJavaProject>, List<String>> projects = Files.walk(directory.toPath())
+			Map<Optional<IJavaProject>, List<String>> projects = Files.walk(Paths.get(new URI(directory.getUri())))
 					.filter(path -> path.getFileName().toString().endsWith(".java"))
 					.filter(Files::isRegularFile)
 					.map(path -> path.toAbsolutePath().toString())
@@ -268,6 +271,7 @@ public class SpringIndexer {
 	}
 
 	private void scanProject(IJavaProject project, String[] files) {
+		System.err.println("scan project: "+project);
 		try {
 			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			String[] classpathEntries = getClasspathEntries(project);

@@ -36,7 +36,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void springStandardPropertyPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
 		PropertyInfo propertyInfo = index.get("server.port");
@@ -48,7 +48,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void customPropertyPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
 		PropertyInfo propertyInfo = index.get("demo.settings.user");
@@ -60,7 +60,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void propertyNotPresent_Maven() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
 		PropertyInfo propertyInfo = index.get("my.server.port");
@@ -70,7 +70,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void springStandardPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
 		PropertyInfo propertyInfo = index.get("server.port");
@@ -82,7 +82,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void customPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
 		PropertyInfo propertyInfo = index.get("demo.settings.user");
@@ -94,7 +94,7 @@ public class PropertiesIndexTest {
 	@Test
 	public void propertyNotPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault());
+				ValueProviderRegistry.getDefault(), null);
 		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
 		PropertyInfo propertyInfo = index.get("my.server.port");

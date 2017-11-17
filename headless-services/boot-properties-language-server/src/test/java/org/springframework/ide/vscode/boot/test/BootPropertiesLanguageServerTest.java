@@ -21,7 +21,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -38,7 +38,7 @@ public class BootPropertiesLanguageServerTest {
 	}
 
 	private LanguageServerHarness newHarness() throws Exception {
-		Callable<? extends SimpleLanguageServer> f = () -> new BootPropertiesLanguageServer((d) -> null, (d) -> null, new CompositeJavaProjectFinder());
+		Callable<? extends SimpleLanguageServer> f = () -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createTestDefault());
 		return new LanguageServerHarness(f);
 	}
 

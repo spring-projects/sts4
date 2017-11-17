@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,8 +31,11 @@ import org.springframework.ide.vscode.boot.java.beans.test.SpringIndexerHarness.
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -57,7 +61,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleConfigurationClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java",
@@ -71,7 +75,7 @@ public class SpringIndexerBeansTest {
 	@Test public void testScanSpecialConfigurationClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SpecialConfiguration.java";
@@ -103,7 +107,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleFunctionBean() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java",
@@ -119,7 +123,7 @@ public class SpringIndexerBeansTest {
 	public void testScanSimpleComponentClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java",
@@ -134,7 +138,7 @@ public class SpringIndexerBeansTest {
 	@Test public void testScanSimpleControllerClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SimpleController.java";
@@ -148,7 +152,7 @@ public class SpringIndexerBeansTest {
 	@Test public void testScanRestControllerClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(directory.toPath());
+		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SimpleRestController.java";

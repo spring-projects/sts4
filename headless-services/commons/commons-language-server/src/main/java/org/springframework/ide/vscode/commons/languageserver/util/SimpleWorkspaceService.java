@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -20,6 +23,10 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.DidChangeWorkspaceFoldersParams;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersChangeEvent;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -28,14 +35,17 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
-public class SimpleWorkspaceService implements WorkspaceService {
+public class SimpleWorkspaceService implements WorkspaceService, WorkspaceFoldersProposedService {
 
 	private SimpleLanguageServer server;
+	private Set<WorkspaceFolder> workspaceRoots = new HashSet<>();
 
 	private ListenerList<Settings> configurationListeners = new ListenerList<>();
 	private ExecuteCommandHandler executeCommandHandler;
 	private WorkspaceSymbolHandler workspaceSymbolHandler;
 	private SimpleServerFileObserver fileObserver;
+
+	private ListenerList<DidChangeWorkspaceFoldersParams> workspaceFolderListeners = new ListenerList<>();
 
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
 		this.server = server;
@@ -90,6 +100,27 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	}
 
 	@Override
+	public synchronized void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
+		WorkspaceFoldersChangeEvent evt = params.getEvent();
+		boolean changed = false;
+		for (WorkspaceFolder r : evt.getAdded()) {
+			workspaceRoots.add(r);
+			changed = true;
+		}
+		for (WorkspaceFolder r : evt.getRemoved()) {
+			workspaceRoots.remove(r);
+			changed = true;
+		}
+		if (changed) {
+			workspaceFolderListeners.fire(params);
+		}
+	}
+
+	public void onDidChangeWorkspaceFolders(Consumer<DidChangeWorkspaceFoldersParams> l) {
+		workspaceFolderListeners.add(l);
+	}
+
+	@Override
 	public CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
 		if (this.executeCommandHandler!=null) {
 			return this.executeCommandHandler.handle(params);
@@ -122,5 +153,15 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	public void dispose() {
 		fileObserver.dispose();
 	}
+
+	public Collection<WorkspaceFolder> getWorkspaceRoots() {
+		return ImmutableList.copyOf(workspaceRoots);
+	}
+
+	public synchronized void setWorkspaceFolders(List<WorkspaceFolder> workspaceFolders) {
+		workspaceRoots = new HashSet<>();
+		workspaceRoots.addAll(workspaceFolders);
+	}
+
 
 }

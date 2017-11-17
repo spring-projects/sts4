@@ -12,14 +12,14 @@ package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -139,7 +140,17 @@ public class SpringIndexerHarness {
 		return ImmutableList.of();
 	}
 
-	public void initialize(Path wsRoot) {
-		indexer.initialize(wsRoot);
+	public Collection<WorkspaceFolder> wsFolder(File directory) {
+		if (directory!=null) {
+			return ImmutableList.of(new WorkspaceFolder(
+					directory.toURI().toString(),
+					directory.getName()
+			));
+		}
+		return ImmutableList.of();
+	}
+
+	public void initialize(Collection<WorkspaceFolder> wsRoots) {
+		indexer.initialize(wsRoots);
 	}
 }

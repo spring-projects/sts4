@@ -13,8 +13,10 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,6 +45,9 @@ import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.DidChangeWorkspaceFoldersParams;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
@@ -70,15 +75,13 @@ import reactor.core.scheduler.Schedulers;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient {
+public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService {
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
 	protected final LazyCompletionResolver completionResolver = createCompletionResolver();
-
-    private Path workspaceRoot;
 
 	private SimpleTextDocumentService tds;
 
@@ -169,16 +172,28 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		Log.debug("Initializing: "+params);
-		String rootPath = params.getRootPath();
-		if (rootPath==null) {
-			Log.debug("workspaceRoot NOT SET");
-		} else {
-			this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
+
+		// multi-root workspace handling
+		List<WorkspaceFolder> workspaceFolders = getWorkspaceFolders(params);
+		if (!workspaceFolders.isEmpty()) {
+			this.getWorkspaceService().setWorkspaceFolders(workspaceFolders);
 		}
+		else {
+			String rootPath = params.getRootPath();
+			if (rootPath==null) {
+				Log.debug("workspaceRoot NOT SET");
+			} else {
+				List<WorkspaceFolder> singleRootFolder = new ArrayList<>();
+				Path path = Paths.get(rootPath);
+				singleRootFolder.add(new WorkspaceFolder(path.toUri().toString(), path.getFileName().toString()));
+				this.getWorkspaceService().setWorkspaceFolders(singleRootFolder);
+			}
+		}
+
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
 		this.hasFileWatcherRegistrationSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
-		Log.debug("workspaceRoot = "+workspaceRoot);
+		Log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
 		Log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		Log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
@@ -191,6 +206,31 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		result.setCapabilities(cap);
 
 		return CompletableFuture.completedFuture(result);
+	}
+
+	private List<WorkspaceFolder> getWorkspaceFolders(InitializeParams params) {
+		List<WorkspaceFolder> initialFolders = new ArrayList<>();
+
+		Object initOptions = params.getInitializationOptions();
+		if (initOptions != null && initOptions instanceof Map) {
+			Map<?, ?> initializationOptions = (Map<?, ?>) initOptions;
+			Object folders = initializationOptions.get("workspaceFolders");
+			if (folders != null && folders instanceof List) {
+				List<?> workspaceFolders = (List<?>) folders;
+				for (Object object : workspaceFolders) {
+					String folderPath = object.toString();
+					String folderName = null;
+
+					int folderNameStart = folderPath.lastIndexOf("/");
+					if (folderNameStart > 0) {
+						folderName = folderPath.substring(folderPath.lastIndexOf("/") + 1);
+					}
+					initialFolders.add(new WorkspaceFolder(object.toString(), folderName));
+				}
+			}
+		}
+
+		return initialFolders;
 	}
 
 	/**
@@ -307,9 +347,28 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		System.exit(0);
 	}
 
-	public Path getWorkspaceRoot() {
-		return workspaceRoot;
+	public Collection<WorkspaceFolder> getWorkspaceRoots() {
+		return getWorkspaceService().getWorkspaceRoots();
 	}
+
+//	/**
+//	 * Deprecated, shouldn't use and should be removed. Anyone calling this
+//	 * will have problems handling multi-root workspaces.
+//	 * <p>
+//	 * Use getWorkspaceRoots instead.
+//	 */
+//	@Deprecated
+//	public Path getWorkspaceRoot() {
+//		try {
+//			Optional<WorkspaceFolder> firstRoot = getWorkspaceRoots().stream().findFirst();
+//			if (firstRoot.isPresent()) {
+//				return new File(new URI(firstRoot.get().getUri())).toPath();
+//			}
+//		} catch (Exception e) {
+//			Log.log(e);
+//		}
+//		return null;
+//	}
 
 	@Override
 	public synchronized SimpleTextDocumentService getTextDocumentService() {
@@ -467,4 +526,10 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	public boolean canRegisterFileWatchersDynamically() {
 		return hasFileWatcherRegistrationSupport;
 	}
+
+	@Override
+	public void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
+		getWorkspaceService().didChangeWorkspaceFolders(params);
+	}
+
 }

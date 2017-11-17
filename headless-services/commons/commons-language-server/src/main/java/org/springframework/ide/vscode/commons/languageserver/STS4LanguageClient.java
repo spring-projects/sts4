@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
  *
  * @author Kris De Volder
  */
-public interface STS4LanguageClient extends LanguageClient {
+public interface STS4LanguageClient extends LanguageClient, WorkspaceFoldersProposedClient {
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);

@@ -8,12 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils;
+package org.springframework.ide.vscode.commons.java;
 
 import java.nio.file.Path;
 
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 
 public class BootProjectUtil {

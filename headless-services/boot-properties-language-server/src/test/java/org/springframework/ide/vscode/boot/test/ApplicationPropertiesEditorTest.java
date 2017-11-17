@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
@@ -1585,7 +1586,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(md.getIndexProvider(), typeUtilProvider, javaProjectFinder);
+		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(
+				s -> new BootPropertiesLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
+						typeUtilProvider));
 		server.setMaxCompletionsNumber(-1);
 		return server;
 	}

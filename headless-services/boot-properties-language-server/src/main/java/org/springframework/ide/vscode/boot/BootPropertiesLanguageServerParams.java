@@ -6,18 +6,18 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ * Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java;
+package org.springframework.ide.vscode.boot;
 
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Arrays;
 
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
@@ -33,31 +33,35 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
 import org.springframework.ide.vscode.commons.util.FileObserver;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
-public class BootJavaLanguageServerParams {
+/**
+ * Parameters for creating Boot Properties language server
+ * 
+ * @author Alex Boyko
+ *
+ */
+public class BootPropertiesLanguageServerParams {
 
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
-	public final RunningAppProvider runningAppProvider;
-	public final Duration watchDogInterval;
+	public final TypeUtilProvider typeUtilProvider;
 
-	public BootJavaLanguageServerParams(
+	public BootPropertiesLanguageServerParams(
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
-			RunningAppProvider runningAppProvider,
-			Duration watchDogInterval
+			TypeUtilProvider typeUtilProvider
 	) {
 		super();
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
-		this.runningAppProvider = runningAppProvider;
-		this.watchDogInterval = watchDogInterval;
+		this.typeUtilProvider = typeUtilProvider;
 	}
 
-	public static LSFactory<BootJavaLanguageServerParams> createDefault() {
+	public static LSFactory<BootPropertiesLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
@@ -69,18 +73,20 @@ public class BootJavaLanguageServerParams {
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
 			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+			
+			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
+			indexProvider.setProgressService(server.getProgressService());
 
-			return new BootJavaLanguageServerParams(
+			return new BootPropertiesLanguageServerParams(
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
-					new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver),
-					RunningAppProvider.DEFAULT,
-					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+					indexProvider,
+					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
 			);
 		};
 	}
 
-	public static LSFactory<BootJavaLanguageServerParams> createTestDefault() {
+	public static LSFactory<BootPropertiesLanguageServerParams> createTestDefault(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
@@ -95,14 +101,40 @@ public class BootJavaLanguageServerParams {
 
 			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 
-			return new BootJavaLanguageServerParams(
+			return new BootPropertiesLanguageServerParams(
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
-					new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver),
-					RunningAppProvider.DEFAULT,
-					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+					indexProvider,
+					typeUtilProvider
 			);
 		};
 	}
 
+	public static LSFactory<BootPropertiesLanguageServerParams> createTestDefault() {
+		return (SimpleLanguageServer server) -> {
+			// Initialize project finders, project caches and project observers
+			FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
+			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
+			MavenProjectCache mavenProjectCache = new MavenProjectCache(fileObserver, MavenCore.getDefault(), false, null);
+			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
+			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
+
+			GradleProjectCache gradleProjectCache = new GradleProjectCache(fileObserver, GradleCore.getDefault(), false, null);
+			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
+			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
+
+			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+
+			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
+			indexProvider.setProgressService(server.getProgressService());
+
+			return new BootPropertiesLanguageServerParams(
+					javaProjectFinder.filter(BootProjectUtil::isBootProject),
+					projectObserver,
+					indexProvider,
+					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
+			);
+		};
+	}
+	
 }

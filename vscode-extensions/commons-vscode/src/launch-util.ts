@@ -16,6 +16,7 @@ import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
+import { log } from 'util';
 
 let p2c = P2C.createConverter();
 
@@ -83,7 +84,8 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 reader: socket,
                                 writer: socket
                             });
-                        }).listen(port, () => {
+                        })
+                        .listen(port, () => {
                             let processLaunchoptions = {
                                 cwd: VSCode.workspace.rootPath
                             };
@@ -151,6 +153,8 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     let client = new LanguageClient(options.extensionId, options.extensionId,
         createServer, options.clientOptions
     );
+    client.registerProposedFeatures();
+    log("Proposed protocol extensions loaded!");
     if (options.TRACE) {
         client.trace = Trace.Verbose;
     }

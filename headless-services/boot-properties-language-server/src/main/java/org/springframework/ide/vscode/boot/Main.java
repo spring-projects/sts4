@@ -12,14 +12,7 @@ package org.springframework.ide.vscode.boot;
 
 import java.io.IOException;
 
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Starts up Language Server process
@@ -31,14 +24,8 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class Main {
 		
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("boot-properties", () -> {
-			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder);
-			TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())));
-			SimpleLanguageServer server = new BootPropertiesLanguageServer(indexProvider, typeUtilProvider, javaProjectFinder);
-			indexProvider.setProgressService(server.getProgressService());
-			return server;
-		});
+		LaunguageServerApp.start("boot-properties",
+				() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createDefault()));
 	}
 
 }
