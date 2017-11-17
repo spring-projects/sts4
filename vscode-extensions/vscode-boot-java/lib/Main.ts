@@ -10,7 +10,7 @@ import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo } from 'vscode-languageclient';
-import { TextDocument } from 'vscode';
+import { workspace, TextDocument } from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 
 import * as commons from 'commons-vscode';
@@ -38,7 +38,10 @@ export function activate(context: VSCode.ExtensionContext) {
             documentSelector: ['java'],
             synchronize: {
                 configurationSection: 'boot-java'
-            }
+            },
+            initializationOptions: {
+                workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null
+            },
         }
     };
     commons.activate(options, context);

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -159,9 +158,9 @@ public class SimpleWorkspaceService implements WorkspaceService, WorkspaceFolder
 		return ImmutableList.copyOf(workspaceRoots);
 	}
 
-	public synchronized void setRoot(Path path) {
+	public synchronized void setWorkspaceFolders(List<WorkspaceFolder> workspaceFolders) {
 		workspaceRoots = new HashSet<>();
-		workspaceRoots.add(new WorkspaceFolder(path.toUri().toString(), path.getFileName().toString()));
+		workspaceRoots.addAll(workspaceFolders);
 	}
 
 

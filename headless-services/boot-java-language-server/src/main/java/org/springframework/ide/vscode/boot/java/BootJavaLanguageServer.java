@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
@@ -59,14 +58,13 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
+import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -186,6 +184,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	@Override
 	public void initialized() {
+		Registration registration = new Registration(WorkspaceFoldersProposedService.CAPABILITY_ID, WorkspaceFoldersProposedService.CAPABILITY_NAME, null);
+		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
+		getClient().registerCapability(registrationParams);
+
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)

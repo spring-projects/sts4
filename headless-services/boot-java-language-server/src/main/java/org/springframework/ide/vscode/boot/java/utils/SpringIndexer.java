@@ -103,14 +103,15 @@ public class SpringIndexer {
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
+
+		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
+			System.err.println("Workspace roots have changed!");
+			refresh();
+		});
 	}
 
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
 		synchronized(this) {
-			server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
-				System.err.println("Workspace roots have changed!");
-				refresh();
-			});
 			if (this.initializeTask == null) {
 				initializing.set(true);
 				if (server.getProjectObserver() != null) {
