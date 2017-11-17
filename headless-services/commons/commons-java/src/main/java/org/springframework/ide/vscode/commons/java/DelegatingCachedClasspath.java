@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +30,6 @@ import org.json.JSONTokener;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
@@ -93,20 +93,17 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	}
 	
 	private AtomicReference<ClasspathData> cachedData;
-	private Supplier<T> delegateCreator;
+	private Callable<T> delegateCreator;
 	private AtomicReference<T> cachedDelegate;
 	
 	final private File cacheFile;
 	
-	public DelegatingCachedClasspath(Supplier<T> delegateCreator, File cacheFile) {
+	public DelegatingCachedClasspath(Callable<T> delegateCreator, File cacheFile) {
 		super();
 		this.cacheFile = cacheFile;
-		this.cachedDelegate = new AtomicReference<>(delegateCreator.get());
+		this.cachedDelegate = new AtomicReference<>(null);
 		this.cachedData = new AtomicReference<>(init());
 		this.delegateCreator = delegateCreator;
-		if (!isCached()) {
-			update();
-		}
 	}
 	
 	public T delegate() {
@@ -197,34 +194,43 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 		}
 	}
 	
-	public boolean update() {
-		final ClasspathData newData = createClasspathData();
-		if (!Objects.equal(cachedData.get(), newData)) {
-			cachedData.set(newData);
-			persistCachedData(newData);
-			return true;
+	public boolean update() throws Exception {
+		try {
+			final ClasspathData newData = createClasspathData();
+			if (!Objects.equal(cachedData.get(), newData)) {
+				cachedData.set(newData);
+				persistCachedData(newData);
+				return true;
+			}
+			return false;
+		} catch (Exception e) {
+			cachedData.set(new ClasspathData(null, Collections.emptySet(), Collections.emptySet(), null));
+			throw e;
 		}
-		return false;
 	}
 	
 	@Override
 	public boolean exists() {
-		return cachedDelegate.get().exists();
+		T t = cachedDelegate.get();
+		return t != null && t.exists();
 	}
 
 	@Override
 	public IType findType(String fqName) {
-		return cachedDelegate.get().findType(fqName);
+		T t = cachedDelegate.get();
+		return t == null ? null : t.findType(fqName);
 	}
 
 	@Override
 	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
-		return cachedDelegate.get().fuzzySearchTypes(searchTerm, typeFilter);
+		T t = cachedDelegate.get();
+		return t == null ? Flux.empty() : t.fuzzySearchTypes(searchTerm, typeFilter);
 	}
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		return cachedDelegate.get().fuzzySearchPackages(searchTerm);
+		T t = cachedDelegate.get();
+		return t == null ? Flux.empty() : t.fuzzySearchPackages(searchTerm);
 	}
 
 	@Override
@@ -232,16 +238,12 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 		return cachedDelegate.get().allSubtypesOf(type);
 	}
 
-	protected ClasspathData createClasspathData() {
-		T newDelegate = delegateCreator.get();
+	protected ClasspathData createClasspathData() throws Exception {
+		T newDelegate = delegateCreator.call();
 		cachedDelegate.set(newDelegate);
-		try {
-			LinkedHashSet<Path> classpathEntries = new LinkedHashSet<>(newDelegate.getClasspathEntries());
-			return new ClasspathData(newDelegate.getName(), classpathEntries, new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
-		} catch (Exception e) {
-			Log.log(e);
-			return new ClasspathData(newDelegate.getName(), Collections.emptySet(), new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
-		}
+		LinkedHashSet<Path> classpathEntries = new LinkedHashSet<>(newDelegate.getClasspathEntries());
+		return new ClasspathData(newDelegate.getName(), classpathEntries,
+				new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
 	}
 	
 }

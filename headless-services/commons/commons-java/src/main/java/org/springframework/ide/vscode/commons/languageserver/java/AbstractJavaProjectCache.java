@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.ListenerList;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -30,14 +31,14 @@ import com.google.common.cache.CacheBuilder;
  */
 public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implements JavaProjectCache<K, P> {
 	
-	private FileObserver fileObserver;
+	protected Sts4LanguageServer server;
 
 	private ListenerList<Listener> listeners = new ListenerList<>();
 
 	protected Cache<K, P> cache = CacheBuilder.newBuilder().build();
 	
-	public AbstractJavaProjectCache(FileObserver fileObserver) {
-		this.fileObserver = fileObserver;
+	public AbstractJavaProjectCache(Sts4LanguageServer server) {
+		this.server = server;
 	}
 
 	@Override
@@ -90,6 +91,6 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 	}
 
 	final protected FileObserver getFileObserver() {
-		return fileObserver;
+		return server.getWorkspaceService().getFileObserver();
 	}
 }

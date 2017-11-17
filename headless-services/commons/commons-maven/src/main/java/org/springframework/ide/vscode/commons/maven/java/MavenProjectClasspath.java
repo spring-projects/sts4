@@ -35,8 +35,7 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -49,13 +48,13 @@ public class MavenProjectClasspath extends JandexClasspath {
 	
 	private MavenCore maven;
 	private File pom;
-	private Supplier<MavenProject> projectSupplier;
+	private MavenProject project;
 	
-	MavenProjectClasspath(MavenCore maven, File pom) {
+	MavenProjectClasspath(MavenCore maven, File pom) throws MavenException {
 		super();
 		this.maven = maven;
 		this.pom = pom;
-		this.projectSupplier = Suppliers.memoize(() -> createMavenProject());
+		this.project = createMavenProject();
 	}
 	
 	@Override
@@ -63,19 +62,13 @@ public class MavenProjectClasspath extends JandexClasspath {
 		return new JandexIndex[] { maven.getJavaIndexForJreLibs() };
 	}
 
-	private final MavenProject createMavenProject() {
+	private final MavenProject createMavenProject() throws MavenException {
 		try {
 			// Read with resolved dependencies
 			return maven.readProject(pom, true);
 		} catch (MavenException e) {
 			Log.log(e);
-			try {
-				// Try without resolving dependencies - just read the XML
-				return maven.readProject(pom, false);
-			} catch (MavenException e1) {
-				Log.log(e);
-				return null;
-			}
+			return maven.readProject(pom, false);
 		}
 	}
 	
@@ -92,7 +85,6 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	public String getName() {
-		MavenProject project = projectSupplier.get();
 		return project == null ? null : project.getName();
 	}
 
@@ -107,12 +99,10 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	private Set<Artifact> projectDependencies() {
-		MavenProject project = projectSupplier.get();
 		return project == null ? Collections.emptySet() : project.getArtifacts();
 	}
 	
 	private List<File> projectOutput() {
-		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return Collections.emptyList();
 		} else {
@@ -121,18 +111,15 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	public Path getOutputFolder() {
-		MavenProject project = projectSupplier.get();
 		return project == null ? null : new File(project.getBuild().getOutputDirectory()).toPath();
 	}
 	
 	private Optional<Artifact> getArtifactFromJarFile(File file) throws MavenException {
-		MavenProject project = projectSupplier.get();
 		return project.getArtifacts().stream().filter(a -> file.equals(a.getFile())).findFirst();
 	}
 	
 	@Override
 	public ImmutableList<String> getClasspathResources() {
-		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return ImmutableList.of();
 		}
@@ -188,7 +175,6 @@ public class MavenProjectClasspath extends JandexClasspath {
 //	}
 
 	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
-		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return null;
 		}
@@ -225,7 +211,6 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
-		MavenProject project = projectSupplier.get();
 		if (project == null) {
 			return null;
 		}
@@ -267,7 +252,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 			MavenProjectClasspath other = (MavenProjectClasspath) obj;
 			try {
 				if (pom.equals(other.pom)
-						&& projectSupplier.get().equals(other.projectSupplier.get())) {
+						&& Objects.equal(project, other.project)) {
 					return super.equals(obj);
 				}
 			} catch (Throwable t) {

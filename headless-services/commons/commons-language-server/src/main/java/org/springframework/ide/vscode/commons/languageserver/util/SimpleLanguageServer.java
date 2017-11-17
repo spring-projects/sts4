@@ -38,10 +38,11 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
-import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
@@ -75,7 +76,7 @@ import reactor.core.scheduler.Schedulers;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public abstract class SimpleLanguageServer implements LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService {
+public abstract class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService {
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
@@ -95,6 +96,8 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 			client.progress(new ProgressParams(taskId, statusMsg));
 		}
 	};
+
+	private DiagnosticService diagnosticService = message -> onError(null, message);
 
 	private CompletableFuture<Void> busyReconcile = CompletableFuture.completedFuture(null);
 
@@ -514,6 +517,7 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 		return client;
 	}
 
+	@Override
 	public ProgressService getProgressService() {
 		return progressService;
 	}
@@ -530,6 +534,12 @@ public abstract class SimpleLanguageServer implements LanguageServer, LanguageCl
 	@Override
 	public void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
 		getWorkspaceService().didChangeWorkspaceFolders(params);
+	}
+
+
+	@Override
+	public DiagnosticService getDiagnosticService() {
+		return diagnosticService;
 	}
 
 }

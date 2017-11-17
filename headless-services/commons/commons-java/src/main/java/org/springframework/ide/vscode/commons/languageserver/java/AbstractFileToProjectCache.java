@@ -15,9 +15,11 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.FileObserver;
+import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 
 /**
  * Cache for java projects. The key for the cache is a "project" specific file
@@ -32,24 +34,26 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	private String deleteSubscription;
 	protected boolean asyncUpdate;
 	protected final Path projectCacheFolder;
-	private boolean alwaysFireEventOnFileChanged;
+	private boolean alwaysFireEventOnUpdate;
 
-	public AbstractFileToProjectCache(FileObserver fileObserver, boolean asyncUpdate, Path projectCacheFolder) {
-		super(fileObserver);
+	private static AtomicInteger progressIdCt = new AtomicInteger(0);
+
+	public AbstractFileToProjectCache(Sts4LanguageServer server, boolean asyncUpdate, Path projectCacheFolder) {
+		super(server);
 		this.projectCacheFolder = projectCacheFolder;
 		this.asyncUpdate = asyncUpdate;
 	}
 	
 	
-	final public void setAlwaysFireEventOnFileChanged(boolean alwaysFireEventOnFileChanged) {
-		this.alwaysFireEventOnFileChanged = alwaysFireEventOnFileChanged;
+	final public void setAlwaysFireEventOnFileChanged(boolean alwaysFireEventOnUpdate) {
+		this.alwaysFireEventOnUpdate = alwaysFireEventOnUpdate;
 	}
 
 	@Override
 	protected void attachListeners(File file, P project) {
 		super.attachListeners(file, project);
 		List<String> globPattern = Arrays.asList(file.toString());
-		changeSubscription = getFileObserver().onFileChanged(globPattern, (uri) -> performUpdate(project, asyncUpdate));
+		changeSubscription = getFileObserver().onFileChanged(globPattern, (uri) -> performUpdate(project, asyncUpdate, true));
 		deleteSubscription = getFileObserver().onFileDeleted(globPattern, (uri) -> {
 			cache.invalidate(file);
 			notifyProjectDeleted(project);
@@ -58,19 +62,36 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 		});
 	}
 	
-	final protected void performUpdate(P project, boolean async) {
+	final protected void performUpdate(P project, boolean async, boolean notify) {
+		final String taskId = getProgressId();
+		final ProgressService progressService = server.getProgressService();
+		if (progressService != null) {
+			progressService.progressEvent(taskId, "Updating data for project `" + project.getElementName() + "'");
+		}
 		if (async) {
-			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> {
-				if (changed || alwaysFireEventOnFileChanged) {
-					notifyProjectChanged(project);
-				}
-			});
+			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> afterUpdate(project, changed, notify, taskId));
 		} else {
-			if (update(project) || alwaysFireEventOnFileChanged) {
+			boolean changed = update(project);
+			afterUpdate(project, changed, notify, taskId);
+		}
+	}
+	
+	private void afterUpdate(P project, boolean changed, boolean notify, String taskId) {
+		final ProgressService progressService = server.getProgressService();
+		if (progressService != null) {
+			progressService.progressEvent(taskId, null);
+		}
+		if (changed || alwaysFireEventOnUpdate) {
+			if (notify) {
 				notifyProjectChanged(project);
 			}
 		}
 	}
+	
+	private static String getProgressId() {
+		return AbstractFileToProjectCache.class.getName()+ (progressIdCt.incrementAndGet());
+	}
+
 	
 	abstract protected boolean update(P project);
 	

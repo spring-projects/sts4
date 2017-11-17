@@ -32,8 +32,6 @@ import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.util.Log;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -48,27 +46,13 @@ public class GradleProjectClasspath extends JandexClasspath {
 	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
 	private static final String JAVA_BOOT_CLASS_PATH = "sun.boot.class.path";
 	
-	private Supplier<EclipseProject> gradleProject;
-	private Supplier<BuildEnvironment> buildEnvironment;
+	private EclipseProject project;
+	private BuildEnvironment buildEnvironment;
 	
-	public GradleProjectClasspath(GradleCore gradle, File projectDir) {
+	public GradleProjectClasspath(GradleCore gradle, File projectDir) throws GradleException {
 		super();
-		this.gradleProject = Suppliers.memoize(() -> {
-			try {
-				return gradle.getModel(projectDir, EclipseProject.class);
-			} catch (GradleException e) {
-				Log.log(e);
-				return null;
-			}
-		});
-		this.buildEnvironment = Suppliers.memoize(() -> {
-			try {
-				return gradle.getModel(projectDir, BuildEnvironment.class);
-			} catch (GradleException e) {
-				Log.log(e);
-				return null;
-			}
-		});
+		this.project = gradle.getModel(projectDir, EclipseProject.class);
+		this.buildEnvironment = gradle.getModel(projectDir, BuildEnvironment.class);
 	}
 
 	@Override
@@ -92,7 +76,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 	}
 	
 	public EclipseProject getRootProject() {
-		EclipseProject root = this.gradleProject.get();
+		EclipseProject root = project;
 		if (root == null) {
 			return root;
 		}
@@ -105,7 +89,6 @@ public class GradleProjectClasspath extends JandexClasspath {
 	@Override
 	public ImmutableList<Path> getClasspathEntries() throws Exception {
 		EclipseProject root = getRootProject();
-		EclipseProject project = gradleProject.get();
 		if (project == null) {
 			return ImmutableList.of();
 		} else {
@@ -126,7 +109,6 @@ public class GradleProjectClasspath extends JandexClasspath {
 	
 	@Override
 	public ImmutableList<String> getClasspathResources() {
-		EclipseProject project = gradleProject.get();
 		if (project == null) {
 			return ImmutableList.of();
 		} else {
@@ -145,22 +127,19 @@ public class GradleProjectClasspath extends JandexClasspath {
 	}
 
 	public Path getOutputFolder() {
-		EclipseProject project = gradleProject.get();
 		return project == null ? null : project.getProjectDirectory().toPath().resolve(project.getOutputLocation().getPath());
 	}
 
 	public String getName() {
-		EclipseProject project = gradleProject.get();
 		return project == null ? null : project.getName();
 	}
 
 	public boolean exists() {
-		return gradleProject != null;
+		return project != null;
 	}
 
 	@Override
 	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
-		EclipseProject project = gradleProject.get();
 		if (project != null) {
 			if (classpathResource.isDirectory()) {
 				Optional<File> classpathFolder = project.getSourceDirectories().stream()
@@ -187,18 +166,18 @@ public class GradleProjectClasspath extends JandexClasspath {
 	}
 	
 	public String getGradleVersion()  throws GradleException {
-		if (buildEnvironment.get() == null) {
+		if (buildEnvironment == null) {
 			throw new GradleException(new Exception("Cannot find Gradle version"));
 		} else {
-			return buildEnvironment.get().getGradle().getGradleVersion();
+			return buildEnvironment.getGradle().getGradleVersion();
 		}
 	}
 	
 	public File getGradleHome() throws GradleException {
-		if (buildEnvironment.get() == null) {
+		if (buildEnvironment == null) {
 			throw new GradleException(new Exception("Cannot find Gradle home folder"));
 		} else {
-			return buildEnvironment.get().getGradle().getGradleUserHome();
+			return buildEnvironment.getGradle().getGradleUserHome();
 		}
 	}
 	
@@ -218,10 +197,10 @@ public class GradleProjectClasspath extends JandexClasspath {
 	}
 	
 	private String getJavaHome() {
-		if (buildEnvironment.get() == null) {
+		if (buildEnvironment == null) {
 			return System.getProperty(JAVA_HOME);
 		} else {
-			return buildEnvironment.get().getJava().getJavaHome().toString();
+			return buildEnvironment.getJava().getJavaHome().toString();
 		}
 	}
 	

@@ -15,6 +15,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,9 +28,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.util.Files;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +45,18 @@ import com.google.common.collect.ImmutableList;
  *
  */
 public class GradleProjectTest {
+	
+	private Sts4LanguageServer server;
+	private BasicFileObserver fileObserver;
+	
+	@Before
+	public void setup() throws Exception {
+		fileObserver = new BasicFileObserver();
+		server = mock(Sts4LanguageServer.class);
+		SimpleWorkspaceService workspaceService = mock(SimpleWorkspaceService.class);
+		when(workspaceService.getFileObserver()).thenReturn(fileObserver);
+		when(server.getWorkspaceService()).thenReturn(workspaceService);
+	}
 	
 	private static void writeContent(File file, String content) throws IOException {
 		FileWriter writer = null;
@@ -53,9 +70,7 @@ public class GradleProjectTest {
 	
 	private GradleJavaProject getGradleProject(String projectName) throws Exception {
 		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/" + projectName).toURI());
-		GradleJavaProject gradleJavaProject = new GradleJavaProject(GradleCore.getDefault(), testProjectPath.toFile(), null);
-		gradleJavaProject.update();
-		return gradleJavaProject;
+		return new GradleJavaProject(GradleCore.getDefault(), testProjectPath.toFile());
 	}
 
 	@Test
@@ -86,15 +101,9 @@ public class GradleProjectTest {
 		String gradelFileContents = Files.contentOf(gradleFile, Charset.defaultCharset());
 		
 		try {
-			BasicFileObserver fileObserver = new BasicFileObserver();
-			GradleProjectCache manager = new GradleProjectCache(fileObserver, GradleCore.getDefault(), false, null);
+			GradleProjectCache manager = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
 			IJavaProject[] projectChanged = new IJavaProject[] { null };
 			IJavaProject[] projectDeleted = new IJavaProject[] { null };
-			
-			// Get the project from cache
-			GradleJavaProject cachedProject = manager.project(gradleFile);
-			assertNotNull(cachedProject);
-			
 			manager.addListener(new Listener() {
 				@Override
 				public void created(IJavaProject project) {}
@@ -108,6 +117,10 @@ public class GradleProjectTest {
 					projectDeleted[0] = project;
 				}
 			});
+			
+			// Get the project from cache
+			GradleJavaProject cachedProject = manager.project(gradleFile);
+			assertNotNull(cachedProject);
 			
 			ImmutableList<Path> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
 			assertEquals(48, calculatedClassPath.size());
@@ -132,7 +145,7 @@ public class GradleProjectTest {
 
 	@Test
 	public void findGradleProjectWithStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(new BasicFileObserver(), GradleCore.getDefault(), false, null));
+		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(server, GradleCore.getDefault(), false, null));
 		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-1/src/main/java/Library.java").toURI());
 		Optional<IJavaProject> project = finder.find(sourceFile);
 		assertTrue(project.isPresent());
@@ -143,7 +156,7 @@ public class GradleProjectTest {
 
 	@Test
 	public void findGradleProjectWithNonStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(new BasicFileObserver(), GradleCore.getDefault(), false, null));
+		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(server, GradleCore.getDefault(), false, null));
 		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-2/src/main/java/Library.java").toURI());
 		Optional<IJavaProject> project = finder.find(sourceFile);
 		assertTrue(project.isPresent());

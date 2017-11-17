@@ -13,8 +13,11 @@ package org.springframework.ide.vscode.commons.gradle;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
-import org.springframework.ide.vscode.commons.util.FileObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 
 /**
  * Tests whether document belongs to a Gradle project
@@ -26,24 +29,29 @@ public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaPro
 
 	private GradleCore gradle;
 	
-	public GradleProjectCache(FileObserver fileObserver, GradleCore gradle, boolean asyncUpdate, Path projectCacheFolder) {
-		super(fileObserver, asyncUpdate, projectCacheFolder);
+	public GradleProjectCache(Sts4LanguageServer server, GradleCore gradle, boolean asyncUpdate, Path projectCacheFolder) {
+		super(server, asyncUpdate, projectCacheFolder);
 		this.gradle = gradle;
 	}
 	
 	@Override
 	protected boolean update(GradleJavaProject project) {
-		return project.update();
+		try {
+			return project.update();
+		} catch (Exception e) {
+			server.getDiagnosticService().diagnosticEvent(new ShowMessageException(
+					new MessageParams(MessageType.Error, "Cannot load Gradle project model from folder: " + project.getLocation()), e));
+			return false;
+		}
 	}
 
 	@Override
 	protected GradleJavaProject createProject(File gradleBuild) throws Exception {
 		File gradleFile = gradleBuild.getParentFile();
 		GradleJavaProject gradleJavaProject = new GradleJavaProject(gradle, gradleFile,
-				projectCacheFolder == null ? null : gradleFile.toPath().resolve(projectCacheFolder));
-		if (gradleJavaProject.getClasspath().isCached()) {
-			performUpdate(gradleJavaProject, asyncUpdate);
-		}
+				projectCacheFolder == null ? null : gradleFile.toPath().resolve(projectCacheFolder)
+			);
+		performUpdate(gradleJavaProject, asyncUpdate, asyncUpdate);
 		return gradleJavaProject;
 	}
 
