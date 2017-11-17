@@ -271,7 +271,6 @@ public class SpringIndexer {
 	}
 
 	private void scanProject(IJavaProject project, String[] files) {
-		System.err.println("scan project: "+project);
 		try {
 			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			String[] classpathEntries = getClasspathEntries(project);
