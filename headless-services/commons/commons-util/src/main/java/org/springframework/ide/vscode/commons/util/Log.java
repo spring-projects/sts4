@@ -11,6 +11,9 @@
 
 package org.springframework.ide.vscode.commons.util;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,17 @@ public class Log {
 
 	public static void warn(String msg, Throwable e) {
 		logger.warn(msg, e);
+	}
+
+	public static void redirectToFile(String name) throws IOException {
+		File logfile = null;
+		if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
+			logfile = File.createTempFile(name, ".log");
+			System.setProperty("org.slf4j.simpleLogger.logFile", logfile.toString());
+		} else {
+			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
+		}
+		System.err.println("Redirecting log output to: "+logfile);
 	}
 
 }

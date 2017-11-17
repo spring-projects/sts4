@@ -11,7 +11,6 @@
 
 package org.springframework.ide.vscode.commons.languageserver;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -63,14 +62,6 @@ public abstract class LaunguageServerApp {
 
 	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
 		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
-		File logfile = null;
-		if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
-			logfile = File.createTempFile(name, ".log");
-			System.setProperty("org.slf4j.simpleLogger.logFile", logfile.toString());
-		} else {
-			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
-		}
-		System.err.println("Redirecting log output to: "+logfile);
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override
 			protected SimpleLanguageServer createServer() {

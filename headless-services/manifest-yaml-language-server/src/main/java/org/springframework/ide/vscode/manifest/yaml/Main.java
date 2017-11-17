@@ -10,17 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Log;
 
 public class Main {
 	SimpleLanguageServer server = new ManifestYamlLanguageServer();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("manifest-yaml-language-server", ManifestYamlLanguageServer::new);
+		String serverName = "manifest-yaml-language-server";
+		Log.redirectToFile(serverName);
+		LaunguageServerApp.start(serverName, ManifestYamlLanguageServer::new);
 	}
 
 }

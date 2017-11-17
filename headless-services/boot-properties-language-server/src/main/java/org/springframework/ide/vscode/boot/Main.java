@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Starts up Language Server process
@@ -24,7 +25,9 @@ import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 public class Main {
 		
 	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("boot-properties-language-server",
+		String serverName = "boot-properties-language-server";
+		Log.redirectToFile(serverName);
+		LaunguageServerApp.start(serverName,
 				() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createDefault()));
 	}
 

@@ -14,12 +14,15 @@ package org.springframework.ide.vscode.concourse;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 
 public class Main {
 	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.DEFAULT;
 
    	public static void main(String[] args) throws IOException, InterruptedException {
-		LaunguageServerApp.start("concourse-language-server", () -> new ConcourseLanguageServer(OPTIONS));
+   		String serverName = "concourse-language-server";
+   		Log.redirectToFile(serverName);
+		LaunguageServerApp.start(serverName, () -> new ConcourseLanguageServer(OPTIONS));
 	}
 }
