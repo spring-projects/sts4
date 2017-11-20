@@ -32,6 +32,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,8 +85,8 @@ public class MavenProjectCacheTest {
 
 		Path cacheFolerPath = testProjectPath.resolve(IJavaProject.PROJECT_CACHE_FOLDER);
 		if (cacheFolerPath.toFile().exists()) {
-			Files.walk(cacheFolerPath, FileVisitOption.FOLLOW_LINKS).map(Path::toFile).forEach(File::delete);
-			Files.delete(cacheFolerPath);
+			Files.walk(cacheFolerPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile)
+					.forEach(File::delete);
 		}
 	}
 
@@ -252,5 +253,7 @@ public class MavenProjectCacheTest {
 		}).get(10, TimeUnit.SECONDS);
 		progressDone.set(false);
 		verify(diagnosticService, times(1)).diagnosticEvent(any(ShowMessageException.class));
+		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
+		assertFalse(cacheFolder.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile().exists());
 	}
 }
