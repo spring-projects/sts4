@@ -15,6 +15,7 @@ import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Implementation of Gradle Java project
@@ -36,6 +37,26 @@ public class GradleJavaProject extends AbstractJavaProject {
 			);
 	}
 	
+	public GradleJavaProject(GradleCore gradle, File projectDir) {
+		this(gradle, projectDir, null);
+		if (!classpath.isCached()) {
+			try {
+				classpath.update();
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		}
+	}
+	
+	@Override
+	public String getElementName() {
+		if (classpath.getName() == null) {
+			return projectDir.getName();
+		} else {
+			return super.getElementName();
+		}
+	}
+
 	public File getLocation() {
 		return projectDir;
 	}
@@ -45,7 +66,7 @@ public class GradleJavaProject extends AbstractJavaProject {
 		return classpath;
 	}
 	
-	boolean update() {
+	boolean update() throws Exception {
 		return classpath.update();
 	}
 	

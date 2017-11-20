@@ -12,13 +12,13 @@ package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
 
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 public class JavaProjectWithClasspathFileCache extends AbstractFileToProjectCache<JavaProjectWithClasspathFile> {
 
-	public JavaProjectWithClasspathFileCache(FileObserver fileObserver) {
-		super(fileObserver, false, null);
+	public JavaProjectWithClasspathFileCache(Sts4LanguageServer server) {
+		super(server, false, null);
 	}
 
 	@Override

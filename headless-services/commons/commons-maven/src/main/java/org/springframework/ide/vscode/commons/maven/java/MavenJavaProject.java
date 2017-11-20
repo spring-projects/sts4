@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Wrapper for Maven Core project
@@ -26,9 +27,11 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 public class MavenJavaProject extends AbstractJavaProject {
 	
 	private DelegatingCachedClasspath<MavenProjectClasspath> classpath;
+	private File pom;
 	
 	public MavenJavaProject(MavenCore maven, File pom, Path projectDataCache) {
 		super(projectDataCache);
+		this.pom = pom;
 		this.classpath = new DelegatingCachedClasspath<>(
 				() -> new MavenProjectClasspath(maven, pom),
 				projectDataCache == null ? null : projectDataCache.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile()
@@ -37,6 +40,22 @@ public class MavenJavaProject extends AbstractJavaProject {
 	
 	public MavenJavaProject(MavenCore maven, File pom) {
 		this(maven, pom, null);
+		if (!classpath.isCached()) {
+			try {
+				classpath.update();
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		}
+	}
+	
+	@Override
+	public String getElementName() {
+		if (classpath.getName() == null) {
+			return pom.getParentFile().getName();
+		} else {
+			return super.getElementName();
+		}
 	}
 	
 	@Override
@@ -44,8 +63,12 @@ public class MavenJavaProject extends AbstractJavaProject {
 		return classpath;
 	}
 	
-	boolean update() {
+	boolean update() throws Exception {
 		return classpath.update();
+	}
+	
+	public File pom() {
+		return pom;
 	}
 	
 	@Override

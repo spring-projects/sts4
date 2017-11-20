@@ -184,9 +184,8 @@ public class SpringIndexer {
 			if (server.getProjectObserver() != null) {
 				server.getProjectObserver().removeListener(projectListener);
 			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Log.log(e);
 		}
 	}
 
@@ -224,7 +223,7 @@ public class SpringIndexer {
 					return this.symbols;
 				}
 			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
+				// ignore
 			}
 		}
 		return null;

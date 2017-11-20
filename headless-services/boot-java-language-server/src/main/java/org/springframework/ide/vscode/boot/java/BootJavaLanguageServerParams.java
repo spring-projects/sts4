@@ -32,7 +32,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 public class BootJavaLanguageServerParams {
 
@@ -60,12 +59,11 @@ public class BootJavaLanguageServerParams {
 	public static LSFactory<BootJavaLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
-			FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(fileObserver, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(fileObserver, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
 			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
@@ -83,13 +81,12 @@ public class BootJavaLanguageServerParams {
 	public static LSFactory<BootJavaLanguageServerParams> createTestDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
-			FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(fileObserver, MavenCore.getDefault(), false, null);
+			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null);
 			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(fileObserver, GradleCore.getDefault(), false, null);
+			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
 			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 

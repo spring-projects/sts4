@@ -13,9 +13,12 @@ package org.springframework.ide.vscode.commons.maven.java;
 import java.io.File;
 import java.nio.file.Path;
 
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
+import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
  * Cache for Maven projects
@@ -26,23 +29,28 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 
 	private MavenCore maven;
 	
-	public MavenProjectCache(FileObserver fileObserver, MavenCore maven, boolean asyncUpdate, Path projectCacheFolder) {
-		super(fileObserver, asyncUpdate, projectCacheFolder);
+	public MavenProjectCache(Sts4LanguageServer server, MavenCore maven, boolean asyncUpdate, Path projectCacheFolder) {
+		super(server, asyncUpdate, projectCacheFolder);
 		this.maven = maven;
 	}
 
 	@Override
 	protected boolean update(MavenJavaProject project) {
-		return project.update();
+		try {
+			return project.update();
+		} catch (Exception e) {
+			server.getDiagnosticService().diagnosticEvent(new ShowMessageException(
+					new MessageParams(MessageType.Error, "Cannot load Maven project model from Pom file: " + project.pom()), e));
+			return false;
+		}
 	}
 
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
 		MavenJavaProject mavenJavaProject = new MavenJavaProject(maven, pomFile,
-				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder));
-		if (mavenJavaProject.getClasspath().isCached()) {
-			performUpdate(mavenJavaProject, asyncUpdate);
-		}
+				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)
+			);
+		performUpdate(mavenJavaProject, asyncUpdate, asyncUpdate);
 		return mavenJavaProject;
 	}
 
