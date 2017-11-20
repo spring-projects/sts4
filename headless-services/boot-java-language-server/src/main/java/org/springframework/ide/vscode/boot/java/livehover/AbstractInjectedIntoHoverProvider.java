@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.livehover;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

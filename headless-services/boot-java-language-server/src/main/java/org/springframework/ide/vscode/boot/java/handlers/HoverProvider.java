@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;

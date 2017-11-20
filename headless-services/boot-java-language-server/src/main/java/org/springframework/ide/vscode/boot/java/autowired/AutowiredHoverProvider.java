@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.autowired;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
