@@ -36,16 +36,6 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class AnnotationHierarchies {
 
-	/**
-	 * Note: this cacehe is not just for efficiency! Without it, we also get into trouble accessing the
-	 * AST on multiple threads. AST's coming from CompilationUnit cache should not be accessed on multiple
-	 * threads.
-	 */
-	private static Cache<ITypeBinding, Collection<ITypeBinding>> supertypes = CacheBuilder.newBuilder()
-			.weakKeys()
-			.expireAfterWrite(30, TimeUnit.SECONDS)
-			.build();
-
 	private AnnotationHierarchies() {
 	}
 
@@ -55,27 +45,20 @@ public abstract class AnnotationHierarchies {
 	};
 
 	public static Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
-		try {
-			return supertypes.get(typeBinding, () -> {
-				IAnnotationBinding[] annotations = typeBinding.getAnnotations();
-				if (annotations!=null && annotations.length!=0) {
-					ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
-					for (IAnnotationBinding ab : annotations) {
-						ITypeBinding sa = ab.getAnnotationType();
-						if (sa!=null) {
-							if (!ignoreAnnotation(sa.getQualifiedName())) {
-								superAnnotations.add(sa);
-							}
-						}
+		IAnnotationBinding[] annotations = typeBinding.getAnnotations();
+		if (annotations!=null && annotations.length!=0) {
+			ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
+			for (IAnnotationBinding ab : annotations) {
+				ITypeBinding sa = ab.getAnnotationType();
+				if (sa!=null) {
+					if (!ignoreAnnotation(sa.getQualifiedName())) {
+						superAnnotations.add(sa);
 					}
-					return superAnnotations.build();
 				}
-				return ImmutableList.of();
-			});
-		} catch (ExecutionException e) {
-			Log.log(e);
-			return ImmutableList.of();
+			}
+			return superAnnotations.build();
 		}
+		return ImmutableList.of();
 	}
 
 	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {

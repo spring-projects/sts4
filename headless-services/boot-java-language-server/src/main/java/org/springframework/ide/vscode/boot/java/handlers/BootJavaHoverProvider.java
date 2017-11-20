@@ -83,51 +83,50 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	public Range[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
-		List<Range> result = new ArrayList<>();
+		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+			List<Range> result = new ArrayList<>();
+			try {
+				if (cu != null) {
+					cu.accept(new ASTVisitor() {
+						@Override
+						public boolean visit(SingleMemberAnnotation node) {
+							try {
+								extractLiveHints(node, document, runningBootApps, result);
+							} catch (Exception e) {
+								Log.log(e);
+							}
 
-		try {
-			CompilationUnit cu = server.getCompilationUnitCache().getCompilationUnit(document);
-			if (cu != null) {
-				cu.accept(new ASTVisitor() {
-					@Override
-					public boolean visit(SingleMemberAnnotation node) {
-						try {
-							extractLiveHints(node, document, runningBootApps, result);
-						} catch (Exception e) {
-							Log.log(e);
+							return super.visit(node);
 						}
 
-						return super.visit(node);
-					}
+						@Override
+						public boolean visit(NormalAnnotation node) {
+							try {
+								extractLiveHints(node, document, runningBootApps, result);
+							} catch (Exception e) {
+								Log.log(e);
+							}
 
-					@Override
-					public boolean visit(NormalAnnotation node) {
-						try {
-							extractLiveHints(node, document, runningBootApps, result);
-						} catch (Exception e) {
-							Log.log(e);
+							return super.visit(node);
 						}
 
-						return super.visit(node);
-					}
+						@Override
+						public boolean visit(MarkerAnnotation node) {
+							try {
+								extractLiveHints(node, document, runningBootApps, result);
+							} catch (Exception e) {
+								Log.log(e);
+							}
 
-					@Override
-					public boolean visit(MarkerAnnotation node) {
-						try {
-							extractLiveHints(node, document, runningBootApps, result);
-						} catch (Exception e) {
-							Log.log(e);
+							return super.visit(node);
 						}
-
-						return super.visit(node);
-					}
-				});
+					});
+				}
+			} catch (Exception e) {
+				Log.log(e);
 			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-
-		return result.toArray(new Range[result.size()]);
+			return result.toArray(new Range[result.size()]);
+		});
 	}
 
 	protected void extractLiveHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, List<Range> result) {
@@ -158,11 +157,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private Hover provideHover(TextDocument document, int offset) throws Exception {
 		IJavaProject project = getProject(document).orElse(null);
 		if (project!=null) {
-			CompilationUnit cu = server.getCompilationUnitCache().getCompilationUnit(document);
-			ASTNode node = NodeFinder.perform(cu, offset, 0);
-			if (node != null) {
-				return provideHoverForAnnotation(node, offset, document, project);
-			}
+			return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+				ASTNode node = NodeFinder.perform(cu, offset, 0);
+				if (node != null) {
+					return provideHoverForAnnotation(node, offset, document, project);
+				}
+				return null;
+			});
 		}
 		return null;
 	}

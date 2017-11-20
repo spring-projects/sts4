@@ -55,11 +55,15 @@ public class CompilationUnitCacheTest {
 				"public class SomeClass {\n" +
 				"\n" +
 				"}\n");
-		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cu = getCompilationUnit(doc);
 		assertNotNull(cu);
 
-		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cuAnother = getCompilationUnit(doc);
 		assertTrue(cu == cuAnother);
+	}
+
+	private CompilationUnit getCompilationUnit(TextDocument doc) {
+		return harness.getServer().getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
 	}
 
 	@Test
@@ -73,15 +77,15 @@ public class CompilationUnitCacheTest {
 				"}\n");
 
 		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
-		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cu = getCompilationUnit(doc);
 		assertNotNull(cu);
 
 		harness.changeDocument(doc.getUri(), 0, 0, "     ");
-		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cuAnother = getCompilationUnit(doc);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
 
-		CompilationUnit cuYetAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cuYetAnother = getCompilationUnit(doc);
 		assertTrue(cuAnother == cuYetAnother);
 	}
 
@@ -96,15 +100,15 @@ public class CompilationUnitCacheTest {
 				"}\n");
 
 		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
-		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cu = getCompilationUnit(doc);
 		assertNotNull(cu);
 
 		harness.closeDocument(doc.getId());
-		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cuAnother = getCompilationUnit(doc);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
 
-		CompilationUnit cuYetAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(doc);
+		CompilationUnit cuYetAnother = getCompilationUnit(doc);
 		assertTrue(cuAnother == cuYetAnother);
 	}
 
@@ -122,13 +126,13 @@ public class CompilationUnitCacheTest {
 
 		TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
 
-		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		CompilationUnit cu = getCompilationUnit(document);
 		assertNotNull(cu);
-		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		CompilationUnit cuAnother = getCompilationUnit(document);
 		assertTrue(cu == cuAnother);
 
 		harness.changeFile(directory.toPath().resolve(MavenCore.POM_XML).toUri().toString());
-		cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		cuAnother = getCompilationUnit(document);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
 	}
@@ -147,13 +151,13 @@ public class CompilationUnitCacheTest {
 
 		TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
 
-		CompilationUnit cu = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		CompilationUnit cu = getCompilationUnit(document);
 		assertNotNull(cu);
-		CompilationUnit cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		CompilationUnit cuAnother = getCompilationUnit(document);
 		assertTrue(cu == cuAnother);
 
 		harness.deleteFile(directory.toPath().resolve(MavenCore.POM_XML).toUri().toString());
-		cuAnother = harness.getServer().getCompilationUnitCache().getCompilationUnit(document);
+		cuAnother = getCompilationUnit(document);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
 	}

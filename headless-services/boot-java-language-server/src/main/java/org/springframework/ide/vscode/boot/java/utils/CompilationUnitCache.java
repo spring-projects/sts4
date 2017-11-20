@@ -15,9 +15,11 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.JavaCore;
@@ -30,6 +32,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
@@ -74,14 +77,30 @@ public final class CompilationUnitCache {
 		}
 	}
 
-	public CompilationUnit getCompilationUnit(TextDocument document) throws Exception {
+	/**
+	 * Retrieves a CompiationUnitn AST from the cache and passes it to a requestor callback, applying
+	 * proper thred synchronization around the requestor.
+	 * <p>
+	 * Warning: Callers should take care to do all AST processing inside of the requestor callback and
+	 * not pass of AST nodes to helper functions that work aynchronously or store AST nodes or ITypeBindings
+	 * for later use. The JDT ASTs are not thread safe!
+	 */
+	public <T> T withCompilationUnit(TextDocument document, Function<CompilationUnit, T> requestor) {
 		URI uri = URI.create(document.getUri());
 		readLock.lock();
 		try {
-			return uriToCu.get(uri, () -> parse(document));
+			CompilationUnit cu = uriToCu.get(uri, () -> parse(document));
+			if (cu!=null) {
+				synchronized (cu.getAST()) {
+					return requestor.apply(cu);
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
 		} finally {
 			readLock.unlock();
 		}
+		return requestor.apply(null);
 	}
 
 	private void invalidateCuForJavaFile(String uriStr) {
