@@ -37,7 +37,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class ValueHoverProvider implements HoverProvider {
 
 	@Override
-	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 
 		try {
@@ -67,7 +67,7 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private CompletableFuture<Hover> provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringBootApp[] runningApps) {
+	private Hover provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
 			LocalRange range = getPropertyRange(value, offset);
@@ -104,7 +104,7 @@ public class ValueHoverProvider implements HoverProvider {
 					hover.setContents(hoverContent);
 					hover.setRange(hoverRange);
 
-					return CompletableFuture.completedFuture(hover);
+					return hover;
 				}
 			}
 		}

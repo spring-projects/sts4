@@ -49,7 +49,7 @@ import reactor.util.function.Tuples;
 public class RequestMappingHoverProvider implements HoverProvider {
 
 	@Override
-	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation,
+	public Hover provideHover(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return provideHover(annotation, doc, runningApps);
 	}
@@ -72,7 +72,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	private Hover provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
@@ -89,7 +89,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			hover.setContents(hoverContent);
 			hover.setRange(hoverRange);
 
-			return CompletableFuture.completedFuture(hover);
+			return hover;
 		} catch (Exception e) {
 			Log.log(e);
 		}

@@ -70,9 +70,9 @@ public class BootJavaHoverProvider implements HoverHandler {
 			TextDocument doc = documents.get(params).copy();
 			try {
 				int offset = doc.toOffset(params.getPosition());
-				CompletableFuture<Hover> hoverResult = provideHover(doc, offset);
+				Hover hoverResult = provideHover(doc, offset);
 				if (hoverResult != null) {
-					return hoverResult;
+					return CompletableFuture.completedFuture(hoverResult);
 				}
 			}
 			catch (Exception e) {
@@ -155,7 +155,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 	}
 
-	private CompletableFuture<Hover> provideHover(TextDocument document, int offset) throws Exception {
+	private Hover provideHover(TextDocument document, int offset) throws Exception {
 		IJavaProject project = getProject(document).orElse(null);
 		if (project!=null) {
 			CompilationUnit cu = server.getCompilationUnitCache().getCompilationUnit(document);
@@ -167,7 +167,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private CompletableFuture<Hover> provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc, IJavaProject project) {
+	private Hover provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc, IJavaProject project) {
 		Annotation annotation = null;
 
 		while (node != null && !(node instanceof Annotation)) {
@@ -200,13 +200,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private CompletableFuture<Hover> actuatorWarning(IJavaProject project) {
+	private Hover actuatorWarning(IJavaProject project) {
 		String hoverText =
 				"**No live hover information available**.\n"+
 				"\n" +
 				"Live hover providers use various `spring-boot-actuator` endpoints to retrieve information. "+
 				"Consider adding `spring-boot-actuator` as a dependency to your project `"+project.getElementName()+"`";
-		return CompletableFuture.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hoverText))));
+		return new Hover(ImmutableList.of(Either.forLeft(hoverText)));
 	}
 
 	private boolean hasActuatorDependency(IJavaProject project) {

@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 	@Override
-	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return provideHover(annotation, doc, runningApps);
 	}
@@ -85,7 +85,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		return Optional.empty();
 	}
 
-	private CompletableFuture<Hover> provideHover(Annotation annotation, TextDocument doc,
+	private Hover provideHover(Annotation annotation, TextDocument doc,
 			SpringBootApp[] runningApps) {
 
 		try {
@@ -102,7 +102,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			hover.setContents(hoverContent);
 			hover.setRange(hoverRange);
 
-			return CompletableFuture.completedFuture(hover);
+			return hover;
 		} catch (Exception e) {
 			Log.log(e);
 		}

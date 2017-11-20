@@ -58,7 +58,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	@Override
-	public CompletableFuture<Hover> provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 
@@ -87,8 +87,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					}
 				}
 				if (hasInterestingApp) {
-					return CompletableFuture
-							.completedFuture(new Hover(ImmutableList.of(Either.forLeft(hover.toString()))));
+					return new Hover(ImmutableList.of(Either.forLeft(hover.toString())));
 				}
 			}
 		}

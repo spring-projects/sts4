@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableSet;
 public class ActiveProfilesProvider implements HoverProvider {
 
 	@Override
-	public CompletableFuture<Hover> provideHover(
+	public Hover provideHover(
 			ASTNode node,
 			Annotation annotation,
 			ITypeBinding type,
@@ -67,9 +67,9 @@ public class ActiveProfilesProvider implements HoverProvider {
 					markdown.append("\n");
 				}
 			}
-			return CompletableFuture.completedFuture(new Hover(
+			return new Hover(
 					ImmutableList.of(Either.forLeft(markdown.toString()))
-			));
+			);
 		}
 		return null;
 	}
