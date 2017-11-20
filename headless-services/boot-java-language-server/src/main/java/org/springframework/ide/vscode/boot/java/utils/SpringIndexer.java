@@ -48,7 +48,8 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareFactoryManager;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -67,7 +68,7 @@ public class SpringIndexer {
 
 	private BootJavaLanguageServer server;
 	private JavaProjectFinder projectFinder;
-	private AnnotationHierarchyAwareFactoryManager<SymbolProvider> symbolProviders;
+	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 
 	private List<SymbolInformation> symbols;
 	private ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
@@ -98,7 +99,7 @@ public class SpringIndexer {
 
 	};
 
-	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareFactoryManager<SymbolProvider> specificProviders) {
+	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbolProviders = specificProviders;
@@ -383,10 +384,11 @@ public class SpringIndexer {
 
 		if (typeBinding != null) {
 			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
+			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
 			if (!providers.isEmpty()) {
 				TextDocument doc = getTempTextDocument(docURI, docRef, content);
 				for (SymbolProvider provider : providers) {
-					Collection<SymbolInformation> sbls = provider.getSymbols(node, typeBinding, doc);
+					Collection<SymbolInformation> sbls = provider.getSymbols(node, typeBinding, metaAnnotations, doc);
 					if (sbls != null) {
 						sbls.forEach(symbol -> {
 							symbols.add(symbol);

@@ -10,47 +10,37 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareFactoryManager;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.test.SpringIndexerHarness.TestSymbolInfo;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
  */
 public class SpringIndexerBeansTest {
 
-	private AnnotationHierarchyAwareFactoryManager<SymbolProvider> symbolProviders;
+	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 	private BootLanguageServerHarness harness;
 	private JavaProjectFinder projectFinder;
 
 	@Before
 	public void setup() throws Exception {
-		symbolProviders = new AnnotationHierarchyAwareFactoryManager<>();
+		symbolProviders = new AnnotationHierarchyAwareLookup<>();
 		symbolProviders.put(Annotations.BEAN, new BeansSymbolProvider());
-		symbolProviders.putFactory(Annotations.COMPONENT, ComponentSymbolProvider::new);
+		symbolProviders.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
 		harness = BootLanguageServerHarness.builder().build();
 		projectFinder = harness.getProjectFinder();
@@ -65,9 +55,7 @@ public class SpringIndexerBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java",
-				symbol("@Configuration", "@+ 'simpleConfiguration' (@+Component) SimpleConfiguration"),
-				symbol("@Configuration", "@+ 'simpleConfiguration' (@+Configuration) SimpleConfiguration"),
-				symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration) SimpleConfiguration"),
+				symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration <: @Component) SimpleConfiguration"),
 				symbol("@Bean", "@+ 'simpleBean' (@Bean) BeanClass")
 		);
 	}
@@ -80,9 +68,7 @@ public class SpringIndexerBeansTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SpecialConfiguration.java";
 		indexer.assertDocumentSymbols(docUri,
-				symbol("@Configuration", "@+ 'specialConfiguration' (@+Component) SpecialConfiguration"),
-				symbol("@Configuration", "@+ 'specialConfiguration' (@+Configuration) SpecialConfiguration"),
-				symbol("@Configuration", "@+ 'specialConfiguration' (@Configuration) SpecialConfiguration"),
+				symbol("@Configuration", "@+ 'specialConfiguration' (@Configuration <: @Component) SpecialConfiguration"),
 
 				// @Bean("implicitNamedBean")
 				symbol("implicitNamedBean", "@+ 'implicitNamedBean' (@Bean) BeanClass"),
@@ -111,10 +97,7 @@ public class SpringIndexerBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java",
-				symbol("@Configuration", "@+ 'functionClass' (@+Component) FunctionClass"),
-				symbol("@Configuration", "@+ 'functionClass' (@+Configuration) FunctionClass"),
-				symbol("@Configuration", "@+ 'functionClass' (@Configuration) FunctionClass"),
-
+				symbol("@Configuration", "@+ 'functionClass' (@Configuration <: @Component) FunctionClass"),
 				symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
 		);
 	}
@@ -127,7 +110,6 @@ public class SpringIndexerBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java",
-				symbol("@Component", "@+ 'simpleComponent' (@+Component) SimpleComponent"),
 				symbol("@Component", "@+ 'simpleComponent' (@Component) SimpleComponent")
 		);
 //		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");
@@ -143,9 +125,7 @@ public class SpringIndexerBeansTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SimpleController.java";
 		indexer.assertDocumentSymbols(docUri,
-				symbol("@Controller", "@+ 'simpleController' (@+Component) SimpleController"),
-				symbol("@Controller", "@+ 'simpleController' (@+Controller) SimpleController"),
-				symbol("@Controller", "@+ 'simpleController' (@Controller) SimpleController")
+				symbol("@Controller", "@+ 'simpleController' (@Controller <: @Component) SimpleController")
 		);
 	}
 
@@ -157,10 +137,7 @@ public class SpringIndexerBeansTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		String docUri = uriPrefix + "/src/main/java/org/test/SimpleRestController.java";
 		indexer.assertDocumentSymbols(docUri,
-				symbol("@RestController", "@+ 'simpleRestController' (@+Component) SimpleRestController"),
-				symbol("@RestController", "@+ 'simpleRestController' (@+Controller) SimpleRestController"),
-				symbol("@RestController", "@+ 'simpleRestController' (@+RestController) SimpleRestController"),
-				symbol("@RestController", "@+ 'simpleRestController' (@RestController) SimpleRestController")
+				symbol("@RestController", "@+ 'simpleRestController' (@RestController <: @Controller, @Component) SimpleRestController")
 		);
 	}
 

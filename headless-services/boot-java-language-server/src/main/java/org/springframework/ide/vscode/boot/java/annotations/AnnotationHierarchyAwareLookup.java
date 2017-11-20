@@ -13,13 +13,16 @@ package org.springframework.ide.vscode.boot.java.annotations;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import reactor.util.function.Tuple2;
@@ -90,42 +93,35 @@ public class AnnotationHierarchyAwareLookup<T> {
 	 * a symbol provider for Components should be asked to produce symbols for Component, Controller and RestController,
 	 * so should result in 3 separate calls to the symbols provider.
 	 */
-	public Collection<Tuple2<String, T>> get(ITypeBinding annotationType) {
-		ImmutableSet.Builder<Tuple2<String, T>> associations = ImmutableSet.builder();
-		findElements(annotationType, new HashSet<>(), associations::add);
-		return associations.build();
+	public Collection<T> get(ITypeBinding annotationType) {
+		ImmutableList.Builder<T> found = ImmutableList.builder();
+		findElements(annotationType, new LinkedHashSet<>(), found::add);
+		return found.build();
 	}
 
-	private void findElements(ITypeBinding typeBinding, HashSet<String> seen, Consumer<Tuple2<String, T>> requestor) {
-		//Note: the 'seen' hashset is unneceassary if meta annotations do not annotate eachother
-		//in such a way as to create a cycle. Intuitively, you might expect that inheritance graphs
-		//do not contain cycles, but since these annotations can be coming from anywhere on
-		//a random project's classpath, we don't really know this for sure, so we must play it safe
-		//and guard the lookup against infinite looping.
+	private void findElements(ITypeBinding typeBinding, HashSet<String> seen, Consumer<T> requestor) {
 		String qname = typeBinding.getQualifiedName();
-//		int debugIndent = debug_in("findElements "+StringUtil.simpleName(qname));
-//		Consumer<Tuple2<String, T>> requestor = (e) -> {
-//			debug(debugIndent, "<== "+StringUtil.simpleName(e.getT1())+" from "+StringUtil.simpleName(qname));
-//			_requestor.accept(e);
-//		};
-
 		if (seen.add(qname)) {
 			Binding<T> binding = bindings.get(qname);
 			boolean isOverriding = false;
 			if (binding!=null) {
-				requestor.accept(Tuples.of(qname, binding.value));
+				requestor.accept(binding.value);
 				isOverriding = binding.isOverriding;
 			}
 			if (!isOverriding) {
 				for (ITypeBinding superAnnotation : AnnotationHierarchies.getDirectSuperAnnotations(typeBinding)) {
-					findElements(superAnnotation, seen, superResult -> {
-						requestor.accept(superResult);
-						requestor.accept(Tuples.of(qname, superResult.getT2()));
-					});
+					findElements(superAnnotation, seen, requestor);
 				}
 			}
 		}
-//		debug_out("findElements "+qname);
+	}
+
+	public void put(String annotationName, T value) {
+		put(annotationName, true, value);
+	}
+
+	public boolean containsKey(String fqName) {
+		return bindings.containsKey(fqName);
 	}
 
 //	private static int indent = 0;

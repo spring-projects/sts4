@@ -23,6 +23,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface SymbolProvider {
 
-	Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding, TextDocument doc);
+	Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding, Collection<ITypeBinding> metaAnnotations, TextDocument doc);
 
 }

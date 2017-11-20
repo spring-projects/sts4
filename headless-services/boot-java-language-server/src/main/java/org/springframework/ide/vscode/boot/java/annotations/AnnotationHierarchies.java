@@ -11,19 +11,23 @@
 package org.springframework.ide.vscode.boot.java.annotations;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.gradle.internal.io.SkipFirstTextStream;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -67,11 +71,11 @@ public abstract class AnnotationHierarchies {
 		return seen;
 	}
 
-	public static Stream<String> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
+	public static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
 		String qname = typeBinding.getQualifiedName();
 		if (seen.add(qname)) {
 			return Stream.concat(
-				Stream.of(qname),
+				Stream.of(typeBinding),
 				getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding ->
 					findTransitiveSupers(superBinding, seen)
 				)
@@ -84,9 +88,22 @@ public abstract class AnnotationHierarchies {
 		ITypeBinding annotationType = annotation.resolveTypeBinding();
 		if (annotationType!=null) {
 			return findTransitiveSupers(annotationType, new HashSet<>())
-					.anyMatch(superType -> superType.equals(fqAnnotationTypeName));
+					.anyMatch(superType -> superType.getQualifiedName().equals(fqAnnotationTypeName));
 		}
 		return false;
+	}
+
+	public static Collection<ITypeBinding> getMetaAnnotations(ITypeBinding actualAnnotation, Predicate<String> isKeyAnnotationName) {
+		Stream<ITypeBinding> allSupers = findTransitiveSupers(actualAnnotation, new HashSet<>())
+				.skip(1); //Don't include 'actualAnnotation' itself.
+		return allSupers
+				.filter(candidate -> isMetaAnnotation(candidate, isKeyAnnotationName))
+				.collect(CollectorUtil.toImmutableList());
+	}
+
+	private static boolean isMetaAnnotation(ITypeBinding candidate, Predicate<String> isKeyAnnotationName) {
+		return findTransitiveSupers(candidate, new HashSet<>())
+				.anyMatch(sa -> isKeyAnnotationName.test(sa.getQualifiedName()));
 	}
 
 }

@@ -65,11 +65,11 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
-		assertEquals(10, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
@@ -85,12 +85,8 @@ public class SpringIndexerTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
-		assertEquals(7, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@+SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@+SpringBootConfiguration) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@+Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@+Configuration) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertEquals(3, symbols.size());
+		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
 		assertTrue(containsSymbol(symbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 
@@ -112,11 +108,11 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
-		assertEquals(10, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath() + "/test-annotation-indexing";
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
@@ -145,14 +141,11 @@ public class SpringIndexerTest {
 
 		// check for updated index in all symbols
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
-		assertEquals(10, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@+Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@+SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@+Configuration) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
 		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root -- (no method defined)", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 36));
@@ -168,7 +161,7 @@ public class SpringIndexerTest {
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("mapp");
 
-		assertEquals(7, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 
@@ -233,7 +226,7 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
-		assertEquals(10, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 
 		File pomFile = directory.toPath().resolve(MavenCore.POM_XML).toFile();
 
@@ -244,7 +237,7 @@ public class SpringIndexerTest {
 
 		allSymbols = indexer().getAllSymbols("");
 		assertFalse(indexer().isInitializing());
-		assertEquals(10, allSymbols.size());
+		assertEquals(6, allSymbols.size());
 	}
 
 }

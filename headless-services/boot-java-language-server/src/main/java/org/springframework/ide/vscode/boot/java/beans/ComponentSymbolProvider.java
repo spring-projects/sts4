@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -33,23 +34,12 @@ import com.google.common.collect.ImmutableList;
  */
 public class ComponentSymbolProvider implements SymbolProvider {
 
-	private String annotationName;
-	private String simpleAnnotationName;
-
-	public ComponentSymbolProvider(String annotationName) {
-		this.annotationName = annotationName;
-		this.simpleAnnotationName = StringUtil.simpleName(annotationName);
-	}
-
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, TextDocument doc) {
+	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		try {
-			ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
-			symbols.add(createSymbol(node, doc, false));
-			if (isExactAnnotationType(annotationType)) {
-				symbols.add(createSymbol(node, doc, true));
-			}
-			return symbols.build();
+			return ImmutableList.of(
+					createSymbol(node, annotationType, metaAnnotations, doc)
+			);
 		}
 		catch (Exception e) {
 			Log.log(e);
@@ -57,24 +47,21 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		return ImmutableList.of();
 	}
 
-	protected SymbolInformation createSymbol(Annotation node, TextDocument doc, boolean isExactAnnotationType) throws BadLocationException {
-		String annotationTypeName = isExactAnnotationType
-				? simpleAnnotationName
-				: '+' + simpleAnnotationName;
+	protected SymbolInformation createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+		String annotationTypeName = annotationType.getName();
+		Collection<String> metaAnnotationNames = metaAnnotations.stream()
+				.map(ITypeBinding::getName)
+				.collect(Collectors.toList());
 		String beanName = getBeanName(node);
 		String beanType = getBeanType(node);
 
 		SymbolInformation symbol = new SymbolInformation(
-				beanLabel("+", annotationTypeName, beanName, beanType), SymbolKind.Interface,
+				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
 				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
 		return symbol;
 	}
 
-	protected boolean isExactAnnotationType(ITypeBinding actualAnnotationType) {
-		return actualAnnotationType.getQualifiedName().equals(annotationName);
-	}
-
-	protected String beanLabel(String searchPrefix, String annotationTypeName, String beanName, String beanType) {
+	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append("@");
 		symbolLabel.append(searchPrefix);
@@ -84,6 +71,18 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		symbolLabel.append('\'');
 		symbolLabel.append(" (@");
 		symbolLabel.append(annotationTypeName);
+		if (!metaAnnotationNames.isEmpty()) {
+			symbolLabel.append(" <: ");
+			boolean first = true;
+			for (String ma : metaAnnotationNames) {
+				if (!first) {
+					symbolLabel.append(", ");
+				}
+				symbolLabel.append("@");
+				symbolLabel.append(ma);
+				first = false;
+			}
+		}
 		symbolLabel.append(") ");
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
@@ -111,11 +110,6 @@ public class ComponentSymbolProvider implements SymbolProvider {
 			return returnType;
 		}
 		return null;
-	}
-
-	@Override
-	public String toString() {
-		return "ComponentSymbolProvider("+simpleAnnotationName+")";
 	}
 
 }
