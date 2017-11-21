@@ -60,6 +60,18 @@ public class RequestMappingSymbolProviderTest {
 	}
 
 	@Test
+	public void testEmptyPathWithParentRequestMappingSymbol() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
+
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass2.java");
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/parent2 -- GET,POST,DELETE", uriPrefix + "/src/main/java/org/test/ParentMappingClass2.java", 8, 1, 8, 16));
+	}
+
+	@Test
 	public void testMultiRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
 
