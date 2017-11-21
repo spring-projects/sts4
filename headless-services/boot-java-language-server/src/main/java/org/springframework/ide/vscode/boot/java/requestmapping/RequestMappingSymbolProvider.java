@@ -56,6 +56,9 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 								.filter(Objects::nonNull).map(p -> {
 									String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
 									String resultPath = parent + separator + p;
+									if (resultPath.endsWith("/")) {
+										resultPath = resultPath.substring(0, resultPath.length() - 1);
+									}
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
 						.map(p -> "@" + p + " -- " + methodStr)
@@ -121,7 +124,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 			return ASTUtils.getExpressionValueAsArray(expression);
 		}
 
-		return null;
+		return new String[] { "" };
 	}
 
 	private String[] getParentPath(Annotation node) {
