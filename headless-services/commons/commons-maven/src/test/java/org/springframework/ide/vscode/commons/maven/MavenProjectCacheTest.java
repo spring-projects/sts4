@@ -176,7 +176,13 @@ public class MavenProjectCacheTest {
 
 		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
 		MavenJavaProject project = cache.project(pomFile);
-		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
+		assertEquals(48, project.getClasspath().getClasspathEntries().size());
+		
+		progressDone.set(false);
+		
+		writeContent(pomFile,
+				new String(Files.readAllBytes(testProjectPath.resolve("pom.newxml")), Charset.defaultCharset()));
+		fileObserver.notifyFileChanged(pomFile.toURI().toString());
 
 		CompletableFuture.runAsync(() -> {
 			while (!progressDone.get()) {
@@ -189,7 +195,7 @@ public class MavenProjectCacheTest {
 		}).get(10, TimeUnit.SECONDS);
 
 		assertTrue(classpathCacheFile.exists());
-		assertEquals(48, project.getClasspath().getClasspathEntries().size());
+		assertEquals(49, project.getClasspath().getClasspathEntries().size());
 
 		progressDone.set(false);
 
@@ -198,7 +204,18 @@ public class MavenProjectCacheTest {
 
 		// Check loaded from cache file
 		project = cache.project(pomFile);
-		assertEquals(48, project.getClasspath().getClasspathEntries().size());
+		assertEquals(49, project.getClasspath().getClasspathEntries().size());
+		
+		// check async project update (no changes no project changed event)
+		CompletableFuture.runAsync(() -> {
+			while (!progressDone.get()) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}).get(10, TimeUnit.SECONDS);
 	}
 
 	@Test
@@ -226,20 +243,11 @@ public class MavenProjectCacheTest {
 
 		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
 		MavenJavaProject project = cache.project(pomFile);
-		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
+		assertEquals(48, project.getClasspath().getClasspathEntries().size());
 
-		CompletableFuture.runAsync(() -> {
-			while (!progressDone.get()) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}).get(10, TimeUnit.SECONDS);
-		progressDone.set(false);
 		verify(diagnosticService, never()).diagnosticEvent(any(ShowMessageException.class));
 
+		progressDone.set(false);
 		writeContent(pomFile, "");
 		fileObserver.notifyFileChanged(pomFile.toURI().toString());
 		CompletableFuture.runAsync(() -> {
