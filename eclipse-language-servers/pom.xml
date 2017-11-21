@@ -68,9 +68,41 @@
 
 		<tycho-version>0.26.0</tycho-version>
 		<encoding>UTF-8</encoding>
+
+		<dist.accessKey>${accessKey}</dist.accessKey>
+		<dist.secretKey>${secretKey}</dist.secretKey>
+		<dist.bucket>dist.springsource.com</dist.bucket>
+		<dist.key>TOOLS</dist.key>
+		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
+
 	</properties>
 
 	<profiles>
+
+		<profile>
+			<id>snapshot</id>
+			<properties>
+				<dist.type>snapshot</dist.type>
+				<dist.version>nightly</dist.version>
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>milestone</id>
+			<properties>
+				<dist.type>milestone</dist.type>
+				<dist.version>today</dist.version> <!-- should be overridden when building with some timestamp like 20171114 -->
+			</properties>
+		</profile>
+		
+		<profile>
+			<id>release</id>
+			<properties>
+				<dist.type>release</dist.type>
+				<dist.version>today</dist.version> <!-- should be overridden when building with some timestamp like 20171114 -->
+			</properties>
+		</profile>
+
 		<profile>
 			<id>e47</id>
 			<properties>
@@ -298,7 +330,7 @@
 					<artifactId>tycho-packaging-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
-						<format>yyyyMMddHHmm-'${p2.qualifier}'</format>
+						<format>yyyyMMddHHmm</format>
 						<archiveSite>true</archiveSite>
 						<archive>
 							<addMavenDescriptor>false</addMavenDescriptor>

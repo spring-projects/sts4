@@ -54,10 +54,10 @@
 		
 		<dist.pathpostfix>nightly</dist.pathpostfix>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
-		<dist.dependencies-version-path>nightly</dist.dependencies-version-path>
-		<dist.springboot-language-servers-pathpostfix>${dist.dependencies-version-path}</dist.springboot-language-servers-pathpostfix>
-		<dist.springide-pathpostfix>${dist.dependencies-version-path}</dist.springide-pathpostfix>
-		<dist.eclipse-integration-commons-version>${dist.dependencies-version-path}</dist.eclipse-integration-commons-version>
+		
+		<eclipsecommons-p2-repo>http://dist.springsource.com/snapshot/TOOLS/eclipse-integration-commons/nightly</eclipsecommons-p2-repo>
+		<springide-p2-repo>http://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo>
+		<sts4-language-servers-p2-repo>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 
 		<tycho-version>0.26.0</tycho-version>
 		<encoding>UTF-8</encoding>
@@ -72,6 +72,8 @@
 				<dist.path.repo>${dist.type}/TOOLS/sts4/nightly/${dist.target.major}</dist.path.repo>
 				<dist.path.product>${dist.type}/STS4/nightly/dist/${dist.target.major}</dist.path.product>
 				<skip.update-nightly-download-page>false</skip.update-nightly-download-page>
+				
+				<sts4-language-servers-version>nightly</sts4-language-servers-version>
 			</properties>
 		</profile>
 		
@@ -82,6 +84,8 @@
 				<dist.path.repo>${dist.type}/TOOLS/sts4/update/${unqualifiedVersion}.${p2.qualifier}/${dist.target.major}</dist.path.repo>
 				<dist.path.product>${dist.type}/STS4/${unqualifiedVersion}.${p2.qualifier}/dist/${dist.target.major}</dist.path.product>
 				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
+
+				<sts4-language-servers-version>today</sts4-language-servers-version> <!-- this should be overridden in the build with the concrete ls version to include-->
 			</properties>
 		</profile>
 		
@@ -92,6 +96,8 @@
 				<dist.path.repo>${dist.type}/TOOLS/sts4/update/${unqualifiedVersion}.${p2.qualifier}/${dist.target.major}</dist.path.repo>
 				<dist.path.product>${dist.type}/STS4/${unqualifiedVersion}.${p2.qualifier}/dist/${dist.target.major}</dist.path.product>
 				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
+
+				<sts4-language-servers-version>today</sts4-language-servers-version> <!-- this should be overridden in the build with the concrete ls version to include-->
 			</properties>
 		</profile>
 
@@ -214,24 +220,19 @@
 
 	<repositories>
 		<repository>
-			<id>spring-boot-language-servers</id>
-			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
-		</repository>
-		<repository>
 			<id>spring-boot-language-server-integrations</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${dist.springboot-language-servers-pathpostfix}</url>
+			<url>${sts4-language-servers-p2-repo}</url>
 		</repository>
 		<repository>
 			<id>springide</id>
 			<layout>p2</layout>
-			<url>http://dist.springframework.org/${dist.type}/IDE/${dist.springide-pathpostfix}</url>
+			<url>${springide-p2-repo}</url>
 		</repository>
 		<repository>
 			<id>eclipse-integration-commons</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/eclipse-integration-commons/${dist.eclipse-integration-commons-version}</url>
+			<url>${eclipsecommons-p2-repo}</url>
 		</repository>
 		<repository>
 			<id>egit-github</id>

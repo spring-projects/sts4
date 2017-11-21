@@ -205,6 +205,9 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			return false;
 		} catch (Exception e) {
 			cachedData.set(new ClasspathData(null, Collections.emptySet(), Collections.emptySet(), null));
+			if (cacheFile != null && cacheFile.exists()) {
+				cacheFile.delete();
+			}
 			throw e;
 		}
 	}

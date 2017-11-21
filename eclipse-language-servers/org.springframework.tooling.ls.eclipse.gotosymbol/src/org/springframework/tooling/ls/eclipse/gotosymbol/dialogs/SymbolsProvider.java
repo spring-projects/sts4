@@ -22,4 +22,11 @@ import org.eclipse.lsp4j.SymbolInformation;
 public interface SymbolsProvider {
 	String getName();
 	Collection<SymbolInformation> fetchFor(String query) throws Exception;
+	/**
+	 * True if the symbol information is provided from a file provider (a file is the provider of the symbols). False otherwise
+	 * @param symbol
+	 * @return True if the symbol information is provided from a file provider (a file is the provider of the symbols). False otherwise
+
+	 */
+	boolean fromFile(SymbolInformation symbol);
 }
