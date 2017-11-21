@@ -73,7 +73,7 @@ public class LiveBean {
 		this.aliases = aliases;
 		this.scope = scope;
 		this.type = type;
-		this.resource = resource;
+		this.resource = "null".equals(resource) ? null : resource;
 		this.dependencies = dependencies;
 	}
 
