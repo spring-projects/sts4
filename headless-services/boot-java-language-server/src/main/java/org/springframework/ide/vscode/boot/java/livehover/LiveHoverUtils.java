@@ -71,7 +71,7 @@ public class LiveHoverUtils {
 			Stream<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId()).stream();
 			String type = definedBean.getType();
 			if (type != null) {
-				relevantBeans = relevantBeans.filter(bean -> type.equals(bean.getType()));
+				relevantBeans = relevantBeans.filter(bean -> type.equals(bean.getType(true)));
 			}
 			return relevantBeans;
 		}

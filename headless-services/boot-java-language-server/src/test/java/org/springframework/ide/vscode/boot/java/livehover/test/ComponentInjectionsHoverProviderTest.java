@@ -585,4 +585,42 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 	}
 
+	@Test public void bug_153072942_SpringBootApplication__withCGLib_is_a_Component() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("demoApplication")
+						.type("com.example.DemoApplication$$EnhancerBySpringCGLIB$$f378241f")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.boot.SpringApplication;\n" +
+				"import org.springframework.boot.autoconfigure.SpringBootApplication;\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.web.client.RestTemplate;\n" +
+				"\n" +
+				"@SpringBootApplication\n" +
+				"public class DemoApplication {\n" +
+				"	\n" +
+				"\n" +
+				"	public static void main(String[] args) {\n" +
+				"		SpringApplication.run(DemoApplication.class, args);\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@SpringBootApplication");
+		editor.assertHoverContains("@SpringBootApplication",
+				"**Injection report for Bean [id: demoApplication, type: `com.example.DemoApplication`]**"
+		);
+	}
+
 }
