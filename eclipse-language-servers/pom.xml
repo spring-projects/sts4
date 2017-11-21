@@ -91,7 +91,7 @@
 			<id>milestone</id>
 			<properties>
 				<dist.type>milestone</dist.type>
-				<dist.version>20171121</dist.version>
+				<dist.version>today</dist.version> <!-- should be overridden when building with some timestamp like 20171114 -->
 			</properties>
 		</profile>
 		
@@ -99,7 +99,7 @@
 			<id>release</id>
 			<properties>
 				<dist.type>release</dist.type>
-				<dist.version>20171121</dist.version>
+				<dist.version>today</dist.version> <!-- should be overridden when building with some timestamp like 20171114 -->
 			</properties>
 		</profile>
 
