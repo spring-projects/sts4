@@ -78,6 +78,7 @@ public class ActiveProfilesHoverTest {
 	public void testActiveProfileHover_Unknown() throws Exception {
 		//Sometimes its not possible to determine active profiles for an app (e.g. no actuator dependency).
 		//Make sure we show something sensible
+		harness.useProject(projects.mavenProject("no-actuator-boot-15-web-app"));
 
 		mockAppProvider.builder()
 			.isSpringBootApp(true)
@@ -98,8 +99,8 @@ public class ActiveProfilesHoverTest {
 				"\n" +
 				"}"
 		);
-		editor.assertHoverContains("@Profile", "Process [PID=22022, name=`foo.bar.RunningApp`] : _Unknown_");
-		editor.assertHighlights("@Profile");
+		editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency");
+		editor.assertHighlights(/*NONE*/);
 	}
 
 	@Test

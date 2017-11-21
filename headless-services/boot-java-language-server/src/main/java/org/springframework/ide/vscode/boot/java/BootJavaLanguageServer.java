@@ -250,7 +250,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
 			RunningAppProvider runningAppProvider) {
-		HashMap<String, HoverProvider> providers = new HashMap<>();
+		AnnotationHierarchyAwareLookup<HoverProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
 

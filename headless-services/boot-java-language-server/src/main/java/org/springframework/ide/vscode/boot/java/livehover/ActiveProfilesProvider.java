@@ -52,23 +52,29 @@ public class ActiveProfilesProvider implements HoverProvider {
 		if (runningApps.length>0) {
 			StringBuilder markdown = new StringBuilder();
 			markdown.append("**Active Profiles**\n\n");
+			boolean hasInterestingApp = false;
 			for (SpringBootApp app : runningApps) {
 				List<String> profiles = app.getActiveProfiles();
 				if (profiles==null) {
 					markdown.append(niceAppName(app)+" : _Unknown_\n\n");
-				} else if (profiles.isEmpty()) {
-					markdown.append(niceAppName(app)+" : _None_\n\n");
 				} else {
-					markdown.append(niceAppName(app)+" :\n");
-					for (String profile : profiles) {
-						markdown.append("- "+profile+"\n");
+					hasInterestingApp = true;
+					if (profiles.isEmpty()) {
+						markdown.append(niceAppName(app)+" : _None_\n\n");
+					} else {
+						markdown.append(niceAppName(app)+" :\n");
+						for (String profile : profiles) {
+							markdown.append("- "+profile+"\n");
+						}
+						markdown.append("\n");
 					}
-					markdown.append("\n");
 				}
 			}
-			return new Hover(
-					ImmutableList.of(Either.forLeft(markdown.toString()))
-			);
+			if (hasInterestingApp) {
+				return new Hover(
+						ImmutableList.of(Either.forLeft(markdown.toString()))
+				);
+			}
 		}
 		return null;
 	}

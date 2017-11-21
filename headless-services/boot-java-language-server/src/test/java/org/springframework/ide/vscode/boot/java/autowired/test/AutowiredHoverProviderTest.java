@@ -300,7 +300,7 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
 		for (int i = 1; i <= 2; i++) {
-			editor.assertHoverContains("@Autowired", 1,
+			editor.assertHoverContains("@Autowired", i,
 					"Bean [id: defaultFoo, type: `com.example.FooImplementation`] got autowired with:\n" +
 					"\n" +
 					"- Bean: otherBean  \n" +
@@ -351,15 +351,16 @@ public class AutowiredHoverProviderTest {
 				"	\n" +
 				"}"
 		);
-		editor.assertHighlights(/* not yet: "@Controller",*/ "@Autowired");
-		for (int i = 1; i <= 2; i++) {
-			editor.assertHoverContains("@Autowired", 1,
-					"Bean [id: myController, type: `com.example.MyController`] got autowired with:\n" +
-					"\n" +
-					"- Bean: restTemplate  \n" +
-					"  Type: `org.springframework.web.client.RestTemplate`");
-		}
-
+		editor.assertHighlights("@Controller", "@Autowired");
+		editor.assertHoverContains("@Autowired",
+				"Bean [id: myController, type: `com.example.MyController`] got autowired with:\n" +
+				"\n" +
+				"- Bean: restTemplate  \n" +
+				"  Type: `org.springframework.web.client.RestTemplate`"
+		);
+		editor.assertHoverContains("@Controller",
+				"**Injection report for Bean [id: myController, type: `com.example.MyController`]**"
+		);
 	}
 
 }
