@@ -12,14 +12,7 @@
 	<packaging>eclipse-repository</packaging>
   
 	<properties>
-		<dist.accessKey>${accessKey}</dist.accessKey>
-		<dist.secretKey>${secretKey}</dist.secretKey>
-		<dist.bucket>dist.springsource.com</dist.bucket>
-		<dist.type>snapshot</dist.type>
-		<dist.key>TOOLS</dist.key>
 		<dist.project>sts4-language-server-integrations</dist.project>
-		<dist.pathpostfix>nightly</dist.pathpostfix>
-		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 	</properties>  
 
 	<build>
