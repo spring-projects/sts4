@@ -93,6 +93,8 @@ public class GotoSymbolDialog extends PopupDialog {
 		}
 	}
 
+	private static final Point DEFAULT_SIZE = new Point(280, 300);
+
 	private GotoSymbolDialogModel model;
 	private List<Disposable> disposables = new ArrayList<>();
 	private ITextEditor fTextEditor;
@@ -289,20 +291,22 @@ public class GotoSymbolDialog extends PopupDialog {
 		super.configureShell(shell);
 		
 		Control control = fTextEditor.getAdapter(Control.class);
+		Point dialogueSize = DEFAULT_SIZE;
 		if (control != null) {
 			//Set size relative to editor's size.
-			Point size = new Point(control.getBounds().width/3, control.getBounds().height/2);
-			shell.setSize(size);
+			dialogueSize = computeDialogueSize(control);
 			if (alignRight) {
 				shell.setLocation(control.toDisplay(control.getBounds().width - shell.getSize().x, control.getLocation().y));
 			} else {
 				//centered on the editor
-				shell.setLocation(control.toDisplay(control.getBounds().width/3, control.getBounds().height/4));
+				shell.setLocation(control.toDisplay(control.getBounds().width/4, control.getBounds().height/4));
 			}
-		} else {
-			// fallback
-			shell.setSize(280, 300);
-		}
+		} 
+		shell.setSize(dialogueSize);
+	}
+
+	protected Point computeDialogueSize(Control control) {
+		return new Point(control.getBounds().width, control.getBounds().height/2);
 	}
 
 //	/**
