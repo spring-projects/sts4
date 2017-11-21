@@ -182,6 +182,14 @@ public class GotoSymbolDialogModel {
 	public boolean performOk(SymbolInformation selection) {
 		return this.okHandler.performOk(selection);
 	}
+
+	public boolean fromFileProvider(SymbolInformation symbolInformation) {
+		SymbolsProvider sp = currentSymbolsProvider.getValue();
+		if (sp!=null) {
+			return sp.fromFile(symbolInformation);
+		}
+		return false;
+	}
 	
 	
 }

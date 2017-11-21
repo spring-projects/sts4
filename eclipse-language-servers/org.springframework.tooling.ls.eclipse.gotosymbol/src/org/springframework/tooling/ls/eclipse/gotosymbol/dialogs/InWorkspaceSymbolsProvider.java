@@ -64,7 +64,6 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 		
-		ImmutableList.Builder<SymbolInformation> allSymbols = ImmutableList.builder();
 		Flux<SymbolInformation> symbols = Flux.fromIterable(this.languageServers)
 		.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
 					.timeout(TIMEOUT)
@@ -108,4 +107,8 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		return null;
 	}
 
+	@Override
+	public boolean fromFile(SymbolInformation symbol) {
+		return false;
+	}
 }

@@ -14,6 +14,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -26,8 +27,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -46,6 +50,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
+import org.springsource.ide.eclipse.commons.livexp.ui.Stylers;
 import org.springsource.ide.eclipse.commons.livexp.ui.util.SwtConnect;
 
 @SuppressWarnings("restriction")
@@ -78,7 +83,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		}
 	}
 	
-	private static class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
+	private  class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
 		@Override
 		protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
 				throws CoreException, BadLocationException {
@@ -91,6 +96,21 @@ public class GotoSymbolDialog extends PopupDialog {
 			}
 			return maxSeverity;
 		}
+
+		@Override
+		public StyledString getStyledText(Object element) {
+			StyledString s = super.getStyledText(element);
+			if (element instanceof SymbolInformation) {
+				Optional<String> workspacePath = GotoSymbolDialog.this
+						.getWorkspaceLocation((SymbolInformation) element);
+				if (workspacePath.isPresent()) {
+					s.append(" -- [", Stylers.NULL);
+					s.append(workspacePath.get(), Stylers.NULL);
+					s.append("]", Stylers.NULL);
+				}
+			}
+			return s;
+		}		
 	}
 
 	private static final Point DEFAULT_SIZE = new Point(280, 300);
@@ -197,6 +217,21 @@ public class GotoSymbolDialog extends PopupDialog {
 		});
 		
 		list.addDoubleClickListener(e -> performOk(list));
+	}
+	
+	private Optional<String> getWorkspaceLocation(SymbolInformation symbolInformation) {
+		String val = null;
+
+		if (!model.fromFileProvider(symbolInformation)) {
+			Location location = symbolInformation.getLocation();
+
+			IResource targetResource = LSPEclipseUtils.findResourceFor(location.getUri());
+			if (targetResource != null && targetResource.getFullPath() != null) {
+				val = targetResource.getFullPath().toString();
+			}	
+		}
+
+		return val != null ? Optional.of(val) : Optional.empty();
 	}
 	
 	private void performOk(TreeViewer list) {

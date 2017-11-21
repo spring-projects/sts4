@@ -68,4 +68,13 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	public String getName() {
 		return "Symbols in File";
 	}
+
+	@Override
+	public boolean fromFile(SymbolInformation symbol) {
+		if (symbol != null && symbol.getLocation() != null) {
+			String symbolUri = symbol.getLocation().getUri();
+			return info.getFileUri().toString().equals(symbolUri);
+		}
+		return false;
+	}
 }
