@@ -227,7 +227,7 @@ public class MavenProjectCacheTest {
 		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
 		MavenJavaProject project = cache.project(pomFile);
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
-		
+
 		CompletableFuture.runAsync(() -> {
 			while (!progressDone.get()) {
 				try {
@@ -238,10 +238,8 @@ public class MavenProjectCacheTest {
 			}
 		}).get(10, TimeUnit.SECONDS);
 		progressDone.set(false);
-			 
 		verify(diagnosticService, never()).diagnosticEvent(any(ShowMessageException.class));
 
-		progressDone.set(false);
 		writeContent(pomFile, "");
 		fileObserver.notifyFileChanged(pomFile.toURI().toString());
 		CompletableFuture.runAsync(() -> {
@@ -252,7 +250,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(10, TimeUnit.SECONDS);
+		}).get(30, TimeUnit.SECONDS);
 		progressDone.set(false);
 		verify(diagnosticService, times(1)).diagnosticEvent(any(ShowMessageException.class));
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
