@@ -14,7 +14,7 @@ package org.springframework.ide.vscode.concourse;
 import java.io.IOException;
 
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.LogRedirect;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 
 public class Main {
@@ -22,7 +22,7 @@ public class Main {
 
    	public static void main(String[] args) throws IOException, InterruptedException {
    		String serverName = "concourse-language-server";
-   		Log.redirectToFile(serverName);
+   		LogRedirect.redirectToFile(serverName);
 		LaunguageServerApp.start(serverName, () -> new ConcourseLanguageServer(OPTIONS));
 	}
 }

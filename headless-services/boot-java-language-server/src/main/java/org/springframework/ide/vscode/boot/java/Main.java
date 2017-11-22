@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.LogRedirect;
 
 /**
  * Starts up Language Server process
@@ -25,7 +25,7 @@ public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		String serverName = "boot-java-language-server";
-		Log.redirectToFile(serverName);
+		LogRedirect.redirectToFile(serverName);
 		LaunguageServerApp.start(serverName, () -> {
 			SimpleLanguageServer server = new BootJavaLanguageServer(
 					BootJavaLanguageServerParams.createDefault()
