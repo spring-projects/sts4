@@ -40,8 +40,8 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 			return project.update();
 		} catch (Exception e) {
 			server.getDiagnosticService().diagnosticEvent(new ShowMessageException(
-					new MessageParams(MessageType.Error, "Cannot load Maven project model from Pom file:\n" + project.pom()), e));
-			return false;
+					new MessageParams(MessageType.Error, "Cannot load Maven project model from Pom file: " + project.pom()), e));
+			return true;
 		}
 	}
 
