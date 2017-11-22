@@ -109,7 +109,7 @@ public class GotoSymbolDialog extends PopupDialog {
 			if (element instanceof SymbolInformation) {
 				String locationText = getSymbolLocationText((SymbolInformation) element);
 				if (locationText != null) {
-					s.append(locationText, stylers.italic());
+					s = s.append(locationText, stylers.italic());
 				}
 			}
 			return s;
