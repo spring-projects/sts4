@@ -4,7 +4,8 @@ Bundle-Name: Eclipse Language Server Commons
 Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.commons;singleton:=true
 Bundle-Version: 4.0.0.qualifier
 Bundle-Vendor: Pivotal, Inc.
-Require-Bundle: org.eclipse.ui,
+Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
+ org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.lsp4e;bundle-version="0.3.0",
  org.eclipse.lsp4j.jsonrpc,

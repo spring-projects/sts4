@@ -27,8 +27,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
@@ -36,6 +38,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -83,34 +86,67 @@ public class GotoSymbolDialog extends PopupDialog {
 		}
 	}
 	
-	private  class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
-		@Override
-		protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
-				throws CoreException, BadLocationException {
-			int maxSeverity = -1;
-			for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {
-				int offset = marker.getAttribute(IMarker.CHAR_START, -1);
-				if (offset != -1) {
-					maxSeverity = Math.max(maxSeverity, marker.getAttribute(IMarker.SEVERITY, -1));
+	private  class GotoSymbolsLabelProvider extends StyledCellLabelProvider {
+		
+		private Stylers stylers;
+		private SymbolsLabelProvider symbolsLabelProvider;
+		
+		public  GotoSymbolsLabelProvider(Font base) {
+			stylers = new Stylers(base);
+			boolean showSymbolsLabelProviderLocation  = false; /* dont show full location. we show relative location in our own implementation below */
+			boolean showKindInformation = false;
+			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation , showKindInformation) {
+				@Override
+				protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
+						throws CoreException, BadLocationException {
+					int maxSeverity = -1;
+					for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {
+						int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+						if (offset != -1) {
+							maxSeverity = Math.max(maxSeverity, marker.getAttribute(IMarker.SEVERITY, -1));
+						}
+					}
+					return maxSeverity;
 				}
-			}
-			return maxSeverity;
+			};
+		}
+	
+		@Override
+		public void update(ViewerCell cell) {
+			super.update(cell);
+			Object element = cell.getElement();
+			cell.setImage(symbolsLabelProvider.getImage(element));
+			StyledString styledString = getStyledText(element);
+			cell.setText(styledString.getString());
+			cell.setStyleRanges(styledString.getStyleRanges());
 		}
 
-		@Override
-		public StyledString getStyledText(Object element) {
-			StyledString s = super.getStyledText(element);
+		private StyledString getStyledText(Object element) {
+			StyledString s = symbolsLabelProvider.getStyledText(element);
 			if (element instanceof SymbolInformation) {
-				Optional<String> workspacePath = GotoSymbolDialog.this
-						.getWorkspaceLocation((SymbolInformation) element);
-				if (workspacePath.isPresent()) {
-					s.append(" -- [", Stylers.NULL);
-					s.append(workspacePath.get(), Stylers.NULL);
-					s.append("]", Stylers.NULL);
+				String locationText = getSymbolLocationText((SymbolInformation) element);
+				if (locationText != null) {
+					s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
 				}
 			}
 			return s;
-		}		
+		}	
+
+		@Override
+		public void dispose() {
+			stylers.dispose();
+			symbolsLabelProvider.dispose();
+			super.dispose();
+		}
+		
+		protected String getSymbolLocationText(SymbolInformation symbol) {
+			Optional<String> location = GotoSymbolDialog.this
+					.getSymbolLocation(symbol);
+			if (location.isPresent()) {
+				return " -- [" + location.get() + "]";
+			}
+			return null;
+		}
 	}
 
 	private static final Point DEFAULT_SIZE = new Point(280, 300);
@@ -219,7 +255,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		list.addDoubleClickListener(e -> performOk(list));
 	}
 	
-	private Optional<String> getWorkspaceLocation(SymbolInformation symbolInformation) {
+	private Optional<String> getSymbolLocation(SymbolInformation symbolInformation) {
 		String val = null;
 
 		if (!model.fromFileProvider(symbolInformation)) {
@@ -281,7 +317,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(viewer.getControl());
 		viewer.setContentProvider(new SymbolsContentProvider());
-		viewer.setLabelProvider(new GotoSymbolsLabelProvider());
+		viewer.setLabelProvider(new GotoSymbolsLabelProvider(viewer.getTree().getFont()));
 		viewer.setUseHashlookup(true);
 		disposables.add(model.getSymbols().onChange(UIValueListener.from((e, v) -> {
 			viewer.refresh();

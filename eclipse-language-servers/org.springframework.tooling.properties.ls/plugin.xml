@@ -81,6 +81,7 @@
       <server
             class="org.springframework.tooling.properties.ls.SpringBootPropertiesLanguageServer"
             id="org.eclipse.languageserver.languages.springbootproperties"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="Spring Boot Properties Language Server">
       </server>
       <contentTypeMapping

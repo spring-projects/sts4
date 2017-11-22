@@ -51,8 +51,7 @@ public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaPro
 		GradleJavaProject gradleJavaProject = new GradleJavaProject(gradle, gradleFile,
 				projectCacheFolder == null ? null : gradleFile.toPath().resolve(projectCacheFolder)
 			);
-		boolean cached = gradleJavaProject.getClasspath().isCached();
-		performUpdate(gradleJavaProject, cached && asyncUpdate, cached);
+		performUpdate(gradleJavaProject, asyncUpdate, asyncUpdate);
 		return gradleJavaProject;
 	}
 

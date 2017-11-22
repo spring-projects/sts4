@@ -11,7 +11,6 @@
 package org.springframework.tooling.boot.java.ls;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -21,18 +20,13 @@ import java.util.List;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.osgi.framework.Bundle;
-import org.springframework.tooling.ls.eclipse.commons.LanguageServerProcessReaper;
+import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
-public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvider {
-	
-	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
+public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStreamConnector {
 	
 	public SpringBootJavaLanguageServer() {
 		List<String> commands = new ArrayList<>();
@@ -43,7 +37,7 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		
 		commands.add("-Dlsp.lazy.completions.disable=true");
 		commands.add("-Dlsp.completions.indentation.enable=true");
-		commands.add("-Xmx100m");
+		commands.add("-Xmx200m");
 		commands.add("-cp");
 		commands.add(getToolsJAR() + ":" + getLanguageServerJARLocation());
 		commands.add("org.springframework.boot.loader.JarLauncher");
@@ -52,29 +46,6 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 
 		setCommands(commands);
 		setWorkingDirectory(workingDir);
-	}
-	
-	@Override
-	public void start() throws IOException {
-		super.start();
-		processReaper.addProcess(LanguageServerProcessReaper.getProcess(this));
-	}
-	
-	@Override
-	public void stop() {
-		super.stop();
-		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
-	}
-	
-	protected String getJDKLocation() {
-		File jre = new File(System.getProperty("java.home"));
-		File javaExecutable = StandardVMType.findJavaExecutable(jre);
-		return javaExecutable.getAbsolutePath();
-	}
-	
-	protected String getToolsJAR() {
-		File jre = new File(System.getProperty("java.home"));
-		return new File(jre.getParent(), "lib" + Path.SEPARATOR + "tools.jar").getAbsolutePath();
 	}
 	
 	protected String getLanguageServerJARLocation() {
@@ -100,11 +71,6 @@ public class SpringBootJavaLanguageServer extends ProcessStreamConnectionProvide
 		}
 		
 		return dataFile.getAbsolutePath();
-	}
-	
-	protected String getWorkingDirLocation() {
-		// TODO: identify a reasonable working directory for the language server process
-		return System.getProperty("user.dir");
 	}
 	
 	protected void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {

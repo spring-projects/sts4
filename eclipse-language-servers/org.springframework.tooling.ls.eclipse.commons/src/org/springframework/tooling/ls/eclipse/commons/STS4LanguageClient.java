@@ -23,9 +23,9 @@ public interface STS4LanguageClient extends LanguageClient {
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);
 
-// TODO: @JsonNotification("sts/progress")
-//	void progress(ProgressParams progressEvent);
-//
+	@JsonNotification("sts/progress")
+	void progress(ProgressParams progressEvent);
+
 // TODO: @JsonRequest("sts/moveCursor")
 //	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
 
