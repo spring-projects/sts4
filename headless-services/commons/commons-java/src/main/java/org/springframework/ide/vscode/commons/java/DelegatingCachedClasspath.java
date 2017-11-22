@@ -54,6 +54,8 @@ import reactor.util.function.Tuple2;
 public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspath {
 	
 	public static final String CLASSPATH_DATA_CACHE_FILE = "classpath-data.json";
+	private static final ClasspathData EMPTY_CLASSPATH_DATA = new ClasspathData(null, Collections.emptySet(),
+			Collections.emptySet(), null);
 	
 	private static final String OUTPUT_FOLDER_PROPERTY = "outputFolder";
 	private static final String CLASSPATH_RESOURCES_PROPERTY = "classpathResources";
@@ -238,15 +240,20 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 
 	@Override
 	public Flux<IType> allSubtypesOf(IType type) {
-		return cachedDelegate.get().allSubtypesOf(type);
+		T t = cachedDelegate.get();
+		return t == null ? Flux.empty() : t.allSubtypesOf(type);
 	}
 
 	protected ClasspathData createClasspathData() throws Exception {
 		T newDelegate = delegateCreator.call();
 		cachedDelegate.set(newDelegate);
-		LinkedHashSet<Path> classpathEntries = new LinkedHashSet<>(newDelegate.getClasspathEntries());
-		return new ClasspathData(newDelegate.getName(), classpathEntries,
-				new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
+		if (newDelegate == null) {
+			return EMPTY_CLASSPATH_DATA;
+		} else {
+			LinkedHashSet<Path> classpathEntries = new LinkedHashSet<>(newDelegate.getClasspathEntries());
+			return new ClasspathData(newDelegate.getName(), classpathEntries,
+					new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
+		}
 	}
 	
 }

@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -31,7 +30,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -87,18 +85,32 @@ public final class CompilationUnitCache {
 	 */
 	public <T> T withCompilationUnit(TextDocument document, Function<CompilationUnit, T> requestor) {
 		URI uri = URI.create(document.getUri());
-		readLock.lock();
-		try {
-			CompilationUnit cu = uriToCu.get(uri, () -> parse(document));
-			if (cu!=null) {
-				synchronized (cu.getAST()) {
-					return requestor.apply(cu);
+		IJavaProject project = projectFinder.find(document.getId()).orElse(null);
+		if (project != null) {
+			readLock.lock();
+			try {
+				CompilationUnit cu = uriToCu.get(uri, () -> {
+					CompilationUnit cUnit = parse(document, project);
+					projectToDocs.get(project, () -> new HashSet<>()).add(URI.create(document.getUri()));
+					return cUnit;
+				});
+				if (cu!=null) {
+					projectToDocs.get(project, () -> new HashSet<>()).add(URI.create(document.getUri()));
+					synchronized (cu.getAST()) {
+						return requestor.apply(cu);
+					}
 				}
+			} catch (Exception e) {
+				Log.log(e);
+			} finally {
+				readLock.unlock();
 			}
-		} catch (Exception e) {
-			Log.log(e);
-		} finally {
-			readLock.unlock();
+		} else {
+			try {
+				return requestor.apply(parse(document, null));
+			} catch (Exception e) {
+				Log.log(e);
+			}
 		}
 		return requestor.apply(null);
 	}
@@ -134,16 +146,6 @@ public final class CompilationUnitCache {
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
-		return cu;
-	}
-
-	private CompilationUnit parse(TextDocument document)
-			throws Exception, BadLocationException {
-		IJavaProject project = projectFinder.find(document.getId()).orElse(null);
-		CompilationUnit cu = parse(document, project);
-		if (project != null) {
-			projectToDocs.get(project, () -> new HashSet<>()).add(URI.create(document.getUri()));
-		}
 		return cu;
 	}
 

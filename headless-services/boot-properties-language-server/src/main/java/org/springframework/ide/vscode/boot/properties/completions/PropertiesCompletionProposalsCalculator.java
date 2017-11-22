@@ -334,14 +334,19 @@ public class PropertiesCompletionProposalsCalculator {
 					DocumentEdits docEdits;
 					try {
 						docEdits = LazyProposalApplier.from(() -> {
-								Type type = TypeParser.parse(match.data.getType());
-								DocumentEdits edits = new DocumentEdits(doc);
-								edits.delete(offset-prefix.length(), offset);
-								edits.insert(offset, match.data.getId() + propertyCompletionPostfix(typeUtil, type));
-								return edits;
+								try {
+									Type type = TypeParser.parse(match.data.getType());
+									DocumentEdits edits = new DocumentEdits(doc);
+									edits.delete(offset-prefix.length(), offset);
+									edits.insert(offset, match.data.getId() + propertyCompletionPostfix(typeUtil, type));
+									return edits;
+								} catch (Throwable t) {
+									Log.log(t);
+									return new DocumentEdits(doc);
+								}
 						});
 						proposals.add(completionFactory.property(doc, docEdits, match, typeUtil));
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						Log.log(e);
 					}
 				}

@@ -50,8 +50,7 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 		MavenJavaProject mavenJavaProject = new MavenJavaProject(maven, pomFile,
 				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)
 			);
-		boolean cached = mavenJavaProject.getClasspath().isCached();
-		performUpdate(mavenJavaProject, cached && asyncUpdate, cached);
+		performUpdate(mavenJavaProject, asyncUpdate, asyncUpdate);
 		return mavenJavaProject;
 	}
 

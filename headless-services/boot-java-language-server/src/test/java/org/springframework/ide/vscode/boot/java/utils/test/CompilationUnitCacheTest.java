@@ -23,11 +23,12 @@ import java.nio.file.Paths;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -39,7 +40,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class CompilationUnitCacheTest {
 
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
+	private BootLanguageServerHarness harness;
 
 	@Before
 	public void setup() throws Exception {
@@ -48,6 +49,14 @@ public class CompilationUnitCacheTest {
 
 	@Test
 	public void cu_cached() throws Exception {
+		harness = BootLanguageServerHarness.builder()
+				.mockDefaults().build();
+		harness.useProject(new IJavaProject() {
+			@Override
+			public IClasspath getClasspath() {
+				return new DelegatingCachedClasspath<>(() -> null, null);
+			}
+		});
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -62,12 +71,36 @@ public class CompilationUnitCacheTest {
 		assertTrue(cu == cuAnother);
 	}
 
+	@Test
+	public void cu_not_cached_without_project() throws Exception {
+		harness.intialize(null);
+
+		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
+				"\n" +
+				"public class SomeClass {\n" +
+				"\n" +
+				"}\n");
+		CompilationUnit cu = getCompilationUnit(doc);
+		assertNotNull(cu);
+
+		CompilationUnit cuAnother = getCompilationUnit(doc);
+		assertFalse(cu == cuAnother);
+	}
+
 	private CompilationUnit getCompilationUnit(TextDocument doc) {
 		return harness.getServer().getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
 	}
 
 	@Test
 	public void cu_cache_invalidated_by_doc_change() throws Exception {
+		harness = BootLanguageServerHarness.builder()
+				.mockDefaults().build();
+		harness.useProject(new IJavaProject() {
+			@Override
+			public IClasspath getClasspath() {
+				return new DelegatingCachedClasspath<>(() -> null, null);
+			}
+		});
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -91,6 +124,14 @@ public class CompilationUnitCacheTest {
 
 	@Test
 	public void cu_cache_invalidated_by_doc_close() throws Exception {
+		harness = BootLanguageServerHarness.builder()
+				.mockDefaults().build();
+		harness.useProject(new IJavaProject() {
+			@Override
+			public IClasspath getClasspath() {
+				return new DelegatingCachedClasspath<>(() -> null, null);
+			}
+		});
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
