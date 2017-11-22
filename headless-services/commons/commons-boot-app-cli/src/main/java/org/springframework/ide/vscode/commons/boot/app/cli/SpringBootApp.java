@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
@@ -85,7 +86,7 @@ public class SpringBootApp {
 		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
 	}
 
-	public SpringBootApp(VirtualMachineDescriptor vmd) throws Exception {
+	public SpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
 		Log.info("SpringBootApp created: "+this);
@@ -113,7 +114,9 @@ public class SpringBootApp {
 							isSpringBootAppSysprops()
 					);
 			} catch (Exception e) {
-				Log.log(e);
+				//Couldn't determine if the VM is a spring boot app. Could be it already died. Or could be its not accessible (yet).
+				// We will ignore the exception, pretend its not a boot app (most likely isn't) but DO NOT CACHE this result
+				// so it will be retried again on the next polling loop.
 				return false;
 			}
 		}
@@ -133,14 +136,9 @@ public class SpringBootApp {
 	}
 
 
-	public boolean containsSystemProperty(Object key) {
-		try {
-			Properties props = this.vm.getSystemProperties();
-			return props.containsKey(key);
-		}
-		catch (Exception e) {
-			return false;
-		}
+	public boolean containsSystemProperty(Object key) throws IOException {
+		Properties props = this.vm.getSystemProperties();
+		return props.containsKey(key);
 	}
 
 	public String getPort() throws Exception {

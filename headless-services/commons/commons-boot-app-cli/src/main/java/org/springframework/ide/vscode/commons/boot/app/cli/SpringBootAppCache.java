@@ -15,8 +15,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.springframework.ide.vscode.commons.util.Log;
-
 import com.google.common.collect.ImmutableMap;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -37,25 +35,27 @@ public class SpringBootAppCache {
 
 	private void refresh() {
 		List<VirtualMachineDescriptor> currentVms = VirtualMachine.list();
-		HashSet<VirtualMachineDescriptor> oldVms = new HashSet<>(apps.keySet());
-		ImmutableMap.Builder<VirtualMachineDescriptor, SpringBootApp> newApps = ImmutableMap.builder();
+		ImmutableMap.Builder<VirtualMachineDescriptor, SpringBootApp> newAppsBuilder = ImmutableMap.builder();
 		for (VirtualMachineDescriptor vm : currentVms) {
-			oldVms.remove(vm);
 			SpringBootApp existingApp = apps.get(vm);
 			if (existingApp!=null) {
-				newApps.put(vm, existingApp);
+				newAppsBuilder.put(vm, existingApp);
 			} else {
 				try {
-					newApps.put(vm, new SpringBootApp(vm));
+					newAppsBuilder.put(vm, new SpringBootApp(vm));
 				} catch (Exception e) {
-					Log.log(e);
+					//Ignore problems attaching to a VM. We will try again on next polling loop, if vm still exists.
+					//The most likely cause is that the VM already died since we obtained a reference to it.
 				}
 			}
 		}
+		HashSet<VirtualMachineDescriptor> oldVms = new HashSet<>(apps.keySet());
+		ImmutableMap<VirtualMachineDescriptor, SpringBootApp> newApps = newAppsBuilder.build();
+		oldVms.removeAll(newApps.keySet());
 		for (VirtualMachineDescriptor oldVm : oldVms) {
 			apps.get(oldVm).dispose();
 		}
-		apps = newApps.build();
+		apps = newApps;
 		nextRefreshAfter = System.currentTimeMillis() + EXPIRE_AFTER.toMillis();
 	}
 }
