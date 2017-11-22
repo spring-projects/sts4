@@ -186,7 +186,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(10, TimeUnit.SECONDS);
+		}).get(30, TimeUnit.SECONDS);
 
 		assertTrue(classpathCacheFile.exists());
 		assertEquals(48, project.getClasspath().getClasspathEntries().size());
@@ -236,7 +236,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(10, TimeUnit.SECONDS);
+		}).get(30, TimeUnit.SECONDS);
 		progressDone.set(false);
 		verify(diagnosticService, never()).diagnosticEvent(any(ShowMessageException.class));
 
