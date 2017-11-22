@@ -114,18 +114,6 @@ public class GotoSymbolDialog extends PopupDialog {
 			}
 			return s;
 		}	
-		
-		@Override
-		public String getText(Object element) {
-			String s = super.getText(element);
-			if (element instanceof SymbolInformation) {
-				String locationText = getSymbolLocationText((SymbolInformation) element);
-				if (locationText != null) {
-					s+=locationText;
-				}
-			}
-			return s;
-		}
 
 		@Override
 		public void dispose() {
