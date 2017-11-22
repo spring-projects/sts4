@@ -26,8 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.inject.Provider;
 
@@ -38,6 +36,7 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Log;
 
 
 /**
@@ -103,28 +102,28 @@ public abstract class LaunguageServerApp {
 				try {
 					in.close();
 				} catch (IOException e) {
-					LOG.log(Level.SEVERE, e.getMessage(), e);
+					Log.log(e);
 				}
 			}
 			if (out != null) {
 				try {
 					out.close();
 				} catch (IOException e) {
-					LOG.log(Level.SEVERE, e.getMessage(), e);
+					Log.log(e);
 				}
 			}
 			if (socket != null) {
 				try {
 					socket.close();
 				} catch (IOException e) {
-					LOG.log(Level.SEVERE, e.getMessage(), e);
+					Log.log(e);
 				}
 			}
 		}
 	}
 
 	public void start() throws IOException {
-		LOG.info("Starting LS");
+		Log.info("Starting LS");
 		Connection connection = null;
 		try {
 			LoggingFormat.startLogging();
@@ -132,7 +131,7 @@ public abstract class LaunguageServerApp {
 
 			run(connection);
 		} catch (Throwable t) {
-			LOG.log(Level.SEVERE, t.getMessage(), t);
+			Log.log(t);
 			System.exit(1);
 		} finally {
 			if (connection != null) {
@@ -154,7 +153,7 @@ public abstract class LaunguageServerApp {
 	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
 	 */
 	public void startAsServer() throws IOException, InterruptedException {
-		LOG.info("Starting LS as standlone server");
+		Log.info("Starting LS as standlone server");
 
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = consumer;
@@ -201,20 +200,18 @@ public abstract class LaunguageServerApp {
 			InputStream in = socket.getInputStream();
 			OutputStream out = socket.getOutputStream();
 
-			LOG.info("Connected to parent using socket on port " + port);
+			Log.info("Connected to parent using socket on port " + port);
 			return new Connection(in, out, socket);
 		}
 		else {
 			InputStream in = System.in;
 			PrintStream out = System.out;
 
-			LOG.info("Connected to parent using stdio");
+			Log.info("Connected to parent using stdio");
 
 			return new Connection(in, out, null);
 		}
 	}
-
-	public static final Logger LOG = Logger.getLogger("main");
 
 	/**
 	 * Listen for requests from the parent node process.
@@ -232,7 +229,7 @@ public abstract class LaunguageServerApp {
 					consumer.consume(msg);
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
-					LOG.log(Level.WARNING, "Unsupported message was ignored!", e);
+					Log.warn("Unsupported message was ignored!", e);
 				}
 			};
 		};

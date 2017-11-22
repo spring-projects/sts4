@@ -17,6 +17,7 @@ import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
+import { tmpdir } from 'os';
 
 let p2c = P2C.createConverter();
 
@@ -90,8 +91,11 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 cwd: VSCode.workspace.rootPath
                             };
                             let child: ChildProcess.ChildProcess;
+                            let logfile = Path.join(tmpdir(), options.extensionId + '-' + Date.now()+'.log');
+                            log('Redirecting server logs to ' + logfile);
                             const args = [
-                                '-Dserver.port=' + port
+                                '-Dserver.port=' + port,
+                                '-Dorg.slf4j.simpleLogger.logFile=' + logfile
                             ];
                             if (options.classpath) {
                                 const classpath = options.classpath(context);

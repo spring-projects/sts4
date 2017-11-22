@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class is here to make porting old STS code easier. Instead of using this,
- * consider using {@link java.util.logging.Logger} directly
+ * consider using {@link org.slf4j.Logger} directly
  */
 public class Log {
 
