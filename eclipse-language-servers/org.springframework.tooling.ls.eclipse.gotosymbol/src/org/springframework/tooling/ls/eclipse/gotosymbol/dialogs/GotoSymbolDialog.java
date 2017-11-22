@@ -27,8 +27,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
@@ -84,32 +86,47 @@ public class GotoSymbolDialog extends PopupDialog {
 		}
 	}
 	
-	private  class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
+	private  class GotoSymbolsLabelProvider extends StyledCellLabelProvider {
 		
 		private Stylers stylers;
+		private SymbolsLabelProvider symbolsLabelProvider;
+		
 		public  GotoSymbolsLabelProvider(Font base) {
 			stylers = new Stylers(base);
-		}
-		@Override
-		protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
-				throws CoreException, BadLocationException {
-			int maxSeverity = -1;
-			for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {
-				int offset = marker.getAttribute(IMarker.CHAR_START, -1);
-				if (offset != -1) {
-					maxSeverity = Math.max(maxSeverity, marker.getAttribute(IMarker.SEVERITY, -1));
+			boolean showSymbolsLabelProviderLocation  = false; /* dont show full location. we show relative location in our own implementation below */
+			boolean showKindInformation = false;
+			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation , showKindInformation) {
+				@Override
+				protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
+						throws CoreException, BadLocationException {
+					int maxSeverity = -1;
+					for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {
+						int offset = marker.getAttribute(IMarker.CHAR_START, -1);
+						if (offset != -1) {
+							maxSeverity = Math.max(maxSeverity, marker.getAttribute(IMarker.SEVERITY, -1));
+						}
+					}
+					return maxSeverity;
 				}
-			}
-			return maxSeverity;
+			};
+		}
+	
+		@Override
+		public void update(ViewerCell cell) {
+			super.update(cell);
+			Object element = cell.getElement();
+			cell.setImage(symbolsLabelProvider.getImage(element));
+			StyledString styledString = getStyledText(element);
+			cell.setText(styledString.getString());
+			cell.setStyleRanges(styledString.getStyleRanges());
 		}
 
-		@Override
-		public StyledString getStyledText(Object element) {
-			StyledString s = super.getStyledText(element);
+		private StyledString getStyledText(Object element) {
+			StyledString s = symbolsLabelProvider.getStyledText(element);
 			if (element instanceof SymbolInformation) {
 				String locationText = getSymbolLocationText((SymbolInformation) element);
 				if (locationText != null) {
-					s = s.append(locationText, stylers.italic());
+					s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
 				}
 			}
 			return s;
@@ -118,6 +135,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		@Override
 		public void dispose() {
 			stylers.dispose();
+			symbolsLabelProvider.dispose();
 			super.dispose();
 		}
 		
