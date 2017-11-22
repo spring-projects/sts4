@@ -107,7 +107,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		public StyledString getStyledText(Object element) {
 			StyledString s = super.getStyledText(element);
 			if (element instanceof SymbolInformation) {
-				String locationText = getWorkspacePathLabelText((SymbolInformation) element);
+				String locationText = getSymbolLocationText((SymbolInformation) element);
 				if (locationText != null) {
 					s.append(locationText, stylers.italic());
 				}
@@ -119,7 +119,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		public String getText(Object element) {
 			String s = super.getText(element);
 			if (element instanceof SymbolInformation) {
-				String locationText = getWorkspacePathLabelText((SymbolInformation) element);
+				String locationText = getSymbolLocationText((SymbolInformation) element);
 				if (locationText != null) {
 					s+=locationText;
 				}
@@ -133,11 +133,11 @@ public class GotoSymbolDialog extends PopupDialog {
 			super.dispose();
 		}
 		
-		protected String getWorkspacePathLabelText(SymbolInformation symbol) {
-			Optional<String> workspacePath = GotoSymbolDialog.this
-					.getWorkspaceLocation(symbol);
-			if (workspacePath.isPresent()) {
-				return " -- [" + workspacePath.get() + "]";
+		protected String getSymbolLocationText(SymbolInformation symbol) {
+			Optional<String> location = GotoSymbolDialog.this
+					.getSymbolLocation(symbol);
+			if (location.isPresent()) {
+				return " -- [" + location.get() + "]";
 			}
 			return null;
 		}
@@ -249,7 +249,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		list.addDoubleClickListener(e -> performOk(list));
 	}
 	
-	private Optional<String> getWorkspaceLocation(SymbolInformation symbolInformation) {
+	private Optional<String> getSymbolLocation(SymbolInformation symbolInformation) {
 		String val = null;
 
 		if (!model.fromFileProvider(symbolInformation)) {
