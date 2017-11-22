@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -84,6 +85,11 @@ public class GotoSymbolDialog extends PopupDialog {
 	}
 	
 	private  class GotoSymbolsLabelProvider extends SymbolsLabelProvider {
+		
+		private Stylers stylers;
+		public  GotoSymbolsLabelProvider(Font base) {
+			stylers = new Stylers(base);
+		}
 		@Override
 		protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
 				throws CoreException, BadLocationException {
@@ -101,16 +107,40 @@ public class GotoSymbolDialog extends PopupDialog {
 		public StyledString getStyledText(Object element) {
 			StyledString s = super.getStyledText(element);
 			if (element instanceof SymbolInformation) {
-				Optional<String> workspacePath = GotoSymbolDialog.this
-						.getWorkspaceLocation((SymbolInformation) element);
-				if (workspacePath.isPresent()) {
-					s.append(" -- [", Stylers.NULL);
-					s.append(workspacePath.get(), Stylers.NULL);
-					s.append("]", Stylers.NULL);
+				String locationText = getWorkspacePathLabelText((SymbolInformation) element);
+				if (locationText != null) {
+					s.append(locationText, stylers.italic());
 				}
 			}
 			return s;
-		}		
+		}	
+		
+		@Override
+		public String getText(Object element) {
+			String s = super.getText(element);
+			if (element instanceof SymbolInformation) {
+				String locationText = getWorkspacePathLabelText((SymbolInformation) element);
+				if (locationText != null) {
+					s+=locationText;
+				}
+			}
+			return s;
+		}
+
+		@Override
+		public void dispose() {
+			stylers.dispose();
+			super.dispose();
+		}
+		
+		protected String getWorkspacePathLabelText(SymbolInformation symbol) {
+			Optional<String> workspacePath = GotoSymbolDialog.this
+					.getWorkspaceLocation(symbol);
+			if (workspacePath.isPresent()) {
+				return " -- [" + workspacePath.get() + "]";
+			}
+			return null;
+		}
 	}
 
 	private static final Point DEFAULT_SIZE = new Point(280, 300);
@@ -281,7 +311,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(viewer.getControl());
 		viewer.setContentProvider(new SymbolsContentProvider());
-		viewer.setLabelProvider(new GotoSymbolsLabelProvider());
+		viewer.setLabelProvider(new GotoSymbolsLabelProvider(viewer.getTree().getFont()));
 		viewer.setUseHashlookup(true);
 		disposables.add(model.getSymbols().onChange(UIValueListener.from((e, v) -> {
 			viewer.refresh();
