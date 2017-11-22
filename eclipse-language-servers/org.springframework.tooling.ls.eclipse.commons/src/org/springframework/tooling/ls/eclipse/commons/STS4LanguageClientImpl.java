@@ -20,6 +20,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -147,4 +148,31 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 	}
 
+	@Override
+	public void progress(ProgressParams progressEvent) {
+		String status = progressEvent.getStatusMsg() != null ? progressEvent.getStatusMsg() : "";
+		showStatusMessage(status);
+	}
+	
+	private void showStatusMessage(final String status) {
+		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IStatusLineManager statusLineManager = getStatusLineManager();
+				if (statusLineManager != null) {
+					statusLineManager.setMessage(status);
+				}
+			}
+		});
+	}
+
+	private IStatusLineManager getStatusLineManager() {
+		try {
+			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getEditorSite().getActionBars().getStatusLineManager();
+		}
+		catch (NullPointerException e) {
+			return null;
+		}
+	}
+	
 }

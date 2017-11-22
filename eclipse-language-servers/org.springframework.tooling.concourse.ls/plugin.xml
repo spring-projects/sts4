@@ -85,6 +85,7 @@
       <server
             class="org.springframework.tooling.concourse.ls.ConcourseLanguageServer"
             id="org.eclipse.languageserver.languages.concourse"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="Concourse Language Server">
       </server>
       <contentTypeMapping

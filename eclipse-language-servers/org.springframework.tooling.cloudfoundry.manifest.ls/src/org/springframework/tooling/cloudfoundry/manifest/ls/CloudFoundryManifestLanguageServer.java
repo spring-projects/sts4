@@ -11,7 +11,6 @@
 package org.springframework.tooling.cloudfoundry.manifest.ls;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -23,23 +22,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
-import org.springframework.tooling.ls.eclipse.commons.LanguageServerProcessReaper;
+import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
-public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionProvider {
-	
-	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
+public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProcessStreamConnector {
 	
 	private LanguageServer languageServer;
 	private URI rootPath;
@@ -93,34 +87,11 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 	public void stop() {
 		removeLanguageServer(this);
 		super.stop();
-		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
 	}
 	
 	@Override
 	public Object getInitializationOptions(URI rootUri) {
 		return cfTargetOptionSettings;
-	}
-	
-	protected String getJDKLocation() {
-		try {
-			File javaHome= new File(System.getProperty("java.home")).getCanonicalFile(); //$NON-NLS-1$
-			if (javaHome.exists()) {
-				File javaExecutable = StandardVMType.findJavaExecutable(javaHome);
-				if (javaExecutable != null && javaExecutable.exists()) {
-					return javaExecutable.getAbsolutePath();
-				}
-			}
-		} catch (IOException e) {
-			return null;
-		}
-		
-		return null;
-	}
-	
-	@Override
-	public void start() throws IOException {
-		super.start();
-		processReaper.addProcess(LanguageServerProcessReaper.getProcess(this));
 	}
 	
 	protected String getLanguageServerJARLocation() {
@@ -142,11 +113,6 @@ public class CloudFoundryManifestLanguageServer extends ProcessStreamConnectionP
 		}
 		
 		return dataFile.getAbsolutePath();
-	}
-	
-	protected String getWorkingDirLocation() {
-		// TODO: identify a reasonable working directory for the language server process
-		return System.getProperty("user.dir");
 	}
 	
 	protected void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {

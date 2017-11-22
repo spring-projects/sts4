@@ -7,6 +7,7 @@
       <server
             class="org.springframework.tooling.cloudfoundry.manifest.ls.CloudFoundryManifestLanguageServer"
             id="org.eclipse.languageserver.languages.cloudfoundrymanifest"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="Cloud Foundry Manifest Language Server">
       </server>
       <contentTypeMapping

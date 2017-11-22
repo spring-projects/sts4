@@ -85,6 +85,7 @@
       <server
             class="org.springframework.tooling.bosh.ls.BoshLanguageServer"
             id="org.eclipse.languageserver.languages.bosh"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="BOSH Language Server">
       </server>
       <contentTypeMapping
