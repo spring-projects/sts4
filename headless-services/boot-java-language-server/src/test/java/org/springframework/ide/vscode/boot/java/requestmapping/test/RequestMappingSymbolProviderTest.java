@@ -44,7 +44,7 @@ public class RequestMappingSymbolProviderTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols = harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/greeting -- (no method defined)", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 29));
+		assertTrue(containsSymbol(symbols, "@/greeting", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 29));
 	}
 
 	@Test
@@ -80,8 +80,8 @@ public class RequestMappingSymbolProviderTest {
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java");
 		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/hello1 -- (no method defined)", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
-		assertTrue(containsSymbol(symbols, "@/hello2 -- (no method defined)", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
+		assertTrue(containsSymbol(symbols, "@/hello1", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
+		assertTrue(containsSymbol(symbols, "@/hello2", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
 	}
 
 	@Test
