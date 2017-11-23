@@ -22,7 +22,7 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-properties',
         launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
-        jvmHeap: "64m",
+        jvmHeap: "160m",
         clientOptions: {
             documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID ]
         }
