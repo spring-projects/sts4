@@ -185,6 +185,14 @@ resources:
 #     secret_access_key: {{s3_prod_secretkey}}
 #     region_name: {{s3_prod_region}}
 #     regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
+- name: s3-boot-properties-fatjar-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/fatjars/snapshots/boot-properties-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -760,6 +768,10 @@ jobs:
       - put: s3-boot-java-fatjar-snapshot
         params:
           file: out/boot-java-language-server-*.jar
+          acl: public-read
+      - put: s3-boot-properties-fatjar-snapshot
+        params:
+          file: out/boot-properties-language-server-*.jar
           acl: public-read
 - name: build-manifest-yaml-atom-package
   serial: true
