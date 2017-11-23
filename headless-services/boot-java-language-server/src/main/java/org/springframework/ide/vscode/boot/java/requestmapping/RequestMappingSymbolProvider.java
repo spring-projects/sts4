@@ -49,7 +49,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 				String[] parentPath = getParentPath(node);
 				String[] method = getMethod(node);
 
-				String methodStr = method == null || method.length == 0 ? "(no method defined)" : String.join(",", method);
+				String methodStr = method == null || method.length == 0 ? "" : String.join(",", method);
 
 				return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
@@ -61,7 +61,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 									}
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
-						.map(p -> "@" + p + " -- " + methodStr)
+						.map(p -> "@" + p + (methodStr.isEmpty() ? "" : " -- " + methodStr))
 						.map(symbolLabel -> new SymbolInformation(symbolLabel, SymbolKind.Interface, location))
 						.collect(Collectors.toList());
 			} catch (Exception e) {
