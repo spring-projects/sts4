@@ -1,5 +1,7 @@
 # Atom package for Spring Boot Application Properties
 
+[![macOS Build Status](https://travis-ci.org/spring-projects/atom-boot-properties.svg?branch=master)](https://travis-ci.org/spring-projects/atom-boot-properties) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/1jvknxt9jhykgrxo?svg=true)](https://ci.appveyor.com/project/spring-projects/atom-boot-properties/branch/master) [![Dependency Status](https://david-dm.org/spring-projects/atom-boot-properties.svg)](https://david-dm.org/spring-projects/atom-boot-properties)
+
 Atom package and Language Server providing support for editing `application.properties` 
 and `application.yml` files containing Spring Boot configuration properties.
 

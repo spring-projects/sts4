@@ -73,6 +73,12 @@ resources:
     branch: {{branch}}
     private_key: {{rsa_id}}
     uri: git@github.com:spring-projects/atom-boot-java.git
+- name: atom-boot-properties
+  type: git
+  source:
+    branch: {{branch}}
+    private_key: {{rsa_id}}
+    uri: git@github.com:spring-projects/atom-boot-properties.git
 - name: tasks
   type: git
   source:
@@ -225,6 +231,14 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/atom/snapshots/boot-java-(.*).tgz
+- name: s3-boot-properties-atom-snapshot
+  type: s3
+  source:
+    bucket: {{s3_bucket}}
+    access_key_id: {{s3_accesskey}}
+    secret_access_key: {{s3_secretkey}}
+    region_name: {{s3_region}}
+    regexp: sts4/atom/snapshots/boot-properties-(.*).tgz
 - name: vscode-snapshot-website
   type: s3-multi
   source:
@@ -703,6 +717,10 @@ jobs:
       trigger: true
       passed:
       - build-boot-java-atom-package
+    - get: s3-boot-properties-atom-snapshot
+      trigger: true
+      passed:
+      - build-boot-properties-atom-package
   - task: build-website
     file: sts4/concourse/tasks/build-atom-website.yml
   - put: atom-snapshot-website
@@ -905,3 +923,37 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-boot-properties-atom-package
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-boot-properties
+    - get: s3-boot-properties-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-boot-properties-atom-package
+    params:
+      package_name: atom-boot-properties
+    input_mapping:
+      fatjar: s3-boot-properties-fatjar-snapshot
+      release_repo: atom-boot-properties
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - aggregate:
+    - put: s3-boot-properties-atom-snapshot
+      params:
+        file: out/boot-properties-*.tgz
+        acl: public-read
+    - put: atom-boot-properties
+      params:
+        repository: out/repo
+        rebase: true    
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+         
