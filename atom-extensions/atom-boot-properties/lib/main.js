@@ -38,7 +38,6 @@ class BootPropertiesClient extends JavaProcessLanguageClient {
             '-Dorg.slf4j.simpleLogger.logFile=boot-properties.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
         ]);
-
     }
 
 }
