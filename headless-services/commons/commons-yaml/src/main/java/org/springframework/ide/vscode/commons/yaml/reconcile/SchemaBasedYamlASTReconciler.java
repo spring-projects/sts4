@@ -139,7 +139,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType _type) {
 //		IDocument doc = ast.getDocument();
-		if (_type!=null) {
+		if (_type!=null && !skipReconciling(node)) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
 			if (typeCollector!=null) {
@@ -341,22 +341,31 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	protected NodeId getNodeId(Node node) {
 		NodeId id = node.getNodeId();
-		if (id==NodeId.mapping && isMoustacheVar(node)) {
-			return NodeId.scalar;
-		}
+//		if (id==NodeId.mapping && isMoustacheVar(node)) {
+//			return NodeId.scalar;
+//		}
 		return id;
 	}
 
 	/**
 	 * 'Moustache' variables look like `{{name}}` and unfortuately when
-	 * parsed these will parse as a kind of map. But since these vars are meant to be replaced
-	 * with some kind of string we should treat them as scalar instead.
+	 * parsed these will parse as a kind of weird map node.
 	 * <p>
 	 * This function recognizes a mapping node that actually is moustache var pattern.
 	 */
 	private boolean isMoustacheVar(Node node) {
 		return NodeUtil.asScalar(debrace(debrace(node))) != null;
 	}
+
+	private boolean isParensPlaceHolder(Node node) {
+		String scalar = NodeUtil.asScalar(node);
+		return scalar != null && scalar.startsWith("((") && scalar.endsWith("))");
+	}
+
+	protected boolean skipReconciling(Node node) {
+		return isMoustacheVar(node) || isParensPlaceHolder(node);
+	}
+
 
 	private Node debrace(Node _node) {
 		MappingNode node = NodeUtil.asMapping(_node);

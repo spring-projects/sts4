@@ -4062,6 +4062,22 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("environment_variables", "Environment variables");
 	}
 
+	@Test public void bug_152918825_no_reconciling_for_double_parens_placeholders() throws Exception {
+		//https://www.pivotaltracker.com/story/show/152918825
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: image-XXX\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: ((DOCKER_IMAGE))\n" +
+				"    insecure_registries: ((DOCKER_INSECURE_REGISTRIES))\n" +
+				"    tag: latest"
+		);
+		editor.assertProblems(
+				"image-XXX|Unused 'Resource'"
+		);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
