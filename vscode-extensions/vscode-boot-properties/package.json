@@ -25,11 +25,45 @@
     "application-yaml"
   ],
   "activationEvents": [
-    "onLanguage:ini",
-    "onLanguage:java-properties",
-    "onLanguage:properties",
-    "onLanguage:yaml"
+    "onLanguage:spring-boot-properties",
+    "onLanguage:spring-boot-properties-yaml"
   ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "spring-boot-properties-yaml",
+        "aliases": [
+          "Spring Boot Properties Yaml"
+        ],
+        "filenamePatterns": [
+          "application*.yml"
+        ],
+        "configuration": "./yaml-support/language-configuration.json"
+      },
+      {
+        "id": "spring-boot-properties",
+        "aliases": [
+          "Spring Boot Properties"
+        ],
+        "filenamePatterns": [
+          "application*.properties"
+        ],
+        "configuration": "./properties-support/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "spring-boot-properties-yaml",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      },
+      {
+        "language": "spring-boot-properties",
+        "scopeName": "source.java-properties",
+        "path": "./properties-support/java-properties.tmLanguage"
+      }
+    ]
+  },
   "main": "./out/lib/Main",
   "scripts": {
     "prepublish": "tsc -p .",

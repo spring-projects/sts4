@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>properties</string>
+	</array>
+	<key>foldingStartMarker</key>
+	<string>^[a-zA-Z0-9.-_]+=.*\
+</string>
+	<key>foldingStopMarker</key>
+	<string>^(.*(?&lt;!\)
+)</string>
+	<key>keyEquivalent</key>
+	<string>^~J</string>
+	<key>name</key>
+	<string>Java Properties</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>comment</key>
+			<string>Ignore blank lines</string>
+			<key>match</key>
+			<string>^\s*$</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#comment-line</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#property-name</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>#property-definition</string>
+		</dict>
+	</array>
+	<key>repository</key>
+	<dict>
+		<key>comment-line</key>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.whitespace.comment.leading.java-properties</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.comment.java-properties</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(\s*)([#!])(.+)?$\n?</string>
+			<key>name</key>
+			<string>comment.line.java-properties</string>
+		</dict>
+		<key>property-definition</key>
+		<dict>
+			<key>begin</key>
+			<string>^(\s*)((?:\\[ \t]|\\:|\\=|[^:=\s])+)(?:\s*([:=]))?\s*</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.whitespace.leading.java-properties</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>support.constant.java-properties</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>match</key>
+							<string>\\(?:[ \t:=\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
+							<key>name</key>
+							<string>constant.character.escape.java-properties</string>
+						</dict>
+					</array>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.separator.key-value.java-properties</string>
+				</dict>
+			</dict>
+			<key>contentName</key>
+			<string>string.unquoted.java-properties</string>
+			<key>end</key>
+			<string>(?&lt;!\\{1})$\n</string>
+			<key>name</key>
+			<string>meta.key-value.java-properties</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>comment</key>
+					<string>Leading space on a continued line is ignored</string>
+					<key>match</key>
+					<string>^\s*</string>
+					<key>name</key>
+					<string>punctuation.whitespace.leading.java-properties</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>(\\{1})(?=$\n)</string>
+					<key>name</key>
+					<string>punctuation.separator.continuation.java-properties</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>\\(?:[\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
+					<key>name</key>
+					<string>constant.character.escape.java-properties</string>
+				</dict>
+			</array>
+		</dict>
+		<key>property-name</key>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.whitespace.comment.leading.java-properties</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>support.constant.java-properties</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>match</key>
+							<string>\\(?:[ \t:=\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
+							<key>name</key>
+							<string>constant.character.escape.java-properties</string>
+						</dict>
+					</array>
+				</dict>
+			</dict>
+			<key>comment</key>
+			<string>A property name with no value</string>
+			<key>match</key>
+			<string>^(\s*)((?:\\[ \t]|\\:|\\=|[^:=\s])+)(?:\s*([:=]))?\s*$\n</string>
+			<key>name</key>
+			<string>meta.key-value.java-properties</string>
+		</dict>
+	</dict>
+	<key>scopeName</key>
+	<string>source.java-properties</string>
+	<key>uuid</key>
+	<string>D364E829-7643-4AFF-948D-3C0D6B4EA8A4</string>
+</dict>
+</plist>

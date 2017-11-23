@@ -28,12 +28,6 @@
     "onLanguage:concourse-task-yaml"
   ],
   "contributes": {
-    "commands": [
-      {
-        "command": "mycommand.sayHello",
-        "title": "Say Hello"
-      }
-    ],
     "languages": [
       {
         "id": "concourse-pipeline-yaml",

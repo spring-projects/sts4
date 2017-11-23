@@ -12,6 +12,9 @@ import {TextDocument} from 'vscode';
 
 import * as commons from 'commons-vscode';
 
+const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
+const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
+
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
@@ -19,25 +22,10 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-boot-properties',
         launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
+        jvmHeap: "64m",
         clientOptions: {
-            // HACK!!! documentSelector only takes string|string[] where string is language id, but DocumentFilter object is passed instead
-            // Reasons:
-            // 1. documentSelector is just passed over to functions like #registerHoverProvider(documentSelector, ...) that take documentSelector
-            // parameter in string | DocumentFilter | string[] | DocumentFilter[] format
-            // 2. Combination of non string|string[] documentSelector parameter and synchronize.textDocumentFilter function makes doc synchronization
-            // events pass on to Language Server only for documents for which function passed via textDocumentFilter property return true
-
-            // TODO: Remove <any> cast ones https://github.com/Microsoft/vscode-languageserver-node/issues/9 is resolved
-            documentSelector: [
-                // for application.properties files
-                 <any> {language: 'ini', pattern: '**/application*.properties'},
-                 <any> {language: 'java-properties', pattern: '**/application*.properties'},
-                 <any> {language: 'properties', pattern: '**/application*.properties'},
-                 // for application.yml files
-                 <any> {language: 'yaml', pattern: '**/application*.yml'}
-                 
-            ]
+            documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID ]
         }
     };
-    commons.activate(options, context);
+    let clientPromise = commons.activate(options, context);
 }
