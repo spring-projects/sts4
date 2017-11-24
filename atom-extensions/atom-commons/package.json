@@ -12,7 +12,7 @@
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",
-    "postinstall-build": "^3.0.0"
+    "postinstall-build": "5.0.1"
   },
   "main": "./build/lib/index",
   "scripts": {
