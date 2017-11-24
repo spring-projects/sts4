@@ -1,6 +1,6 @@
 {
   "name": "pivotal-atom-languageclient-commons",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Atom language client commons for STS4 language servers",
   "repository": "https://github.com/spring-projects/sts4",
   "license": "MIT",
@@ -12,9 +12,12 @@
     "decompress": "^4.2.0",
     "portfinder": "^1.0.13",
     "remote-file-size": "^3.0.3",
-    "postinstall-build": "^3.0.0"
+    "postinstall-build": "5.0.1"
   },
   "main": "./build/lib/index",
+  "files": [
+    "build/"
+  ],
   "scripts": {
     "clean": "rm -rf build",
     "compile": "babel lib --out-dir build/lib",
