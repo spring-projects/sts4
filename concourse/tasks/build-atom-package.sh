@@ -25,6 +25,10 @@ EOF
 
 npm install
 
+cd $atom_package/node_modules/pivotal-atom-languageclient-commons
+ls
+cd $atom_package
+
 # push code to release repository
 
 cd $workdir
@@ -48,12 +52,16 @@ git add .
 git commit \
     -m "Publish ${fatjar_version}"
 
-# Publsuh linkable artifact to S3
+# Publish linkable artifact to S3
 
 cd $atom_package
 npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
+
+cd $atom_package/node_modules/pivotal-atom-languageclient-commons
+ls
+cd $atom_package
 
 basename=$(npm pack | tee /dev/tty)
 
