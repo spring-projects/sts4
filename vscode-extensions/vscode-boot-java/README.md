@@ -88,5 +88,3 @@ open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: I
 [screenshot-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-apps-quick-access.png
 [screenshot-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-hovers.png
 [screenshot-navigation]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-navigation.png
-
-https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
