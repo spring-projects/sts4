@@ -45,12 +45,8 @@ git config user.name "Alex Boyko"
 
 git add .
 
-git_changes=$(git diff --cached --exit-code)
-if [$git_changes != 0]
-then
 git commit \
     -m "Publish ${fatjar_version}"
-fi
 
 # Publish linkable artifact to S3
 
