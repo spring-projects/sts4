@@ -29,7 +29,7 @@ Easy navigation to Spring-specific elements of your source code.
 ## Quick-access for running apps
 Easy navigation to the provided request mappings of running apps.
 
-![accessing running apps quickly](screenshot-live-apps-quick-access]
+![accessing running apps quickly][screenshot-live-apps-quick-access]
 
 ### Shortcuts
 * Mac: Cmd-Shift-O (symbols in file), Cmd-T (symbols in workspace)
@@ -84,7 +84,9 @@ that can be donwloaded from
 [here](http://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it
 open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
-[screenshot-code-completion]: prefixxx/screenshot-code-completion.png
-[screenshot-live-apps-quick-access]: prefixxx/screenshot-live-apps-quick-access.png
-[screenshot-live-hovers]: prefixxx/screenshot-live-hovers.png
-[screenshot-navigation]: prefixxx/screenshot-navigation.png
+[screenshot-code-completion]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
+[screenshot-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-apps-quick-access.png
+[screenshot-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-hovers.png
+[screenshot-navigation]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-navigation.png
+
+https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
