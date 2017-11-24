@@ -51,8 +51,8 @@ that can be donwloaded from
 2. Execute `apm link .` from that folder
 3. Execute `Window Reload` (Package -> Command Palette -> Toggle then search for it) command in the opened Atom instance or open an Atom instance
 
-[yaml-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-completion.png
-[properties-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-completion.png
-[yaml-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-validation.png
-[properties-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-validation.png
-[yaml-hovers]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hovers.png
+[yaml-completion]: https://github.com/spring-projects/sts4/blob/714c6bbb519f714ebba9f9fc5968ac2e619159f8/atom-extensions/atom-boot-properties/readme-imgs/yaml-completion.png
+[properties-completion]: https://github.com/spring-projects/sts4/blob/714c6bbb519f714ebba9f9fc5968ac2e619159f8/atom-extensions/atom-boot-properties/readme-imgs/properties-completion.png
+[yaml-validation]: https://github.com/spring-projects/sts4/blob/714c6bbb519f714ebba9f9fc5968ac2e619159f8/atom-extensions/atom-boot-properties/readme-imgs/yaml-validation.png
+[properties-validation]: https://github.com/spring-projects/sts4/blob/714c6bbb519f714ebba9f9fc5968ac2e619159f8/atom-extensions/atom-boot-properties/readme-imgs/properties-validation.png
+[yaml-hovers]: https://github.com/spring-projects/sts4/blob/714c6bbb519f714ebba9f9fc5968ac2e619159f8/atom-extensions/atom-boot-properties/readme-imgs/yaml-hovers.png
