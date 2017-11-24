@@ -26,18 +26,17 @@ hovers while editing Spring Boot Properties in either `.properties` or `.yml` fo
 ## Validation
 
 ![application-yaml-validation][yaml-validation]
-
-![application-properties-validation][yaml-validation]
+![application-properties-validation][properties-validation]
 
 ## Code Completions
 
-![application-yaml-completions][yaml-validation]
+![application-yaml-completions][yaml-completion]
 
-![application-properties-completions][yaml-validation]
+![application-properties-completions][properties-completion]
 
 ## Information Hovers
 
-![application-yaml-hovers][yaml-validation]
+![application-yaml-hovers][yaml-hovers]
 
 ## Issues and Feature Requests
 
@@ -52,7 +51,8 @@ that can be donwloaded from
 [here](http://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it
 open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
-[screenshot-code-completion]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
-[screenshot-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-apps-quick-access.png
-[screenshot-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-hovers.png
-[screenshot-navigation]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-navigation.png
+[yaml-completion]: prefixxx/yaml-completion.png
+[properties-completion]: prefixxx/properties-completion.png
+[yaml-validation]: prefixx/yaml-validation.png
+[properties-validation]: prefixx/properties-validation.png
+[yaml-hovers]: prefixx/yaml-hovers.png
