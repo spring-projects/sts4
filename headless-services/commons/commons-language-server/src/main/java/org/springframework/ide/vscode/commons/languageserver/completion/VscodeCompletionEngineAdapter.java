@@ -168,6 +168,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
 		item.setDetail(completion.getDetail());
+		resolveEdits(doc, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
+											//lazy as we used to do in the past.
 		if (resolver!=null) {
 			item.setData(resolver.resolveLater(completion, doc));
 		} else {
@@ -178,6 +180,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
 		item.setDocumentation(toMarkdown(completion.getDocumentation()));
+		resolveEdits(doc, completion, item);
+	}
+
+	private static void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
 		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(mainEdit.get());
