@@ -65,4 +65,4 @@ that can be donwloaded from
 
 [screenshot-live-hovers]: https://raw.githubusercontent.com/spring-projects/sts4/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-live-hovers.png
 [screenshot-code-completion]: https://github.com/spring-projects/sts4/blob/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-code-completion.png
-[screenshot-navigation]: https://github.com/spring-projects/sts4/blob/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-navigation-in-file.png
+[screenshot-navigation]: https://github.com/spring-projects/sts4/blob/26452532e6151f6668bcae4b5a2503c5a75c8d15/atom-extensions/atom-boot-java/readme-imgs/screenshot-navigation-in-file.png
