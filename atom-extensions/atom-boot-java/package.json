@@ -34,7 +34,8 @@
     "postinstall": "node script.js"
   },
   "package-deps": [
-    "atom-ide-ui"
+    "atom-ide-ui",
+    "ide-java"
   ],
   "consumedServices": {
     "linter-indie": {
