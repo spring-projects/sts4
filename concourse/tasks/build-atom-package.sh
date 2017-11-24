@@ -45,7 +45,7 @@ git config user.name "Alex Boyko"
 
 git add .
 
-git_changes=git diff --cached --exit-code
+git_changes=$(git diff --cached --exit-code)
 if [$git_changes != 0]
 then
 git commit \
