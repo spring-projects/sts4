@@ -58,5 +58,5 @@ that can be donwloaded from
 2. Execute `apm link .` from that folder
 3. Execute `Window Reload` (Package -> Command Palette -> Toggle then search for it) command in the opened Atom instance or open an Atom instance
 
-[screenshot-code-completion]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
-[screenshot-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-hovers.png
+[screenshot-code-completion]: https://raw.githubusercontent.com/spring-projects/sts4/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-live-hovers.png
+[screenshot-live-hovers]: https://github.com/spring-projects/sts4/blob/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-code-completion.png
