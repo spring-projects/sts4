@@ -15,7 +15,7 @@ fatjar_version=`cat fatjar/version`
 
 cd $atom_package
 
-# npm install ${atom_commons}
+npm install ${atom_commons}
 
 cat > properties.json << EOF
 {
@@ -24,10 +24,6 @@ cat > properties.json << EOF
 EOF
 
 npm install
-
-cd $atom_package/node_modules/pivotal-atom-languageclient-commons
-ls
-cd $atom_package
 
 # push code to release repository
 
@@ -49,8 +45,12 @@ git config user.name "Alex Boyko"
 
 git add .
 
+git_changes=git diff --cached --exit-code
+if [$git_changes != 0]
+then
 git commit \
     -m "Publish ${fatjar_version}"
+fi
 
 # Publish linkable artifact to S3
 
@@ -58,10 +58,6 @@ cd $atom_package
 npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
-
-cd $atom_package/node_modules/pivotal-atom-languageclient-commons
-ls
-cd $atom_package
 
 basename=$(npm pack | tee /dev/tty)
 
