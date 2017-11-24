@@ -51,8 +51,8 @@ that can be donwloaded from
 [here](http://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it
 open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
-[yaml-completion]: prefixxx/yaml-completion.png
-[properties-completion]: prefixxx/properties-completion.png
-[yaml-validation]: prefixx/yaml-validation.png
-[properties-validation]: prefixx/properties-validation.png
-[yaml-hovers]: prefixx/yaml-hovers.png
+[yaml-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-completion.png
+[properties-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-completion.png
+[yaml-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-validation.png
+[properties-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-validation.png
+[yaml-hovers]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hovers.png
