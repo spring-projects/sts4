@@ -37,7 +37,7 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 		
 		commands.add("-Dlsp.lazy.completions.disable=true");
 		commands.add("-Dlsp.completions.indentation.enable=true");
-		commands.add("-Xmx200m");
+		commands.add("-Xmx1024m");
 		commands.add("-cp");
 		commands.add(getToolsJAR() + ":" + getLanguageServerJARLocation());
 		commands.add("org.springframework.boot.loader.JarLauncher");
