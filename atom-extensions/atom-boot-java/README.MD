@@ -13,6 +13,11 @@ name patterns:
 
 # Functionality
 
+## Navigating the source code - Go to symbol in file
+Easy navigation to Spring-specific elements of your source code. Open `.java` file then open Atom's `Outline View` - View -> Toggle Outline View
+
+![Go to Symbol in file][screenshot-navigation]
+
 ## Live application information hovers
 Show information from running Spring Boot apps on your machine in the source code. This allows you to run the Spring Boot app locally on your machine and visualizes information from those running apps in your source code.
 
@@ -60,3 +65,4 @@ that can be donwloaded from
 
 [screenshot-live-hovers]: https://raw.githubusercontent.com/spring-projects/sts4/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-live-hovers.png
 [screenshot-code-completion]: https://github.com/spring-projects/sts4/blob/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-code-completion.png
+[screenshot-navigation]: https://github.com/spring-projects/sts4/blob/112106b8bfdcebc33bb7923dda496f7a91fa93d8/atom-extensions/atom-boot-java/readme-imgs/screenshot-navigation-in-file.png
