@@ -10,8 +10,8 @@ atom_package=$workdir/sts4/atom-extensions/$package_name
 url=`cat fatjar/url`
 fatjar_version=`cat fatjar/version`
 
-# cd $atom_commons
-# npm install
+cd $atom_commons
+npm install
 
 cd $atom_package
 
