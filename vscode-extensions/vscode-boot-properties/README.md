@@ -1,77 +1,58 @@
 # VS Code Language Server for Spring Boot Application Properties
 
-VSCode extension and Language Server providing support for editing `application.properties` 
-and `application.yml` files containing Spring Boot configuration properties.
+VSCode extension and Language Server providing support for working with Spring Boot 
+`application.properties` and `application.yml` files.
 
-## Installation:
-
-Currently this plugin is not distributed via vscode marketplace. You can only install
-it from a .vsix file. You can download it here:
-
-   TODO: add link
-
-To install it:
-
-- open vscode. 
-- press `CTRL-SHIFT-P` and search for VSIX
-- select `Extension: Install from VSIX`
-
-## Usage:
+# Usage:
 
 The extension will automatically activate when you edit files with the following
 name patterns:
 
- - `application*.properties` => activates support for .properties file format.
- - `application*.yml` => activates support for .yml file format.
+ - `application*.java` => activates support for Spring Boot properties in `.properties`format.
+ - `application*.yml` =>  activates support for Spring Boot properties in `.yml` format.
 
-# Developer notes
+You can also define your own patterns and map them to the language-ids
+`spring-boot-properties` or `spring-boot-properties-yaml` by defining `files.associations`
+in workspace settings.  See [vscode documentation](https://code.visualstudio.com/Docs/languages/overview#_adding-a-file-extension-to-a-language) for details.
 
-## Bulding and Running
+# Functionality
 
-This project consists of three pieces:
+This extension analyzes your project's classpath and parses and indexes any [Spring Boot
+Properties Metadata](https://docs.spring.io/spring-boot/docs/current/reference/html/configuration-metadata.html) it finds. Both Maven and Gradle projects are supported.
 
- - a vscode-extension which is a language-server client implemented in TypeScript.
- - commons-vscode: a local npm module with some utilities implemented in TypeScript.
- - a language server implemented in Java.
+The data in the index is used to provide validation, code completions and information
+hovers while editing Spring Boot Properties in either `.properties` or `.yml` format.
 
-To build all these pieces you normally only need to run:
+## Validation
 
-   npm install
+![application-yaml-validation][yaml-validation]
 
-**However, the first time you build** it might fail trying to
-find the `commons-vscode` module on npm central. Once we publish a stable 
-version of that module on npm central that will no longer be a problem. 
-Until that time, you can work around this by doing a one time manual 
-run of the `preinstall` script prior to running `npm install`:
+![application-properties-validation][yaml-validation]
 
-    ./scripts/preinstall.sh
-    npm install
+## Code Completions
 
-Now you can open the client-app in vscode. From the root of this project.
+![application-yaml-completions][yaml-validation]
 
-    code .
+![application-properties-completions][yaml-validation]
 
-To launch the language server in a vscode runtime, press F5.
+## Information Hovers
 
-## Debugging
+![application-yaml-hovers][yaml-validation]
 
-To debug the language server, open `lib/Main.ts` and edit to set the
-`DEBUG` option to `true`. When you laucnh the app next by pressing
-`F5` it will launch with debug options being passed to the JVM.
+## Issues and Feature Requests
 
-You can then connect a 'Remote Java' Eclipse debugger on port 8000.
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
 
-## Packaging as a vscode extension
+# Releases:
 
-First make sure the stuff is all built locally:
+Released versions of this extension can be installed directly from the vscode marketplace.
 
-     ./scripts/preinstall.sh  # only needed if this is the first build.
-     npm install
+There are also development snapshots available with the latest fixes and improvements as a `.vsix` file 
+that can be donwloaded from 
+[here](http://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it
+open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
-Then package it:
-
-     npm run vsce-package
-
-This produces a `.vsix` file which you can install directly into vscode.
-
-*Version: 0.0.1-201701250238*
+[screenshot-code-completion]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-code-completion.png
+[screenshot-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-apps-quick-access.png
+[screenshot-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-live-hovers.png
+[screenshot-navigation]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/screenshot-navigation.png

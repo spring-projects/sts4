@@ -1,4 +1,4 @@
-# VS Code Language Server for Spring Boot Application Properties
+# VS Code Language Server for Spring Boot Java Support
 
 VSCode extension and Language Server providing support for working with Spring Boot apps in Java.
 
@@ -64,7 +64,6 @@ Write Spring code with templates, available via regular code completion.
 * `@GetMapping`
 * `@PostMapping`
 * `@PutMapping`
-* `@RequestMapping`
 
 ## Smart code completions
 Additional code completions for Spring-specific annotations
@@ -74,6 +73,10 @@ Additional code completions for Spring-specific annotations
 ### Examples
 * `@Value`: code completion for Spring Boot property keys
 * `@Scope`: code completion for standard scope names
+
+# Issues and Feature Requests
+
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
 
 # Releases:
 
