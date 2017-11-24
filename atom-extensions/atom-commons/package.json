@@ -19,7 +19,7 @@
     "clean": "rm -rf build",
     "compile": "babel lib --out-dir build/lib",
     "postinstall": "postinstall-build --only-as-dependency build \"npm run compile\"",
-    "prepublish": "npm run clean && npm run compile",
+    "prepublish": "npm run compile",
     "watch": "babel lib --out-dir build/lib -w"
   },
   "atomTranspilers": [
