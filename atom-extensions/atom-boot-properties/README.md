@@ -23,16 +23,22 @@ hovers while editing Spring Boot Properties in either `.properties` or `.yml` fo
 
 ## Validation
 
+Property keys as well as property values are validated. Property keys are validated for being known properties and values are checked for being of expected type as well being a valid value
+
 ![application-yaml-validation][yaml-validation]
 ![application-properties-validation][properties-validation]
 
 ## Code Completions
+
+Both YAML and Properties formats have support for Content Assist on property keys and values helping to write valid Spring Boot configuration files right from the start.
 
 ![application-yaml-completions][yaml-completion]
 
 ![application-properties-completions][properties-completion]
 
 ## Information Hovers
+
+Hovering over property keys provide valuable documentation about the purpose of the property and expected type for its value in a small popup window.
 
 ![application-yaml-hovers][yaml-hovers]
 
