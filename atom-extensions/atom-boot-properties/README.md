@@ -1,4 +1,4 @@
-# VS Code Language Server for Spring Boot Application Properties
+# Atom package and Language Server for Spring Boot Application Properties
 
 Atom package and Language Server providing support for working with Spring Boot 
 `application.properties` and `application.yml` files.
