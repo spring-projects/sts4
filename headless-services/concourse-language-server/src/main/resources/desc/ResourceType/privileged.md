@@ -1,0 +1,3 @@
+*Optional*. *Default* `false`. If set to `true`, the resource's containers will be run with full capabilities, as determined by the Garden backend the task runs on. For Linux-based backends it typically determines whether or not the container will run in a separate user namespace, and whether the `root` user is "actual" `root` (if set to `true`) or a user namespaced `root` (if set to `false`, the default).
+
+This is a gaping security hole; only configure it if the resource type needs it (which should be called out in its documentation). This is not up to the resource type to decide dynamically, so as to prevent privilege escalation via third-party resource type exploits.

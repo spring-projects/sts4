@@ -379,6 +379,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(resourceType, "name", resourceTypeNameDef).isPrimary(true);
 		addProp(resourceType, "type", t_resource_type_name).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
+		addProp(resourceType, "privileged", t_boolean);
 
 		AbstractType group = f.ybean("Group");
 		addProp(group, "name", t_ne_string).isPrimary(true);
