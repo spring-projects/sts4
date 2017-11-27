@@ -10,25 +10,28 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -40,17 +43,19 @@ public class ValueHoverProvider implements HoverProvider {
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 
 		try {
+			ASTNode exactNode = NodeFinder.perform(node, offset, 0);
+
 			// case: @Value("prefix<*>")
-			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc, runningApps);
+			if (exactNode != null && exactNode instanceof StringLiteral && exactNode.getParent() instanceof Annotation) {
+				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
+					return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(), exactNode.getStartPosition(), doc, runningApps);
 				}
 			}
 			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideHover(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc, runningApps);
+			else if (exactNode != null && exactNode instanceof StringLiteral && exactNode.getParent() instanceof MemberValuePair
+					&& "value".equals(((MemberValuePair)exactNode.getParent()).getName().toString())) {
+				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
+					return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(), exactNode.getStartPosition(), doc, runningApps);
 				}
 			}
 		}
@@ -74,36 +79,37 @@ public class ValueHoverProvider implements HoverProvider {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 
 				if (propertyKey != null) {
-					JSONObject[] allProperties = getPropertiesFromProcesses(runningApps);
+					Map<SpringBootApp, JSONObject> allProperties = getPropertiesFromProcesses(runningApps);
 
-					List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
+					StringBuilder hover = new StringBuilder();
 
-					for (int i = 0; i < allProperties.length; i++) {
-						Iterator<?> keys = allProperties[i].keys();
+					for (SpringBootApp app : allProperties.keySet()) {
+						JSONObject properties = allProperties.get(app);
+						Iterator<?> keys = properties.keys();
 						while (keys.hasNext()) {
 							String key = (String) keys.next();
-							if (allProperties[i].get(key) instanceof JSONObject) {
-								JSONObject props = allProperties[i].getJSONObject(key);
+							if (properties.get(key) instanceof JSONObject) {
+								JSONObject props = properties.getJSONObject(key);
 
 								if (props.has(propertyKey)) {
 									String propertyValue = props.getString(propertyKey);
 
-									hoverContent.add(Either.forLeft("property value for " + propertyKey));
-									hoverContent.add(Either.forLeft(propertyValue));
-									hoverContent.add(Either.forLeft("coming from:"));
-									hoverContent.add(Either.forLeft(key));
+									hover.append(propertyKey + " : " + propertyValue);
+									hover.append(" (from: " + key + ")\n\n");
+									hover.append(LiveHoverUtils.niceAppName(app));
+									hover.append("\n\n");
 								}
 							}
 						}
 					}
 
-					Range hoverRange = doc.toRange(nodeStartOffset + range.getStart(), range.getEnd() - range.getStart());
-					Hover hover = new Hover();
+					if (hover.length() > 0) {
+						Range hoverRange = doc.toRange(nodeStartOffset + range.getStart(), range.getEnd() - range.getStart());
+						Hover result = new Hover(ImmutableList.of(Either.forLeft(hover.toString())));
+						result.setRange(hoverRange);
 
-					hover.setContents(hoverContent);
-					hover.setRange(hoverRange);
-
-					return hover;
+						return result;
+					}
 				}
 			}
 		}
@@ -114,8 +120,8 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public JSONObject[] getPropertiesFromProcesses(SpringBootApp[] runningApps) {
-		List<JSONObject> result = new ArrayList<>();
+	public Map<SpringBootApp, JSONObject> getPropertiesFromProcesses(SpringBootApp[] runningApps) {
+		Map<SpringBootApp, JSONObject> result = new HashMap<>();
 
 		try {
 			for (SpringBootApp app : runningApps) {
@@ -123,7 +129,7 @@ public class ValueHoverProvider implements HoverProvider {
 				if (environment != null) {
 					JSONObject env = new JSONObject(environment);
 					if (env != null) {
-						result.add(env);
+						result.put(app, env);
 					}
 				}
 			}
@@ -132,7 +138,7 @@ public class ValueHoverProvider implements HoverProvider {
 			e.printStackTrace();
 		}
 
-		return result.toArray(new JSONObject[result.size()]);
+		return result;
 	}
 
 	public String getPropertyKey(String value, int offset) {
