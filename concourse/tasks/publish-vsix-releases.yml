@@ -4,7 +4,7 @@ inputs:
 - name: s3-concourse-vsix-snapshot
 - name: s3-bosh-vsix-snapshot
 - name: s3-boot-java-vsix-snapshot
-- name: s3-boot-properties-snapshot
+- name: s3-boot-properties-vsix-snapshot
 platform: linux
 run:
   path: sts4/concourse/tasks/publish-vsix-releases.sh
