@@ -684,14 +684,15 @@ jobs:
     - get: version
       params:
         bump: patch
-  - aggregate:
-    - put: version
-      params:
-        file: version/version
-    - put: sts4
-      params:
-        repository: out
-        rebase: true
+  - task: bump-versions
+    file: sts4/concourse/tasks/bump-versions.yml
+  - put: sts4
+    params:
+      repository: out
+      rebase: true
+  - put: version
+    params:
+      file: version/version
 - name: post-release
   serial: true
   plan:
@@ -973,10 +974,6 @@ jobs:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 groups:
-- name: setup
-  jobs:
-  - build-mvn-cache
-  - build-docker-image
 - name: vscode-release
   jobs:
   - build-bosh-rc
@@ -988,6 +985,7 @@ groups:
   - build-manifest-yaml-vsix-snapshot
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
+  - bump-version-patch
 - name: vscode-snapshot
   jobs:
   - build-vscode-snapshot-website
@@ -1005,4 +1003,8 @@ groups:
   - build-manifest-yaml-atom-package
   - build-boot-java-atom-package
   - build-boot-properties-atom-package
+- name: setup
+  jobs:
+  - build-mvn-cache
+  - build-docker-image
 
