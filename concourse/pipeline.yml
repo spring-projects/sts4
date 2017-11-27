@@ -416,6 +416,8 @@ jobs:
       - build-manifest-yaml-vsix-snapshot
       - build-consourse-vsix-snapshot
       - build-bosh-vsix-snapshot
+      - build-boot-java-vsix-snapshot
+      - build-boot-properties-vsix-snapshot
     - do:
       - get: version
         params:
@@ -618,6 +620,74 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-boot-properties-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-boot-properties-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-boot-properties-rc
+    file: sts4/concourse/tasks/rc-build.yml
+    params:
+      extension_id: vscode-boot-properties
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-boot-properties-vsix-snapshot
+    params: 
+      file: out/vscode-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-boot-properties-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-properties/spring-boot-logo.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-boot-java-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-boot-java-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-boot-java-rc
+    file: sts4/concourse/tasks/rc-build.yml
+    params:
+      extension_id: vscode-boot-java
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-boot-java-vsix-snapshot
+    params: 
+      file: out/vscode-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        text_file: s3-boot-java-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-java/spring-boot-logo.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-release
   serial: true
   plan:
@@ -628,6 +698,17 @@ jobs:
       - build-manifest-yaml-rc
       - build-concourse-rc
       - build-bosh-rc
+      - build-boot-properties-rc
+      - build-boot-java-rc
+    - get: version
+      passed:
+      - build-concourse-rc
+      - build-manifest-yaml-rc
+      - build-bosh-rc
+      - build-boot-java-rc
+      - build-boot-properties-rc
+      params:
+        bump: final
     - get: s3-concourse-vsix-snapshot
       passed:
       - build-concourse-rc
@@ -637,13 +718,12 @@ jobs:
     - get: s3-bosh-vsix-snapshot
       passed:
       - build-bosh-rc
-    - get: version
+    - get: s3-boot-properties-vsix-snapshot
       passed:
-      - build-concourse-rc
-      - build-manifest-yaml-rc
-      - build-bosh-rc
-      params:
-        bump: final
+      - build-boot-properties-rc
+    - get: s3-boot-java-vsix-snapshot
+      passed:
+      - build-boot-java-rc
   - task: publish-vsix-releases
     file: tasks/concourse/tasks/publish-vsix-releases.yml
     input_mapping:
@@ -684,6 +764,23 @@ jobs:
     - get: version
       params:
         bump: patch
+  - task: bump-versions
+    file: sts4/concourse/tasks/bump-versions.yml
+  - put: sts4
+    params:
+      repository: out
+      rebase: true
+  - put: version
+    params:
+      file: version/version
+- name: bump-version-minor
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: version
+      params:
+        bump: minor
   - task: bump-versions
     file: sts4/concourse/tasks/bump-versions.yml
   - put: sts4
@@ -974,18 +1071,6 @@ jobs:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 groups:
-- name: vscode-release
-  jobs:
-  - build-bosh-rc
-  - build-concourse-rc
-  - build-manifest-yaml-rc
-  - trigger-rc-build
-  - publish-release
-  - post-release
-  - build-manifest-yaml-vsix-snapshot
-  - build-consourse-vsix-snapshot
-  - build-bosh-vsix-snapshot
-  - bump-version-patch
 - name: vscode-snapshot
   jobs:
   - build-vscode-snapshot-website
@@ -994,6 +1079,25 @@ groups:
   - build-boot-java-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot
+- name: vscode-release
+  jobs:
+  - build-bosh-rc
+  - build-concourse-rc
+  - build-manifest-yaml-rc
+  - build-boot-java-rc
+  - build-boot-properties-rc
+  - trigger-rc-build
+  - publish-release
+  - post-release
+  - build-manifest-yaml-vsix-snapshot
+  - build-consourse-vsix-snapshot
+  - build-bosh-vsix-snapshot
+  - build-boot-java-vsix-snapshot
+  - build-boot-properties-vsix-snapshot
+- name: bump-versions
+  jobs:
+  - bump-version-patch
+  - bump-version-minor
 - name: atom
   jobs:
   - build-atom-snapshot-website
