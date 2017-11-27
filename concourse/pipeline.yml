@@ -792,26 +792,26 @@ jobs:
   - put: version
     params:
       file: version/version
-- name: post-release
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: version
-      params:
-        bump: patch
-      trigger: true
-      passed:
-      - publish-release
-  - task: bump-versions
-    file: sts4/concourse/tasks/bump-versions.yml
-  - put: sts4-out
-    params:
-      repository: out
-      rebase: true
-  - put: version
-    params:
-      file: version/version
+# - name: post-release
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#     - get: version
+#       params:
+#         bump: patch
+#       trigger: true
+#       passed:
+#       - publish-release
+#   - task: bump-versions
+#     file: sts4/concourse/tasks/bump-versions.yml
+#   - put: sts4-out
+#     params:
+#       repository: out
+#       rebase: true
+#   - put: version
+#     params:
+#       file: version/version
 - name: build-atom-snapshot-website
   serial: true
   plan:
@@ -1090,7 +1090,7 @@ groups:
   - build-boot-properties-rc
   - trigger-rc-build
   - publish-release
-  - post-release
+#  - post-release
   - build-manifest-yaml-vsix-snapshot
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
