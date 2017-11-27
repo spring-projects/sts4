@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Application Properties Support",
   "description": "Provides validation and content assist for Spring Boot application.properties and application.yml file",
   "icon": "spring-boot-logo.png",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
