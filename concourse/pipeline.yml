@@ -743,9 +743,11 @@ jobs:
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
           Releases now available on Vscode Marketplace:
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest YML Support>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-properties|Spring Boot Application Properties Support>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-java|Spring Boot Java Support>
   - aggregate:
     - put: sts4-out
       params:
