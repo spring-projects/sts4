@@ -676,6 +676,22 @@ jobs:
     - put: version
       params:
         file: version/version
+- name: bump-version-patch
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: version
+      params:
+        bump: patch
+  - aggregate:
+    - put: version
+      params:
+        file: version/version
+    - put: sts4
+      params:
+        repository: out
+        rebase: true
 - name: post-release
   serial: true
   plan:
@@ -969,6 +985,9 @@ groups:
   - trigger-rc-build
   - publish-release
   - post-release
+  - build-manifest-yaml-vsix-snapshot
+  - build-consourse-vsix-snapshot
+  - build-bosh-vsix-snapshot
 - name: vscode-snapshot
   jobs:
   - build-vscode-snapshot-website
