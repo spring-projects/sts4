@@ -738,7 +738,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tooling-projects"
+        channel: "#tools-team-internal"
         text_file: version/version
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
