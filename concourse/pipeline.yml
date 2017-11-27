@@ -956,4 +956,34 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-         
+groups:
+- name: setup
+  jobs:
+  - build-mvn-cache
+  - build-docker-image
+- name: vscode-release
+  jobs:
+  - build-bosh-rc
+  - build-concourse-rc
+  - build-manifest-yaml-rc
+  - trigger-rc-build
+  - publish-release
+  - post-release
+- name: vscode-snapshot
+  jobs:
+  - build-vscode-snapshot-website
+  - build-consourse-vsix-snapshot
+  - build-boot-properties-vsix-snapshot
+  - build-boot-java-vsix-snapshot
+  - build-bosh-vsix-snapshot
+  - build-manifest-yaml-vsix-snapshot
+- name: atom
+  jobs:
+  - build-atom-snapshot-website
+  - atom-language-servers-test
+  - build-concourse-atom-package
+  - build-bosh-atom-package
+  - build-manifest-yaml-atom-package
+  - build-boot-java-atom-package
+  - build-boot-properties-atom-package
+
