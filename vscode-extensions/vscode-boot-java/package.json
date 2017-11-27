@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Java Support",
   "description": "Provides validation, content assist, and more working with Spring Boot applications Java code",
   "icon": "spring-boot-logo.png",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
