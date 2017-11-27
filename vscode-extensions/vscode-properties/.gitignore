@@ -1,9 +1,0 @@
-out
-node_modules
-*.log
-*.log.*
-.idea
-*.iml
-*.vsix
-.DS_Store
-**/.DS_Store
