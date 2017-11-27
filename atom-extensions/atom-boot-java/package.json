@@ -1,7 +1,7 @@
 {
   "name": "boot-java",
   "main": "./lib/main",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "Spring Boot support for Atom",
   "repository": "https://github.com/spring-projects/atom-boot-java",
   "icon": "icon.png",
