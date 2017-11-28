@@ -1,0 +1,48 @@
+{
+  "name": "vscode-boot-dev-pack",
+  "version": "0.1.0",
+  "publisher": "Pivotal",
+  "displayName": "Spring Boot Development Extension Pack",
+  "description": "A collection of extensions for developing Spring Boot applications",
+  "license": "EPL-1.0",
+  "galleryBanner": {
+    "color": "#1BB3A8",
+    "theme": "dark"
+  },
+  "icon": "spring-boot-logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "homepage": "https://github.com/spring-projects/sts4",
+  "bugs": {
+    "url": "https://github.com/spring-projects/sts4/issues"
+  },
+  "keywords": [
+    "spring",
+    "spring-boot",
+    "java",
+    "yaml",
+    "concourse",
+    "pipeline.yml",
+    "cloud-foundry",
+    "cloudfoundry",
+    "manifest.yml",
+    "java-properties",
+    "application-properties",
+    "application-yaml"
+  ],
+  "categories": [
+    "Spring Boot",
+    "Extension Packs"
+  ],
+  "engines": {
+    "vscode": "^1.15.0"
+  },
+  "extensionDependencies": [
+    "Pivotal.vscode-boot-java",
+    "Pivotal.vscode-boot-properties",
+    "Pivotal.vscode-concourse",
+    "Pivotal.vscode-manifest-yaml"
+  ]
+}
