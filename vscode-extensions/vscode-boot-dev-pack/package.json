@@ -19,18 +19,11 @@
     "url": "https://github.com/spring-projects/sts4/issues"
   },
   "keywords": [
-    "spring",
     "spring-boot",
     "java",
-    "yaml",
     "concourse",
-    "pipeline.yml",
-    "cloud-foundry",
     "cloudfoundry",
-    "manifest.yml",
-    "java-properties",
-    "application-properties",
-    "application-yaml"
+    "yaml"
   ],
   "categories": [
     "Spring Boot",
