@@ -117,7 +117,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
-- name: s3-manifest-yaml-fatjar-release
+- name: s3-manifest-yaml-fatjar--rc
   type: s3
   source:
     bucket: {{s3_prod_bucket}}
@@ -133,7 +133,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
-- name: s3-concourse-fatjar-release
+- name: s3-concourse-fatjar--rc
   type: s3
   source:
     bucket: {{s3_prod_bucket}}
@@ -149,7 +149,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
-- name: s3-bosh-fatjar-release
+- name: s3-bosh-fatjar--rc
   type: s3
   source:
     bucket: {{s3_prod_bucket}}
@@ -165,7 +165,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/boot-java-language-server-(.*).jar
-- name: s3-boot-java-fatjar-release
+- name: s3-boot-java-fatjar--rc
   type: s3
   source:
     bucket: {{s3_prod_bucket}}
@@ -181,7 +181,7 @@ resources:
     secret_access_key: {{s3_secretkey}}
     region_name: {{s3_region}}
     regexp: sts4/fatjars/snapshots/boot-properties-language-server-(.*).jar
-- name: s3-boot-properties-fatjar-release
+- name: s3-boot-properties-fatjar--rc
   type: s3
   source:
     bucket: {{s3_prod_bucket}}
@@ -441,23 +441,23 @@ jobs:
       passed:
       - build-boot-properties-atom-package
   - aggregate:
-    - put: s3-bosh-fatjar-release
+    - put: s3-bosh-fatjar--rc
       params:
         file: s3-bosh-fatjar-snapshot/*.jar
         acl: public-read
-    - put: s3-concourse-fatjar-release
+    - put: s3-concourse-fatjar--rc
       params:
         file: s3-concourse-fatjar-snapshot/*.jar
         acl: public-read
-    - put: s3-manifest-yaml-fatjar-release
+    - put: s3-manifest-yaml-fatjar--rc
       params:
         file: s3-manifest-yaml-fatjar-snapshot/*.jar
         acl: public-read
-    - put: s3-boot-java-fatjar-release
+    - put: s3-boot-java-fatjar--rc
       params:
         file: s3-boot-java-fatjar-snapshot/*.jar
         acl: public-read
-    - put: s3-boot-properties-fatjar-release
+    - put: s3-boot-properties-fatjar--rc
       params:
         file: s3-boot-properties-fatjar-snapshot/*.jar
         acl: public-read
@@ -467,7 +467,7 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-cf-manifest-yaml
-    - get: s3-manifest-yaml-fatjar-release
+    - get: s3-manifest-yaml-fatjar--rc
       trigger: true
       passed:
       - promote-fatjars-to-rc
@@ -475,7 +475,7 @@ jobs:
     input_mapping:
       package_sources: atom-cf-manifest-yaml
       release_repo: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar-release
+      fatjar: s3-manifest-yaml-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-cf-manifest-yaml
     params:
@@ -487,7 +487,7 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-concourse
-    - get: s3-concourse-fatjar-release
+    - get: s3-concourse-fatjar--rc
       trigger: true
       passed:
       - promote-fatjars-to-rc
@@ -495,7 +495,7 @@ jobs:
     input_mapping:
       package_sources: atom-concourse
       release_repo: atom-concourse
-      fatjar: s3-concourse-fatjar-release
+      fatjar: s3-concourse-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-concourse
     params:
@@ -507,7 +507,7 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-bosh
-    - get: s3-bosh-fatjar-release
+    - get: s3-bosh-fatjar--rc
       trigger: true
       passed:
       - promote-fatjars-to-rc
@@ -515,7 +515,7 @@ jobs:
     input_mapping:
       package_sources: atom-bosh
       release_repo: atom-bosh
-      fatjar: s3-bosh-fatjar-release
+      fatjar: s3-bosh-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-bosh
     params:
@@ -527,7 +527,7 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-boot-properties
-    - get: s3-boot-properties-fatjar-release
+    - get: s3-boot-properties-fatjar--rc
       trigger: true
       passed:
       - promote-fatjars-to-rc
@@ -535,7 +535,7 @@ jobs:
     input_mapping:
       package_sources: atom-boot-properties
       release_repo: atom-boot-properties
-      fatjar: s3-boot-properties-fatjar-release
+      fatjar: s3-boot-properties-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-properties
     params:
@@ -547,7 +547,7 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-boot-java
-    - get: s3-boot-java-fatjar-release
+    - get: s3-boot-java-fatjar--rc
       trigger: true
       passed:
       - promote-fatjars-to-rc
@@ -555,7 +555,7 @@ jobs:
     input_mapping:
       package_sources: atom-boot-java
       release_repo: atom-boot-java
-      fatjar: s3-boot-java-fatjar-release
+      fatjar: s3-boot-java-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-java
     params:
