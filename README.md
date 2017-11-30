@@ -1,4 +1,5 @@
 # STS4
+
 This is a work-in-progress project to build the next generation of the Spring Tool Suite.
 Details will follow soon.
 
