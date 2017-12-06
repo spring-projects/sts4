@@ -8,7 +8,7 @@ VSCode extension and Language Server providing support for working with Spring B
 The extension will automatically activate when you edit files with the following
 name patterns:
 
- - `application*.java` => activates support for Spring Boot properties in `.properties`format.
+ - `application*.properties` => activates support for Spring Boot properties in `.properties`format.
  - `application*.yml` =>  activates support for Spring Boot properties in `.yml` format.
 
 You can also define your own patterns and map them to the language-ids
