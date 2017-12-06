@@ -1,6 +1,6 @@
-STS4 - Dev Environment Setup
+# STS4 - Dev Environment Setup
 
-# Running the STS4 Boot Java Language Server locally
+## Running the STS4 Boot Java Language Server locally
 
 Import the headless-services modules into your workspace as existing Maven projects.
 Startup the boot java language server with:
@@ -30,7 +30,7 @@ Save, then launch by pressing `F5`.
 This connects the VSCode extension to the locally running language server.
 It also uses port 5007
 
-# Connect local STS4 Boot Java LS to Eclipse runtime workbench
+## Connect local STS4 Boot Java LS to Eclipse runtime workbench
 
 Startup Eclipse or STS (3). I.e something that support for RCP / plugin development.
 
@@ -43,7 +43,7 @@ The language server plugin is: org.springframework.tooling.boot.java.ls
 Add Vmargs: -Dboot-java-ls-port=5007
 This lets the Eclipse language server extension connect to the locally running language server on port 5007
 
-# Additional Resources:
+## Additional Resources:
 
 - Generic editor source code (used by lsp4e as a dependency): https://github.com/eclipse/eclipse.platform.text
   Not sure which version of this you should checkout, it probably depends on your version of Eclipse as this is part
