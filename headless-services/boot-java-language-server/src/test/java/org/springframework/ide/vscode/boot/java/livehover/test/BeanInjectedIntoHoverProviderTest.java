@@ -220,6 +220,66 @@ public class BeanInjectedIntoHoverProviderTest {
 	}
 
 	@Test
+	public void beanFromInnerClassWithOneInjection() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("hello.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"public class OuterClass {\n" +
+				"	\n" +
+				"	@Configuration\n" +
+				"	public static class InnerClass {\n" +
+				"		\n" +
+				"		@Bean(\"fooImplementation\")\n" +
+				"		Foo someFoo() {\n" +
+				"			return new FooImplementation();\n" +
+				"		}\n"	 +
+				"	}\n"	 +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injection report for Bean [id: fooImplementation]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
+				"\n" +
+				"- Bean: myController  \n" +
+				"  Type: `hello.MyController`\n"
+		);
+	}
+
+	@Test
 	public void beanWithFileResource() throws Exception {
 		Path of = harness.getOutputFolder();
 		LiveBeansModel beans = LiveBeansModel.builder()

@@ -92,6 +92,13 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString)
 		.orElseGet(() ->  {
 			String typeName = beanType.getName();
+
+			ITypeBinding declaringClass = beanType.getDeclaringClass();
+			while (declaringClass != null) {
+				typeName = declaringClass.getName() + "." + typeName;
+				declaringClass = declaringClass.getDeclaringClass();
+			}
+
 			if (StringUtil.hasText(typeName)) {
 				return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
 			}

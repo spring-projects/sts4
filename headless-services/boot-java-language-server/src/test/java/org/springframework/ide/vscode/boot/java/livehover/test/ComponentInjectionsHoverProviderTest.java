@@ -585,7 +585,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 	}
 
-	@Test public void bug_153072942_SpringBootApplication__withCGLib_is_a_Component() throws Exception {
+	@Test
+	public void bug_153072942_SpringBootApplication__withCGLib_is_a_Component() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("demoApplication")
@@ -623,4 +624,88 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 	}
 
+	@Test
+	public void componentFromInnerClass() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("demoApplication.InnerClass")
+						.type("com.example.DemoApplication$InnerClass")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.boot.SpringApplication;\n" +
+				"import org.springframework.boot.autoconfigure.SpringBootApplication;\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.web.client.RestTemplate;\n" +
+				"\n" +
+				"public class DemoApplication {\n" +
+				"	\n" +
+				"	@SpringBootApplication\n" +
+				"	public static class InnerClass {\n" +
+				"	\n" +
+				"		public static void main(String[] args) {\n" +
+				"			SpringApplication.run(DemoApplication.InnerClass.class, args);\n" +
+				"		}\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@SpringBootApplication");
+		editor.assertHoverContains("@SpringBootApplication",
+				"**Injection report for Bean [id: demoApplication.InnerClass, type: `com.example.DemoApplication.InnerClass`]**"
+		);
+	}
+
+	@Test
+	public void componentFromInnerInnerClass() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("demoApplication.InnerClass.InnerInnerClass")
+						.type("com.example.DemoApplication$InnerClass$InnerInnerClass")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.boot.SpringApplication;\n" +
+				"import org.springframework.boot.autoconfigure.SpringBootApplication;\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.web.client.RestTemplate;\n" +
+				"\n" +
+				"public class DemoApplication {\n" +
+				"	\n" +
+				"	public static class InnerClass {\n" +
+				"		\n" +
+				"		@SpringBootApplication\n" +
+				"		public static class InnerInnerClass {\n" +
+				"		\n" +
+				"			public static void main(String[] args) {\n" +
+				"				SpringApplication.run(DemoApplication.InnerClass.InnerInnerClass.class, args);\n" +
+				"			}\n" +
+				"		}\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@SpringBootApplication");
+		editor.assertHoverContains("@SpringBootApplication",
+				"**Injection report for Bean [id: demoApplication.InnerClass.InnerInnerClass, type: `com.example.DemoApplication.InnerClass.InnerInnerClass`]**"
+		);
+	}
 }

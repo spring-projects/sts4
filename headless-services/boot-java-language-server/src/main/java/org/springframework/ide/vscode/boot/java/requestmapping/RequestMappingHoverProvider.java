@@ -119,19 +119,28 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	private boolean methodMatchesAnnotation(Annotation annotation, RequestMapping rm) {
 		String rqClassName = rm.getFullyQualifiedClassName();
 
-		ASTNode parent = annotation.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration methodDec = (MethodDeclaration) parent;
-			IMethodBinding binding = methodDec.resolveBinding();
-			return binding.getDeclaringClass().getQualifiedName().equals(rqClassName)
-					&& binding.getName().equals(rm.getMethodName())
-					&& Arrays.equals(Arrays.stream(binding.getParameterTypes())
-							.map(t -> t.getTypeDeclaration().getQualifiedName())
-							.toArray(String[]::new),
-						rm.getMethodParameters());
-//		} else if (parent instanceof TypeDeclaration) {
-//			TypeDeclaration typeDec = (TypeDeclaration) parent;
-//			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
+		if (rqClassName != null) {
+			int chop = rqClassName.indexOf("$$EnhancerBySpringCGLIB$$");
+			if (chop >= 0) {
+				rqClassName = rqClassName.substring(0, chop);
+			}
+
+			rqClassName = rqClassName.replace('$', '.');
+
+			ASTNode parent = annotation.getParent();
+			if (parent instanceof MethodDeclaration) {
+				MethodDeclaration methodDec = (MethodDeclaration) parent;
+				IMethodBinding binding = methodDec.resolveBinding();
+				return binding.getDeclaringClass().getQualifiedName().equals(rqClassName)
+						&& binding.getName().equals(rm.getMethodName())
+						&& Arrays.equals(Arrays.stream(binding.getParameterTypes())
+								.map(t -> t.getTypeDeclaration().getQualifiedName())
+								.toArray(String[]::new),
+							rm.getMethodParameters());
+	//		} else if (parent instanceof TypeDeclaration) {
+	//			TypeDeclaration typeDec = (TypeDeclaration) parent;
+	//			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
+			}
 		}
 		return false;
 	}

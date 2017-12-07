@@ -64,6 +64,7 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
@@ -94,6 +95,8 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
+
 		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
@@ -214,11 +217,7 @@ public class RequestMappingLiveHoverTest {
         docUri);
 
 		editor.assertNoHover("@DeleteMapping(\"/greetings\")");
-
 	}
-
-
-
 
 	@Test
 	public void testNoHoverHintMethod() throws Exception {
@@ -261,7 +260,6 @@ public class RequestMappingLiveHoverTest {
         docUri);
 
 		editor.assertNoHover("@PutMapping(\"/greetings\")");
-
 	}
 
 	@Test
@@ -754,6 +752,41 @@ public class RequestMappingLiveHoverTest {
 				"@GetMapping(\"/person/{name}\")", "@DeleteMapping(\"/delete/{id}\")", "@PostMapping(\"/postHello\")",
 				"@PutMapping(\"/put/{id}\")");
 
+	}
+
+	@Test
+	public void testMappingHoversInInnerClasses() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/InnerClassController.java";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappings(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/inner-inner-class]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.InnerClassController$InnerController$InnerInnerController.saySomethingSuperInnerClass()\"},\"{[/inner-class]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.InnerClassController$InnerController.saySomething()\"},\"{[/person/{name}],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.getMapping(java.lang.String)\"},\"{[/delete/{id}],methods=[DELETE]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.removeMe(int)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/postHello],methods=[POST]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.postMethod(java.lang.String)\"},\"{[/put/{id}],methods=[PUT]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.putMethod(int,java.lang.String)\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(\"/inner-class\")", "@RequestMapping(\"/inner-inner-class\")");
+
+		editor.assertHoverContains("@RequestMapping(\"/inner-class\")", "[http://cfapps.io:1111/inner-class](http://cfapps.io:1111/inner-class)\n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+		editor.assertHoverContains("@RequestMapping(\"/inner-inner-class\")", "[http://cfapps.io:1111/inner-inner-class](http://cfapps.io:1111/inner-inner-class)\n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 	}
 
 }
