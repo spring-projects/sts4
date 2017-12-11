@@ -36,7 +36,8 @@
           "Spring Boot Properties Yaml"
         ],
         "filenamePatterns": [
-          "application*.yml"
+          "application*.yml",
+          "bootstrap*.yml"
         ],
         "configuration": "./yaml-support/language-configuration.json"
       },
@@ -46,7 +47,8 @@
           "Spring Boot Properties"
         ],
         "filenamePatterns": [
-          "application*.properties"
+          "application*.properties",
+          "bootstrap*.yml"
         ],
         "configuration": "./properties-support/language-configuration.json"
       }
