@@ -48,7 +48,7 @@ public class SpringBootPropertiesLanguageServer extends STS4LanguageServerProces
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "boot-properties-language-server-" + Constants.LANGUAGE_SERVER_VERSION + "-SNAPSHOT.jar";
+		String languageServer = "boot-properties-language-server-" + Constants.LANGUAGE_SERVER_VERSION + ".jar";
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);

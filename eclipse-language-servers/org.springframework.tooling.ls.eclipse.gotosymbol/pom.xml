@@ -11,6 +11,5 @@
 	
 	<artifactId>org.springframework.tooling.ls.eclipse.gotosymbol</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	<version>0.0.10-SNAPSHOT</version>
 	  
 </project>

@@ -48,7 +48,7 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "bosh-language-server-" + Constants.LANGUAGE_SERVER_VERSION + "-SNAPSHOT.jar";
+		String languageServer = "bosh-language-server-" + Constants.LANGUAGE_SERVER_VERSION + ".jar";
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);
