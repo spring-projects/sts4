@@ -104,13 +104,15 @@ public class YamlDocument {
 		//So comments never span multiple lines of text and we only have scan back
 		//from offset upto the start of the current line.
 		IRegion lineInfo = doc.getLineInformationOfOffset(offset);
-		int startOfLine = lineInfo.getOffset();
-		while (offset>=startOfLine) {
-			char c = getChar(offset);
-			if (c=='#') {
-				return true;
+		if (lineInfo!=null) {
+			int startOfLine = lineInfo.getOffset();
+			while (offset>=startOfLine) {
+				char c = getChar(offset);
+				if (c=='#') {
+					return true;
+				}
+				offset--;
 			}
-			offset--;
 		}
 		return false;
 	}
