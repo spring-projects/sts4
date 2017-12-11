@@ -23,9 +23,9 @@ public class LiveHoverUtils {
 
 	public static String showBean(LiveBean bean) {
 		StringBuilder buf = new StringBuilder("Bean [id: " + bean.getId());
-		String type = bean.getType();
-		if (type!=null) {
-			buf.append(", type: `"+type+"`");
+		String type = bean.getType(true);
+		if (type != null) {
+			buf.append(", type: `" + type + "`");
 		}
 		buf.append(']');
 		return buf.toString();
@@ -35,10 +35,10 @@ public class LiveHoverUtils {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 		StringBuilder buf = new StringBuilder("Bean: ");
 		buf.append(bean.getId());
-		String type = bean.getType();
-		if (type!=null) {
+		String type = bean.getType(true);
+		if (type != null) {
 			buf.append(newline);
-			buf.append("Type: `"+type+"`");
+			buf.append("Type: `" + type + "`");
 		}
 		String resource = bean.getResource();
 		if (StringUtil.hasText(resource)) {

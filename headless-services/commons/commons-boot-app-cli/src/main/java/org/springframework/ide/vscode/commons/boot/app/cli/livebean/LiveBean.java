@@ -95,12 +95,19 @@ public class LiveBean {
 
 	public String getType(boolean stripCGLib) {
 		String type = this.type;
-		if (stripCGLib) {
-			int chop = type.indexOf("$$EnhancerBySpringCGLIB$$");
-			if (chop>=0) {
-				type = type.substring(0, chop);
+
+		if (type != null) {
+			if (stripCGLib) {
+				int chop = type.indexOf("$$EnhancerBySpringCGLIB$$");
+				if (chop >= 0) {
+					type = type.substring(0, chop);
+				}
 			}
+
+			// convert inner classes from $ to . notation
+			type = type.replace('$', '.');
 		}
+
 		return type;
 	}
 

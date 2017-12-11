@@ -14,6 +14,12 @@
 eclipse-language-servers/**/*.jar
 *.war
 *.ear
+**/.sts4-cache/*
+**/test-projects/**/*.classpath
+**/test-projects/**/*.vscode
+**/test-projects/**/*.project
+**/test-projects/**/*.settings
+**/test-projects/**/*.springBeans
 # Exceptions
 !**/.mvn/wrapper/maven-wrapper.jar
 
