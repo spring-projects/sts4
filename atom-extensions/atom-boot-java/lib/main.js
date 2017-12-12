@@ -73,7 +73,7 @@ class BootJavaLanguageClient extends JavaProcessLanguageClient {
                 '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
                 '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
                 '-cp',
-                `${toolsJar ? `${toolsJar}:` : ''}${lsJar}`
+                `${toolsJar ? `${toolsJar}${path.delimiter}` : ''}${lsJar}`
             ];
         });
     }

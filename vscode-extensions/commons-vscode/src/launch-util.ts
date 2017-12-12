@@ -101,7 +101,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 const classpath = options.classpath(context);
                                 if (classpath) {
                                     args.push('-cp');
-                                    args.push(classpath.join(':'));
+                                    args.push(classpath.join(Path.delimiter));
                                 }
                             }
                             const launcher = options.launcher(context);
