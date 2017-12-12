@@ -19,6 +19,4 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0"
 Import-Package: com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
- org.eclipse.lsp4j.jsonrpc.messages;version="0.4.0",
- org.eclipse.lsp4j.services;version="0.4.0",
  org.osgi.framework
