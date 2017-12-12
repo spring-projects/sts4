@@ -35,8 +35,8 @@
 			<artifactId>tools</artifactId>
 			<version>1.8.0</version>
 			<scope>system</scope>
-			<systemPath>C:\Program Files\Java\jdk1.8.0_144\lib\tools.jar</systemPath>
-<!-- 			<systemPath>${java.home}/../lib/tools.jar</systemPath>  -->
+			<!-- <systemPath>C:\Program Files\Java\jdk1.8.0_144\lib\tools.jar</systemPath> -->
+ 			<systemPath>${java.home}/../lib/tools.jar</systemPath>
 		</dependency>
 		<dependency>
 			<artifactId>commons-util</artifactId>
