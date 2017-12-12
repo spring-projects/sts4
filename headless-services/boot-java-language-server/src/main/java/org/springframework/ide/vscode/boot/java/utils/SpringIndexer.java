@@ -58,6 +58,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -329,7 +330,7 @@ public class SpringIndexer {
 		FileASTRequestor requestor = new FileASTRequestor() {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
-				String docURI = "file://" + sourceFilePath;
+				String docURI = UriUtil.toUri(new File(sourceFilePath)).toString();
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				scanAST(cu, docURI, docRef, null);
 			}

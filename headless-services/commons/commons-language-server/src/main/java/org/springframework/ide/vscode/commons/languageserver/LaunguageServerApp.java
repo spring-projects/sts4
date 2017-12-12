@@ -56,7 +56,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 public abstract class LaunguageServerApp {
 
 	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
-	private static final String STANDALONE_STARTUP = "standalone-startup";
+	public static final String STANDALONE_STARTUP = "standalone-startup";
 	private static final int SERVER_STANDALONE_PORT = 5007;
 
 	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {

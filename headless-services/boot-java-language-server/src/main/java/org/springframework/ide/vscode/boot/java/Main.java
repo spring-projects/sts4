@@ -25,7 +25,9 @@ public class Main {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		String serverName = "boot-java-language-server";
-		LogRedirect.redirectToFile(serverName);
+		if (!System.getProperty(LaunguageServerApp.STANDALONE_STARTUP, "false").equals("true")) {
+			LogRedirect.redirectToFile(serverName);
+		}
 		LaunguageServerApp.start(serverName, () -> {
 			SimpleLanguageServer server = new BootJavaLanguageServer(
 					BootJavaLanguageServerParams.createDefault()

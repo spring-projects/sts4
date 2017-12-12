@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.nio.file.Path;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -182,13 +182,18 @@ public abstract class SimpleLanguageServer implements Sts4LanguageServer, Langua
 			this.getWorkspaceService().setWorkspaceFolders(workspaceFolders);
 		}
 		else {
-			String rootPath = params.getRootPath();
-			if (rootPath==null) {
+			String rootUri = params.getRootUri();
+			if (rootUri==null) {
 				Log.debug("workspaceRoot NOT SET");
 			} else {
 				List<WorkspaceFolder> singleRootFolder = new ArrayList<>();
-				Path path = Paths.get(rootPath);
-				singleRootFolder.add(new WorkspaceFolder(path.toUri().toString(), path.getFileName().toString()));
+				String name;
+				try {
+					name = Paths.get(new URI(rootUri).getPath()).getFileName().toString();
+				} catch (Exception e) {
+					name = "";
+				}
+				singleRootFolder.add(new WorkspaceFolder(rootUri, name));
 				this.getWorkspaceService().setWorkspaceFolders(singleRootFolder);
 			}
 		}
