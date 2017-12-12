@@ -99,6 +99,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_any = f.yany("Object");
 	public final YType t_params = f.ymap(t_string, t_any);
 	public final YType t_string_params = f.ymap(t_string, t_string);
+	public final YType t_resource_version = f.ymap(t_string, t_string);
 	public final YType t_pos_integer = f.yatomic("Positive Integer")
 			.parseWith(ValueParsers.POS_INTEGER);
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
@@ -288,7 +289,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType getStep = f.ybean("GetStep");
 		addProp(getStep, "get", t_put_get_name);
 		addProp(getStep, "resource", t_resource_name);
-		addProp(getStep, "version", t_version);
+		addProp(getStep, "version", t_resource_version);
 		addProp(getStep, "passed", f.yseq(t_job_name));
 		addProp(getStep, "params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("get", models, dc))
