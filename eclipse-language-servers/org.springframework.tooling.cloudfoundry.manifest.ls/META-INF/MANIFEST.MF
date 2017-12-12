@@ -10,8 +10,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.lsp4e;bundle-version="0.2.0",
  org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0"
 Import-Package: org.eclipse.jface.preference,
- org.eclipse.lsp4j;version="0.2.0.v20170518-0647",
- org.eclipse.lsp4j.jsonrpc.messages;version="0.1.0.v20170117-0759",
- org.eclipse.lsp4j.services;version="0.1.0.v20170117-0759",
+ org.eclipse.lsp4j;version="[0.2.0,1.0.0)",
+ org.eclipse.lsp4j.jsonrpc.messages;version="[0.2.0,1.0.0)",
+ org.eclipse.lsp4j.services;version="[0.2.0,1.0.0)",
  org.osgi.framework
 Export-Package: org.springframework.tooling.cloudfoundry.manifest.ls
