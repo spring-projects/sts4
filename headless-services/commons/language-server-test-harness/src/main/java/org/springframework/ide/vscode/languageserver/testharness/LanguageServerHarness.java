@@ -100,6 +100,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
+import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -206,7 +207,10 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 		server = factory.call();
 		int parentPid = random.nextInt(40000)+1000;
 		InitializeParams initParams = new InitializeParams();
-		initParams.setRootPath(workspaceRoot== null?null:workspaceRoot.toString());
+		if (workspaceRoot!=null) {
+			initParams.setRootPath(workspaceRoot.toString());
+			initParams.setRootUri(UriUtil.toUri(workspaceRoot).toString());
+		}
 		initParams.setProcessId(parentPid);
 		ClientCapabilities clientCap = new ClientCapabilities();
 		TextDocumentClientCapabilities textCap = new TextDocumentClientCapabilities();
