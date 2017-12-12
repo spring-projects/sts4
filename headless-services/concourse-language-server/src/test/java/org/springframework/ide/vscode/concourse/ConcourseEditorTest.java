@@ -4078,6 +4078,18 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void getStepVersionShouldAcceptMap() throws Exception {
+		//See https://github.com/spring-projects/sts4/pull/24
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: cf-deployment-git\n" +
+				"    version: { ref: ((cf_deployment_commit_ref)) }"
+		);
+		editor.assertProblems("cf-deployment-git|resource does not exist");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {
