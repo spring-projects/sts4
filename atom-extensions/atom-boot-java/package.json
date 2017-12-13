@@ -12,6 +12,7 @@
   "files": [
     "lib/",
     "server/",
+    "styles/",
     "properties.json"
   ],
   "configSchema": {
@@ -24,7 +25,7 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",
-    "pivotal-atom-languageclient-commons": "0.0.17"
+    "pivotal-atom-languageclient-commons": "0.0.18"
   },
   "devDependencies": {
     "coffeelint": "^1.10.1"
