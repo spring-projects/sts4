@@ -12,6 +12,7 @@
   "files": [
     "lib/",
     "server/",
+    "styles/",
     "properties.json"
   ],
   "configSchema": {
