@@ -83,7 +83,7 @@ class BootJavaLanguageClient extends JavaProcessLanguageClient {
     }
 
     filterChangeWatchedFiles(filePath) {
-        return filePath.endsWith('.gradle') || filePath.endsWith('/pom.xml');
+        return filePath.endsWith('.gradle') || filePath.endsWith(path.join('', 'pom.xml'));
     }
 
 }
