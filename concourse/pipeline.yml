@@ -590,6 +590,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
+        channel: "#tools-team-internal"
         text_file: s3-concourse-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -624,6 +625,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
+        channel: "#tools-team-internal"
         text_file: s3-manifest-yaml-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
@@ -658,6 +660,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
+        channel: "#tools-team-internal"
         text_file: s3-bosh-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -692,6 +695,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
+        channel: "#tools-team-internal"
         text_file: s3-boot-properties-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-properties/spring-boot-logo.png
         text: |
@@ -726,6 +730,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
+        channel: "#tools-team-internal"
         text_file: s3-boot-java-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-java/spring-boot-logo.png
         text: |
