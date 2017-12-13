@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import static org.assertj.core.api.Assertions.setAllowComparingPrivateFields;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -149,5 +151,41 @@ public class PartialCollection<T> {
 
 	public PartialCollection<T> add(@SuppressWarnings("unchecked") T... values) {
 		return addAll(Arrays.asList(values));
+	}
+
+	public PartialCollection<T> addAll(PartialCollection<T> values) {
+		PartialCollection<T> merged = this.addAll(values.getElements());
+		if (!values.isComplete()) {
+			merged = merged.addUncertainty();
+			if (merged.getExplanation()==null && values.getExplanation()!=null) {
+				merged = merged.withExplanation(values.getExplanation());
+			}
+		}
+		return merged;
+	}
+
+	private PartialCollection<T> withExplanation(Throwable explanation) {
+		return new PartialCollection<>(knownElements, isComplete, explanation);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder("PartialCollection(");
+		boolean first = true;
+		for (T e : knownElements) {
+			if (!first) {
+				s.append(", ");
+			}
+			s.append(e.toString());
+			first = false;
+		}
+		if (!isComplete) {
+			if (!first) {
+				s.append(", ");
+			}
+			s.append("...");
+		}
+		s.append(")");
+		return s.toString();
 	}
 }

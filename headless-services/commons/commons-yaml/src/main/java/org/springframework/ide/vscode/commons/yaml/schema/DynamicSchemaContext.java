@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableSet;
 public interface DynamicSchemaContext {
 
 	DynamicSchemaContext NULL = new DynamicSchemaContext() {
-		
+
 		@Override
 		public Set<String> getDefinedProperties() {
 			return ImmutableSet.of();
@@ -46,7 +46,16 @@ public interface DynamicSchemaContext {
 		public YamlPath getPath() {
 			return null;
 		}
-		
+
+		@Override
+		public boolean isAtomic() {
+			return false;
+		}
+
+		@Override
+		public boolean isMap() {
+			return false;
+		}
 	};
 
 	/**
@@ -54,7 +63,7 @@ public interface DynamicSchemaContext {
 	 * available (e.g. because of parsing errors)
 	 */
 	default YamlFileAST getAST() { return null; }
-	
+
 	/**
 	 * Returns the set of property names that are already defined in the current context.
 	 * <p>
@@ -67,7 +76,7 @@ public interface DynamicSchemaContext {
 	 * properties are defined in the surrounding object.
 	 */
 	Set<String> getDefinedProperties();
-	
+
 	/**
 	 * Returns the IDocument the current context is in. This allows for some 'schemas' to have
 	 * arbitrarily complex analysis of anyhting in the IDocument or even documents related
@@ -79,5 +88,15 @@ public interface DynamicSchemaContext {
 	 * Returns the yamlpath leading to the current node.
 	 */
 	YamlPath getPath();
+
+	/**
+	 * Returns true if the current AST node is a scalar value
+	 */
+	boolean isAtomic();
+
+	/**
+	 * Returns true if the current node is a Mapping node
+	 */
+	boolean isMap();
 
 }

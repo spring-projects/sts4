@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
@@ -35,6 +36,7 @@ import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
@@ -153,9 +155,34 @@ public class YTypeFactory {
 		return new YBeanType(name, properties);
 	}
 
-	public YBeanUnionType yunion(String name, YBeanType... types) {
+	public YBeanUnionType yBeanUnion(String name, YBeanType[] types) {
+		return (YBeanUnionType) yunion(name, types);
+	}
+
+	public YType yunion(String name, YType... types) {
 		Assert.isLegal(types.length>1);
-		return new YBeanUnionType(name, types);
+		if (Stream.of(types).allMatch(t -> t instanceof YBeanType)) {
+			YBeanType[] beanTypes = new YBeanType[types.length];
+			for (int i = 0; i < beanTypes.length; i++) {
+				beanTypes[i] = (YBeanType) types[i];
+			}
+			return new YBeanUnionType(name, beanTypes);
+		}
+		ArrayList<YMapType> maps = new ArrayList<>(types.length);
+		ArrayList<YAtomicType> atoms = new ArrayList<>(types.length);
+		for (YType t : types) {
+			if (t instanceof YMapType) {
+				maps.add((YMapType) t);
+			} else if (t instanceof YAtomicType) {
+				atoms.add((YAtomicType) t);
+			} else {
+				throw new IllegalArgumentException("Union of this kind of types is not (yet) supported: "+t);
+			}
+		}
+		if (atoms.size()==1 && maps.size()==1) {
+			return new YAtomAndMapUnion(name, atoms.get(0), maps.get(0));
+		}
+		throw new IllegalArgumentException("Union of this kind of types is not (yet) supported: "+types);
 	}
 
 	/**
@@ -763,6 +790,49 @@ public class YTypeFactory {
 		}
 	}
 
+	public class YAtomAndMapUnion extends AbstractType {
+
+		private String name;
+		private YAtomicType atom;
+		private YMapType map;
+
+		public YAtomAndMapUnion(String name, YAtomicType atom, YMapType map) {
+			this.name = name;
+			this.atom = atom;
+			this.map = map;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+		@Override
+		public boolean isAtomic() {
+			return true;
+		}
+
+		@Override
+		public boolean isMap() {
+			return true;
+		}
+
+		@Override
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			if (dc.isAtomic()) {
+				return atom;
+			} else if (dc.isMap()) {
+				return map;
+			}
+			return super.inferMoreSpecificType(dc);
+		}
+
+		@Override
+		public PartialCollection<YValueHint> getHintValues(DynamicSchemaContext dc) {
+			return atom.getHintValues(dc).addAll(map.getHintValues(dc));
+		}
+
+	}
 
 	public static class YTypedPropertyImpl implements YTypedProperty, Cloneable {
 
@@ -1000,6 +1070,5 @@ public class YTypeFactory {
 		this.snippetProvider = snippetProvider;
 		return this;
 	}
-
 
 }

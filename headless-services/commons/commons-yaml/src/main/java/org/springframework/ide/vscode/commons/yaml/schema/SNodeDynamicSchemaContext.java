@@ -74,4 +74,14 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 		return "SNodeDynamicSchemaContext("+contextPath+")";
 	}
 
+	@Override
+	public boolean isAtomic() {
+		return false;
+	}
+
+	@Override
+	public boolean isMap() {
+		return false;
+	}
+
 }

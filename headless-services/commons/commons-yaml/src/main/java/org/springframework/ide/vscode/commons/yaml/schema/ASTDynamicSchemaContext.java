@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 
 /**
  * Adapts a SnakeYaml ast node as a {@link DynamicSchemaContext} (so it
@@ -30,11 +31,13 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 	private MappingNode mapNode;
 	private YamlPath path;
 	private YamlFileAST ast;
+	private Node node;
 
 	public ASTDynamicSchemaContext(YamlFileAST ast, YamlPath path, Node node) {
 		this.ast = ast;
 		this.path = path;
 		this.mapNode = as(MappingNode.class, node);
+		this.node = node;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -59,9 +62,19 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 	public YamlPath getPath() {
 		return path;
 	}
-	
+
 	@Override
 	public YamlFileAST getAST() {
 		return ast;
+	}
+
+	@Override
+	public boolean isAtomic() {
+		return node instanceof ScalarNode;
+	}
+
+	@Override
+	public boolean isMap() {
+		return mapNode!=null;
 	}
 }

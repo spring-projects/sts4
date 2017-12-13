@@ -4078,6 +4078,27 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void getStepVersionShouldAcceptLatestAndEvery() throws Exception {
+		//See https://github.com/spring-projects/sts4/pull/24
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: cf-deployment-git\n" +
+				"    version: latest\n" +
+				"  - get: some-resource\n" +
+				"    version: every\n" +
+				"  - get: other-resource\n" +
+				"    version: bogus"
+		);
+		editor.assertProblems(
+				"cf-deployment-git|resource does not exist",
+				"some-resource|resource does not exist",
+				"other-resource|resource does not exist",
+				"bogus|Valid values are: [every, latest]"
+		);
+	}
+
 	@Test public void getStepVersionShouldAcceptMap() throws Exception {
 		//See https://github.com/spring-projects/sts4/pull/24
 		Editor editor = harness.newEditor(
@@ -4088,6 +4109,36 @@ public class ConcourseEditorTest {
 				"    version: { ref: ((cf_deployment_commit_ref)) }"
 		);
 		editor.assertProblems("cf-deployment-git|resource does not exist");
+	}
+
+	@Test public void getStepVersionCompletionsSuggestLatestAndEvery() throws Exception {
+		//See https://github.com/spring-projects/sts4/pull/24
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: cf-deployment-git\n" +
+				"    version: <*>"
+		);
+		editor.assertCompletionLabels("every", "latest");
+	}
+
+	@Test public void getStepVersionMapStringStringValidation() throws Exception {
+		//See https://github.com/spring-projects/sts4/pull/24
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - get: cf-deployment-git\n" +
+				"    version: { ref: good}\n" +
+				"  - get: other-rsrc\n" +
+				"    version: { ref: [bad]}\n"
+		);
+		editor.assertProblems(
+				"cf-deployment-git|resource does not exist",
+				"other-rsrc|resource does not exist",
+				"[bad]|Expecting a 'String' but found a 'Sequence'"
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

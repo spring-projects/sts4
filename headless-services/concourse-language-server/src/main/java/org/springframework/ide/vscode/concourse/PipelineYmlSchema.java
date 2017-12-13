@@ -12,9 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -34,7 +32,6 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
-import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -99,7 +96,10 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_any = f.yany("Object");
 	public final YType t_params = f.ymap(t_string, t_any);
 	public final YType t_string_params = f.ymap(t_string, t_string);
-	public final YType t_resource_version = f.ymap(t_string, t_string);
+	public final YType t_resource_version = f.yunion("ResourceVersion",
+			f.yenum("ResourceVersionString", "latest", "every"),
+			t_string_params
+	);
 	public final YType t_pos_integer = f.yatomic("Positive Integer")
 			.parseWith(ValueParsers.POS_INTEGER);
 	public final YType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer")
@@ -346,7 +346,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				doStep,
 				tryStep
 		};
-		YBeanUnionType step = f.yunion("Step", stepTypes);
+		YBeanUnionType step = f.yBeanUnion("Step", stepTypes);
 		addProp(aggregateStep, "aggregate", f.yseq(step));
 		addProp(doStep, "do", f.yseq(step));
 		addProp(tryStep, "try", step);
