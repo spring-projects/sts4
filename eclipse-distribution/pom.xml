@@ -145,6 +145,11 @@
 					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/</url>
 				</repository>
 				<repository>
+					<id>latest-buildship-release</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/buildship/updates/e47/releases/2.x</url>
+				</repository>
+				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
 					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
