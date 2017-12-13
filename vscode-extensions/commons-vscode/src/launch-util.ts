@@ -201,7 +201,7 @@ function javaVersion(javaExecutablePath: string): Promise<number> {
         ChildProcess.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
             if (stderr.indexOf('1.8') >= 0) {
                 resolve(8);
-            } else if (stderr.indexOf('java version "9"') >= 0) {
+            } else if (stderr.indexOf('java version "9') >= 0) {
                 resolve(9);
             } else {
                 resolve(0);
