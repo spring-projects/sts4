@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
-import static org.assertj.core.api.Assertions.setAllowComparingPrivateFields;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
