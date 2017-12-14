@@ -6,7 +6,7 @@
 	<groupId>org.springframework.ide.vscode</groupId>
 	<artifactId>headless-services-aggregator</artifactId>
 	<packaging>pom</packaging>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.1.2-SNAPSHOT</version>
 	<name>aggregator</name>
 
     <modules>
