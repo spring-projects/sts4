@@ -472,8 +472,9 @@ jobs:
       passed:
       - promote-fatjars-to-rc
   - task: build-atom-package
+    params:
+      package_name: atom-cf-manifest-yaml
     input_mapping:
-      package_sources: atom-cf-manifest-yaml
       release_repo: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
@@ -492,8 +493,9 @@ jobs:
       passed:
       - promote-fatjars-to-rc
   - task: build-atom-package
+    params:
+      package_name: atom-concourse
     input_mapping:
-      package_sources: atom-concourse
       release_repo: atom-concourse
       fatjar: s3-concourse-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
@@ -512,8 +514,9 @@ jobs:
       passed:
       - promote-fatjars-to-rc
   - task: build-atom-package
+    params:
+      package_name: atom-bosh
     input_mapping:
-      package_sources: atom-bosh
       release_repo: atom-bosh
       fatjar: s3-bosh-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
@@ -532,8 +535,9 @@ jobs:
       passed:
       - promote-fatjars-to-rc
   - task: build-atom-package
+    params:
+      package_name: atom-boot-properties
     input_mapping:
-      package_sources: atom-boot-properties
       release_repo: atom-boot-properties
       fatjar: s3-boot-properties-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
@@ -552,8 +556,9 @@ jobs:
       passed:
       - promote-fatjars-to-rc
   - task: build-atom-package
+    params:
+      package_name: atom-boot-java
     input_mapping:
-      package_sources: atom-boot-java
       release_repo: atom-boot-java
       fatjar: s3-boot-java-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
