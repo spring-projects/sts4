@@ -10,7 +10,6 @@
 	</parent>
 	
 	<artifactId>org.springframework.tooling.cloudfoundry.manifest.ls.feature</artifactId>
-	<version>0.0.9-SNAPSHOT</version>
 	<packaging>eclipse-feature</packaging>
 
 </project>
