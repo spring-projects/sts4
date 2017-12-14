@@ -15,17 +15,25 @@
 		<category name="Core / Eclipse Integration Commons" />
 	</feature>
 	
+	<!-- STS4 branding and custom features -->
+	<category-def name="Spring Tool Suite 4 Distribution" label="Spring Tool Suite 4 Distribution" />
+
+	<feature
+		id="org.springframework.boot.ide.main.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Distribution" />
+	</feature>
+
+	<feature
+		id="org.springframework.boot.ide.branding.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Distribution" />
+	</feature>
+
 	<!-- Spring IDE -->
 	<category-def name="Core / Spring IDE" label="Core / Spring IDE" />
 	<category-def name="Extensions / Spring IDE" label="Extensions / Spring IDE" />
 	<category-def name="Extensions (Incubation) / Spring IDE" label="Extensions (Incubation) / Spring IDE" />
 	<category-def name="Integrations / Spring IDE" label="Integrations / Spring IDE" />
 	<category-def name="Resources / Spring IDE" label="Resources / Spring IDE" />
-
-	<feature
-		id="org.springframework.boot.ide.main.feature" version="0.0.0">
-		<category name="Extensions / Spring IDE" />
-	</feature>
 
 <!--	<feature
 		id="org.springframework.ide.eclipse.boot.feature" version="0.0.0">
