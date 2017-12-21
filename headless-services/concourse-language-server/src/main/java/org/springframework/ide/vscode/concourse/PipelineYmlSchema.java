@@ -249,12 +249,16 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(t_command, "dir", t_ne_string);
 		addProp(t_command, "user", t_string);
 
+		YBeanType cache = f.ybean("TaskCache");
+		addProp(cache, "path", t_ne_string).isRequired(true);
+
 		task = f.ybean("TaskConfig");
 		addProp(task, "platform", t_platform).isRequired(true);
 		addProp(task, "image_resource", t_image_resource);
 		addProp(task, "rootfs_uri", t_ne_string);
 		addProp(task, "image", t_ne_string).isDeprecated("The 'image' property in 'TaskConfig' is renamed to 'rootfs_uri' in Concourse 3.0");
 		addProp(task, "inputs", f.yseq(t_input));
+		addProp(task, "caches", f.yseq(cache));
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
 		addProp(task, "params", t_string_params);

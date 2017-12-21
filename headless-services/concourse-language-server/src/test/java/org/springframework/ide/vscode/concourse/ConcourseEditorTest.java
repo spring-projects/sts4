@@ -2875,6 +2875,9 @@ public class ConcourseEditorTest {
 				,
 				"<*>"
 				, // ==>
+				"caches:\n" +
+				"- path: <*>"
+				,
 				"image_resource:\n" +
 				"  type: <*>"
 				,
@@ -4139,6 +4142,58 @@ public class ConcourseEditorTest {
 				"other-rsrc|resource does not exist",
 				"[bad]|Expecting a 'String' but found a 'Sequence'"
 		);
+	}
+
+	@Test public void taskCachesReconcile() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/153861788
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"\n" +
+				"inputs:\n" +
+				"- name: project-src\n" +
+				"\n" +
+				"caches:\n" +
+				"- path: project-src/node_modules\n" +
+				"  junk: bad\n" +
+				"\n" +
+				"run:\n" +
+				"  path: project-src/ci/build"
+		);
+		editor.assertProblems("junk|Unknown property");
+	}
+
+	@Test public void taskCachesCompletions() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/153861788
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"\n" +
+				"inputs:\n" +
+				"- name: project-src\n" +
+				"\n" +
+				"caches:\n" +
+				"- <*>\n" +
+				"run:\n" +
+				"  path: project-src/ci/build"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>", "path: <*>");
+	}
+
+	@Test public void taskCachesHovers() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"\n" +
+				"inputs:\n" +
+				"- name: project-src\n" +
+				"\n" +
+				"caches:\n" +
+				"- path: project-src/node_modules\n" +
+				"  junk: bad\n" +
+				"\n" +
+				"run:\n" +
+				"  path: project-src/ci/build"
+		);
+		editor.assertHoverContains("caches", "Caches are scoped to the worker the task is run on");
+		editor.assertHoverContains("path", "The path to a directory to be cached");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
