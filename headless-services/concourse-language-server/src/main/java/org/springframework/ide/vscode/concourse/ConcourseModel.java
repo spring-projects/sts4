@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -32,30 +33,26 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.ASTRootCursor;
 import org.springframework.ide.vscode.commons.yaml.path.NodeCursor;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
-import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache.NodeTypes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
-import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
-import org.springframework.ide.vscode.commons.yaml.util.StaleFallbackCache;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.util.Streams;
-import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -128,6 +125,25 @@ public class ConcourseModel {
 					}
 				}
 			}
+		}
+	}
+
+
+
+	/**
+	 * Verification of constraint: if at least one job is assigned to a group, then all jobs must be assigned to a group.
+	 */
+	public final void jobAssignmentIsComplete(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
+		Multiset<String> assignedJobs = getStringsFromAst(dc.getDocument(), JOBS_ASSIGNED_TO_GROUPS);
+		if (assignedJobs!=null && !assignedJobs.isEmpty()) {
+			getJobNameNodes(dc).forEach(jobDefName -> {
+				String name = NodeUtil.asScalar(jobDefName);
+				if (StringUtil.hasText(name)) { //'not assigned to a group' errors for empty names are a bit silly, so avoid that
+					if (!assignedJobs.contains(name)) {
+						problems.accept(YamlSchemaProblems.schemaProblem("'"+name+"' belongs to no group", jobDefName));
+					}
+				}
+			});
 		}
 	}
 
@@ -238,6 +254,14 @@ public class ConcourseModel {
 			anyChild()
 	);
 
+	public static final YamlPath JOBS_ASSIGNED_TO_GROUPS = new YamlPath(
+			anyChild(),
+			valueAt("groups"),
+			anyChild(),
+			valueAt("jobs"),
+			anyChild()
+	);
+
 	public static final YamlPath JOB_NAMES_PATH = new YamlPath(
 		anyChild(),
 		valueAt("jobs"),
@@ -332,6 +356,11 @@ public class ConcourseModel {
 	public Multiset<String> getJobNames(DynamicSchemaContext dc) {
 		return getStringsFromAst(dc.getDocument(), JOB_NAMES_PATH);
 	}
+
+	public Stream<Node> getJobNameNodes(DynamicSchemaContext dc) {
+		return getFromAst(dc.getDocument(), ast -> JOB_NAMES_PATH.traverseAmbiguously(ast));
+	}
+
 
 	private Multiset<String> getStringsFromAst(IDocument doc, YamlPath path) {
 		return getFromAst(doc, (ast) -> {

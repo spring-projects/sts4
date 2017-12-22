@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -4311,6 +4312,68 @@ public class ConcourseEditorTest {
 				"  version: not-a-valid-version"
 		);
 		editor.assertProblems("not-a-valid-version|Valid values are: [every, latest]");
+	}
+
+	@Test public void jobGroupsCompletenessReconcile() throws Exception {
+		//1) if all jobs are assigned to a group... don't complain:
+		Editor editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-snapshot\n" +
+				"- name: build-release\n" +
+				"- name: test-snapshot\n" +
+				"- name: test-release\n" +
+				"- name: publish-snapshot\n" +
+				"- name: publish-release\n" +
+				"groups:\n" +
+				"- name: snapshot\n" +
+				"  jobs:\n" +
+				"  - build-snapshot\n" +
+				"  - test-snapshot\n" +
+				"  - publish-snapshot\n" +
+				"- name: release\n" +
+				"  jobs:\n" +
+				"  - build-release\n" +
+				"  - test-release\n" +
+				"  - publish-release\n"
+		);
+		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
+		editor.assertProblems(/*NONE*/);
+
+		//If there are no groups then, don't complain about inconmplete jobs partitioning
+		editor.setText(
+				"jobs:\n" +
+				"- name: build-snapshot\n" +
+				"- name: build-release\n" +
+				"- name: test-snapshot\n" +
+				"- name: test-release\n" +
+				"- name: publish-snapshot\n" +
+				"- name: publish-release\n"
+		);
+
+		//If at least one job is in a group, check that all jobs are in a group
+		editor.setText(
+				"jobs:\n" +
+				"- name: build-snapshot\n" +
+				"- name: build-release\n" +
+				"- name: test-snapshot\n" +
+				"- name: test-release\n" +
+				"- name: publish-snapshot\n" +
+				"- name: publish-release\n" +
+				"groups:\n" +
+				"- name: snapshot\n" +
+				"  jobs:\n" +
+				"  - build-snapshot\n" +
+				"- name: release\n" +
+				"  jobs:\n" +
+				"  - build-release"
+		);
+		editor.assertProblems(
+				"test-snapshot|'test-snapshot' belongs to no group",
+				"test-release|'test-release' belongs to no group",
+				"publish-snapshot|'publish-snapshot' belongs to no group",
+				"publish-release|'publish-release' belongs to no group"
+		);
+
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

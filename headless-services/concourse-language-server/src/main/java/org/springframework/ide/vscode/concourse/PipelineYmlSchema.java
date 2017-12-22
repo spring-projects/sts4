@@ -399,7 +399,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "resources", f.yseq(t_resource));
 		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
 		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
-		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group));
+		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group).require(models::jobAssignmentIsComplete));
 
 		definitionTypes = ImmutableList.of(
 				jobNameDef,
