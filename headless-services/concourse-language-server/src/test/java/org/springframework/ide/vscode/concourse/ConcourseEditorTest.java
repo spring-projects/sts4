@@ -4196,6 +4196,122 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("path", "The path to a directory to be cached");
 	}
 
+	@Test public void image_resource_completions() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"<*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION,
+				"imgrs<*>"
+				, // ==>
+				"image_resource:\n" +
+				"  type: <*>"
+		);
+
+		editor.setText(
+			"platform: linux\n" +
+			"run:\n" +
+			"  path: blah\n" +
+			"image_resource:\n" +
+			"  type: <*>"
+		);
+		editor.assertContextualCompletions("dckr<*>",
+				"docker-image\n" +
+				"  source:\n" +
+				"    repository: <*>"
+		);
+
+		editor.setText(
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  <*>"
+		);
+		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>"
+				, // =>
+				  "params:\n" +
+				"    <*>"
+				, // ----
+				  "source:\n" +
+				"    <*>" //Actually... would expect 'repository' to be filled in by snippet here!
+				, // ----
+				  "version:\n" +
+				"    <*>"
+		);
+	}
+
+	@Test public void image_resource_subHovers() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: some-docker-image\n" +
+				"  version: latest"
+		);
+		editor.assertHoverContains("type", "type of the resource. Usually `docker-image`.");
+		editor.assertHoverContains("source", "Configuration for the resource");
+		editor.assertHoverContains("params", "A map of arbitrary configuration to forward to the resource");
+		editor.assertHoverContains("version", "A specific version of the resource to fetch");
+	}
+
+	@Test public void image_resource_version_reconcile() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: some-docker-image\n" +
+				"  version: latest"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: some-docker-image\n" +
+				"  version: every"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: some-docker-image\n" +
+				"  version:\n"+
+				"    anystring: goes\n"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"image_resource:\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: some-docker-image\n" +
+				"  version: not-a-valid-version"
+		);
+		editor.assertProblems("not-a-valid-version|Valid values are: [every, latest]");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

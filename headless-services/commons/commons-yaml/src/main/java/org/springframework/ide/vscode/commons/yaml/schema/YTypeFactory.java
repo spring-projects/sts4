@@ -393,6 +393,7 @@ public class YTypeFactory {
 		public abstract String toString(); // force each sublcass to implement a (nice) toString method.
 
 		public void addProperty(YTypedProperty p) {
+			Assert.isNotNull(p);
 			cachedPropertyMap = null;
 			propertyList.add(p);
 		}

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.concourse;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -168,9 +169,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		// define schema types
 		TOPLEVEL_TYPE = f.ybean("Pipeline");
 
-		YAtomicType t_version = f.yatomic("Version");
-		t_version.addHints("latest", "every");
-
 		t_resource_type_name = f.yenumFromHints("ResourceType Name",
 				(dc) -> (parseString, validValues) ->  {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
@@ -226,10 +224,19 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(t_resource, "webhook_token", t_ne_string);
 
 		AbstractType t_image_resource = f.ybean("ImageResource");
-		for (YTypedProperty p : t_resource.getProperties()) {
-			if (!"name".equals(p.getName())) {
-				t_image_resource.addProperty(p);
-			}
+		{
+			Map<String, YTypedProperty> resourceProperties = t_resource.getPropertiesMap();
+			//Some of the properties in 'image_resource' are just like the ones in regular resource.
+			// So let's copy them...
+			t_image_resource.addProperty(resourceProperties.get("type"));
+			t_image_resource.addProperty(resourceProperties.get("source"));
+			addProp(t_image_resource, "params", t_params);
+			//TODO: make ImageResourceParams dynamic based on resource type. Somewhat like below, but that code isn't exactly
+			// right (yet :-)
+//			addProp(t_image_resource, "params", f.contextAware("ImageResourceParams", (dc) ->
+//				resourceTypes.getInParamsType(getImageResourceType(models, dc))
+//			));
+			addProp(t_image_resource, "version", t_resource_version);
 		}
 
 		YAtomicType t_platform = f.yenum("Platform", "windows", "linux", "darwin");
