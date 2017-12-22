@@ -226,9 +226,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		AbstractType t_image_resource = f.ybean("ImageResource");
 		{
 			Map<String, YTypedProperty> resourceProperties = t_resource.getPropertiesMap();
-			//Some of the properties in 'image_resource' are just like the ones in regular resource.
-			// So let's copy them...
-			t_image_resource.addProperty(resourceProperties.get("type"));
+			addProp(t_image_resource, "type", t_resource_type_name).isRequired(true);
 			t_image_resource.addProperty(resourceProperties.get("source"));
 			addProp(t_image_resource, "params", t_params);
 			//TODO: make ImageResourceParams dynamic based on resource type. Somewhat like below, but that code isn't exactly

@@ -4251,12 +4251,13 @@ public class ConcourseEditorTest {
 				"  path: blah\n" +
 				"image_resource:\n" +
 				"  type: docker-image\n" +
+				"  params: {}\n" +
 				"  source:\n" +
 				"    repository: some-docker-image\n" +
 				"  version: latest"
 		);
 		editor.assertHoverContains("type", "type of the resource. Usually `docker-image`.");
-		editor.assertHoverContains("source", "Configuration for the resource");
+		editor.assertHoverContains(" source", "The location of the resource");
 		editor.assertHoverContains("params", "A map of arbitrary configuration to forward to the resource");
 		editor.assertHoverContains("version", "A specific version of the resource to fetch");
 	}
