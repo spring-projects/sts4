@@ -1,0 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2017 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.concourse.github;
+
+import java.util.Collection;
+
+public interface GithubInfoProvider {
+
+	/**
+	 * Retrieves a list of owners that can be suggested as hints in completions of github repo urls.
+	 * <p>
+	 * Note: since github has millions of users and fetching all of them isn't really an option, the owners
+	 * are expected to be somehow limited based on the user credentials (i.e. returning a list that is
+	 * deemed relevant to the current logged in user, rather than an exhaustive list of every org and user name
+	 * on github.
+	 */
+	Collection<String> getOwners() throws Exception;
+	Collection<String> getReposForOwner(String owner) throws Exception;
+
+}

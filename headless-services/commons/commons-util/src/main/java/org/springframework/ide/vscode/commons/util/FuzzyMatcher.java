@@ -24,7 +24,7 @@ public class FuzzyMatcher {
 	 * 'score' when it does. The higher the score, the better the match is considered to
 	 * be.
 	 */
-	public static double matchScore(String pattern, String data) {
+	public static double matchScore(CharSequence pattern, String data) {
 		int ppos = 0; //pos of next char in pattern to look for
 		int dpos = 0; //pos of next char in data not yet matched
 		int gaps = 0; //number of 'gaps' in the match. A gap is any non-empty run of consecutive characters in the data that are not used by the match
@@ -61,7 +61,7 @@ public class FuzzyMatcher {
 		return score(gaps, skips, pattern);
 	}
 
-	private static double score(int gaps, int skips, String pattern) {
+	private static double score(int gaps, int skips, CharSequence pattern) {
 		if (gaps==0) {
 			//gaps == 0 means a prefix match, ignore 'skips' at end of String and just sort
 			// alphabetic (see STS-4049)

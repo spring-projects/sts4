@@ -181,6 +181,10 @@ public class DocumentRegion implements CharSequence, IRegion {
 		return -1;
 	}
 
+	public int indexOf(char c) {
+		return indexOf(c, 0);
+	}
+
 	public DocumentRegion[] split(char c) {
 		List<DocumentRegion> pieces = new ArrayList<>();
 		int start = 0;
@@ -337,6 +341,5 @@ public class DocumentRegion implements CharSequence, IRegion {
 	public int getOffset() {
 		return getStart();
 	}
-
 
 }

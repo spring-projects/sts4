@@ -32,7 +32,7 @@ function error(msg : string) {
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG : false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-concourse',
         launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
         jvmHeap: "48m",

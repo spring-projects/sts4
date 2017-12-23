@@ -37,7 +37,7 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 			if (p1 instanceof ScoreableProposal && p2 instanceof ScoreableProposal) {
 				double s1 = ((ScoreableProposal)p1).getScore();
 				double s2 = ((ScoreableProposal)p2).getScore();
-				if (Math.abs(s1-s2)<1E-5) {
+				if (s1==s2) {
 					String name1 = ((ScoreableProposal)p1).getLabel();
 					String name2 = ((ScoreableProposal)p2).getLabel();
 					return name1.compareTo(name2);
@@ -45,7 +45,13 @@ public abstract class ScoreableProposal implements ICompletionProposal {
 					return Double.compare(s2, s1);
 				}
 			}
-			return 0;
+			if (p1 instanceof ScoreableProposal) {
+				return -1;
+			}
+			if (p2 instanceof ScoreableProposal) {
+				return +1;
+			}
+			return p1.getLabel().compareTo(p2.getLabel());
 		}
 	};
 	public abstract double getBaseScore();

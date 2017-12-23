@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 
 import com.google.common.collect.ImmutableList;
 
@@ -90,10 +91,10 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		}
 	}
 
-	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions) {
+	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions, GithubInfoProvider github) {
 		super("vscode-concourse");
 		this.COMPLETION_OPTIONS = completionOptions;
-		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models);
+		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models, github);
 		enableSnippets(pipelineSchema, true);
 		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
 

@@ -8,11 +8,10 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.handlers;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -20,13 +19,13 @@ public class SimpleCompletionFactory {
 
 
 	public static class SimpleProposal implements ICompletionProposal{
-		
+
 		private DocumentEdits edits;
 		private CompletionItemKind kind;
 		private Renderable info;
 		private String detail;
 		private String label;
-		
+
 		public SimpleProposal(DocumentEdits edits,  CompletionItemKind kind, Renderable info,
 				String detail, String label) {
 			this.edits = edits;
@@ -66,7 +65,15 @@ public class SimpleCompletionFactory {
 			return detail;
 		}
 
+		@Override
+		public String toString() {
+			return "SimpleProposal("+label+")";
+		}
 
+	}
+
+	public static SimpleProposal simpleProposal(DocumentRegion query, CompletionItemKind kind, String value, String detail, Renderable info) {
+		return simpleProposal(query.getDocument(), query.getEnd(), query.toString(), kind, value, detail, info);
 	}
 
 	public static SimpleProposal simpleProposal(IDocument doc, int offset, String query, CompletionItemKind kind, String value, String detail, Renderable info) {

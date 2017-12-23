@@ -55,21 +55,25 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 			if (keyNode.isInValue(offset)) {
 				int valueStart = keyNode.getColonOffset()+1;
 				int valueEnd = keyNode.getNodeEnd(); // assumes we only look at the current line, good enough for now
-				return new DocumentRegion(doc.getDocument(), valueStart, valueEnd);
+				DocumentRegion region = new DocumentRegion(doc.getDocument(), valueStart, valueEnd);
+				if (region.startsWith(" ")) {
+					region = region.subSequence(1);
+				}
+				return region;
 			}
 		}
 		return null; // TODO Reaching here might mean support for calling the custom assistant isn't
 					// implemented for this kind of context yet. It will have to be expanded upon
 					// as the need for it arises in real use-cases.
 	}
-	
+
 	private static PrefixFinder prefixfinder = new PrefixFinder() {
 		@Override
 		protected boolean isPrefixChar(char c) {
 			return !Character.isWhitespace(c);
 		}
 	};
-	
+
 	protected String getPrefix(YamlDocument doc, SNode node, int offset) {
 		//For value completions... in general we would like to determine the whole text
 		// corresponding to the value, so a simplistic backwards scan isn't good enough.

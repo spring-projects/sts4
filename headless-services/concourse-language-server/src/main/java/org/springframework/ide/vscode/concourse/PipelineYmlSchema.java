@@ -47,6 +47,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.concourse.ConcourseModel.ResourceModel;
 import org.springframework.ide.vscode.concourse.ConcourseModel.StepModel;
+import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
+import org.springframework.ide.vscode.concourse.github.GithubRepoContentAssistant;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -160,7 +162,10 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	private List<YType> definitionTypes = new ArrayList<>();
 
-	public PipelineYmlSchema(ConcourseModel models) {
+	private GithubInfoProvider github;
+
+	public PipelineYmlSchema(ConcourseModel models, GithubInfoProvider github) {
+		this.github = github;
 		this.models = models;
 		this.asts = models.getAstCache();
 		models.setResourceTypeRegistry(resourceTypes);
@@ -417,8 +422,11 @@ public class PipelineYmlSchema implements YamlSchema {
 	private void initializeDefaultResourceTypes() {
 		// git :
 		{
+			AbstractType t_git_repo_uri = f.yatomic("GitRepoUri");
+			t_git_repo_uri.setCustomContentAssistant(new GithubRepoContentAssistant(github));
+
 			AbstractType source = f.ybean("GitSource");
-			addProp(source, "uri", t_ne_string).isPrimary(true);
+			addProp(source, "uri", t_git_repo_uri).isPrimary(true);
 			addProp(source, "branch", t_ne_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
 			addProp(source, "private_key", t_ne_string);
 			addProp(source, "username", t_ne_string);

@@ -20,7 +20,9 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.ide.vscode.concourse.ConcourseLanguageServer;
+import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import static org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions.*;
 
@@ -32,7 +34,8 @@ public class ConcourseLanguageServerTest {
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new ConcourseLanguageServer(TEST_DEFAULT));
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new ConcourseLanguageServer(TEST_DEFAULT, Mockito.mock(GithubInfoProvider.class)));
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -40,7 +43,8 @@ public class ConcourseLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(() -> new ConcourseLanguageServer(TEST_DEFAULT));
+		LanguageServerHarness harness = new LanguageServerHarness(() ->
+			new ConcourseLanguageServer(TEST_DEFAULT, Mockito.mock(GithubInfoProvider.class)));
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 

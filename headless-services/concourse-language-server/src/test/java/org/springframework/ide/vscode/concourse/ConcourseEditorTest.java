@@ -12,8 +12,12 @@ package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -31,12 +35,15 @@ import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
 
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+import com.google.common.collect.ImmutableList;
+
+import org.mockito.Mockito;
 
 public class ConcourseEditorTest {
 
@@ -45,9 +52,11 @@ public class ConcourseEditorTest {
 	private static final String CURSOR = "<*>";
 	LanguageServerHarness harness;
 
+	private GithubInfoProvider github= Mockito.mock(GithubInfoProvider.class);
+
 	@Before public void setup() throws Exception {
 		harness = new LanguageServerHarness(() -> {
-				return new ConcourseLanguageServer(OPTIONS)
+				return new ConcourseLanguageServer(OPTIONS, github)
 						.setMaxCompletions(100);
 			},
 			LanguageId.CONCOURSE_PIPELINE
@@ -4373,7 +4382,107 @@ public class ConcourseEditorTest {
 				"publish-snapshot|'publish-snapshot' belongs to no group",
 				"publish-release|'publish-release' belongs to no group"
 		);
+	}
 
+	@Test public void githubCompletionsUriTypes() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: <*>"
+		);
+		editor.assertContextualCompletions("<*>",
+				"git@github.com:<*>",
+				"https://github.com/<*>"
+		);
+
+		editor.assertContextualCompletions("@<*>",
+				"git@github.com:<*>"
+		);
+	}
+
+	@Test public void githubCompletionsOwners() throws Exception {
+		when(github.getOwners()).thenReturn(ImmutableList.of(
+				"kdvolder", "spring-projects", "spring-guides"
+		));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: <*>"
+		);
+
+		editor.assertContextualCompletions("git@github.com:<*>",
+				"git@github.com:kdvolder/<*>",
+				"git@github.com:spring-guides/<*>",
+				"git@github.com:spring-projects/<*>"
+		);
+
+		editor.assertContextualCompletions("git@github.com:vol<*>",
+				"git@github.com:kdvolder/<*>"
+		);
+		editor.assertContextualCompletions("https://github.com/<*>",
+				"https://github.com/kdvolder/<*>",
+				"https://github.com/spring-guides/<*>",
+				"https://github.com/spring-projects/<*>"
+		);
+
+	}
+
+	@Test public void githubCompletionsRepos() throws Exception {
+		when(github.getReposForOwner("the-owner")).thenReturn(ImmutableList.of(
+				"nice-repo", "cool-project", "good-stuff"
+		));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: <*>"
+		);
+		editor.assertContextualCompletions("https://github.com/the-owner/<*>",
+				"https://github.com/the-owner/cool-project<*>",
+				"https://github.com/the-owner/good-stuff<*>",
+				"https://github.com/the-owner/nice-repo<*>"
+		);
+
+		editor.assertContextualCompletions("https://github.com/the-owner/proj<*>",
+				"https://github.com/the-owner/cool-project<*>"
+		);
+
+		editor.assertContextualCompletions("git@github.com:the-owner/<*>",
+				"git@github.com:the-owner/cool-project<*>",
+				"git@github.com:the-owner/good-stuff<*>",
+				"git@github.com:the-owner/nice-repo<*>"
+		);
+
+		editor.assertContextualCompletions("git@github.com:the-owner/proj<*>",
+				"git@github.com:the-owner/cool-project<*>"
+		);
+	}
+
+	@Test public void githubCompletionErrors() throws Exception {
+		when(github.getReposForOwner("the-owner")).thenThrow(new IOException("Explain some stuff"));
+		when(github.getOwners()).thenThrow(new IOException("Explain some stuff"));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:the-owner/<*>"
+		);
+		editor.assertCompletionLabels("Explain some stuff");
+
+		editor.setText(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:<*>"
+		);
+		editor.assertCompletionLabels("Explain some stuff");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
