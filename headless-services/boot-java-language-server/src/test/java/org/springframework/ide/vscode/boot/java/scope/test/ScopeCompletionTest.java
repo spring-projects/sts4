@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.languageserver.testharness.TestAsserts;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -50,12 +51,12 @@ public class ScopeCompletionTest {
 	public void testEmptyBracketsCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(<*>)");
 		assertAnnotationCompletions(
+				"@Scope(\"application\"<*>)",
+				"@Scope(\"globalSession\"<*>)",
 				"@Scope(\"prototype\"<*>)",
-				"@Scope(\"singleton\"<*>)",
 				"@Scope(\"request\"<*>)",
 				"@Scope(\"session\"<*>)",
-				"@Scope(\"globalSession\"<*>)",
-				"@Scope(\"application\"<*>)",
+				"@Scope(\"singleton\"<*>)",
 				"@Scope(\"websocket\"<*>)");
 	}
 
@@ -63,12 +64,12 @@ public class ScopeCompletionTest {
 	public void testEmptyStringLiteralCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"<*>\")");
 		assertAnnotationCompletions(
+				"@Scope(\"application\"<*>)",
+				"@Scope(\"globalSession\"<*>)",
 				"@Scope(\"prototype\"<*>)",
-				"@Scope(\"singleton\"<*>)",
 				"@Scope(\"request\"<*>)",
 				"@Scope(\"session\"<*>)",
-				"@Scope(\"globalSession\"<*>)",
-				"@Scope(\"application\"<*>)",
+				"@Scope(\"singleton\"<*>)",
 				"@Scope(\"websocket\"<*>)");
 	}
 
@@ -76,12 +77,12 @@ public class ScopeCompletionTest {
 	public void testEmptyValueCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=<*>)");
 		assertAnnotationCompletions(
+				"@Scope(value=\"application\"<*>)",
+				"@Scope(value=\"globalSession\"<*>)",
 				"@Scope(value=\"prototype\"<*>)",
-				"@Scope(value=\"singleton\"<*>)",
 				"@Scope(value=\"request\"<*>)",
 				"@Scope(value=\"session\"<*>)",
-				"@Scope(value=\"globalSession\"<*>)",
-				"@Scope(value=\"application\"<*>)",
+				"@Scope(value=\"singleton\"<*>)",
 				"@Scope(value=\"websocket\"<*>)");
 	}
 
@@ -89,12 +90,12 @@ public class ScopeCompletionTest {
 	public void testEmptyValueStringLiteralCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(value=\"<*>\")");
 		assertAnnotationCompletions(
+				"@Scope(value=\"application\"<*>)",
+				"@Scope(value=\"globalSession\"<*>)",
 				"@Scope(value=\"prototype\"<*>)",
-				"@Scope(value=\"singleton\"<*>)",
 				"@Scope(value=\"request\"<*>)",
 				"@Scope(value=\"session\"<*>)",
-				"@Scope(value=\"globalSession\"<*>)",
-				"@Scope(value=\"application\"<*>)",
+				"@Scope(value=\"singleton\"<*>)",
 				"@Scope(value=\"websocket\"<*>)");
 	}
 
@@ -151,7 +152,7 @@ public class ScopeCompletionTest {
 		for (String expectedCompleted : completedAnnotations) {
 			Editor clonedEditor = editor.clone();
 			clonedEditor.apply(completions.get(i++));
-			assertTrue(clonedEditor.getText().contains(expectedCompleted));
+			TestAsserts.assertContains(expectedCompleted, clonedEditor.getText());
 		}
 
 		assertEquals(i, completions.size());
