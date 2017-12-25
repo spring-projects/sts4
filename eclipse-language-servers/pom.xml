@@ -176,9 +176,19 @@
 					<url>http://download.eclipse.org/staging/photon/</url>
 				</repository> -->
 				<repository>
+					<id>platform-i-builds</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/eclipse/updates/4.8-I-builds/</url>
+				</repository>
+<!--				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20171130170529/repository/</url>
+				</repository> -->
+				<repository>
+					<id>orbit-i-builds</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/tools/orbit/downloads/latest-I/</url>
 				</repository>
 				<repository>
 					<id>lsp4j-snapshots</id>
