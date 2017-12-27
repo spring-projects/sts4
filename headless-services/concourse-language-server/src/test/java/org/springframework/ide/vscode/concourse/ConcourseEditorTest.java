@@ -1585,7 +1585,7 @@ public class ConcourseEditorTest {
 				"- name: repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    uri: git@github.com:johny-coder/test-repo\n" +
+				"    uri: git@someplace.com:johny-coder/test-repo.git\n" +
 				"jobs:\n" +
 				"- name: do-stuff\n" +
 				"  plan:\n" +
