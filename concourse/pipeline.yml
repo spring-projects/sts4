@@ -15,267 +15,267 @@ resources:
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     paths:
     - concourse/docker
 - name: sts4
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
 - name: sts4-out
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
 - name: atom-cf-manifest-yaml
   type: git
   source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
 - name: atom-concourse
   type: git
   source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-concourse.git
 - name: atom-bosh
   type: git
   source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-bosh.git
 - name: atom-boot-java
   type: git
   source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-boot-java.git
 - name: atom-boot-properties
   type: git
   source:
-    branch: {{branch}}
-    private_key: {{rsa_id}}
+    branch: ((branch))
+    private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-boot-properties.git
 - name: tasks
   type: git
   source:
     uri: git@github.com:spring-projects/sts4.git
-    branch: {{branch}}
+    branch: ((branch))
     paths:
     - concourse/tasks
-    private_key: {{rsa_id}}
+    private_key: ((rsa_id))
 - name: s3-boot-properties-vsix-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-boot-properties-(.*).vsix
 - name: s3-boot-java-vsix-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-boot-java-(.*).vsix
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-concourse-(.*).vsix
 - name: s3-bosh-vsix-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-manifest-yaml-(.*).vsix
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
 - name: s3-manifest-yaml-fatjar--rc
   type: s3
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
 - name: s3-concourse-fatjar-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
 - name: s3-concourse-fatjar--rc
   type: s3
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
 - name: s3-bosh-fatjar-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
 - name: s3-bosh-fatjar--rc
   type: s3
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
 - name: s3-boot-java-fatjar-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/boot-java-language-server-(.*).jar
 - name: s3-boot-java-fatjar--rc
   type: s3
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
 - name: s3-boot-properties-fatjar-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/boot-properties-language-server-(.*).jar
 - name: s3-boot-properties-fatjar--rc
   type: s3
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_prod_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/boot-properties-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/atom/snapshots/cf-manifest-yaml-(.*).tgz
 - name: s3-concourse-atom-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/atom/snapshots/concourse-pipeline-yaml-(.*).tgz
 - name: s3-bosh-atom-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/atom/snapshots/bosh-yaml-(.*).tgz
 - name: s3-boot-java-atom-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/atom/snapshots/boot-java-(.*).tgz
 - name: s3-boot-properties-atom-snapshot
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: sts4/atom/snapshots/boot-properties-(.*).tgz
 - name: vscode-snapshot-website
   type: s3-multi
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_region))
     path: snapshot/STS4/vscode-extensions
     options:
     - "--acl public-read"
 - name: atom-snapshot-website
   type: s3-multi
   source:
-    bucket: {{s3_prod_bucket}}
-    access_key_id: {{s3_prod_accesskey}}
-    secret_access_key: {{s3_prod_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_region))
     path: snapshot/STS4/atom-packages
     options:
     - "--acl public-read"
 - name: slack-notification
   type: slack-notification
   source:
-    url: {{slack_webhook}}
+    url: ((slack_webhook))
 - name: docker-image
   type: docker-image
   source:
-    username: {{docker_hub_username}}
-    password: {{docker_hub_password}}
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
     repository: kdvolder/sts4-build-env
 - name: maven-cache
   type: s3
   source:
-    bucket: {{s3_bucket}}
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     regexp: mvn-caches/sts4-(.*).tar.gz
 - name: version
   type: semver
   source:
     driver: s3
-    bucket: {{s3_bucket}}
+    bucket: ((s3_bucket))
     key: versions/vscode-extensions
-    access_key_id: {{s3_accesskey}}
-    secret_access_key: {{s3_secretkey}}
-    region_name: {{s3_region}}
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
 ########################################################################################
 jobs:
@@ -782,7 +782,7 @@ jobs:
     input_mapping:
       sts4: tasks
     params:
-      vsce_token: {{vsce_token}}
+      vsce_token: ((vsce_token))
     on_failure:
       put: slack-notification
       params:
