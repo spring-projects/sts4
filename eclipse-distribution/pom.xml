@@ -183,10 +183,15 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
+				</repository> -->
+				<repository>
+					<id>lsp4e-050-stream</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/lsp4e/0.5.0milestone/</url>
 				</repository>
 			</repositories>
 			<modules>
