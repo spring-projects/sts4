@@ -13,25 +13,21 @@ package org.springframework.ide.vscode.concourse.github;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.SimpleCompletionFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.yaml.completion.CompletionFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
 
-import org.eclipse.lsp4j.CompletionItemKind;
-
 import com.google.common.collect.ImmutableList;
 
 public class GithubRepoContentAssistant implements ISubCompletionEngine {
 
-	private String[] uriPrefixes = {
+	public static final String[] URI_PREFIXES = {
 			"git@github.com:",
 			"https://github.com/"
 	};
@@ -45,14 +41,14 @@ public class GithubRepoContentAssistant implements ISubCompletionEngine {
 	public List<ICompletionProposal> getCompletions(CompletionFactory f, DocumentRegion region, int offset) {
 		DocumentRegion query = region.subSequence(0, offset);
 		//If uri prefix is already there, we provide CA for owner / repo
-		for (String uriPrefix : uriPrefixes) {
+		for (String uriPrefix : URI_PREFIXES) {
 			if (query.startsWith(uriPrefix)) {
 				return getOwnerOrRepoCompletions(f, query.subSequence(uriPrefix.length()));
 			}
 		}
 		//If uri prefix is not yet there, maybe we can suggest it (if it matches the query)
-		List<ICompletionProposal> proposals = new ArrayList<>(uriPrefixes.length);
-		for (String uriPrefix : uriPrefixes) {
+		List<ICompletionProposal> proposals = new ArrayList<>(URI_PREFIXES.length);
+		for (String uriPrefix : URI_PREFIXES) {
 			if (FuzzyMatcher.matchScore(query, uriPrefix)!=0.0) {
 				proposals.add(SimpleCompletionFactory.simpleProposal(query, CompletionItemKind.Text, uriPrefix, null, null));
 			}
@@ -93,7 +89,7 @@ public class GithubRepoContentAssistant implements ISubCompletionEngine {
 				List<ICompletionProposal> proposals = new ArrayList<>(repos.size());
 				for (String repo : repos) {
 					if (FuzzyMatcher.matchScore(query, repo)!=0.0) {
-						proposals.add(SimpleCompletionFactory.simpleProposal(query, CompletionItemKind.Text, repo, null, null));
+						proposals.add(SimpleCompletionFactory.simpleProposal(query, CompletionItemKind.Text, repo+".git", null, null));
 					}
 				}
 				return proposals;

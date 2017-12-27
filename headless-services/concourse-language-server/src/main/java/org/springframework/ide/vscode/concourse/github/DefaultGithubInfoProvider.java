@@ -13,12 +13,15 @@ package org.springframework.ide.vscode.concourse.github;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHPerson;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.cache.Cache;
@@ -36,11 +39,39 @@ public class DefaultGithubInfoProvider implements GithubInfoProvider {
 	//especially when connecting fails. So that user may try to address the
 	//issue and try again.
 
+	private static class Result<T> {
+		private Object result;
+
+		public Result(Object valueOrTrowable) {
+			this.result = valueOrTrowable;
+		}
+
+		@SuppressWarnings("unchecked")
+		public T get() throws Exception {
+			if (result instanceof Throwable) {
+				throw ExceptionUtil.exception((Throwable) result);
+			}
+			return (T)result;
+		}
+	}
+
+	private <T> Callable<Result<T>> loader(Callable<T> callable) {
+		return () -> load(callable);
+	}
+
+	private static <T> Result<T> load(Callable<T> callable) {
+		try {
+			return new Result<>(callable.call());
+		} catch (Throwable e) {
+			return new Result<>(e);
+		}
+	}
+
 	private GitHub github;
 	private IOException connectionError;
 	private Collection<String> owners;
 
-	private Cache<String, Collection<String>> reposByOwner = CacheBuilder.newBuilder()
+	private Cache<String, Result<Collection<String>>> reposByOwner = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
@@ -94,17 +125,23 @@ public class DefaultGithubInfoProvider implements GithubInfoProvider {
 		}
 		try {
 			if (github!=null) {
-				return reposByOwner.get(ownerName, () -> {
+				return reposByOwner.get(ownerName, loader(() -> {
 					GHPerson owner = getOwner(ownerName);
-					return Flux.fromIterable(owner.listRepositories())
-							.filter(repo -> repo.getOwnerName().equals(ownerName))
-							.map(GHRepository::getName)
-							.collect(CollectorUtil.toImmutableSet())
-							.block();
-				});
+					if (owner!=null) {
+						return Flux.fromIterable(owner.listRepositories())
+								.filter(repo -> repo.getOwnerName().equals(ownerName))
+								.map(GHRepository::getName)
+								.collect(CollectorUtil.toImmutableSet())
+								.block();
+					}
+					return null;
+				}))
+				.get();
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			if (!isMissingOwnerException(e)) {
+				Log.log(e);
+			}
 		}
 		return ImmutableList.of();
 	}
@@ -112,9 +149,23 @@ public class DefaultGithubInfoProvider implements GithubInfoProvider {
 	private GHPerson getOwner(String ownerName) throws IOException {
 		try {
 			return github.getUser(ownerName);
-		} catch (IOException e) {
-			return github.getOrganization(ownerName);
+		} catch (IOException e1) {
+			if (isMissingOwnerException(e1)) {
+				try {
+					return github.getOrganization(ownerName);
+				} catch (IOException e2) {
+					if (isMissingOwnerException(e2)) {
+						return null;
+					}
+					throw e2;
+				}
+			}
+			throw e1;
 		}
+	}
+
+	protected boolean isMissingOwnerException(Throwable e) {
+		return e instanceof GHFileNotFoundException;
 	}
 
 }

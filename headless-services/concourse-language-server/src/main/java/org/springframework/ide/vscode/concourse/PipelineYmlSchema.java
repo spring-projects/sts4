@@ -49,6 +49,7 @@ import org.springframework.ide.vscode.concourse.ConcourseModel.ResourceModel;
 import org.springframework.ide.vscode.concourse.ConcourseModel.StepModel;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.ide.vscode.concourse.github.GithubRepoContentAssistant;
+import org.springframework.ide.vscode.concourse.github.GithubValueParsers;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -424,6 +425,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		{
 			AbstractType t_git_repo_uri = f.yatomic("GitRepoUri");
 			t_git_repo_uri.setCustomContentAssistant(new GithubRepoContentAssistant(github));
+			t_git_repo_uri.parseWith(GithubValueParsers.uri(github));
 
 			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_git_repo_uri).isPrimary(true);

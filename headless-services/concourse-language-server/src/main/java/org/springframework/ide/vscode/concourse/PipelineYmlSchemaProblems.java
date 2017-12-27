@@ -16,5 +16,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
 
 public class PipelineYmlSchemaProblems {
-	protected static final ProblemType UNUSED_RESOURCE = problemType("PipelineYamlUnusedResource", ProblemSeverity.ERROR);
+	public static final ProblemType UNUSED_RESOURCE = problemType("PipelineYamlUnusedResource", ProblemSeverity.ERROR);
+	public static final ProblemType UNKNOWN_GITHUB_ENTITY = problemType("UnknownGithubEntitity", ProblemSeverity.WARNING);
 }

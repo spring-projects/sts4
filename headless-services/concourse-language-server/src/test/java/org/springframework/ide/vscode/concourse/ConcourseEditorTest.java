@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
@@ -30,18 +31,21 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
+import org.springframework.ide.vscode.concourse.github.GithubRepoContentAssistant;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import org.mockito.Mockito;
 
@@ -220,6 +224,7 @@ public class ConcourseEditorTest {
 	public void reconcileAcceptsSensiblePipelineFile() throws Exception {
 		Editor editor;
 
+		when(github.getReposForOwner("spring-projects")).thenReturn(ImmutableSet.of("sts4"));
 		editor = harness.newEditor(
 				getClasspathResourceText("workspace/pipeline.yml")
 		);
@@ -643,7 +648,7 @@ public class ConcourseEditorTest {
 				"- name: sts4\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    uri: https://github.com/kdvolder/somestuff\n" +
+				"    uri: https://someplace.com/kdvolder/somestuff\n" +
 				"    branch: master\n" +
 				"jobs:\n" +
 				"- name: job1\n" +
@@ -848,14 +853,14 @@ public class ConcourseEditorTest {
 				"  type: git\n" +
 				"  source:\n" +
 				"    branch: master\n" +
-				"    uri: https://github.com/kdvolder/my-repo\n" +
+				"    uri: https://someplace.com/kdvolder/my-repo\n" +
 				"resources:\n" +
 				"- name: your-repo\n" +
 				"  type: git\n" +
 				"  type: git\n" +
 				"  source:\n" +
 				"    branch: master\n" +
-				"    uri: https://github.com/kdvolder/forked-repo\n"
+				"    uri: https://someplace.com/kdvolder/forked-repo\n"
 		);
 
 		editor.assertProblems(
@@ -1049,7 +1054,7 @@ public class ConcourseEditorTest {
 				"- name: sts4-out\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    uri: git@github.com:spring-projects/sts4.git\n" +
+				"    uri: git@someplace.com:spring-projects/sts4.git\n" +
 				"    bogus: bad\n" +
 				"    branch: {{branch}}\n" +
 				"    private_key: {{rsa_id}}\n" +
@@ -1564,7 +1569,7 @@ public class ConcourseEditorTest {
 				"- name: repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    uri: git@github.com/johny-coder/test-repo\n" +
+				"    uri: git@someplace.com:johny-coder/test-repo.git\n" +
 				"jobs:\n" +
 				"- name: do-stuff\n" +
 				"  plan:\n" +
@@ -1580,7 +1585,7 @@ public class ConcourseEditorTest {
 				"- name: repo\n" +
 				"  type: git\n" +
 				"  source:\n" +
-				"    uri: git@github.com/johny-coder/test-repo\n" +
+				"    uri: git@github.com:johny-coder/test-repo\n" +
 				"jobs:\n" +
 				"- name: do-stuff\n" +
 				"  plan:\n" +
@@ -3929,7 +3934,7 @@ public class ConcourseEditorTest {
 				"  type: git\n" +
 				"  source:\n" +
 				"    branch: master\n" +
-				"    uri: git@github.com/blah\n" +
+				"    uri: git@someplace.com:blah/blah.git\n" +
 				"jobs:\n" +
 				"- name: build-it\n" +
 				"  plan:\n" +
@@ -3949,7 +3954,7 @@ public class ConcourseEditorTest {
 				"  - name: cf-networking-dev\n" +
 				"    type: git\n" +
 				"    source:\n" +
-				"      uri: git@github.com:cloudfoundry-incubator/cf-networking-release.git\n" +
+				"      uri: git@someplace.com:cloudfoundry-incubator/cf-networking-release.git\n" +
 				"      branch: develop\n" +
 				"      ignore_paths:\n" +
 				"        - docs\n" +
@@ -4443,23 +4448,23 @@ public class ConcourseEditorTest {
 				"    uri: <*>"
 		);
 		editor.assertContextualCompletions("https://github.com/the-owner/<*>",
-				"https://github.com/the-owner/cool-project<*>",
-				"https://github.com/the-owner/good-stuff<*>",
-				"https://github.com/the-owner/nice-repo<*>"
+				"https://github.com/the-owner/cool-project.git<*>",
+				"https://github.com/the-owner/good-stuff.git<*>",
+				"https://github.com/the-owner/nice-repo.git<*>"
 		);
 
 		editor.assertContextualCompletions("https://github.com/the-owner/proj<*>",
-				"https://github.com/the-owner/cool-project<*>"
+				"https://github.com/the-owner/cool-project.git<*>"
 		);
 
 		editor.assertContextualCompletions("git@github.com:the-owner/<*>",
-				"git@github.com:the-owner/cool-project<*>",
-				"git@github.com:the-owner/good-stuff<*>",
-				"git@github.com:the-owner/nice-repo<*>"
+				"git@github.com:the-owner/cool-project.git<*>",
+				"git@github.com:the-owner/good-stuff.git<*>",
+				"git@github.com:the-owner/nice-repo.git<*>"
 		);
 
 		editor.assertContextualCompletions("git@github.com:the-owner/proj<*>",
-				"git@github.com:the-owner/cool-project<*>"
+				"git@github.com:the-owner/cool-project.git<*>"
 		);
 	}
 
@@ -4483,6 +4488,127 @@ public class ConcourseEditorTest {
 				"    uri: git@github.com:<*>"
 		);
 		editor.assertCompletionLabels("Explain some stuff");
+	}
+
+
+	@Test public void noNetworkGithubUriReconciling() throws Exception {
+		//When not plugged into the network (i.e github api returns errors)
+		// we consider the repos unknowable and will not warn about anything.
+		when(github.getReposForOwner("the-owner")).thenThrow(new Exception("Some problem talking to github"));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:the-owner/bad-project.git\n" +
+				"- name: other-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/the-owner/wrong-project.git\n"
+		);
+		editor.assertProblems(
+				"my-repo|Unused",
+				"other-repo|Unused"
+		);
+	}
+
+	@Test public void nonGithubUriReconciling() throws Exception {
+		//We only care about gihub uris. So, ignore anything else for reconciler.
+		when(github.getReposForOwner("the-owner")).thenReturn(ImmutableList.of(
+				"nice-repo", "cool-project", "good-stuff"
+		));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@somehost.somewhere:the-owner/bad-project\n" +
+				"- name: other-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://somehost.somewhere/the-owner/wrong-project\n"
+		);
+		editor.assertProblems(
+				"my-repo|Unused",
+				"other-repo|Unused"
+		);
+	}
+
+	@Test public void githubWrongFormatReconciling() throws Exception {
+		when(github.getReposForOwner("the-owner")).thenReturn(ImmutableList.of(
+				"nice-repo", "cool-project", "good-stuff"
+		));
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:ssh-just-owner\n" +
+				"- name: my-repo2\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com:ssh-just-owner.git\n" +
+				"- name: other-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/https-just-owner\n" +
+				"- name: other-repo2\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com/https-just-owner.git\n" +
+				"- name: different-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.com/ssh/wrong-separator.git\n" +
+				"- name: one-more-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.com:https/wrong-separator.git\n"
+		);
+		editor.ignoreProblem(PipelineYmlSchemaProblems.UNUSED_RESOURCE);
+		editor.assertProblems(
+				"uri: git@github.com:ssh-just-owne^r^\n|should end with '.git'",
+				"ssh-just-owner|Expecting something of the form '${owner}/${repo}'",
+				"uri: https://github.com/https-just-owne^r^\n|should end with '.git'",
+				"https-just-owner|Expecting something of the form '${owner}/${repo}'",
+				"git@github.com^/^ssh/wrong-separator|Expecting a ':'",
+				"https://github.com^:^https/wrong-separator|Expecting a '/'"
+		);
+	}
+
+	@Test public void githubUriReconciling() throws Exception {
+		when(github.getReposForOwner("the-owner")).thenReturn(ImmutableList.of(
+				"nice-repo", "cool-project", "good-stuff"
+		));
+		when(github.getReposForOwner("owner-no-exist")).thenReturn(null);
+
+		String editorText =
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: $$github$$the-owner/cool-project.git\n" +
+				"- name: other-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: $$github$$the-owner/repo-no-exist.git\n" +
+				"- name: different-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: $$github$$owner-no-exist/who-cares.git\n"
+				;
+
+		for (String githubUriPrefix : GithubRepoContentAssistant.URI_PREFIXES) {
+			Editor editor = harness.newEditor(editorText.replace("$$github$$", githubUriPrefix));
+			editor.ignoreProblem(PipelineYmlSchemaProblems.UNUSED_RESOURCE);
+			List<Diagnostic> problems = editor.assertProblems(
+					"repo-no-exist|Repo not found: 'repo-no-exist'",
+					"owner-no-exist|User or Organization not found: 'owner-no-exist'"
+			);
+			for (Diagnostic d : problems) {
+				assertEquals(DiagnosticSeverity.Warning, d.getSeverity());
+			}
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
