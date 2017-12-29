@@ -273,7 +273,7 @@ public class SpringIndexer {
 
 	private void scanProject(IJavaProject project, String[] files) {
 		try {
-			ASTParser parser = ASTParser.newParser(AST.JLS8);
+			ASTParser parser = ASTParser.newParser(AST.JLS9);
 			String[] classpathEntries = getClasspathEntries(project);
 
 			scanFiles(parser, files, classpathEntries);
@@ -284,7 +284,7 @@ public class SpringIndexer {
 	}
 
 	private void scanFile(String docURI, String content, String[] classpathEntries) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 		parser.setCompilerOptions(options);

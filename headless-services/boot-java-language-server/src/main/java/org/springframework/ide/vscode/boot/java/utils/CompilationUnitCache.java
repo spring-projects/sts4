@@ -126,7 +126,7 @@ public final class CompilationUnitCache {
 	}
 
 	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 		parser.setCompilerOptions(options);

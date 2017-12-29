@@ -18,18 +18,12 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 /**
- * A Map-like utilyt that allows putting and getting values associated with
+ * A Map-like utilty that allows putting and getting values associated with
  * annotation types.
  * <p>
  * The lookup is 'hierarchy aware' which means that is able to associate values

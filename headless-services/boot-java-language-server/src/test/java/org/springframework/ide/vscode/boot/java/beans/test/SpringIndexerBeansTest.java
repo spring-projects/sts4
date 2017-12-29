@@ -11,10 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans.test;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.List;
 
-import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.Annotations;
@@ -112,9 +109,6 @@ public class SpringIndexerBeansTest {
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java",
 				symbol("@Component", "@+ 'simpleComponent' (@Component) SimpleComponent")
 		);
-//		List<? extends SymbolInformation> symbols = indexer.getSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java");
-//		assertEquals(1, symbols.size());
-//		assertTrue(containsSymbol(symbols, "@+ 'simpleComponent' (@Component) SimpleComponent", uriPrefix + "/src/main/java/org/test/SimpleComponent.java", 4, 0, 4, 10));
 	}
 
 	@Test public void testScanSimpleControllerClass() throws Exception {
@@ -144,23 +138,6 @@ public class SpringIndexerBeansTest {
 
 	////////////////////////////////
 	// harness code
-
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
-
-			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
-				return true;
-			}
- 		}
-
-		return false;
-	}
 
 	private TestSymbolInfo symbol(String coveredText, String label) {
 		return new TestSymbolInfo(coveredText, label);

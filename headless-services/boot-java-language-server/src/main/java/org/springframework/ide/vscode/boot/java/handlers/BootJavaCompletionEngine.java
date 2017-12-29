@@ -51,7 +51,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 
 	@Override
 	public Collection<ICompletionProposal> getCompletions(IDocument document, int offset) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 		parser.setCompilerOptions(options);
