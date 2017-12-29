@@ -22,16 +22,20 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'boot-java',
         launcher: (context: VSCode.ExtensionContext) => 'org.springframework.boot.loader.JarLauncher',
-        classpath: (context: VSCode.ExtensionContext) => {
+        classpath: (context: VSCode.ExtensionContext, javaVersion: number) => {
             const classpath = [
                 Path.resolve(context.extensionPath, 'jars/language-server.jar')
             ];
-            const toolsJar = commons.findJvmFile('lib', 'tools.jar');
-            if (toolsJar) {
-                classpath.push(toolsJar);
-            } else {
-                VSCode.window.showWarningMessage('JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable');
+
+            if (javaVersion < 9) {
+                const toolsJar = commons.findJvmFile('lib', 'tools.jar');
+                if (toolsJar) {
+                    classpath.push(toolsJar);
+                } else {
+                    VSCode.window.showWarningMessage('JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable');
+                }
             }
+
             return classpath;
         },
         clientOptions: {
