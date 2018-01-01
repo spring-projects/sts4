@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,6 +90,13 @@ public class AnnotationHierarchyAwareLookup<T> {
 	public Collection<T> get(ITypeBinding annotationType) {
 		ImmutableList.Builder<T> found = ImmutableList.builder();
 		findElements(annotationType, new LinkedHashSet<>(), found::add);
+		return found.build();
+	}
+
+	public Collection<T> getAll() {
+		ImmutableList.Builder<T> found = ImmutableList.builder();
+		Collection<Binding<T>> values = bindings.values();
+		values.forEach(binding -> found.add(binding.value));
 		return found.build();
 	}
 

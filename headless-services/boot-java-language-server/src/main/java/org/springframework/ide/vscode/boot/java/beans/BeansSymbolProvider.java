@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,6 +23,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
@@ -35,6 +37,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 /**
@@ -46,51 +49,13 @@ public class BeansSymbolProvider implements SymbolProvider {
 	private static final String FUNCTION_FUNCTION_TYPE = Function.class.getName();
 	private static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
 	private static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
+
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
-
-	private boolean isFunctionBean(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-
-			String returnType = null;
-			if (method.getReturnType2().isParameterizedType()) {
-				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
-				Type type = paramType.getType();
-				ITypeBinding typeBinding = type.resolveBinding();
-				returnType = typeBinding.getBinaryName();
-			}
-			else {
-				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
-			}
-
-			return FUNCTION_FUNCTION_TYPE.equals(returnType) || FUNCTION_CONSUMER_TYPE.equals(returnType)
-					|| FUNCTION_SUPPLIER_TYPE.equals(returnType);
-		}
-		return false;
-	}
-
-//	private SymbolInformation createFunctionSymbol(Annotation node, TextDocument doc) throws BadLocationException {
-//		StringBuilder symbolLabel = new StringBuilder();
-//		symbolLabel.append("@> ");
-//
-//		String beanName = getBeanName(node);
-//		String beanType = getBeanType(node);
-//
-//		symbolLabel.append('\'');
-//		symbolLabel.append(beanName);
-//		symbolLabel.append('\'');
-//		symbolLabel.append(" (@Bean) ");
-//		symbolLabel.append(beanType);
-//
-//		SymbolInformation symbol = new SymbolInformation(symbolLabel.toString(), SymbolKind.Interface,
-//				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-//		return symbol;
-//	}
 
 	@Override
 	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		boolean isFunction = isFunctionBean(node);
+
 		ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
 		String beanType = getBeanType(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
@@ -107,16 +72,65 @@ public class BeansSymbolProvider implements SymbolProvider {
 		return symbols.build();
 	}
 
-	Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
+	@Override
+	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+		Tuple3<String, String, DocumentRegion> functionBean = getFunctionBean(typeDeclaration, doc);
+		if (functionBean != null) {
+			try {
+				SymbolInformation symbol = new SymbolInformation(
+						beanLabel(true, functionBean.getT1(), functionBean.getT2()),
+						SymbolKind.Interface,
+						new Location(doc.getUri(), doc.toRange(functionBean.getT3())));
+				return ImmutableList.of(symbol);
+			} catch (BadLocationException e) {
+				Log.log(e);
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	protected Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
+		List<?> interfaceTypes = typeDeclaration.superInterfaceTypes();
+		if (interfaceTypes != null && interfaceTypes.size() > 0) {
+			for (Object interfaceType : interfaceTypes) {
+				Type type = (Type) interfaceType;
+				String simplifiedType = null;
+
+				if (type.isParameterizedType()) {
+					ParameterizedType paramType = (ParameterizedType) type;
+					Type simpleType = paramType.getType();
+					ITypeBinding typeBinding = simpleType.resolveBinding();
+					simplifiedType = typeBinding.getBinaryName();
+				}
+				else {
+					simplifiedType = type.resolveBinding().getQualifiedName();
+				}
+
+				if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
+						|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
+					String beanName = getBeanName(typeDeclaration);
+					String beanType = type.resolveBinding().getName();
+					DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
+
+					return Tuples.of(beanName, beanType, region);
+				}
+			}
+		}
+		return null;
+	}
+
+	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
 		Collection<StringLiteral> beanNameNodes = getBeanNameLiterals(node);
-		if (beanNameNodes!=null && !beanNameNodes.isEmpty()) {
+
+		if (beanNameNodes != null && !beanNameNodes.isEmpty()) {
 			ImmutableList.Builder<Tuple2<String,DocumentRegion>> namesAndRegions = ImmutableList.builder();
 			for (StringLiteral nameNode : beanNameNodes) {
 				String name = ASTUtils.getLiteralValue(nameNode);
 				namesAndRegions.add(Tuples.of(name, ASTUtils.stringRegion(doc, nameNode)));
 			}
 			return namesAndRegions.build();
-		} else {
+		}
+		else {
 			ASTNode parent = node.getParent();
 			if (parent instanceof MethodDeclaration) {
 				MethodDeclaration method = (MethodDeclaration) parent;
@@ -141,6 +155,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
 	}
+
 	protected Collection<StringLiteral> getBeanNameLiterals(Annotation node) {
 		ImmutableList.Builder<StringLiteral> literals = ImmutableList.builder();
 		for (String attrib : NAME_ATTRIBUTES) {
@@ -160,4 +175,36 @@ public class BeansSymbolProvider implements SymbolProvider {
 		}
 		return null;
 	}
+
+	protected String getBeanName(TypeDeclaration typeDeclaration) {
+		String beanName = typeDeclaration.getName().toString();
+		if (beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
+			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
+		}
+		return beanName;
+	}
+
+	private boolean isFunctionBean(Annotation node) {
+		ASTNode parent = node.getParent();
+		if (parent instanceof MethodDeclaration) {
+			MethodDeclaration method = (MethodDeclaration) parent;
+
+			String returnType = null;
+			if (method.getReturnType2().isParameterizedType()) {
+				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
+				Type type = paramType.getType();
+				ITypeBinding typeBinding = type.resolveBinding();
+				returnType = typeBinding.getBinaryName();
+			}
+			else {
+				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
+			}
+
+			return FUNCTION_FUNCTION_TYPE.equals(returnType) || FUNCTION_CONSUMER_TYPE.equals(returnType)
+					|| FUNCTION_SUPPLIER_TYPE.equals(returnType);
+		}
+		return false;
+	}
+
+
 }

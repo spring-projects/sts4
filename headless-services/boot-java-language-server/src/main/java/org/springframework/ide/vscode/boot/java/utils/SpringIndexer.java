@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
@@ -343,6 +344,17 @@ public class SpringIndexer {
 		cu.accept(new ASTVisitor() {
 
 			@Override
+			public boolean visit(TypeDeclaration node) {
+				try {
+					extractSymbolInformation(node, docURI, docRef, content);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				return super.visit(node);
+			}
+
+			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
 					extractSymbolInformation(node, docURI, docRef, content);
@@ -378,6 +390,22 @@ public class SpringIndexer {
 				return super.visit(node);
 			}
 		});
+	}
+
+	private void extractSymbolInformation(TypeDeclaration typeDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+		Collection<SymbolProvider> providers = symbolProviders.getAll();
+		if (!providers.isEmpty()) {
+			TextDocument doc = getTempTextDocument(docURI, docRef, content);
+			for (SymbolProvider provider : providers) {
+				Collection<SymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
+				if (sbls != null) {
+					sbls.forEach(symbol -> {
+						symbols.add(symbol);
+						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					});
+				}
+			}
+		}
 	}
 
 	private void extractSymbolInformation(Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -83,19 +83,6 @@ public class SpringIndexerBeansTest {
 				// @Bean(name= {"namedBean1", "namedBean2"})
 				symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
 				symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
-		);
-	}
-
-	@Test
-	public void testScanSimpleFunctionBean() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(indexer.wsFolder(directory));
-
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java",
-				symbol("@Configuration", "@+ 'functionClass' (@Configuration <: @Component) FunctionClass"),
-				symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
 		);
 	}
 
