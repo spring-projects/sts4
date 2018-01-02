@@ -69,6 +69,39 @@ public class SpringIndexerFunctionBeansTest {
 		);
 	}
 
+	@Test
+	public void testScanSpecializedFunctionClass() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedClass.java",
+				symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' (@Bean) Function<String,String>")
+		);
+	}
+
+	@Test
+	public void testScanSpecializedFunctionInterface() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedInterface.java",
+				symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' (@Bean) Function<String,String>")
+		);
+	}
+
+	@Test
+	public void testScanInconsistentInterfaceHierarchy() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/LoopedFunctionClass.java");
+	}
 
 	////////////////////////////////
 	// harness code

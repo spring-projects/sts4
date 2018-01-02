@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -74,6 +73,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 
 	@Override
 	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+		// this checks function beans that are defined as implementations of Function interfaces
 		Tuple3<String, String, DocumentRegion> functionBean = getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
@@ -90,33 +90,51 @@ public class BeansSymbolProvider implements SymbolProvider {
 	}
 
 	protected Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
-		List<?> interfaceTypes = typeDeclaration.superInterfaceTypes();
-		if (interfaceTypes != null && interfaceTypes.size() > 0) {
-			for (Object interfaceType : interfaceTypes) {
-				Type type = (Type) interfaceType;
-				String simplifiedType = null;
+		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
+		if (resolvedType != null) {
+			return getFunctionBean(typeDeclaration, doc, resolvedType);
+		}
+		else {
+			return null;
+		}
+	}
 
-				if (type.isParameterizedType()) {
-					ParameterizedType paramType = (ParameterizedType) type;
-					Type simpleType = paramType.getType();
-					ITypeBinding typeBinding = simpleType.resolveBinding();
-					simplifiedType = typeBinding.getBinaryName();
-				}
-				else {
-					simplifiedType = type.resolveBinding().getQualifiedName();
-				}
+	private Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc,
+			ITypeBinding resolvedType) {
 
-				if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
-						|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
-					String beanName = getBeanName(typeDeclaration);
-					String beanType = type.resolveBinding().getName();
-					DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
+		ITypeBinding[] interfaces = resolvedType.getInterfaces();
+		for (ITypeBinding resolvedInterface : interfaces) {
+			String simplifiedType = null;
+			if (resolvedInterface.isParameterizedType()) {
+				simplifiedType = resolvedInterface.getBinaryName();
+			}
+			else {
+				simplifiedType = resolvedType.getQualifiedName();
+			}
 
-					return Tuples.of(beanName, beanType, region);
+			if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
+					|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
+				String beanName = getBeanName(typeDeclaration);
+				String beanType = resolvedInterface.getName();
+				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
+
+				return Tuples.of(beanName, beanType, region);
+			}
+			else {
+				Tuple3<String, String, DocumentRegion> result = getFunctionBean(typeDeclaration, doc, resolvedInterface);
+				if (result != null) {
+					return result;
 				}
 			}
 		}
-		return null;
+
+		ITypeBinding superclass = resolvedType.getSuperclass();
+		if (superclass != null) {
+			return getFunctionBean(typeDeclaration, doc, superclass);
+		}
+		else {
+			return null;
+		}
 	}
 
 	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
