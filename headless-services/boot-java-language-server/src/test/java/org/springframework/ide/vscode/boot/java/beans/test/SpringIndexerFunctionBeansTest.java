@@ -65,7 +65,7 @@ public class SpringIndexerFunctionBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/ScannedFunctionClass.java",
-				symbol("ScannedFunctionClass", "@> 'scannedFunctionClass' (@Bean) Function<String,String>")
+				symbol("ScannedFunctionClass", "@> 'scannedFunctionClass' Function<String,String>")
 		);
 	}
 
@@ -77,7 +77,7 @@ public class SpringIndexerFunctionBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedClass.java",
-				symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' (@Bean) Function<String,String>")
+				symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' Function<String,String>")
 		);
 	}
 
@@ -89,7 +89,7 @@ public class SpringIndexerFunctionBeansTest {
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
 		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedInterface.java",
-				symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' (@Bean) Function<String,String>")
+				symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' Function<String,String>")
 		);
 	}
 

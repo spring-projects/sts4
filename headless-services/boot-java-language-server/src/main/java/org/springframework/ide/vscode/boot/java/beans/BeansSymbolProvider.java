@@ -60,7 +60,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
 				symbols.add(new SymbolInformation(
-						beanLabel(isFunction, nameAndRegion.getT1(), beanType),
+						beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean"),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))
 				));
@@ -78,7 +78,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		if (functionBean != null) {
 			try {
 				SymbolInformation symbol = new SymbolInformation(
-						beanLabel(true, functionBean.getT1(), functionBean.getT2()),
+						beanLabel(true, functionBean.getT1(), functionBean.getT2(), null),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(functionBean.getT3())));
 				return ImmutableList.of(symbol);
@@ -161,7 +161,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType) {
+	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType, String markerString) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append('@');
 		symbolLabel.append(isFunctionBean ? '>' : '+');
@@ -169,7 +169,10 @@ public class BeansSymbolProvider implements SymbolProvider {
 		symbolLabel.append('\'');
 		symbolLabel.append(beanName);
 		symbolLabel.append('\'');
-		symbolLabel.append(" (@Bean) ");
+
+		markerString = markerString != null && markerString.length() > 0 ? " (" + markerString + ") " : " ";
+		symbolLabel.append(markerString);
+
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
 	}
