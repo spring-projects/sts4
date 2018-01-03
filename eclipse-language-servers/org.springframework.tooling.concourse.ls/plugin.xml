@@ -60,7 +60,7 @@
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
-            contentType="org.springframework.tooling.concourse.pipeline">
+            contentType="org.springframework.tooling.concourse.task">
       </presentationReconciler>
    </extension>
 
@@ -90,12 +90,12 @@
       </server>
       <contentTypeMapping
             contentType="org.springframework.tooling.concourse.pipeline"
-            id="org.eclipse.languageserver.languages.concourse"
+            id="org.springframework.tooling.concourse.pipeline"
             languageId="concourse-pipeline-yaml">
       </contentTypeMapping>
       <contentTypeMapping
             contentType="org.springframework.tooling.concourse.task"
-            id="org.eclipse.languageserver.languages.concourse"
+            id="org.springframework.tooling.concourse.task"
             languageId="concourse-task-yaml">
       </contentTypeMapping>
    </extension>
