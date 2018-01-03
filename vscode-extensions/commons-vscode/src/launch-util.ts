@@ -33,7 +33,7 @@ export interface ActivatorOptions {
     clientOptions: LanguageClientOptions;
     launcher: (context: VSCode.ExtensionContext) => string;
     jvmHeap?: string;
-    classpath?: (context: VSCode.ExtensionContext) => string[];
+    classpath?: (context: VSCode.ExtensionContext, javaVersion: number) => string[];
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
@@ -98,7 +98,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dorg.slf4j.simpleLogger.logFile=' + logfile
                             ];
                             if (options.classpath) {
-                                const classpath = options.classpath(context);
+                                const classpath = options.classpath(context, version);
                                 if (classpath) {
                                     args.push('-cp');
                                     args.push(classpath.join(Path.delimiter));

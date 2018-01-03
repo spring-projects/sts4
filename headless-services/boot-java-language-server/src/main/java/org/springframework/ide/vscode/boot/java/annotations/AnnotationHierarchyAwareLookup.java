@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,18 +18,12 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 /**
- * A Map-like utilyt that allows putting and getting values associated with
+ * A Map-like utilty that allows putting and getting values associated with
  * annotation types.
  * <p>
  * The lookup is 'hierarchy aware' which means that is able to associate values
@@ -96,6 +90,13 @@ public class AnnotationHierarchyAwareLookup<T> {
 	public Collection<T> get(ITypeBinding annotationType) {
 		ImmutableList.Builder<T> found = ImmutableList.builder();
 		findElements(annotationType, new LinkedHashSet<>(), found::add);
+		return found.build();
+	}
+
+	public Collection<T> getAll() {
+		ImmutableList.Builder<T> found = ImmutableList.builder();
+		Collection<Binding<T>> values = bindings.values();
+		values.forEach(binding -> found.add(binding.value));
 		return found.build();
 	}
 

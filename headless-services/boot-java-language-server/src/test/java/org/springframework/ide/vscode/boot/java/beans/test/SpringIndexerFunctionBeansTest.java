@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 /**
  * @author Martin Lippert
  */
-public class SpringIndexerBeansTest {
+public class SpringIndexerFunctionBeansTest {
 
 	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 	private BootLanguageServerHarness harness;
@@ -45,83 +45,63 @@ public class SpringIndexerBeansTest {
 	}
 
 	@Test
-	public void testScanSimpleConfigurationClass() throws Exception {
+	public void testScanSimpleFunctionBean() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java",
-				symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration <: @Component) SimpleConfiguration"),
-				symbol("@Bean", "@+ 'simpleBean' (@Bean) BeanClass")
-		);
-	}
-
-	@Test public void testScanSpecialConfigurationClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
-		indexer.initialize(indexer.wsFolder(directory));
-
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SpecialConfiguration.java";
-		indexer.assertDocumentSymbols(docUri,
-				symbol("@Configuration", "@+ 'specialConfiguration' (@Configuration <: @Component) SpecialConfiguration"),
-
-				// @Bean("implicitNamedBean")
-				symbol("implicitNamedBean", "@+ 'implicitNamedBean' (@Bean) BeanClass"),
-
-				// @Bean(value="valueBean")
-				symbol("valueBean", "@+ 'valueBean' (@Bean) BeanClass"),
-
-				// @Bean(value= {"valueBean1", "valueBean2"})
-				symbol("valueBean1", "@+ 'valueBean1' (@Bean) BeanClass"),
-				symbol("valueBean2", "@+ 'valueBean2' (@Bean) BeanClass"),
-
-				// @Bean(name="namedBean")
-				symbol("namedBean", "@+ 'namedBean' (@Bean) BeanClass"),
-
-				// @Bean(name= {"namedBean1", "namedBean2"})
-				symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
-				symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java",
+				symbol("@Configuration", "@+ 'functionClass' (@Configuration <: @Component) FunctionClass"),
+				symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
 		);
 	}
 
 	@Test
-	public void testScanSimpleComponentClass() throws Exception {
+	public void testScanSimpleFunctionClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java",
-				symbol("@Component", "@+ 'simpleComponent' (@Component) SimpleComponent")
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/ScannedFunctionClass.java",
+				symbol("ScannedFunctionClass", "@> 'scannedFunctionClass' Function<String,String>")
 		);
 	}
 
-	@Test public void testScanSimpleControllerClass() throws Exception {
+	@Test
+	public void testScanSpecializedFunctionClass() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SimpleController.java";
-		indexer.assertDocumentSymbols(docUri,
-				symbol("@Controller", "@+ 'simpleController' (@Controller <: @Component) SimpleController")
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedClass.java",
+				symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' Function<String,String>")
 		);
 	}
 
-	@Test public void testScanRestControllerClass() throws Exception {
+	@Test
+	public void testScanSpecializedFunctionInterface() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
 		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SimpleRestController.java";
-		indexer.assertDocumentSymbols(docUri,
-				symbol("@RestController", "@+ 'simpleRestController' (@RestController <: @Controller, @Component) SimpleRestController")
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedInterface.java",
+				symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' Function<String,String>")
 		);
 	}
 
+	@Test
+	public void testScanInconsistentInterfaceHierarchy() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/LoopedFunctionClass.java");
+	}
 
 	////////////////////////////////
 	// harness code

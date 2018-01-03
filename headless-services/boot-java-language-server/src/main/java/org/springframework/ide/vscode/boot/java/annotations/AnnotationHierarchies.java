@@ -11,22 +11,15 @@
 package org.springframework.ide.vscode.boot.java.annotations;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.gradle.internal.io.SkipFirstTextStream;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
 
