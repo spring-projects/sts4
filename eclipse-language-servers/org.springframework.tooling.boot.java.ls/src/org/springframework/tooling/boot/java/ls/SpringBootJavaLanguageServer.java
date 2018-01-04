@@ -49,10 +49,6 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 	}
 	
 	protected String getLanguageServerJARLocation() {
-		String fromSysprop = System.getProperty("boot-java-ls-jar", null);
-		if (fromSysprop!=null) {
-			return fromSysprop;
-		}
 		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
@@ -69,7 +65,16 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 				e.printStackTrace();
 			}
 		}
-		
+		if (!dataFile.exists()) {
+			File userHome = new File(System.getProperty("user.home"));
+			File locallyBuiltJar = new File(
+					userHome, 
+					"git/sts4/headless-services/boot-java-language-server/target/boot-java-language-server-"+Constants.LANGUAGE_SERVER_VERSION
+			);
+			if (locallyBuiltJar.exists()) {
+				return locallyBuiltJar.getAbsolutePath();
+			}
+		}
 		return dataFile.getAbsolutePath();
 	}
 	
