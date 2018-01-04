@@ -10,22 +10,47 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
+import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
+import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 public class GotoSymbolDialogModel {
+
+	public static class Match<T> {
+		final double score;
+		final String query;
+		final T value;
+		public Match(double score, String query, T value) {
+			super();
+			this.score = score;
+			this.query = query;
+			this.value = value;
+		}
+		
+	}
+	
+	public static Comparator<Match<SymbolInformation>> MATCH_COMPARATOR = (m1, m2) -> {
+		int comp = Double.compare(m2.score, m1.score);
+		if (comp!=0) return comp;
+		return m1.value.getName().compareTo(m2.value.getName());
+	};
 
 	private static final String SEARCH_BOX_HINT_MESSAGE = "@/ -> request mappings, @+ -> beans, @> -> functions, @ -> all spring elements";
 	private static final boolean DEBUG = false;//(""+Platform.getLocation()).contains("kdvolder");
@@ -91,36 +116,30 @@ public class GotoSymbolDialogModel {
 		}
 	};
 	
-	private ObservableSet<SymbolInformation> filteredSymbols = new ObservableSet<SymbolInformation>() {
+	private LiveExpression<Collection<Match<SymbolInformation>>> filteredSymbols = new LiveExpression<Collection<Match<SymbolInformation>>>() {
 		//Note: filtering is 'fast' so is done synchronously
 		{
 			dependsOn(searchBox);
 			dependsOn(unfilteredSymbols);
 		}
 		
-		private boolean containsCharactersCaseInsensitive(String symbol, String query) {
-			return containsCharacters(symbol.toLowerCase().toCharArray(), query.toLowerCase().toCharArray());
-		}
-		
-		private boolean containsCharacters(char[] symbolChars, char[] queryChars) {
-			int symbolindex = 0;
-			int queryindex = 0;
-
-			while (queryindex < queryChars.length && symbolindex < symbolChars.length) {
-				if (symbolChars[symbolindex] == queryChars[queryindex]) {
-					queryindex++;
-				}
-				symbolindex++;
-			}
-
-			return queryindex == queryChars.length;
-		}
-
 		@Override
-		protected ImmutableSet<SymbolInformation> compute() {
-			ImmutableSet.Builder<SymbolInformation> builder = ImmutableSet.builder();
-			unfilteredSymbols.getValues().stream().filter(sym -> containsCharactersCaseInsensitive(sym.getName(), searchBox.getValue())).forEach(builder::add);
-			return builder.build();
+		protected Collection<Match<SymbolInformation>> compute() {
+			String query = searchBox.getValue();
+			if (!StringUtil.hasText(query)) {
+				query = "";
+			}
+			query = query.toLowerCase();
+			List<Match<SymbolInformation>> matches = new ArrayList<>();
+			for (SymbolInformation symbol : unfilteredSymbols.getValues()) {
+				String name = symbol.getName().toLowerCase();
+				double score = FuzzyMatcher.matchScore(query, name);
+				if (score!=0.0) {
+					matches.add(new Match<SymbolInformation>(score, query, symbol));
+				}
+			}
+			Collections.sort(matches, MATCH_COMPARATOR);
+			return ImmutableList.copyOf(matches);
 		}
 	};
 	
@@ -137,16 +156,16 @@ public class GotoSymbolDialogModel {
 			searchBox.addListener((e, v) -> {
 				debug("searchBox = "+v);
 			});
-			unfilteredSymbols.addListener((e, v) -> debug("raw = "+summary(filteredSymbols.getValues())));
-			filteredSymbols.addListener((e, v) -> debug("filtered = "+summary(filteredSymbols.getValues())));
+			unfilteredSymbols.addListener((e, v) -> debug("raw = "+summary(filteredSymbols.getValue())));
+			filteredSymbols.addListener((e, v) -> debug("filtered = "+summary(filteredSymbols.getValue())));
 		}
 	}
 
-	private List<String> summary(ImmutableSet<SymbolInformation> values) {
-		return values.stream().map(SymbolInformation::getName).collect(Collectors.toList());
+	private List<String> summary(Collection<Match<SymbolInformation>> collection) {
+		return collection.stream().map(match -> match.value.getName()).collect(Collectors.toList());
 	}
 
-	public ObservableSet<SymbolInformation> getSymbols() {
+	public LiveExpression<Collection<Match<SymbolInformation>>> getSymbols() {
 		return filteredSymbols;
 	}
 

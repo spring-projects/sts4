@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016. 2017 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,12 +7,13 @@
  *
  * Contributors:
  *  Michał Niewrzał (Rogue Wave Software Inc.) - initial implementation
- *  Kris De Volder (Pivotal Inc) - Copied and adapted from 
+ *  Kris De Volder (Pivotal Inc) - Copied and adapted 
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -38,12 +43,14 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -51,6 +58,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Match;
+import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 import org.springsource.ide.eclipse.commons.livexp.ui.Stylers;
@@ -80,7 +89,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		public Object[] getElements(Object inputElement) {
 			if (inputElement instanceof GotoSymbolDialogModel) {
 				GotoSymbolDialogModel model = (GotoSymbolDialogModel) inputElement;
-				return model.getSymbols().getValues().toArray();
+				return model.getSymbols().getValue().toArray();
 			}
 			return null;
 		}
@@ -110,26 +119,64 @@ public class GotoSymbolDialog extends PopupDialog {
 				}
 			};
 		}
+		
+		@Override
+		public Color getToolTipBackgroundColor(Object object) {
+			return JFaceColors.getInformationViewerBackgroundColor(Display.getDefault());
+		}
+		
+		@Override
+		public Color getToolTipForegroundColor(Object object) {
+			return JFaceColors.getInformationViewerForegroundColor(Display.getDefault());
+		}
+		
+		@Override
+		public String getToolTipText(Object element) {
+			if (element instanceof Match) {
+				element = ((Match<?>)element).value;
+				if (element instanceof SymbolInformation) {
+					return ((SymbolInformation) element).getName();
+				}
+			}
+			return null;
+		}
 	
 		@Override
 		public void update(ViewerCell cell) {
 			super.update(cell);
-			Object element = cell.getElement();
-			cell.setImage(symbolsLabelProvider.getImage(element));
-			StyledString styledString = getStyledText(element);
-			cell.setText(styledString.getString());
-			cell.setStyleRanges(styledString.getStyleRanges());
+			Object obj = cell.getElement();
+			if (obj instanceof Match) {
+				Match<?> match = (Match<?>) obj;
+				cell.setImage(symbolsLabelProvider.getImage(match.value));
+				StyledString styledString = getStyledText(match);
+				cell.setText(styledString.getString());
+				cell.setStyleRanges(styledString.getStyleRanges());
+				cell.getControl().redraw(); 
+				//^^^ Sigh... Yes, this is needed. It seems SWT/Jface isn't smart enough to itself figure out that if 
+				//the styleranges change a redraw is needed to make the change visible.
+			} else {
+				super.update(cell);
+			}
 		}
 
-		private StyledString getStyledText(Object element) {
-			StyledString s = symbolsLabelProvider.getStyledText(element);
-			if (element instanceof SymbolInformation) {
-				String locationText = getSymbolLocationText((SymbolInformation) element);
-				if (locationText != null) {
-					s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
+		private StyledString getStyledText(Match<?> element) {
+			if (element.value instanceof SymbolInformation) {
+				String name = ((SymbolInformation)element.value).getName();
+				StyledString s = new StyledString(name);
+				Collection<IRegion> highlights = FuzzyMatcher.highlights(element.query, name.toLowerCase());
+				for (IRegion hl : highlights) {
+					s.setStyle(hl.getOffset(), hl.getLength(), stylers.bold());
 				}
+				if (element.value instanceof SymbolInformation) {
+					String locationText = getSymbolLocationText((SymbolInformation) element.value);
+					if (locationText != null) {
+						s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
+					}
+				}
+				return s;
+			} else {
+				return symbolsLabelProvider.getStyledText(element.value);
 			}
-			return s;
 		}	
 
 		@Override
@@ -191,8 +238,11 @@ public class GotoSymbolDialog extends PopupDialog {
 		if (sel instanceof IStructuredSelection) {
 			IStructuredSelection ss = (IStructuredSelection) sel;
 			Object selected = ss.getFirstElement();
-			if (selected!=null) {
-				return (SymbolInformation) selected;
+			if (selected instanceof Match) {
+				selected = ((Match<?>)selected).value;
+				if (selected instanceof SymbolInformation) {
+					return (SymbolInformation)selected;
+				}
 			}
 		}
 		//No element selected, target the first element in the list instead.
@@ -280,7 +330,13 @@ public class GotoSymbolDialog extends PopupDialog {
 		TreeItem[] items = list.getTree().getItems();
 		if (items!=null && items.length>0) {
 			TreeItem item = items[0];
-			return (SymbolInformation) item.getData();
+			Object data = item.getData();
+			if (data instanceof Match) {
+				data = ((Match<?>)data).value;
+				if (data instanceof SymbolInformation) {
+					return (SymbolInformation) data;
+				}
+			}
 		}
 		return null;
 	}
@@ -315,6 +371,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		SwtConnect.connect(pattern, model.getSearchBox());
 
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);
+		ColumnViewerToolTipSupport.enableFor(viewer);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(viewer.getControl());
 		viewer.setContentProvider(new SymbolsContentProvider());
 		viewer.setLabelProvider(new GotoSymbolsLabelProvider(viewer.getTree().getFont()));
