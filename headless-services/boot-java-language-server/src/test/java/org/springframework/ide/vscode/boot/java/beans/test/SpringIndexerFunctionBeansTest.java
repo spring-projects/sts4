@@ -94,6 +94,26 @@ public class SpringIndexerFunctionBeansTest {
 	}
 
 	@Test
+	public void testNoSymbolForAbstractClasses() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SpecializedFunctionClass.java");
+	}
+
+	@Test
+	public void testNoSymbolForSubInterfaces() throws Exception {
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SpecializedFunctionInterface.java");
+	}
+
+	@Test
 	public void testScanInconsistentInterfaceHierarchy() throws Exception {
 		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());

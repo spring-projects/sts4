@@ -45,7 +45,53 @@ public class FunctionInjectionsHoverProviderTest {
 	}
 
 	@Test
-	public void componentWithNoInjections() throws Exception {
+	public void typeButNotAFunction() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("scannedRandomClass")
+						.type("com.example.ScannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("randomOtherBean")
+						.type("randomOtherBeanType")
+						.dependencies("scannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import java.io.Serializable;\n" +
+				"\n" +
+				"public class ScannedRandomClass implements Serializable {\n" +
+				"\n" +
+				"	public String apply(String t) {\n" +
+				"		return t.toUpperCase();\n" +
+				"	}\n" +
+				"\n" +
+				"}\n" +
+				""
+		);
+		editor.assertHighlights();
+		editor.assertNoHover("ScannedRandomClass");
+	}
+
+	@Test
+	public void scannedAndInjectedFunction() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("scannedFunctionClass")
@@ -99,5 +145,4 @@ public class FunctionInjectionsHoverProviderTest {
 				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`"
 		);
 	}
-
 }

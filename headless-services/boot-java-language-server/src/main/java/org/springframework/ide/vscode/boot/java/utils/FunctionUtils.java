@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -22,6 +24,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
+/**
+ * @author Martin Lippert
+ */
 public class FunctionUtils {
 
 	public static final String FUNCTION_FUNCTION_TYPE = Function.class.getName();
@@ -30,7 +35,8 @@ public class FunctionUtils {
 
 	public static Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
 		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
-		if (resolvedType != null) {
+
+		if (resolvedType != null && !resolvedType.isInterface() && !isAbstractClass(typeDeclaration, resolvedType)) {
 			return getFunctionBean(typeDeclaration, doc, resolvedType);
 		}
 		else {
@@ -82,6 +88,19 @@ public class FunctionUtils {
 			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
 		}
 		return beanName;
+	}
+
+	protected static boolean isAbstractClass(TypeDeclaration typeDeclaration, ITypeBinding resolvedType) {
+		List<?> modifiers = typeDeclaration.modifiers();
+		for (Object object : modifiers) {
+			if (object instanceof Modifier) {
+				if (((Modifier) object).isAbstract()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 }
