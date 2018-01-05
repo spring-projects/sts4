@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -178,4 +179,17 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		}
 	}
+
+	@Override
+	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		return null;
+	}
+
+	@Override
+	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
+			SpringBootApp[] runningApps) {
+		return null;
+	}
+
 }

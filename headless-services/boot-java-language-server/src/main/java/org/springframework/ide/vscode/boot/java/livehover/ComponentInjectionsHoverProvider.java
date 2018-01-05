@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,19 +10,36 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
+
+import reactor.util.function.Tuple3;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
@@ -76,6 +93,10 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	public static LiveBean getDefinedBeanForComponent(Annotation annotation) {
 		//Move to ASTUtils?
 		TypeDeclaration declaringType = ASTUtils.getAnnotatedType(annotation);
+		return getDefinedBeanForType(declaringType, annotation);
+	}
+
+	private static LiveBean getDefinedBeanForType(TypeDeclaration declaringType, Annotation annotation) {
 		if (declaringType != null) {
 			ITypeBinding beanType = declaringType.resolveBinding();
 			if (beanType != null) {
@@ -104,6 +125,65 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			}
 			return null;
 		});
+	}
+
+	@Override
+	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
+			SpringBootApp[] runningApps) {
+		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
+		if (functionBean != null && runningApps.length > 0) {
+			try {
+				LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
+				if (definedBean != null) {
+					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
+						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
+						if (nameRange.isPresent()) {
+							return ImmutableList.of(nameRange.get());
+						}
+					}
+				}
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	@Override
+	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
+			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
+		if (functionBean != null && runningApps.length > 0) {
+
+			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
+			if (definedBean != null) {
+				StringBuilder hover = new StringBuilder();
+				hover.append("**Injection report for " + LiveHoverUtils.showBean(definedBean) + "**\n\n");
+
+				boolean hasInterestingApp = false;
+				for (SpringBootApp app : runningApps) {
+					LiveBeansModel beans = app.getBeans();
+					List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean).collect(Collectors.toList());
+
+					if (!relevantBeans.isEmpty()) {
+						if (!hasInterestingApp) {
+							hasInterestingApp = true;
+						} else {
+							hover.append("\n\n");
+						}
+						hover.append(LiveHoverUtils.niceAppName(app) + ":");
+
+						for (LiveBean bean : relevantBeans) {
+							addInjectedInto(definedBean, hover, beans, bean, project);
+						}
+					}
+				}
+				if (hasInterestingApp) {
+					return new Hover(ImmutableList.of(Either.forLeft(hover.toString())));
+				}
+			}
+		}
+		return null;
 	}
 
 }
