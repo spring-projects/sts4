@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,9 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -86,10 +88,22 @@ public class BootJavaHoverProvider implements HoverHandler {
 			try {
 				if (cu != null) {
 					cu.accept(new ASTVisitor() {
+
+						@Override
+						public boolean visit(TypeDeclaration node) {
+							try {
+								extractLiveHintsForType(node, document, runningBootApps, result);
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+							return super.visit(node);
+						}
+
 						@Override
 						public boolean visit(SingleMemberAnnotation node) {
 							try {
-								extractLiveHints(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
 								Log.log(e);
 							}
@@ -100,7 +114,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(NormalAnnotation node) {
 							try {
-								extractLiveHints(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
 								Log.log(e);
 							}
@@ -111,7 +125,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(MarkerAnnotation node) {
 							try {
-								extractLiveHints(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
 								Log.log(e);
 							}
@@ -127,10 +141,29 @@ public class BootJavaHoverProvider implements HoverHandler {
 		});
 	}
 
-	protected void extractLiveHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
+	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
+		Collection<HoverProvider> providers = this.hoverProviders.getAll();
+		if (!providers.isEmpty()) {
+			for (HoverProvider provider : providers) {
+				getProject(doc).ifPresent(project -> {
+					if (hasActuatorDependency(project)) {
+						Collection<Range> hints = provider.getLiveHoverHints(typeDeclaration, doc, runningApps);
+						if (hints!=null) {
+							result.addAll(hints);
+						}
+					} else {
+						//Do nothing... we don't want a highlight for the 'no actuator warning'
+						//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
+					}
+				});
+			}
+		}
+	}
+
+	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
-			if (runningApps.length>0) {
+			if (runningApps.length > 0) {
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					getProject(doc).ifPresent(project -> {
 						if (hasActuatorDependency(project)) {
@@ -154,7 +187,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 			return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 				if (node != null) {
-					return provideHoverForAnnotation(node, offset, document, project);
+					return provideHover(node, offset, document, project);
 				}
 				return null;
 			});
@@ -162,33 +195,59 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForAnnotation(ASTNode node, int offset, TextDocument doc, IJavaProject project) {
-		Annotation annotation = null;
+	private Hover provideHover(ASTNode node, int offset, TextDocument doc, IJavaProject project) {
 
-		while (node != null && !(node instanceof Annotation)) {
-			node = node.getParent();
+		// look for spring annotations first
+		ASTNode annotationNode = node;
+		while (annotationNode != null && !(annotationNode instanceof Annotation)) {
+			annotationNode = annotationNode.getParent();
+		}
+		if (annotationNode != null) {
+			return provideHoverForAnnotation(node, (Annotation) annotationNode, offset, doc, project);
 		}
 
-		if (node != null) {
-			annotation = (Annotation) node;
-			ITypeBinding type = annotation.resolveTypeBinding();
-			if (type != null) {
-				SpringBootApp[] runningApps = getRunningSpringApps(project);
-				if (runningApps.length>0) {
-					for (HoverProvider provider : this.hoverProviders.get(type)) {
-						Hover hover = provider.provideHover(node, annotation, type, offset, doc, project, runningApps);
-						if (hover!=null) {
-							//TODO: compose multiple hovers somehow instead of just returning the first one?
-							return hover;
-						}
+		// then do additional AST node coverage
+		if (node instanceof SimpleName && node.getParent() instanceof TypeDeclaration) {
+			return provideHoverForTypeDeclaration(node, (TypeDeclaration) node.getParent(), offset, doc, project);
+		}
+
+		return null;
+	}
+
+	private Hover provideHoverForAnnotation(ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project) {
+		ITypeBinding type = annotation.resolveTypeBinding();
+		if (type != null) {
+			SpringBootApp[] runningApps = getRunningSpringApps(project);
+			if (runningApps.length > 0) {
+				for (HoverProvider provider : this.hoverProviders.get(type)) {
+					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, runningApps);
+					if (hover!=null) {
+						//TODO: compose multiple hovers somehow instead of just returning the first one?
+						return hover;
 					}
-					//Only reaching here if we didn't get a hover.
-					if (!hasActuatorDependency(project)) {
-						DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
-						if (region.containsOffset(offset)) {
-							return actuatorWarning(project);
-						}
+				}
+				//Only reaching here if we didn't get a hover.
+				if (!hasActuatorDependency(project)) {
+					DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
+					if (region.containsOffset(offset)) {
+						return actuatorWarning(project);
 					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private Hover provideHoverForTypeDeclaration(ASTNode exactNode, TypeDeclaration typeDeclaration, int offset, TextDocument doc, IJavaProject project) {
+		SpringBootApp[] runningApps = getRunningSpringApps(project);
+		if (runningApps.length > 0) {
+			ITypeBinding type = typeDeclaration.resolveBinding();
+
+			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				Hover hover = provider.provideHover(exactNode, typeDeclaration, type, offset, doc, project, runningApps);
+				if (hover!=null) {
+					//TODO: compose multiple hovers somehow instead of just returning the first one?
+					return hover;
 				}
 			}
 		}

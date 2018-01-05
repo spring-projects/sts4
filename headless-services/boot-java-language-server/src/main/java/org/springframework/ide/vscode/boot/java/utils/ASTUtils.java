@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,26 +77,28 @@ public class ASTUtils {
 	}
 
 	public static Optional<Expression> getAttribute(Annotation annotation, String name) {
-		try {
-			if (annotation.isSingleMemberAnnotation() && name.equals("value")) {
-				SingleMemberAnnotation sma = (SingleMemberAnnotation) annotation;
-				return Optional.ofNullable(sma.getValue());
-			} else if (annotation.isNormalAnnotation()) {
-				NormalAnnotation na = (NormalAnnotation) annotation;
-				Object attributeObjs = na.getStructuralProperty(NormalAnnotation.VALUES_PROPERTY);
-				if (attributeObjs instanceof List) {
-					for (Object atrObj : (List<?>)attributeObjs) {
-						if (atrObj instanceof MemberValuePair) {
-							MemberValuePair mvPair = (MemberValuePair) atrObj;
-							if (name.equals(mvPair.getName().getIdentifier())) {
-								return Optional.ofNullable(mvPair.getValue());
+		if (annotation != null) {
+			try {
+				if (annotation.isSingleMemberAnnotation() && name.equals("value")) {
+					SingleMemberAnnotation sma = (SingleMemberAnnotation) annotation;
+					return Optional.ofNullable(sma.getValue());
+				} else if (annotation.isNormalAnnotation()) {
+					NormalAnnotation na = (NormalAnnotation) annotation;
+					Object attributeObjs = na.getStructuralProperty(NormalAnnotation.VALUES_PROPERTY);
+					if (attributeObjs instanceof List) {
+						for (Object atrObj : (List<?>)attributeObjs) {
+							if (atrObj instanceof MemberValuePair) {
+								MemberValuePair mvPair = (MemberValuePair) atrObj;
+								if (name.equals(mvPair.getName().getIdentifier())) {
+									return Optional.ofNullable(mvPair.getValue());
+								}
 							}
 						}
 					}
 				}
+			} catch (Exception e) {
+				Log.log(e);
 			}
-		} catch (Exception e) {
-			Log.log(e);
 		}
 		return Optional.empty();
 	}

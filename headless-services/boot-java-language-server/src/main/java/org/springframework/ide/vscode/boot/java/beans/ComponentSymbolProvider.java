@@ -113,7 +113,6 @@ public class ComponentSymbolProvider implements SymbolProvider {
 
 	@Override
 	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

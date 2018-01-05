@@ -11,9 +11,6 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -28,6 +25,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -44,10 +42,6 @@ import reactor.util.function.Tuples;
  * @author Kris De Volder
  */
 public class BeansSymbolProvider implements SymbolProvider {
-
-	private static final String FUNCTION_FUNCTION_TYPE = Function.class.getName();
-	private static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
-	private static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
 
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
@@ -74,7 +68,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 	@Override
 	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		// this checks function beans that are defined as implementations of Function interfaces
-		Tuple3<String, String, DocumentRegion> functionBean = getFunctionBean(typeDeclaration, doc);
+		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
 				SymbolInformation symbol = new SymbolInformation(
@@ -87,54 +81,6 @@ public class BeansSymbolProvider implements SymbolProvider {
 			}
 		}
 		return ImmutableList.of();
-	}
-
-	protected Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
-		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
-		if (resolvedType != null) {
-			return getFunctionBean(typeDeclaration, doc, resolvedType);
-		}
-		else {
-			return null;
-		}
-	}
-
-	private Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc,
-			ITypeBinding resolvedType) {
-
-		ITypeBinding[] interfaces = resolvedType.getInterfaces();
-		for (ITypeBinding resolvedInterface : interfaces) {
-			String simplifiedType = null;
-			if (resolvedInterface.isParameterizedType()) {
-				simplifiedType = resolvedInterface.getBinaryName();
-			}
-			else {
-				simplifiedType = resolvedType.getQualifiedName();
-			}
-
-			if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
-					|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
-				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.getName();
-				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
-
-				return Tuples.of(beanName, beanType, region);
-			}
-			else {
-				Tuple3<String, String, DocumentRegion> result = getFunctionBean(typeDeclaration, doc, resolvedInterface);
-				if (result != null) {
-					return result;
-				}
-			}
-		}
-
-		ITypeBinding superclass = resolvedType.getSuperclass();
-		if (superclass != null) {
-			return getFunctionBean(typeDeclaration, doc, superclass);
-		}
-		else {
-			return null;
-		}
 	}
 
 	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
@@ -197,14 +143,6 @@ public class BeansSymbolProvider implements SymbolProvider {
 		return null;
 	}
 
-	protected String getBeanName(TypeDeclaration typeDeclaration) {
-		String beanName = typeDeclaration.getName().toString();
-		if (beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
-			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
-		}
-		return beanName;
-	}
-
 	private boolean isFunctionBean(Annotation node) {
 		ASTNode parent = node.getParent();
 		if (parent instanceof MethodDeclaration) {
@@ -221,8 +159,8 @@ public class BeansSymbolProvider implements SymbolProvider {
 				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
 			}
 
-			return FUNCTION_FUNCTION_TYPE.equals(returnType) || FUNCTION_CONSUMER_TYPE.equals(returnType)
-					|| FUNCTION_SUPPLIER_TYPE.equals(returnType);
+			return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(returnType) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(returnType)
+					|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
 		}
 		return false;
 	}
