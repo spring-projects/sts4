@@ -28,6 +28,16 @@
     "onLanguage:concourse-task-yaml"
   ],
   "contributes": {
+    "configuration": {
+      "type" : "object",
+      "title": "Concourse Language Server Options",
+      "properties": {
+        "concourse.ls.java.heap": {
+          "type": ["string", "null"],
+          "description" : "Passed as an `-Xmx` argument to the concourse language server process"
+        }
+      }
+    },
     "languages": [
       {
         "id": "concourse-pipeline-yaml",

@@ -33,12 +33,25 @@ export interface ActivatorOptions {
     clientOptions: LanguageClientOptions;
     launcher: (context: VSCode.ExtensionContext) => string;
     jvmHeap?: string;
+    workspaceOptions?: VSCode.WorkspaceConfiguration;
     classpath?: (context: VSCode.ExtensionContext, javaVersion: number) => string[];
+}
+
+type JavaOptions = {
+    heap?: string
+}
+
+function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : string) : string {
+    if (!wsOpts) {
+        return dflt;
+    }
+    let javaOptions : JavaOptions = wsOpts.get("java");
+    return javaOptions.heap || dflt;
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
     let DEBUG = options.DEBUG;
-    let jvmHeap = options.jvmHeap;
+    let jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
     if (options.CONNECT_TO_LS) {
         return connectToLS(context, options);
     } else {
