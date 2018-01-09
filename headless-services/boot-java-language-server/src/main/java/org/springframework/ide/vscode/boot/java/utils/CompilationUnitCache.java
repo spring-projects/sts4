@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,6 +55,10 @@ public final class CompilationUnitCache {
 		uriToCu = CacheBuilder.newBuilder().build();
 		projectToDocs = CacheBuilder.newBuilder().build();
 
+		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		readLock = lock.readLock();
+		writeLock = lock.writeLock();
+
 		if (documentService != null) {
 			documentService.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
 			documentService.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
@@ -63,10 +67,6 @@ public final class CompilationUnitCache {
 		if (this.projectObserver != null) {
 			this.projectObserver.addListener(projectListener);
 		}
-
-		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		readLock = lock.readLock();
-		writeLock = lock.writeLock();
 	}
 
 	public void dispose() {
@@ -77,7 +77,7 @@ public final class CompilationUnitCache {
 
 	/**
 	 * Retrieves a CompiationUnitn AST from the cache and passes it to a requestor callback, applying
-	 * proper thred synchronization around the requestor.
+	 * proper thread synchronization around the requestor.
 	 * <p>
 	 * Warning: Callers should take care to do all AST processing inside of the requestor callback and
 	 * not pass of AST nodes to helper functions that work aynchronously or store AST nodes or ITypeBindings
@@ -86,25 +86,38 @@ public final class CompilationUnitCache {
 	public <T> T withCompilationUnit(TextDocument document, Function<CompilationUnit, T> requestor) {
 		URI uri = URI.create(document.getUri());
 		IJavaProject project = projectFinder.find(document.getId()).orElse(null);
+
 		if (project != null) {
+
 			readLock.lock();
+			CompilationUnit cu = null;
+
 			try {
-				CompilationUnit cu = uriToCu.get(uri, () -> {
+				cu = uriToCu.get(uri, () -> {
 					CompilationUnit cUnit = parse(document, project);
 					projectToDocs.get(project, () -> new HashSet<>()).add(URI.create(document.getUri()));
 					return cUnit;
 				});
-				if (cu!=null) {
+				if (cu != null) {
 					projectToDocs.get(project, () -> new HashSet<>()).add(URI.create(document.getUri()));
-					synchronized (cu.getAST()) {
-						return requestor.apply(cu);
-					}
 				}
 			} catch (Exception e) {
 				Log.log(e);
 			} finally {
 				readLock.unlock();
 			}
+
+			if (cu != null) {
+				try {
+					synchronized (cu.getAST()) {
+						return requestor.apply(cu);
+					}
+				}
+				catch (Exception e) {
+					Log.log(e);
+				}
+			}
+
 		} else {
 			try {
 				return requestor.apply(parse(document, null));
