@@ -149,6 +149,9 @@ public class SpringIndexer {
 							}
 						}, "Spring Annotation Index Update Worker");
 						updateWorker.start();
+
+						System.err.println("update worker STARTED: #" + updateWorker.getId() + " - " + updateWorker.toString());
+
 						initializing.set(false);
 					}
 
@@ -181,6 +184,9 @@ public class SpringIndexer {
 
 			if (updateWorker != null && updateWorker.isAlive()) {
 				updateWorker.interrupt();
+
+				System.err.println("update worker INTERRUPPTED: #" + updateWorker.getId() + " - " + updateWorker.toString());
+
 			}
 
 			if (server.getProjectObserver() != null) {
