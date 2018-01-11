@@ -189,6 +189,8 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
 		getClient().registerCapability(registrationParams);
 
+		this.indexer.serverInitialized();
+
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)

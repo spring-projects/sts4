@@ -140,6 +140,13 @@ public class SpringIndexer {
 		}
 	}
 
+	public void serverInitialized() {
+		List<String> globPattern = Arrays.asList("**/*.java");
+		server.getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
+			deleteDocument(new TextDocumentIdentifier(file).getUri());
+		});
+	}
+
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
 		synchronized(this) {
 			try {
