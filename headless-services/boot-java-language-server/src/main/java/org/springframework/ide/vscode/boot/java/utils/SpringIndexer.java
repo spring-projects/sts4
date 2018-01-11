@@ -163,7 +163,7 @@ public class SpringIndexer {
 		return lastInitializeItem != null && !lastInitializeItem.getFuture().isDone();
 	}
 
-	private void waitForInitializeTask() {
+	public void waitForInitializeTask() {
 		synchronized (this) {
 			if (lastInitializeItem != null) {
 				try {
@@ -216,8 +216,23 @@ public class SpringIndexer {
 					}
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					Log.log(e);
 				}
+			}
+		}
+
+		return null;
+	}
+
+	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
+		synchronized(this) {
+			try {
+				DeleteItem deleteItem = new DeleteItem(deletedDocURI);
+				updateQueue.put(deleteItem);
+				return deleteItem.getFuture();
+			}
+			catch (Exception e) {
+				Log.log(e);
 			}
 		}
 
@@ -481,37 +496,6 @@ public class SpringIndexer {
 
 	}
 
-	private class UpdateItem implements WorkerItem {
-
-		private final String docURI;
-		private final String content;
-		private final String[] classpathEntries;
-
-		private final CompletableFuture<Void> future;
-
-		public UpdateItem(String docURI, String content, String[] classpathEntries) {
-			this.docURI = docURI;
-			this.content = content;
-			this.classpathEntries = classpathEntries;
-			this.future = new CompletableFuture<Void>();
-		}
-
-		@Override
-		public CompletableFuture<Void> getFuture() {
-			return future;
-		}
-
-		@Override
-		public void run() {
-			try {
-				SpringIndexer.this.scanFile(docURI, content, classpathEntries);
-			} catch (Exception e) {
-				Log.log(e);
-			}
-			future.complete(null);
-		}
-	}
-
 	private class InitializeItem implements WorkerItem {
 
 		private final WorkspaceFolder[] workspaceRoots;
@@ -545,6 +529,66 @@ public class SpringIndexer {
 			else {
 				Log.log("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
 			}
+		}
+	}
+
+	private class UpdateItem implements WorkerItem {
+
+		private final String docURI;
+		private final String content;
+		private final String[] classpathEntries;
+
+		private final CompletableFuture<Void> future;
+
+		public UpdateItem(String docURI, String content, String[] classpathEntries) {
+			this.docURI = docURI;
+			this.content = content;
+			this.classpathEntries = classpathEntries;
+			this.future = new CompletableFuture<Void>();
+		}
+
+		@Override
+		public CompletableFuture<Void> getFuture() {
+			return future;
+		}
+
+		@Override
+		public void run() {
+			try {
+				SpringIndexer.this.scanFile(docURI, content, classpathEntries);
+			} catch (Exception e) {
+				Log.log(e);
+			}
+			future.complete(null);
+		}
+	}
+
+	private class DeleteItem implements WorkerItem {
+
+		private final String docURI;
+		private final CompletableFuture<Void> future;
+
+		public DeleteItem(String docURI) {
+			this.docURI = docURI;
+			this.future = new CompletableFuture<Void>();
+		}
+
+		@Override
+		public CompletableFuture<Void> getFuture() {
+			return future;
+		}
+
+		@Override
+		public void run() {
+			try {
+				List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
+				if (oldSymbols != null) {
+					symbols.removeAll(oldSymbols);
+				}
+			} catch (Exception e) {
+				Log.log(e);
+			}
+			future.complete(null);
 		}
 	}
 

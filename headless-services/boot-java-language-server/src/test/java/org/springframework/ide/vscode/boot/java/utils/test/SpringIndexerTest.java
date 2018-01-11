@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -150,6 +151,32 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 36));
 		assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+	}
+
+	@Test
+	public void testRemoveSymbolsFromDeletedDocument() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+
+		// update document and update index
+		String deletedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
+		CompletableFuture<Void> deleteFuture = indexer().deleteDocument(deletedDocURI);
+		deleteFuture.get(5, TimeUnit.SECONDS);
+
+		// check for updated index per document
+		List<? extends SymbolInformation> symbols = indexer().getSymbols(deletedDocURI);
+		assertNull(symbols);
+
+		// check for updated index in all symbols
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
+		assertEquals(4, allSymbols.size());
+
+		String uriPrefix = "file://" + directory.getAbsolutePath();
+
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
 	}
 
