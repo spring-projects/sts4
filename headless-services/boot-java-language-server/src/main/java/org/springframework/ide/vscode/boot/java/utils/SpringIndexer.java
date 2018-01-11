@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,38 +68,39 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringIndexer {
 
-	private BootJavaLanguageServer server;
-	private JavaProjectFinder projectFinder;
-	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
+	private final BootJavaLanguageServer server;
+	private final JavaProjectFinder projectFinder;
+	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 
-	private List<SymbolInformation> symbols;
-	private ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
+	private final List<SymbolInformation> symbols;
+	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
 
-	private CompletableFuture<Void> initializeTask;
-
-	private Thread updateWorker;
-	private BlockingQueue<UpdateItem> updateQueue;
-
-	private AtomicBoolean initializing = new AtomicBoolean(false);
+	private final Thread updateWorker;
+	private final BlockingQueue<WorkerItem> updateQueue;
 
 	private final Listener projectListener = new Listener() {
 
 		@Override
 		public void created(IJavaProject project) {
+			Log.log("project created event: " + project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
+			Log.log("project changed event: " + project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void deleted(IJavaProject project) {
+			Log.log("project deleted event: " + project.getElementName());
 			refresh();
 		}
 
 	};
+
+	private volatile InitializeItem lastInitializeItem;
 
 	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
 		this.server = server;
@@ -109,87 +110,92 @@ public class SpringIndexer {
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
 
+		this.updateQueue = new LinkedBlockingQueue<>();
+		this.updateWorker = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while (true) {
+						WorkerItem workerItem = updateQueue.take();
+						workerItem.run();
+					}
+				}
+				catch (InterruptedException e) {
+					// ignore
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, "Spring Annotation Index Update Worker");
+		updateWorker.start();
+
 		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
-			System.err.println("Workspace roots have changed!");
+			Log.log("workspace roots have changed event arrived - added: " + Arrays.toString(evt.getEvent().getAdded()) + " - removed: " + Arrays.toString(evt.getEvent().getRemoved()));
 			refresh();
 		});
+
+		if (server.getProjectObserver() != null) {
+			server.getProjectObserver().addListener(projectListener);
+		}
 	}
 
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
 		synchronized(this) {
-			if (this.initializeTask == null) {
-				initializing.set(true);
-				if (server.getProjectObserver() != null) {
-					server.getProjectObserver().addListener(projectListener);
+			try {
+				if (lastInitializeItem != null && !lastInitializeItem.getFuture().isDone()) {
+					lastInitializeItem.getFuture().cancel(false);
 				}
-				this.initializeTask = CompletableFuture.runAsync(new Runnable() {
-					@Override
-					public void run() {
-						for (WorkspaceFolder root : workspaceRoots) {
-							scanFiles(root);
-						}
 
-						SpringIndexer.this.updateQueue = new LinkedBlockingQueue<>();
-						SpringIndexer.this.updateWorker = new Thread(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									while (true) {
-										UpdateItem updateItem = updateQueue.take();
-										scanFile(updateItem.getDocURI(), updateItem.getContent(), updateItem.getClasspathEntries());
-										updateItem.getFuture().complete(null);
-									}
-								}
-								catch (InterruptedException e) {
-									// ignore
-								}
-								catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-						}, "Spring Annotation Index Update Worker");
-						updateWorker.start();
-
-						Log.log("update worker STARTED: #" + updateWorker.getId() + " - " + updateWorker.toString());
-
-						initializing.set(false);
-					}
-
-				});
+				lastInitializeItem = new InitializeItem(workspaceRoots.toArray(new WorkspaceFolder[workspaceRoots.size()]));
+				updateQueue.put(lastInitializeItem);
+				return lastInitializeItem.getFuture();
 			}
-			return this.initializeTask;
+			catch (Exception e) {
+				Log.log(e);
+			}
 		}
+
+		return null;
 	}
 
 	public boolean isInitializing() {
-		return initializing.get();
+		return lastInitializeItem != null && !lastInitializeItem.getFuture().isDone();
+	}
+
+	private void waitForInitializeTask() {
+		synchronized (this) {
+			if (lastInitializeItem != null) {
+				try {
+					lastInitializeItem.getFuture().get();
+				} catch (InterruptedException | ExecutionException e) {
+					// ignore
+				}
+			}
+		}
 	}
 
 	private void refresh() {
 		synchronized (this) {
-			shutdown();
-			initializeTask = null;
 			symbols.clear();
 			symbolsByDoc.clear();
-			Log.info("Rebuilding SpringIndexer...");
-			initialize(server.getWorkspaceRoots());
+
+			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
+			Log.log("refresh spring indexer for roots: " + roots.toString());
+			initialize(roots);
 		}
 	}
 
 	public void shutdown() {
 		try {
-			if (this.initializeTask != null) {
-				initializeTask.cancel(true);
-			}
+			synchronized(this) {
+				if (updateWorker != null && updateWorker.isAlive()) {
+					updateWorker.interrupt();
+				}
 
-			if (updateWorker != null && updateWorker.isAlive()) {
-				updateWorker.interrupt();
-
-				Log.log("update worker INTERRUPPTED: #" + updateWorker.getId() + " - " + updateWorker.toString());
-			}
-
-			if (server.getProjectObserver() != null) {
-				server.getProjectObserver().removeListener(projectListener);
+				if (server.getProjectObserver() != null) {
+					server.getProjectObserver().removeListener(projectListener);
+				}
 			}
 		} catch (Exception e) {
 			Log.log(e);
@@ -197,22 +203,21 @@ public class SpringIndexer {
 	}
 
 	public CompletableFuture<Void> updateDocument(String docURI, String content) {
-		if (docURI.endsWith(".java") && initializeTask != null) {
-			try {
-				initializeTask.get();
+		synchronized(this) {
+			if (docURI.endsWith(".java") && lastInitializeItem != null) {
+				try {
+					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
+					if (maybeProject.isPresent()) {
+						String[] classpathEntries = getClasspathEntries(maybeProject.get());
 
-				Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
-				if (maybeProject.isPresent()) {
-					String[] classpathEntries = getClasspathEntries(maybeProject.get());
-
-					CompletableFuture<Void> future = new CompletableFuture<>();
-					UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries, future);
-					updateQueue.put(updateItem);
-					return future;
+						UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries);
+						updateQueue.put(updateItem);
+						return updateItem.getFuture();
+					}
 				}
-			}
-			catch (Exception e) {
-				e.printStackTrace();
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -220,46 +225,25 @@ public class SpringIndexer {
 	}
 
 	public List<SymbolInformation> getAllSymbols(String query) {
-		if (initializeTask != null) {
-			try {
-				initializeTask.get();
+		waitForInitializeTask();
 
-				if (query != null && query.length() > 0) {
-					return searchMatchingSymbols(this.symbols, query);
-				} else {
-					return this.symbols;
-				}
-			} catch (InterruptedException | ExecutionException e) {
-				// ignore
-			}
+		if (query != null && query.length() > 0) {
+			return searchMatchingSymbols(this.symbols, query);
+		} else {
+			return this.symbols;
 		}
-		return null;
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		if (initializeTask != null) {
-			try {
-				initializeTask.get();
-				return this.symbolsByDoc.get(docURI);
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
+		waitForInitializeTask();
+		return this.symbolsByDoc.get(docURI);
 	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
-		if (initializeTask != null) {
-			try {
-				initializeTask.get();
-				return allsymbols.stream()
-						.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), query))
-						.collect(Collectors.toList());
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
+		waitForInitializeTask();
+		return allsymbols.stream()
+				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), query))
+				.collect(Collectors.toList());
 	}
 
 	private void scanFiles(WorkspaceFolder directory) {
@@ -490,36 +474,78 @@ public class SpringIndexer {
 	/**
 	 * inner class to capture items for the update worker
 	 */
-	private static class UpdateItem {
+	private interface WorkerItem {
+
+		public void run();
+		public CompletableFuture<Void> getFuture();
+
+	}
+
+	private class UpdateItem implements WorkerItem {
 
 		private final String docURI;
-		private final  String content;
+		private final String content;
 		private final String[] classpathEntries;
 
 		private final CompletableFuture<Void> future;
 
-		public UpdateItem(String docURI, String content, String[] classpathEntries, CompletableFuture<Void> future) {
+		public UpdateItem(String docURI, String content, String[] classpathEntries) {
 			this.docURI = docURI;
 			this.content = content;
 			this.classpathEntries = classpathEntries;
-			this.future = future;
+			this.future = new CompletableFuture<Void>();
 		}
 
-		public String getDocURI() {
-			return docURI;
-		}
-
-		public String getContent() {
-			return content;
-		}
-
-		public String[] getClasspathEntries() {
-			return classpathEntries;
-		}
-
+		@Override
 		public CompletableFuture<Void> getFuture() {
 			return future;
 		}
 
+		@Override
+		public void run() {
+			try {
+				SpringIndexer.this.scanFile(docURI, content, classpathEntries);
+			} catch (Exception e) {
+				Log.log(e);
+			}
+			future.complete(null);
+		}
 	}
+
+	private class InitializeItem implements WorkerItem {
+
+		private final WorkspaceFolder[] workspaceRoots;
+		private final CompletableFuture<Void> future;
+
+		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
+			Log.log("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
+
+			this.workspaceRoots = workspaceRoots;
+			this.future = new CompletableFuture<Void>();
+		}
+
+		@Override
+		public CompletableFuture<Void> getFuture() {
+			return future;
+		}
+
+		@Override
+		public void run() {
+			if (!future.isCancelled()) {
+				Log.log("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
+
+				for (WorkspaceFolder root : workspaceRoots) {
+					SpringIndexer.this.scanFiles(root);
+				}
+
+				Log.log("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
+
+				future.complete(null);
+			}
+			else {
+				Log.log("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
+			}
+		}
+	}
+
 }
