@@ -137,15 +137,25 @@ public class SpringLiveHoverWatchdog {
 		refreshEnablement();
 	}
 
-	public void update(String docURI) {
+	public void update(String docURI, SpringBootApp[] runningBootApps) {
 		if (highlightsEnabled) {
+
 			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
-				TextDocument doc = this.server.getTextDocumentService().get(docURI);
-				if (doc != null) {
-					Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
-					publishLiveHints(docURI, ranges);
+				if (runningBootApps == null) {
+					runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 				}
+
+				if (runningBootApps != null && runningBootApps.length > 0) {
+					TextDocument doc = this.server.getTextDocumentService().get(docURI);
+					if (doc != null) {
+						Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
+						publishLiveHints(docURI, ranges);
+					}
+				}
+				else {
+					cleanupLiveHints(docURI);
+				}
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -154,8 +164,13 @@ public class SpringLiveHoverWatchdog {
 
 	protected void update() {
 		if (this.watchedDocs.size() > 0) {
-			for (String docURI : watchedDocs) {
-				update(docURI);
+			try {
+				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+				for (String docURI : watchedDocs) {
+					update(docURI, runningBootApps);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
