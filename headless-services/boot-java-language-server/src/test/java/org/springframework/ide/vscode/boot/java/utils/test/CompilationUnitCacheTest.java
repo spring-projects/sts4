@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -72,7 +73,7 @@ public class CompilationUnitCacheTest {
 	}
 
 	@Test
-	public void cu_not_cached_without_project() throws Exception {
+	public void cu_not_generated_without_project() throws Exception {
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -81,10 +82,7 @@ public class CompilationUnitCacheTest {
 				"\n" +
 				"}\n");
 		CompilationUnit cu = getCompilationUnit(doc);
-		assertNotNull(cu);
-
-		CompilationUnit cuAnother = getCompilationUnit(doc);
-		assertFalse(cu == cuAnother);
+		assertNull(cu);
 	}
 
 	private CompilationUnit getCompilationUnit(TextDocument doc) {
