@@ -117,14 +117,8 @@ public final class CompilationUnitCache {
 					Log.log(e);
 				}
 			}
-
-		} else {
-			try {
-				return requestor.apply(parse(document, null));
-			} catch (Exception e) {
-				Log.log(e);
-			}
 		}
+
 		return requestor.apply(null);
 	}
 
