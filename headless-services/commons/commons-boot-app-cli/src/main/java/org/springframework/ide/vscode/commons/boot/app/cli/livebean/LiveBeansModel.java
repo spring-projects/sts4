@@ -117,7 +117,7 @@ public class LiveBeansModel {
 		public LiveBeansModel parse(String json) throws Exception {
 			Builder model = LiveBeansModel.builder();
 			JSONObject mainObject = new JSONObject(json);
-			JSONObject beansObject = mainObject.getJSONObject("beans");
+			JSONObject beansObject = getBeans(mainObject);
 			for (String id : beansObject.keySet()) {
 				JSONObject beanObject = beansObject.getJSONObject(id);
 				LiveBean bean = parseBean(id, beanObject);
@@ -126,6 +126,14 @@ public class LiveBeansModel {
 				}
 			}
 			return model.build();
+		}
+
+		private JSONObject getBeans(JSONObject mainObject) {
+			JSONObject beans = mainObject.optJSONObject("beans");
+			if (beans==null) {
+				beans = mainObject.getJSONObject("contexts").getJSONObject("application").getJSONObject("beans");
+			}
+			return beans;
 		}
 
 		private LiveBean parseBean(String id, JSONObject beansJSON) {

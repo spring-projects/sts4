@@ -242,13 +242,15 @@ public class SpringBootApp {
 	}
 
 	public String getAutoConfigReport() throws Exception {
+		//Boot 1.x
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
 		if (result != null) {
 			String report = new ObjectMapper().writeValueAsString(result);
 			return report;
 		}
 
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Conditions", "getEvaluationReport");
+		//Boot 2.x
+		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Conditions", "applicationConditionEvaluation");
 		if (result != null) {
 			String report = new ObjectMapper().writeValueAsString(result);
 			return report;
