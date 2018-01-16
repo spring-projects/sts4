@@ -11,6 +11,11 @@ resource_types:
     tag: latest
 #########################################################
 resources:
+- name: monthly
+  type: time
+  check_every: 24h
+  source:
+    interval: 720h
 - name: docker-git
   type: git
   source:
@@ -282,6 +287,8 @@ jobs:
 - name: build-docker-image
   serial: true
   plan:
+  - get: monthly
+    trigger: true
   - get: docker-git
     trigger: true
   - put: docker-image
