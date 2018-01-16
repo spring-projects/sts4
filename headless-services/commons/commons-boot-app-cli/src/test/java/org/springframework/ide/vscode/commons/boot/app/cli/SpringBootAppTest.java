@@ -190,13 +190,13 @@ public class SpringBootAppTest {
 	}
 
 	@Test
-	public void getAutoConfigReport() throws Exception {
+	public void getLiveConditionals() throws Exception {
 		for (SpringBootApp testApp : getTestApps()) {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
-					String result = testApp.getAutoConfigReport();
-					assertNonEmptyJsonObject(result);
-		//			System.out.println("autoconfreport = "+result);
+					Optional<List<LiveConditional>> result = testApp.getLiveConditionals();
+					assertTrue(result.isPresent());
+					assertFalse(result.get().isEmpty());
 				});
 			} catch (Exception e) {
 				throw new RuntimeException("Failed for: "+testApp, e);

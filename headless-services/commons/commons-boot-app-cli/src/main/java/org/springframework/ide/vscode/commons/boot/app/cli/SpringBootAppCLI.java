@@ -32,7 +32,7 @@ public class SpringBootAppCLI {
 		System.out.println("Port: " + app.getPort());
 		System.out.println("Beans: " + app.getBeans());
 		System.out.println("Mappings: " + app.getRequestMappings());
-		System.out.println("ConfigReport: " + app.getAutoConfigReport());
+		System.out.println("ConfigReport: " + app.getLiveConditionals());
 		System.out.println();
 	}
 

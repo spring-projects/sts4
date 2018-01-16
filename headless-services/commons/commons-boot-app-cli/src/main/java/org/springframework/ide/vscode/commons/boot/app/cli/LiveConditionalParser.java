@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,15 +42,20 @@ public class LiveConditionalParser {
 	}
 
 	public Optional<List<LiveConditional>> parse() {
-
 		try {
 			List<LiveConditional> allConditionals = new ArrayList<>();
-
+			JSONObject autoConfigReport = new JSONObject(autoConfigRecord);
+			if (autoConfigReport.has("contexts")) {
+				//more recently the report is nested inside the 'application' context.
+				autoConfigReport = autoConfigReport.getJSONObject("contexts").getJSONObject("application");
+			}
 			if (StringUtil.hasText(autoConfigRecord)) {
-				getConditionalsFromPositiveMatches(autoConfigRecord).stream()
-						.forEach(conditional -> allConditionals.add(conditional));
-				getConditionalsFromNegativeMatches(autoConfigRecord).stream()
-						.forEach(conditional -> allConditionals.add(conditional));
+				for (LiveConditional c : getConditionalsFromPositiveMatches(autoConfigReport)) {
+					allConditionals.add(c);
+				}
+				for (LiveConditional c : getConditionalsFromNegativeMatches(autoConfigReport)) {
+					allConditionals.add(c);
+				}
 			}
 			if (!allConditionals.isEmpty()) {
 				return Optional.of(allConditionals);
@@ -65,67 +69,38 @@ public class LiveConditionalParser {
 	/**
 	 * Fetches the "positiveMatches" element in the autoconfig report JSON that contains conditional information.
 	 */
-	private Optional<JSONObject> getPositiveMatchesJson(String autoConfigReport) {
-		JSONObject autoConfigJson = new JSONObject(autoConfigReport);
-
-		Iterator<String> keys = autoConfigJson.keys();
-
-		while (keys.hasNext()) {
-			String key = keys.next();
-			if ("positiveMatches".equals(key)) {
-				Object obj = autoConfigJson.get(key);
-				if (obj instanceof JSONObject) {
-					return Optional.of((JSONObject) obj);
-				}
-			}
-		}
-
-		return Optional.empty();
+	private Optional<JSONObject> getPositiveMatchesJson(JSONObject autoConfigReport) {
+		return Optional.ofNullable(autoConfigReport.optJSONObject("positiveMatches"));
 	}
 
 	/**
 	 * Fetches the "negativeMatches" element in the autoconfig report JSON that contains conditional information.
 	 */
-	private Optional<JSONObject> getNegativeMatchesJson(String autoConfigReport) {
-		JSONObject autoConfigJson = new JSONObject(autoConfigReport);
-
-		Iterator<String> keys = autoConfigJson.keys();
-
-		while (keys.hasNext()) {
-			String key = keys.next();
-			if ("negativeMatches".equals(key)) {
-				Object obj = autoConfigJson.get(key);
-				if (obj instanceof JSONObject) {
-					return Optional.of((JSONObject) obj);
-				}
-			}
-		}
-
-		return Optional.empty();
+	private Optional<JSONObject> getNegativeMatchesJson(JSONObject autoConfigReport) {
+		return Optional.ofNullable(autoConfigReport.optJSONObject("negativeMatches"));
 	}
 
 	/**
 	 * Fetches all the conditionals listed in the the "positiveMatches" element in the autoconfig report.
 	 *
 	 */
-	private List<LiveConditional> getConditionalsFromPositiveMatches(String autoConfigReport) {
+	private List<LiveConditional> getConditionalsFromPositiveMatches(JSONObject autoConfigReport) {
 		List<LiveConditional> conditions = new ArrayList<>();
 		getPositiveMatchesJson(autoConfigReport).ifPresent((matches) -> {
-			matches.keySet().stream().forEach(typeInfo -> {
+			for (String typeInfo : matches.keySet()) {
 				// The positive match key contains the bean method information where conditional
 				// was applied to
 				Object val = matches.get(typeInfo);
-	            if (val instanceof JSONArray) {
+				if (val instanceof JSONArray) {
 					JSONArray contentList = (JSONArray) val;
 					parseConditionalsFromContentList(conditions, typeInfo, contentList);
 				}
-			});
-
+			}
 		});
 		return conditions;
 	}
 
-	private List<LiveConditional> getConditionalsFromNegativeMatches(String autoConfigReport) {
+	private List<LiveConditional> getConditionalsFromNegativeMatches(JSONObject autoConfigReport) {
 		List<LiveConditional> conditions = new ArrayList<>();
 		// The JSON structure being parsed is:
 //	    "negativeMatches": {
@@ -140,7 +115,7 @@ public class LiveConditionalParser {
 //	        }
 		getNegativeMatchesJson(autoConfigReport).ifPresent((matches) -> {
 			// The key in the "matches" JSON contains the live type information where the conditional was applied to
-			matches.keySet().stream().forEach(typeInfo -> {
+			for (String typeInfo : matches.keySet()) {
 				// The positive match key contains the bean method information where conditional
 				// was applied to
 				Object val = matches.get(typeInfo);
@@ -151,15 +126,15 @@ public class LiveConditionalParser {
 						parseConditionalsFromContentList(conditions, typeInfo, contentList);
 					});
 				}
-			});
 
+			}
 		});
 		return conditions;
 	}
 
 	private void parseConditionalsFromContentList(List<LiveConditional> conditionals, String typeInfo,
 			JSONArray contentList) {
-		contentList.forEach((content) -> {
+		for (Object content : contentList) {
 			if (content instanceof JSONObject) {
 				JSONObject conditionalJson = (JSONObject) content;
 				String condition = (String) conditionalJson.get("condition");
@@ -173,7 +148,7 @@ public class LiveConditionalParser {
 					conditionals.add(conditional);
 				}
 			}
-		});
+		}
 	}
 
 

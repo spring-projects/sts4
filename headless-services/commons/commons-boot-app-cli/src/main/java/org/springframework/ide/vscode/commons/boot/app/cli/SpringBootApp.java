@@ -241,7 +241,7 @@ public class SpringBootApp {
 		return LiveConditionalParser.parse(autoConfigReport, processId, processName);
 	}
 
-	public String getAutoConfigReport() throws Exception {
+	private String getAutoConfigReport() throws Exception {
 		//Boot 1.x
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
 		if (result != null) {
