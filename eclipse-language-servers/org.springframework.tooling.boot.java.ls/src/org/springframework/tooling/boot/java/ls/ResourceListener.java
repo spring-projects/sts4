@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
@@ -32,6 +33,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
  * @author Alex Boyko
  *
  */
+@SuppressWarnings("restriction")
 public class ResourceListener implements IResourceChangeListener {
 	
 	private final LanguageServer server;
@@ -91,7 +93,8 @@ public class ResourceListener implements IResourceChangeListener {
 	}
 
 	private static FileEvent createFileEventFromDelta(IResourceDelta delta) {
-		URI locationURI = delta.getResource().getLocationURI();
+		URI locationURI = LSPEclipseUtils.toUri(delta.getResource());
+		
 		if (locationURI == null) {
 			return null;
 		}
