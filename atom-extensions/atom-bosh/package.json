@@ -1,7 +1,7 @@
 {
   "name": "bosh-yaml",
   "main": "./lib/main",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Provides validation and content assist for various Bosh configuration files",
   "repository": "https://github.com/spring-projects/atom-bosh",
   "icon": "icon.png",
@@ -19,7 +19,7 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",
-    "pivotal-atom-languageclient-commons": "0.0.18"
+    "pivotal-atom-languageclient-commons": "0.0.19"
   },
   "configSchema": {
     "bosh": {
