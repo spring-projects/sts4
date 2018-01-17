@@ -1,0 +1,38 @@
+<idea-plugin>
+  <id>org.spring.tools.boot-java.ls</id>
+  <name>Spring Boot Java Support</name>
+  <version>1.0</version>
+  <vendor email="aboyko@pivotal.io" url="http://www.pivotal.io">YourCompany</vendor>
+
+  <description><![CDATA[
+      Enter short description for your plugin here.<br>
+      <em>most HTML tags may be used</em>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="145.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.github.gtache.lsp</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+    <preloadingActivity implementation="org.spring.tools.boot.java.ls.BootJavaPreloadingActivity" id="org.spring.tools.boot.java.ls.BootJavaPreloadingActivity" />
+    <!--<lang.documentationProvider implementationClass="com.github.gtache.lsp.contributors.LSPDocumentationProvider"-->
+                                <!--id="LSPDocumentationProviderJava" language="JAVA"/>-->
+
+  </extensions>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
