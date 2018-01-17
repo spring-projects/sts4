@@ -155,6 +155,71 @@ public class SpringIndexerTest {
 	}
 
 	@Test
+	public void testNewDocumentCreated() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+
+		String createdDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/CreatedClass.java";
+
+		// check for document to not be created yet
+		List<? extends SymbolInformation> symbols = indexer().getSymbols(createdDocURI);
+		assertNull(symbols);
+
+		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
+		assertEquals(6, allSymbols.size());
+
+		try {
+			// create document and update index
+			String content = "package org.test;\n" +
+					"\n" +
+					"import org.springframework.web.bind.annotation.RequestMapping;\n" +
+					"\n" +
+					"public class SimpleMappingClass {\n" +
+					"	\n" +
+					"	@RequestMapping(\"created-mapping1\")\n" +
+					"	public String hello1() {\n" +
+					"		return \"hello1\";\n" +
+					"	}\n" +
+					"\n" +
+					"	@RequestMapping(\"created-mapping2\")\n" +
+					"	public String hello2() {\n" +
+					"		return \"hello2\";\n" +
+					"	}\n" +
+					"\n" +
+					"}\n" +
+					"";
+			FileUtils.write(new File(new URI(createdDocURI)), content);
+			CompletableFuture<Void> createFuture = indexer().createDocument(createdDocURI);
+			createFuture.get(5, TimeUnit.SECONDS);
+
+			// check for updated index per document
+			symbols = indexer().getSymbols(createdDocURI);
+			assertEquals(2, symbols.size());
+			assertTrue(containsSymbol(symbols, "@/created-mapping1", createdDocURI, 6, 1, 6, 36));
+			assertTrue(containsSymbol(symbols, "@/created-mapping2", createdDocURI, 11, 1, 11, 36));
+
+			// check for updated index in all symbols
+			allSymbols = indexer().getAllSymbols("");
+			assertEquals(8, allSymbols.size());
+
+			String uriPrefix = "file://" + directory.getAbsolutePath();
+
+			assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
+			assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
+			assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+			assertTrue(containsSymbol(allSymbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
+			assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+			assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+
+			assertTrue(containsSymbol(allSymbols, "@/created-mapping1", createdDocURI, 6, 1, 6, 36));
+			assertTrue(containsSymbol(allSymbols, "@/created-mapping2", createdDocURI, 11, 1, 11, 36));
+		}
+		finally {
+			FileUtils.deleteQuietly(new File(new URI(createdDocURI)));
+		}
+	}
+
+	@Test
 	public void testRemoveSymbolsFromDeletedDocument() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());

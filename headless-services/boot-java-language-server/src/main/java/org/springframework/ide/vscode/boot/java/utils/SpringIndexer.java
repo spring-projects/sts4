@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -145,6 +146,9 @@ public class SpringIndexer {
 		server.getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
 			deleteDocument(new TextDocumentIdentifier(file).getUri());
 		});
+		server.getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
+			createDocument(new TextDocumentIdentifier(file).getUri());
+		});
 	}
 
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
@@ -240,6 +244,29 @@ public class SpringIndexer {
 			}
 			catch (Exception e) {
 				Log.log(e);
+			}
+		}
+
+		return null;
+	}
+
+	public CompletableFuture<Void> createDocument(String docURI) {
+		synchronized(this) {
+			if (docURI.endsWith(".java") && lastInitializeItem != null) {
+				try {
+					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
+					if (maybeProject.isPresent()) {
+						String[] classpathEntries = getClasspathEntries(maybeProject.get());
+
+						String content = FileUtils.readFileToString(new File(new URI(docURI)));
+						UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries);
+						updateQueue.put(updateItem);
+						return updateItem.getFuture();
+					}
+				}
+				catch (Exception e) {
+					Log.log(e);
+				}
 			}
 		}
 
