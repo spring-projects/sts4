@@ -536,7 +536,7 @@ public class SpringIndexer {
 		private final CompletableFuture<Void> future;
 
 		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
-			Log.log("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
+			Log.debug("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
 
 			this.workspaceRoots = workspaceRoots;
 			this.future = new CompletableFuture<Void>();
@@ -550,18 +550,18 @@ public class SpringIndexer {
 		@Override
 		public void run() {
 			if (!future.isCancelled()) {
-				Log.log("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
+				Log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
 
 				for (WorkspaceFolder root : workspaceRoots) {
 					SpringIndexer.this.scanFiles(root);
 				}
 
-				Log.log("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
+				Log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
 
 				future.complete(null);
 			}
 			else {
-				Log.log("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
+				Log.debug("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
 			}
 		}
 	}
