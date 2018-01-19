@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
+import java.util.Optional;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -60,6 +62,18 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 			}
 		}
 		return null;
+	}
+	
+	public Optional<IJavaProject> projectByName(String name) {
+		ConcurrentMap<K, P> map = cache.asMap();
+		
+		for (P project : map.values()) {
+			if (project != null && project.getElementName().equals(name)) {
+				return Optional.of(project);
+			}
+		}
+
+		return Optional.empty();
 	}
 	
 	abstract protected P createProject(K key) throws Exception;
