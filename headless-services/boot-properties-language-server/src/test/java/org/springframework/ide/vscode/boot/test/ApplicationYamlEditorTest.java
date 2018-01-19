@@ -31,6 +31,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+
 /**
  * This class is a placeholder where we will attempt to copy and port
  * as many tests a possible from
@@ -41,6 +43,39 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
+
+	@Test public void bug_153144391() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/153144391
+		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
+
+		Editor editor = newEditor(
+				"spring:\n" +
+				"  application:\n" +
+				"    name: chatter-web-ui\n" +
+				"  cloud:\n" +
+				"    stream:\n" +
+				"      bindings:\n" +
+				"        output:\n" +
+				"          destination: chat\n" +
+				"        input:\n" +
+				"          destination: chat\n" +
+				"jackloca<*>"
+		);
+		editor.assertCompletions(INDENTED_COMPLETION,
+				"spring:\n" +
+				"  application:\n" +
+				"    name: chatter-web-ui\n" +
+				"  cloud:\n" +
+				"    stream:\n" +
+				"      bindings:\n" +
+				"        output:\n" +
+				"          destination: chat\n" +
+				"        input:\n" +
+				"          destination: chat\n" +
+				"  jackson:\n" +
+				"    locale: <*>"
+		);
+	}
 
 	@Test public void linterRunsOnDocumentOpenAndChange() throws Exception {
 		Editor editor = newEditor(
@@ -3630,7 +3665,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		//See: https://www.pivotaltracker.com/story/show/150005676
 		defaultTestData();
 		Editor editor = newEditor(
-				"server:\n" + 
+				"server:\n" +
 				"  port: \"@application-port@\"\n" +
 				"bogus: bad" //token error to ensure reconciler is really working
 		);
@@ -3643,7 +3678,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		//Not implemented, this test fails. The choice not to implement this was deliberate!
 		defaultTestData();
 		Editor editor = newEditor(
-				"server:\n" + 
+				"server:\n" +
 				"  port: @application-port@\n" +
 				"bogus: bad" //token error to ensure reconciler is really working
 		);
