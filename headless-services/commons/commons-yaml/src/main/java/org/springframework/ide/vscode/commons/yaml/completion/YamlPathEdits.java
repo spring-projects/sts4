@@ -41,6 +41,11 @@ public class YamlPathEdits extends DocumentEdits {
 		this.indentUtil = new YamlIndentUtil(doc);
 	}
 
+	@Override
+	public boolean hasRelativeIndents() {
+		return false;
+	}
+
 	/**
 	 * Create the necessary edits to ensure that a given property
 	 * path exists, placing cursor in the right place also to start

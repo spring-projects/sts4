@@ -234,11 +234,19 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
 //				originalEdit.indentFirstEdit(indentStr);
 				YamlIndentUtil indenter = new YamlIndentUtil("\n");
-				originalEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
-					String prefix = insertText.substring(0, offset);
-					String target = insertText.substring(offset);
-					return prefix + indentStr + indenter.applyIndentation(target, indentStr);
-				});
+				if (originalEdit.hasRelativeIndents()) {
+					originalEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+						String prefix = insertText.substring(0, offset);
+						String target = insertText.substring(offset);
+						return prefix + indentStr + indenter.applyIndentation(target, indentStr);
+					});
+				} else {
+					originalEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
+						String prefix = insertText.substring(0, offset);
+						String target = insertText.substring(offset);
+						return prefix + indentStr + target;
+					});
+				}
 				return originalEdit;
 			}
 		};
