@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -226,6 +226,27 @@ public class JandexIndex {
 										.map(e -> createType(Tuples.of(e.getT1(), e.getT2().get()))).findFirst()
 										.orElse(null));
 
+	}
+	
+	private Optional<Tuple2<File, ClassInfo>> findMatch(DotName fqName) {
+		return (baseIndex == null ? Stream.<Optional<Tuple2<File, ClassInfo>>>empty()
+				: Arrays.stream(
+						baseIndex)
+						.filter(
+								jandexIndex -> jandexIndex != null)
+						.map(jandexIndex -> jandexIndex.findMatch(fqName))).filter(o -> o.isPresent())
+								.findFirst()
+								// If not found look at indices owned by this
+								// JandexIndex instance
+								.orElseGet(() -> streamOfIndices()
+										.map(e -> Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName))))
+										.filter(t -> t.getT2().isPresent())
+										.map(e -> Tuples.of(e.getT1(), e.getT2().get())).findFirst());
+	}
+	
+	public Optional<File> findClasspathResourceForType(String fqName) {
+		Optional<Tuple2<File, ClassInfo>> match = findMatch(DotName.createSimple(fqName));
+		return Optional.ofNullable(match.isPresent() ? match.get().getT1() : null);
 	}
 
 	private IType createType(Tuple2<File, ClassInfo> match) {

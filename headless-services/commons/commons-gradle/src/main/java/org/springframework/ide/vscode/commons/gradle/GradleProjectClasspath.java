@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -236,5 +236,10 @@ public class GradleProjectClasspath extends JandexClasspath {
 		return false;
 	}
 
-	
+	@Override
+	public ImmutableList<String> getSourceFolders() {
+		return ImmutableList.copyOf(project.getSourceDirectories().stream()
+				.map(dir -> dir.getDirectory().toPath().toString()).collect(Collectors.toList()));
+	}
+
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,10 +16,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -132,5 +134,22 @@ public class JavaIndexTest {
 		assertEquals(m.getDeclaringType().getElementName(), m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(Collections.singletonList(IPrimitiveType.INT), m.parameters().collect(Collectors.toList()));		
+	}
+	
+	@Test
+	public void testFindJarResource() throws Exception {
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		Optional<File> jar = project.getClasspath().findClasspathResourceContainer("org.springframework.boot.autoconfigure.SpringBootApplication");
+		assertTrue(jar.isPresent());
+		assertEquals("spring-boot-autoconfigure-1.4.1.RELEASE.jar", jar.get().getName());
+	}
+
+	@Test
+	public void testFindJavaResource() throws Exception {
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		Optional<File> file = project.getClasspath().findClasspathResourceContainer("hello.GreetingController");
+		assertTrue(file.isPresent());
+		assertTrue(file.get().exists());
+		assertEquals(project.getClasspath().getOutputFolder().toString(), file.get().toString());
 	}
 }

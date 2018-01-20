@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.boot.java.utils.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class LiveHoverUtils {
@@ -33,9 +36,17 @@ public class LiveHoverUtils {
 
 	public static String showBeanWithResource(LiveBean bean, String indentStr, IJavaProject project) {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
+
+		String type = bean.getType(true);
+		
+		// Try creating a URL link to open source for the type
+		Optional<String> url = SourceLinks.sourceLinkUrl(project, type);
+		if (url.isPresent()) {
+			return Renderables.link(type, url.get()).toMarkdown();
+		}
+
 		StringBuilder buf = new StringBuilder("Bean: ");
 		buf.append(bean.getId());
-		String type = bean.getType(true);
 		if (type != null) {
 			buf.append(newline);
 			buf.append("Type: `" + type + "`");

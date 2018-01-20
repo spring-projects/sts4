@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableList;
@@ -54,5 +56,9 @@ public interface IClasspath {
 	 * @return classpath resource relative paths
 	 */
 	ImmutableList<String> getClasspathResources();
+	
+	ImmutableList<String> getSourceFolders();
+	
+	Optional<File> findClasspathResourceContainer(String fqName);
 
 }

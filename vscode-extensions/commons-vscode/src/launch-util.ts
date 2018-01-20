@@ -108,6 +108,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             log('Redirecting server logs to ' + logfile);
                             const args = [
                                 '-Dserver.port=' + port,
+                                '-Dsts.lsp.client=vscode',
                                 '-Dorg.slf4j.simpleLogger.logFile=' + logfile
                             ];
                             if (options.classpath) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,6 +87,16 @@ public class FileClasspath implements IClasspath {
 	@Override
 	public Path getOutputFolder() {
 		return null;
+	}
+
+	@Override
+	public ImmutableList<String> getSourceFolders() {
+		return ImmutableList.of();
+	}
+
+	@Override
+	public Optional<File> findClasspathResourceContainer(String fqName) {
+		return Optional.empty();
 	}
 
 }

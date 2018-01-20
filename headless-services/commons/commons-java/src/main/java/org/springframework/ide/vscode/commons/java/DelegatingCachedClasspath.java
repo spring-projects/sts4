@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -254,6 +255,18 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			return new ClasspathData(newDelegate.getName(), classpathEntries,
 					new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
 		}
+	}
+
+	@Override
+	public ImmutableList<String> getSourceFolders() {
+		T t = cachedDelegate.get();
+		return t == null ? ImmutableList.of() : t.getSourceFolders();
+	}
+
+	@Override
+	public Optional<File> findClasspathResourceContainer(String fqName) {
+		T t = cachedDelegate.get();
+		return t == null ? Optional.empty() : t.findClasspathResourceContainer(fqName);
 	}
 	
 }

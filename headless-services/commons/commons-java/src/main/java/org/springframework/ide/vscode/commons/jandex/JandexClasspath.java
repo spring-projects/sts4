@@ -1,7 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,6 +28,12 @@ import com.google.common.base.Suppliers;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
+/**
+ * Classpath with Jandex Java index for searching types
+ * 
+ * @author Alex Boyko
+ *
+ */
 public abstract class JandexClasspath implements IClasspath {
 	
 	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
@@ -81,6 +98,11 @@ public abstract class JandexClasspath implements IClasspath {
 		return JandexIndex.getIndexFolder();
 	}
 	
+	@Override
+	public Optional<File> findClasspathResourceContainer(String fqName) {
+		return javaIndex.get().findClasspathResourceForType(fqName);
+	}
+
 	abstract protected IJavadocProvider createParserJavadocProvider(File classpathResource);
 	
 	abstract protected IJavadocProvider createHtmlJavdocProvider(File classpathResource);
