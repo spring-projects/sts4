@@ -19,7 +19,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1
 /**
  * @author Martin Lippert
  */
-public class RequestMappingImp1Test {
+public class Boot1xRequestMappingTest {
 
 	@Test
 	public void testSplitPathWithoutDuplicate() {
