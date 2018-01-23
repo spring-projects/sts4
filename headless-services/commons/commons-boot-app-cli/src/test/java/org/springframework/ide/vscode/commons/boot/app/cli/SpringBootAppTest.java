@@ -181,11 +181,15 @@ public class SpringBootAppTest {
 	@Test
 	public void getRequestMappings() throws Exception {
 		for (SpringBootApp testApp : getTestApps()) {
-			ACondition.waitFor(TIMEOUT, () -> {
-				Collection<RequestMapping> result = testApp.getRequestMappings();
-				assertTrue(result != null && !result.isEmpty());
-//				System.out.println("requestMappings = "+result);
-			});
+			try {
+				ACondition.waitFor(TIMEOUT, () -> {
+					Collection<RequestMapping> result = testApp.getRequestMappings();
+					assertTrue(result != null && result.size()>4);
+	//				System.out.println("requestMappings = "+result);
+				});
+			} catch (Exception e) {
+				throw new RuntimeException("Failed for: "+testApp, e);
+			}
 		}
 	}
 

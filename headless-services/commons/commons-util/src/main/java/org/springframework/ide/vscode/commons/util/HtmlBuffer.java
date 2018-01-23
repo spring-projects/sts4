@@ -50,7 +50,6 @@ public class HtmlBuffer {
 
 
 	public String toString() {
-
 		return buffer.toString();
 	}
 

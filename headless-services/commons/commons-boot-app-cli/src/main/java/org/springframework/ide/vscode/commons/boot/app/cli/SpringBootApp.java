@@ -33,7 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -195,29 +196,35 @@ public class SpringBootApp {
 		}
 	}
 
-	public static Collection<RequestMapping> parseRequestMappingsJson(String json) {
+	public static Collection<RequestMapping> parseRequestMappingsJson(String json, String bootVersion) {
 		JSONObject obj = new JSONObject(json);
-		Iterator<String> keys = obj.keys();
-		List<RequestMapping> result = new ArrayList<>();
-		while (keys.hasNext()) {
-			String rawKey = keys.next();
-			JSONObject value = obj.getJSONObject(rawKey);
-			result.add(new RequestMappingImpl1(rawKey, value));
+		if (bootVersion.equals("2.x")) {
+			return RequestMappingsParser20.parse(obj);
+		} else { //1.x
+			List<RequestMapping> result = new ArrayList<>();
+			Iterator<String> keys = obj.keys();
+			while (keys.hasNext()) {
+				String rawKey = keys.next();
+				JSONObject value = obj.getJSONObject(rawKey);
+				result.add(new Boot1xRequestMapping(rawKey, value));
+			}
+			return result;
 		}
-		return result;
 	}
 
 	public Collection<RequestMapping> getRequestMappings() throws Exception {
+		//Boot 1.x
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
 		if (result != null) {
 			String mappings = new ObjectMapper().writeValueAsString(result);
-			return parseRequestMappingsJson(mappings);
+			return parseRequestMappingsJson(mappings, "1.x");
 		}
 
+		//Boot 2.x
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
 		if (result != null) {
 			String mappings = new ObjectMapper().writeValueAsString(result);
-			return parseRequestMappingsJson(mappings);
+			return parseRequestMappingsJson(mappings, "2.x");
 		}
 
 		return null;

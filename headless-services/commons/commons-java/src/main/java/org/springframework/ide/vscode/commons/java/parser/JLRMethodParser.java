@@ -151,7 +151,7 @@ public class JLRMethodParser {
 
 	}
 
-	private static final Set<String> MODIFIERS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+	public static final Set<String> MODIFIERS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"public", "protected", "private", "abstract",
 		    "static", "final", "synchronized", "native", "strictfp"
 	)));

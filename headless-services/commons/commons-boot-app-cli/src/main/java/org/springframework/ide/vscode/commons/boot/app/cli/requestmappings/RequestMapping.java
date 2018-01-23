@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
 import java.util.Set;
 
 public interface RequestMapping {
-	String getPath();
+	// String getPath(); commented... because... not used??
 	String[] getSplitPath();
 	String getFullyQualifiedClassName();
 	String getMethodName();

@@ -13,7 +13,8 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingImpl1;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.AbstractRequestMapping;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 
 /**
  * @author Martin Lippert
@@ -22,7 +23,7 @@ public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathWithoutDuplicate() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath", null);
+		AbstractRequestMapping rm = new Boot1xRequestMapping("/superpath", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(1, splitPath.length);
 		assertEquals("/superpath", splitPath[0]);
@@ -30,7 +31,7 @@ public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathSimpleCaseWithEmptyOr() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("/superpath/mypath || ", null);
+		AbstractRequestMapping rm = new Boot1xRequestMapping("/superpath/mypath || ", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(1, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
@@ -38,7 +39,7 @@ public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathSimpleCase() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json]}", null);
+		AbstractRequestMapping rm = new Boot1xRequestMapping("{[/superpath/mypath || mypath.json]}", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(2, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);
@@ -47,7 +48,7 @@ public class RequestMappingImp1Test {
 
 	@Test
 	public void testSplitPathMultipleCases() {
-		RequestMappingImpl1 rm = new RequestMappingImpl1("{[/superpath/mypath || mypath.json || somethingelse.what]}", null);
+		AbstractRequestMapping rm = new Boot1xRequestMapping("{[/superpath/mypath || mypath.json || somethingelse.what]}", null);
 		String[] splitPath = rm.getSplitPath();
 		assertEquals(3, splitPath.length);
 		assertEquals("/superpath/mypath", splitPath[0]);

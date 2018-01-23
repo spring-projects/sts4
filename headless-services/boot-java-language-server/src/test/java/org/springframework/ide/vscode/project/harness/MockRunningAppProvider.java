@@ -106,7 +106,7 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder requestMappings(String mappings) throws Exception {
-			Collection<RequestMapping> requestMappings = SpringBootApp.parseRequestMappingsJson(mappings);
+			Collection<RequestMapping> requestMappings = SpringBootApp.parseRequestMappingsJson(mappings, "1.x");
 			when(app.getRequestMappings()).thenReturn(requestMappings);
 			return this;
 		}
