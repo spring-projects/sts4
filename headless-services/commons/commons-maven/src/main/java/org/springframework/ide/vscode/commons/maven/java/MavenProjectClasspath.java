@@ -316,6 +316,54 @@ public class MavenProjectClasspath extends JandexClasspath {
 				Path outputFolder) {
 			super(name, classpathEntries, classpathResources, outputFolder);
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (!super.equals(obj))
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MavenClasspathData other = (MavenClasspathData) obj;
+			if (artifacts == null) {
+				if (other.artifacts != null)
+					return false;
+			} else if (!artifacts.equals(other.artifacts))
+				return false;
+			if (outputDirectory == null) {
+				if (other.outputDirectory != null)
+					return false;
+			} else if (!outputDirectory.equals(other.outputDirectory))
+				return false;
+			if (remoteArtifactRepositories == null) {
+				if (other.remoteArtifactRepositories != null)
+					return false;
+			} else if (!remoteArtifactRepositories.equals(other.remoteArtifactRepositories))
+				return false;
+			if (reportingOutputDirectory == null) {
+				if (other.reportingOutputDirectory != null)
+					return false;
+			} else if (!reportingOutputDirectory.equals(other.reportingOutputDirectory))
+				return false;
+			if (sourceDirectory == null) {
+				if (other.sourceDirectory != null)
+					return false;
+			} else if (!sourceDirectory.equals(other.sourceDirectory))
+				return false;
+			if (testOutputDirectory == null) {
+				if (other.testOutputDirectory != null)
+					return false;
+			} else if (!testOutputDirectory.equals(other.testOutputDirectory))
+				return false;
+			if (testSourceDirectory == null) {
+				if (other.testSourceDirectory != null)
+					return false;
+			} else if (!testSourceDirectory.equals(other.testSourceDirectory))
+				return false;
+			return true;
+		}
+
 		
 	}
 }
