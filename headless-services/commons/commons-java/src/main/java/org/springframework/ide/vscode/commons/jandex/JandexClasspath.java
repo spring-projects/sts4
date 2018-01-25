@@ -57,12 +57,17 @@ public abstract class JandexClasspath implements IClasspath {
 			Log.log(e);
 		}
 		return new JandexIndex(classpathEntries.map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
-			switch (providerType) {
-			case JAVA_PARSER:
-				return createParserJavadocProvider(classpathResource);
-			default:
-				return createHtmlJavdocProvider(classpathResource);
+			try {
+				switch (providerType) {
+				case JAVA_PARSER:
+					return createParserJavadocProvider(classpathResource);
+				default:
+					return createHtmlJavdocProvider(classpathResource);
+				}
+			} catch (Exception e) {
+				Log.log(e);
 			}
+			return null;
 		}, getBaseIndices());
 	}
 	
@@ -103,8 +108,8 @@ public abstract class JandexClasspath implements IClasspath {
 		return javaIndex.get().findClasspathResourceForType(fqName);
 	}
 
-	abstract protected IJavadocProvider createParserJavadocProvider(File classpathResource);
+	abstract protected IJavadocProvider createParserJavadocProvider(File classpathResource) throws Exception;
 	
-	abstract protected IJavadocProvider createHtmlJavdocProvider(File classpathResource);
+	abstract protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) throws Exception;
 	
 }
