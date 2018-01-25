@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -55,45 +54,11 @@ import reactor.util.function.Tuple2;
 public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspath {
 	
 	public static final String CLASSPATH_DATA_CACHE_FILE = "classpath-data.json";
-	private static final ClasspathData EMPTY_CLASSPATH_DATA = new ClasspathData(null, Collections.emptySet(),
-			Collections.emptySet(), null);
 	
 	private static final String OUTPUT_FOLDER_PROPERTY = "outputFolder";
 	private static final String CLASSPATH_RESOURCES_PROPERTY = "classpathResources";
 	private static final String CLASSPATH_ENTRIES_PROPERTY = "classpathEntries";
 	private static final String NAME_PROPERTY = "name";
-
-	protected static class ClasspathData {
-		
-		final public String name;
-		final public Set<Path> classpathEntries;
-		final public Set<String> classpathResources;
-		final public Path outputFolder;
-		
-		public ClasspathData(String name, Set<Path> classpathEntries, Set<String> classpathResources, Path outputFolder) {
-			this.name = name;
-			this.classpathEntries = classpathEntries;
-			this.classpathResources = classpathResources;
-			this.outputFolder = outputFolder;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof ClasspathData) {
-				ClasspathData other = (ClasspathData) obj;
-				try {
-					return Objects.equal(name, other.name)
-							&& Objects.equal(classpathEntries, other.classpathEntries)
-							&& Objects.equal(classpathResources, other.classpathResources)
-							&& Objects.equal(outputFolder, outputFolder);
-				} catch (Throwable t) {
-					Log.log(t);
-				}
-			}
-			return false;
-		}
-		
-	}
 	
 	private AtomicReference<ClasspathData> cachedData;
 	private Callable<T> delegateCreator;
@@ -245,16 +210,17 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 		return t == null ? Flux.empty() : t.allSubtypesOf(type);
 	}
 
-	protected ClasspathData createClasspathData() throws Exception {
+	@Override
+	public ClasspathData createClasspathData() throws Exception {
 		T newDelegate = delegateCreator.call();
 		cachedDelegate.set(newDelegate);
-		if (newDelegate == null) {
-			return EMPTY_CLASSPATH_DATA;
-		} else {
-			LinkedHashSet<Path> classpathEntries = new LinkedHashSet<>(newDelegate.getClasspathEntries());
-			return new ClasspathData(newDelegate.getName(), classpathEntries,
-					new LinkedHashSet<>(newDelegate.getClasspathResources()), newDelegate.getOutputFolder());
-		}
+		if (newDelegate != null) {
+			ClasspathData data = newDelegate.createClasspathData();
+			if (data != null) {
+				return data;
+			}
+		} 
+		return EMPTY_CLASSPATH_DATA;
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -99,4 +100,8 @@ public class FileClasspath implements IClasspath {
 		return Optional.empty();
 	}
 
+	@Override
+	public ClasspathData createClasspathData() throws Exception {
+		return ClasspathData.from(getName(), getClasspathEntries(), getClasspathResources(), getOutputFolder());
+	}
 }

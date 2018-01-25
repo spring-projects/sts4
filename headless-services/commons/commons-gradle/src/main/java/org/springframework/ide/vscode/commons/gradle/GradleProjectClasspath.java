@@ -25,6 +25,7 @@ import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
+import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
@@ -240,6 +241,11 @@ public class GradleProjectClasspath extends JandexClasspath {
 	public ImmutableList<String> getSourceFolders() {
 		return ImmutableList.copyOf(project.getSourceDirectories().stream()
 				.map(dir -> dir.getDirectory().toPath().toString()).collect(Collectors.toList()));
+	}
+	
+	@Override
+	public ClasspathData createClasspathData() throws Exception {
+		return ClasspathData.from(getName(), getClasspathEntries(), getClasspathResources(), getOutputFolder());
 	}
 
 }
