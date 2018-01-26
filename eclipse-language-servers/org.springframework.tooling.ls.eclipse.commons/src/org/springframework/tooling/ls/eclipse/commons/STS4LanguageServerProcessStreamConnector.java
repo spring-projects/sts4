@@ -13,7 +13,10 @@ package org.springframework.tooling.ls.eclipse.commons;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.eclipse.jdt.internal.launching.StandardVMType;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
@@ -79,18 +82,40 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 	 */
 	protected File getToolsJAR() throws MissingToolsJarException {
 		List<File> lookedIn = new ArrayList<>();
-		File jhome = new File(System.getProperty("java.home"));
-//		resolve(System.getenv("JAVA_HOME"), jhomes::add);
-		for (String tjPath : TOOLS_JAR_PATHS) {
-			File toolsJar = new File(jhome, tjPath).toPath().normalize().toFile();
-			lookedIn.add(toolsJar);
-			if (toolsJar.isFile()) {
-				return toolsJar;
+		Set<File> jhomes = new LinkedHashSet<>();
+		File mainHome = new File(System.getProperty("java.home"));
+		jhomes.add(mainHome);
+		findPairedJdk(mainHome, jhomes::add);
+		for (File jhome : jhomes) {
+			for (String tjPath : TOOLS_JAR_PATHS) {
+				File toolsJar = new File(jhome, tjPath).toPath().normalize().toFile();
+				lookedIn.add(toolsJar);
+				if (toolsJar.isFile()) {
+					return toolsJar;
+				}
 			}
 		}
-		throw new MissingToolsJarException(jhome, lookedIn);
+		throw new MissingToolsJarException(mainHome, lookedIn);
 	}
 	
+	private void findPairedJdk(File mainHome, Consumer<File> requestor) {
+		//Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
+		//nested jre install inside of a jdk.
+		
+		//E.g.
+		//C:\ProgramFiles\Java\jdk1.8.0_161
+		//C:\ProgramFiles\Java\jre1.8.0_161
+		
+		String name = mainHome.getName();
+		String pairedName = name.replace("jre", "jdk");
+		if (!pairedName.equals(name)) {
+			File pairedJdk = new File(mainHome.getParentFile(), pairedName);
+			if (pairedJdk.exists()) {
+				requestor.accept(pairedJdk);
+			}
+		}
+	}
+
 	protected String getWorkingDirLocation() {
 		return System.getProperty("user.dir");
 	}
