@@ -81,6 +81,9 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 	 * @throws MissingToolsJarException If tools jar is needed but could not be found.
 	 */
 	protected File getToolsJAR() throws MissingToolsJarException {
+		if (!needsToolsJar()) {
+			return null;
+		}
 		List<File> lookedIn = new ArrayList<>();
 		Set<File> jhomes = new LinkedHashSet<>();
 		File mainHome = new File(System.getProperty("java.home"));
@@ -98,7 +101,12 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 		throw new MissingToolsJarException(mainHome, lookedIn);
 	}
 	
-	private void findPairedJdk(File mainHome, Consumer<File> requestor) {
+	protected boolean needsToolsJar() {
+		int javaVersion = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]);
+		return javaVersion<9;
+	}
+
+	protected void findPairedJdk(File mainHome, Consumer<File> requestor) {
 		//Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
 		//nested jre install inside of a jdk.
 		
