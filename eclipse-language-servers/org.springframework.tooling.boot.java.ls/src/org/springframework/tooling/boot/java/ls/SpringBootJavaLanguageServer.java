@@ -21,6 +21,9 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
+import org.springframework.tooling.ls.eclipse.commons.JRE;
+import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
+import org.springframework.tooling.ls.eclipse.commons.JRE.MissingToolsJarException;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
@@ -30,7 +33,8 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 	
 	public SpringBootJavaLanguageServer() {
 		List<String> commands = new ArrayList<>();
-		commands.add(getJDKLocation());
+		JRE jre = getJRE(); 
+		commands.add(jre.getJavaExecutable());
 		
 //		commands.add("-Xdebug");
 //		commands.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
@@ -40,13 +44,8 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 		commands.add("-Xmx1024m");
 		commands.add("-cp");
 		String classpath = getLanguageServerJARLocation();
-		try {
-			File toolsJar = getToolsJAR();
-			if (toolsJar!=null) {
-				classpath = toolsJar + File.pathSeparator + classpath;
-			}
-		} catch (MissingToolsJarException e) {
-			MissingToolsJarWarning.show(e);
+		if (jre.toolsJar!=null) {
+			classpath = jre.toolsJar + File.pathSeparator + classpath;
 		}
 		commands.add(classpath);
 		commands.add("org.springframework.boot.loader.JarLauncher");
@@ -57,6 +56,15 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 		setWorkingDirectory(workingDir);
 	}
 	
+	private JRE getJRE() {
+		try {
+			return JRE.findJRE(true);
+		} catch (MissingJDKException e) {
+			MissingJdkWarning.show(e);
+			return new JRE(e.javaHome, null); //Not everything will work without tools jar. But some of it will. So fallback on JRE without toolsjar.
+		}
+	}
+
 	protected String getLanguageServerJARLocation() {
 		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 

@@ -1,0 +1,152 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.tooling.ls.eclipse.commons;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import org.eclipse.jdt.internal.launching.StandardVMType;
+
+@SuppressWarnings("restriction")
+public class JRE {
+	
+	public final File javaHome;
+	public final File toolsJar;
+	
+	public JRE(File javaHome, File toolsJar) {
+		this.javaHome = javaHome;
+		this.toolsJar = toolsJar;
+	}
+
+	public String getJavaExecutable() {
+		if (javaHome.exists()) {
+			File javaExecutable = StandardVMType.findJavaExecutable(javaHome);
+			if (javaExecutable != null && javaExecutable.isFile()) {
+				return javaExecutable.getAbsolutePath();
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return "JRE("+javaHome+")";
+	}
+
+	/**
+	 * Get a JRE, with a paired tools jar if it is needed based on current JRE version 
+	 * and whether the caller wants it.
+	 * 
+	 * @return The tools.jar, or null if none is needed.
+	 * @throws MissingToolsJarException If tools jar is needed but could not be found.
+	 * @throws MissingJava9JDKException 
+	 */
+	public static JRE findJRE(boolean needJdk) throws MissingJDKException {
+		File mainHome = new File(System.getProperty("java.home"));
+		if (!needJdk) {
+			return new JRE(mainHome, null);
+		}
+		Set<File> jhomes = new LinkedHashSet<>();
+		jhomes.add(mainHome);
+		findPairedJdk(mainHome, jhomes::add);
+		if (javaVersionNeedsToolsJar()) {
+			//Finding a JDK with a tools jar
+			List<File> lookedIn = new ArrayList<>();
+			for (File jhome : jhomes) {
+				for (String tjPath : TOOLS_JAR_PATHS) {
+					File toolsJar = new File(jhome, tjPath).toPath().normalize().toFile();
+					lookedIn.add(toolsJar);
+					if (toolsJar.isFile()) {
+						return new JRE(jhome, toolsJar);
+					}
+				}
+			}
+			throw new MissingToolsJarException(mainHome, lookedIn);
+		} else { // needJdk && !needsToolsJar 
+			//Find a jdk 'java 9 style'.
+			for (File jhome : jhomes) {
+				for (String jmPath : JMOD_PATHS) {
+					File jmodFile = new File(jhome, jmPath).toPath().normalize().toFile();
+					if (jmodFile.exists()) {
+						return new JRE(jhome, null);
+					}
+				}
+			}
+			throw new MissingJDKException(mainHome);
+		}
+	}
+	
+	/**
+	 * Different places to look for tools jar, relative to Java home (for java version < 9)
+	 */
+	private final static String[] TOOLS_JAR_PATHS = {
+			"../lib/tools.jar",
+			"lib/tools.jar"
+	};
+
+	/**
+	 * Different places to look for jdk.mamagement.jmod file. We don't need this file
+	 * explicitly. It is just used as a means to try to recognize whether the given 
+	 * java home is a JDK.
+	 */
+	private static final String JMOD_PATHS[] = {
+			"jmods/jdk.management.jmod"
+	};
+
+	private static boolean javaVersionNeedsToolsJar() {
+		int javaVersion = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]);
+		return javaVersion<9;
+	}
+
+	private static void findPairedJdk(File mainHome, Consumer<File> requestor) {
+		//Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
+		//nested jre install inside of a jdk.
+		
+		//E.g.
+		//C:\ProgramFiles\Java\jdk1.8.0_161
+		//C:\ProgramFiles\Java\jre1.8.0_161
+		
+		String name = mainHome.getName();
+		String pairedName = name.replace("jre", "jdk");
+		if (!pairedName.equals(name)) {
+			File pairedJdk = new File(mainHome.getParentFile(), pairedName);
+			if (pairedJdk.exists()) {
+				requestor.accept(pairedJdk);
+			}
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class MissingToolsJarException extends MissingJDKException {
+		
+		public final List<File> lookedIn;
+		
+		public MissingToolsJarException(File javaHome, List<File> lookedIn) {
+			super(javaHome);
+			this.lookedIn = lookedIn;
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public static class MissingJDKException extends Exception {
+		public MissingJDKException(File javaHome) {
+			super();
+			this.javaHome = javaHome;
+		}
+		public final File javaHome;
+	}
+
+
+}
