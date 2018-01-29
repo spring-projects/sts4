@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.osgi.framework.Bundle;
+import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
@@ -44,7 +45,7 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 	public CloudFoundryManifestLanguageServer() {
 		List<String> commands = new ArrayList<>();
 		
-		commands.add(getJDKLocation());
+		commands.add(JRE.currentJRE().getJavaExecutable());
 
 //		commands.add("-Xdebug");
 //		commands.add("-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n");

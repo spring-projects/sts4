@@ -45,6 +45,10 @@ public class JRE {
 		return "JRE("+javaHome+")";
 	}
 
+	public static JRE currentJRE() {
+		return new JRE(new File(System.getProperty("java.home")), null);
+	}
+
 	/**
 	 * Get a JRE, with a paired tools jar if it is needed based on current JRE version 
 	 * and whether the caller wants it.
@@ -147,6 +151,4 @@ public class JRE {
 		}
 		public final File javaHome;
 	}
-
-
 }

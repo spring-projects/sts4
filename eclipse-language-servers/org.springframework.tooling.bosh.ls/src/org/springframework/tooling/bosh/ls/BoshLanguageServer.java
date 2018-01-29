@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
+import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
@@ -30,7 +31,7 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 
 	public BoshLanguageServer() {
 		List<String> commands = new ArrayList<>();
-		commands.add(getJDKLocation());
+		commands.add(JRE.currentJRE().getJavaExecutable());
 
 //		commands.add("-Xdebug");
 //		commands.add("-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n");
