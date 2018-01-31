@@ -7,29 +7,28 @@
   "repository": "",
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
-    "node": ">=4.0.0",
-    "vscode": "^1.15.0"
+    "npm": "^3.0.0",
+    "vscode": "^1.19.0"
   },
-  "keywords": [
-    ""
-  ],
+  "keywords": [],
   "files": [
-    "lib", "icons"
+    "lib",
+    "icons"
   ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "clean": "rm -rf lib node_modules",
-    "compile": "tsc -watch -p ./",
-    "prepublish": "node ./node_modules/vscode/bin/install && tsc -p ./"
+    "clean": "rm -rf lib node_modules package-lock.json",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "portfinder": "^0.4.0"
   },
   "devDependencies": {
-    "typescript": "^2.3.0",
-    "@types/node": "^6.0.68",
-    "vscode": "^1.1.5",
-    "vscode-languageclient": "^3.4.5"
+    "typescript": "2.6.1",
+    "@types/node": "^7.0.43",
+    "vscode": "^1.1.10",
+    "vscode-languageclient": "^3.5.0"
   }
 }
