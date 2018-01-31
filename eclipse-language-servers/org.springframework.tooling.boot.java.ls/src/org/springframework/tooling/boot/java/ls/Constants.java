@@ -16,7 +16,7 @@ package org.springframework.tooling.boot.java.ls;
 public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.boot.java.ls";
-	public static final String LANGUAGE_SERVER_VERSION = "0.1.3-SNAPSHOT.jar";
+	public static final String LANGUAGE_SERVER_VERSION = "0.1.4-SNAPSHOT.jar";
 	
 	public static final String PREF_BOOT_HINTS = "boot-java.boot-hints.on";
 
