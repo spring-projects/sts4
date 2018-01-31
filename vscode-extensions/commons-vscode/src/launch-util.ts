@@ -109,7 +109,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             const args = [
                                 '-Dserver.port=' + port,
                                 '-Dsts.lsp.client=vscode',
-                                '-Dorg.slf4j.simpleLogger.logFile=' + logfile
+                                '-Dsts.log.file=' + logfile
                             ];
                             if (options.classpath) {
                                 const classpath = options.classpath(context, version);

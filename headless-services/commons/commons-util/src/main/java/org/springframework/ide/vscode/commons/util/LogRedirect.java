@@ -11,19 +11,19 @@
 package org.springframework.ide.vscode.commons.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 public class LogRedirect {
 
 	public static void redirectToFile(String name) throws IOException {
-		File logfile = null;
-		if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
-			logfile = File.createTempFile(name, ".log");
-			System.setProperty("org.slf4j.simpleLogger.logFile", logfile.toString());
-		} else {
-			logfile = new File(System.getProperty("org.slf4j.simpleLogger.logFile"));
+		String logfilePath = System.getProperty("sts.log.file");
+		if (StringUtil.hasText(logfilePath)) {
+			File logfile = new File(logfilePath);
+			System.err.println("Redirecting log output to: "+logfile);
+			System.setErr(new PrintStream(new FileOutputStream(logfile, false)));
 		}
-		System.err.println("Redirecting log output to: "+logfile);
 	}
 	
 }
