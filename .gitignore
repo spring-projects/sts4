@@ -33,3 +33,5 @@ bin/
 # Mac OSX aux files
 .DS_Store
 **/.DS_Store
+/vscode-extensions/commons-vscode/package-lock.json
+/vscode-extensions/vscode-concourse/package-lock.json
