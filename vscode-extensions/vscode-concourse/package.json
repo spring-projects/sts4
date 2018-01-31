@@ -3,7 +3,7 @@
   "displayName": "Concourse CI Pipeline Editor",
   "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
   "icon": "icon.png",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -29,12 +29,15 @@
   ],
   "contributes": {
     "configuration": {
-      "type" : "object",
+      "type": "object",
       "title": "Concourse Language Server Options",
       "properties": {
         "concourse.ls.java.heap": {
-          "type": ["string", "null"],
-          "description" : "Passed as an `-Xmx` argument to the concourse language server process"
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Passed as an `-Xmx` argument to the concourse language server process"
         }
       }
     },
