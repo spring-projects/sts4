@@ -101,7 +101,7 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 		return super.getErrorStream();
 	}
  	
-	@Override
+	//@Override Don't put the @Override to allow compiling with older lps4e api
 	public InputStream getErrorStream() {
 		// lsp4e doesn't do anything with it. So don't pass it on. (Once they do start reading it it might actually break us otherwise)
 		return null; 
