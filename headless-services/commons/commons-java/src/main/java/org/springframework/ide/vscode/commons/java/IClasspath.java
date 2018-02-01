@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -63,8 +62,4 @@ public interface IClasspath {
 	Optional<File> findClasspathResourceContainer(String fqName);
 	
 	ClasspathData createClasspathData() throws Exception;
-	
-	public static final ClasspathData EMPTY_CLASSPATH_DATA = new ClasspathData(null, Collections.emptySet(),
-			Collections.emptySet(), null);
-
 }

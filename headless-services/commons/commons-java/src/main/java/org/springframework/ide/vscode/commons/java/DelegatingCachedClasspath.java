@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -220,7 +219,7 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 				return data;
 			}
 		} 
-		return EMPTY_CLASSPATH_DATA;
+		return ClasspathData.EMPTY_CLASSPATH_DATA;
 	}
 
 	@Override
