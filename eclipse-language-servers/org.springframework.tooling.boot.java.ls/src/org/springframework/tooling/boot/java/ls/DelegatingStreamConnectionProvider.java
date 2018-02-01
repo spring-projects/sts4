@@ -55,7 +55,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	
 	public DelegatingStreamConnectionProvider() {
 		String port = System.getProperty("boot-java-ls-port");
-		
 		if (port != null) {
 			this.provider = new SpringBootJavaLanguageServerViaSocket(Integer.parseInt(port));
 		}
@@ -125,5 +124,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		settings.put("boot-java", bootJavaObj);
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}
-	
+
+	public InputStream getErrorStream() {
+		return provider.getErrorStream();
+	}
 }

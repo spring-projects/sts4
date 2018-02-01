@@ -61,4 +61,9 @@ public class SpringBootJavaLanguageServerViaSocket implements StreamConnectionPr
 		}
 	}
 
+	public InputStream getErrorStream() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
