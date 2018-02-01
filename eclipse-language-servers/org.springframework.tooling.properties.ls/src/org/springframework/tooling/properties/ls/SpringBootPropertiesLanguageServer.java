@@ -30,6 +30,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class SpringBootPropertiesLanguageServer extends STS4LanguageServerProcessStreamConnector {
 
 	public SpringBootPropertiesLanguageServer() {
+		super("Boot Properties Language Server");
 		List<String> commands = new ArrayList<>();
 		commands.add(JRE.currentJRE().getJavaExecutable());
 
@@ -53,14 +54,26 @@ public class SpringBootPropertiesLanguageServer extends STS4LanguageServerProces
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		File dataFile = bundle.getDataFile(languageServer);
-//		if (!dataFile.exists()) {
-			try {
-				copyLanguageServerJAR(languageServer);
+		Exception error = null;
+		try {
+			copyLanguageServerJAR(languageServer);
+		}
+		catch (Exception e) {
+			error = e;
+		}
+		if (!dataFile.exists()) {
+			File userHome = new File(System.getProperty("user.home"));
+			File locallyBuiltJar = new File(
+					userHome, 
+					"git/sts4/headless-services/boot-properties-language-server/target/boot-properties-language-server-"+Constants.LANGUAGE_SERVER_VERSION + ".jar"
+			);
+			if (locallyBuiltJar.exists()) {
+				return locallyBuiltJar.getAbsolutePath();
 			}
-			catch (Exception e) {
-				e.printStackTrace();
+			if (error!=null) {
+				error.printStackTrace();
 			}
-//		}
+		}
 		
 		return dataFile.getAbsolutePath();
 	}

@@ -12,7 +12,9 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.lsp4j;bundle-version="0.4.0",
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.jface.text,
- com.google.guava
+ com.google.guava,
+ org.eclipse.debug.ui,
+ org.eclipse.ui.console
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.tooling.ls.eclipse.commons

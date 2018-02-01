@@ -32,6 +32,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStreamConnector {
 	
 	public SpringBootJavaLanguageServer() {
+		super("Boot Java Language Server");
 		List<String> commands = new ArrayList<>();
 		JRE jre = getJRE(); 
 		commands.add(jre.getJavaExecutable());
@@ -74,12 +75,13 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
 		
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
+		Exception error = null;
 		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
 			try {
 				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				error = e;
 			}
 		}
 		if (!dataFile.exists()) {
@@ -90,6 +92,9 @@ public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStrea
 			);
 			if (locallyBuiltJar.exists()) {
 				return locallyBuiltJar.getAbsolutePath();
+			}
+			if (error!=null) {
+				error.printStackTrace();
 			}
 		}
 		return dataFile.getAbsolutePath();

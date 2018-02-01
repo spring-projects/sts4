@@ -43,6 +43,7 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 	private static List<CloudFoundryManifestLanguageServer> servers = new CopyOnWriteArrayList<>();
 
 	public CloudFoundryManifestLanguageServer() {
+		super("Cloudfoundry Language Server");
 		List<String> commands = new ArrayList<>();
 		
 		commands.add(JRE.currentJRE().getJavaExecutable());

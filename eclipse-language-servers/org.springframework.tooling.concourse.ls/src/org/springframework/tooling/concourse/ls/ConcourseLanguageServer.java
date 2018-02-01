@@ -30,6 +30,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConnector {
 
 	public ConcourseLanguageServer() {
+		super("Concourse Language Server");
 		List<String> commands = new ArrayList<>();
 		commands.add(JRE.currentJRE().getJavaExecutable());
 

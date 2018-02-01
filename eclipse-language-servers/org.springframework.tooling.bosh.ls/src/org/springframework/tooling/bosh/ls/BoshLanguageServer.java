@@ -30,6 +30,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector {
 
 	public BoshLanguageServer() {
+		super("Bosh Language Server");
 		List<String> commands = new ArrayList<>();
 		commands.add(JRE.currentJRE().getJavaExecutable());
 
