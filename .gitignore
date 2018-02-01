@@ -20,6 +20,8 @@ eclipse-language-servers/**/*.jar
 **/test-projects/**/*.project
 **/test-projects/**/*.settings
 **/test-projects/**/*.springBeans
+**/package-lock.json
+
 # Exceptions
 !**/.mvn/wrapper/maven-wrapper.jar
 
@@ -33,5 +35,3 @@ bin/
 # Mac OSX aux files
 .DS_Store
 **/.DS_Store
-/vscode-extensions/commons-vscode/package-lock.json
-/vscode-extensions/vscode-concourse/package-lock.json
