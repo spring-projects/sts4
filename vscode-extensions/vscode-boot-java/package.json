@@ -44,11 +44,12 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
+    "preinstall": "./scripts/preinstall.sh",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
+    "commons-vscode": "0.1.4",
     "vscode-languageclient": "^3.4.5"
   },
   "devDependencies": {
