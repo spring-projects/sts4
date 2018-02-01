@@ -100,7 +100,7 @@
   },
   "dependencies": {
     "vscode-languageclient": "^3.4.2",
-    "commons-vscode": "0.1.2"
+    "commons-vscode": "0.1.4"
   },
   "devDependencies": {
     "vsce": "^1.36.1",
