@@ -11,22 +11,12 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -52,25 +42,23 @@ import reactor.util.function.Tuple2;
  */
 public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspath {
 	
-	public static final String CLASSPATH_DATA_CACHE_FILE = "classpath-data.json";
-	
-	private static final String OUTPUT_FOLDER_PROPERTY = "outputFolder";
-	private static final String CLASSPATH_RESOURCES_PROPERTY = "classpathResources";
-	private static final String CLASSPATH_ENTRIES_PROPERTY = "classpathEntries";
-	private static final String NAME_PROPERTY = "name";
-	
 	private AtomicReference<ClasspathData> cachedData;
 	private Callable<T> delegateCreator;
 	private AtomicReference<T> cachedDelegate;
+
+	private ClasspathFileBasedCache fileCache;
 	
-	final private File cacheFile;
 	
-	public DelegatingCachedClasspath(Callable<T> delegateCreator, File cacheFile) {
+	public DelegatingCachedClasspath(Callable<T> delegateCreator, ClasspathFileBasedCache fileCache) {
 		super();
-		this.cacheFile = cacheFile;
+		this.fileCache = fileCache;
 		this.cachedDelegate = new AtomicReference<>(null);
-		this.cachedData = new AtomicReference<>(init());
+		this.cachedData = new AtomicReference<>(loadFileBasedCache(fileCache));
 		this.delegateCreator = delegateCreator;
+	}
+
+	private ClasspathData loadFileBasedCache(ClasspathFileBasedCache fileCache) {
+		return fileCache != null ? fileCache.load() : ClasspathData.EMPTY_CLASSPATH_DATA;
 	}
 	
 	public T delegate() {
@@ -98,67 +86,7 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	}
 	
 	public boolean isCached() {
-		return cacheFile != null && cacheFile.exists();
-	}
-	
-	private synchronized ClasspathData loadCachedData() {
-		if (cacheFile != null && cacheFile.exists()) {
-			try {
-				JSONObject json = new JSONObject(new JSONTokener(new FileInputStream(cacheFile)));
-				String name = json.getString(NAME_PROPERTY);
-				JSONArray classpathEntriesJson = json.optJSONArray(CLASSPATH_ENTRIES_PROPERTY);
-				JSONArray classpathResourcesJson = json.optJSONArray(CLASSPATH_RESOURCES_PROPERTY);
-				String outputFolderStr = json.optString(OUTPUT_FOLDER_PROPERTY);
-				
-				return new ClasspathData(
-						name,
-						classpathEntriesJson == null ? Collections.emptySet() : classpathEntriesJson.toList().stream()
-								.filter(o -> o instanceof String)
-								.map(o -> (String) o)
-								.map(s -> new File(s).toPath())
-								.collect(Collectors.toSet()),
-						classpathResourcesJson == null ? Collections.emptySet() : classpathResourcesJson.toList().stream()
-								.filter(o -> o instanceof String)
-								.map(o -> (String) o)
-								.collect(Collectors.toSet()),
-						outputFolderStr == null ? null : new File(outputFolderStr).toPath()
-					);
-			} catch (Throwable e) {
-				Log.log(e);
-			}
-		}
-		return null;
-	}
-	
-	private ClasspathData init() {
-		ClasspathData data = loadCachedData();
-		return data == null ? new ClasspathData(null, Collections.emptySet(), Collections.emptySet(), null) : data;
-	}
-	
-	private synchronized void persistCachedData(ClasspathData data) {
-		if (cacheFile != null && data != null) {
-			FileWriter writer = null;
-			try {
-				Files.createDirectories(cacheFile.getParentFile().toPath());
-				JSONObject json = new JSONObject();
-				json.put(NAME_PROPERTY, data.name);
-				json.put(CLASSPATH_ENTRIES_PROPERTY, data.classpathEntries.stream().map(e -> e.toString()).collect(Collectors.toList()));
-				json.put(CLASSPATH_RESOURCES_PROPERTY, data.classpathResources);
-				json.put(OUTPUT_FOLDER_PROPERTY, data.outputFolder);
-				writer = new FileWriter(cacheFile);
-				json.write(writer);
-			} catch (IOException e) {
-				Log.log(e);
-			} finally {
-				if (writer != null) {
-					try {
-						writer.close();
-					} catch (IOException e) {
-						Log.log(e);
-					}
-				}
-			}
-		}
+		return fileCache.isCached();
 	}
 	
 	public boolean update() throws Exception {
@@ -166,15 +94,13 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			final ClasspathData newData = createClasspathData();
 			if (!Objects.equal(cachedData.get(), newData)) {
 				cachedData.set(newData);
-				persistCachedData(newData);
+				fileCache.persist(newData);
 				return true;
 			}
 			return false;
 		} catch (Exception e) {
 			cachedData.set(new ClasspathData(null, Collections.emptySet(), Collections.emptySet(), null));
-			if (cacheFile != null && cacheFile.exists()) {
-				cacheFile.delete();
-			}
+			fileCache.delete();
 			throw e;
 		}
 	}

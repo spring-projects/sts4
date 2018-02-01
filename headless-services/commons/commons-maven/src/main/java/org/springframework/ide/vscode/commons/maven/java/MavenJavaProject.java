@@ -14,6 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
+import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -32,9 +33,12 @@ public class MavenJavaProject extends AbstractJavaProject {
 	public MavenJavaProject(MavenCore maven, File pom, Path projectDataCache) {
 		super(projectDataCache);
 		this.pom = pom;
+		File file = projectDataCache == null ? null
+				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
+		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
 		this.classpath = new DelegatingCachedClasspath<>(
 				() -> new MavenProjectClasspath(maven, pom),
-				projectDataCache == null ? null : projectDataCache.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile()
+				fileBasedCache 
 			);
 	}
 	

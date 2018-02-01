@@ -42,7 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -156,7 +156,7 @@ public class MavenProjectCacheTest {
 
 		Path cacheFolder = testProjectPath.resolve(IJavaProject.PROJECT_CACHE_FOLDER);
 
-		final File classpathCacheFile = cacheFolder.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE)
+		final File classpathCacheFile = cacheFolder.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE)
 				.toFile();
 
 		AtomicBoolean progressDone = new AtomicBoolean();
@@ -254,6 +254,6 @@ public class MavenProjectCacheTest {
 		progressDone.set(false);
 		verify(diagnosticService, times(1)).diagnosticEvent(any(ShowMessageException.class));
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
-		assertFalse(cacheFolder.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile().exists());
+		assertFalse(cacheFolder.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile().exists());
 	}
 }

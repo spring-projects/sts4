@@ -14,6 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
+import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -31,9 +32,12 @@ public class GradleJavaProject extends AbstractJavaProject {
 	public GradleJavaProject(GradleCore gradle, File projectDir, Path projectDataCache) {
 		super(projectDataCache);
 		this.projectDir = projectDir;
+		File file = projectDataCache == null ? null
+				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
+		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
 		this.classpath = new DelegatingCachedClasspath<GradleProjectClasspath>(
 				() -> new GradleProjectClasspath(gradle, projectDir),
-				projectDataCache == null ? null : projectDataCache.resolve(DelegatingCachedClasspath.CLASSPATH_DATA_CACHE_FILE).toFile()
+				fileBasedCache
 			);
 	}
 	
