@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -102,7 +101,7 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			}
 			return false;
 		} catch (Exception e) {
-			cachedData.set(new ClasspathData(null, Collections.emptySet(), Collections.emptySet(), null));
+			cachedData.set(ClasspathData.EMPTY_CLASSPATH_DATA);
 			fileCache.delete();
 			throw e;
 		}
