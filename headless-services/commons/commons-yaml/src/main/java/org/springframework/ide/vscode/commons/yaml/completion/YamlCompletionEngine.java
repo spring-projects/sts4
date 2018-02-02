@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
@@ -79,7 +80,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(IDocument _doc, int offset) throws Exception {
+	public Collection<ICompletionProposal> getCompletions(TextDocument _doc, int offset) throws Exception {
 		YamlDocument doc = new YamlDocument(_doc, structureProvider);
 		if (!doc.isCommented(offset)) {
 			SRootNode root = doc.getStructure();

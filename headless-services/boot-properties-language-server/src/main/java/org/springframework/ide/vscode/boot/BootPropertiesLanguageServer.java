@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private static final String PROPERTIES = ".properties";
 
 	private static final YamlCompletionEngineOptions COMPLETION_OPTIONS = new YamlCompletionEngineOptions() {
+		@Override
 		public boolean includeDeindentedProposals() { return false; };
 	};
 	// Shared:
@@ -80,14 +81,14 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	public BootPropertiesLanguageServer(LSFactory<BootPropertiesLanguageServerParams> _params) {
 		super("vscode-boot-properties");
-		
+
 		BootPropertiesLanguageServerParams serverParams = _params.create(this);
 
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;
 		this.javaProjectFinder = serverParams.projectFinder;
 		this.projectObserver = serverParams.projectObserver;
-		
+
 		this.completionFactory = new PropertyCompletionFactory(javaProjectFinder);
 		this.yamlAssistContextProvider = new YamlAssistContextProvider() {
 			@Override
@@ -114,13 +115,13 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 		HoverInfoProvider hoverInfoProvider = getHoverProvider();
 		hoverEngine = new VscodeHoverEngineAdapter(this, hoverInfoProvider);
-		documents.onHover(hoverEngine::getHover);		
+		documents.onHover(hoverEngine::getHover);
 	}
 
 	private ICompletionEngine getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
-		return (IDocument document, int offset) -> {
+		return (TextDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
@@ -182,7 +183,7 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	public ProjectObserver getProjectObserver() {
 		return projectObserver;
 	}
-	
+
 	public SpringPropertyIndexProvider getPropertiesIndexProvider() {
 		return indexProvider;
 	}

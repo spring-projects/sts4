@@ -247,7 +247,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 				"@PutMapping(value=\"${path}/{${id}}\")\n"
 						+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
 						+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
-		return new BootJavaCompletionEngine(javaProjectFinder, providers, snippetManager);
+		return new BootJavaCompletionEngine(this, providers, snippetManager);
 	}
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
