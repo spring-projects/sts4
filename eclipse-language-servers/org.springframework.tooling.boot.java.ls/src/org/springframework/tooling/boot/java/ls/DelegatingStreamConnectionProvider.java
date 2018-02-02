@@ -84,6 +84,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	}
 
 	@Override
+	public InputStream getErrorStream() {
+		return provider.getErrorStream();
+	}
+
+	@Override
 	public void stop() {
 		this.provider.stop();
 		if (fResourceListener != null) {
@@ -125,7 +130,4 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}
 
-	public InputStream getErrorStream() {
-		return provider.getErrorStream();
-	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -101,12 +101,6 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 		return super.getErrorStream();
 	}
  	
-	//@Override Don't put the @Override to allow compiling with older lps4e api
-	public InputStream getErrorStream() {
-		// lsp4e doesn't do anything with it. So don't pass it on. (Once they do start reading it it might actually break us otherwise)
-		return null; 
-	}
-	
 	@Override
 	public void stop() {
 		super.stop();
