@@ -49,6 +49,8 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
@@ -58,7 +60,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -79,23 +80,25 @@ public class SpringIndexer {
 	private final Thread updateWorker;
 	private final BlockingQueue<WorkerItem> updateQueue;
 
+	private static final Logger log = LoggerFactory.getLogger(SpringIndexer.class);
+
 	private final Listener projectListener = new Listener() {
 
 		@Override
 		public void created(IJavaProject project) {
-			Log.log("project created event: " + project.getElementName());
+			log.debug("project created event: {}", project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
-			Log.log("project changed event: " + project.getElementName());
+			log.debug("project changed event: {}", project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void deleted(IJavaProject project) {
-			Log.log("project deleted event: " + project.getElementName());
+			log.debug("project deleted event: {}", project.getElementName());
 			refresh();
 		}
 
@@ -132,7 +135,7 @@ public class SpringIndexer {
 		updateWorker.start();
 
 		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
-			Log.log("workspace roots have changed event arrived - added: " + Arrays.toString(evt.getEvent().getAdded()) + " - removed: " + Arrays.toString(evt.getEvent().getRemoved()));
+			log.debug("workspace roots have changed event arrived - added: " + Arrays.toString(evt.getEvent().getAdded()) + " - removed: " + Arrays.toString(evt.getEvent().getRemoved()));
 			refresh();
 		});
 
@@ -163,7 +166,7 @@ public class SpringIndexer {
 				return lastInitializeItem.getFuture();
 			}
 			catch (Exception e) {
-				Log.log(e);
+				log.error("{}", e);
 			}
 		}
 
@@ -192,7 +195,7 @@ public class SpringIndexer {
 			symbolsByDoc.clear();
 
 			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
-			Log.log("refresh spring indexer for roots: " + roots.toString());
+			log.debug("refresh spring indexer for roots: {}", roots.toString());
 			initialize(roots);
 		}
 	}
@@ -209,7 +212,7 @@ public class SpringIndexer {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("{}", e);
 		}
 	}
 
@@ -227,7 +230,7 @@ public class SpringIndexer {
 					}
 				}
 				catch (Exception e) {
-					Log.log(e);
+					log.error("{}", e);
 				}
 			}
 		}
@@ -243,7 +246,7 @@ public class SpringIndexer {
 				return deleteItem.getFuture();
 			}
 			catch (Exception e) {
-				Log.log(e);
+				log.error("{}", e);
 			}
 		}
 
@@ -265,7 +268,7 @@ public class SpringIndexer {
 					}
 				}
 				catch (Exception e) {
-					Log.log(e);
+					log.error("{}", e);
 				}
 			}
 		}
@@ -536,7 +539,7 @@ public class SpringIndexer {
 		private final CompletableFuture<Void> future;
 
 		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
-			Log.debug("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
+			log.debug("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
 
 			this.workspaceRoots = workspaceRoots;
 			this.future = new CompletableFuture<Void>();
@@ -550,18 +553,18 @@ public class SpringIndexer {
 		@Override
 		public void run() {
 			if (!future.isCancelled()) {
-				Log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
 
 				for (WorkspaceFolder root : workspaceRoots) {
 					SpringIndexer.this.scanFiles(root);
 				}
 
-				Log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
 
 				future.complete(null);
 			}
 			else {
-				Log.debug("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
 			}
 		}
 	}
@@ -591,7 +594,7 @@ public class SpringIndexer {
 			try {
 				SpringIndexer.this.scanFile(docURI, content, classpathEntries);
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("{}", e);
 			}
 			future.complete(null);
 		}
@@ -620,7 +623,7 @@ public class SpringIndexer {
 					symbols.removeAll(oldSymbols);
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("{}", e);
 			}
 			future.complete(null);
 		}
