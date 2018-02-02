@@ -18,6 +18,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import org.springframework.ide.vscode.commons.util.Assert;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
@@ -46,12 +48,13 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	private Callable<T> delegateCreator;
 	private AtomicReference<T> cachedDelegate;
 
-	private ClasspathFileBasedCache fileCache;
+	private final ClasspathFileBasedCache fileCache;
 	
 	
 	public DelegatingCachedClasspath(Callable<T> delegateCreator, ClasspathFileBasedCache fileCache) {
 		super();
-		this.fileCache = fileCache;
+		Assert.isLegal(delegateCreator != null);
+		this.fileCache = fileCache != null ? fileCache : ClasspathFileBasedCache.NULL;
 		this.cachedDelegate = new AtomicReference<>(null);
 		this.cachedData = new AtomicReference<>(loadFileBasedCache(fileCache));
 		this.delegateCreator = delegateCreator;

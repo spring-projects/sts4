@@ -24,6 +24,9 @@ import org.json.JSONTokener;
 import org.springframework.ide.vscode.commons.util.Log;
 
 public class ClasspathFileBasedCache {
+	
+	public static final ClasspathFileBasedCache NULL = new ClasspathFileBasedCache(null);
+	
 	public static final String CLASSPATH_DATA_CACHE_FILE = "classpath-data.json";
 	
 	private static final String OUTPUT_FOLDER_PROPERTY = "outputFolder";
