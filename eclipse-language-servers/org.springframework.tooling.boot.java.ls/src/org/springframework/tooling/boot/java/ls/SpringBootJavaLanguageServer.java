@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.java.ls;
 
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.BOOT_JAVA_SERVER;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -23,7 +25,6 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
-import org.springframework.tooling.ls.eclipse.commons.JRE.MissingToolsJarException;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
@@ -32,7 +33,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class SpringBootJavaLanguageServer extends STS4LanguageServerProcessStreamConnector {
 	
 	public SpringBootJavaLanguageServer() {
-		super("Boot Java Language Server");
+		super(BOOT_JAVA_SERVER);
 		List<String> commands = new ArrayList<>();
 		JRE jre = getJRE(); 
 		commands.add(jre.getJavaExecutable());

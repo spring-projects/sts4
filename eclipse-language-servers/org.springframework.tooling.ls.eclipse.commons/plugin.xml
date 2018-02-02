@@ -26,5 +26,18 @@
         verticalRulerPreferenceValue="true">
       </specification>
    </extension>
-
+   <extension
+     point="org.eclipse.ui.preferencePages">
+    <page
+        class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPreferencesPage"
+        id="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPreferencesPage"
+        name="Language Servers STS">
+     </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPrefsInitializer">
+      </initializer>
+   </extension>
 </plugin>

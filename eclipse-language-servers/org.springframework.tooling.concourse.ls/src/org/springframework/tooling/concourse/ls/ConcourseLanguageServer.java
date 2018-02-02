@@ -24,13 +24,15 @@ import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
+
 /**
  * @author Martin Lippert
  */
 public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConnector {
 
 	public ConcourseLanguageServer() {
-		super("Concourse Language Server");
+		super(CONCOURSE_SERVER);
 		List<String> commands = new ArrayList<>();
 		commands.add(JRE.currentJRE().getJavaExecutable());
 

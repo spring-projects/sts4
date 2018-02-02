@@ -26,16 +26,16 @@ import org.springframework.tooling.ls.eclipse.commons.console.LanguageServerCons
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 
+import org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+
 public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 	
 	private Supplier<Console> consoles = null;
 	
-	public STS4LanguageServerProcessStreamConnector(String consoleLabel) {
-		if (consoleLabel!=null) {
-			this.consoles = LanguageServerConsoles.getConsoleFactory(consoleLabel);
-		}
+	public STS4LanguageServerProcessStreamConnector(ServerInfo server) {
+		this.consoles = LanguageServerConsoles.getConsoleFactory(server);
 	}
 	
 	@Override
@@ -55,6 +55,7 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 		}
 		ProcessBuilder builder = new ProcessBuilder(getCommands());
 		builder.directory(new File(getWorkingDirectory()));
+		//Super does this, but we do not:
 		//builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 		return builder;
 	}

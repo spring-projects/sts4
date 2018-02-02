@@ -31,6 +31,8 @@ import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
+
 /**
  * @author Martin Lippert
  */
@@ -43,7 +45,7 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 	private static List<CloudFoundryManifestLanguageServer> servers = new CopyOnWriteArrayList<>();
 
 	public CloudFoundryManifestLanguageServer() {
-		super("Cloudfoundry Language Server");
+		super(CLOUDFOUNDRY_SERVER);
 		List<String> commands = new ArrayList<>();
 		
 		commands.add(JRE.currentJRE().getJavaExecutable());

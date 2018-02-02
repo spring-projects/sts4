@@ -24,13 +24,15 @@ import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
+
 /**
  * @author Martin Lippert
  */
 public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector {
 
 	public BoshLanguageServer() {
-		super("Bosh Language Server");
+		super(BOSH_SERVER);
 		List<String> commands = new ArrayList<>();
 		commands.add(JRE.currentJRE().getJavaExecutable());
 
