@@ -212,11 +212,11 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/releases/photon/</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>staging</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/staging/photon/</url>
-				</repository> -->
+				</repository>
 				<repository>
 					<id>platform-i-builds</id>
 					<layout>p2</layout>
