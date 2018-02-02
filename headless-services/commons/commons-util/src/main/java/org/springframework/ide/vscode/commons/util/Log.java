@@ -15,9 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is here to make porting old STS code easier. Instead of using this,
- * consider using {@link org.slf4j.Logger} directly
+ * This class is here to make porting old STS code easier. Deprecated: Instead of using this,
+ * consider using {@link org.slf4j.Logger} directly. This allows for more fine-grained
+ * tuning of logging levels per class.
  */
+@Deprecated
 public class Log {
 
 	final static Logger logger = LoggerFactory.getLogger(Log.class);
