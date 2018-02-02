@@ -26,14 +26,23 @@ import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 /**
- * A wrapper around the classpath created from a Java project using the data in the project file (maven, gradle)
+ * 
+ * This wrapper around a classpath manages classpath data from and to a file-based cache (e.g. ".sts4-cache/classpath-data.json") with classpath data obtained
+ * from a project (e.g., maven or gradle project) through an "update" operation. 
+ * 
+ * The cached classpath data is written to the file and loaded from it when instance of this classpath is created
+ * 
+ * NOTE: Classpath data may not be available until an actual update is requested on this wrapper.
+ * 
+ * As the wrapper is a classpath itself ,it delegates to the underlying classpath for classpath operations (e.g. getting classpath entries, resources, etc..). However, the data may not
+ * be available until update is performed.
+ *  
  * The wrapper caches some of classpath data such as
  * <li> Classpath entries </li>
  * <li> Classpath resources </li>
  * <li> Output folder </li>
  * <li> Projects' name </li>
  * 
- * The cached classpath data is written to ".sts4-cache/classpath-data.json" and loadedd from it when intance of this classpath is created
  * 
  * Implementation is somewhat experimental at the moment...
  * 
@@ -44,19 +53,19 @@ import reactor.util.function.Tuple2;
 public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspath {
 	
 	private AtomicReference<ClasspathData> cachedData;
-	private Callable<T> delegateCreator;
-	private AtomicReference<T> cachedDelegate;
+	private Callable<T> classpathCreator;
+	private AtomicReference<T> cachedClasspath;
 
-	private final ClasspathFileBasedCache fileCache;
+	private final ClasspathFileBasedCache fileBasedCache;
 	
 	
 	public DelegatingCachedClasspath(Callable<T> delegateCreator, ClasspathFileBasedCache fileCache) {
 		super();
 		Assert.isLegal(delegateCreator != null);
-		this.fileCache = fileCache != null ? fileCache : ClasspathFileBasedCache.NULL;
-		this.cachedDelegate = new AtomicReference<>(null);
+		this.fileBasedCache = fileCache != null ? fileCache : ClasspathFileBasedCache.NULL;
+		this.cachedClasspath = new AtomicReference<>(null);
 		this.cachedData = new AtomicReference<>(loadFileBasedCache(fileCache));
-		this.delegateCreator = delegateCreator;
+		this.classpathCreator = delegateCreator;
 	}
 
 	private ClasspathData loadFileBasedCache(ClasspathFileBasedCache fileCache) {
@@ -64,7 +73,7 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	}
 	
 	public T delegate() {
-		return cachedDelegate.get();
+		return cachedClasspath.get();
 	}
 
 	@Override
@@ -88,7 +97,7 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	}
 	
 	public boolean isCached() {
-		return fileCache.isCached();
+		return fileBasedCache.isCached();
 	}
 	
 	public boolean update() throws Exception {
@@ -96,51 +105,51 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			final ClasspathData newData = createClasspathData();
 			if (!Objects.equal(cachedData.get(), newData)) {
 				cachedData.set(newData);
-				fileCache.persist(newData);
+				fileBasedCache.persist(newData);
 				return true;
 			}
 			return false;
 		} catch (Exception e) {
 			cachedData.set(ClasspathData.EMPTY_CLASSPATH_DATA);
-			fileCache.delete();
+			fileBasedCache.delete();
 			throw e;
 		}
 	}
 	
 	@Override
 	public boolean exists() {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t != null && t.exists();
 	}
 
 	@Override
 	public IType findType(String fqName) {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? null : t.findType(fqName);
 	}
 
 	@Override
 	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? Flux.empty() : t.fuzzySearchTypes(searchTerm, typeFilter);
 	}
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? Flux.empty() : t.fuzzySearchPackages(searchTerm);
 	}
 
 	@Override
 	public Flux<IType> allSubtypesOf(IType type) {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? Flux.empty() : t.allSubtypesOf(type);
 	}
 
 	@Override
 	public ClasspathData createClasspathData() throws Exception {
-		T newDelegate = delegateCreator.call();
-		cachedDelegate.set(newDelegate);
+		T newDelegate = classpathCreator.call();
+		cachedClasspath.set(newDelegate);
 		if (newDelegate != null) {
 			ClasspathData data = newDelegate.createClasspathData();
 			if (data != null) {
@@ -152,13 +161,13 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 
 	@Override
 	public ImmutableList<String> getSourceFolders() {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? ImmutableList.of() : t.getSourceFolders();
 	}
 
 	@Override
 	public Optional<File> findClasspathResourceContainer(String fqName) {
-		T t = cachedDelegate.get();
+		T t = cachedClasspath.get();
 		return t == null ? Optional.empty() : t.findClasspathResourceContainer(fqName);
 	}
 	
