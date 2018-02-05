@@ -1,6 +1,4 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 
 import * as net from 'net';
 
@@ -14,28 +12,25 @@ import { workspace, TextDocument } from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 
 import * as commons from 'commons-vscode';
+import { connect } from 'tls';
 
 export function activate(context: VSCode.ExtensionContext) {
-
     let options: commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
         extensionId: 'boot-java',
         launcher: (context: VSCode.ExtensionContext) => 'org.springframework.boot.loader.JarLauncher',
-        classpath: (context: VSCode.ExtensionContext, javaVersion: number) => {
+        classpath: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
             const classpath = [
                 Path.resolve(context.extensionPath, 'jars/language-server.jar')
             ];
-
-            if (javaVersion < 9) {
-                const toolsJar = commons.findJvmFile('lib', 'tools.jar');
-                if (toolsJar) {
-                    classpath.push(toolsJar);
-                } else {
-                    VSCode.window.showWarningMessage('JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable');
-                }
+            if (!jvm.isJdk()) {
+                VSCode.window.showWarningMessage('JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.');
             }
-
+            const toolsJar = jvm.getToolsJar();
+            if (toolsJar) {
+                classpath.unshift(toolsJar);
+            }
             return classpath;
         },
         clientOptions: {

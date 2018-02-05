@@ -8,9 +8,9 @@ workdir=`pwd`
 npm install ../commons-vscode/commons-vscode-*.tgz
 
 # Use maven to build fat jar of the language server
-cd ../../headless-services/boot-java-language-server
-./build.sh
+#cd ../../headless-services/boot-java-language-server
+#./build.sh
 
-mkdir -p ${workdir}/jars
-cp target/*.jar ${workdir}/jars/language-server.jar
+# mkdir -p ${workdir}/jars
+# cp target/*.jar ${workdir}/jars/language-server.jar
 

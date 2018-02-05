@@ -18,6 +18,7 @@ import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
+import { JVM, findJvm } from './jvm-util';
 
 let p2c = P2C.createConverter();
 
@@ -34,7 +35,7 @@ export interface ActivatorOptions {
     launcher: (context: VSCode.ExtensionContext) => string;
     jvmHeap?: string;
     workspaceOptions?: VSCode.WorkspaceConfiguration;
-    classpath?: (context: VSCode.ExtensionContext, javaVersion: number) => string[];
+    classpath?: (context: VSCode.ExtensionContext, jvm: JVM) => string[];
 }
 
 type JavaOptions = {
@@ -72,22 +73,21 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
             }
         }
 
-        let javaExecutablePath = findJvmFile('bin', correctBinname('java'));
-
-        if (javaExecutablePath == null) {
-            VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
-            return;
-        }
-        log("Found java exe: " + javaExecutablePath);
-
-
-        return javaVersion(javaExecutablePath).then(version => {
-            if (!version) {
+        return findJvm().then(jvm => {
+            if (!jvm) {
+                VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
+                return;
+            }
+            let javaExecutablePath = jvm.getJavaExecutable();
+            log("Found java exe: " + javaExecutablePath);
+    
+            let version = jvm.getMajorVersion();
+            if (version<8) {
                 VSCode.window.showErrorMessage('Java-based Language Server requires Java 8 or higher (using ' + javaExecutablePath + ')');
                 return;
             }
             log("isJavaEightOrHigher => true");
-
+    
             function createServer(): Promise<StreamInfo> {
                 return new Promise((resolve, reject) => {
                     PortFinder.getPort((err, port) => {
@@ -112,7 +112,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dsts.log.file=' + logfile
                             ];
                             if (options.classpath) {
-                                const classpath = options.classpath(context, version);
+                                const classpath = options.classpath(context, jvm);
                                 if (classpath) {
                                     args.push('-cp');
                                     args.push(classpath.join(Path.delimiter));
@@ -143,7 +143,6 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                     });
                 });
             }
-
             return setupLanguageClient(context, createServer, options);
         });
     }
@@ -208,44 +207,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         });
         return client;
     });
-}
-
-function javaVersion(javaExecutablePath: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        ChildProcess.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-            if (stderr.indexOf('1.8') >= 0) {
-                resolve(8);
-            } else if (stderr.indexOf('java version "9') >= 0) {
-                resolve(9);
-            } else {
-                resolve(0);
-            }
-        });
-    });
-}
-
-export function findJvmFile(folderPath: string, file: string): string {
-    // First search each JAVA_HOME bin folder
-    if (process.env['JAVA_HOME']) {
-        let workspaces = process.env['JAVA_HOME'].split(Path.delimiter);
-        for (let i = 0; i < workspaces.length; i++) {
-            let filePath = Path.join(workspaces[i], folderPath, file);
-            if (FS.existsSync(filePath)) {
-                return filePath;
-            }
-        }
-    }
-
-    // Then search PATH parts
-    if (process.env['PATH']) {
-        let pathparts = process.env['PATH'].split(Path.delimiter);
-        for (let i = 0; i < pathparts.length; i++) {
-            let filePath = Path.join(pathparts[i], file);
-            if (FS.existsSync(filePath)) {
-                return filePath;
-            }
-        }
-    }
 }
 
 function correctBinname(binname: string) {
