@@ -19,6 +19,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG: false,
         CONNECT_TO_LS: false,
         extensionId: 'boot-java',
+        preferJdk: true,
         launcher: (context: VSCode.ExtensionContext) => 'org.springframework.boot.loader.JarLauncher',
         classpath: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
             const classpath = [

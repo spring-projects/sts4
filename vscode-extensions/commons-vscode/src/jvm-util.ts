@@ -1,6 +1,7 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 import * as ChildProcess from 'child_process';
+import { basename } from 'path';
 
 'use strict';
 
@@ -14,6 +15,11 @@ export interface JVM {
      * Path to the Java executable
      */
     getJavaExecutable() : string
+
+    /**
+     * Path to the corresponding 'java home' for the executable.
+     */
+    getJavaHome() : string
 
     /**
      * Detect whether this JVM is a JDK
@@ -44,6 +50,46 @@ export function findJvm(javaHome?: string) : Promise<JVM | null> {
         return determineJavaVersion(javaExe).then(version => new JavaExecutable(javaExe, version));
     }
     return Promise.resolve(null);
+}
+
+/**
+ * Like findJvm, but additionally, if the found JVM is not a JDK tries to
+ * find a companion JDK that may be installed alongside it. 
+ */
+export function findJdk(javaHome?: string) : Promise<JVM | null> {
+    return findJvm(javaHome).then(jvm => {
+        if (!jvm.isJdk()) {
+            console.log("found jvm is not a JDK");
+
+            //Try to find a 'sibling' JDK. 
+            //Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
+            //nested jre install inside of a jdk.
+            
+            //E.g.
+            //C:\ProgramFiles\Java\jdk1.8.0_161
+            //C:\ProgramFiles\Java\jre1.8.0_161
+
+            let javaExe = jvm.getJavaExecutable();
+            console.log("javaExe = ", javaExe);
+            // javaExe example: C:\ProgramFiles\Java\jre1.8.0_161\bin\java.exe
+            let jhome = jvm.getJavaHome();
+            console.log("jhome = ", jhome);
+            let basename : string = Path.basename(jhome);
+            console.log("basename = ", basename);
+            let altBasename : string = basename.replace("jre", "jdk");
+            console.log("altBasename = ", altBasename);
+            if (altBasename!==basename) {
+                let altHome = Path.join(Path.dirname(jhome), altBasename);
+                console.log("altHome = ", altHome);
+                if (FS.existsSync(altHome)) {
+                    let altExe = Path.resolve(altHome, Path.relative(jhome, javaExe));
+                    console.log("altExe = ", altExe);
+                    return new JavaExecutable(altExe, jvm.getMajorVersion());
+                }
+            }
+        }
+        return jvm;
+    });
 }
 
 /**

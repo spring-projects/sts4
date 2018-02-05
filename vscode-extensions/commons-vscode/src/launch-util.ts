@@ -18,7 +18,7 @@ import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
-import { JVM, findJvm } from './jvm-util';
+import { JVM, findJvm, findJdk } from './jvm-util';
 
 let p2c = P2C.createConverter();
 
@@ -36,6 +36,7 @@ export interface ActivatorOptions {
     jvmHeap?: string;
     workspaceOptions?: VSCode.WorkspaceConfiguration;
     classpath?: (context: VSCode.ExtensionContext, jvm: JVM) => string[];
+    preferJdk?: boolean;
 }
 
 type JavaOptions = {
@@ -73,7 +74,9 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
             }
         }
 
-        return findJvm().then(jvm => {
+        let findJRE = options.preferJdk ? findJdk : findJvm;
+
+        return findJRE().then(jvm => {
             if (!jvm) {
                 VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
                 return;
