@@ -11,6 +11,6 @@ npm install ../commons-vscode/commons-vscode-*.tgz
 cd ../../headless-services/boot-java-language-server
 ./build.sh
 
-# mkdir -p ${workdir}/jars
+mkdir -p ${workdir}/jars
 cp target/*.jar ${workdir}/jars/language-server.jar
 
