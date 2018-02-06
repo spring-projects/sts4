@@ -86,7 +86,7 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
                 let altHome = Path.join(Path.dirname(jhome), altBasename);
                 console.log("altHome = ", altHome);
                 if (FS.existsSync(altHome)) {
-                    let altExe = Path.resolve(altHome, Path.relative(jhome, javaExe));
+                    let altExe = Path.resolve(altHome, "bin", correctBinname("java"));
                     console.log("altExe = ", altExe);
                     return new JVMImpl(altHome, altExe, jvm.getMajorVersion());
                 }
