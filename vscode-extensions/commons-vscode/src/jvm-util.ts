@@ -47,7 +47,11 @@ export interface JVM {
 export function findJvm(javaHome?: string) : Promise<JVM | null> {
     let javaExe = findJavaExe(javaHome);
     if (javaExe) {
-        return determineJavaVersion(javaExe).then(version => new JavaExecutable(javaExe, version));
+        return getJavaInfo(javaExe).then(javaProps => new JVMImpl(
+            javaProps.get("java.home"), 
+            javaExe, 
+            getMajorVersion(javaProps)
+        ));
     }
     return Promise.resolve(null);
 }
@@ -84,7 +88,7 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
                 if (FS.existsSync(altHome)) {
                     let altExe = Path.resolve(altHome, Path.relative(jhome, javaExe));
                     console.log("altExe = ", altExe);
-                    return new JavaExecutable(altExe, jvm.getMajorVersion());
+                    return new JVMImpl(altHome, altExe, jvm.getMajorVersion());
                 }
             }
         }
@@ -140,18 +144,20 @@ const TOOLS_JAR_PATHS : string[][] = [
     ["..", "lib", "tools.jar"]
 ];
 
-class JavaExecutable implements JVM {
+class JVMImpl implements JVM {
+    javaHome : string
     javaExe : string
     version : number
     toolsJar: () => string | null;
-    constructor(javaExe : string, version : number) {
+    constructor(javaHome : string, javaExe : string, version : number) {
+        this.javaHome = javaHome;
         this.javaExe = javaExe;
         this.version = version;
         this.toolsJar = memoize(() => this.findToolsJar());
     }
 
     getJavaHome() : string {
-        return Path.resolve(this.javaExe, "..", "..");
+        return this.javaHome;
     }
 
     findToolsJar() : string | null {
@@ -188,40 +194,49 @@ class JavaExecutable implements JVM {
     }
 }
 
-function determineJavaVersion(javaExecutablePath : string) : Promise<number> {
-//Examples of the 'java -version' command output:
-// 
-// For Java 9:
-/*
-java version "9.0.4"
-Java(TM) SE Runtime Environment (build 9.0.4+11)
-Java HotSpot(TM) 64-Bit Server VM (build 9.0.4+11, mixed mode)
-*/
-// For Java 8:
-/*
-java version "1.8.0_161"
-Java(TM) SE Runtime Environment (build 1.8.0_161-b12)
-Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)
-*/   
+function getJavaInfo(javaExe : string) : Promise<Map<string, string>> {
+    console.log("Fetching java properties for "+javaExe);
     return new Promise((resolve, reject) => {
-        ChildProcess.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-            let versionStart = stderr.indexOf('"');
-            if (versionStart>=0) {
-                versionStart = versionStart + 1;
-                let versionEnd = stderr.indexOf('"', versionStart);
-                if (versionEnd>=0) {
-                    let versionString = stderr.substring(versionStart, versionEnd);
-                    let pieces = versionString.split(".");
-                    let major = parseInt(pieces[0]);
-                    major = major==1 ? parseInt(pieces[1]) : major
-                    return resolve(major);
+        ChildProcess.execFile(javaExe, ['-XshowSettings:properties'], {}, (error, stdout, stderr) => {
+            let lines = stderr.split(/\r?\n/);
+            let propNames = [ 'java.version', 'java.home' ];
+            let props = new Map<string,string>();
+            for (var l of lines) {
+                console.log("Line: "+l);
+                for (var p of propNames) {
+                    let offset = l.indexOf(p);
+                    if (offset>=0) {
+                        //Make sure it looks like a proper 'assignment' to the property and not an
+                        // accidental match.
+                        console.log("Propname found: "+p);
+                        let assign = " " +p + " = ";
+                        offset = l.indexOf(assign);
+                        if (offset>=0) {
+                            console.log("Assignment found: "+p);
+                            offset = offset + assign.length;
+                            let value = l.substring(offset);
+                            console.log("value = "+value);
+                            props.set(p, value);
+                            if (props.size >= propNames.length) {
+                                //We found everything we care about, so we can stop now.
+                                console.log("result = ", props);
+                                return resolve(props);
+                            }
+                        }
+                    }
                 }
             }
-            //Unexpected output...
-            return resolve(0);
+            //Not found everything we expected.
+            return reject("Unexpected output from `java -XshowSettings:properties`. Didn't find all expected properties: "+propNames);
         });
     });
+}
 
+function getMajorVersion(javaProperties : Map<string,string>) : number {
+    let versionString = javaProperties.get('java.version');
+    let pieces = versionString.split(".");
+    let major = parseInt(pieces[0]);
+    return major==1 ? parseInt(pieces[1]) : major;
 }
 
 function correctBinname(binname: string) {
