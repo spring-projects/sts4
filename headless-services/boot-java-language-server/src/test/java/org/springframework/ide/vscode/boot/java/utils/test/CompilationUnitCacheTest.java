@@ -155,7 +155,7 @@ public class CompilationUnitCacheTest {
 	public void cu_cache_invalidated_by_project_change() throws Exception {
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloWorldController.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
 
 		harness.intialize(directory);
 
@@ -180,7 +180,7 @@ public class CompilationUnitCacheTest {
 	public void cu_cache_invalidated_by_project_deletion() throws Exception {
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloWorldController.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
 
 		harness.intialize(directory);
 

@@ -50,8 +50,8 @@ public class SpringIndexerBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleConfiguration.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleConfiguration.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration <: @Component) SimpleConfiguration"),
 				symbol("@Bean", "@+ 'simpleBean' (@Bean) BeanClass")
 		);
@@ -62,8 +62,7 @@ public class SpringIndexerBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SpecialConfiguration.java";
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialConfiguration.java").toUri().toString();
 		indexer.assertDocumentSymbols(docUri,
 				symbol("@Configuration", "@+ 'specialConfiguration' (@Configuration <: @Component) SpecialConfiguration"),
 
@@ -92,8 +91,8 @@ public class SpringIndexerBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SimpleComponent.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleComponent.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("@Component", "@+ 'simpleComponent' (@Component) SimpleComponent")
 		);
 	}
@@ -103,8 +102,7 @@ public class SpringIndexerBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SimpleController.java";
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleController.java").toUri().toString();
 		indexer.assertDocumentSymbols(docUri,
 				symbol("@Controller", "@+ 'simpleController' (@Controller <: @Component) SimpleController")
 		);
@@ -115,8 +113,7 @@ public class SpringIndexerBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		String docUri = uriPrefix + "/src/main/java/org/test/SimpleRestController.java";
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleRestController.java").toUri().toString();
 		indexer.assertDocumentSymbols(docUri,
 				symbol("@RestController", "@+ 'simpleRestController' (@RestController <: @Controller, @Component) SimpleRestController")
 		);

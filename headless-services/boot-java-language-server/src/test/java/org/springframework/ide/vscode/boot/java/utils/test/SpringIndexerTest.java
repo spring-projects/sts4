@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,14 +68,17 @@ public class SpringIndexerTest {
 
 		assertEquals(6, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-		assertTrue(containsSymbol(allSymbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
-		assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
@@ -84,41 +87,46 @@ public class SpringIndexerTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/MainClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer().getSymbols(docUri);
 		assertEquals(3, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(symbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(symbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
+		docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		symbols = indexer().getSymbols(docUri);
 		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
-		assertTrue(containsSymbol(symbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
+		assertTrue(containsSymbol(symbols, "@/mapping1", docUri, 6, 1, 6, 28));
+		assertTrue(containsSymbol(symbols, "@/mapping2", docUri, 11, 1, 11, 28));
 
-		symbols = indexer().getSymbols(uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java");
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		symbols = indexer().getSymbols(docUri);
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		assertTrue(containsSymbol(symbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
 	public void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI()));
 
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/").toURI());
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing").toURI());
 
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 
 		assertEquals(6, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath() + "/test-annotation-indexing";
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-		assertTrue(containsSymbol(allSymbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
-		assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
@@ -128,7 +136,8 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
 		// update document and update index
-		String changedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
+		String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+
 		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
 		CompletableFuture<Void> updateFuture = indexer().updateDocument(changedDocURI, newContent);
 
@@ -144,14 +153,17 @@ public class SpringIndexerTest {
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 		assertEquals(6, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 36));
-		assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/mapping1-CHANGED", docUri, 6, 1, 6, 36));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
@@ -159,7 +171,7 @@ public class SpringIndexerTest {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		String createdDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/CreatedClass.java";
+		String createdDocURI = directory.toPath().resolve("src/main/java/org/test/CreatedClass.java").toUri().toString();
 
 		// check for document to not be created yet
 		List<? extends SymbolInformation> symbols = indexer().getSymbols(createdDocURI);
@@ -202,14 +214,17 @@ public class SpringIndexerTest {
 			allSymbols = indexer().getAllSymbols("");
 			assertEquals(8, allSymbols.size());
 
-			String uriPrefix = "file://" + directory.getAbsolutePath();
+			String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+			assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+			assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+			assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-			assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-			assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-			assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-			assertTrue(containsSymbol(allSymbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
-			assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-			assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+			docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+			assertTrue(containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+			assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+
+			docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+			assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
 			assertTrue(containsSymbol(allSymbols, "@/created-mapping1", createdDocURI, 6, 1, 6, 36));
 			assertTrue(containsSymbol(allSymbols, "@/created-mapping2", createdDocURI, 11, 1, 11, 36));
@@ -225,7 +240,7 @@ public class SpringIndexerTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
 		// update document and update index
-		String deletedDocURI = "file://" + directory.getAbsolutePath() + "/src/main/java/org/test/SimpleMappingClass.java";
+		String deletedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
 		CompletableFuture<Void> deleteFuture = indexer().deleteDocument(deletedDocURI);
 		deleteFuture.get(5, TimeUnit.SECONDS);
 
@@ -237,12 +252,13 @@ public class SpringIndexerTest {
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 		assertEquals(4, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", uriPrefix + "/src/main/java/org/test/MainClass.java", 6, 0, 6, 22));
-		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
@@ -255,13 +271,16 @@ public class SpringIndexerTest {
 
 		assertEquals(6, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 
-		assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", uriPrefix + "/src/main/java/org/test/MainClass.java", 17, 1, 17, 41));
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
-		assertTrue(containsSymbol(allSymbols, "@/mapping1", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 28));
-		assertTrue(containsSymbol(allSymbols, "@/mapping2", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 11, 1, 11, 28));
-		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", uriPrefix + "/src/main/java/org/test/sub/MappingClassSubpackage.java", 7, 1, 7, 38));
+		docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+		assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
 
 	@Test
@@ -274,9 +293,9 @@ public class SpringIndexerTest {
 
 		assertEquals(1, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 	}
 
 	@Test
@@ -289,9 +308,9 @@ public class SpringIndexerTest {
 
 		assertEquals(1, allSymbols.size());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 
-		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", uriPrefix + "/src/main/java/org/test/MainClass.java", 27, 1, 27, 51));
+		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

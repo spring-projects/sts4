@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -45,8 +45,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/HelloWorldController.java";
-
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
 
 		// Build a mock running boot app
 		mockAppProvider.builder()
@@ -76,7 +76,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -112,7 +113,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 		harness.intialize(directory);
 
@@ -124,7 +126,8 @@ public class RequestMappingLiveHoverTest {
 
 		editorWithMethodLiveHover.assertNoHover("@RequestMapping(\"/goodbye\")");
 
-		docUri = "file://" + directory.getAbsolutePath() + "/src/main/java/example/HelloWorldController.java";
+		docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
 
 		Editor editorWithTypeLiveHover = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editorWithTypeLiveHover.assertNoHover("@RequestMapping(\"/hello-world\")");
@@ -136,7 +139,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -182,7 +186,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -224,7 +229,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -267,7 +273,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -314,7 +321,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -364,7 +372,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -414,7 +423,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -465,7 +475,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -516,7 +527,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -565,7 +577,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -614,7 +627,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -663,7 +677,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 		// Build three different instances of the same app running on different ports with different process IDs
 		mockAppProvider.builder()
@@ -727,7 +742,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/RestApi.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app
@@ -759,7 +775,8 @@ public class RequestMappingLiveHoverTest {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = "file://" +directory.getAbsolutePath() + "/src/main/java/example/InnerClassController.java";
+		String docUri = directory.toPath().resolve("src/main/java/example/InnerClassController.java").toUri()
+				.toString();
 
 
 		// Build a mock running boot app

@@ -62,10 +62,7 @@ public class SourceLinks {
 		Optional<Path> sourceResource = project.getClasspath().getSourceFolders().stream()
 				.map(r -> Paths.get(r).resolve(path)).filter(r -> Files.exists(r)).findFirst();
 		if (sourceResource.isPresent()) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("file://");
-			sb.append(sourceResource.get().toString());
-			return Optional.of(sb.toString());
+			return Optional.of(sourceResource.get().toUri().toString());
 		}
 		return Optional.empty();
 	}
@@ -100,7 +97,7 @@ public class SourceLinks {
 			query.append("=");
 			query.append(project.getElementName());
 			query.append("/");
-			String convertedPath = String.join("\\/", jarFile.toString().split(File.separator));
+			String convertedPath = String.join("\\/", jarFile.toString().replaceAll("\\\\", "/").split("/"));
 			query.append(convertedPath);
 			query.append("<");
 			query.append(packageName);

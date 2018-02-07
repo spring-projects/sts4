@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,10 +41,10 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols = harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = harness.getServer().getSpringIndexer().getSymbols(docUri);
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/greeting", uriPrefix + "/src/main/java/org/test/SimpleMappingClass.java", 6, 1, 6, 29));
+		assertTrue(containsSymbol(symbols, "@/greeting", docUri, 6, 1, 6, 29));
 	}
 
 	@Test
@@ -53,10 +53,10 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/ParentMappingClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/parent/greeting -- GET", uriPrefix + "/src/main/java/org/test/ParentMappingClass.java", 8, 1, 8, 47));
+		assertTrue(containsSymbol(symbols, "@/parent/greeting -- GET", docUri, 8, 1, 8, 47));
 	}
 
 	@Test
@@ -65,10 +65,10 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/ParentMappingClass2.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/ParentMappingClass2.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
 		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/parent2 -- GET,POST,DELETE", uriPrefix + "/src/main/java/org/test/ParentMappingClass2.java", 8, 1, 8, 16));
+		assertTrue(containsSymbol(symbols, "@/parent2 -- GET,POST,DELETE", docUri, 8, 1, 8, 16));
 	}
 
 	@Test
@@ -77,11 +77,11 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MultiRequestMappingClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
 		assertEquals(2, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/hello1", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
-		assertTrue(containsSymbol(symbols, "@/hello2", uriPrefix + "/src/main/java/org/test/MultiRequestMappingClass.java", 6, 1, 6, 44));
+		assertTrue(containsSymbol(symbols, "@/hello1", docUri, 6, 1, 6, 44));
+		assertTrue(containsSymbol(symbols, "@/hello2", docUri, 6, 1, 6, 44));
 	}
 
 	@Test
@@ -90,9 +90,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/getData -- GET", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 12, 1, 12, 24));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/getData -- GET", docUri, 12, 1, 12, 24));
 	}
 
 	@Test
@@ -101,9 +101,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/deleteData -- DELETE", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 20, 1, 20, 30));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/deleteData -- DELETE",docUri, 20, 1, 20, 30));
 	}
 
 	@Test
@@ -112,9 +112,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/postData -- POST", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 24, 1, 24, 26));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/postData -- POST", docUri, 24, 1, 24, 26));
 	}
 
 	@Test
@@ -123,9 +123,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/putData -- PUT", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 16, 1, 16, 24));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/putData -- PUT", docUri, 16, 1, 16, 24));
 	}
 
 	@Test
@@ -134,9 +134,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/patchData -- PATCH", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 28, 1, 28, 28));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/patchData -- PATCH", docUri, 28, 1, 28, 28));
 	}
 
 	@Test
@@ -145,9 +145,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/getHello -- GET", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 32, 1, 32, 61));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/getHello -- GET", docUri, 32, 1, 32, 61));
 	}
 
 	@Test
@@ -156,9 +156,9 @@ public class RequestMappingSymbolProviderTest {
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(uriPrefix + "/src/main/java/org/test/RequestMethodClass.java");
-		assertTrue(containsSymbol(symbols, "@/postAndPutHello -- POST,PUT", uriPrefix + "/src/main/java/org/test/RequestMethodClass.java", 36, 1, 36, 76));
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  harness.getServer().getSpringIndexer().getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/postAndPutHello -- POST,PUT", docUri, 36, 1, 36, 76));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

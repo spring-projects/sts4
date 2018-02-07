@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,7 +63,7 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 	private static class ClasspathHints extends CachingValueProvider {
 		@Override
 		protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
-			return Flux.fromStream(javaProject.getClasspath().getClasspathResources().stream().distinct().map(StsValueHint::create));
+			return Flux.fromStream(javaProject.getClasspath().getClasspathResources().stream().distinct().map(r -> r.replaceAll("\\\\", "/")).map(StsValueHint::create));
 		}
 	}
 

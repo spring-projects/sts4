@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -52,7 +52,7 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	@Override
 	protected void attachListeners(File file, P project) {
 		super.attachListeners(file, project);
-		List<String> globPattern = Arrays.asList(file.toString());
+		List<String> globPattern = Arrays.asList(file.toString().replaceAll("\\\\", "/"));
 		changeSubscription = getFileObserver().onFileChanged(globPattern, (uri) -> performUpdate(project, asyncUpdate, true));
 		deleteSubscription = getFileObserver().onFileDeleted(globPattern, (uri) -> {
 			cache.invalidate(file);

@@ -50,8 +50,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionClass.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/FunctionClass.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("@Configuration", "@+ 'functionClass' (@Configuration <: @Component) FunctionClass"),
 				symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
 		);
@@ -63,8 +63,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/ScannedFunctionClass.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/ScannedFunctionClass.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("ScannedFunctionClass", "@> 'scannedFunctionClass' Function<String,String>")
 		);
 	}
@@ -75,8 +75,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedClass.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/FunctionFromSpecializedClass.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' Function<String,String>")
 		);
 	}
@@ -87,8 +87,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/FunctionFromSpecializedInterface.java",
+		String docUri = directory.toPath().resolve("src/main/java/org/test/FunctionFromSpecializedInterface.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
 				symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' Function<String,String>")
 		);
 	}
@@ -99,8 +99,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SpecializedFunctionClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SpecializedFunctionClass.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri);
 	}
 
 	@Test
@@ -109,8 +109,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/SpecializedFunctionInterface.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SpecializedFunctionInterface.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri);
 	}
 
 	@Test
@@ -119,8 +119,8 @@ public class SpringIndexerFunctionBeansTest {
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
-		String uriPrefix = "file://" + directory.getAbsolutePath();
-		indexer.assertDocumentSymbols(uriPrefix + "/src/main/java/org/test/LoopedFunctionClass.java");
+		String docUri = directory.toPath().resolve("src/main/java/org/test/LoopedFunctionClass.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri);
 	}
 
 	////////////////////////////////
