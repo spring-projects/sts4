@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.boot.configurationmetadata;
+package org.springframework.ide.vscode.boot.configurationmetadata;
 
 /**
  * An extension of {@link ConfigurationMetadataProperty} that provides a reference to its

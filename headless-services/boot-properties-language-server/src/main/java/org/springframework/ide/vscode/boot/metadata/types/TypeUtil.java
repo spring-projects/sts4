@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.metadata.ResourceHintProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;

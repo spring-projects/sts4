@@ -14,11 +14,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataSource;
-import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.boot.configurationmetadata.ValueHint;
-import org.springframework.boot.configurationmetadata.ValueProvider;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataSource;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProviders;

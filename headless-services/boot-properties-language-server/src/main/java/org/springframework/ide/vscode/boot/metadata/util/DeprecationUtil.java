@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot.metadata.util;
 
 import java.util.Optional;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.commons.java.IAnnotatable;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 

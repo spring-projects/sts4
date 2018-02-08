@@ -22,7 +22,7 @@ import static org.springframework.ide.vscode.commons.util.Renderables.text;
 
 import java.util.Collection;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;

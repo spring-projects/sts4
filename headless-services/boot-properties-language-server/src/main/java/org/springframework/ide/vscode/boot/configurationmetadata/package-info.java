@@ -17,4 +17,4 @@
 /**
  * Spring Boot configuration meta-data parser.
  */
-package org.springframework.boot.configurationmetadata;
+package org.springframework.ide.vscode.boot.configurationmetadata;

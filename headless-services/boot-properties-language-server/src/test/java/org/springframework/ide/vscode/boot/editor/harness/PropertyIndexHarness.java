@@ -14,10 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.boot.configurationmetadata.ValueHint;
-import org.springframework.boot.configurationmetadata.ValueProvider;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;

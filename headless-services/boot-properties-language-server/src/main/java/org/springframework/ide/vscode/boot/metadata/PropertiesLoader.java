@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.util.Log;
 

@@ -11,7 +11,7 @@
 
 package org.springframework.ide.vscode.boot.metadata.types;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;

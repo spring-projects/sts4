@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.boot.configurationmetadata;
+package org.springframework.ide.vscode.boot.configurationmetadata;
 
 import java.io.IOException;
 import java.io.InputStream;

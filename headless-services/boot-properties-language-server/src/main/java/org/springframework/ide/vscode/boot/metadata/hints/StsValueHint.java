@@ -11,8 +11,8 @@
 
 package org.springframework.ide.vscode.boot.metadata.hints;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.util.DeprecationUtil;
 import org.springframework.ide.vscode.commons.java.IJavaElement;

@@ -9,7 +9,7 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 
-package org.springframework.ide.vscode.boot.metadata;
+package org.springframework.ide.vscode.boot.java.metadata;
 
 import java.util.Optional;
 

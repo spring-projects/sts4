@@ -17,7 +17,7 @@ import org.junit.Assert;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;

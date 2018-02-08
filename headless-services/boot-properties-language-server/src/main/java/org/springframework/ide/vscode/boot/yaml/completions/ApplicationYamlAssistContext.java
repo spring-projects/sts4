@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;

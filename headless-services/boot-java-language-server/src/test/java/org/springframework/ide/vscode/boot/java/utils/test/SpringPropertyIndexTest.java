@@ -21,7 +21,7 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.java.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;

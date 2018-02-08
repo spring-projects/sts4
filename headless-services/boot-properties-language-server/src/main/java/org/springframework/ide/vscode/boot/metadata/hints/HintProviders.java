@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.metadata.hints;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;

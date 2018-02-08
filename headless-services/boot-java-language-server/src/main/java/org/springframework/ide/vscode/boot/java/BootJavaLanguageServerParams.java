@@ -15,9 +15,9 @@ import java.time.Duration;
 import java.util.Arrays;
 
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
-import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;

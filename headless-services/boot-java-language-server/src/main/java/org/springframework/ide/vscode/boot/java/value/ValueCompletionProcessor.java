@@ -24,7 +24,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
