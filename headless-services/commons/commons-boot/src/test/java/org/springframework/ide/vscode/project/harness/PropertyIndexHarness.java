@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.boot.configurationmetadata.Deprecation;
-import org.springframework.boot.configurationmetadata.ValueHint;
-import org.springframework.boot.configurationmetadata.ValueProvider;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;

@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.boot.java.metadata;
 
 import java.util.Collection;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 

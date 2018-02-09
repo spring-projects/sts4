@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.metadata;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataProperty;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;

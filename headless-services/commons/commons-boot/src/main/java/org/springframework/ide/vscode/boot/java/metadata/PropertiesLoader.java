@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepository;
-import org.springframework.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 
 public class PropertiesLoader {
@@ -84,7 +84,7 @@ public class PropertiesLoader {
 			InputStream is = null;
 			try {
 				is = Files.newInputStream(mdf);
-				loadFromInputStream(is);
+				loadFromInputStream(mdf, is);
 			} catch (Exception e) {
 				LOG.log(Level.SEVERE, "Error loading file '" + mdf + "'", e);
 			} finally {
@@ -127,7 +127,7 @@ public class PropertiesLoader {
 		InputStream is = null;
 		try {
 			is = jarFile.getInputStream(ze);
-			loadFromInputStream(is);
+			loadFromInputStream(jarFile, is);
 		} catch (Throwable e) {
 			LOG.log(Level.SEVERE, "Error loading JAR file", e);
 		} finally {
@@ -140,8 +140,8 @@ public class PropertiesLoader {
 		}
 	}
 
-	private void loadFromInputStream(InputStream is) throws IOException {
-		builder.withJsonResource(is);
+	private void loadFromInputStream(Object origin, InputStream is) throws IOException {
+		builder.withJsonResource(origin, is);
 	}
 	
 }
