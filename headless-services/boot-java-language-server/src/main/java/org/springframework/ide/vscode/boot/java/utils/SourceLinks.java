@@ -31,17 +31,48 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class SourceLinks {
 
-	private static final String JAR = ".jar";
-	private static final String JAVA = ".java";
-	private static final String CLASS = ".class";
+	static final String JAR = ".jar";
+	static final String JAVA = ".java";
+	static final String CLASS = ".class";
 
-	public static Optional<String> sourceLinkUrl(IJavaProject project, String fqName) {
+	public static Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
 			return createVSCodeSourceLink(project, fqName);
 		default:
 			return Optional.empty();
 		}
+	}
+
+	public static Optional<String> sourceLinkUrlForClasspathResource(IJavaProject project, String path) {
+		switch (LspClient.currentClient()) {
+		case VSCODE:
+			return createVSCodeSourceLinkForClasspathResource(project, path);
+		default:
+			return Optional.empty();
+		}
+	}
+
+	public static Optional<String> sourceLinkForResourcePath(Path path) {
+		switch (LspClient.currentClient()) {
+		case VSCODE:
+			return Optional.of(createVSCodeLink(path));
+		default:
+			return Optional.empty();
+		}
+	}
+
+	private static Optional<String> createVSCodeSourceLinkForClasspathResource(IJavaProject project, String path) {
+		int idx = path.lastIndexOf(SourceLinks.CLASS);
+		if (idx >= 0) {
+			Path p = Paths.get(path.substring(0, idx));
+			return SourceLinks.sourceLinkUrlForFQName(project, p.toString().replace(File.separator, "."));
+		}
+		return Optional.empty();
+	}
+
+	private static String createVSCodeLink(Path path) {
+		return path.toUri().toString();
 	}
 
 	private static Optional<String> createVSCodeSourceLink(IJavaProject project, String fqName) {
@@ -97,7 +128,7 @@ public class SourceLinks {
 			query.append("=");
 			query.append(project.getElementName());
 			query.append("/");
-			String convertedPath = String.join("\\/", jarFile.toString().replaceAll("\\\\", "/").split("/"));
+			String convertedPath = jarFile.toString().replace(File.separator, "\\/");
 			query.append(convertedPath);
 			query.append("<");
 			query.append(packageName);

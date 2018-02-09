@@ -38,18 +38,19 @@ public class LiveHoverUtils {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 
 		String type = bean.getType(true);
-		
-		// Try creating a URL link to open source for the type
-		Optional<String> url = SourceLinks.sourceLinkUrl(project, type);
-		if (url.isPresent()) {
-			return Renderables.link(type, url.get()).toMarkdown();
-		}
 
 		StringBuilder buf = new StringBuilder("Bean: ");
 		buf.append(bean.getId());
 		if (type != null) {
+			// Try creating a URL link to open source for the type
 			buf.append(newline);
-			buf.append("Type: `" + type + "`");
+			buf.append("Type: ");
+			Optional<String> url = SourceLinks.sourceLinkUrlForFQName(project, type);
+			if (url.isPresent()) {
+				buf.append(Renderables.link(type, url.get()).toMarkdown());
+			} else {
+				buf.append("`" + type + "`");
+			}
 		}
 		String resource = bean.getResource();
 		if (StringUtil.hasText(resource)) {

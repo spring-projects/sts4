@@ -10,13 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 
 /**
  * Helper class, represents parsed info from a Resource, and provide method(s) to
@@ -48,11 +52,21 @@ public class SpringResource {
 		if (type==null) {
 			return path; //path is just the raw text in this case
 		}
+		Optional<String> linkUrl;
 		switch (type) {
 		case FILE:
-			return "`"+projectRelativePath(path)+"`";
+			String relativePath = projectRelativePath(path);
+			if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
+				linkUrl = SourceLinks.sourceLinkUrlForClasspathResource(project, relativePath);
+			} else {
+				linkUrl = SourceLinks.sourceLinkForResourcePath(Paths.get(path));
+			}
+			// not a project relative path
+			return linkUrl.isPresent() ? Renderables.link(relativePath, linkUrl.get()).toMarkdown()
+					: "`" + projectRelativePath(path) + "`";
 		case CLASS_PATH_RESOURCE:
-			return "`"+path+"`";
+			linkUrl = SourceLinks.sourceLinkUrlForClasspathResource(project, path);
+			return linkUrl.isPresent() ? Renderables.link(path, linkUrl.get()).toMarkdown() : "`"+path+"`";
 		default:
 			return path;
 		}
