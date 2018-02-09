@@ -39,61 +39,17 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-maven</artifactId>
+			<artifactId>commons-boot</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-gradle</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-language-server</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>java-properties</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-yaml</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-boot-app-cli</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
+		
+		<!-- Test harness -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Eclipse JDT for parsing (at the moment) -->
-		<dependency>
-			<groupId>org.eclipse.jdt</groupId>
-			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.13.50</version>
-		</dependency>
-
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>${commons-io-version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-metadata</artifactId>
-			<version>1.5.8.RELEASE</version>
-		</dependency>
-
-		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>language-server-test-harness</artifactId>
@@ -114,7 +70,7 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<!-- Configure fat jar
+			<!-- Configure fat jar -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -124,10 +80,12 @@
 						<goals>
 							<goal>repackage</goal>
 						</goals>
+						<configuration>
+							<mainClass>org.springframework.ide.vscode.boot.java.Main</mainClass>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			 -->
 			<!-- Ignore test classes from test projects -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
