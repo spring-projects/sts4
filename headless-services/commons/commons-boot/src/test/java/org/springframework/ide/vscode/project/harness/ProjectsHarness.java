@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,32 +10,73 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
+import org.springframework.ide.vscode.commons.util.IOUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.io.Files;
+
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
 /**
  * Test projects harness
  *
  * @author Alex Boyko
- *
+ * @author Kris De Volder
  */
 public class ProjectsHarness {
 
 	public static final ProjectsHarness INSTANCE = new ProjectsHarness();;
 
-	public Cache<String, IJavaProject> cache = CacheBuilder.newBuilder().concurrencyLevel(1).build();
+	public Cache<Object, IJavaProject> cache = CacheBuilder.newBuilder().concurrencyLevel(1).build();
+
+	/**
+	 * A callback that is given a chance to make changes to test project contents before the test project
+	 * is created from it.
+	 */
+	public interface ProjectCustomizer {
+		void customize(CustomizableProjectContent projectContent) throws Exception;
+	}
+
+	/**
+	 * Provides convenience apis to make changes to project content from a {@link ProjectCustomizer}
+	 */
+	public static class CustomizableProjectContent {
+		private final File projectRoot;
+
+		public CustomizableProjectContent(File projectRoot) {
+			this.projectRoot = projectRoot;
+		}
+
+		public void createFile(String path, String content) throws Exception {
+			File target = new File(projectRoot, path);
+			IOUtil.pipe(new ByteArrayInputStream(content.getBytes("UTF8")), target);
+		}
+
+		public void createType(String fqName, String sourceCode) throws Exception {
+			String sourceFile = sourceFolder()+"/"+fqName.replace('.', '/')+".java";
+			createFile(sourceFile, sourceCode);
+		}
+
+		private String sourceFolder() {
+			return "src/main/java";
+		}
+	}
 
 	private enum ProjectType {
 		MAVEN,
@@ -45,116 +86,49 @@ public class ProjectsHarness {
 	private ProjectsHarness() {
 	}
 
-	public IJavaProject project(ProjectType type, String name) throws Exception {
-		return cache.get(type + "/" + name, () -> {
-			Path testProjectPath = getProjectPath(name);
-			switch (type) {
-			case MAVEN:
-				MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-				return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
-			case CLASSPATH_TXT:
-				MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
-				return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
-			default:
-				throw new IllegalStateException("Bug!!! Missing case");
-			}
+	public IJavaProject project(ProjectType type, String name, ProjectCustomizer customizer) throws Exception {
+		Tuple3<ProjectType, String, ProjectCustomizer> key = Tuples.of(type, name, customizer);
+		return cache.get(key, () -> {
+			Path baseProjectPath = getProjectPath(name);
+			File testProjectRoot = Files.createTempDir();
+			FileUtils.copyDirectory(baseProjectPath.toFile(), testProjectRoot);
+			customizer.customize(new CustomizableProjectContent(testProjectRoot));
+			return createProject(type, testProjectRoot.toPath());
 		});
 	}
 
-	protected void enableSNIExtension(boolean enable) {
-		String enableVal = Boolean.toString(enable);
-		System.setProperty("jsse.enableSNIExtension", enableVal);
+	private IJavaProject createProject(ProjectType type, Path testProjectPath) throws Exception {
+		switch (type) {
+		case MAVEN:
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
+			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+		case CLASSPATH_TXT:
+			MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
+			return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
+		default:
+			throw new IllegalStateException("Bug!!! Missing case");
+		}
+	}
+
+	public IJavaProject project(ProjectType type, String name) throws Exception {
+		return cache.get(type + "/" + name, () -> {
+			Path testProjectPath = getProjectPath(name);
+			return createProject(type, testProjectPath);
+		});
 	}
 
 	protected Path getProjectPath(String name) throws URISyntaxException, IOException {
-//		URI sourceLocation = ProjectsHarness.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-//		// file:/Users/aboyko/git/sts4/vscode-extensions/commons/project-test-harness/target/project-test-harness-0.0.1-SNAPSHOT.jar
-//		Path testProjectsPath = Paths.get(sourceLocation).getParent().getParent().resolve("test-projects").resolve(name);
-//		if (Files.exists(testProjectsPath)) {
-//			return testProjectsPath;
-//		} else {
-//			/*
-//			 * If "test-projects" folder is not found then extract test project
-//			 * from the jar's "test-projects" folder and copy it in the temp
-//			 * folder
-//			 */
-			return getProjectPathFromClasspath(name);
-//		}
+		return getProjectPathFromClasspath(name);
 	}
 
 	private Path getProjectPathFromClasspath(String name) throws URISyntaxException, IOException {
 		URI resource = ProjectsHarness.class.getResource("/test-projects/" + name).toURI();
-//		if (resource.getScheme().equalsIgnoreCase("jar")) {
-//			return getProjectPathFromJar(resource);
-//		} else {
-			return Paths.get(resource);
-//		}
+		return Paths.get(resource);
 	}
 
-//	private Path getProjectPathFromJar(URI jar) throws IOException {
-//		final String[] array = jar.toString().split("!");
-//		URI firstHalf = URI.create(array[0]);
-//		Path tempFolderPath = Paths.get(new File(System.getProperty(MavenCore.JAVA_IO_TMPDIR)).toURI());
-//		FileSystem fs =  FileSystems.newFileSystem(firstHalf, Collections.emptyMap());
-//		try {
-//			Path path = fs.getPath(array[1]);
-//			Path projectCopyPath = tempFolderPath.resolve(path.getFileName().toString());
-//			if (Files.exists(projectCopyPath)) {
-//				recursiveDelete(projectCopyPath);
-//			}
-//			recursiveCopy(path, tempFolderPath, StandardCopyOption.REPLACE_EXISTING);
-//			System.out.println("Copied test project to: " + projectCopyPath);
-//			return projectCopyPath;
-//		} finally {
-//			fs.close();
-//		}
-//	}
-//
-//	private static void recursiveCopy(Path source, Path target, CopyOption... options) throws IOException {
-//		Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-//
-//			Path destination = target;
-//
-//			@Override
-//			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-//				destination = destination.resolve(dir.getFileName().toString());
-//				Files.copy(dir, destination, options);
-//				return super.preVisitDirectory(dir, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//				Path newFile = destination.resolve(file.getFileName().toString());
-//				Files.copy(file, newFile, options);
-//				return super.visitFile(file, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-//				destination = destination.getParent();
-//				return super.postVisitDirectory(dir, exc);
-//			}
-//
-//		});
-//	}
-//
-//	private static void recursiveDelete(Path path) throws IOException {
-//		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-//
-//			@Override
-//			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-//				Files.delete(file);
-//				return super.visitFile(file, attrs);
-//			}
-//
-//			@Override
-//			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-//				Files.delete(dir);
-//				return super.postVisitDirectory(dir, exc);
-//			}
-//
-//		});
-//	}
+	public MavenJavaProject mavenProject(String name, ProjectCustomizer customizer) throws Exception {
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, customizer);
+	}
 
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);
