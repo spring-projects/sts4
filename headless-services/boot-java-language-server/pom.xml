@@ -114,7 +114,7 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-			<!-- Configure fat jar -->
+			<!-- Configure fat jar
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -127,6 +127,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			 -->
 			<!-- Ignore test classes from test projects -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

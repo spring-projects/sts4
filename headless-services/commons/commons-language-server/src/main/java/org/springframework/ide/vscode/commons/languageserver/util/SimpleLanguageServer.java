@@ -76,7 +76,7 @@ import reactor.core.scheduler.Schedulers;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public abstract class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService {
+public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService, SimpleLanguageServerWrapper {
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
@@ -116,7 +116,7 @@ public abstract class SimpleLanguageServer implements Sts4LanguageServer, Langua
 		this.client = (STS4LanguageClient) _client;
 	}
 
-	protected VscodeCompletionEngineAdapter createCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
+	public VscodeCompletionEngineAdapter createCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
 		return new VscodeCompletionEngineAdapter(server, engine, completionResolver);
 	}
 
@@ -406,7 +406,7 @@ public abstract class SimpleLanguageServer implements Sts4LanguageServer, Langua
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
 	 */
-	protected void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
+	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
 //		Log.debug("Reconciling BUSY");
 
@@ -545,6 +545,11 @@ public abstract class SimpleLanguageServer implements Sts4LanguageServer, Langua
 	@Override
 	public DiagnosticService getDiagnosticService() {
 		return diagnosticService;
+	}
+
+	@Override
+	public SimpleLanguageServer getServer() {
+		return this;
 	}
 
 }

@@ -117,7 +117,7 @@ public abstract class CachingValueProvider implements ValueProviderStrategy {
 //				Log.log(e);
 			}
 			if (cached!=null) {
-				System.out.println("cached "+subquery+": "+cached);
+//				debug("cached "+subquery+": "+cached);
 				if (cached.isComplete) {
 					return cached.values
 //							.doOnNext((hint) -> debug("filter["+query+"]: "+hint.getValue()))

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot;
+package org.springframework.ide.vscode.boot.properties;
 
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -53,7 +54,7 @@ import com.google.common.collect.ImmutableList;
  * @author Alex Boyko
  *
  */
-public class BootPropertiesLanguageServer extends SimpleLanguageServer {
+public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper {
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
@@ -78,11 +79,11 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 	private final YamlASTProvider parser = new YamlParser(yaml);
 	private final YamlStructureProvider yamlStructureProvider= YamlStructureProvider.DEFAULT;
 	private YamlAssistContextProvider yamlAssistContextProvider;
+	private final SimpleLanguageServer server;
 
 	public BootPropertiesLanguageServer(LSFactory<BootPropertiesLanguageServerParams> _params) {
-		super("vscode-boot-properties");
-
-		BootPropertiesLanguageServerParams serverParams = _params.create(this);
+		this.server = new SimpleLanguageServer("vscode-boot-properties");
+		BootPropertiesLanguageServerParams serverParams = _params.create(server);
 
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;
@@ -99,22 +100,22 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 			}
 		};
 
-		SimpleTextDocumentService documents = getTextDocumentService();
+		SimpleTextDocumentService documents = server.getTextDocumentService();
 
 		IReconcileEngine reconcileEngine = getReconcileEngine();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			validateWith(doc.getId(), reconcileEngine);
+			server.validateWith(doc.getId(), reconcileEngine);
 		});
 
 		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();
-		completionEngine = createCompletionEngineAdapter(this, propertiesCompletionEngine);
+		completionEngine = server.createCompletionEngineAdapter(server, propertiesCompletionEngine);
 		completionEngine.setMaxCompletions(100);
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 
 		HoverInfoProvider hoverInfoProvider = getHoverProvider();
-		hoverEngine = new VscodeHoverEngineAdapter(this, hoverInfoProvider);
+		hoverEngine = new VscodeHoverEngineAdapter(server, hoverInfoProvider);
 		documents.onHover(hoverEngine::getHover);
 	}
 
@@ -186,5 +187,10 @@ public class BootPropertiesLanguageServer extends SimpleLanguageServer {
 
 	public SpringPropertyIndexProvider getPropertiesIndexProvider() {
 		return indexProvider;
+	}
+
+	@Override
+	public SimpleLanguageServer getServer() {
+		return this.server;
 	}
 }

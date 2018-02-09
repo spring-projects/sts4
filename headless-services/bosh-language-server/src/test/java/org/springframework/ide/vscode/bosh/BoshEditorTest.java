@@ -276,7 +276,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void releasesBlockCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
+		harness.getServerWrapper().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"releases:\n" +
 				"- <*>"
@@ -359,7 +359,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void instanceGroupsCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
+		harness.getServerWrapper().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"instance_groups:\n" +
 				"- <*>"
@@ -543,7 +543,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void updateBlockCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
+		harness.getServerWrapper().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"update:\n" +
 				"  <*>"
@@ -583,7 +583,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void variablesBlockCompletions() throws Exception {
-		harness.getServer().enableSnippets(false);
+		harness.getServerWrapper().enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"variables:\n" +
 				"- <*>"

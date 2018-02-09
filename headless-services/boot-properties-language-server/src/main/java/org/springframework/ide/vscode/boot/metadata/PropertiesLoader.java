@@ -28,11 +28,11 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.util.Log;
 
 public class PropertiesLoader {
-	
+
 	private static final String MAIN_SPRING_CONFIGURATION_METADATA_JSON = "META-INF/spring-configuration-metadata.json";
 
 	public static final String ADDITIONAL_SPRING_CONFIGURATION_METADATA_JSON = "META-INF/additional-spring-configuration-metadata.json";
-	
+
 	/**
 	 * The default classpath location for config metadata loaded when scanning .jar files on the classpath.
 	 */
@@ -48,15 +48,15 @@ public class PropertiesLoader {
 		MAIN_SPRING_CONFIGURATION_METADATA_JSON,
 		ADDITIONAL_SPRING_CONFIGURATION_METADATA_JSON
 	};
-	
+
     private static final Logger LOG = Logger.getLogger(PropertiesLoader.class.getName());
-    
+
 	private ConfigurationMetadataRepositoryJsonBuilder builder = ConfigurationMetadataRepositoryJsonBuilder.create();
-	
+
 	public ConfigurationMetadataRepository load(IClasspath classPath) {
 		try {
 			classPath.getClasspathEntries().forEach(entry -> {
-				Log.info("Indexing "+entry);
+				//Log.info("Indexing "+entry);
 				File fileEntry = entry.toFile();
 				if (fileEntry.exists()) {
 					if (fileEntry.isDirectory()) {
@@ -72,7 +72,7 @@ public class PropertiesLoader {
 		ConfigurationMetadataRepository repository = builder.build();
 		return repository;
 	}
-	
+
 	private void loadFromOutputFolder(Path outputFolderPath) {
 		if (outputFolderPath != null && Files.exists(outputFolderPath)) {
 			Arrays.stream(PROJECT_META_DATA_LOCATIONS).forEach(mdLoc -> {
@@ -100,7 +100,7 @@ public class PropertiesLoader {
 			}
 		}
 	}
-	
+
 	private void loadFromJar(Path f) {
 		JarFile jarFile = null;
 		try {
@@ -145,5 +145,5 @@ public class PropertiesLoader {
 	private void loadFromInputStream(Object origin, InputStream is) throws IOException {
 		builder.withJsonResource(origin, is);
 	}
-	
+
 }

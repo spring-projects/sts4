@@ -97,6 +97,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -111,7 +112,7 @@ import com.google.common.collect.MultimapBuilder;
 
 import reactor.core.publisher.Mono;
 
-public class LanguageServerHarness<S extends SimpleLanguageServer> {
+public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 
 	//Warning this 'harness' is incomplete. Growing it as needed.
 
@@ -709,10 +710,14 @@ public class LanguageServerHarness<S extends SimpleLanguageServer> {
 	}
 
 	public void changeConfiguration(Settings settings) {
-		server.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+		getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}
 
-	public S getServer() {
+	public SimpleLanguageServer getServer() {
+		return server==null ? null : server.getServer();
+	}
+
+	public S getServerWrapper() {
 		return server;
 	}
 

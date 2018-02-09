@@ -8,7 +8,7 @@
  * Contributors:
  * Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot;
+package org.springframework.ide.vscode.boot.properties;
 
 import java.nio.file.Paths;
 import java.util.Arrays;

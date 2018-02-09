@@ -50,7 +50,7 @@ public class SpringPropertyIndexTest {
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServer().getSpringPropertyIndexProvider();
+		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getSpringPropertyIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 

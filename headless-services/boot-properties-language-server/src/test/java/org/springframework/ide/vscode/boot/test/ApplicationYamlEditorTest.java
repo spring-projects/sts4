@@ -20,12 +20,12 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.BootPropertiesLanguageServer;
-import org.springframework.ide.vscode.boot.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -3710,7 +3710,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				s -> new BootPropertiesLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
 						typeUtilProvider));
 		server.setMaxCompletionsNumber(-1);
-		return server;
+		return server.getServer();
 	}
 
 	@Override

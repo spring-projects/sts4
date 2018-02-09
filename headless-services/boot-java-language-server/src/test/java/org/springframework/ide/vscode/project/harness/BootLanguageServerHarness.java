@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLanguageServer> {
 
 	private PropertyIndexHarness indexHarness;
-	private final JavaProjectFinder projectFinder = (doc) -> getServer().getProjectFinder().find(doc);
+	private final JavaProjectFinder projectFinder = (doc) -> getServerWrapper().getProjectFinder().find(doc);
 
 	/**
 	 * Creates a builder and initializes it so that it sets up a test harness with

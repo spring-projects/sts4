@@ -46,7 +46,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testScanSimpleFunctionBean() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -59,7 +59,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testScanSimpleFunctionClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -71,7 +71,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testScanSpecializedFunctionClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -83,7 +83,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testScanSpecializedFunctionInterface() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -95,7 +95,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testNoSymbolForAbstractClasses() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -105,7 +105,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testNoSymbolForSubInterfaces() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -115,7 +115,7 @@ public class SpringIndexerFunctionBeansTest {
 
 	@Test
 	public void testScanInconsistentInterfaceHierarchy() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServer(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 

@@ -47,7 +47,7 @@ public class SpringIndexerTest {
 	private LanguageServerHarness<BootJavaLanguageServer> harness;
 
 	private SpringIndexer indexer() {
-		return harness.getServer().getSpringIndexer();
+		return harness.getServerWrapper().getSpringIndexer();
 	}
 
 
