@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,18 @@ public class SpringBootAppTest {
 
 	private SpringBootApp getAppContaining(String nameFragment) {
 		try {
-			return SpringBootApp.getAllRunningJavaApps().stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+			Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
+			try {
+				return allApps.stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+			} catch (NoSuchElementException e) {
+				//Improve error message for debugging...
+				StringBuilder foundAppNames = new StringBuilder();
+				for (SpringBootApp app : allApps) {
+					foundAppNames.append("\n");
+					foundAppNames.append(app.getProcessName());
+				}
+				throw new NoSuchElementException("getAppContaining("+nameFragment+") in "+foundAppNames);
+			}
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
 		}
