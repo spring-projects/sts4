@@ -76,7 +76,12 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
 
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
-        return findJRE().then(jvm => {
+        return findJRE()
+        .catch(error => {
+            VSCode.window.showErrorMessage("Error trying to find JVM: "+error);
+            return Promise.reject(error);
+        })
+        .then(jvm => {
             if (!jvm) {
                 VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
                 return;

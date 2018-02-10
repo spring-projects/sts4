@@ -103,6 +103,7 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
  * search logic and uses that javaHome as is, not looking anywhere else.
  */
 function findJavaExe(javaHome?: string) : string | null {
+    //Try java home first
     if (!javaHome) {
         javaHome = process.env["JAVA_HOME"];
     }
@@ -112,14 +113,17 @@ function findJavaExe(javaHome?: string) : string | null {
     }
     let binName = correctBinname("java");
     if (javaHome) {
-        return Path.resolve(javaHome, "bin", binName);
-    } else {
-        for (var searchPath of process.env['PATH'].split(Path.delimiter)) {
-            let javaExe = Path.resolve(searchPath, binName);
-            if (FS.existsSync(javaExe)) {
-                //Resolve symlinks
-                return FS.realpathSync(javaExe);
-            }
+        let javaExe = Path.resolve(javaHome, "bin", binName);
+        if (FS.existsSync(javaExe)) {
+            return javaExe;
+        }
+    }
+
+    for (var searchPath of process.env['PATH'].split(Path.delimiter)) {
+        let javaExe = Path.resolve(searchPath, binName);
+        if (FS.existsSync(javaExe)) {
+            //Resolve symlinks
+            return FS.realpathSync(javaExe);
         }
     }
     return null;
