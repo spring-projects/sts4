@@ -199,31 +199,31 @@ class JVMImpl implements JVM {
 }
 
 function getJavaInfo(javaExe : string) : Promise<Map<string, string>> {
-    console.log("Fetching java properties for "+javaExe);
+    //console.log("Fetching java properties for "+javaExe);
     return new Promise((resolve, reject) => {
         ChildProcess.execFile(javaExe, ['-XshowSettings:properties'], {}, (error, stdout, stderr) => {
             let lines = stderr.split(/\r?\n/);
             let propNames = [ 'java.version', 'java.home' ];
             let props = new Map<string,string>();
             for (var l of lines) {
-                console.log("Line: "+l);
+                //console.log("Line: "+l);
                 for (var p of propNames) {
                     let offset = l.indexOf(p);
                     if (offset>=0) {
                         //Make sure it looks like a proper 'assignment' to the property and not an
                         // accidental match.
-                        console.log("Propname found: "+p);
+                        //console.log("Propname found: "+p);
                         let assign = " " +p + " = ";
                         offset = l.indexOf(assign);
                         if (offset>=0) {
-                            console.log("Assignment found: "+p);
+                            //console.log("Assignment found: "+p);
                             offset = offset + assign.length;
                             let value = l.substring(offset);
-                            console.log("value = "+value);
+                            //console.log("value = "+value);
                             props.set(p, value);
                             if (props.size >= propNames.length) {
                                 //We found everything we care about, so we can stop now.
-                                console.log("result = ", props);
+                                //console.log("result = ", props);
                                 return resolve(props);
                             }
                         }
