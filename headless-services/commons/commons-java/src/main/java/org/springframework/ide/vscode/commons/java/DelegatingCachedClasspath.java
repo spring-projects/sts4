@@ -171,4 +171,12 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 		return t == null ? Optional.empty() : t.findClasspathResourceContainer(fqName);
 	}
 	
+	@Override
+	public void reindex() {
+		T t = cachedClasspath.get();
+		if (t != null) {
+			t.reindex();
+		}
+	}
+	
 }

@@ -62,4 +62,6 @@ public interface IClasspath {
 	Optional<File> findClasspathResourceContainer(String fqName);
 	
 	ClasspathData createClasspathData() throws Exception;
+	
+	void reindex();
 }

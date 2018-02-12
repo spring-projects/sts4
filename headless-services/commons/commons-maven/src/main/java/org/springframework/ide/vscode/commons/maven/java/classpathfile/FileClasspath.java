@@ -104,4 +104,8 @@ public class FileClasspath implements IClasspath {
 	public ClasspathData createClasspathData() throws Exception {
 		return ClasspathData.from(getName(), getClasspathEntries(), getClasspathResources(), getOutputFolder());
 	}
+
+	@Override
+	public void reindex() {
+	}
 }
