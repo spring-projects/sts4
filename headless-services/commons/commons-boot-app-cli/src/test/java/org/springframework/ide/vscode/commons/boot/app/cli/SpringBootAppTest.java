@@ -100,7 +100,7 @@ public class SpringBootAppTest {
 					foundAppNames.append("\n");
 					foundAppNames.append(app.getProcessName());
 				}
-				throw new NoSuchElementException("getAppContaining("+nameFragment+") in "+foundAppNames);
+				throw new NoSuchElementException("getAppContaining("+nameFragment+") in "+foundAppNames.toString());
 			}
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
