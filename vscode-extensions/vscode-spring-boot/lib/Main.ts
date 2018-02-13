@@ -21,7 +21,7 @@ export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
-        extensionId: 'vscode-boot',
+        extensionId: 'vscode-spring-boot',
         launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
         jvmHeap: "160m",
         clientOptions: {

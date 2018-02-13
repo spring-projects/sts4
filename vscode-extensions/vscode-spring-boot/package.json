@@ -1,5 +1,5 @@
 {
-  "name": "vscode-boot",
+  "name": "vscode-spring-boot",
   "displayName": "Spring Boot Support",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
