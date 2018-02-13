@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.properties;
 
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
-import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
@@ -22,16 +21,13 @@ import org.springframework.ide.vscode.boot.properties.reconcile.SpringProperties
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
