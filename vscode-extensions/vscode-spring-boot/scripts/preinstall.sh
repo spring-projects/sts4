@@ -12,7 +12,7 @@ curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YA
 curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/JavaProperties.plist > properties-support/java-properties.tmLanguage
 
 # Use maven to build fat jar of the language server
-cd ../../headless-services/boot-language-server
+cd ../../headless-services/spring-boot-language-server
 ./build.sh
 
 mkdir -p ${workdir}/jars

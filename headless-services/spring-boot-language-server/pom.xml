@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>boot-language-server</artifactId>
+	<artifactId>spring-boot-language-server</artifactId>
 	<packaging>jar</packaging>
 	
 	<parent>
@@ -19,10 +19,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>boot-java-language-server</artifactId>
-			<version>${dependencies.version}</version>
+			<artifactId>commons-boot</artifactId>
+			<version>0.1.4-SNAPSHOT</version>
 		</dependency>
-		
+
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -36,12 +36,6 @@
 			<artifactId>mockito-all</artifactId>
 			<version>${mockito-version}</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-boot</artifactId>
-			<version>0.1.4-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>

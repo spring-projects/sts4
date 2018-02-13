@@ -13,7 +13,7 @@
 		<module>commons</module>
 		<module>manifest-yaml-language-server</module>
 		<module>concourse-language-server</module>
-		<module>boot-language-server</module>
+		<module>spring-boot-language-server</module>
 		<module>boot-properties-language-server</module>
 		<module>boot-java-language-server</module>
 		<module>bosh-language-server</module>
