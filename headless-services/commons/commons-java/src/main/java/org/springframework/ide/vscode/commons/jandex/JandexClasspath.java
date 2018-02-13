@@ -46,7 +46,7 @@ public abstract class JandexClasspath implements IClasspath {
 	private Supplier<JandexIndex> javaIndex;
 	
 	public JandexClasspath() {
-		this.javaIndex = Suppliers.memoize(() -> createIndex());
+		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 	
 	protected JandexIndex createIndex() {
@@ -101,6 +101,11 @@ public abstract class JandexClasspath implements IClasspath {
 	@Override
 	public Optional<File> findClasspathResourceContainer(String fqName) {
 		return javaIndex.get().findClasspathResourceForType(fqName);
+	}
+	
+	@Override
+	public void reindex() {
+		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 
 	abstract protected IJavadocProvider createParserJavadocProvider(File classpathResource);

@@ -127,12 +127,12 @@ public class JandexIndex {
 		this.knownPackages = new HashMap<>();
 		this.javadocProviderFactory = javadocProviderFactory;
 		classpathEntries.forEach(file -> {
-			index.put(file, Suppliers.memoize(() -> createIndex(file, indexFileFinder)));
+			index.put(file, Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex(file, indexFileFinder))));
 			knownTypes.put(file, Suppliers.memoize(() -> getKnownTypesStream(file).collect(Collectors.toList())));
 			knownPackages.put(file, Suppliers.memoize(() -> getKnownPackages(file).collect(Collectors.toList())));
 		});
 	}
-
+	
 	private Optional<IndexView> createIndex(File file, IndexFileFinder indexFileFinder) {
 		if (file != null && file.isFile() && file.getName().endsWith(".jar")) {
 			return indexJar(file, indexFileFinder);
@@ -239,7 +239,12 @@ public class JandexIndex {
 								// If not found look at indices owned by this
 								// JandexIndex instance
 								.orElseGet(() -> streamOfIndices()
-										.map(e -> Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName))))
+										.map(e -> {
+											IndexView view = e.getT2();
+											ClassInfo info = view.getClassByName(fqName);
+											return Tuples.of(e.getT1(), Optional.ofNullable(info));
+//											return Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName)));
+										})
 										.filter(t -> t.getT2().isPresent())
 										.map(e -> Tuples.of(e.getT1(), e.getT2().get())).findFirst());
 	}
