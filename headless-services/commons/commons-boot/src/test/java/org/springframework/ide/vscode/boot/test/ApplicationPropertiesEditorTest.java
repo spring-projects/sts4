@@ -28,10 +28,11 @@ import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTes
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -1586,7 +1587,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(
+		ComposableLanguageServer server = BootLanguageServer.create(
 				s -> new BootPropertiesLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
 						typeUtilProvider));
 		server.setMaxCompletionsNumber(-1);

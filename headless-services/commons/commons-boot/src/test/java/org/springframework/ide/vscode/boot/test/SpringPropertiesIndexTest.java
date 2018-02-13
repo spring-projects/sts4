@@ -21,9 +21,11 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -38,19 +40,19 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class SpringPropertiesIndexTest {
 
-	private LanguageServerHarness<BootPropertiesLanguageServer> harness;
+	private LanguageServerHarness<ComposableLanguageServer<BootPropertiesLanguageServerComponents>> harness;
 
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
 	@Before
 	public void setup() throws Exception {
-		harness = new LanguageServerHarness<>(() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createTestDefault()));
+		harness = new LanguageServerHarness<>(() -> BootLanguageServer.create(BootPropertiesLanguageServerParams.createTestDefault()));
 	}
 
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getPropertiesIndexProvider();
+		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getComponents().getPropertiesIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI());
 

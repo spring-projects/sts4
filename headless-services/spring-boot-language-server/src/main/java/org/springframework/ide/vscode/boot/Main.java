@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot;
 
 import java.io.IOException;
 
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
@@ -31,7 +31,7 @@ public class Main {
 		LogRedirect.redirectToFile(serverName);
 		//TODO: wrap both BootProperties and BootJavaLanguageServers into a composite of some kind.
 		LaunguageServerApp.start(serverName,
-				() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createDefault()).getServer()
+				() -> BootLanguageServer.create(BootPropertiesLanguageServerParams.createDefault()).getServer()
 		);
 	}
 

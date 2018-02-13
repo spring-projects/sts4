@@ -28,7 +28,7 @@ public class Main {
 		String serverName = "boot-properties-language-server";
 		LogRedirect.redirectToFile(serverName);
 		LaunguageServerApp.start(serverName,
-				() -> new BootPropertiesLanguageServer(BootPropertiesLanguageServerParams.createDefault()).getServer()
+				() -> BootLanguageServer.createProperties(BootPropertiesLanguageServerParams.createDefault()).getServer()
 		);
 	}
 

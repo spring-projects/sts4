@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
 import java.time.Duration;
 
@@ -24,14 +25,13 @@ import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTes
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServer;
+import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
 
 /**
  * This class is a placeholder where we will attempt to copy and port
@@ -3706,7 +3706,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		BootPropertiesLanguageServer server = new BootPropertiesLanguageServer(
+		ComposableLanguageServer server = BootLanguageServer.create(
 				s -> new BootPropertiesLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
 						typeUtilProvider));
 		server.setMaxCompletionsNumber(-1);

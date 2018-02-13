@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.properties;
 
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
@@ -22,15 +23,14 @@ import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssis
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -52,9 +52,9 @@ import com.google.common.collect.ImmutableList;
  * Language Server for Spring Boot Application Properties files
  *
  * @author Alex Boyko
- *
+ * @author Kris De Volder
  */
-public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper {
+public class BootPropertiesLanguageServerComponents implements LanguageServerComponents {
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
@@ -68,8 +68,6 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 	private final JavaProjectFinder javaProjectFinder;
 	private final SpringPropertyIndexProvider indexProvider;
 	private final TypeUtilProvider typeUtilProvider;
-	private final VscodeCompletionEngineAdapter completionEngine;
-	private final VscodeHoverEngineAdapter hoverEngine;
 	private final RelaxedNameConfig relaxedNameConfig = RelaxedNameConfig.COMPLETION_DEFAULTS;
 
 	private final PropertyCompletionFactory completionFactory;
@@ -81,8 +79,8 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 	private YamlAssistContextProvider yamlAssistContextProvider;
 	private final SimpleLanguageServer server;
 
-	public BootPropertiesLanguageServer(LSFactory<BootPropertiesLanguageServerParams> _params) {
-		this.server = new SimpleLanguageServer("vscode-boot-properties");
+	public BootPropertiesLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootPropertiesLanguageServerParams> _params) {
+		this.server = server;
 		BootPropertiesLanguageServerParams serverParams = _params.create(server);
 
 		this.indexProvider = serverParams.indexProvider;
@@ -100,26 +98,10 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 			}
 		};
 
-		SimpleTextDocumentService documents = server.getTextDocumentService();
-
-		IReconcileEngine reconcileEngine = getReconcileEngine();
-		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			server.validateWith(doc.getId(), reconcileEngine);
-		});
-
-		ICompletionEngine propertiesCompletionEngine = getCompletionEngine();
-		completionEngine = server.createCompletionEngineAdapter(server, propertiesCompletionEngine);
-		completionEngine.setMaxCompletions(100);
-		documents.onCompletion(completionEngine::getCompletions);
-		documents.onCompletionResolve(completionEngine::resolveCompletion);
-
-		HoverInfoProvider hoverInfoProvider = getHoverProvider();
-		hoverEngine = new VscodeHoverEngineAdapter(server, hoverInfoProvider);
-		documents.onHover(hoverEngine::getHover);
 	}
 
-	private ICompletionEngine getCompletionEngine() {
+	@Override
+	public ICompletionEngine getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
 		return (TextDocument document, int offset) -> {
@@ -135,7 +117,8 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 		};
 	}
 
-	protected HoverInfoProvider getHoverProvider() {
+	@Override
+	public HoverInfoProvider getHoverProvider() {
 		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
 		HoverInfoProvider ymlHovers = new YamlHoverInfoProvider(parser, yamlStructureProvider, yamlAssistContextProvider);
 
@@ -152,15 +135,8 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 		};
 	}
 
-	public void setMaxCompletionsNumber(int number) {
-		completionEngine.setMaxCompletions(number);
-	}
-
-	public void setHoverType(HoverType type) {
-		hoverEngine.setHoverType(type);
-	}
-
-	protected IReconcileEngine getReconcileEngine() {
+	@Override
+	public IReconcileEngine getReconcileEngine() {
 		IReconcileEngine propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider, typeUtilProvider);
 		IReconcileEngine ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider);
 
@@ -181,16 +157,7 @@ public class BootPropertiesLanguageServer implements SimpleLanguageServerWrapper
 		};
 	}
 
-	public ProjectObserver getProjectObserver() {
-		return projectObserver;
-	}
-
 	public SpringPropertyIndexProvider getPropertiesIndexProvider() {
 		return indexProvider;
-	}
-
-	@Override
-	public SimpleLanguageServer getServer() {
-		return this.server;
 	}
 }
