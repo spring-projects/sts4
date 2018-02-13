@@ -1,0 +1,17 @@
+out
+node_modules
+target
+*.log
+*.log.*
+classpath.txt
+*.vsix
+repo
+.idea
+*.iml
+.DS_Store
+**/.DS_Store
+src/test/resources/test-projects/**/.classpath
+src/test/resources/test-projects/**/.project
+src/test/resources/test-projects/**/.factorypath
+src/test/resources/test-projects/**/.settings/**
+src/test/resources/test-projects/**/bin/**

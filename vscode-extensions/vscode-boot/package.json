@@ -1,0 +1,91 @@
+{
+  "name": "vscode-boot",
+  "displayName": "Spring Boot Support",
+  "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
+  "icon": "spring-boot-logo.png",
+  "version": "0.1.4",
+  "publisher": "Pivotal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "license": "EPL-1.0",
+  "engines": {
+    "npm": "^3.0.0",
+    "vscode": "^1.19.0"
+  },
+  "categories": [
+    "Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "java-properties",
+    "spring-boot",
+    "java",
+    "application-properties",
+    "application-yaml"
+  ],
+  "activationEvents": [
+    "onLanguage:spring-boot-properties",
+    "onLanguage:spring-boot-properties-yaml",
+    "onLanguage:java"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "spring-boot-properties-yaml",
+        "aliases": [
+          "Spring Boot Properties Yaml"
+        ],
+        "filenamePatterns": [
+          "application*.yml",
+          "bootstrap*.yml"
+        ],
+        "configuration": "./yaml-support/language-configuration.json"
+      },
+      {
+        "id": "spring-boot-properties",
+        "aliases": [
+          "Spring Boot Properties"
+        ],
+        "filenamePatterns": [
+          "application*.properties",
+          "bootstrap*.yml"
+        ],
+        "configuration": "./properties-support/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "spring-boot-properties-yaml",
+        "scopeName": "source.yaml",
+        "path": "./yaml-support/yaml.tmLanguage"
+      },
+      {
+        "language": "spring-boot-properties",
+        "scopeName": "source.java-properties",
+        "path": "./properties-support/java-properties.tmLanguage"
+      }
+    ]
+  },
+  "main": "./out/lib/Main",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "clean": "rm -fr node_modules out *.vsix package-lock.json",
+    "preinstall": "./scripts/preinstall.sh",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "vsce-package": "vsce package"
+  },
+  "dependencies": {
+    "commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
+    "vscode-languageclient": "^3.4.2"
+  },
+  "devDependencies": {
+    "vsce": "^1.36.1",
+    "typescript": "2.6.1",
+    "@types/node": "^7.0.43",
+    "vscode": "^1.1.10"
+  }
+}
