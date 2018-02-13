@@ -114,6 +114,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-manifest-yaml-(.*).vsix
+- name: s3-spring-boot-vsix-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
@@ -404,30 +412,26 @@ jobs:
       params: 
         file: out/vscode-manifest-yaml-*.vsix
         acl: public-read
-- name: build-boot-vsix-snapshot
-  # This job is not yet properly / fully implemented. It only builds language-server-jar
+- name: build-spring-boot-vsix-snapshot
   plan:
   - aggregate:
     - get: sts4
       trigger: true
     - get: maven-cache
-  - task: build-language-server-jar
-    config:
-      inputs:
-      - name: sts4
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: kdvolder/sts4-build-env
-      run:
-        dir: sts4/headless-services/boot-language-server
-        path: ./build.sh
+  - task: build-spring-boot-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-spring-boot
     on_failure:
       put: slack-notification
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - aggregate:
+    - put: s3-spring-boot-vsix-snapshot
+      params: 
+        file: out/vscode-spring-boot-*.vsix
+        acl: public-read
 - name: trigger-rc-build
   serial: true
   plan: 
@@ -439,6 +443,7 @@ jobs:
       - build-bosh-vsix-snapshot
       - build-boot-java-vsix-snapshot
       - build-boot-properties-vsix-snapshot
+      - build-spring-boot-vsix-snapshot
     - do:
       - get: version
         params:
@@ -1162,7 +1167,7 @@ groups:
   - build-vscode-snapshot-website
   - build-consourse-vsix-snapshot
   - build-boot-properties-vsix-snapshot
-  - build-boot-vsix-snapshot
+  - build-spring-boot-vsix-snapshot
   - build-boot-java-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot

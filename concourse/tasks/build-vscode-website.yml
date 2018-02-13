@@ -1,6 +1,7 @@
 inputs:
 - name: sts4
 - name: s3-manifest-yaml-vsix-snapshot
+- name: s3-spring-boot-vsix-snapshot
 - name: s3-boot-properties-vsix-snapshot
 - name: s3-boot-java-vsix-snapshot
 - name: s3-concourse-vsix-snapshot

@@ -13,6 +13,8 @@ dist_type=snapshot
 
 export vscode_manifest_yaml=$(basename s3-manifest-yaml-vsix-${dist_type}/*.vsix)
 echo "vscode_manifest_yaml=$vscode_manifest_yaml"
+export vscode_spring_boot=$(basename s3-spring-boot-vsix-${dist_type}/*.vsix)
+echo "vscode_spring_boot=$vscode_spring_boot"
 export vscode_boot_properties=$(basename s3-boot-properties-vsix-${dist_type}/*.vsix)
 echo "vscode_boot_properties=$vscode_boot_properties"
 export vscode_boot_java=$(basename s3-boot-java-vsix-${dist_type}/*.vsix)
@@ -24,6 +26,9 @@ echo "vscode_bosh=$vscode_bosh"
 
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
+   <li>Spring Boot Language Server: 
+       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_boot}">${vscode_spring_boot}</a> 
+   </li>
    <li>Spring Boot Property Language Server: 
        <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_boot_properties}">${vscode_boot_properties}</a> 
    </li>
