@@ -944,6 +944,10 @@ jobs:
       trigger: true
       passed:
       - build-manifest-yaml-vsix-snapshot
+    - get: s3-spring-boot-vsix-snapshot
+      trigger: true
+      passed:
+      - build-spring-boot-vsix-snapshot
     - get: s3-boot-properties-vsix-snapshot
       trigger: true
       passed:
