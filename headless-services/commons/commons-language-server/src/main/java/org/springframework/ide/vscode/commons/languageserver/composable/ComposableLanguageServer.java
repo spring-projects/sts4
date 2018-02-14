@@ -41,16 +41,20 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
 		IReconcileEngine reconcileEngine = components.getReconcileEngine();
-		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			server.validateWith(doc.getId(), reconcileEngine);
-		});
+		if (reconcileEngine!=null) {
+			documents.onDidChangeContent(params -> {
+				TextDocument doc = params.getDocument();
+				server.validateWith(doc.getId(), reconcileEngine);
+			});
+		}
 
 		ICompletionEngine completionEngine = components.getCompletionEngine();
-		completionEngineAdapter = server.createCompletionEngineAdapter(server, completionEngine);
-		completionEngineAdapter.setMaxCompletions(100);
-		documents.onCompletion(completionEngineAdapter::getCompletions);
-		documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);
+		if (completionEngine!=null) {
+			completionEngineAdapter = server.createCompletionEngineAdapter(server, completionEngine);
+			completionEngineAdapter.setMaxCompletions(100);
+			documents.onCompletion(completionEngineAdapter::getCompletions);
+			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);
+		}
 
 		HoverInfoProvider hoverInfoProvider = components.getHoverProvider();
 		hoverEngine = new VscodeHoverEngineAdapter(server, hoverInfoProvider);
@@ -62,7 +66,9 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 	}
 
 	public void setMaxCompletionsNumber(int number) {
-		completionEngineAdapter.setMaxCompletions(number);
+		if (completionEngineAdapter!=null) {
+			completionEngineAdapter.setMaxCompletions(number);
+		}
 	}
 
 	public void setHoverType(HoverType type) {

@@ -16,8 +16,12 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 
 public interface LanguageServerComponents {
 
-	IReconcileEngine getReconcileEngine();
-	ICompletionEngine getCompletionEngine();
+	default IReconcileEngine getReconcileEngine() {
+		return null;
+	}
+	default ICompletionEngine getCompletionEngine() {
+		return null;
+	}
 	HoverInfoProvider getHoverProvider();
 
 }
