@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -92,7 +92,6 @@ import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -291,15 +290,6 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 					return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
 				}
 
-				@Override
-				public CompletableFuture<WorkspaceFolder[]> getWorkspaceFolders() {
-					if (workspaceRoot!=null) {
-						return CompletableFuture.completedFuture(new WorkspaceFolder[]{
-							new WorkspaceFolder(workspaceRoot.toURI().toString(), workspaceRoot.getName())
-						});
-					}
-					return CompletableFuture.completedFuture(new WorkspaceFolder[]{});
-				}
 			});
 
 		}

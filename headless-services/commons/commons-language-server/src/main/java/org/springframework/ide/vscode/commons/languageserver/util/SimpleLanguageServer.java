@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
@@ -46,9 +47,6 @@ import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.DidChangeWorkspaceFoldersParams;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
@@ -76,7 +74,7 @@ import reactor.core.scheduler.Schedulers;
  * here so we can try to keep the subclass itself more 'clutter free' and focus on
  * what its really doing and not the 'wiring and plumbing'.
  */
-public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, WorkspaceFoldersProposedService, SimpleLanguageServerWrapper {
+public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
@@ -193,7 +191,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 				} catch (Exception e) {
 					name = "";
 				}
-				singleRootFolder.add(new WorkspaceFolder(rootUri, name));
+				WorkspaceFolder folder = new WorkspaceFolder();
+				folder.setName(name);
+				folder.setUri(rootUri);
+				singleRootFolder.add(folder);
 				this.getWorkspaceService().setWorkspaceFolders(singleRootFolder);
 			}
 		}
@@ -233,7 +234,12 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 					if (folderNameStart > 0) {
 						folderName = folderPath.substring(folderPath.lastIndexOf("/") + 1);
 					}
-					initialFolders.add(new WorkspaceFolder(object.toString(), folderName));
+
+					WorkspaceFolder folder = new WorkspaceFolder();
+					folder.setName(folderName);
+					folder.setUri(object.toString());
+
+					initialFolders.add(folder);
 				}
 			}
 		}
@@ -535,12 +541,6 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	public boolean canRegisterFileWatchersDynamically() {
 		return hasFileWatcherRegistrationSupport;
 	}
-
-	@Override
-	public void didChangeWorkspaceFolders(DidChangeWorkspaceFoldersParams params) {
-		getWorkspaceService().didChangeWorkspaceFolders(params);
-	}
-
 
 	@Override
 	public DiagnosticService getDiagnosticService() {

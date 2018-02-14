@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -59,12 +60,10 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -77,6 +76,10 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class BootJavaLanguageServer extends SimpleLanguageServer {
+	
+	public static final String WORKSPACE_FOLDERS_CAPABILITY_NAME = "workspace/didChangeWorkspaceFolders";
+	public static final String WORKSPACE_FOLDERS_CAPABILITY_ID = UUID.randomUUID().toString();
+
 
 	private final VscodeCompletionEngineAdapter completionEngine;
 	private final SpringIndexer indexer;
@@ -186,7 +189,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 
 	@Override
 	public void initialized() {
-		Registration registration = new Registration(WorkspaceFoldersProposedService.CAPABILITY_ID, WorkspaceFoldersProposedService.CAPABILITY_NAME, null);
+		Registration registration = new Registration(WORKSPACE_FOLDERS_CAPABILITY_ID, WORKSPACE_FOLDERS_CAPABILITY_NAME, null);
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
 		getClient().registerCapability(registrationParams);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,14 +19,13 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceFolder;
+import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.DidChangeWorkspaceFoldersParams;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersChangeEvent;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFoldersProposedService;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -35,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
-public class SimpleWorkspaceService implements WorkspaceService, WorkspaceFoldersProposedService {
+public class SimpleWorkspaceService implements WorkspaceService {
 
 	private SimpleLanguageServer server;
 	private Set<WorkspaceFolder> workspaceRoots = new HashSet<>();
