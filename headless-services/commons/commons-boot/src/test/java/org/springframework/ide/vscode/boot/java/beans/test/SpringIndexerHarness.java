@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,12 +24,12 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceFolder;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -141,11 +141,11 @@ public class SpringIndexerHarness {
 	}
 
 	public Collection<WorkspaceFolder> wsFolder(File directory) {
-		if (directory!=null) {
-			return ImmutableList.of(new WorkspaceFolder(
-					directory.toURI().toString(),
-					directory.getName()
-			));
+		if (directory != null) {
+			WorkspaceFolder folder = new WorkspaceFolder();
+			folder.setName(directory.getName());
+			folder.setUri(directory.toURI().toString());
+			return ImmutableList.of(folder);
 		}
 		return ImmutableList.of();
 	}

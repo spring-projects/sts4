@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.WorkspaceFolder;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 import com.google.common.collect.ImmutableList;
@@ -54,11 +54,11 @@ public class PropertyReferenceFinderTest {
 	}
 
 	private Collection<WorkspaceFolder> wsFolder(Path directory) {
-		if (directory!=null) {
-			return ImmutableList.of(new WorkspaceFolder(
-					directory.toUri().toString(),
-					directory.getFileName().toString()
-			));
+		if (directory != null) {
+			WorkspaceFolder folder = new WorkspaceFolder();
+			folder.setName(directory.getFileName().toString());
+			folder.setUri(directory.toUri().toString());
+			return ImmutableList.of(folder);
 		}
 		return ImmutableList.of();
 	}

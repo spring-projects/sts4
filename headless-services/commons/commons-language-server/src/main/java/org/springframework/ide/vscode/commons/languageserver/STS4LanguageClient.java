@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
  *
  * @author Kris De Volder
  */
-public interface STS4LanguageClient extends LanguageClient, WorkspaceFoldersProposedClient {
+public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);

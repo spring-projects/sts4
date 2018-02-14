@@ -49,6 +49,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
@@ -59,7 +60,6 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
-import org.springframework.ide.vscode.commons.languageserver.multiroot.WorkspaceFolder;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -135,7 +135,7 @@ public class SpringIndexer {
 		updateWorker.start();
 
 		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
-			log.debug("workspace roots have changed event arrived - added: " + Arrays.toString(evt.getEvent().getAdded()) + " - removed: " + Arrays.toString(evt.getEvent().getRemoved()));
+			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 			refresh();
 		});
 
