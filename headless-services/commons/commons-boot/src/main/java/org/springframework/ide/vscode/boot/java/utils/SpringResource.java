@@ -10,16 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 
 /**
@@ -31,13 +30,15 @@ public class SpringResource {
 	private static final String FILE = "file";
 	private static final String CLASS_PATH_RESOURCE = "class path resource";
 
+	private SourceLinks sourceLinks;
 	private String type;
 	private String path;
 	private IJavaProject project;
 
 	private static final Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
 
-	public SpringResource(String toParse, IJavaProject project) {
+	public SpringResource(SourceLinks sourceLinks, String toParse, IJavaProject project) {
+		this.sourceLinks = sourceLinks;
 		this.project = project;
 		Matcher matcher = BRACKETS.matcher(toParse);
 		if (matcher.find()) {
@@ -57,15 +58,15 @@ public class SpringResource {
 		case FILE:
 			String relativePath = projectRelativePath(path);
 			if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
-				linkUrl = SourceLinks.sourceLinkUrlForClasspathResource(project, relativePath);
+				linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath);
 			} else {
-				linkUrl = SourceLinks.sourceLinkForResourcePath(Paths.get(path));
+				linkUrl = sourceLinks.sourceLinkForResourcePath(Paths.get(path));
 			}
 			// not a project relative path
 			return linkUrl.isPresent() ? Renderables.link(relativePath, linkUrl.get()).toMarkdown()
 					: "`" + projectRelativePath(path) + "`";
 		case CLASS_PATH_RESOURCE:
-			linkUrl = SourceLinks.sourceLinkUrlForClasspathResource(project, path);
+			linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, path);
 			return linkUrl.isPresent() ? Renderables.link(path, linkUrl.get()).toMarkdown() : "`"+path+"`";
 		default:
 			return path;

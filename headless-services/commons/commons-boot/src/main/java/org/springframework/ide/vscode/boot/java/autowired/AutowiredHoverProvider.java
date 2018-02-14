@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
@@ -41,6 +42,12 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class AutowiredHoverProvider implements HoverProvider {
+	
+	private BootJavaLanguageServer server;
+	
+	public AutowiredHoverProvider(BootJavaLanguageServer server) {
+		this.server = server;
+	}
 
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
@@ -155,7 +162,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 				}
 				List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
 				for (LiveBean dependencyBean : dependencyBeans) {
-					hover.append("- " + LiveHoverUtils.showBeanWithResource(dependencyBean, "  ", project));
+					hover.append("- " + LiveHoverUtils.showBeanWithResource(server, dependencyBean, "  ", project));
 				}
 				firstDependency = false;
 			}

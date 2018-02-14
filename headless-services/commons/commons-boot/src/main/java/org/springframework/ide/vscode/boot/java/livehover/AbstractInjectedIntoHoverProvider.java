@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -34,6 +35,12 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
+	
+	protected BootJavaLanguageServer server;
+	
+	public AbstractInjectedIntoHoverProvider(BootJavaLanguageServer server) {
+		this.server = server;
+	}
 
 	@Override
 	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
@@ -113,7 +120,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				if (!firstDependency) {
 					hover.append("\n");
 				}
-				hover.append("- " + LiveHoverUtils.showBeanWithResource(dependingBean, "  ", project));
+				hover.append("- " + LiveHoverUtils.showBeanWithResource(server, dependingBean, "  ", project));
 				firstDependency = false;
 			}
 		}

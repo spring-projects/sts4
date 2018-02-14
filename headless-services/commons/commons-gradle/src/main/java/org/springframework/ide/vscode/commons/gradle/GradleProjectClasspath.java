@@ -68,7 +68,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 						URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
 						return new HtmlJavadocProvider(
 								(type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
-										.sourceUrl(javadocUrl, type));
+										.sourceUrl(javadocUrl, type.getFullyQualifiedName()));
 					} catch (MalformedURLException e) {
 						Log.log(e);
 						return null;
@@ -150,7 +150,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 				if (classpathFolder.isPresent()) {
 					return new ParserJavadocProvider(type -> {
 						return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-								.sourceUrl(classpathFolder.get().toURI().toURL(), type);
+								.sourceUrl(classpathFolder.get().toURI().toURL(), type.getFullyQualifiedName());
 					});
 
 				}
@@ -246,6 +246,11 @@ public class GradleProjectClasspath extends JandexClasspath {
 	@Override
 	public ClasspathData createClasspathData() throws Exception {
 		return ClasspathData.from(getName(), getClasspathEntries(), getClasspathResources(), getOutputFolder());
+	}
+
+	@Override
+	public Optional<URL> sourceContainer(File classpathResource) {
+		return Optional.empty();
 	}
 
 }

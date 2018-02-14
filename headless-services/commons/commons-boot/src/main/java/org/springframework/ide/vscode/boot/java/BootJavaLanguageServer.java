@@ -269,9 +269,9 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(Annotations.SPRING_PATCH_MAPPING, new RequestMappingHoverProvider());
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
-		providers.put(Annotations.AUTOWIRED, new AutowiredHoverProvider());
-		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider());
-		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider());
+		providers.put(Annotations.AUTOWIRED, new AutowiredHoverProvider(this));
+		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider(this));
+		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider(this));
 
 		providers.put(Annotations.CONDITIONAL, new ConditionalsLiveHoverProvider());
 		providers.put(Annotations.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());

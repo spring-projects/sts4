@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -177,6 +178,12 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 		if (t != null) {
 			t.reindex();
 		}
+	}
+
+	@Override
+	public Optional<URL> sourceContainer(File classpathResource) {
+		T t = cachedClasspath.get();
+		return t == null ? Optional.empty() : t.sourceContainer(classpathResource);
 	}
 	
 }

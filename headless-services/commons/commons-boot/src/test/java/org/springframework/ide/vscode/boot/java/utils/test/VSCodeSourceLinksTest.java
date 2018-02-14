@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.utils.SourceLinks;
+import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -63,29 +63,35 @@ public class VSCodeSourceLinksTest {
 	@Test
 	public void testJavaSourceUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = SourceLinks.sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
+		Optional<String> url = new VSCodeSourceLinks(null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
 		assertTrue(url.isPresent());
 		Path projectPath = Paths.get(project.pom().getParent());
-		Path relativePath = projectPath.relativize(Paths.get(new URL(url.get()).toURI()));
+		Path relativePath = projectPath.relativize(Paths.get(new URL(url.get()).getPath()));
 		assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
+		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+		assertEquals("#7,14", positionPart);
 	}
 
 	@Test
 	public void testJarUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = SourceLinks.sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
+		Optional<String> url = new VSCodeSourceLinks(null).sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
 		assertTrue(url.isPresent());
 		String headerPart = url.get().substring(0, url.get().indexOf('?'));
 		assertEquals("jdt://contents/spring-boot-autoconfigure-1.5.8.RELEASE.jar/org.springframework.boot.autoconfigure/SpringBootApplication.class", headerPart);
+		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+		assertEquals("#55,19", positionPart);
 	}
 
 	@Test
 	public void testJarUrlInnerType() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = SourceLinks.sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
+		Optional<String> url = new VSCodeSourceLinks(null).sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
 		assertTrue(url.isPresent());
 		String headerPart = url.get().substring(0, url.get().indexOf('?'));
 		assertEquals("jdt://contents/spring-web-4.3.12.RELEASE.jar/org.springframework.web.client/RestTemplate$AcceptHeaderRequestCallback.class", headerPart);
+		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+		assertEquals("#747,16", positionPart);
 	}
 
 }
