@@ -8,8 +8,9 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties;
+package org.springframework.ide.vscode.boot;
 
+import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
@@ -20,11 +21,11 @@ public class BootLanguageServer<C extends LanguageServerComponents> extends Comp
 		super(extensionId, _components);
 	}
 
-	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> create(LSFactory<BootPropertiesLanguageServerParams> params) {
+	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> create(LSFactory<BootLanguageServerParams> params) {
 		return new ComposableLanguageServer<>("vscode-boot", s -> new BootPropertiesLanguageServerComponents(s, params));
 	}
 	
-	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> createProperties(LSFactory<BootPropertiesLanguageServerParams> params) {
+	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> createProperties(LSFactory<BootLanguageServerParams> params) {
 		return new ComposableLanguageServer<>("vscode-boot", s -> new BootPropertiesLanguageServerComponents(s, params));
 	}
 

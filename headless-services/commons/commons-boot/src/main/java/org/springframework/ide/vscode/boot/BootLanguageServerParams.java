@@ -8,7 +8,7 @@
  * Contributors:
  * Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.properties;
+package org.springframework.ide.vscode.boot;
 
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -40,14 +40,14 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Alex Boyko
  *
  */
-public class BootPropertiesLanguageServerParams {
+public class BootLanguageServerParams {
 
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
 	public final TypeUtilProvider typeUtilProvider;
 
-	public BootPropertiesLanguageServerParams(
+	public BootLanguageServerParams(
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
@@ -60,7 +60,7 @@ public class BootPropertiesLanguageServerParams {
 		this.typeUtilProvider = typeUtilProvider;
 	}
 
-	public static LSFactory<BootPropertiesLanguageServerParams> createDefault() {
+	public static LSFactory<BootLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
@@ -75,7 +75,7 @@ public class BootPropertiesLanguageServerParams {
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
 			indexProvider.setProgressService(server.getProgressService());
 
-			return new BootPropertiesLanguageServerParams(
+			return new BootLanguageServerParams(
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,
@@ -84,7 +84,7 @@ public class BootPropertiesLanguageServerParams {
 		};
 	}
 
-	public static LSFactory<BootPropertiesLanguageServerParams> createTestDefault(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
+	public static LSFactory<BootLanguageServerParams> createTestDefault(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
@@ -98,7 +98,7 @@ public class BootPropertiesLanguageServerParams {
 
 			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 
-			return new BootPropertiesLanguageServerParams(
+			return new BootLanguageServerParams(
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,
@@ -107,7 +107,7 @@ public class BootPropertiesLanguageServerParams {
 		};
 	}
 
-	public static LSFactory<BootPropertiesLanguageServerParams> createTestDefault() {
+	public static LSFactory<BootLanguageServerParams> createTestDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
@@ -124,7 +124,7 @@ public class BootPropertiesLanguageServerParams {
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
 			indexProvider.setProgressService(server.getProgressService());
 
-			return new BootPropertiesLanguageServerParams(
+			return new BootLanguageServerParams(
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,

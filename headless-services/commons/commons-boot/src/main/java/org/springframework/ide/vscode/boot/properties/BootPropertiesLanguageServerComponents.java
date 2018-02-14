@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.properties;
 
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -75,9 +76,9 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	private YamlAssistContextProvider yamlAssistContextProvider;
 	private final SimpleLanguageServer server;
 
-	public BootPropertiesLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootPropertiesLanguageServerParams> _params) {
+	public BootPropertiesLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
 		this.server = server;
-		BootPropertiesLanguageServerParams serverParams = _params.create(server);
+		BootLanguageServerParams serverParams = _params.create(server);
 
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;

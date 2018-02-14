@@ -24,12 +24,12 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.BootLanguageServer;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
-import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
@@ -1588,7 +1588,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		ComposableLanguageServer server = BootLanguageServer.create(
-				s -> new BootPropertiesLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
+				s -> new BootLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
 						typeUtilProvider));
 		server.setMaxCompletionsNumber(-1);
 		return server.getServer();

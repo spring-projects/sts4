@@ -20,10 +20,10 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.BootLanguageServer;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -46,7 +46,7 @@ public class SpringPropertiesIndexTest {
 
 	@Before
 	public void setup() throws Exception {
-		harness = new LanguageServerHarness<>(() -> BootLanguageServer.create(BootPropertiesLanguageServerParams.createTestDefault()));
+		harness = new LanguageServerHarness<>(() -> BootLanguageServer.create(BootLanguageServerParams.createTestDefault()));
 	}
 
 	@Test

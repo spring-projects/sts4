@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.boot.properties;
 
 import java.io.IOException;
 
+import org.springframework.ide.vscode.boot.BootLanguageServer;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 
@@ -28,7 +30,7 @@ public class Main {
 		String serverName = "boot-properties-language-server";
 		LogRedirect.redirectToFile(serverName);
 		LaunguageServerApp.start(serverName,
-				() -> BootLanguageServer.createProperties(BootPropertiesLanguageServerParams.createDefault()).getServer()
+				() -> BootLanguageServer.createProperties(BootLanguageServerParams.createDefault()).getServer()
 		);
 	}
 
