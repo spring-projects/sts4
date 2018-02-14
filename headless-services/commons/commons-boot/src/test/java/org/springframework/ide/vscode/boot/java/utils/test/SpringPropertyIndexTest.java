@@ -21,13 +21,13 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -44,7 +44,7 @@ public class SpringPropertyIndexTest {
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootLanguageServerHarness.builder().build();
+		harness = BootJavaLanguageServerHarness.builder().build();
 	}
 
 	@Test

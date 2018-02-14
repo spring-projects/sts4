@@ -12,8 +12,6 @@ package org.springframework.ide.vscode.boot;
 
 import java.io.IOException;
 
-import org.springframework.ide.vscode.boot.properties.BootLanguageServer;
-import org.springframework.ide.vscode.boot.properties.BootLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 

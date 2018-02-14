@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -26,14 +26,14 @@ public class ActuatorWarningHoverTest {
 	private static final String ACTUATOR_PROJECT = "empty-boot-15-web-app";
 	private static final String NO_ACTUATOR_PROJECT = "no-actuator-boot-15-web-app";
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
 		mockAppProvider = new MockRunningAppProvider();
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults()
 				.runningAppProvider(mockAppProvider.provider)
 				.watchDogInterval(Duration.ofMillis(100))

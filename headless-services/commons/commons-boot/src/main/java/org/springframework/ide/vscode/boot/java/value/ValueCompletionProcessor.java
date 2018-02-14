@@ -24,7 +24,8 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
-import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -50,13 +51,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		List<ICompletionProposal> result = new ArrayList<>();
 
 		try {
-			FuzzyMap<ConfigurationMetadataProperty> index = indexProvider.getIndex(doc);
+			FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
 
 			// case: @Value(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
-				List<Match<ConfigurationMetadataProperty>> matches = findMatches("", index);
+				List<Match<PropertyInfo>> matches = findMatches("", index);
 
-				for (Match<ConfigurationMetadataProperty> match : matches) {
+				for (Match<PropertyInfo> match : matches) {
 
 					DocumentEdits edits = new DocumentEdits(doc);
 					edits.replace(offset, offset, "\"${" + match.data.getId() + "}\"");
@@ -96,7 +97,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private void computeProposalsForSimpleName(ASTNode node, List<ICompletionProposal> completions, int offset,
-			IDocument doc, FuzzyMap<ConfigurationMetadataProperty> index) {
+			IDocument doc, FuzzyMap<PropertyInfo> index) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
@@ -105,9 +106,9 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";
 
-		List<Match<ConfigurationMetadataProperty>> matches = findMatches(prefix, index);
+		List<Match<PropertyInfo>> matches = findMatches(prefix, index);
 
-		for (Match<ConfigurationMetadataProperty> match : matches) {
+		for (Match<PropertyInfo> match : matches) {
 
 			DocumentEdits edits = new DocumentEdits(doc);
 			edits.replace(startOffset, endOffset, proposalPrefix + "${" + match.data.getId() + "}" + proposalPostfix);
@@ -118,7 +119,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private void computeProposalsForStringLiteral(ASTNode node, List<ICompletionProposal> completions, int offset,
-			IDocument doc, FuzzyMap<ConfigurationMetadataProperty> index) throws BadLocationException {
+			IDocument doc, FuzzyMap<PropertyInfo> index) throws BadLocationException {
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, offset - (node.getStartPosition() + 1)), offset - (node.getStartPosition() + 1));
 
 		int startOffset = offset - prefix.length();
@@ -140,9 +141,9 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		String fullNodeContent = doc.get(node.getStartPosition(), node.getLength());
 		String postCompletion = isClosingBracketMissing(fullNodeContent + preCompletion) ? "}" : "";
 
-		List<Match<ConfigurationMetadataProperty>> matches = findMatches(prefix, index);
+		List<Match<PropertyInfo>> matches = findMatches(prefix, index);
 
-		for (Match<ConfigurationMetadataProperty> match : matches) {
+		for (Match<PropertyInfo> match : matches) {
 
 			DocumentEdits edits = new DocumentEdits(doc);
 			edits.replace(startOffset, endOffset, preCompletion + match.data.getId() + postCompletion);
@@ -183,8 +184,8 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		return result;
 	}
 
-	private List<Match<ConfigurationMetadataProperty>> findMatches(String prefix, FuzzyMap<ConfigurationMetadataProperty> index) {
-		List<Match<ConfigurationMetadataProperty>> matches = index.find(camelCaseToHyphens(prefix));
+	private List<Match<PropertyInfo>> findMatches(String prefix, FuzzyMap<PropertyInfo> index) {
+		List<Match<PropertyInfo>> matches = index.find(camelCaseToHyphens(prefix));
 		return matches;
 	}
 

@@ -20,7 +20,7 @@ import java.util.List;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -28,11 +28,11 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class RequestMappingSymbolProviderTest {
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootLanguageServerHarness.builder().build();
+		harness = BootJavaLanguageServerHarness.builder().build();
 	}
 
 	@Test

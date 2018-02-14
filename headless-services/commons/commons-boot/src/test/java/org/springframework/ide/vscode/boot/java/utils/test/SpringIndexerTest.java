@@ -35,7 +35,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSym
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -55,7 +55,7 @@ public class SpringIndexerTest {
 	public void setup() throws Exception {
 		symbolProviders = new HashMap<>();
 		symbolProviders.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-		harness = BootLanguageServerHarness.builder().build();
+		harness = BootJavaLanguageServerHarness.builder().build();
 	}
 
 	@Test

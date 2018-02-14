@@ -28,6 +28,8 @@ import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -1587,9 +1589,16 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
-		ComposableLanguageServer server = BootLanguageServer.create(
-				s -> new BootLanguageServerParams(javaProjectFinder, null, md.getIndexProvider(),
-						typeUtilProvider));
+		ComposableLanguageServer<?> server = BootLanguageServer.create(
+				s -> new BootLanguageServerParams(
+						javaProjectFinder, 
+						null, 
+						md.getIndexProvider(),
+						typeUtilProvider,
+						RunningAppProvider.NULL,
+						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+				)
+		);
 		server.setMaxCompletionsNumber(-1);
 		return server.getServer();
 	}

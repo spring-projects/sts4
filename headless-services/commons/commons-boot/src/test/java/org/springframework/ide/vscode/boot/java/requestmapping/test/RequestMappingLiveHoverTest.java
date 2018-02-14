@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -34,7 +34,7 @@ public class RequestMappingLiveHoverTest {
 	public void setup() throws Exception {
 
 		mockAppProvider = new MockRunningAppProvider();
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.runningAppProvider(mockAppProvider.provider)
 				.watchDogInterval(Duration.ofMillis(100))
 				.build();

@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.TestAsserts;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -31,13 +31,13 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class ScopeCompletionTest {
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 	private Editor editor;
 
 	@Before
 	public void setup() throws Exception {
 		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		harness = BootLanguageServerHarness.builder().mockDefaults().build();
+		harness = BootJavaLanguageServerHarness.builder().mockDefaults().build();
 		harness.useProject(testProject);
 		harness.intialize(null);
 	}

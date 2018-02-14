@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -41,16 +41,16 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class CompilationUnitCacheTest {
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootLanguageServerHarness.builder().build();
+		harness = BootJavaLanguageServerHarness.builder().build();
 	}
 
 	@Test
 	public void cu_cached() throws Exception {
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults().build();
 		harness.useProject(new IJavaProject() {
 			@Override
@@ -91,7 +91,7 @@ public class CompilationUnitCacheTest {
 
 	@Test
 	public void cu_cache_invalidated_by_doc_change() throws Exception {
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults().build();
 		harness.useProject(new IJavaProject() {
 			@Override
@@ -122,7 +122,7 @@ public class CompilationUnitCacheTest {
 
 	@Test
 	public void cu_cache_invalidated_by_doc_close() throws Exception {
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults().build();
 		harness.useProject(new IJavaProject() {
 			@Override

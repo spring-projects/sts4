@@ -14,17 +14,18 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 import org.junit.Assert;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLanguageServer> {
+public class BootJavaLanguageServerHarness extends LanguageServerHarness<BootJavaLanguageServer> {
 
 	private PropertyIndexHarness indexHarness;
 	private final JavaProjectFinder projectFinder = (doc) -> getServerWrapper().getProjectFinder().find(doc);
@@ -43,16 +44,17 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 
 	public static class Builder {
 
-		LSFactory<BootJavaLanguageServerParams> defaultsFactory = BootJavaLanguageServerParams.createTestDefault();
+		LSFactory<BootLanguageServerParams> defaultsFactory = BootLanguageServerParams.createTestDefault();
 		private JavaProjectFinder projectFinder = null;
 		private ProjectObserver projectObserver = null;
 		private SpringPropertyIndexProvider indexProvider = null;
 		private RunningAppProvider runningAppProvider = null;
 		private PropertyIndexHarness indexHarness = null;
 		private Duration watchDogInterval = null;
+		private TypeUtilProvider typeUtilProvider = null;
 
-		public BootLanguageServerHarness build() throws Exception {
-			BootLanguageServerHarness harness = new BootLanguageServerHarness(this);
+		public BootJavaLanguageServerHarness build() throws Exception {
+			BootJavaLanguageServerHarness harness = new BootJavaLanguageServerHarness(this);
 			return harness;
 		}
 
@@ -89,14 +91,15 @@ public class BootLanguageServerHarness extends LanguageServerHarness<BootJavaLan
 	/**
 	 * This constructor is private. Use the builder api instead.
 	 */
-	private BootLanguageServerHarness(Builder builder) throws Exception {
+	private BootJavaLanguageServerHarness(Builder builder) throws Exception {
 		super(() -> {
-			LSFactory<BootJavaLanguageServerParams> params = (server) -> {
-				BootJavaLanguageServerParams defaults = BootJavaLanguageServerParams.createTestDefault().create(server);
-				return new BootJavaLanguageServerParams(
+			LSFactory<BootLanguageServerParams> params = (server) -> {
+				BootLanguageServerParams defaults = BootLanguageServerParams.createTestDefault().create(server);
+				return new BootLanguageServerParams(
 						builder.projectFinder==null?defaults.projectFinder:builder.projectFinder,
 						builder.projectObserver==null?defaults.projectObserver:builder.projectObserver,
 						builder.indexProvider==null?defaults.indexProvider:builder.indexProvider,
+						builder.typeUtilProvider==null?defaults.typeUtilProvider:builder.typeUtilProvider,
 						builder.runningAppProvider==null?defaults.runningAppProvider:builder.runningAppProvider,
 						builder.watchDogInterval==null?defaults.watchDogInterval:builder.watchDogInterval
 				);

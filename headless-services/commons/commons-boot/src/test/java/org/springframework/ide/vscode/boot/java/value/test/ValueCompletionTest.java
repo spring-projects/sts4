@@ -25,7 +25,7 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
 
@@ -34,7 +34,7 @@ import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
  */
 public class ValueCompletionTest {
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 	private IJavaProject testProject;
 
 	private Editor editor;
@@ -48,7 +48,7 @@ public class ValueCompletionTest {
 		// But it is not used in the indexProvider.
 		//This is a bit odd... but we preserved the strangeness how it was.
 		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults()
 				.projectFinder(d -> Optional.ofNullable(getTestProject()))
 				.build();

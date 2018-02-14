@@ -22,7 +22,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansMod
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
@@ -55,7 +55,7 @@ public class ComponentInjectionsHoverProviderTest {
 
 	};
 
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	private MockRunningAppProvider mockAppProvider;
@@ -63,7 +63,7 @@ public class ComponentInjectionsHoverProviderTest {
 	@Before
 	public void setup() throws Exception {
 		mockAppProvider = new MockRunningAppProvider();
-		harness = BootLanguageServerHarness.builder()
+		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults()
 				.runningAppProvider(mockAppProvider.provider)
 				.watchDogInterval(Duration.ofMillis(100))

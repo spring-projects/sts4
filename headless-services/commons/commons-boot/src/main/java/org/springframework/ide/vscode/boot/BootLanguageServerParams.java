@@ -11,9 +11,12 @@
 package org.springframework.ide.vscode.boot;
 
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Arrays;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -38,26 +41,37 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * Parameters for creating Boot Properties language server
  * 
  * @author Alex Boyko
- *
+ * @author Kris De Volder
  */
 public class BootLanguageServerParams {
 
+	//Shared
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
+	
+	//Boot Properies
 	public final TypeUtilProvider typeUtilProvider;
+	
+	//Boot Java
+	public final RunningAppProvider runningAppProvider;
+	public final Duration watchDogInterval;
 
 	public BootLanguageServerParams(
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
-			TypeUtilProvider typeUtilProvider
+			TypeUtilProvider typeUtilProvider,
+			RunningAppProvider runningAppProvider,
+			Duration watchDogInterval
 	) {
 		super();
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
+		this.runningAppProvider = runningAppProvider;
+		this.watchDogInterval = watchDogInterval;
 	}
 
 	public static LSFactory<BootLanguageServerParams> createDefault() {
@@ -79,7 +93,9 @@ public class BootLanguageServerParams {
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,
-					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
+					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
+					RunningAppProvider.DEFAULT,
+					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
 	}
@@ -102,7 +118,9 @@ public class BootLanguageServerParams {
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,
-					typeUtilProvider
+					typeUtilProvider,
+					RunningAppProvider.NULL,
+					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
 	}
@@ -128,9 +146,10 @@ public class BootLanguageServerParams {
 					javaProjectFinder.filter(BootProjectUtil::isBootProject),
 					projectObserver,
 					indexProvider,
-					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
+					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
+					RunningAppProvider.NULL,
+					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
 	}
-	
 }

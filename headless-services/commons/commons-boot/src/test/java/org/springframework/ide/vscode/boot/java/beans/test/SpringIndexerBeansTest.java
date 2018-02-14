@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.test.SpringIndexerHarness.TestSymbolInfo;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 public class SpringIndexerBeansTest {
 
 	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
-	private BootLanguageServerHarness harness;
+	private BootJavaLanguageServerHarness harness;
 	private JavaProjectFinder projectFinder;
 
 	@Before
@@ -39,7 +39,7 @@ public class SpringIndexerBeansTest {
 		symbolProviders.put(Annotations.BEAN, new BeansSymbolProvider());
 		symbolProviders.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
-		harness = BootLanguageServerHarness.builder().build();
+		harness = BootJavaLanguageServerHarness.builder().build();
 		projectFinder = harness.getProjectFinder();
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI()));
 	}
