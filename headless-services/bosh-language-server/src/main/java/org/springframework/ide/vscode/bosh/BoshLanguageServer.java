@@ -17,7 +17,6 @@ import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -62,7 +61,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
 		completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
-		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
+		VscodeHoverEngineAdapter hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(asts.getAstProvider(false), schema, quickfixes);
 		engine.setTypeCollector(astTypeCache);
@@ -73,7 +72,7 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		});
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
-		documents.onHover(hoverEngine ::getHover);
+		documents.onHover(hoverEngine);
 		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
 
 		SimpleWorkspaceService workspace = getWorkspaceService();

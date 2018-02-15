@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
@@ -108,6 +109,12 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	private boolean hasExecuteCommandSupport;
 
 	private boolean hasFileWatcherRegistrationSupport;
+
+	private Consumer<InitializeParams> initializeHandler;
+
+	private Runnable initializedHandler;
+
+	private Runnable shutdownHandler;
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -213,8 +220,19 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		}
 		ServerCapabilities cap = getServerCapabilities();
 		result.setCapabilities(cap);
-
+		Consumer<InitializeParams> ih = this.initializeHandler;
+		if (ih!=null){
+			ih.accept(params);
+		}
 		return CompletableFuture.completedFuture(result);
+	}
+
+	@Override
+	public void initialized() {
+		Runnable h = this.initializedHandler;
+		if (h!=null) {
+			h.run();
+		}
 	}
 
 	private List<WorkspaceFolder> getWorkspaceFolders(InitializeParams params) {
@@ -352,6 +370,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	@Override
 	public CompletableFuture<Object> shutdown() {
+		Runnable h = shutdownHandler;
+		if (h!=null) {
+			h.run();
+		}
 		getWorkspaceService().dispose();
 		return CompletableFuture.completedFuture(new Object());
 	}
@@ -550,6 +572,21 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	@Override
 	public SimpleLanguageServer getServer() {
 		return this;
+	}
+
+	public synchronized void onInitialize(Consumer<InitializeParams> handler) {
+		Assert.isNull("Multiple initialize handlers not supported yet", this.initializeHandler);
+		this.initializeHandler = handler;
+	}
+
+	public void onInitialized(Runnable handler) {
+		Assert.isNull("Multiple initialized handlers not supported yet", this.initializedHandler);
+		this.initializedHandler = handler;
+	}
+
+	public void onShutdown(Runnable handler) {
+		Assert.isNull("Multiple shutdown handlers not supported yet", this.shutdownHandler);
+		this.shutdownHandler = handler;
 	}
 
 }

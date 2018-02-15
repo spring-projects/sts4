@@ -52,14 +52,17 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -70,7 +73,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringIndexer {
 
-	private final BootJavaLanguageServer server;
+	private final SimpleLanguageServer server;
+	private final BootLanguageServerParams params;
 	private final JavaProjectFinder projectFinder;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 
@@ -106,9 +110,10 @@ public class SpringIndexer {
 
 	private volatile InitializeItem lastInitializeItem;
 
-	public SpringIndexer(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
+	public SpringIndexer(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
 		this.server = server;
-		this.projectFinder = projectFinder;
+		this.params = params;
+		this.projectFinder = params.projectFinder;
 		this.symbolProviders = specificProviders;
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
@@ -134,24 +139,32 @@ public class SpringIndexer {
 		}, "Spring Annotation Index Update Worker");
 		updateWorker.start();
 
-		server.getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
+		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 			refresh();
 		});
 
-		if (server.getProjectObserver() != null) {
-			server.getProjectObserver().addListener(projectListener);
+		if (getProjectObserver() != null) {
+			getProjectObserver().addListener(projectListener);
 		}
+	}
+
+	private ProjectObserver getProjectObserver() {
+		return params.projectObserver;
 	}
 
 	public void serverInitialized() {
 		List<String> globPattern = Arrays.asList("**/*.java");
-		server.getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
+		getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
 			deleteDocument(new TextDocumentIdentifier(file).getUri());
 		});
-		server.getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
+		getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
 			createDocument(new TextDocumentIdentifier(file).getUri());
 		});
+	}
+
+	private SimpleWorkspaceService getWorkspaceService() {
+		return server.getServer().getWorkspaceService();
 	}
 
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
@@ -207,8 +220,8 @@ public class SpringIndexer {
 					updateWorker.interrupt();
 				}
 
-				if (server.getProjectObserver() != null) {
-					server.getProjectObserver().removeListener(projectListener);
+				if (getProjectObserver() != null) {
+					getProjectObserver().removeListener(projectListener);
 				}
 			}
 		} catch (Exception e) {

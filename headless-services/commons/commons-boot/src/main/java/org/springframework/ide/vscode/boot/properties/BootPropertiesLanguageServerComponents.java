@@ -22,11 +22,14 @@ import org.springframework.ide.vscode.boot.properties.reconcile.SpringProperties
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
+import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
@@ -115,11 +118,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	}
 
 	@Override
-	public HoverInfoProvider getHoverProvider() {
+	public HoverHandler getHoverProvider() {
 		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
 		HoverInfoProvider ymlHovers = new YamlHoverInfoProvider(parser, yamlStructureProvider, yamlAssistContextProvider);
 
-		return (IDocument document, int offset) -> {
+		HoverInfoProvider combined = (IDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
@@ -130,6 +133,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			}
 			return null;
 		};
+		return new VscodeHoverEngineAdapter(server, combined);
 	}
 
 	@Override

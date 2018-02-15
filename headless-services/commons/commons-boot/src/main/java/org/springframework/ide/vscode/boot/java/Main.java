@@ -12,9 +12,10 @@ package org.springframework.ide.vscode.boot.java;
 
 import java.io.IOException;
 
+import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 
 /**
@@ -30,10 +31,10 @@ public class Main {
 			LogRedirect.redirectToFile(serverName);
 		}
 		LaunguageServerApp.start(serverName, () -> {
-			SimpleLanguageServer server = new BootJavaLanguageServer(
+			ComposableLanguageServer<BootJavaLanguageServerComponents> s = BootLanguageServer.createJava(
 					BootLanguageServerParams.createDefault()
 			);
-			return server;
+			return s.getServer();
 		});
 	}
 

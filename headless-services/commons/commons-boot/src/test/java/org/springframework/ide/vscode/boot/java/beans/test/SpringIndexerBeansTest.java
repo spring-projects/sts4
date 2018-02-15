@@ -46,7 +46,7 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleConfigurationClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = createIndexerHarness();
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -58,7 +58,7 @@ public class SpringIndexerBeansTest {
 	}
 
 	@Test public void testScanSpecialConfigurationClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = createIndexerHarness();
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -87,7 +87,7 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleComponentClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = createIndexerHarness();
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -98,7 +98,7 @@ public class SpringIndexerBeansTest {
 	}
 
 	@Test public void testScanSimpleControllerClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = createIndexerHarness();
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -109,7 +109,7 @@ public class SpringIndexerBeansTest {
 	}
 
 	@Test public void testScanRestControllerClass() throws Exception {
-		SpringIndexerHarness indexer = new SpringIndexerHarness(harness.getServerWrapper(), projectFinder, symbolProviders);
+		SpringIndexerHarness indexer = createIndexerHarness();
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 		indexer.initialize(indexer.wsFolder(directory));
 
@@ -122,6 +122,10 @@ public class SpringIndexerBeansTest {
 
 	////////////////////////////////
 	// harness code
+	
+	private SpringIndexerHarness createIndexerHarness() {
+		return new SpringIndexerHarness(harness.getServer(), harness.getServerParams(), symbolProviders);
+	}
 
 	private TestSymbolInfo symbol(String coveredText, String label) {
 		return new TestSymbolInfo(coveredText, label);

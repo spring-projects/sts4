@@ -32,9 +32,9 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngine;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
@@ -90,7 +90,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
 		VscodeCompletionEngineAdapter completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
-		VscodeHoverEngine hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
+		HoverHandler hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
 
@@ -125,7 +125,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
-		documents.onHover(hoverEngine ::getHover);
+		documents.onHover(hoverEngine);
 
 		workspace.onDidChangeConfiguraton(settings -> {
 			Object cfClientParamsObj = settings.getProperty("cfClientParams");

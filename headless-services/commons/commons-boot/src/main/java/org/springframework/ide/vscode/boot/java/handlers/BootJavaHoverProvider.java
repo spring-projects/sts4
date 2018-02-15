@@ -30,7 +30,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -52,11 +52,11 @@ import com.google.common.collect.ImmutableList;
 public class BootJavaHoverProvider implements HoverHandler {
 
 	private JavaProjectFinder projectFinder;
-	private BootJavaLanguageServer server;
+	private BootJavaLanguageServerComponents server;
 	private AnnotationHierarchyAwareLookup<HoverProvider> hoverProviders;
 	private RunningAppProvider runningAppProvider;
 
-	public BootJavaHoverProvider(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
+	public BootJavaHoverProvider(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;

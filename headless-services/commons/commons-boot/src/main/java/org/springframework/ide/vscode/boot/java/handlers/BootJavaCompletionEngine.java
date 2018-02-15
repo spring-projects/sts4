@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -33,9 +33,9 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 
 	private Map<String, CompletionProvider> completionProviders;
 	private JavaSnippetManager snippets;
-	private BootJavaLanguageServer server;
+	private BootJavaLanguageServerComponents server;
 
-	public BootJavaCompletionEngine(BootJavaLanguageServer server, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
+	public BootJavaCompletionEngine(BootJavaLanguageServerComponents server, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
 		this.server = server;
 		this.completionProviders = specificProviders;
 		this.snippets = snippets;

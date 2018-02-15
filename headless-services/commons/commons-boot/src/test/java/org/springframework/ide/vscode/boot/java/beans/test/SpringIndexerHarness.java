@@ -25,11 +25,11 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceFolder;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -106,8 +106,8 @@ public class SpringIndexerHarness {
 
 	private SpringIndexer indexer;
 
-	public SpringIndexerHarness(BootJavaLanguageServer server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders) {
-		this.indexer = new SpringIndexer(server, projectFinder, symbolProviders);
+	public SpringIndexerHarness(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders) {
+		this.indexer = new SpringIndexer(server, params, symbolProviders);
 	}
 
 	public void assertDocumentSymbols(String documentUri, TestSymbolInfo... expectedSymbols) throws Exception {

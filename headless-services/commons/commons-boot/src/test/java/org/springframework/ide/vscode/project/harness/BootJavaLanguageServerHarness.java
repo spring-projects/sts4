@@ -14,22 +14,24 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 import org.junit.Assert;
+import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-public class BootJavaLanguageServerHarness extends LanguageServerHarness<BootJavaLanguageServer> {
+public class BootJavaLanguageServerHarness extends LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> {
 
 	private PropertyIndexHarness indexHarness;
-	private final JavaProjectFinder projectFinder = (doc) -> getServerWrapper().getProjectFinder().find(doc);
-
+	private final JavaProjectFinder projectFinder = (doc) -> getServerWrapper().getComponents().getProjectFinder().find(doc);
+	
 	/**
 	 * Creates a builder and initializes it so that it sets up a test harness with
 	 * the 'real stuff'. I.e project finder and other injected components are like
@@ -104,10 +106,15 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<BootJav
 						builder.watchDogInterval==null?defaults.watchDogInterval:builder.watchDogInterval
 				);
 			};
-			return new BootJavaLanguageServer(params);
+			return BootLanguageServer.createJava(params);
 		});
 		this.indexHarness = builder.indexHarness;
 	}
+
+	public BootLanguageServerParams getServerParams() {
+		return getServerWrapper().getComponents().getServerParams();
+	}
+
 
 
 	@Override

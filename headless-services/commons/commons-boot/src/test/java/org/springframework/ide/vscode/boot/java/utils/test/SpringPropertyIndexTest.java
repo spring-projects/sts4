@@ -20,9 +20,10 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -38,7 +39,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class SpringPropertyIndexTest {
 
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
+	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
 
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
@@ -50,7 +51,7 @@ public class SpringPropertyIndexTest {
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getSpringPropertyIndexProvider();
+		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getComponents().getSpringPropertyIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 

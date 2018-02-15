@@ -18,6 +18,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -29,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple2;
 
-public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
+public class VscodeHoverEngineAdapter implements HoverHandler {
 
 	public enum HoverType {
 		MARKDOWN,
@@ -53,11 +54,12 @@ public class VscodeHoverEngineAdapter implements VscodeHoverEngine {
 	}
 
 	public void setHoverType(HoverType type) {
+		//TODO: is this even used? Check and remove if not.
 		this.type = type;
 	}
 
 	@Override
-	public CompletableFuture<Hover> getHover(TextDocumentPositionParams params) {
+	public CompletableFuture<Hover> handle(TextDocumentPositionParams params) {
 		//TODO: This returns a CompletableFuture which suggests we should try to do expensive work asyncly.
 		// We are currently just doing all this in a blocking way and wrapping the already computed list into
 		// a trivial pre-resolved future.

@@ -29,10 +29,11 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
@@ -44,10 +45,10 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 public class SpringIndexerTest {
 
 	private Map<String, SymbolProvider> symbolProviders;
-	private LanguageServerHarness<BootJavaLanguageServer> harness;
+	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
 
 	private SpringIndexer indexer() {
-		return harness.getServerWrapper().getSpringIndexer();
+		return harness.getServerWrapper().getComponents().getSpringIndexer();
 	}
 
 

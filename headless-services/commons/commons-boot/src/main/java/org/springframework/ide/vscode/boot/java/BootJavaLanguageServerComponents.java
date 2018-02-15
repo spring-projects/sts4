@@ -31,7 +31,6 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -56,15 +55,15 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -76,13 +75,14 @@ import com.google.common.collect.ImmutableList;
  *
  * @author Martin Lippert
  */
-public class BootJavaLanguageServer extends SimpleLanguageServer {
+public class BootJavaLanguageServerComponents implements LanguageServerComponents {
 	
 	public static final String WORKSPACE_FOLDERS_CAPABILITY_NAME = "workspace/didChangeWorkspaceFolders";
 	public static final String WORKSPACE_FOLDERS_CAPABILITY_ID = UUID.randomUUID().toString();
 
 
-	private final VscodeCompletionEngineAdapter completionEngine;
+	private final SimpleLanguageServer server;
+	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
@@ -90,46 +90,28 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 	private final BootJavaConfig config;
 	private final CompilationUnitCache cuCache;
 
-	private final WordHighlighter testHightlighter = null; // new WordHighlighter("foo");
-
 	private JavaProjectFinder projectFinder;
+	private BootJavaHoverProvider hoverProvider;
 
-	public BootJavaLanguageServer(LSFactory<BootLanguageServerParams> _params) {
-		super("boot-java");
-		BootLanguageServerParams serverParams = _params.create(this);
+	public BootJavaLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
+		this.server = server;
+		this.serverParams = _params.create(server);
 
 		this.config = new BootJavaConfig();
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
-		cuCache = new CompilationUnitCache(projectFinder, getTextDocumentService(), projectObserver);
+		cuCache = new CompilationUnitCache(projectFinder, server.getTextDocumentService(), projectObserver);
 
 		propertyIndexProvider = serverParams.indexProvider;
 
-		JavaProjectFinder javaProjectFinder = serverParams.projectFinder;
-		SimpleWorkspaceService workspaceService = getWorkspaceService();
-		SimpleTextDocumentService documents = getTextDocumentService();
+		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
+		SimpleTextDocumentService documents = server.getTextDocumentService();
 
-		IReconcileEngine reconcileEngine = new BootJavaReconcileEngine();
-		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			validateWith(doc.getId(), reconcileEngine);
-		});
-
-		ICompletionEngine bootCompletionEngine = createCompletionEngine(javaProjectFinder, propertyIndexProvider);
-		completionEngine = createCompletionEngineAdapter(this, bootCompletionEngine);
-		completionEngine.setMaxCompletions(100);
-		documents.onCompletion(completionEngine::getCompletions);
-		documents.onCompletionResolve(completionEngine::resolveCompletion);
-
-		BootJavaHoverProvider hoverInfoProvider = createHoverHandler(javaProjectFinder,
-				serverParams.runningAppProvider);
-		documents.onHover(hoverInfoProvider);
-
-		ReferencesHandler referencesHandler = createReferenceHandler(this, javaProjectFinder);
+		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		indexer = createAnnotationIndexer(this, javaProjectFinder);
+		indexer = createAnnotationIndexer(server, serverParams);
 		documents.onDidSave(params -> {
 			String docURI = params.getDocument().getId().getUri();
 			String content = params.getDocument().get();
@@ -140,28 +122,29 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(serverParams.runningAppProvider)));
 
-		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(this, javaProjectFinder);
-		documents.onCodeLens(codeLensHandler::createCodeLenses);
-		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
+//		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(server, projectFinder);
+//		documents.onCodeLens(codeLensHandler::createCodeLenses);
+//		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(this, hoverInfoProvider, serverParams.runningAppProvider,
+		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider);		
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, serverParams.runningAppProvider,
 				projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-			if (testHightlighter != null) {
-				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
-			} else {
+//			if (testHightlighter != null) {
+//				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
+//			} else {
 				liveHoverWatchdog.watchDocument(doc.getUri());
 				liveHoverWatchdog.update(doc.getUri(), null);
-			}
+//			}
 		});
 
 		documents.onDidClose(doc -> {
-			if (testHightlighter != null) {
-				getClient().highlight(new HighlightParams(doc.getId(), testHightlighter.apply(doc)));
-			} else {
+//			if (testHightlighter != null) {
+//				getClient().highlight(new HighlightParams(doc.getId(), testHightlighter.apply(doc)));
+//			} else {
 				liveHoverWatchdog.unwatchDocument(doc.getUri());
-			}
+//			}
 		});
 
 		workspaceService.onDidChangeConfiguraton(settings -> {
@@ -173,29 +156,30 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 			}
 		});
 
+		server.onInitialize(this::initialize);
+		server.onInitialized(this::initialized);
+		server.onShutdown(this::shutdown);
 	}
-
-	public void setMaxCompletionsNumber(int number) {
-		completionEngine.setMaxCompletions(number);
-	}
-
+	
 	@Override
-	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		CompletableFuture<InitializeResult> result = super.initialize(params);
-
-		this.indexer.initialize(getWorkspaceRoots());
-
-		return result;
+	public ICompletionEngine getCompletionEngine() {
+		return createCompletionEngine(projectFinder, propertyIndexProvider);
+	}
+	
+	@Override
+	public HoverHandler getHoverProvider() {
+		return hoverProvider;
+	}
+	
+	private void initialize(InitializeParams params) {
+		this.indexer.initialize(server.getWorkspaceRoots());
 	}
 
-	@Override
-	public void initialized() {
+	private void initialized() {
 		Registration registration = new Registration(WORKSPACE_FOLDERS_CAPABILITY_ID, WORKSPACE_FOLDERS_CAPABILITY_NAME, null);
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
-		getClient().registerCapability(registrationParams);
-
+		server.getClient().registerCapability(registrationParams);
 		this.indexer.serverInitialized();
-
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)
@@ -204,13 +188,10 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		// this.liveHoverWatchdog.start();
 	}
 
-	@Override
-	public CompletableFuture<Object> shutdown() {
+	private void shutdown() {
 		this.liveHoverWatchdog.shutdown();
 		this.indexer.shutdown();
 		this.cuCache.dispose();
-
-		return super.shutdown();
 	}
 
 	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder,
@@ -221,7 +202,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
 				new ValueCompletionProcessor(indexProvider));
 
-		JavaSnippetManager snippetManager = new JavaSnippetManager(this::createSnippetBuilder);
+		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
 		snippetManager.add(
 				new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
 						ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
@@ -295,7 +276,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
-	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
 		providers.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
 		providers.put(Annotations.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
@@ -307,7 +288,7 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());
 		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
-		return new SpringIndexer(this, projectFinder, providers);
+		return new SpringIndexer(server, params, providers);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
@@ -347,4 +328,11 @@ public class BootJavaLanguageServer extends SimpleLanguageServer {
 		return cuCache;
 	}
 
+	public SimpleTextDocumentService getTextDocumentService() {
+		return server.getTextDocumentService();
+	}
+
+	public BootLanguageServerParams getServerParams() {
+		return this.serverParams;
+	}
 }

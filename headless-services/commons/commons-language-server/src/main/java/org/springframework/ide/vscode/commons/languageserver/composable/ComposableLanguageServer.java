@@ -12,10 +12,10 @@ package org.springframework.ide.vscode.commons.languageserver.composable;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter.HoverType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
@@ -29,10 +29,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class ComposableLanguageServer<C extends LanguageServerComponents> implements SimpleLanguageServerWrapper {
 
-	private final VscodeHoverEngineAdapter hoverEngine;
 	private final SimpleLanguageServer server;
 	private C components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
+	private HoverHandler hoverHandler;
 
 	public ComposableLanguageServer(String extensionId, LSFactory<C> _components) {
 		this.server = new SimpleLanguageServer(extensionId);
@@ -56,9 +56,8 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);
 		}
 
-		HoverInfoProvider hoverInfoProvider = components.getHoverProvider();
-		hoverEngine = new VscodeHoverEngineAdapter(server, hoverInfoProvider);
-		documents.onHover(hoverEngine::getHover);
+		this.hoverHandler = components.getHoverProvider();
+		documents.onHover(hoverHandler);
 	}
 
 	public C getComponents() {
@@ -72,11 +71,14 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 	}
 
 	public void setHoverType(HoverType type) {
-		hoverEngine.setHoverType(type);
+		if (hoverHandler instanceof VscodeCompletionEngineAdapter) {
+			((VscodeHoverEngineAdapter) hoverHandler).setHoverType(type);
+		}
 	}
 
 	@Override
 	public SimpleLanguageServer getServer() {
 		return this.server;
 	}
+
 }

@@ -11,17 +11,14 @@
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 
 public interface LanguageServerComponents {
 
 	default IReconcileEngine getReconcileEngine() {
 		return null;
 	}
-	default ICompletionEngine getCompletionEngine() {
-		return null;
-	}
-	HoverInfoProvider getHoverProvider();
-
+	ICompletionEngine getCompletionEngine();
+	HoverHandler getHoverProvider();
 }

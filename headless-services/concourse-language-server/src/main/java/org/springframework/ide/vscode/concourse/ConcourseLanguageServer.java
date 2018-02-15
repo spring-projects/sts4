@@ -144,9 +144,9 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			TextDocument doc = documents.get(params);
 			if (doc!=null) {
 				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-					return forPipelines.hoverEngine.getHover(params);
+					return forPipelines.hoverEngine.handle(params);
 				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-					return forTasks.hoverEngine.getHover(params);
+					return forTasks.hoverEngine.handle(params);
 				}
 			}
 			return SimpleTextDocumentService.NO_HOVER;
