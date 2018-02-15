@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -38,6 +39,8 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceFolder;
+import org.eclipse.lsp4j.WorkspaceFoldersOptions;
+import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
@@ -77,6 +80,7 @@ import reactor.core.scheduler.Schedulers;
  */
 public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
 
+	private static final String WORKSPACE_FOLDERS_CAPABILITY_ID = UUID.randomUUID().toString();
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
 	public final String EXTENSION_ID;
@@ -332,6 +336,15 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (hasWorkspaceSymbolHandler()) {
 			c.setWorkspaceSymbolProvider(true);
 		}
+
+		WorkspaceFoldersOptions workspaceFoldersOptions = new WorkspaceFoldersOptions();
+		workspaceFoldersOptions.setSupported(true);
+		workspaceFoldersOptions.setChangeNotifications(WORKSPACE_FOLDERS_CAPABILITY_ID);
+
+		WorkspaceServerCapabilities workspaceServerCapabilities = new WorkspaceServerCapabilities();
+		workspaceServerCapabilities.setWorkspaceFolders(workspaceFoldersOptions);
+
+		c.setWorkspace(workspaceServerCapabilities);
 
 		return c;
 	}
