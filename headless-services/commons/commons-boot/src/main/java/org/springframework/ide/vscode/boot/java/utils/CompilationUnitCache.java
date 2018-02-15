@@ -133,6 +133,14 @@ public final class CompilationUnitCache {
 	}
 
 	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
+		String[] classpathEntries = getClasspathEntries(document, project);
+		String docURI = document.getUri();
+		String unitName = docURI.substring(docURI.lastIndexOf("/"));
+		char[] source = document.get(0, document.getLength()).toCharArray();
+		return parse(source, docURI, unitName, classpathEntries);
+	}
+	
+	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
@@ -142,14 +150,11 @@ public final class CompilationUnitCache {
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
 
-		String[] classpathEntries = getClasspathEntries(document, project);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
 
-		String docURI = document.getUri();
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
 		parser.setUnitName(unitName);
-		parser.setSource(document.get(0, document.getLength()).toCharArray());
+		parser.setSource(source);
 
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 

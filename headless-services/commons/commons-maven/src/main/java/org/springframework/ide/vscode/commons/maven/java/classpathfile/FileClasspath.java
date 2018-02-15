@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java.classpathfile;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -107,5 +108,10 @@ public class FileClasspath implements IClasspath {
 
 	@Override
 	public void reindex() {
+	}
+
+	@Override
+	public Optional<URL> sourceContainer(File classpathResource) {
+		return Optional.empty();
 	}
 }

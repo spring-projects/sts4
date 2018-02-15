@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.boot.java.livehover;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.springframework.ide.vscode.boot.java.utils.SourceLinks;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
@@ -23,7 +25,7 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class LiveHoverUtils {
-
+	
 	public static String showBean(LiveBean bean) {
 		StringBuilder buf = new StringBuilder("Bean [id: " + bean.getId());
 		String type = bean.getType(true);
@@ -34,18 +36,19 @@ public class LiveHoverUtils {
 		return buf.toString();
 	}
 
-	public static String showBeanWithResource(LiveBean bean, String indentStr, IJavaProject project) {
+	public static String showBeanWithResource(BootJavaLanguageServer server, LiveBean bean, String indentStr, IJavaProject project) {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 
 		String type = bean.getType(true);
 
 		StringBuilder buf = new StringBuilder("Bean: ");
 		buf.append(bean.getId());
+		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 		if (type != null) {
 			// Try creating a URL link to open source for the type
 			buf.append(newline);
 			buf.append("Type: ");
-			Optional<String> url = SourceLinks.sourceLinkUrlForFQName(project, type);
+			Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
 			if (url.isPresent()) {
 				buf.append(Renderables.link(type, url.get()).toMarkdown());
 			} else {
@@ -56,13 +59,13 @@ public class LiveHoverUtils {
 		if (StringUtil.hasText(resource)) {
 			buf.append(newline);
 			buf.append("Resource: ");
-			buf.append(showResource(resource, project));
+			buf.append(showResource(sourceLinks, resource, project));
 		}
 		return buf.toString();
 	}
 
-	public static String showResource(String resource, IJavaProject project) {
-		return new SpringResource(resource, project).toMarkdown();
+	public static String showResource(SourceLinks sourceLinks, String resource, IJavaProject project) {
+		return new SpringResource(sourceLinks, resource, project).toMarkdown();
 	}
 
 	public static String niceAppName(SpringBootApp app) {

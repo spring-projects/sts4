@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -42,6 +43,10 @@ import com.google.common.collect.ImmutableList;
 import reactor.util.function.Tuple3;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
+
+	public ComponentInjectionsHoverProvider(BootJavaLanguageServer server) {
+		super(server);
+	}
 
 	@Override
 	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
@@ -63,7 +68,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 						}
 						List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
 						for (LiveBean dependencyBean : dependencyBeans) {
-							hover.append("- " + LiveHoverUtils.showBeanWithResource(dependencyBean, "  ", project));
+							hover.append("- " + LiveHoverUtils.showBeanWithResource(server, dependencyBean, "  ", project));
 						}
 						firstDependency = false;
 					}

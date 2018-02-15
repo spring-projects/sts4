@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -183,6 +184,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 //			});
 //		}
 //	}
+	
 
 	@Override
 	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
@@ -193,34 +195,48 @@ public class MavenProjectClasspath extends JandexClasspath {
 			if (classpathResource.toString().startsWith(cachedData.outputDirectory)) {
 				return new ParserJavadocProvider(type -> {
 					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.sourceDirectory).toURI().toURL(), type);
+							.sourceUrl(new File(cachedData.sourceDirectory).toURI().toURL(), type.getFullyQualifiedName());
 				});
 			} else if (classpathResource.toString().startsWith(cachedData.testOutputDirectory)) {
 				return new ParserJavadocProvider(type -> {
 					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.testSourceDirectory).toURI().toURL(), type);
+							.sourceUrl(new File(cachedData.testSourceDirectory).toURI().toURL(), type.getFullyQualifiedName());
 				});
 			} else {
 				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
 			}
 		} else {
 			// Assume it's a JAR file
-			return new ParserJavadocProvider(type -> {
+			return new ParserJavadocProvider(type -> sourceContainer(classpathResource).map(url -> {
 				try {
-					Artifact artifact = cachedData.artifacts.stream().filter(a -> classpathResource.equals(a.getFile())).findFirst().get();
-					URL sourceContainer = maven.getSources(artifact, cachedData.remoteArtifactRepositories).getFile().toURI().toURL();
-					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(sourceContainer,
-							type);
-				} catch (MavenException e) {
-					Log.log("Failed to find sources JAR for " + classpathResource, e);
-				} catch (MalformedURLException e) {
-					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(url,
+							type.getFullyQualifiedName());
+				} catch (Exception e) {
+					Log.log(e);
+					return null;
 				}
-				return null;
-			});
+			}).get());
 		}
 	}
 	
+	@Override
+	public Optional<URL> sourceContainer(File classpathResource) {
+		if (cachedData == null) {
+			return Optional.empty();
+		}
+		return cachedData.artifacts.stream().filter(a -> classpathResource.equals(a.getFile())).findFirst().map(artifact -> {
+				try {
+					return maven.getSources(artifact, cachedData.remoteArtifactRepositories).getFile().toURI().toURL();
+				} catch (MalformedURLException e) {
+					Log.log("Invalid URL for sources JAR for " + classpathResource, e);
+					return null;
+				} catch (MavenException e) {
+					Log.log("Failed to find sources JAR for " + classpathResource, e);
+					return null;
+				}
+		});
+	}
+
 	@Override
 	protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
 		if (cachedData == null) {
@@ -230,12 +246,12 @@ public class MavenProjectClasspath extends JandexClasspath {
 			if (classpathResource.toString().startsWith(cachedData.outputDirectory)) {
 				return new HtmlJavadocProvider(type -> {
 					return SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type);
+							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type.getFullyQualifiedName());
 				});
 			} else if (classpathResource.toString().startsWith(cachedData.testOutputDirectory)) {
 				return new ParserJavadocProvider(type -> {
 					return SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type);
+							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type.getFullyQualifiedName());
 				});
 			} else {
 				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
@@ -247,7 +263,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 					Artifact artifact = cachedData.artifacts.stream().filter(a -> classpathResource.equals(a.getFile())).findFirst().get();
 					URL sourceContainer = maven.getJavadoc(artifact, cachedData.remoteArtifactRepositories).getFile().toURI().toURL();
 					return SourceUrlProviderFromSourceContainer.JAR_JAVADOC_URL_PROVIDER.sourceUrl(sourceContainer,
-							type);
+							type.getFullyQualifiedName());
 				} catch (MavenException e) {
 					Log.log("Failed to find sources JAR for " + classpathResource, e);
 				} catch (MalformedURLException e) {

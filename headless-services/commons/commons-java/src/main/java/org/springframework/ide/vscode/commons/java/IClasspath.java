@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -64,4 +65,6 @@ public interface IClasspath {
 	ClasspathData createClasspathData() throws Exception;
 	
 	void reindex();
+	
+	Optional<URL> sourceContainer(File classpathResource);
 }
