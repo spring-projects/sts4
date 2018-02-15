@@ -18,11 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -49,16 +46,6 @@ public class VSCodeSourceLinksTest {
 		}
 
 	});
-
-	@Before
-	public void setupAll() throws Exception {
-		System.setProperty("sts.lsp.client", LspClient.Client.VSCODE.toString());
-	}
-
-	@After
-	public void tearDownAll() throws Exception {
-		System.setProperty("sts.lsp.client", "");
-	}
 
 	@Test
 	public void testJavaSourceUrl() throws Exception {
