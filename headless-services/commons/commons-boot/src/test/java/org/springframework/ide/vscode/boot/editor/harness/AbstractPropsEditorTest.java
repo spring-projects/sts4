@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -77,6 +78,10 @@ public abstract class AbstractPropsEditorTest {
 	public void setup() throws Exception {
 		md = new PropertyIndexHarness();
 		harness = new LanguageServerHarness(this::newLanguageServer) {
+			@Override
+			protected LanguageId getDefaultLanguageId() {
+				return AbstractPropsEditorTest.this.getLanguageId();
+			}
 			protected String getFileExtension() {
 				return AbstractPropsEditorTest.this.getFileExtension();
 			}
@@ -84,6 +89,8 @@ public abstract class AbstractPropsEditorTest {
 		harness.intialize(null);
 	}
 	
+	protected abstract LanguageId getLanguageId();
+
 	/**
 	 * Determines the extension used to create temporary uris for editor contents documents.
 	 * Tests need to control this if the language server behavior they are testing varies depending on the

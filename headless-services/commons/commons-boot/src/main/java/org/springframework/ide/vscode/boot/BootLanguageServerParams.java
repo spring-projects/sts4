@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -66,6 +67,7 @@ public class BootLanguageServerParams {
 			Duration watchDogInterval
 	) {
 		super();
+		Assert.isNotNull(projectObserver); // null is bad should be ProjectObserver.NULL
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;

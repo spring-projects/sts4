@@ -32,8 +32,10 @@ import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 
 /**
@@ -3712,7 +3714,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		ComposableLanguageServer<?> server = BootLanguageServer.create(
 				s -> new BootLanguageServerParams(
 						javaProjectFinder, 
-						null, 
+						ProjectObserver.NULL, 
 						md.getIndexProvider(),
 						typeUtilProvider,
 						RunningAppProvider.NULL,
@@ -3728,4 +3730,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		return ".yml";
 	}
 
+	@Override
+	protected LanguageId getLanguageId() {
+		return LanguageId.BOOT_PROPERTIES_YAML;
+	}
+	
 }

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -23,9 +24,13 @@ public class BootLanguageServer<C extends LanguageServerComponents> extends Comp
 		super(extensionId, _components);
 	}
 
-	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> create(LSFactory<BootLanguageServerParams> params) {
-		//TODO compose properties and java
-		return new ComposableLanguageServer<>("vscode-boot", s -> new BootPropertiesLanguageServerComponents(s, params));
+	public static ComposableLanguageServer<CompositeLanguageServerComponents> create(LSFactory<BootLanguageServerParams> params) {
+		return new ComposableLanguageServer<>("vscode-boot", s -> {
+			CompositeLanguageServerComponents.Builder components = new CompositeLanguageServerComponents.Builder();
+			components.add(new BootPropertiesLanguageServerComponents(s, params));
+			components.add(new BootJavaLanguageServerComponents(s, params));
+			return components.build(s);
+		});
 	}
 	
 	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> createProperties(LSFactory<BootLanguageServerParams> params) {

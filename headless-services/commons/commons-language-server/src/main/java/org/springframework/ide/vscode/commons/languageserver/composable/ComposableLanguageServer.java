@@ -40,13 +40,12 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
-		IReconcileEngine reconcileEngine = components.getReconcileEngine();
-		if (reconcileEngine!=null) {
+		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			documents.onDidChangeContent(params -> {
 				TextDocument doc = params.getDocument();
 				server.validateWith(doc.getId(), reconcileEngine);
 			});
-		}
+		});
 
 		ICompletionEngine completionEngine = components.getCompletionEngine();
 		if (completionEngine!=null) {

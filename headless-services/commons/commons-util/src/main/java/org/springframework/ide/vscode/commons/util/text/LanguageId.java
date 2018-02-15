@@ -27,6 +27,8 @@ public class LanguageId {
 	
 	public static final LanguageId BOSH_DEPLOYMENT = of("bosh-deployment-manifest");
 	public static final LanguageId BOSH_CLOUD_CONFIG = of("bosh-cloud-config");
+	public static final LanguageId BOOT_PROPERTIES = of("spring-boot-properties");
+	public static final LanguageId BOOT_PROPERTIES_YAML = of("spring-boot-properties-yaml");
 
 	private final String id;
 

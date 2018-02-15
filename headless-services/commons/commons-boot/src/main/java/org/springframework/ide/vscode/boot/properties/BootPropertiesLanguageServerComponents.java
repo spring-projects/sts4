@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.properties;
 
+import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
@@ -22,7 +25,6 @@ import org.springframework.ide.vscode.boot.properties.reconcile.SpringProperties
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -34,6 +36,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
@@ -47,6 +50,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Language Server for Spring Boot Application Properties files
@@ -58,6 +62,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
+	
+	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(
+			LanguageId.BOOT_PROPERTIES, 
+			LanguageId.BOOT_PROPERTIES_YAML 
+	);
 
 	private static final YamlCompletionEngineOptions COMPLETION_OPTIONS = new YamlCompletionEngineOptions() {
 		@Override
@@ -101,6 +110,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	}
 
 	@Override
+	public Set<LanguageId> getInterestingLanguages() {
+		return LANGUAGES;
+	}
+
+	@Override
 	public ICompletionEngine getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
@@ -137,11 +151,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	}
 
 	@Override
-	public IReconcileEngine getReconcileEngine() {
+	public Optional<IReconcileEngine> getReconcileEngine() {
 		IReconcileEngine propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider, typeUtilProvider);
 		IReconcileEngine ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider);
 
-		return (doc, problemCollector) -> {
+		return Optional.of((doc, problemCollector) -> {
 			String uri = doc.getUri();
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
@@ -155,10 +169,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			//No real reconciler is applicable. So tell the problemCollector there are no problems.
 			problemCollector.beginCollecting();
 			problemCollector.endCollecting();
-		};
+		});
 	}
 
 	public SpringPropertyIndexProvider getPropertiesIndexProvider() {
 		return indexProvider;
 	}
+
 }

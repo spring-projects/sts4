@@ -35,8 +35,10 @@ import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 
 import com.google.common.collect.ImmutableList;
@@ -1592,7 +1594,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		ComposableLanguageServer<?> server = BootLanguageServer.create(
 				s -> new BootLanguageServerParams(
 						javaProjectFinder, 
-						null, 
+						ProjectObserver.NULL, 
 						md.getIndexProvider(),
 						typeUtilProvider,
 						RunningAppProvider.NULL,
@@ -1633,6 +1635,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Override
 	protected String getFileExtension() {
 		return ".properties";
+	}
+
+	@Override
+	protected LanguageId getLanguageId() {
+		return LanguageId.BOOT_PROPERTIES;
 	}
 
 }

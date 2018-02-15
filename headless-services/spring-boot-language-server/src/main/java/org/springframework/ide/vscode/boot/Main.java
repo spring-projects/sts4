@@ -27,7 +27,6 @@ public class Main {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		String serverName = "boot-language-server";
 		LogRedirect.redirectToFile(serverName);
-		//TODO: wrap both BootProperties and BootJavaLanguageServers into a composite of some kind.
 		LaunguageServerApp.start(serverName,
 				() -> BootLanguageServer.create(BootLanguageServerParams.createDefault()).getServer()
 		);

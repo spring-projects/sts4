@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexPr
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -40,7 +41,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  */
 public class SpringPropertiesIndexTest {
 
-	private LanguageServerHarness<ComposableLanguageServer<BootPropertiesLanguageServerComponents>> harness;
+	private LanguageServerHarness<ComposableLanguageServer<CompositeLanguageServerComponents>> harness;
 
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
@@ -52,7 +53,9 @@ public class SpringPropertiesIndexTest {
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getComponents().getPropertiesIndexProvider();
+		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper()
+				.getComponents().get(BootPropertiesLanguageServerComponents.class)
+				.getPropertiesIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI());
 

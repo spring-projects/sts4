@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.java;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -59,6 +61,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
@@ -66,9 +69,11 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Language Server for Spring Boot Application Properties files
@@ -76,6 +81,8 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class BootJavaLanguageServerComponents implements LanguageServerComponents {
+	
+	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA);
 	
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
@@ -328,4 +335,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	public BootLanguageServerParams getServerParams() {
 		return this.serverParams;
 	}
+
+	@Override
+	public Set<LanguageId> getInterestingLanguages() {
+		return LANGUAGES;
+	}
+
 }
