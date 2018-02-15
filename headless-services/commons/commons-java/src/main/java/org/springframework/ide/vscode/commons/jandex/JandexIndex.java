@@ -127,7 +127,7 @@ public class JandexIndex {
 		this.knownPackages = new HashMap<>();
 		this.javadocProviderFactory = javadocProviderFactory;
 		classpathEntries.forEach(file -> {
-			index.put(file, Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex(file, indexFileFinder))));
+			index.put(file, /*Suppliers.synchronizedSupplier(*/Suppliers.memoize(() -> createIndex(file, indexFileFinder))/*)*/);
 			knownTypes.put(file, Suppliers.memoize(() -> getKnownTypesStream(file).collect(Collectors.toList())));
 			knownPackages.put(file, Suppliers.memoize(() -> getKnownPackages(file).collect(Collectors.toList())));
 		});
