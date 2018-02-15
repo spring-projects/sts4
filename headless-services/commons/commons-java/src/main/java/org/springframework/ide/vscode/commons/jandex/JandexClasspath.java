@@ -46,7 +46,7 @@ public abstract class JandexClasspath implements IClasspath {
 	private Supplier<JandexIndex> javaIndex;
 	
 	public JandexClasspath() {
-		this.javaIndex = /*Suppliers.synchronizedSupplier(*/Suppliers.memoize(() -> createIndex())/*)*/;
+		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 	
 	protected JandexIndex createIndex() {

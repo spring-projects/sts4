@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -331,6 +332,7 @@ public class SpringIndexerTest {
 		return false;
 	}
 
+	@Ignore
 	@Test
 	public void testRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
