@@ -22,13 +22,14 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -36,9 +37,9 @@ import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
 	
-	protected BootJavaLanguageServer server;
+	protected BootJavaLanguageServerComponents server;
 	
-	public AbstractInjectedIntoHoverProvider(BootJavaLanguageServer server) {
+	public AbstractInjectedIntoHoverProvider(BootJavaLanguageServerComponents server) {
 		this.server = server;
 	}
 

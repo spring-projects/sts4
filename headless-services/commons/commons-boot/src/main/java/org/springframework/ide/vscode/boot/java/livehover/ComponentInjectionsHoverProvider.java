@@ -26,7 +26,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -44,7 +44,7 @@ import reactor.util.function.Tuple3;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
-	public ComponentInjectionsHoverProvider(BootJavaLanguageServer server) {
+	public ComponentInjectionsHoverProvider(BootJavaLanguageServerComponents server) {
 		super(server);
 	}
 

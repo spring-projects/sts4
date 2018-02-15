@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.livehover;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
@@ -36,7 +37,7 @@ public class LiveHoverUtils {
 		return buf.toString();
 	}
 
-	public static String showBeanWithResource(BootJavaLanguageServer server, LiveBean bean, String indentStr, IJavaProject project) {
+	public static String showBeanWithResource(BootJavaLanguageServerComponents server, LiveBean bean, String indentStr, IJavaProject project) {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 
 		String type = bean.getType(true);

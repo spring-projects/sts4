@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.links;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 
@@ -49,7 +49,7 @@ public final class SourceLinkFactory {
 	 * @param server the boot LS
 	 * @return appropriate source links object
 	 */
-	public static SourceLinks createSourceLinks(BootJavaLanguageServer server) {
+	public static SourceLinks createSourceLinks(BootJavaLanguageServerComponents server) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
 			return new VSCodeSourceLinks(server);

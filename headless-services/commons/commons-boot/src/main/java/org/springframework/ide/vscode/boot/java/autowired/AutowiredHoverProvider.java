@@ -22,7 +22,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -43,9 +44,9 @@ import com.google.common.collect.ImmutableList;
  */
 public class AutowiredHoverProvider implements HoverProvider {
 	
-	private BootJavaLanguageServer server;
+	private BootJavaLanguageServerComponents server;
 	
-	public AutowiredHoverProvider(BootJavaLanguageServer server) {
+	public AutowiredHoverProvider(BootJavaLanguageServerComponents server) {
 		this.server = server;
 	}
 

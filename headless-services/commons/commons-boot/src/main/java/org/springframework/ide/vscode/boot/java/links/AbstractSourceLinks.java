@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -51,9 +51,9 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	
 	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 	
-	private BootJavaLanguageServer server;
+	private BootJavaLanguageServerComponents server;
 	
-	protected AbstractSourceLinks(BootJavaLanguageServer server) {
+	protected AbstractSourceLinks(BootJavaLanguageServerComponents server) {
 		this.server = server;
 	}
 

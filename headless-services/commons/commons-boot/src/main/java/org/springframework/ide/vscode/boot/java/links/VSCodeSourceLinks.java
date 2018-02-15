@@ -18,7 +18,7 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
@@ -35,7 +35,7 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 	
 	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 
-	public VSCodeSourceLinks(BootJavaLanguageServer server) {
+	public VSCodeSourceLinks(BootJavaLanguageServerComponents server) {
 		super(server);
 	}
 
