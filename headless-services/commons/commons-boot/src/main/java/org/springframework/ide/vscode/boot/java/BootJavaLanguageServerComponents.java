@@ -77,10 +77,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class BootJavaLanguageServerComponents implements LanguageServerComponents {
 	
-	public static final String WORKSPACE_FOLDERS_CAPABILITY_NAME = "workspace/didChangeWorkspaceFolders";
-	public static final String WORKSPACE_FOLDERS_CAPABILITY_ID = UUID.randomUUID().toString();
-
-
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
@@ -176,9 +172,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	private void initialized() {
-		Registration registration = new Registration(WORKSPACE_FOLDERS_CAPABILITY_ID, WORKSPACE_FOLDERS_CAPABILITY_NAME, null);
-		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
-		server.getClient().registerCapability(registrationParams);
 		this.indexer.serverInitialized();
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
