@@ -73,7 +73,7 @@ public class IndexNavigator {
 	public PropertyInfo getExactMatch() {
 		if (prefix!=null) {
 			PropertyInfo candidate = index.findLongestCommonPrefixEntry(prefix);
-			if (candidate.getId().equals(prefix)) {
+			if (candidate!=null && candidate.getId().equals(prefix)) {
 				return candidate;
 			}
 		}
