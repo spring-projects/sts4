@@ -28,8 +28,6 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
@@ -41,16 +39,11 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
 /**
  * @author Martin Lippert
  */
 public class SpringIndexerTest {
 	
-	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(SpringIndexerTest.class));
-
 	private Map<String, SymbolProvider> symbolProviders;
 	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
 
@@ -340,7 +333,6 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testRefreshOnProjectChange() throws Exception {
-		LOG.get().info("testRefreshOnProjectChange STARTED");
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
@@ -348,19 +340,23 @@ public class SpringIndexerTest {
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
 		assertEquals(6, allSymbols.size());
 
-		File pomFile = directory.toPath().resolve(MavenCore.POM_XML).toFile();
+		// Delete some symbols
+		String deletedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		CompletableFuture<Void> deleteFuture = indexer().deleteDocument(deletedDocURI);
+		deleteFuture.get(5, TimeUnit.SECONDS);
+		// check for updated index in all symbols
+		allSymbols = indexer().getAllSymbols("");
+		assertEquals(4, allSymbols.size());
 
+		
+		File pomFile = directory.toPath().resolve(MavenCore.POM_XML).toFile();
 		assertFalse(indexer().isInitializing());
 		harness.changeFile(pomFile.toURI().toString());
-		// Refresh in progress
-		LOG.get().info("testRefreshOnProjectChange - FILE CHANGED HANLED");
-		assertTrue(indexer().isInitializing());
-		LOG.get().info("testRefreshOnProjectChange - INDEX INIT in PROGRESS");
 
+		// Everything is expected to be re-indexed hence "fake" deleted document should be indexed now 
 		allSymbols = indexer().getAllSymbols("");
 		assertFalse(indexer().isInitializing());
 		assertEquals(6, allSymbols.size());
-		LOG.get().info("testRefreshOnProjectChange - FINISHED");
 	}
 
 }
