@@ -18,9 +18,14 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Cache for java projects. The key for the cache is a "project" specific file
@@ -30,6 +35,8 @@ import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
  * @param <P> java project sub-class
  */
 public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends AbstractJavaProjectCache<File, P> {
+	
+	private static final Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractFileToProjectCache.class)); 
 	
 	private List<String> subscriptions;	
 	protected boolean asyncUpdate;
@@ -82,10 +89,14 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 			progressService.progressEvent(taskId, "Updating data for project `" + project.getElementName() + "'");
 		}
 		if (async) {
+			LOG.get().info("Started updating project " + project.getElementName() + " in ASYNC mode");
 			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> afterUpdate(project, changed, notify, taskId));
+			LOG.get().info("Finished updating project " + project.getElementName() + " in ASYNC mode");
 		} else {
+			LOG.get().info("Started updating project " + project.getElementName() + " in SYNC mode");
 			boolean changed = update(project);
 			afterUpdate(project, changed, notify, taskId);
+			LOG.get().info("Finished updating project " + project.getElementName() + " in SYNC mode");
 		}
 	}
 	
