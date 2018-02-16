@@ -122,7 +122,7 @@ open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: I
 [yaml-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-validation.png
 [properties-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-validation.png
 [yaml-hovers]: https://github.com/spring-projects/sts4/raw/1d731ed1ad5c8defcca4e4abb3cf5f2d89daba43/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hover.png
-[java-code-completion]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/java-code-completion.png
-[java-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/java-live-apps-quick-access.png
-[java-live-hovers]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/java-live-hovers.png
-[java-navigation]: https://github.com/spring-projects/sts4/raw/ff066560158e50cd9c7e4a9ff0b84d47c84c9d14/vscode-extensions/vscode-boot-java/readme-imgs/java-navigation.png
+[java-code-completion]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-boot-java/readme-imgs/java-code-completion.png
+[java-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-boot-java/readme-imgs/java-live-apps-quick-access.png
+[java-live-hovers]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-boot-java/readme-imgs/java-live-hovers.png
+[java-navigation]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-boot-java/readme-imgs/java-navigation.png
