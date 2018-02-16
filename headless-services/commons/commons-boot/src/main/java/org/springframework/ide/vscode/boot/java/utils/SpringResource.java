@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,9 @@ public class SpringResource {
 	private IJavaProject project;
 
 	private static final Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
+	
+	private static final String ID_PATTERN = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
+    private static final String REGEX_FQCN = ID_PATTERN + "(\\." + ID_PATTERN + ")*";
 
 	public SpringResource(SourceLinks sourceLinks, String toParse, IJavaProject project) {
 		this.sourceLinks = sourceLinks;
@@ -44,6 +47,10 @@ public class SpringResource {
 		if (matcher.find()) {
 			type = toParse.substring(0, matcher.start()).trim();
 			path = toParse.substring(matcher.start()+1, matcher.end()-1);
+		} else if (Pattern.matches(REGEX_FQCN, toParse)) {
+			// Resource is fully qualified Java type name
+			type = CLASS_PATH_RESOURCE;
+			path = toParse.replace('.','/') + SourceLinks.CLASS;
 		} else {
 			path = toParse;
 		}
