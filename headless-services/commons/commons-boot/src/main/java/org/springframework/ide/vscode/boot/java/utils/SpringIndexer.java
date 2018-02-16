@@ -90,19 +90,19 @@ public class SpringIndexer {
 
 		@Override
 		public void created(IJavaProject project) {
-			log.info("project created event: {}", project.getElementName());
+			log.debug("project created event: {}", project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
-			log.info("project changed event: {}", project.getElementName());
+			log.debug("project changed event: {}", project.getElementName());
 			refresh();
 		}
 
 		@Override
 		public void deleted(IJavaProject project) {
-			log.info("project deleted event: {}", project.getElementName());
+			log.debug("project deleted event: {}", project.getElementName());
 			refresh();
 		}
 
@@ -140,7 +140,7 @@ public class SpringIndexer {
 		updateWorker.start();
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
-			log.info("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
+			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 			refresh();
 		});
 
@@ -208,7 +208,7 @@ public class SpringIndexer {
 			symbolsByDoc.clear();
 
 			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
-			log.info("refresh spring indexer for roots: {}", roots.toString());
+			log.debug("refresh spring indexer for roots: {}", roots.toString());
 			initialize(roots);
 		}
 	}
@@ -552,7 +552,7 @@ public class SpringIndexer {
 		private final CompletableFuture<Void> future;
 
 		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
-			log.info("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
+			log.debug("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
 
 			this.workspaceRoots = workspaceRoots;
 			this.future = new CompletableFuture<Void>();
@@ -566,18 +566,18 @@ public class SpringIndexer {
 		@Override
 		public void run() {
 			if (!future.isCancelled()) {
-				log.info("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
 
 				for (WorkspaceFolder root : workspaceRoots) {
 					SpringIndexer.this.scanFiles(root);
 				}
 
-				log.info("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
 
 				future.complete(null);
 			}
 			else {
-				log.info("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
+				log.debug("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
 			}
 		}
 	}

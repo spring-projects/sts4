@@ -37,6 +37,7 @@
     "Pivotal.vscode-boot-java",
     "Pivotal.vscode-boot-properties",
     "Pivotal.vscode-concourse",
-    "Pivotal.vscode-manifest-yaml"
+    "Pivotal.vscode-manifest-yaml",
+    "vscjava.vscode-spring-initializr"
   ]
 }
