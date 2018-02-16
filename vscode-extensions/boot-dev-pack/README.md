@@ -13,3 +13,6 @@ The [Cloud Foundry Manifest YML Support](https://marketplace.visualstudio.com/it
 
 ## Concourse CI Pipeline
 The [Concourse CI Pipeline Editor](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse) provides support for setting up Concourse build pipeline for the Spring Boot application
+
+## Spring Initializr Java
+The [Spring Initializr Java Support](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr) extension provides support for generating quickstart Spring Boot Java projects with Spring Initiailizr API.
