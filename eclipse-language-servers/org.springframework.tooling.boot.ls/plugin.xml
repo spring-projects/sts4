@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.lsp4e.languageServer">
+      <server
+            class="org.springframework.tooling.boot.ls.DelegatingStreamConnectionProvider"
+            id="org.eclipse.languageserver.languages.springboot"
+            clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
+            label="Spring Boot Language Server">
+      </server>
+      <contentTypeMapping
+            contentType="org.eclipse.jdt.core.javaSource"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.properties.application.properties"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.properties.application.yml"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            default-charset="ISO-8859-1"
+            id="org.springframework.boot.ide.properties.application.properties"
+            name="Spring Properties File"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.properties.application.properties"
+            file-names="application.properties,application-dev.properties">
+      </file-association>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            default-charset="UTF-8"
+            id="org.springframework.boot.ide.properties.application.yml"
+            name="Spring Yaml Properties File"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.properties.application.yml"
+            file-names="application.yml,bootstrap.yml,application-dev.yml">
+      </file-association>
+   </extension>
+
+   <extension
+         id="springbootjava-completion-computer"
+         point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
+      <javaCompletionProposalComputer
+            activate="true"
+            categoryId="org.eclipse.jdt.ui.defaultProposalCategory"
+            class="org.springframework.tooling.boot.ls.jdt.SpringBootJavaCompletionProposalComputer"
+            needsSortingAfterFiltering="false">
+      </javaCompletionProposalComputer>
+   </extension>
+   
+   <extension
+         id="springbootjava-hover-provider"
+         point="org.eclipse.jdt.ui.javaEditorTextHovers">
+      <hover
+            activate="true"
+            class="org.springframework.tooling.boot.ls.jdt.SpringBootJavaHoverProvider"
+            id="org.springframework.boot.ide.java.servers.hoverprovider">
+      </hover>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
+            contentTypeId="org.eclipse.jdt.core.javaSource">
+      </participant>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.springsource.ide.eclipse.commons.preferencePage"
+            class="org.springframework.tooling.boot.ls.BootLanguageServerPreferencesPage"
+            id="org.springframework.tooling.boot.java.ls.page1"
+            name="Boot Language Server Extension">
+      </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.springframework.tooling.boot.ls.PrefsInitializer">
+      </initializer>
+   </extension>
+   
+      <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.properties"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.springframework.tooling.boot.ls.SpringPropertiesPresentationReconciler"
+            contentType="org.springframework.boot.ide.properties.application.properties">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.boot.ide.properties.application.yml">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <grammar
+      		scopeName="source.yaml"
+            path="./syntaxes/YAML.tmLanguage" >
+      </grammar>      
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
+   </extension>
+   
+
+</plugin>

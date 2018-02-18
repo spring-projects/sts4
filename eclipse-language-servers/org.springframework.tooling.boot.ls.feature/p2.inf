@@ -1,0 +1,8 @@
+requires.0.namespace = org.eclipse.equinox.p2.iu
+requires.0.name = org.springframework.tooling.boot.java.ls.feature.feature.group
+requires.0.min = 0
+requires.0.max = 0
+requires.1.namespace = org.eclipse.equinox.p2.iu
+requires.1.name = org.springframework.tooling.properties.ls.feature.feature.group
+requires.1.min = 0
+requires.1.max = 0

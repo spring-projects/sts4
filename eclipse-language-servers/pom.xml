@@ -36,12 +36,9 @@
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration</module>
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature</module>
 
-		<module>org.springframework.tooling.properties.ls</module>
-		<module>org.springframework.tooling.properties.ls.feature</module>
-		
 		<module>org.springframework.tooling.ls.eclipse.gotosymbol</module>
-		<module>org.springframework.tooling.boot.java.ls</module>
-		<module>org.springframework.tooling.boot.java.ls.feature</module>
+		<module>org.springframework.tooling.boot.ls</module>
+		<module>org.springframework.tooling.boot.ls.feature</module>
 
 		<module>org.springframework.tooling.bosh.ls</module>
 		<module>org.springframework.tooling.bosh.ls.feature</module>
