@@ -16,11 +16,13 @@
       </contentTypeMapping>
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
-            id="org.eclipse.languageserver.languages.springboot">
+            id="org.eclipse.languageserver.languages.springboot"
+            languageId="spring-boot-properties">
       </contentTypeMapping>
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.yml"
-            id="org.eclipse.languageserver.languages.springboot">
+            id="org.eclipse.languageserver.languages.springboot"
+            languageId="spring-boot-properties-yaml">
       </contentTypeMapping>
    </extension>
    
@@ -98,7 +100,7 @@
       </initializer>
    </extension>
    
-      <extension
+   <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
             contentTypeId="org.springframework.boot.ide.properties.application.properties"
