@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
 	id="org.springframework.tooling.boot.ls.feature"
-	label="Spring Boot Java Language Server Feature"
+	label="Spring Boot Language Server Feature"
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
