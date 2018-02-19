@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.BOOT_JAVA_SERVER;
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.SPRING_BOOT_SERVER;
 
 import java.io.File;
 import java.io.InputStream;
@@ -33,7 +33,7 @@ import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessS
 public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamConnector {
 	
 	public SpringBootLanguageServer() {
-		super(BOOT_JAVA_SERVER);
+		super(SPRING_BOOT_SERVER);
 		List<String> commands = new ArrayList<>();
 		JRE jre = getJRE(); 
 		commands.add(jre.getJavaExecutable());
