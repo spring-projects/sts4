@@ -74,12 +74,7 @@
 	</feature>
 
 	<feature
-		id="org.springframework.tooling.properties.ls.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
-	</feature>
-
-	<feature
-		id="org.springframework.tooling.boot.java.ls.feature" version="0.0.0">
+		id="org.springframework.tooling.boot.ls.feature" version="0.0.0">
 		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
 	</feature>
 
