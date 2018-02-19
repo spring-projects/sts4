@@ -68,7 +68,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	}
 
 	protected String getLanguageServerJARLocation() {
-		String languageServer = "boot-java-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
+		String languageServer = "spring-boot-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
 
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
 		String bundleVersion = bundle.getVersion().toString();
@@ -89,7 +89,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 			File userHome = new File(System.getProperty("user.home"));
 			File locallyBuiltJar = new File(
 					userHome, 
-					"git/sts4/headless-services/boot-java-language-server/target/boot-java-language-server-"+Constants.LANGUAGE_SERVER_VERSION
+					"git/sts4/headless-services/spring-boot-language-server/target/spring-boot-language-server-"+Constants.LANGUAGE_SERVER_VERSION
 			);
 			if (locallyBuiltJar.exists()) {
 				return locallyBuiltJar.getAbsolutePath();
