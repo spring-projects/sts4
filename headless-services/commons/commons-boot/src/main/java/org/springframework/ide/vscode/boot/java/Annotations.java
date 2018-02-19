@@ -18,7 +18,11 @@ package org.springframework.ide.vscode.boot.java;
 public class Annotations {
 	public static final String BEAN = "org.springframework.context.annotation.Bean";
 	public static final String PROFILE = "org.springframework.context.annotation.Profile";
+	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
+	
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
+	public static final String REPOSITORY = "org.springframework.stereotype.Repository";
+
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
 	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
@@ -28,7 +32,6 @@ public class Annotations {
 	public static final String SPRING_DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
 	public static final String SPRING_PATCH_MAPPING = "org.springframework.web.bind.annotation.PatchMapping";
 
-	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
 	public static final String CONDITIONAL_ON_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnBean";
 	public static final String CONDITIONAL_ON_MISSING_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean";
 	public static final String CONDITIONAL_ON_PROPERTY = "org.springframework.boot.autoconfigure.condition.ConditionalOnProperty";
