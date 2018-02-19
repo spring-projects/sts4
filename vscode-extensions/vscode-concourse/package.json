@@ -90,12 +90,11 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
+    "commons-vscode": "0.1.4",
     "vscode-languageclient": "^3.4.2"
   },
   "devDependencies": {
-    "vsce": "1.36.2",
-    "vso-node-api": "6.1.2-preview",
+    "vsce": "^1.36.1",
     "typescript": "2.6.1",
     "@types/node": "^7.0.43",
     "vscode": "^1.1.10"

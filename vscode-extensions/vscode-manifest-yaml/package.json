@@ -62,8 +62,7 @@
     "commons-vscode": "0.1.4"
   },
   "devDependencies": {
-    "vsce": "1.36.2",
-    "vso-node-api": "6.1.2-preview",
+    "vsce": "^1.36.1",
     "typescript": "2.6.1",
     "@types/node": "^7.0.43",
     "vscode": "^1.1.10"
