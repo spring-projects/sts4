@@ -14,6 +14,10 @@ To install it in vscode follow these steps:
  - Press `CTRL-SHIFT-P` and type 'vsix' in the search box
  - Select the `Extensions: Install from vsix file` command
  - Install the `.vsix` you downloaded earlier.
+ 
+**IMPORTANT**: Take care not to install multiple versions of the extension at once.
+Vscode will not complain but it leads to unpredictable outcomes. So if you have
+a prior version already installed make sure to uninstall it first!
 
 ## Bulding and Running
 
