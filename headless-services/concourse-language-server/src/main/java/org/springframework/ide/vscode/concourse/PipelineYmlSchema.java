@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -88,6 +89,8 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_string = f.yatomic("String");
 	public final YType t_ne_string = f.yatomic("String")
 			.parseWith(ValueParsers.NE_STRING);
+	public final YType t_opt_string = f.yatomic("String")
+			.parseWith(YamlSchemaValueParsers.OPT_STRING);
 
 	public final YType t_strings = f.yseq(t_string);
 	public final YType t_pair = f.ybean("NameValuePair",
@@ -248,11 +251,12 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		AbstractType t_input = f.ybean("TaskInput");
 		addProp(t_input, "name", t_ne_string).isPrimary(true);
-		addProp(t_input, "path", t_ne_string);
+		addProp(t_input, "path", t_opt_string);
+		addProp(t_input, "optional", t_boolean);
 
 		AbstractType t_output = f.ybean("TaskOutput");
 		addProp(t_output, "name", t_ne_string).isPrimary(true);
-		addProp(t_output, "path", t_ne_string);
+		addProp(t_output, "path", t_opt_string);
 
 		AbstractType t_command = f.ybean("Command");
 		addProp(t_command, "path", t_ne_string).isRequired(true);

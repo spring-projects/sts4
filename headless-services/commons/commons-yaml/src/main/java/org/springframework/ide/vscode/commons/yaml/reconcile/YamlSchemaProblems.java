@@ -55,7 +55,7 @@ public class YamlSchemaProblems {
 	public static final ProblemType DEPRECATED_VALUE = problemType("DeprecatedValue", ProblemSeverity.WARNING);
 	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR);
 	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR);
-
+	public static final ProblemType EMPTY_OPTIONAL_STRING = problemType("EmptyOptionalString", ProblemSeverity.WARNING);
 
 	public static final Set<ProblemType> PROPERTY_CONSTRAINT = ImmutableSet.of(
 			MISSING_PROPERTY, EXTRA_PROPERTY
