@@ -27,10 +27,10 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigator;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -69,7 +69,7 @@ public class CommonLanguageTools {
 
 	public static Collection<StsValueHint> getValueHints(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, String query, String propertyName, EnumCaseMode caseMode) {
 		Type type = getValueType(index, typeUtil, propertyName);
-		if (TypeUtil.isArray(type) || TypeUtil.isList(type)) {
+		if (TypeUtil.isSequencable(type)) {
 			//It is useful to provide content assist for the values in the list when entering a list
 			type = TypeUtil.getDomainType(type);
 		}

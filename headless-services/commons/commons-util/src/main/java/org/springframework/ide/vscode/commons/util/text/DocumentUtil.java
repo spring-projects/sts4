@@ -9,11 +9,10 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 
-package org.springframework.ide.vscode.commons.languageserver.util;
+package org.springframework.ide.vscode.commons.util.text;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DocumentUtil {
 

@@ -9,7 +9,7 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 
-package org.springframework.ide.vscode.commons.languageserver.util;
+package org.springframework.ide.vscode.commons.util.text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +19,6 @@ import java.util.regex.Pattern;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
-import org.springframework.ide.vscode.commons.util.text.IRegion;
-import org.springframework.ide.vscode.commons.util.text.Region;
 
 /**
  * A non-sucky alternative to {@link IRegion}. Represents a region of text in a document.

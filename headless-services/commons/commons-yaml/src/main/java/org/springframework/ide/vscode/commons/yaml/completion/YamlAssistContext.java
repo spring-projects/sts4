@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.commons.yaml.completion;
 import java.util.Collection;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;

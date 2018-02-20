@@ -78,12 +78,12 @@ public class ExceptionUtil {
 		// The message of nested exception is usually more interesting than the
 		// one on top.
 		Throwable cause = getDeepestCause(e);
-		if (cause != null) {
-			String msg = getSimpleError(cause) + ": " + cause.getMessage();
+		String errorType = cause.getClass().getSimpleName();
+		String msg = cause.getMessage();
+		if (ValueParseException.class.isInstance(cause) && msg!=null) {
 			return msg;
-		} else {
-			return "An error occurred: " + getSimpleError(e);
 		}
+		return errorType + ": " + msg;
 	}
 	
 	public static String getMessageNoAppendedInformation(Throwable e) {

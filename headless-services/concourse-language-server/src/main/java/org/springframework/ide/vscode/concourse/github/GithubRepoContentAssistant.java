@@ -17,9 +17,9 @@ import java.util.List;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.SimpleCompletionFactory;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.completion.CompletionFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
 

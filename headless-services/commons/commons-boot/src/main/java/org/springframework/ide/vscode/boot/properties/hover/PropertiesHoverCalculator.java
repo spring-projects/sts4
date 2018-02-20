@@ -30,10 +30,10 @@ import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
@@ -103,7 +103,7 @@ class PropertiesHoverCalculator {
 			String valueString = valueRegion.toString();
 			String propertyName = value.getParent().getKey().decode();
 			Type type = getValueType(index, typeUtil, propertyName);
-			if (TypeUtil.isArray(type) || TypeUtil.isList(type)) {
+			if (TypeUtil.isSequencable(type)) {
 				//It is useful to provide content assist for the values in the list when entering a list
 				type = TypeUtil.getDomainType(type);
 			}

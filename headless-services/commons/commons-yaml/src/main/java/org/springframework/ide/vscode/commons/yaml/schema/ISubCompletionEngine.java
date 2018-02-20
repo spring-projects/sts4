@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.completion.CompletionFactory;
 
 /**

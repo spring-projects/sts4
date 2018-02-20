@@ -1180,7 +1180,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"test-map.test-list-object.color-list[2]=GREEN\n"
 		);
 		editor.assertProblems(
-				"not-a-color|Expecting 'com.wellsfargo.lendingplatform.web.config.Color"
+				"not-a-color|com.wellsfargo.lendingplatform.web.config.Color"
 		);
 
 		editor = newEditor(
@@ -1402,21 +1402,37 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Test public void testCommaListReconcile() throws Exception {
+		doCommaCollectionReconcileTest("java.util.List");
+	}
+
+	@Test public void testCommaSetReconcile() throws Exception {
+		doCommaCollectionReconcileTest("java.util.Set");
+	}
+
+	private void doCommaCollectionReconcileTest(String collectionType) throws Exception {
 		Editor editor;
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
 		assertNotNull(p.getClasspath().findType("demo.Color"));
 
-		data("my.colors", "java.util.List<demo.Color>", null, "Ooh! nice colors!");
+		data("my.colors", collectionType+"<demo.Color>", null, "Ooh! nice colors!");
 
-//		editor = newEditor(
-//				"#comment\n" +
-//				"my.colors=RED, green, not-a-color , BLUE"
-//		);
-//		editor.assertProblems(
-//				"not-a-color|demo.Color"
-//		);
+		editor = newEditor(
+				"#comment\n" +
+				"my.colors=RED, green, not-a-color , BLUE"
+		);
+		editor.assertProblems(
+				"not-a-color|demo.Color"
+		);
+
+		editor = newEditor(
+				"my.colors=\\\n" +
+				"	red , \\\n" +
+				"	green,\\\n" +
+				"	bad\n"
+		);
+		editor.assertProblems( "bad|demo.Color");
 
 		editor = newEditor(
 				"my.colors=\\\n" +
@@ -1439,14 +1455,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"	bad , \\\n" +
 				"	green,\\\n" +
 				"	blue\n"
-		);
-		editor.assertProblems( "bad|demo.Color");
-
-		editor = newEditor(
-				"my.colors=\\\n" +
-				"	red , \\\n" +
-				"	green,\\\n" +
-				"	bad\n"
 		);
 		editor.assertProblems( "bad|demo.Color");
 
@@ -1589,6 +1597,28 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverExactText("debug", "**debug**  \n[java.lang.String](null)");
 	}
 
+	@Test public void testSetOfEnumsCompletions() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		data("my.color-set", "java.util.Set<demo.Color>", null, "Set of colors that can be used.");
+
+		assertCompletions("my.colos<*>", 
+				"my.color-set=<*>"
+		);
+		assertCompletions("my.color-set=<*>",
+				"my.color-set=blue<*>",
+				"my.color-set=green<*>",
+				"my.color-set=red<*>"
+		);
+		assertCompletions("my.color-set=B<*>",
+				"my.color-set=BLUE<*>"
+		);
+		assertCompletions("my.color-set=red,B<*>",
+				"my.color-set=red,BLUE<*>"
+		);
+	}
+
+	////////////// harness code below /////////////////////////
+	
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		ComposableLanguageServer<?> server = BootLanguageServer.create(

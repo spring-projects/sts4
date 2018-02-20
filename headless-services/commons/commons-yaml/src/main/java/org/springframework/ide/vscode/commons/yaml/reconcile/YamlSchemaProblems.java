@@ -22,9 +22,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;

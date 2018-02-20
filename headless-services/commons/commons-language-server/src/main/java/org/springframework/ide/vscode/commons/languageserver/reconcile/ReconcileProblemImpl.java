@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 
 /**
  * An implementation of {@link ReconcileProblem} that is just a simple data object.

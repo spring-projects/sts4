@@ -23,10 +23,10 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyN
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**

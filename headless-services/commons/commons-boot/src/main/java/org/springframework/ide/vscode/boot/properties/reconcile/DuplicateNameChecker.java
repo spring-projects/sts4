@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscapes;
 
 /**

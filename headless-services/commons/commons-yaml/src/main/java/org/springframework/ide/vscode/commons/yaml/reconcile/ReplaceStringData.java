@@ -11,8 +11,8 @@
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import org.eclipse.lsp4j.TextEdit;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 
 public class ReplaceStringData {
 

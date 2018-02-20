@@ -17,10 +17,10 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 
 import com.google.common.base.Supplier;
 

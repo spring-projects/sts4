@@ -27,11 +27,13 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
@@ -64,7 +66,6 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 
 	private SpringPropertyIndexProvider fIndexProvider;
 	private TypeUtilProvider typeUtilProvider;
-	private final DelimitedListReconciler commaListReconciler = new DelimitedListReconciler(COMMA, this::reconcileType);
 	private Parser parser = new AntlrParser();
 
 	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider) {
@@ -171,23 +172,26 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + length);
 	}
 
-	private void reconcileType(DocumentRegion region, Type expectType, IProblemCollector problems) {
-		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(region.getDocument());
+	private void reconcileType(DocumentRegion escapedValue, Type expectType, IProblemCollector problems) {
+		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(escapedValue.getDocument());
 		ValueParser parser = typeUtil.getValueParser(expectType);
 		if (parser!=null) {
 			try {
-				String valueStr = PropertiesFileEscapes.unescape(region.toString());
+				String valueStr = PropertiesFileEscapes.unescape(escapedValue.toString());
 				if (!valueStr.contains("${")) {
 					//Don't check strings that look like they use variable substitution.
 					parser.parse(valueStr);
 				}
+			} catch (ValueParseException e) {
+				problems.accept(problem(ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
+						ExceptionUtil.getMessage(e),
+						e.getHighlightRegion(escapedValue)));
+				
 			} catch (Exception e) {
 				problems.accept(problem(ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
 						"Expecting '"+typeUtil.niceTypeName(expectType)+"'",
-						region));
+						escapedValue));
 			}
-		} else if (TypeUtil.isList(expectType)||TypeUtil.isArray(expectType)) {
-			commaListReconciler.reconcile(region, expectType, problems);
 		}
 	}
 
