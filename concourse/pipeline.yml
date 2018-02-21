@@ -845,6 +845,7 @@ jobs:
       - build-bosh-rc
       - build-boot-properties-rc
       - build-boot-java-rc
+      - build-spring-boot-rc
     - get: version
       passed:
       - build-concourse-rc
@@ -852,6 +853,7 @@ jobs:
       - build-bosh-rc
       - build-boot-java-rc
       - build-boot-properties-rc
+      - build-spring-boot-rc
       params:
         bump: final
     - get: s3-concourse-vsix-snapshot
@@ -869,6 +871,9 @@ jobs:
     - get: s3-boot-java-vsix-snapshot
       passed:
       - build-boot-java-rc
+    - get: s3-spring-boot-vsix-snapshot
+      passed:
+      - build-spring-boot-rc
   - task: publish-vsix-releases
     file: tasks/concourse/tasks/publish-vsix-releases.yml
     input_mapping:
@@ -891,8 +896,9 @@ jobs:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-properties|Spring Boot Application Properties Support>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-java|Spring Boot Java Support>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-properties|Spring Boot Application Properties Support (Obsolete Placeholder)>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-java|Spring Boot Java Support (Obselete Placeholder)>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
   - aggregate:
     - put: sts4-out
       params:
