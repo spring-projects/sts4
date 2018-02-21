@@ -49,4 +49,7 @@ if [ "$dist_type" == release ]; then
 fi
 
 cp *.vsix $workdir/out
-cp $workdir/sts4/headless-services/${server_id}-language-server/target/*.jar $workdir/out/${server_id}-language-server-${base_version}-${timestamp}.jar
+server_jar=$workdir/sts4/headless-services/${server_id}-language-server/target/*.jar
+if [ -f $server_jar ]; then
+    cp $server_jar $workdir/out/${server_id}-language-server-${base_version}-${timestamp}.jar
+fi
