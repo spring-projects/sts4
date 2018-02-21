@@ -169,7 +169,6 @@ public class SpringBootAppTest {
 			ACondition.waitFor(TIMEOUT, () -> {
 				String env = testApp.getEnvironment();
 				assertNonEmptyJsonObject(env);
-				System.out.println("env = "+new JSONObject(env).toString(3));
 			});
 		}
 	}
