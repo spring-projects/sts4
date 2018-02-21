@@ -812,6 +812,7 @@ jobs:
       passed: 
       - trigger-rc-build
   - task: build-spring-boot-rc
+    attempts: 4
     file: sts4/concourse/tasks/rc-build.yml
     params:
       extension_id: vscode-spring-boot
