@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.livehover;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,20 +28,17 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
-
-import reactor.util.function.Tuple3;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
@@ -135,8 +133,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	@Override
 	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
 			SpringBootApp[] runningApps) {
-		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
-		if (functionBean != null && runningApps.length > 0) {
+		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {
 				LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 				if (definedBean != null) {
@@ -157,8 +154,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	@Override
 	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
-		if (functionBean != null && runningApps.length > 0) {
+
+		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
@@ -189,6 +186,28 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			}
 		}
 		return null;
+	}
+
+	private boolean isComponentAnnotatedType(TypeDeclaration typeDeclaration) {
+		List<?> modifiers = typeDeclaration.modifiers();
+		for (Object modifier : modifiers) {
+			if (modifier instanceof Annotation) {
+				ITypeBinding typeBinding = ((Annotation) modifier).resolveTypeBinding();
+				return isComponentAnnotation(typeBinding);
+			}
+		}
+		return false;
+	}
+	
+	private boolean isComponentAnnotation(ITypeBinding type) {
+		Set<String> transitiveSuperAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(type);
+		for (String annotationType : transitiveSuperAnnotations) {
+			if (Annotations.COMPONENT.equals(annotationType)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 }
