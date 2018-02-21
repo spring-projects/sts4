@@ -1,20 +1,13 @@
-const path = require('path');
-const { JavaProcessLanguageClient } = require('pivotal-atom-languageclient-commons');
-const PROPERTIES = require('../properties.json');
+const {AutoLanguageClient} = require('atom-languageclient');
 
-class BootPropertiesClient extends JavaProcessLanguageClient {
+class BootPropertiesClient extends AutoLanguageClient {
 
     constructor() {
-        //noinspection JSAnnotator
-        super(
-            PROPERTIES.jarUrl,
-            path.join(__dirname, '..', 'server'),
-            'boot-properties-language-server.jar'
-        );
+        super();
     }
 
     getGrammarScopes() {
-        return ['source.boot-properties','source.boot-properties-yaml'];
+        return [];
     }
 
     getLanguageName() {
@@ -26,18 +19,18 @@ class BootPropertiesClient extends JavaProcessLanguageClient {
     }
 
     activate() {
-        // replace the example argument 'linter-ruby' with the name of this Atom package
-        require('atom-package-deps')
-            .install('boot-properties')
-            .then(() => console.debug('All dependencies installed, good to go'));
+        const notification = atom.notifications.addInfo('`boot-properties` Extension __NOT__ Functional', {
+            dismissable: true,
+            detail: '`boot-properties` extension starting from 0.1.4 is obsolete',
+            description: 'The `boot-properties` extension is obsolete and no longer functional. Please uninstall it and install the `spring-boot` extension instead.',
+            buttons: [{
+                text: 'OK',
+                onDidClick: () => {
+                    notification.dismiss();
+                }
+            }]
+        });
         super.activate();
-    }
-
-    launchVmArgs(version) {
-        return Promise.resolve([
-            '-Dorg.slf4j.simpleLogger.logFile=boot-properties.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-        ]);
     }
 
 }
