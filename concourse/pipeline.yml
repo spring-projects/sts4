@@ -54,6 +54,12 @@ resources:
     branch: ((branch))
     private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-bosh.git
+- name: atom-spring-boot
+  type: git
+  source:
+    branch: ((branch))
+    private_key: ((rsa_id))
+    uri: git@github.com:spring-projects/atom-spring-boot.git
 - name: atom-boot-java
   type: git
   source:
@@ -194,6 +200,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/boot-properties-language-server-(.*).jar
+- name: s3-spring-boot-fatjar-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
 - name: s3-boot-properties-fatjar--rc
   type: s3
   source:
@@ -226,6 +240,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/atom/snapshots/bosh-yaml-(.*).tgz
+- name: s3-spring-boot-atom-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/atom/snapshots/spring-boot-(.*).tgz
 - name: s3-boot-java-atom-snapshot
   type: s3
   source:
@@ -321,7 +343,6 @@ jobs:
       trigger: true
     - get: maven-cache
   - task: build-boot-properties-vsix-snapshot
-    attempts: 3 #Because its a bit flaky with the maven bits
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-boot-properties
@@ -1000,6 +1021,10 @@ jobs:
         params:
           file: out/boot-properties-language-server-*.jar
           acl: public-read
+      - put: s3-spring-boot-fatjar-snapshot
+        params:
+          file: out/spring-boot-language-server-*.jar
+          acl: public-read          
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
@@ -1132,6 +1157,39 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-spring-boot-atom-package
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+      passed:
+      - atom-language-servers-test
+    - get: atom-spring-boot
+    - get: s3-spring-boot-fatjar-snapshot
+      trigger: true
+      passed:
+      - atom-language-servers-test
+  - task: build-spring-boot-atom-package
+    params:
+      package_name: atom-spring-boot
+    input_mapping:
+      fatjar: s3-spring-boot-fatjar-snapshot
+      release_repo: atom-spring-boot
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - aggregate:
+    - put: s3-spring-boot-atom-snapshot
+      params:
+        file: out/spring-boot-*.tgz
+        acl: public-read
+    - put: atom-spring-boot
+      params:
+        repository: out/repo
+        rebase: true    
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-boot-properties-atom-package
   serial: true
   plan:
@@ -1203,6 +1261,7 @@ groups:
   - build-manifest-yaml-atom-package
   - build-boot-java-atom-package
   - build-boot-properties-atom-package
+  - build-spring-boot-atom-package
 - name: atom-rc
   jobs:
   - prepare-boot-java-atom-rc
