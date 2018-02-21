@@ -1,11 +1,6 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 
 import * as VSCode from 'vscode';
-
-const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
-const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
