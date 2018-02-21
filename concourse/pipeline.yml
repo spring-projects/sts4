@@ -1281,6 +1281,7 @@ groups:
   - build-manifest-yaml-rc
   - build-boot-java-rc
   - build-boot-properties-rc
+  - build-spring-boot-rc
   - trigger-rc-build
   - publish-release
 #  - post-release
@@ -1289,7 +1290,7 @@ groups:
   - build-bosh-vsix-snapshot
   - build-boot-java-vsix-snapshot
   - build-boot-properties-vsix-snapshot
-  - build-spring-boot-rc
+  - build-spring-boot-vsix-snapshot
 - name: bump-versions
   jobs:
   - bump-version-patch
