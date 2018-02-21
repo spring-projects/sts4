@@ -10,6 +10,8 @@
     "atom": ">=1.21.0"
   },
   "files": [
+    "grammars/",
+    "settings/",
     "lib/",
     "server/",
     "styles/",

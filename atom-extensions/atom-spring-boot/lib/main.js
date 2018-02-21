@@ -28,7 +28,7 @@ class SpringBootLanguageClient extends JavaProcessLanguageClient {
     }
 
     getGrammarScopes() {
-        return ['source.java'];
+        return ['source.java', 'source.boot-properties', 'source.boot-properties-yaml'];
     }
 
     getLanguageName() {
@@ -41,7 +41,7 @@ class SpringBootLanguageClient extends JavaProcessLanguageClient {
 
     activate() {
         require('atom-package-deps')
-            .install('boot-java')
+            .install('spring-boot')
             .then(() => console.debug('All dependencies installed, good to go'));
         super.activate();
     }
