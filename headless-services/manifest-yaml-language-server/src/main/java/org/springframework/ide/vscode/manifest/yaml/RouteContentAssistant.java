@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.completion.CompletionFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;

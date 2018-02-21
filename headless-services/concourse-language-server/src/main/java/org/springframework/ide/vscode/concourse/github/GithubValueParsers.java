@@ -13,9 +13,9 @@ package org.springframework.ide.vscode.concourse.github;
 import java.util.Collection;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.concourse.PipelineYmlSchemaProblems;

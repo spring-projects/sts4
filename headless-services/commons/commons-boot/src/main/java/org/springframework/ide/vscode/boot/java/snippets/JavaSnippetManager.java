@@ -17,10 +17,10 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 import com.google.common.base.Supplier;

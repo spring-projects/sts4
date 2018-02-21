@@ -11,8 +11,8 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class SimpleCompletionFactory {

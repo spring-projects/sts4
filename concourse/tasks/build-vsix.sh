@@ -12,12 +12,12 @@ else
    echo "!!!This may slow down the build!!!"
 fi
 
-cd ${sources}/../commons-vscode
-npm install
+#cd ${sources}/../commons-vscode
+#npm install
 
 cd "$sources"
 
-npm install ../commons-vscode
+#npm install ../commons-vscode
 
 timestamp=`date -u +%Y%m%d%H%M`
 

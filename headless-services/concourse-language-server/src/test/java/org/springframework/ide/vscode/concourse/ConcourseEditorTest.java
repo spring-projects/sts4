@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.concourse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
@@ -31,7 +30,7 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
+import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -47,21 +46,20 @@ import org.springframework.ide.vscode.languageserver.testharness.Synchronization
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import org.mockito.Mockito;
-
 public class ConcourseEditorTest {
 
 	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.TEST_DEFAULT;
 
 	private static final String CURSOR = "<*>";
-	LanguageServerHarness harness;
+	LanguageServerHarness<ConcourseLanguageServer> harness;
 
 	private GithubInfoProvider github= Mockito.mock(GithubInfoProvider.class);
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(() -> {
-				return new ConcourseLanguageServer(OPTIONS, github)
-						.setMaxCompletions(100);
+		harness = new LanguageServerHarness<>(() -> {
+				ConcourseLanguageServer s = new ConcourseLanguageServer(OPTIONS, github);
+				s.setMaxCompletions(100);
+				return s;
 			},
 			LanguageId.CONCOURSE_PIPELINE
 		);
@@ -4609,6 +4607,40 @@ public class ConcourseEditorTest {
 				assertEquals(DiagnosticSeverity.Warning, d.getSeverity());
 			}
 		}
+	}
+
+	@Test public void emptyInputPathWarning() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"inputs:\n" +
+				"- name: foo\n" +
+				"  path: \"\"\n" +
+				"outputs:\n" +
+				"- name: bar\n" +
+				"  path: \"\"\n"
+		);
+		List<Diagnostic> problems = editor.assertProblems(
+				"\"\"|Empty optional String attribute is useless and can be omitted",
+				"\"\"|Empty optional String attribute is useless and can be omitted"
+		);
+		for (Diagnostic problem : problems) {
+			assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+		}
+	}
+
+	@Test public void taskInputOptionalAttribute() throws Exception {
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" +
+				"run:\n" +
+				"  path: blah\n" +
+				"inputs:\n" +
+				"- name: foo\n" +
+				"  optional: non-bool\n"
+		);
+		editor.assertProblems("non-bool|boolean");
+		editor.assertHoverContains("optional", "If `true`, then the input is not required by the task");
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

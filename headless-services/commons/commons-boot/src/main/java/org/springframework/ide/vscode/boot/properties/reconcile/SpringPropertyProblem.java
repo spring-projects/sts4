@@ -15,7 +15,7 @@ import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 //import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 
 // TODO: Move to a common project shared between YAML and Properties
 

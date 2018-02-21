@@ -24,7 +24,7 @@ public class ValueParsers {
 			throw new ValueParseException("String should not be empty");
 		}
 	};
-
+	
 	public static final ValueParser POS_INTEGER = integerRange(0, null);
 
 	public static ValueParser integerAtLeast(final Integer lowerBound) {

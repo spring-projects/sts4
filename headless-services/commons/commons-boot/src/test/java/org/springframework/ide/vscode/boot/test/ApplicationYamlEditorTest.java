@@ -17,6 +17,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.Editor.I
 
 import java.time.Duration;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
@@ -29,11 +30,11 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -715,19 +716,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		editor.assertProblems(
-				"bad: BLUE|Expecting a 'demo.Color",
-				"Bogus|Expecting a 'demo.Color"
+				"bad: BLUE|demo.Color",
+				"Bogus|demo.Color"
 		);
-
-		/*
-		 * TODO: if enums are not sorted by the 3rd party java indexing lib then
-		 * perform the commented out test rather than the above
-		 */
-		//		editor.assertProblems(
-//				"bad: BLUE|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got a 'Mapping' node",
-//				"Bogus|Expecting a 'demo.Color[RED, GREEN, BLUE]' but got 'Bogus'"
-//		);
-
 	}
 
 	@Test public void testReconcileSkipIfNoMetadata() throws Exception {
@@ -3459,7 +3450,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      - GREEN\n"
 		);
 		editor.assertProblems(
-				"not-a-color|Expecting a 'com.wellsfargo.lendingplatform.web.config.Color"
+				"not-a-color|com.wellsfargo.lendingplatform.web.config.Color"
 		);
 
 		editor = newEditor(
@@ -3690,6 +3681,69 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems("bogus|Unknown property");
 	}
 
+	@Test public void testSetOfEnumReconcile() throws Exception {
+		String collectionType = "java.util.Set";
+		doCollectionOfEnumReconcileTest(collectionType);
+	}
+
+	@Test public void testListOfEnumReconcile() throws Exception {
+		String collectionType = "java.util.List";
+		doCollectionOfEnumReconcileTest(collectionType);
+	}
+	
+	private void doCollectionOfEnumReconcileTest(String collectionType) throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		data("my.colors", collectionType + "<demo.Color>", null, "Ooh! nice colors!");
+		Editor editor;
+
+		//comma-separated string
+		editor = newEditor(
+				"my:\n" +
+				"  colors: red,green,BLUE,not-a-color\n"
+		);
+		editor.assertProblems("not-a-color|demo.Color");
+
+		//comma-separated string
+		editor = newEditor(
+				"my:\n" +
+				"  colors: red, green,  not-a-color, BLUE\n"
+		);
+		editor.assertProblems("not-a-color|demo.Color");
+
+		//flow list
+		editor = newEditor(
+				"my:\n" +
+				"  colors: [red, green, BLUE, not-a-color]"
+		);
+		editor.assertProblems("not-a-color|demo.Color");
+		
+		//block list
+		editor = newEditor(
+				"my:\n" +
+				"  colors:\n" +
+				"  - red\n" +
+				"  - green\n" +
+				"  - BLUE\n" +
+				"  - not-a-color\n"
+		);
+		editor.assertProblems("not-a-color|demo.Color");
+	}
+	
+	@Test public void testSetOfEnumCompletions() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		data("my.colors", "java.util.Set<demo.Color>", null, "Ooh! nice colors!");
+		
+		Editor editor = newEditor(
+				"my:\n" +
+				"  colors:\n" +
+				"  - <*>"
+		);
+		editor.assertContextualCompletions("<*>", "blue<*>", "green<*>", "red<*>");
+		editor.assertContextualCompletions("b<*>", "blue<*>");
+		editor.assertContextualCompletions("B<*>", "BLUE<*>");
+	}
+
+	
 	///////////////// cruft ////////////////////////////////////////////////////////
 
 	private void generateNestedProperties(int levels, String[] names, String prefix) {

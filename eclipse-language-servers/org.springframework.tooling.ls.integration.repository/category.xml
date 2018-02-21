@@ -2,11 +2,7 @@
 <site>
 	<category-def name="Spring Tools 4 Language Server Integrations for Eclipse" label="Spring Tools 4 Language Server Integrations for Eclipse"/>
 
-	<feature id="org.springframework.tooling.properties.ls.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
-
-	<feature id="org.springframework.tooling.boot.java.ls.feature">
+	<feature id="org.springframework.tooling.boot.ls.feature">
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 

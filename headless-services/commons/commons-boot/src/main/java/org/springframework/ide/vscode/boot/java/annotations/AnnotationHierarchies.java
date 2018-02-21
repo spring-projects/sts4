@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
@@ -60,7 +61,7 @@ public abstract class AnnotationHierarchies {
 
 	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
 		Set<String> seen = new HashSet<>();
-		findTransitiveSupers(typeBinding, seen);
+		findTransitiveSupers(typeBinding, seen).collect(Collectors.toList());
 		return seen;
 	}
 

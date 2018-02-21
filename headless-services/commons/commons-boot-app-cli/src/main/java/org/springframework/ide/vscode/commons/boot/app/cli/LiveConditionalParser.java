@@ -44,12 +44,12 @@ public class LiveConditionalParser {
 	public Optional<List<LiveConditional>> parse() {
 		try {
 			List<LiveConditional> allConditionals = new ArrayList<>();
-			JSONObject autoConfigReport = new JSONObject(autoConfigRecord);
-			if (autoConfigReport.has("contexts")) {
-				//more recently the report is nested inside the 'application' context.
-				autoConfigReport = autoConfigReport.getJSONObject("contexts").getJSONObject("application");
-			}
 			if (StringUtil.hasText(autoConfigRecord)) {
+				JSONObject autoConfigReport = new JSONObject(autoConfigRecord);
+				if (autoConfigReport.has("contexts")) {
+					//more recently the report is nested inside the 'application' context.
+					autoConfigReport = autoConfigReport.getJSONObject("contexts").getJSONObject("application");
+				}
 				for (LiveConditional c : getConditionalsFromPositiveMatches(autoConfigReport)) {
 					allConditionals.add(c);
 				}

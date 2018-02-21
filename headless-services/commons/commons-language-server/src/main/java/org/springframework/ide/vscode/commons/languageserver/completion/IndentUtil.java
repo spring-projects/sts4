@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 

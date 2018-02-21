@@ -13,9 +13,9 @@ package org.springframework.ide.vscode.commons.yaml.hover;
 import java.util.List;
 
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.Region;
