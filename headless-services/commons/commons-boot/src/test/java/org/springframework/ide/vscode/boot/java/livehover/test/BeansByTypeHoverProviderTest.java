@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarn
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
-public class FunctionInjectionsHoverProviderTest {
+public class BeansByTypeHoverProviderTest {
 
 	private BootJavaLanguageServerHarness harness;
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
@@ -45,7 +45,53 @@ public class FunctionInjectionsHoverProviderTest {
 	}
 
 	@Test
-	public void typeButNotAFunction() throws Exception {
+	public void typeButNotABean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("scannedRandomClass")
+						.type("com.example.ScannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("randomOtherBean")
+						.type("randomOtherBeanType")
+						.dependencies("scannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import java.io.Serializable;\n" +
+				"\n" +
+				"public class ClassNoBean implements Serializable {\n" +
+				"\n" +
+				"	public String apply(String t) {\n" +
+				"		return t.toUpperCase();\n" +
+				"	}\n" +
+				"\n" +
+				"}\n" +
+				""
+		);
+		editor.assertHighlights();
+		editor.assertNoHover("ClassNoBean");
+	}
+
+	@Test
+	public void typeWithGeneralBean() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("scannedRandomClass")
@@ -86,8 +132,17 @@ public class FunctionInjectionsHoverProviderTest {
 				"}\n" +
 				""
 		);
-		editor.assertHighlights();
-		editor.assertNoHover("ScannedRandomClass");
+		editor.assertHighlights("ScannedRandomClass");
+		editor.assertTrimmedHover("ScannedRandomClass",
+				"**Injection report for Bean [id: scannedRandomClass, type: `com.example.ScannedRandomClass`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: scannedRandomClass, type: `com.example.ScannedRandomClass`] injected into:\n" +
+				"\n" +
+				"- Bean: randomOtherBean  \n" +
+				"  Type: `randomOtherBeanType`"
+		);
 	}
 
 	@Test
@@ -145,4 +200,46 @@ public class FunctionInjectionsHoverProviderTest {
 				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`"
 		);
 	}
+	
+	@Test
+	public void generalBeanLiveHoverAvoidOverlapWithAnnotation() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] exists but is **Not injected anywhere**\n"
+		);
+	}
+
+
 }
