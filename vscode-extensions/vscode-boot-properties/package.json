@@ -52,18 +52,6 @@
         ],
         "configuration": "./properties-support/language-configuration.json"
       }
-    ],
-    "grammars": [
-      {
-        "language": "spring-boot-properties-yaml",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
-      },
-      {
-        "language": "spring-boot-properties",
-        "scopeName": "source.java-properties",
-        "path": "./properties-support/java-properties.tmLanguage"
-      }
     ]
   },
   "main": "./out/lib/Main",
@@ -72,13 +60,11 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
-    "preinstall": "./scripts/preinstall.sh",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "vscode-languageclient": "^3.4.2",
-    "commons-vscode": "0.1.4"
+    "vscode-languageclient": "^3.4.2"
   },
   "devDependencies": {
     "vsce": "^1.36.1",

@@ -17,15 +17,8 @@ const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
-    let options : commons.ActivatorOptions = {
-        DEBUG: false,
-        CONNECT_TO_LS: false,
-        extensionId: 'vscode-boot-properties',
-        launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
-        jvmHeap: "160m",
-        clientOptions: {
-            documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID ]
-        }
-    };
-    let clientPromise = commons.activate(options, context);
+    VSCode.window.showInformationMessage(
+        "The `vscode-boot-properties` extension is obsolete and no longer functional. "+
+        "Please uninstall it and install the `vscode-spring-boot` extension instead."
+    );
 }
