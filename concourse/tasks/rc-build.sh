@@ -30,11 +30,11 @@ echo "Version set to " `npm version`
 echo -e "\n\n*Version: ${version}*" >> README.md
 
 # Build commons vscode
-cd ${sources}/../commons-vscode
-npm install
+# cd ${sources}/../commons-vscode
+# npm install
 
 cd "$sources"
-npm install ../commons-vscode
+# npm install ../commons-vscode
 npm install
 npm run vsce-package
 

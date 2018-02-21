@@ -798,6 +798,41 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-spring-boot-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-spring-boot-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-spring-boot-rc
+    file: sts4/concourse/tasks/rc-build.yml
+    params:
+      extension_id: vscode-spring-boot
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-spring-boot-vsix-snapshot
+    params: 
+      file: out/vscode-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: s3-spring-boot-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-java/spring-boot-logo.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-release
   serial: true
   plan:
@@ -1248,6 +1283,7 @@ groups:
   - build-bosh-vsix-snapshot
   - build-boot-java-vsix-snapshot
   - build-boot-properties-vsix-snapshot
+  - build-spring-boot-rc
 - name: bump-versions
   jobs:
   - bump-version-patch
