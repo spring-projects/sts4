@@ -2,6 +2,7 @@ inputs:
 - name: sts4
 - name: release_repo
 - name: fatjar
+  optional: true
 params:
   package_name: atom-bosh
 outputs:
