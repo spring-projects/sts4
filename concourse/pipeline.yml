@@ -549,7 +549,6 @@ jobs:
       package_name: atom-boot-properties
     input_mapping:
       release_repo: atom-boot-properties
-      fatjar: none
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-properties
     params:
@@ -569,7 +568,6 @@ jobs:
       package_name: atom-boot-java
     input_mapping:
       release_repo: atom-boot-java
-      fatjar: none
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-java
     params:
@@ -1127,7 +1125,6 @@ jobs:
     params:
       package_name: atom-boot-java
     input_mapping:
-      fatjar: none
       release_repo: atom-boot-java
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
@@ -1189,7 +1186,6 @@ jobs:
     params:
       package_name: atom-boot-properties
     input_mapping:
-      fatjar: none
       release_repo: atom-boot-properties
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
