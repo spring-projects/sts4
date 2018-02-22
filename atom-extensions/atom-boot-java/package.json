@@ -10,81 +10,12 @@
     "atom": ">=1.21.0"
   },
   "files": [
-    "lib/",
-    "server/",
-    "styles/",
-    "properties.json"
+    "lib/"
   ],
-  "configSchema": {
-    "boot-hints.on": {
-      "type": "boolean",
-      "default": true,
-      "description": "Enable/Disable Spring running Boot application live hints decorators in the source code"
-    }
-  },
   "dependencies": {
-    "atom-package-deps": "^4.6.0",
-    "download": "^6.2.5",
-    "pivotal-atom-languageclient-commons": "0.0.19"
-  },
-  "devDependencies": {
-    "coffeelint": "^1.10.1"
+    "atom-languageclient": "0.8.0"
   },
   "scripts": {
-    "clean": "rm -fr node_modules",
-    "postinstall": "node script.js"
-  },
-  "package-deps": [
-    "atom-ide-ui",
-    "ide-java"
-  ],
-  "consumedServices": {
-    "linter-indie": {
-      "versions": {
-        "2.0.0": "consumeLinterV2"
-      }
-    },
-    "datatip": {
-      "versions": {
-        "0.1.0": "consumeDatatip"
-      }
-    }
-  },
-  "providedServices": {
-    "autocomplete.provider": {
-      "versions": {
-        "2.0.0": "provideAutocomplete"
-      }
-    },
-    "code-actions": {
-      "versions": {
-        "0.1.0": "provideCodeActions"
-      }
-    },
-    "code-format.range": {
-      "versions": {
-        "0.1.0": "provideCodeFormat"
-      }
-    },
-    "code-highlight": {
-      "versions": {
-        "0.1.0": "provideCodeHighlight"
-      }
-    },
-    "definitions": {
-      "versions": {
-        "0.1.0": "provideDefinitions"
-      }
-    },
-    "find-references": {
-      "versions": {
-        "0.1.0": "provideFindReferences"
-      }
-    },
-    "outline-view": {
-      "versions": {
-        "0.1.0": "provideOutlines"
-      }
-    }
+    "clean": "rm -fr node_modules"
   }
 }
