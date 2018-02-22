@@ -184,6 +184,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
+- name: s3-spring-boot-fatjar--rc
+  type: s3
+  source:
+    bucket: ((s3_prod_bucket))
+    access_key_id: ((s3_prod_accesskey))
+    secret_access_key: ((s3_prod_secretkey))
+    region_name: ((s3_prod_region))
+    regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -472,6 +480,10 @@ jobs:
       params:
         file: s3-manifest-yaml-fatjar-snapshot/*.jar
         acl: public-read
+    - put: s3-spring-boot-fatjar--rc
+      params:
+        file: s3-spring-boot-fatjar-snapshot/*.jar
+        acl: public-read
 - name: prepare-manifest-yaml-atom-rc
   serial: true
   plan:
@@ -570,6 +582,27 @@ jobs:
       release_repo: atom-boot-java
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-java
+    params:
+      repository: out/repo
+      rebase: true
+- name: prepare-spring-boot-atom-rc
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: atom-spring-boot
+    - get: s3-spring-boot-fatjar--rc
+      trigger: true
+      passed:
+      - promote-fatjars-to-rc
+  - task: build-atom-package
+    params:
+      package_name: atom-spring-boot
+    input_mapping:
+      release_repo: atom-spring-boot
+      fatjar: s3-spring-boot-fatjar--rc
+    file: sts4/concourse/tasks/build-atom-package.yml
+  - put: atom-spring-boot
     params:
       repository: out/repo
       rebase: true
@@ -1251,6 +1284,7 @@ groups:
   - prepare-bosh-atom-rc
   - prepare-concourse-atom-rc
   - prepare-manifest-yaml-atom-rc
+  - prepare-spring-boot-atom-rc
   - promote-fatjars-to-rc
 - name: setup
   jobs:
