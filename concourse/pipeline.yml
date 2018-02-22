@@ -1136,11 +1136,11 @@ jobs:
       params:
         repository: out/repo
         rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+#  on_failure:
+#    put: slack-notification
+#    params:
+#      text: |
+#         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-spring-boot-atom-package
   serial: true
   plan:
@@ -1198,11 +1198,11 @@ jobs:
       params:
         repository: out/repo
         rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  # on_failure:
+  #   put: slack-notification
+  #   params:
+  #     text: |
+  #        Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 groups:
 - name: vscode-snapshot
   jobs:
