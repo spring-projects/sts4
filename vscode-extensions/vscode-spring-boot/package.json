@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Support",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",

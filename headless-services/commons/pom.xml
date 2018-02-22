@@ -6,7 +6,7 @@
 	<groupId>org.springframework.ide.vscode</groupId>
 	<artifactId>commons-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1.4-SNAPSHOT</version>
+	<version>0.1.5-SNAPSHOT</version>
 	<name>commons-parent</name>
 
 	<modules>
