@@ -176,30 +176,6 @@ resources:
     secret_access_key: ((s3_prod_secretkey))
     region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
-- name: s3-boot-java-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/boot-java-language-server-(.*).jar
-- name: s3-boot-java-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/boot-java-language-server-(.*).jar
-- name: s3-boot-properties-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/boot-properties-language-server-(.*).jar
 - name: s3-spring-boot-fatjar-snapshot
   type: s3
   source:
@@ -208,14 +184,6 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
-- name: s3-boot-properties-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/boot-properties-language-server-(.*).jar
 - name: s3-manifest-yaml-atom-snapshot
   type: s3
   source:
@@ -491,12 +459,6 @@ jobs:
     - get: s3-manifest-yaml-fatjar-snapshot
       passed:
       - build-manifest-yaml-atom-package
-    - get: s3-boot-java-fatjar-snapshot
-      passed:
-      - build-boot-java-atom-package
-    - get: s3-boot-properties-fatjar-snapshot
-      passed:
-      - build-boot-properties-atom-package
   - aggregate:
     - put: s3-bosh-fatjar--rc
       params:
@@ -509,14 +471,6 @@ jobs:
     - put: s3-manifest-yaml-fatjar--rc
       params:
         file: s3-manifest-yaml-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-boot-java-fatjar--rc
-      params:
-        file: s3-boot-java-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-boot-properties-fatjar--rc
-      params:
-        file: s3-boot-properties-fatjar-snapshot/*.jar
         acl: public-read
 - name: prepare-manifest-yaml-atom-rc
   serial: true
@@ -587,16 +541,15 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-boot-properties
-    - get: s3-boot-properties-fatjar--rc
       trigger: true
       passed:
-      - promote-fatjars-to-rc
+      - build-boot-properties-atom-package
   - task: build-atom-package
     params:
       package_name: atom-boot-properties
     input_mapping:
       release_repo: atom-boot-properties
-      fatjar: s3-boot-properties-fatjar--rc
+      fatjar: none
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-properties
     params:
@@ -608,16 +561,15 @@ jobs:
   - aggregate:
     - get: sts4
     - get: atom-boot-java
-    - get: s3-boot-java-fatjar--rc
       trigger: true
       passed:
-      - promote-fatjars-to-rc
+      - build-boot-java-atom-package
   - task: build-atom-package
     params:
       package_name: atom-boot-java
     input_mapping:
       release_repo: atom-boot-java
-      fatjar: s3-boot-java-fatjar--rc
+      fatjar: none
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-boot-java
     params:
@@ -1055,14 +1007,6 @@ jobs:
         params:
           file: out/bosh-language-server-*.jar
           acl: public-read
-      - put: s3-boot-java-fatjar-snapshot
-        params:
-          file: out/boot-java-language-server-*.jar
-          acl: public-read
-      - put: s3-boot-properties-fatjar-snapshot
-        params:
-          file: out/boot-properties-language-server-*.jar
-          acl: public-read
       - put: s3-spring-boot-fatjar-snapshot
         params:
           file: out/spring-boot-language-server-*.jar
@@ -1171,18 +1115,15 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
-      passed:
-      - atom-language-servers-test
-    - get: atom-boot-java
-    - get: s3-boot-java-fatjar-snapshot
       trigger: true
       passed:
       - atom-language-servers-test
+    - get: atom-boot-java
   - task: build-boot-java-atom-package
     params:
       package_name: atom-boot-java
     input_mapping:
-      fatjar: s3-boot-java-fatjar-snapshot
+      fatjar: none
       release_repo: atom-boot-java
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
@@ -1240,15 +1181,11 @@ jobs:
       passed:
       - atom-language-servers-test
     - get: atom-boot-properties
-    - get: s3-boot-properties-fatjar-snapshot
-      trigger: true
-      passed:
-      - atom-language-servers-test
   - task: build-boot-properties-atom-package
     params:
       package_name: atom-boot-properties
     input_mapping:
-      fatjar: s3-boot-properties-fatjar-snapshot
+      fatjar: none
       release_repo: atom-boot-properties
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
