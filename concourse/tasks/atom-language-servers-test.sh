@@ -14,7 +14,7 @@ else
 fi
 
 cd ${sources}
-./mvnw package -Dmaven.test.skip=true -DargLine="-Dlsp.lazy.completions.disable=true -Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
+./mvnw package -DargLine="-Dlsp.lazy.completions.disable=true -Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
 
 timestamp=`date -u +%Y%m%d%H%M`
 for i in `ls *-language-server/target/*.jar`; do
