@@ -60,18 +60,6 @@ resources:
     branch: ((branch))
     private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-spring-boot.git
-- name: atom-boot-java
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-boot-java.git
-- name: atom-boot-properties
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-boot-properties.git
 - name: tasks
   type: git
   source:
@@ -80,22 +68,6 @@ resources:
     paths:
     - concourse/tasks
     private_key: ((rsa_id))
-- name: s3-boot-properties-vsix-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/vscode-extensions/snapshots/vscode-boot-properties-(.*).vsix
-- name: s3-boot-java-vsix-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/vscode-extensions/snapshots/vscode-boot-java-(.*).vsix
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
@@ -224,22 +196,6 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/atom/snapshots/spring-boot-(.*).tgz
-- name: s3-boot-java-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/boot-java-(.*).tgz
-- name: s3-boot-properties-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/boot-properties-(.*).tgz
 - name: vscode-snapshot-website
   type: s3-multi
   source:
@@ -312,45 +268,6 @@ jobs:
   - put: maven-cache
     params:
       file: out/*.tar.gz
-- name: build-boot-properties-vsix-snapshot
-  plan:
-  - aggregate:
-    - get: sts4
-      trigger: true
-    - get: maven-cache
-  - task: build-boot-properties-vsix-snapshot
-    file: sts4/concourse/tasks/build-vsix.yml
-    params:
-      extension_id: vscode-boot-properties
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - put: s3-boot-properties-vsix-snapshot
-    params: 
-      file: out/vscode-boot-properties-*.vsix
-      acl: public-read
-- name: build-boot-java-vsix-snapshot
-  plan:
-  - aggregate:
-    - get: sts4
-      trigger: true
-    - get: maven-cache
-  - task: build-boot-java-vsix-snapshot
-    #attempts: 3 #Because its a bit flaky with the maven bits
-    file: sts4/concourse/tasks/build-vsix.yml
-    params:
-      extension_id: vscode-boot-java
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - put: s3-boot-java-vsix-snapshot
-    params: 
-      file: out/vscode-boot-java-*.vsix
-      acl: public-read
 - name: build-consourse-vsix-snapshot
   plan:
   - aggregate:
@@ -438,8 +355,6 @@ jobs:
       - build-manifest-yaml-vsix-snapshot
       - build-consourse-vsix-snapshot
       - build-bosh-vsix-snapshot
-      - build-boot-java-vsix-snapshot
-      - build-boot-properties-vsix-snapshot
       - build-spring-boot-vsix-snapshot
     - do:
       - get: version
@@ -547,44 +462,6 @@ jobs:
       fatjar: s3-bosh-fatjar--rc
     file: sts4/concourse/tasks/build-atom-package.yml
   - put: atom-bosh
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-boot-properties-atom-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: atom-boot-properties
-      trigger: true
-      passed:
-      - build-boot-properties-atom-package
-  - task: build-atom-package
-    params:
-      package_name: atom-boot-properties
-    input_mapping:
-      release_repo: atom-boot-properties
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-boot-properties
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-boot-java-atom-rc
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: atom-boot-java
-      trigger: true
-      passed:
-      - build-boot-java-atom-package
-  - task: build-atom-package
-    params:
-      package_name: atom-boot-java
-    input_mapping:
-      release_repo: atom-boot-java
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-boot-java
     params:
       repository: out/repo
       rebase: true
@@ -714,76 +591,6 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
-- name: build-boot-properties-rc
-  plan:
-  - aggregate:
-    - get: maven-cache
-      passed:
-      - build-boot-properties-vsix-snapshot
-    - get: sts4
-      passed: 
-      - trigger-rc-build
-    - get: version
-      trigger: true
-      passed: 
-      - trigger-rc-build
-  - task: build-boot-properties-rc
-    file: sts4/concourse/tasks/rc-build.yml
-    params:
-      extension_id: vscode-boot-properties
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
-  - put: s3-boot-properties-vsix-snapshot
-    params: 
-      file: out/vscode-*.vsix
-      acl: public-read
-    on_success:
-      put: slack-notification
-      params:
-        channel: "#tools-team-internal"
-        text_file: s3-boot-properties-vsix-snapshot/url
-        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-properties/spring-boot-logo.png
-        text: |
-          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
-          Release candidate available for testing $TEXT_FILE_CONTENT
-- name: build-boot-java-rc
-  plan:
-  - aggregate:
-    - get: maven-cache
-      passed:
-      - build-boot-java-vsix-snapshot
-    - get: sts4
-      passed: 
-      - trigger-rc-build
-    - get: version
-      trigger: true
-      passed: 
-      - trigger-rc-build
-  - task: build-boot-java-rc
-    file: sts4/concourse/tasks/rc-build.yml
-    params:
-      extension_id: vscode-boot-java
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
-  - put: s3-boot-java-vsix-snapshot
-    params: 
-      file: out/vscode-*.vsix
-      acl: public-read
-    on_success:
-      put: slack-notification
-      params:
-        channel: "#tools-team-internal"
-        text_file: s3-boot-java-vsix-snapshot/url
-        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-java/spring-boot-logo.png
-        text: |
-          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
-          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-spring-boot-rc
   plan:
   - aggregate:
@@ -816,7 +623,7 @@ jobs:
       params:
         channel: "#tools-team-internal"
         text_file: s3-spring-boot-vsix-snapshot/url
-        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-boot-java/spring-boot-logo.png
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-spring-boot/spring-boot-logo.png
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
@@ -830,16 +637,12 @@ jobs:
       - build-manifest-yaml-rc
       - build-concourse-rc
       - build-bosh-rc
-      - build-boot-properties-rc
-      - build-boot-java-rc
       - build-spring-boot-rc
     - get: version
       passed:
       - build-concourse-rc
       - build-manifest-yaml-rc
       - build-bosh-rc
-      - build-boot-java-rc
-      - build-boot-properties-rc
       - build-spring-boot-rc
       params:
         bump: final
@@ -852,12 +655,6 @@ jobs:
     - get: s3-bosh-vsix-snapshot
       passed:
       - build-bosh-rc
-    - get: s3-boot-properties-vsix-snapshot
-      passed:
-      - build-boot-properties-rc
-    - get: s3-boot-java-vsix-snapshot
-      passed:
-      - build-boot-java-rc
     - get: s3-spring-boot-vsix-snapshot
       passed:
       - build-spring-boot-rc
@@ -883,8 +680,6 @@ jobs:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-properties|Spring Boot Application Properties Support (Obsolete Placeholder)>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-boot-java|Spring Boot Java Support (Obselete Placeholder)>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
   - aggregate:
     - put: sts4-out
@@ -967,14 +762,6 @@ jobs:
       trigger: true
       passed:
       - build-concourse-atom-package
-    - get: s3-boot-java-atom-snapshot
-      trigger: true
-      passed:
-      - build-boot-java-atom-package
-    - get: s3-boot-properties-atom-snapshot
-      trigger: true
-      passed:
-      - build-boot-properties-atom-package
     - get: s3-spring-boot-atom-snapshot
       trigger: true
       passed:
@@ -1001,14 +788,6 @@ jobs:
       trigger: true
       passed:
       - build-spring-boot-vsix-snapshot
-    - get: s3-boot-properties-vsix-snapshot
-      trigger: true
-      passed:
-      - build-boot-properties-vsix-snapshot
-    - get: s3-boot-java-vsix-snapshot
-      trigger: true
-      passed:
-      - build-boot-java-vsix-snapshot
     - get: s3-concourse-vsix-snapshot
       trigger: true
       passed:
@@ -1148,35 +927,6 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-boot-java-atom-package
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-      trigger: true
-      passed:
-      - atom-language-servers-test
-    - get: atom-boot-java
-  - task: build-boot-java-atom-package
-    params:
-      package_name: atom-boot-java
-    input_mapping:
-      release_repo: atom-boot-java
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
-    - put: s3-boot-java-atom-snapshot
-      params:
-        file: out/boot-java-*.tgz
-        acl: public-read
-    - put: atom-boot-java
-      params:
-        repository: out/repo
-        rebase: true    
-#  on_failure:
-#    put: slack-notification
-#    params:
-#      text: |
-#         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-spring-boot-atom-package
   serial: true
   plan:
@@ -1210,43 +960,12 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-boot-properties-atom-package
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-      trigger: true
-      passed:
-      - atom-language-servers-test
-    - get: atom-boot-properties
-  - task: build-boot-properties-atom-package
-    params:
-      package_name: atom-boot-properties
-    input_mapping:
-      release_repo: atom-boot-properties
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
-    - put: s3-boot-properties-atom-snapshot
-      params:
-        file: out/boot-properties-*.tgz
-        acl: public-read
-    - put: atom-boot-properties
-      params:
-        repository: out/repo
-        rebase: true    
-  # on_failure:
-  #   put: slack-notification
-  #   params:
-  #     text: |
-  #        Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 groups:
 - name: vscode-snapshot
   jobs:
   - build-vscode-snapshot-website
   - build-consourse-vsix-snapshot
-  - build-boot-properties-vsix-snapshot
   - build-spring-boot-vsix-snapshot
-  - build-boot-java-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot
 - name: vscode-release
@@ -1254,8 +973,6 @@ groups:
   - build-bosh-rc
   - build-concourse-rc
   - build-manifest-yaml-rc
-  - build-boot-java-rc
-  - build-boot-properties-rc
   - build-spring-boot-rc
   - trigger-rc-build
   - publish-release
@@ -1263,8 +980,6 @@ groups:
   - build-manifest-yaml-vsix-snapshot
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
-  - build-boot-java-vsix-snapshot
-  - build-boot-properties-vsix-snapshot
   - build-spring-boot-vsix-snapshot
 - name: bump-versions
   jobs:
@@ -1277,13 +992,9 @@ groups:
   - build-concourse-atom-package
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
-  - build-boot-java-atom-package
-  - build-boot-properties-atom-package
   - build-spring-boot-atom-package
 - name: atom-rc
   jobs:
-  - prepare-boot-java-atom-rc
-  - prepare-boot-properties-atom-rc
   - prepare-bosh-atom-rc
   - prepare-concourse-atom-rc
   - prepare-manifest-yaml-atom-rc
