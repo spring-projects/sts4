@@ -24,10 +24,7 @@ done
 cd $atom_sources
 for extension_id in $(ls -d atom-*)
 do
-    if [ $extension_id = "atom-commons" ]; then
-        # skip commons package
-        echo "Skipping $extension_id"
-    else
+    if [ $extension_id != "atom-commons" ]; then
         cd $atom_sources/$extension_id
         echo "Should update version of $extension_id to $version"
         npm version $version
