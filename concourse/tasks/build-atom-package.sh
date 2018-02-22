@@ -6,7 +6,7 @@ output=$workdir/out
 #atom_commons=$workdir/sts4/atom-extensions/atom-commons
 atom_package=$workdir/sts4/atom-extensions/$package_name
 
-if [ -e $fatjar ]; then
+if [ -e $fatjar/version ]; then
     url=`cat fatjar/url`
     fatjar_version=`cat fatjar/version`
 fi
@@ -20,7 +20,7 @@ cd $atom_package
 
 timestamp=`date -u +%Y%m%d%H%M`
 
-if [ -e $fatjar ]; then
+if [ -e $fatjar/version ]; then
 cat > properties.json << EOF
 {
     "jarUrl": "${url}"
@@ -56,7 +56,7 @@ git config user.name "Alex Boyko"
 
 git add .
 
-if [ -e $fatjar ]; then
+if [ -e $fatjar/version ]; then
     git commit \
         -m "Publish $fatjar_version"
 else

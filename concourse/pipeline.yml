@@ -563,6 +563,8 @@ jobs:
       trigger: true
       passed:
       - build-boot-java-atom-package
+    - task: no-fatjar
+      file: sts4/concourse/tasks/no-fatjar.yml
   - task: build-atom-package
     params:
       package_name: atom-boot-java

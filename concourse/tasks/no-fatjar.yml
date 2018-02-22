@@ -1,0 +1,10 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+outputs:
+- name: fatjar
+run:
+  path: echo
+  args: [ "Faking it there is no fatjar" ]
