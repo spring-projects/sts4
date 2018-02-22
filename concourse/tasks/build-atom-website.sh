@@ -9,7 +9,6 @@ dist_type=snapshot
 #cp -r "${sources}/stylesheet.css" "$target"
 #cp -r ${sources}/*.js "$target"
 #cp s3-manifest-yaml-vsix/*.vsix "$target"
-#cp s3-boot-properties-vsix/*.vsix "$target"
 
 packages=$(ls -d s3-*)
 echo "package=${packages}"

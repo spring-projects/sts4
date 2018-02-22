@@ -3,8 +3,6 @@ inputs:
 - name: s3-bosh-atom-snapshot
 - name: s3-concourse-atom-snapshot
 - name: s3-manifest-yaml-atom-snapshot
-- name: s3-boot-java-atom-snapshot
-- name: s3-boot-properties-atom-snapshot
 - name: s3-spring-boot-atom-snapshot
 outputs:
 - name: website
