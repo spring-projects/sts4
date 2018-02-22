@@ -55,8 +55,23 @@ public class WebFluxMappingSymbolProviderTest {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = getSymbols(docUri);
 		assertEquals(6, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/hello", docUri, 22, 23, 22, 81));
-		assertTrue(containsSymbol(symbols, "@/echo", docUri, 23, 1, 23, 85));
+		assertTrue(containsSymbol(symbols, "@/hello", docUri, 22, 5, 22, 70));
+		assertTrue(containsSymbol(symbols, "@/echo", docUri, 23, 5, 23, 101));
+		assertTrue(containsSymbol(symbols, "@/quotes", docUri, 24, 5, 24, 86));
+		assertTrue(containsSymbol(symbols, "@/quotes", docUri, 25, 5, 25, 94));
+	}
+
+	@Test
+	public void testNestedRoutesMappingSymbols() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		assertEquals(5, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/person/{id}", docUri, 27, 6, 27, 45));
+		assertTrue(containsSymbol(symbols, "@/person/", docUri, 29, 6, 29, 83));
+		assertTrue(containsSymbol(symbols, "@/person", docUri, 28, 7, 28, 60));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
