@@ -3,19 +3,36 @@ set -e
 set -v
 workdir=`pwd`
 
-sources=$workdir/sts4/vscode-extensions
+vscode_sources=$workdir/sts4/vscode-extensions
+atom_sources=$workdir/sts4/atom-extensions
 
 version=`cat version/version`
 echo "version=$version"
 
-cd $sources
+# vscode extensions
+cd $vscode_sources
 for extension_id in $(ls -d vscode-*)
 do
-    cd $sources/$extension_id
+    cd $vscode_sources/$extension_id
     echo "Should update version of $extension_id to $version"
     npm version $version
     git add package.json
     echo ""
+done
+
+# atom extensions
+cd $atom_sources
+for extension_id in $(ls -d atom-*)
+do
+    if [ $extension_id = "atom-commons" ]; then
+        # skip commons package
+    else
+        cd $atom_sources/$extension_id
+        echo "Should update version of $extension_id to $version"
+        npm version $version
+        git add package.json
+        echo ""
+    fi
 done
 
 cd $workdir/sts4/headless-services
