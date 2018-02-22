@@ -52,7 +52,7 @@ public class SourceJavadocTest {
 				"/**",
 				" * {@link ApplicationListener} that replaces the liquibase {@link ServiceLocator} with a"
 			);
-		assertEquals(expected, type.getJavaDoc().raw().trim().substring(0, expected.length()));
+		assertEquals(expected, type.getJavaDoc().raw().trim().replace("\r", "").substring(0, expected.length()));
 
 		type = project.getClasspath().findType("org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener$LiquibasePresent");
 		assertNotNull(type);
@@ -61,7 +61,7 @@ public class SourceJavadocTest {
 				"	 * Inner class to prevent class not found issues.",
 				"	 */"
 			);
-		assertEquals(expected, type.getJavaDoc().raw().trim());
+		assertEquals(expected, type.getJavaDoc().raw().trim().replace("\r", ""));
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class SourceJavadocTest {
 				" * Comment for Greeting class ",
 				" */"
 			);
-		assertEquals(expected, type.getJavaDoc().raw().trim());
+		assertEquals(expected, type.getJavaDoc().raw().trim().replace("\r", ""));
 
 		IField field = type.getField("id");
 		assertNotNull(field);
@@ -84,7 +84,7 @@ public class SourceJavadocTest {
 				"     * Comment for id field",
 				"     */"
 			);
-		assertEquals(expected, field.getJavaDoc().raw().trim());
+		assertEquals(expected, field.getJavaDoc().raw().trim().replace("\r", ""));
 
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
@@ -93,7 +93,7 @@ public class SourceJavadocTest {
 				"     * Comment for getId()",
 				"     */"
 			);
-		assertEquals(expected, method.getJavaDoc().raw().trim());
+		assertEquals(expected, method.getJavaDoc().raw().trim().replace("\r", ""));
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class SourceJavadocTest {
 				 "	 * Default banner location.",
 				 "	 */"
 			);
-		assertEquals(expected, field.getJavaDoc().raw().trim());
+		assertEquals(expected, field.getJavaDoc().raw().trim().replace("\r", ""));
 
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
@@ -118,7 +118,7 @@ public class SourceJavadocTest {
 				"/**",
 				"	 * Returns read-only ordered Set of the {@link ApplicationListener}s that will be"
 			);
-		assertEquals(expected, method.getJavaDoc().raw().trim().substring(0, expected.length()));
+		assertEquals(expected, method.getJavaDoc().raw().trim().replace("\r", "").substring(0, expected.length()));
 	}
 
 	@Test
@@ -126,15 +126,15 @@ public class SourceJavadocTest {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.getClasspath().findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
-		assertEquals("/**\n     * Comment for inner class\n     */", type.getJavaDoc().raw().trim());
+		assertEquals("/**\n     * Comment for inner class\n     */", type.getJavaDoc().raw().trim().replace("\r", ""));
 
 		IField field = type.getField("innerField");
 		assertNotNull(field);
-		assertEquals("/**\n    \t * Comment for inner field\n    \t */", field.getJavaDoc().raw().trim());
+		assertEquals("/**\n    \t * Comment for inner field\n    \t */", field.getJavaDoc().raw().trim().replace("\r", ""));
 
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
-		assertEquals("/**\n    \t * Comment for method inside nested class\n    \t */", method.getJavaDoc().raw().trim());
+		assertEquals("/**\n    \t * Comment for method inside nested class\n    \t */", method.getJavaDoc().raw().trim().replace("\r", ""));
 	}
 
 }
