@@ -13,7 +13,8 @@ package org.springframework.ide.vscode.boot.java.utils.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URL;
+import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -53,7 +54,12 @@ public class VSCodeSourceLinksTest {
 		Optional<String> url = new VSCodeSourceLinks(null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
 		assertTrue(url.isPresent());
 		Path projectPath = Paths.get(project.pom().getParent());
-		Path relativePath = projectPath.relativize(Paths.get(new URL(url.get()).getPath()));
+		URI uri = URI.create(url.get());
+		
+		// Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
+		uri = new File(uri.getPath()).toURI();
+
+		Path relativePath = projectPath.relativize(Paths.get(uri));
 		assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
 		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
 		assertEquals("#7,14", positionPart);
