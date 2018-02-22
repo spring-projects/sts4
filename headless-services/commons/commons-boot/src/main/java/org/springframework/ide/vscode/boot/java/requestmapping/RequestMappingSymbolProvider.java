@@ -181,4 +181,9 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 		return null;
 	}
 
+	@Override
+	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+		return null;
+	}
+
 }

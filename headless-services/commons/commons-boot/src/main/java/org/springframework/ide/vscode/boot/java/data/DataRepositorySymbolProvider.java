@@ -14,6 +14,7 @@ import java.util.Collection;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -138,5 +139,10 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
 		}
 		return beanName;
+	}
+
+	@Override
+	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+		return null;
 	}
 }

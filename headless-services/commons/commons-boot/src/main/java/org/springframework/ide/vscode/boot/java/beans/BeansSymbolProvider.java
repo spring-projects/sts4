@@ -165,5 +165,9 @@ public class BeansSymbolProvider implements SymbolProvider {
 		return false;
 	}
 
+	@Override
+	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+		return null;
+	}
 
 }
