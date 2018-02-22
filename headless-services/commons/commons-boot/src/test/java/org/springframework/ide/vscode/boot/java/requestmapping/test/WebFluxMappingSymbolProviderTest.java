@@ -47,6 +47,18 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/users/{username}", docUri, 24, 1, 24, 85));
 	}
 
+	@Test
+	public void testRoutesMappingSymbols() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		assertEquals(6, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/hello", docUri, 22, 23, 22, 81));
+		assertTrue(containsSymbol(symbols, "@/echo", docUri, 23, 1, 23, 85));
+	}
+
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
 			SymbolInformation symbol = iterator.next();
