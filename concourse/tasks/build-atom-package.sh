@@ -6,10 +6,8 @@ output=$workdir/out
 #atom_commons=$workdir/sts4/atom-extensions/atom-commons
 atom_package=$workdir/sts4/atom-extensions/$package_name
 
-if [ -e $fatjar/version ]; then
-    url=`cat fatjar/url`
-    fatjar_version=`cat fatjar/version`
-fi
+url=`cat fatjar/url`
+fatjar_version=`cat fatjar/version`
 
 #cd $atom_commons
 #npm install
@@ -18,21 +16,11 @@ cd $atom_package
 
 #npm install ${atom_commons}
 
-timestamp=`date -u +%Y%m%d%H%M`
-
-if [ -e $fatjar/version ]; then
 cat > properties.json << EOF
 {
     "jarUrl": "${url}"
 }
 EOF
-else
-cat > properties.json << EOF
-{
-    "timestamp": "${timestamp}"
-}
-EOF
-fi
 
 npm install
 
@@ -56,13 +44,8 @@ git config user.name "Alex Boyko"
 
 git add .
 
-if [ -e $fatjar/version ]; then
-    git commit \
-        -m "Publish $fatjar_version"
-else
-    git commit \
-        -m "Publish $timestamp"
-fi
+git commit \
+    -m "Publish $fatjar_version"
 
 # Publish linkable artifact to S3
 
@@ -70,6 +53,8 @@ cd $atom_package
 npm install bundle-deps
 
 node ./node_modules/bundle-deps/bundle-deps .
+
+timestamp=`date -u +%Y%m%d%H%M`
 
 basename=$(npm pack | tee /dev/tty)
 
