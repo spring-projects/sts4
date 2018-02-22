@@ -1181,6 +1181,7 @@ jobs:
   plan:
   - aggregate:
     - get: sts4
+      trigger: true
       passed:
       - atom-language-servers-test
     - get: atom-boot-properties
