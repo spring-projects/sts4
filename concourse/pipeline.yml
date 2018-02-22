@@ -941,6 +941,10 @@ jobs:
       trigger: true
       passed:
       - build-boot-properties-atom-package
+    - get: s3-spring-boot-atom-snapshot
+      trigger: true
+      passed:
+      - build-spring-boot-atom-package
   - task: build-website
     file: sts4/concourse/tasks/build-atom-website.yml
   - put: atom-snapshot-website
