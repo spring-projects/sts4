@@ -467,6 +467,9 @@ jobs:
     - get: s3-manifest-yaml-fatjar-snapshot
       passed:
       - build-manifest-yaml-atom-package
+    - get: s3-spring-boot-fatjar-snapshot
+      passed:
+      - build-spring-boot-atom-package
   - aggregate:
     - put: s3-bosh-fatjar--rc
       params:
