@@ -10,25 +10,28 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.List;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxPathFinder extends ASTVisitor {
+public class WebfluxMethodFinder extends ASTVisitor {
 	
-	private String path;
+	private String method;
 	private ASTNode root;
 	
-	public WebfluxPathFinder(ASTNode root) {
+	public WebfluxMethodFinder(ASTNode root) {
 		this.root = root;
 	}
 	
-	public String getPath() {
-		return path;
+	public String getMethod() {
+		return method;
 	}
 	
 	@Override
@@ -40,17 +43,33 @@ public class WebfluxPathFinder extends ASTVisitor {
 			
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
-				if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
-					path = WebfluxUtils.extractPath(node);
+				if (name != null && WebfluxUtils.REQUEST_PREDICATE_HTTPMETHOD_METHODS.contains(name)) {
+					method = name;
+				}
+				else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
+					method = extractMethodValue(node);
 				}
 			}
-			
+
 			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-				visitChildren = false;				
+				visitChildren = false;
 			}
-			
 		}
 		return visitChildren;
+	}
+
+	private String extractMethodValue(MethodInvocation node) {
+		List<?> arguments = node.arguments();
+		if (arguments != null && arguments.size() > 0) {
+			Object object = arguments.get(0);
+			if (object instanceof QualifiedName) {
+				QualifiedName qualifiedName = (QualifiedName) object;
+				if (qualifiedName.getName() != null) {
+					return qualifiedName.getName().toString();
+				}
+			}
+		}
+		return null;
 	}
 
 }

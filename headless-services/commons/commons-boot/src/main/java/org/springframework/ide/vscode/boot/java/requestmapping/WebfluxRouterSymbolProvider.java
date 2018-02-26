@@ -11,11 +11,8 @@
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -25,7 +22,6 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
@@ -40,12 +36,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class WebfluxRouterSymbolProvider implements SymbolProvider {
 	
-	public static final String ROUTER_FUNCTION_TYPE = "org.springframework.web.reactive.function.server.RouterFunction";
-	public static final String ROUTER_FUNCTIONS_TYPE = "org.springframework.web.reactive.function.server.RouterFunctions";
-	public static final String REQUEST_PREDICATES_TYPE = "org.springframework.web.reactive.function.server.RequestPredicates";
-	
-	public static final Set<String> REQUEST_PREDICATE_PATH_METHODS = new HashSet<>(Arrays.asList("path", "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
-
 	@Override
 	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding,
 			Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
@@ -63,7 +53,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		if (returnType != null) {
 			ITypeBinding resolvedBinding = returnType.resolveBinding();
 			if (resolvedBinding != null) {
-				if (ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
+				if (WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
 					return getSymbolsForRouterFunction(methodDeclaration, doc);
 				}
 			}
@@ -82,17 +72,8 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			public boolean visit(MethodInvocation node) {
 				IMethodBinding methodBinding = node.resolveMethodBinding();
 				
-				if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-					String name = methodBinding.getName();
-					if ("route".equals(name)) {
-						extractMappingSymbol(node, doc, result);
-					}
-				}
-				else if (ROUTER_FUNCTION_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-					String name = methodBinding.getName();
-					if ("andRoute".equals(name)) {
-						extractMappingSymbol(node, doc, result);
-					}
+				if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
+					extractMappingSymbol(node, doc, result);
 				}
 				
 				return super.visit(node);
@@ -141,7 +122,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			MethodInvocation methodInvocation = (MethodInvocation) node;
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 			
-			if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+			if (WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if ("nest".equals(name)) {
 					List<?> arguments = methodInvocation.arguments();
@@ -152,7 +133,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 							
 							String nestedMethodName = nestedMethodBinding.getName();
 							if ("path".equals(nestedMethodName)) {
-								String additionalPath = extractPath(nestedMethod);
+								String additionalPath = WebfluxUtils.extractPath(nestedMethod);
 								if (additionalPath != null && additionalPath.length() > 0) {
 									path = additionalPath + path;
 								}
@@ -167,20 +148,12 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		return extractPath(node.getParent(), path);
 	}
 
-	protected static String extractPath(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof StringLiteral) {
-				String path = ((StringLiteral) object).getLiteralValue();
-				return path;
-			}
-		}
-		return null;
-	}
-	
-	private String extractMethod(MethodInvocation node) {
-		return null;
+	private String extractMethod(MethodInvocation routerInvocation) {
+		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation);
+		routerInvocation.accept(methodFinder);
+		
+		String method = methodFinder.getMethod();
+		return method;
 	}
 
 }
