@@ -66,6 +66,7 @@ openFile</programArgs>
       <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/>
       <feature id="org.eclipse.tm.terminal.feature" installMode="root"/>
       <feature id="org.eclipse.rse" installMode="root"/>
+      <feature id="org.eclipse.epp.mpc" installMode="root"/>
 
       <feature id="org.sonatype.m2e.buildhelper.feature" installMode="root"/>
       <feature id="org.sonatype.m2e.mavenarchiver.feature" installMode="root"/>
