@@ -347,7 +347,8 @@ public class SpringIndexer {
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(false);
+		parser.setResolveBindings(true);
+		parser.setIgnoreMethodBodies(false);
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
