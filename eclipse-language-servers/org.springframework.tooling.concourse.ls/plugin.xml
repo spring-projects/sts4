@@ -7,7 +7,7 @@
       <content-type
             default-charset="UTF-8"
             id="org.springframework.tooling.concourse.pipeline"
-            name="Cloudfoundry Pipeline"
+            name="Concourse Pipeline Definition"
             priority="high">
       </content-type>
       <file-association
@@ -21,7 +21,7 @@
       <content-type
             default-charset="UTF-8"
             id="org.springframework.tooling.concourse.task"
-            name="Cloudfoundry Pipeline"
+            name="Concourse Task Definition"
             priority="high">
       </content-type>
       <file-association
