@@ -20,7 +20,6 @@
 		<module>commons-maven</module>
 		<module>commons-gradle</module>
 		<module>commons-boot-app-cli</module>
-		<module>commons-boot</module>
 	</modules>
 
 	<repositories>
