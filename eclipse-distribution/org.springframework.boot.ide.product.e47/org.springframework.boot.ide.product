@@ -11,8 +11,7 @@
 openFile</programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=1.8
 --add-modules=ALL-SYSTEM
--Xms40m
--Xverify:none</vmArgs>
+-Xms40m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
          <argsX86_64>-Xmx1200m</argsX86_64>
       </vmArgsMac>
