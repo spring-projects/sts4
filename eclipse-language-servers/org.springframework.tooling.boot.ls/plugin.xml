@@ -14,7 +14,7 @@
             contentType="org.eclipse.jdt.core.javaSource"
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
-      <contentTypeMapping
+<!--      <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties">
@@ -23,9 +23,9 @@
             contentType="org.springframework.boot.ide.properties.application.yml"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties-yaml">
-      </contentTypeMapping>
+      </contentTypeMapping> -->
    </extension>
-   
+<!--   
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
@@ -53,7 +53,7 @@
             file-names="application.yml,bootstrap.yml,application-dev.yml">
       </file-association>
    </extension>
-
+-->
    <extension
          id="springbootjava-completion-computer"
          point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
@@ -99,7 +99,7 @@
             class="org.springframework.tooling.boot.ls.PrefsInitializer">
       </initializer>
    </extension>
-   
+<!--
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
@@ -143,6 +143,6 @@
             scopeName="source.yaml">
       </scopeNameContentTypeBinding>
    </extension>
-   
+-->
 
 </plugin>

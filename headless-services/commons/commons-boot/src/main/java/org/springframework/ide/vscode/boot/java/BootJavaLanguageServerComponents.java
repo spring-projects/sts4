@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHov
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
+import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
@@ -281,6 +282,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 		
 		providers.put(Annotations.REPOSITORY, new DataRepositorySymbolProvider());
+		providers.put("", new WebfluxRouterSymbolProvider());
 
 		return new SpringIndexer(server, params, providers);
 	}

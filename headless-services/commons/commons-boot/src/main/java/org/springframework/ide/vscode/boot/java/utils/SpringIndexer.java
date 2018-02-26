@@ -42,6 +42,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -347,6 +348,7 @@ public class SpringIndexer {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
+		parser.setIgnoreMethodBodies(false);
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
@@ -377,7 +379,7 @@ public class SpringIndexer {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
-		parser.setIgnoreMethodBodies(true);
+		parser.setIgnoreMethodBodies(false);
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
@@ -399,6 +401,17 @@ public class SpringIndexer {
 
 			@Override
 			public boolean visit(TypeDeclaration node) {
+				try {
+					extractSymbolInformation(node, docURI, docRef, content);
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				return super.visit(node);
+			}
+
+			@Override
+			public boolean visit(MethodDeclaration node) {
 				try {
 					extractSymbolInformation(node, docURI, docRef, content);
 				}
@@ -452,6 +465,22 @@ public class SpringIndexer {
 			TextDocument doc = getTempTextDocument(docURI, docRef, content);
 			for (SymbolProvider provider : providers) {
 				Collection<SymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
+				if (sbls != null) {
+					sbls.forEach(symbol -> {
+						symbols.add(symbol);
+						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					});
+				}
+			}
+		}
+	}
+
+	private void extractSymbolInformation(MethodDeclaration methodDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+		Collection<SymbolProvider> providers = symbolProviders.getAll();
+		if (!providers.isEmpty()) {
+			TextDocument doc = getTempTextDocument(docURI, docRef, content);
+			for (SymbolProvider provider : providers) {
+				Collection<SymbolInformation> sbls = provider.getSymbols(methodDeclaration, doc);
 				if (sbls != null) {
 					sbls.forEach(symbol -> {
 						symbols.add(symbol);

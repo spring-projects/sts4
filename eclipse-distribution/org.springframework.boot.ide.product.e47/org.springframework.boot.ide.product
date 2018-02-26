@@ -11,8 +11,7 @@
 openFile</programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=1.8
 --add-modules=ALL-SYSTEM
--Xms40m
--Xverify:none</vmArgs>
+-Xms40m</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
          <argsX86_64>-Xmx1200m</argsX86_64>
       </vmArgsMac>
@@ -67,6 +66,7 @@ openFile</programArgs>
       <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/>
       <feature id="org.eclipse.tm.terminal.feature" installMode="root"/>
       <feature id="org.eclipse.rse" installMode="root"/>
+      <feature id="org.eclipse.epp.mpc" installMode="root"/>
 
       <feature id="org.sonatype.m2e.buildhelper.feature" installMode="root"/>
       <feature id="org.sonatype.m2e.mavenarchiver.feature" installMode="root"/>
