@@ -60,6 +60,14 @@ resources:
     branch: ((branch))
     private_key: ((rsa_id))
     uri: git@github.com:spring-projects/atom-spring-boot.git
+- name: jvm-launch-utils-git
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    private_key: ((rsa_id))
+    branch: ((branch))
+    paths:
+    - nodejs-packages/jvm-launch-utils
 - name: tasks
   type: git
   source:
@@ -725,26 +733,6 @@ jobs:
   - put: version
     params:
       file: version/version
-# - name: post-release
-#   serial: true
-#   plan:
-#   - aggregate:
-#     - get: sts4
-#     - get: version
-#       params:
-#         bump: patch
-#       trigger: true
-#       passed:
-#       - publish-release
-#   - task: bump-versions
-#     file: sts4/concourse/tasks/bump-versions.yml
-#   - put: sts4-out
-#     params:
-#       repository: out
-#       rebase: true
-#   - put: version
-#     params:
-#       file: version/version
 - name: build-atom-snapshot-website
   serial: true
   plan:
@@ -960,6 +948,19 @@ jobs:
     params:
       text: |
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: publish-jvm-launch-utils
+  plan:
+  - aggregate:
+    - get: jvm-launch-utils-git
+      trigger: true
+    - get: tasks 
+  - task: publish
+    file: tasks/concourse/tasks/npm-publish.yml
+    input_mapping:
+      sources_repo: jvm-launch-utils-git
+    params:
+      npm_token: ((npm_token))
+      sources_dir: nodejs-packages/jvm-launch-utils
 groups:
 - name: vscode-snapshot
   jobs:
@@ -976,7 +977,6 @@ groups:
   - build-spring-boot-rc
   - trigger-rc-build
   - publish-release
-#  - post-release
   - build-manifest-yaml-vsix-snapshot
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
@@ -1004,4 +1004,6 @@ groups:
   jobs:
   - build-mvn-cache
   - build-docker-image
-
+- name: npm-packages
+  jobs:
+  - publish-jvm-launch-utils
