@@ -6,7 +6,7 @@
   "showOutput": "always",
   "tasks": [
     {
-      "taskName": "build",
+      "taskName": "compile",
       "isBuildCommand": true
     },
     {

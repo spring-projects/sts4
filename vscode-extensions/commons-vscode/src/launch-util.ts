@@ -18,7 +18,7 @@ import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
-import { JVM, findJvm, findJdk } from './jvm-util';
+import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
 
 let p2c = P2C.createConverter();
 
