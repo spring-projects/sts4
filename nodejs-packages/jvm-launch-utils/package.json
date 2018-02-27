@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/jvm-launch-utils",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Provides utilities useful for launching Java processes from node packages.",
   "files": [
     "src",
@@ -8,7 +8,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "prepare": "tsc -p .",
+    "preinstall": "tsc -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
