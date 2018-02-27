@@ -1,0 +1,33 @@
+{
+  "name": "@pivotal-tools/jvm-launch-utils",
+  "version": "0.0.4",
+  "description": "Provides utilities useful for launching Java processes from node packages.",
+  "files": [
+    "src",
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "scripts": {
+    "prepare": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spring-projects/sts4.git"
+  },
+  "keywords": [
+    "Java",
+    "Launching",
+    "JVM"
+  ],
+  "author": "Kris De Volder <kdevolder@pivotal.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/spring-projects/sts4/issues"
+  },
+  "homepage": "https://github.com/spring-projects/sts4/nodejs-packages/jvm-launch-utils/README.md",
+  "devDependencies": {
+    "@types/node": "^9.4.6",
+    "typescript": "^2.7.2"
+  }
+}

@@ -1,0 +1,29 @@
+resources:
+- name: jvm-launch-utils-git
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    private_key: ((rsa_id))
+    branch: ((branch))
+    paths:
+    - nodejs-packages/jvm-launch-utils
+- name: tasks
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    private_key: ((rsa_id))
+    branch: ((branch))
+jobs:
+- name: publish-jvm-launch-utils
+  plan:
+  - aggregate:
+    - get: jvm-launch-utils-git
+      trigger: true
+    - get: tasks 
+  - task: publish
+    file: tasks/concourse/tasks/npm-publish.yml
+    input_mapping:
+      sources_repo: jvm-launch-utils-git
+    params:
+      npm_token: ((npm_token))
+      sources_dir: nodejs-packages/jvm-launch-utils
