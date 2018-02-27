@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -38,14 +39,8 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 	
 	private static final String REPOSITORY_TYPE = "org.springframework.data.repository.Repository";
 
-
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
 		Tuple4<String, String, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 		if (repositoryBean != null) {
@@ -54,7 +49,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2(), repositoryBean.getT3()),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(repositoryBean.getT4())));
-				return ImmutableList.of(symbol);
+				return ImmutableList.of(new EnhancedSymbolInformation(symbol, null));
 			} catch (BadLocationException e) {
 				Log.log(e);
 			}
@@ -142,7 +137,12 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+		return null;
+	}
+
+	@Override
+	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
 		return null;
 	}
 }

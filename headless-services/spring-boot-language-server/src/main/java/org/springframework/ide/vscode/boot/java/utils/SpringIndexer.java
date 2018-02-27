@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -80,7 +82,9 @@ public class SpringIndexer {
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 
 	private final List<SymbolInformation> symbols;
+	private final List<Object> addonInformation;
 	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
+	private final ConcurrentMap<String, List<Object>> addonInformationByDoc;
 
 	private final Thread updateWorker;
 	private final BlockingQueue<WorkerItem> updateQueue;
@@ -119,6 +123,8 @@ public class SpringIndexer {
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
+		this.addonInformation = Collections.synchronizedList(new ArrayList<>());
+		this.addonInformationByDoc = new ConcurrentHashMap<>();
 
 		this.updateQueue = new LinkedBlockingQueue<>();
 		this.updateWorker = new Thread(new Runnable() {
@@ -207,6 +213,9 @@ public class SpringIndexer {
 		synchronized (this) {
 			symbols.clear();
 			symbolsByDoc.clear();
+
+			addonInformation.clear();
+			addonInformationByDoc.clear();
 
 			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
 			log.debug("refresh spring indexer for roots: {}", roots.toString());
@@ -305,6 +314,22 @@ public class SpringIndexer {
 		return this.symbolsByDoc.get(docURI);
 	}
 
+	public List<Object> getAllAdditionalInformation(Predicate<Object> filter) {
+		waitForInitializeTask();
+
+		if (filter != null) {
+			return addonInformation.stream().filter(filter).collect(Collectors.toList());
+		}
+		else {
+			return null;
+		}
+	}
+
+	public List<? extends Object> getAdditonalInformation(String docURI) {
+		waitForInitializeTask();
+		return this.addonInformationByDoc.get(docURI);
+	}
+
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
 		waitForInitializeTask();
 		return allsymbols.stream()
@@ -363,6 +388,11 @@ public class SpringIndexer {
 			List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
 			if (oldSymbols != null) {
 				symbols.removeAll(oldSymbols);
+			}
+
+			List<Object> oldAddInInformation = addonInformationByDoc.remove(docURI);
+			if (oldAddInInformation != null) {
+				addonInformation.removeAll(oldAddInInformation);
 			}
 
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
@@ -464,11 +494,16 @@ public class SpringIndexer {
 		if (!providers.isEmpty()) {
 			TextDocument doc = getTempTextDocument(docURI, docRef, content);
 			for (SymbolProvider provider : providers) {
-				Collection<SymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
+				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
 				if (sbls != null) {
-					sbls.forEach(symbol -> {
-						symbols.add(symbol);
-						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					sbls.forEach(enhancedSymbol -> {
+						symbols.add(enhancedSymbol.getSymbol());
+						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
+						
+						if (enhancedSymbol.getAdditionalInformation() != null) {
+							addonInformation.add(enhancedSymbol.getAdditionalInformation());
+							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+						}
 					});
 				}
 			}
@@ -480,11 +515,16 @@ public class SpringIndexer {
 		if (!providers.isEmpty()) {
 			TextDocument doc = getTempTextDocument(docURI, docRef, content);
 			for (SymbolProvider provider : providers) {
-				Collection<SymbolInformation> sbls = provider.getSymbols(methodDeclaration, doc);
+				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(methodDeclaration, doc);
 				if (sbls != null) {
-					sbls.forEach(symbol -> {
-						symbols.add(symbol);
-						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					sbls.forEach(enhancedSymbol -> {
+						symbols.add(enhancedSymbol.getSymbol());
+						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
+
+						if (enhancedSymbol.getAdditionalInformation() != null) {
+							addonInformation.add(enhancedSymbol.getAdditionalInformation());
+							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+						}
 					});
 				}
 			}
@@ -500,11 +540,16 @@ public class SpringIndexer {
 			if (!providers.isEmpty()) {
 				TextDocument doc = getTempTextDocument(docURI, docRef, content);
 				for (SymbolProvider provider : providers) {
-					Collection<SymbolInformation> sbls = provider.getSymbols(node, typeBinding, metaAnnotations, doc);
+					Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(node, typeBinding, metaAnnotations, doc);
 					if (sbls != null) {
-						sbls.forEach(symbol -> {
-							symbols.add(symbol);
-							symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+						sbls.forEach(enhancedSymbol -> {
+							symbols.add(enhancedSymbol.getSymbol());
+							symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
+
+							if (enhancedSymbol.getAdditionalInformation() != null) {
+								addonInformation.add(enhancedSymbol.getAdditionalInformation());
+								addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+							}
 						});
 					}
 				}
@@ -660,10 +705,17 @@ public class SpringIndexer {
 		@Override
 		public void run() {
 			try {
+
 				List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
 				if (oldSymbols != null) {
 					symbols.removeAll(oldSymbols);
 				}
+				
+				List<Object> oldAddInInformation = addonInformationByDoc.remove(docURI);
+				if (oldAddInInformation != null) {
+					addonInformation.removeAll(oldAddInInformation);
+				}
+
 			} catch (Exception e) {
 				log.error("{}", e);
 			}

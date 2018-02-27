@@ -18,15 +18,18 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.ExpressionMethodReference;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.MethodReference;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -37,18 +40,18 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class WebfluxRouterSymbolProvider implements SymbolProvider {
 	
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding,
+	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding,
 			Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		return null;
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		return null;
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
 		Type returnType = methodDeclaration.getReturnType2();
 		if (returnType != null) {
 			ITypeBinding resolvedBinding = returnType.resolveBinding();
@@ -61,9 +64,9 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		return null;
 	}
 
-	private Collection<SymbolInformation> getSymbolsForRouterFunction(MethodDeclaration methodDeclaration,
+	private Collection<EnhancedSymbolInformation> getSymbolsForRouterFunction(MethodDeclaration methodDeclaration,
 			TextDocument doc) {
-		List<SymbolInformation> result = new ArrayList<>();
+		List<EnhancedSymbolInformation> result = new ArrayList<>();
 
 		Block body = methodDeclaration.getBody();
 		body.accept(new ASTVisitor() {
@@ -84,7 +87,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		return result;
 	}
 
-	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, List<SymbolInformation> result) {
+	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, List<EnhancedSymbolInformation> result) {
 		String foundPath = extractPathFromRouterFunction(node);
 		String path = extractPath(node, foundPath);
 		String httpMethod = extractMethod(node);
@@ -96,7 +99,10 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				String label = "@" + (path.startsWith("/") ? path : ("/" + path)) + (httpMethod == null || httpMethod.isEmpty() ? "" : " -- " + httpMethod);
-				result.add(new SymbolInformation(label, SymbolKind.Interface, location));
+
+				WebfluxHandlerInformation handler = extractHandlerInformation(node, label);
+				
+				result.add(new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), handler));
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
@@ -154,6 +160,29 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		
 		String method = methodFinder.getMethod();
 		return method;
+	}
+	
+	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String symbol) {
+		List<?> arguments = node.arguments();
+		
+		if (arguments != null) {
+			for (Object argument : arguments) {
+				if (argument instanceof ExpressionMethodReference) {
+					ExpressionMethodReference methodReference = (ExpressionMethodReference) argument;
+					IMethodBinding methodBinding = methodReference.resolveMethodBinding();
+
+					if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null) {
+						ITypeBinding declaringClass = methodBinding.getDeclaringClass();
+						String destinationClass = declaringClass.getBinaryName();
+						String methodKey = methodBinding.getMethodDeclaration().getKey();
+
+						return new WebfluxHandlerInformation(symbol, destinationClass, methodKey);
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 
 }

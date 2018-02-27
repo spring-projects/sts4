@@ -16,7 +16,6 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -25,8 +24,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface SymbolProvider {
 
-	Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding, Collection<ITypeBinding> metaAnnotations, TextDocument doc);
-	Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc);
-	Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc);
+	Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding, Collection<ITypeBinding> metaAnnotations, TextDocument doc);
+	Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc);
+	Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc);
 
 }

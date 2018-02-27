@@ -31,6 +31,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -41,7 +42,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class RequestMappingSymbolProvider implements SymbolProvider {
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		if (node.getParent() instanceof MethodDeclaration) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
@@ -62,7 +63,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
 						.map(p -> "@" + p + (methodStr.isEmpty() ? "" : " -- " + methodStr))
-						.map(symbolLabel -> new SymbolInformation(symbolLabel, SymbolKind.Interface, location))
+						.map(symbolLabel -> new EnhancedSymbolInformation(new SymbolInformation(symbolLabel, SymbolKind.Interface, location), null))
 						.collect(Collectors.toList());
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -177,12 +178,12 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		return null;
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
 		return null;
 	}
 

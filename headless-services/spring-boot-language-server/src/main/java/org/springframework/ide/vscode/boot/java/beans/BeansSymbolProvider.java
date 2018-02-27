@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
@@ -46,17 +47,19 @@ public class BeansSymbolProvider implements SymbolProvider {
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		boolean isFunction = isFunctionBean(node);
 
-		ImmutableList.Builder<SymbolInformation> symbols = ImmutableList.builder();
+		ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
 		String beanType = getBeanType(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
-				symbols.add(new SymbolInformation(
-						beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean"),
-						SymbolKind.Interface,
-						new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))
+				symbols.add(new EnhancedSymbolInformation(
+						new SymbolInformation(
+								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean"),
+								SymbolKind.Interface,
+								new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))),
+						null
 				));
 			} catch (BadLocationException e) {
 				Log.log(e);
@@ -66,7 +69,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		// this checks function beans that are defined as implementations of Function interfaces
 		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
@@ -75,7 +78,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 						beanLabel(true, functionBean.getT1(), functionBean.getT2(), null),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(functionBean.getT3())));
-				return ImmutableList.of(symbol);
+				return ImmutableList.of(new EnhancedSymbolInformation(symbol, null));
 			} catch (BadLocationException e) {
 				Log.log(e);
 			}
@@ -166,7 +169,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
 		return null;
 	}
 

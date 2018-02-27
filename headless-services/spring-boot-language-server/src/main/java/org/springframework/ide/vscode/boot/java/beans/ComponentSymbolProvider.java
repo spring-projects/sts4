@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -35,7 +36,7 @@ import com.google.common.collect.ImmutableList;
 public class ComponentSymbolProvider implements SymbolProvider {
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		try {
 			return ImmutableList.of(
 					createSymbol(node, annotationType, metaAnnotations, doc)
@@ -47,7 +48,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		return ImmutableList.of();
 	}
 
-	protected SymbolInformation createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+	protected EnhancedSymbolInformation createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
@@ -58,7 +59,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		SymbolInformation symbol = new SymbolInformation(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
 				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-		return symbol;
+		return new EnhancedSymbolInformation(symbol, null);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
@@ -113,12 +114,12 @@ public class ComponentSymbolProvider implements SymbolProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		return null;
 	}
 
 	@Override
-	public Collection<SymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
 		return null;
 	}
 

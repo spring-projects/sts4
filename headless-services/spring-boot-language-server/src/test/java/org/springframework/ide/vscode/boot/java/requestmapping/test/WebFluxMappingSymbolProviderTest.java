@@ -11,15 +11,18 @@
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -45,6 +48,9 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals(4, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/users", docUri, 19, 1, 19, 74));
 		assertTrue(containsSymbol(symbols, "@/users/{username}", docUri, 24, 1, 24, 85));
+		
+		List<? extends Object> addons = getAdditionalInformation(docUri);
+		assertNull(addons);
 	}
 
 	@Test
@@ -59,6 +65,29 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/echo -- POST", docUri, 23, 5, 23, 101));
 		assertTrue(containsSymbol(symbols, "@/quotes -- GET", docUri, 24, 5, 24, 86));
 		assertTrue(containsSymbol(symbols, "@/quotes -- GET", docUri, 25, 5, 25, 94));
+		
+		List<? extends Object> addons = getAdditionalInformation(docUri);
+		assertEquals(4, addons.size());
+		
+		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "@/hello -- GET").get(0);
+		assertEquals("@/hello -- GET", handlerInfo1.getSymbol());
+		assertEquals("org.test.QuoteHandler", handlerInfo1.getDestinationClass());
+		assertEquals("Lorg/test/QuoteHandler;.hello(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo1.getMethodKey());
+		
+		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "@/echo -- POST").get(0);
+		assertEquals("@/echo -- POST", handlerInfo2.getSymbol());
+		assertEquals("org.test.QuoteHandler", handlerInfo2.getDestinationClass());
+		assertEquals("Lorg/test/QuoteHandler;.echo(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo2.getMethodKey());
+
+		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "@/quotes -- GET").get(0);
+		assertEquals("@/quotes -- GET", handlerInfo3.getSymbol());
+		assertEquals("org.test.QuoteHandler", handlerInfo3.getDestinationClass());
+		assertEquals("Lorg/test/QuoteHandler;.streamQuotes(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo3.getMethodKey());
+
+		WebfluxHandlerInformation handlerInfo4 = getWebfluxHandler(addons, "@/quotes -- GET").get(1);
+		assertEquals("@/quotes -- GET", handlerInfo4.getSymbol());
+		assertEquals("org.test.QuoteHandler", handlerInfo4.getDestinationClass());
+		assertEquals("Lorg/test/QuoteHandler;.fetchQuotes(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo4.getMethodKey());
 	}
 
 	@Test
@@ -72,6 +101,24 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET", docUri, 27, 6, 27, 45));
 		assertTrue(containsSymbol(symbols, "@/person/ -- POST", docUri, 29, 6, 29, 83));
 		assertTrue(containsSymbol(symbols, "@/person -- GET", docUri, 28, 7, 28, 60));
+
+		List<? extends Object> addons = getAdditionalInformation(docUri);
+		assertEquals(3, addons.size());
+		
+		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "@/person/{id} -- GET").get(0);
+		assertEquals("@/person/{id} -- GET", handlerInfo1.getSymbol());
+		assertEquals("org.test.PersonHandler", handlerInfo1.getDestinationClass());
+		assertEquals("Lorg/test/PersonHandler;.getPerson(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo1.getMethodKey());
+		
+		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "@/person/ -- POST").get(0);
+		assertEquals("@/person/ -- POST", handlerInfo2.getSymbol());
+		assertEquals("org.test.PersonHandler", handlerInfo2.getDestinationClass());
+		assertEquals("Lorg/test/PersonHandler;.createPerson(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo2.getMethodKey());
+
+		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "@/person -- GET").get(0);
+		assertEquals("@/person -- GET", handlerInfo3.getSymbol());
+		assertEquals("org.test.PersonHandler", handlerInfo3.getDestinationClass());
+		assertEquals("Lorg/test/PersonHandler;.listPeople(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;", handlerInfo3.getMethodKey());
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
@@ -94,4 +141,17 @@ public class WebFluxMappingSymbolProviderTest {
 	private List<? extends SymbolInformation> getSymbols(String docUri) {
 		return harness.getServerWrapper().getComponents().getSpringIndexer().getSymbols(docUri);
 	}
+
+	private List<? extends Object> getAdditionalInformation(String docUri) {
+		return harness.getServerWrapper().getComponents().getSpringIndexer().getAdditonalInformation(docUri);
+	}
+	
+	private List<WebfluxHandlerInformation> getWebfluxHandler(List<? extends Object> addons, String symbol) {
+		return addons.stream()
+				.filter((obj) -> obj instanceof WebfluxHandlerInformation)
+				.map((obj -> (WebfluxHandlerInformation) obj))
+				.filter((addon) -> addon.getSymbol().equals(symbol))
+				.collect(Collectors.toList());
+	}
+
 }
