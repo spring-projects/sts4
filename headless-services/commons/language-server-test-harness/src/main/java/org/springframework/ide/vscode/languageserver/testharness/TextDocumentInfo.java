@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 @Deprecated
 public class TextDocumentInfo {
 
-	Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
+	Pattern NEWLINE = Pattern.compile("\\r\\n|\\n");
 
 	private final TextDocumentItem document;
 
