@@ -47,35 +47,32 @@ class SpringBootLanguageClient extends JavaProcessLanguageClient {
     }
 
     getOrInstallLauncher() {
-        return Promise.resolve('org.springframework.boot.loader.JarLauncher');
+        return 'org.springframework.boot.loader.JarLauncher';
     }
 
-    launchVmArgs(version) {
-        return super.getOrInstallLauncher().then(lsJar => {
-            const toolsJar = this.findJavaFile('lib', 'tools.jar');
-            if (version < 9 && !toolsJar) {
-                // Notify the user that tool.jar is not found
-                const notification = atom.notifications.addWarning(`"Boot-Java" Package Functionality Limited`, {
-                    dismissable: true,
-                    detail: 'No tools.jar found',
-                    description: 'JAVA_HOME environment variable points either to JRE or JDK missing "lib/tools.jar" hence Boot Hints are unavailable',
-                    buttons: [{
-                        text: 'OK',
-                        onDidClick: () => {
-                            notification.dismiss()
-                        },
-                    }],
-                });
-            }
-            return [
-                // '-Xdebug',
-                // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
-                '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
-                '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
-                '-cp',
-                `${toolsJar ? `${toolsJar}${path.delimiter}` : ''}${lsJar}`
-            ];
-        });
+    preferJdk() {
+        return true;
+    }
+
+    launchVmArgs(jvm) {
+        let vmargs = [
+            // '-Xdebug',
+            // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
+            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
+            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+        ];
+        if (!jvm.isJdk()) {
+            this.showErrorMessage(
+                '"Boot-Java" Package Functionality Limited', 
+                'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.'
+            );
+        }
+        let toolsJar = jvm.getToolsJar();
+        vmargs.push(
+            "-cp",
+            `${toolsJar ? `${toolsJar}${path.delimiter}` : ''}${this.getServerJar()}`
+        );
+        return Promise.resolve(vmargs);
     }
 
     createStsAdapter() {

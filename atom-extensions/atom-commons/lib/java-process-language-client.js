@@ -10,6 +10,7 @@ const {AutoLanguageClient, DownloadFile} = require('atom-languageclient');
 const { Disposable } = require('atom');
 import { StsAdapter } from './sts-adapter';
 
+import {findJdk, findJvm} from '@pivotal-tools/jvm-launch-utils';
 
 export class JavaProcessLanguageClient extends AutoLanguageClient {
 
@@ -23,6 +24,25 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         this.serverLauncherJar = serverLauncherJar;
     }
 
+    getServerJar() {
+        return path.resolve(this.serverHome, this.serverLauncherJar);
+    }
+
+    showErrorMessage(detail, desc) {
+        const notification = atom.notifications.addError('Cannot start Language Server', {
+            dismissable: true,
+            detail: detail,
+            description: desc,
+            buttons: [{
+                text: 'OK',
+                onDidClick: () => {
+                    notification.dismiss()
+                },
+            }]
+        });
+        return Promise.reject(new Error(detail));
+    }
+    
     getInitializeParams(projectPath, process) {
         const initParams = super.getInitializeParams(projectPath, process);
         initParams.capabilities = {
@@ -55,7 +75,6 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
                 this.server.listen(port, 'localhost', () => {
                     this.launchProcess(port).then(p => childProcess = p);
                 });
-
             });
         });
     }
@@ -84,34 +103,43 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         server.connection._onNotification({method: 'sts/highlight'}, params => stsAdapter.onHighlight(params));
     }
 
+    preferJdk() {
+        return false;
+    }
+
+    findJvm() {
+        return this.preferJdk() ? findJdk() : findJvm();
+    }
 
     launchProcess(port) {
-        const command = this.findJavaFile('bin', this.correctBinname('java'));
-
-        return this.javaVesrion(command).then(version => {
-            if (version) {
-                return this.launchVmArgs(version).then(args => {
-                    args.push(`-Dserver.port=${port}`);
-                    return this.getOrInstallLauncher().then(launcher => this.doLaunchProcess(command, launcher, port, args));
-                });
-            } else {
-                this.logger.error('Java executable is not Java 8 or higher');
-                const notification = atom.notifications.addError('Cannot start Language Server', {
-                    dismissable: true,
-                    detail: 'No compatible Java Runtime Environment found',
-                    description: 'The Java Runtime Environment is either below version "1.8" or is missing from the system',
-                    buttons: [{
-                        text: 'OK',
-                        onDidClick: () => {
-                            notification.dismiss()
-                        },
-                    }],
-                });
+        return this.findJvm()
+        .catch(error => {
+            return this.showErrorMessage("Error trying to find JVM", ""+error);
+        })
+        .then(jvm => {
+            if (!jvm) {
+                return this.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
             }
+            let version = jvm.getMajorVersion();
+            if (version<8) {
+                return this.showErrorMessage(
+                    'No compatible Java Runtime Environment found', 
+                    'The Java Runtime Environment is either below version "1.8" or is missing from the system'
+                );
+            }
+            return this.launchVmArgs(jvm).then(args => {
+                args.push(`-Dserver.port=${port}`);
+                return this.doLaunchProcess(
+                    jvm.getJavaExecutable(), 
+                    this.getOrInstallLauncher(), 
+                    port, 
+                    args
+                );
+            });
         });
     }
 
-    launchVmArgs(version) {
+    launchVmArgs(jvm) {
         return Promise.resolve([]);
     }
 
@@ -131,20 +159,17 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
     }
 
     getOrInstallLauncher() {
-        const fullLauncherJar = path.join(this.serverHome, this.serverLauncherJar);
-        return this.fileExists(fullLauncherJar).then(doesExist =>
-            doesExist ? fullLauncherJar : this.installServer().then(() => fullLauncherJar)
-        );
+        return this.getServerJar();
     }
 
     installServer () {
-        const localFileName = path.join(this.serverHome, this.serverLauncherJar);
+        const localFileName = this.getServerJar();
         this.logger.log(`Downloading ${this.serverDownloadUrl} to ${localFileName}`);
         return this.fileExists(this.serverHome)
                 .then(doesExist => { if (!doesExist) fs.mkdir(this.serverHome) })
                 .then(() => this.remoteFileSize(this.serverDownloadUrl))
                 .then((size) => DownloadFile(this.serverDownloadUrl, localFileName, (bytesDone, percent) => this.handleDownlaodPercentChange(bytesDone, size, percent), size))
-                .then(() => this.fileExists(path.join(this.serverHome, this.serverLauncherJar)))
+                .then(() => this.fileExists(this.getServerJar()))
                 .then(doesExist => { if (!doesExist) throw Error(`Failed to install the ${this.getServerName()} language server`) })
                 .then(() => this.handleServerInstalled())
                 .then(() => Promise.resolve(true));
@@ -180,55 +205,6 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
                 resolve(!error || error.code !== 'ENOENT');
             })
         })
-    }
-
-    findJavaFile(folders, file) {
-
-        // First search each JAVA_HOME folder
-        if (process.env['JAVA_HOME']) {
-            let workspaces = process.env['JAVA_HOME'].split(path.delimiter);
-            for (let i = 0; i < workspaces.length; i++) {
-                let filepath = path.join(workspaces[i], folders, file);
-                if (fs.existsSync(filepath)) {
-                    return filepath;
-                }
-            }
-        }
-
-        // Then search PATH parts
-        if (process.env['PATH']) {
-            let pathparts = process.env['PATH'].split(path.delimiter);
-            for (let i = 0; i < pathparts.length; i++) {
-                let filepath = path.join(pathparts[i], file);
-                if (fs.existsSync(filepath)) {
-                    return filepath;
-                }
-            }
-        }
-
-        // Else return the binary name directly (this will likely always fail downstream)
-        return null;
-    }
-
-    correctBinname(binname) {
-        if (process.platform === 'win32')
-            return binname + '.exe';
-        else
-            return binname;
-    }
-
-    javaVesrion(javaExecutablePath) {
-        return new Promise((resolve, reject) => {
-            cp.execFile(javaExecutablePath, ['-version'], {}, (error, stdout, stderr) => {
-                if (stderr.indexOf('1.8') >= 0) {
-                    resolve(8);
-                } else if (stderr.indexOf('java version "9') >= 0) {
-                    resolve(9);
-                } else {
-                    resolve(0);
-                }
-            });
-        });
     }
 
     // Late wire-up of listeners after initialize method has been sent

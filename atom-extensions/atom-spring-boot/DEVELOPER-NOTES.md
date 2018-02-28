@@ -35,9 +35,9 @@ Open Atom or execute `Refresh Window` in the opened instance (Packages -> Comman
 
 **Client Side Debugging**: Open Atom's `Developer Tools` view - View -> Developer -> Toggle Developer Tools
 
-**Server Side Debugging**:  Change `launchVmArgs(version)` implementation in `lib/main.js` to be:
+**Server Side Debugging**:  Change `launchVmArgs(jvm)` implementation in `lib/main.js` to be:
 ```
-    launchVmArgs(version) {
+    launchVmArgs(jvm) {
         return Promise.resolve([
             '-Xdebug',
             '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
