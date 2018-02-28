@@ -1,5 +1,5 @@
 const path = require('path');
-const { JavaProcessLanguageClient } = require('pivotal-atom-languageclient-commons');
+const { JavaProcessLanguageClient } = require('@pivotal-tools/atom-languageclient-commons');
 const PROPERTIES = require('../properties.json');
 
 class ConcourseCiYamlClient extends JavaProcessLanguageClient {

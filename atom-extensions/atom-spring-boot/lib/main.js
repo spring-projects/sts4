@@ -1,5 +1,5 @@
 const path = require('path');
-const { JavaProcessLanguageClient, StsAdapter } = require('pivotal-atom-languageclient-commons');
+const { JavaProcessLanguageClient, StsAdapter } = require('@pivotal-tools/atom-languageclient-commons');
 const { Convert } = require('atom-languageclient');
 const PROPERTIES = require('../properties.json');
 
