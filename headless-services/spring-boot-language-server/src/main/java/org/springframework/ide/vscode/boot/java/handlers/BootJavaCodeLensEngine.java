@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,30 +11,32 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class BootJavaCodeLensEngine {
+public class BootJavaCodeLensEngine implements CodeLensHandler {
 
-	private final SimpleLanguageServer server;
-//	private final JavaProjectFinder projectFinder;
+	private final BootJavaLanguageServerComponents server;
+	private final Collection<CodeLensProvider> codelensProviders;
 
-	public BootJavaCodeLensEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public BootJavaCodeLensEngine(BootJavaLanguageServerComponents server, Collection<CodeLensProvider> codelensProviders) {
 		this.server = server;
-//		this.projectFinder = projectFinder;
+		this.codelensProviders = codelensProviders;
 	}
 
-	public CompletableFuture<List<? extends CodeLens>> createCodeLenses(CodeLensParams params) {
+	@Override
+	public CompletableFuture<List<? extends CodeLens>> handle(CodeLensParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docURI = params.getTextDocument().getUri();
 
@@ -53,23 +55,22 @@ public class BootJavaCodeLensEngine {
 		return SimpleTextDocumentService.NO_CODELENS;
 	}
 
-	private CompletableFuture<List<? extends CodeLens>> provideCodeLenses(TextDocument doc) {
-		List<CodeLens> result = new ArrayList<>();
-/**
-		CodeLens codeLens = new CodeLens();
+	private CompletableFuture<List<? extends CodeLens>> provideCodeLenses(TextDocument document) {
+		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+			
+			if (cu != null) {
+				List<CodeLens> result = new ArrayList<>();
+				for (CodeLensProvider codeLensProvider : codelensProviders) {
+					codeLensProvider.provideCodeLenses(document, cu, result);
+				}
+				
+				if (result.size() > 0) {
+					return CompletableFuture.completedFuture(result);
+				}
+			}
 
-		Range range = new Range();
-		range.setStart(new Position(5, 0));
-		range.setEnd(new Position(5, 10));
-		codeLens.setRange(range);
-
-		Command command = new Command("my first awesome code lens", "my first code lens command");
-		codeLens.setCommand(command);
-
-		codeLens.setData("some data");
-
-		result.add(codeLens); */
-		return CompletableFuture.completedFuture(result);
+			return null;
+		});
 	}
 
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
