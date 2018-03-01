@@ -40,11 +40,6 @@
 		    <artifactId>remark</artifactId>
 		    <version>1.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.javaparser</groupId>
-			<artifactId>javaparser-core</artifactId>
-			<version>3.2.12</version>
-		</dependency>
 		<!-- Reactor -->
 		<dependency>
 		    <groupId>io.projectreactor</groupId>

@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -137,28 +136,6 @@ public class GradleProjectClasspath extends JandexClasspath {
 
 	public boolean exists() {
 		return project != null;
-	}
-
-	@Override
-	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
-		if (project != null) {
-			if (classpathResource.isDirectory()) {
-				Optional<File> classpathFolder = project.getSourceDirectories().stream()
-						.map(dir -> dir.getDirectory())
-						.filter(dir -> classpathResource.toPath().startsWith(dir.toPath()))
-						.findFirst();
-				if (classpathFolder.isPresent()) {
-					return new ParserJavadocProvider(type -> {
-						return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-								.sourceUrl(classpathFolder.get().toURI().toURL(), type.getFullyQualifiedName());
-					});
-
-				}
-			} else {
-				
-			}
-		}
-		return null;
 	}
 
 	@Override

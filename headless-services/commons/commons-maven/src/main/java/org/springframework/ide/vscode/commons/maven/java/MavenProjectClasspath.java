@@ -31,7 +31,6 @@ import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.java.parser.ParserJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -187,39 +186,6 @@ public class MavenProjectClasspath extends JandexClasspath {
 	
 
 	@Override
-	protected IJavadocProvider createParserJavadocProvider(File classpathResource) {
-		if (cachedData == null) {
-			return null;
-		}
-		if (classpathResource.isDirectory()) {
-			if (classpathResource.toString().startsWith(cachedData.outputDirectory)) {
-				return new ParserJavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.sourceDirectory).toURI().toURL(), type.getFullyQualifiedName());
-				});
-			} else if (classpathResource.toString().startsWith(cachedData.testOutputDirectory)) {
-				return new ParserJavadocProvider(type -> {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER
-							.sourceUrl(new File(cachedData.testSourceDirectory).toURI().toURL(), type.getFullyQualifiedName());
-				});
-			} else {
-				throw new IllegalArgumentException("Cannot find source folder for " + classpathResource);
-			}
-		} else {
-			// Assume it's a JAR file
-			return new ParserJavadocProvider(type -> sourceContainer(classpathResource).map(url -> {
-				try {
-					return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(url,
-							type.getFullyQualifiedName());
-				} catch (Exception e) {
-					Log.log(e);
-					return null;
-				}
-			}).get());
-		}
-	}
-	
-	@Override
 	public Optional<URL> sourceContainer(File classpathResource) {
 		if (cachedData == null) {
 			return Optional.empty();
@@ -249,7 +215,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type.getFullyQualifiedName());
 				});
 			} else if (classpathResource.toString().startsWith(cachedData.testOutputDirectory)) {
-				return new ParserJavadocProvider(type -> {
+				return new HtmlJavadocProvider(type -> {
 					return SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
 							.sourceUrl(new File(cachedData.reportingOutputDirectory, "apidocs").toURI().toURL(), type.getFullyQualifiedName());
 				});

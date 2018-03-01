@@ -39,7 +39,8 @@ public abstract class JandexClasspath implements IClasspath {
 	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
 	
 	public enum JavadocProviderTypes {
-		JAVA_PARSER,
+//		JAVA_PARSER, //Used to be based on githb java parser. If need something back that can extract docs from source code, we have to implement
+						// based on JDT parser. But at the moment this wasn't being used so just got removed.
 		HTML
 	}
 	
@@ -58,10 +59,12 @@ public abstract class JandexClasspath implements IClasspath {
 		}
 		return new JandexIndex(classpathEntries.map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
 			switch (providerType) {
-			case JAVA_PARSER:
-				return createParserJavadocProvider(classpathResource);
-			default:
+//			case JAVA_PARSER:
+//				return createParserJavadocProvider(classpathResource);
+			case HTML:
 				return createHtmlJavdocProvider(classpathResource);
+			default:
+				throw new IllegalStateException("Missing switch case?");
 			}
 		}, getBaseIndices());
 	}
@@ -108,8 +111,6 @@ public abstract class JandexClasspath implements IClasspath {
 		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 
-	abstract protected IJavadocProvider createParserJavadocProvider(File classpathResource);
-	
 	abstract protected IJavadocProvider createHtmlJavdocProvider(File classpathResource);
 	
 }
