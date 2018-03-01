@@ -46,6 +46,8 @@ import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
@@ -469,6 +471,12 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		params.setPosition(cursor);
 		params.setTextDocument(document.getId());
 		return getServer().getTextDocumentService().hover(params ).get();
+	}
+
+	public List<? extends CodeLens> getCodeLenses(TextDocumentInfo document) throws Exception {
+		CodeLensParams params = new CodeLensParams();
+		params.setTextDocument(document.getId());
+		return getServer().getTextDocumentService().codeLens(params).get();
 	}
 
 

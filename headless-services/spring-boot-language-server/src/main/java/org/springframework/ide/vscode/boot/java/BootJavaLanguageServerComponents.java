@@ -60,6 +60,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
@@ -92,6 +93,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private JavaProjectFinder projectFinder;
 	private BootJavaHoverProvider hoverProvider;
+	private CodeLensHandler codeLensHandler;
 
 	public BootJavaLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
 		this.server = server;
@@ -147,8 +149,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //			}
 		});
 		
-		BootJavaCodeLensEngine codeLensEngine = createCodeLensEngine();
-		documents.onCodeLens(codeLensEngine);
+		codeLensHandler = createCodeLensEngine();
+		documents.onCodeLens(codeLensHandler);
 
 		workspaceService.onDidChangeConfiguraton(settings -> {
 			config.handleConfigurationChange(settings);
@@ -172,6 +174,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public HoverHandler getHoverProvider() {
 		return hoverProvider;
+	}
+	
+	public CodeLensHandler getCodeLensHandler() {
+		return codeLensHandler;
 	}
 	
 	private void initialize(InitializeParams params) {
