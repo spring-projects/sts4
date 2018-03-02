@@ -190,6 +190,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
 
     let progressNotification = new NotificationType<ProgressParams,void>("sts/progress");
     let highlightNotification = new NotificationType<HighlightParams,void>("sts/highlight");
+    let classpathRequest = new RequestType<ClasspathParams, ClasspathResponse, void, void>("sts/classpath");
     let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void,void>("sts/moveCursor");
 
     let disposable = client.start();
@@ -206,6 +207,12 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         client.onNotification(highlightNotification, (params: HighlightParams) => {
             highlightService.handle(params);
         });
+        client.onRequest(classpathRequest, async (params: ClasspathParams) => {
+            const mainResult = <any[]>(await resolveClasspath(params));
+            return {
+                classpath : mainResult
+            };
+        });
         client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
             let editors = VSCode.window.visibleTextEditors;
             for (let editor of editors) {
@@ -219,6 +226,38 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         });
         return client;
     });
+}
+
+async function resolveClasspath(params) {
+    const mainResult = <any[]>(await executeJdtCommand("vscode.java.resolveMainClass", params.main));
+    if (mainResult.length === 0) {
+        return;
+    }
+    const mainType = mainResult.map((item) => {
+        return item.mainClass;
+    });
+
+    if (mainType.length === 0) {
+        return;
+    }
+
+    let mainTypeClasspath = mainType[0];
+
+    const classpathResult = <any[]>(await executeJdtCommand("vscode.java.resolveClasspath", mainTypeClasspath, params.project));
+
+    if (mainType.length < 2) {
+        return;
+    }
+
+    let modulePaths = classpathResult[0];
+    let classPaths = classpathResult[1];   
+
+    return classPaths;
+}
+
+
+function executeJdtCommand(...rest) {
+    return VSCode.commands.executeCommand("java.execute.workspaceCommand", ...rest);
 }
 
 function correctBinname(binname: string) {
@@ -237,9 +276,18 @@ interface MoveCursorResponse {
     applied: boolean
 }
 
+interface ClasspathResponse {
+    classpath: any
+}
+
 interface ProgressParams {
     id: string
     statusMsg?: string
+}
+
+interface ClasspathParams {
+    project: string
+    main: string
 }
 
 class ProgressService {

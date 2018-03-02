@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -30,16 +31,20 @@ public class MavenJavaProject extends AbstractJavaProject {
 	private DelegatingCachedClasspath<MavenProjectClasspath> classpath;
 	private File pom;
 	
-	public MavenJavaProject(MavenCore maven, File pom, Path projectDataCache) {
+	public MavenJavaProject(ClasspathService classpathService, MavenCore maven, File pom, Path projectDataCache) {
 		super(projectDataCache);
 		this.pom = pom;
 		File file = projectDataCache == null ? null
 				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
 		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
 		this.classpath = new DelegatingCachedClasspath<>(
-				() -> new MavenProjectClasspath(maven, pom),
+				() -> (classpathService != null ? new MavenProjectJdtClasspath(classpathService, maven, pom) : new MavenProjectClasspath(maven, pom)),
 				fileBasedCache 
 			);
+	}
+	
+	public MavenJavaProject(MavenCore maven, File pom, Path projectDataCache) {
+		this(null, maven, pom, projectDataCache);
 	}
 	
 	public MavenJavaProject(MavenCore maven, File pom) {
@@ -52,7 +57,7 @@ public class MavenJavaProject extends AbstractJavaProject {
 			}
 		}
 	}
-	
+
 	@Override
 	public String getElementName() {
 		if (classpath.getName() == null) {

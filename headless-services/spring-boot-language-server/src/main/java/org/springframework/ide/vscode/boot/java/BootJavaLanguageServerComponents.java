@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathService;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -350,6 +351,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public Set<LanguageId> getInterestingLanguages() {
 		return LANGUAGES;
+	}
+
+	public ClasspathService getClasspathService() {
+		return server.getClasspathService();
 	}
 
 }

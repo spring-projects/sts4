@@ -40,4 +40,6 @@ public interface Sts4LanguageServer extends LanguageServer {
 	 */
 	DiagnosticService getDiagnosticService();
 
+	ClasspathService getClasspathService();
+
 }

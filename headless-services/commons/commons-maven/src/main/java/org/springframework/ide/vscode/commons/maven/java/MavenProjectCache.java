@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,7 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
-		MavenJavaProject mavenJavaProject = new MavenJavaProject(maven, pomFile,
+		MavenJavaProject mavenJavaProject = new MavenJavaProject(server.getClasspathService(), maven, pomFile,
 				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)
 			);
 		performUpdate(mavenJavaProject, asyncUpdate, asyncUpdate);

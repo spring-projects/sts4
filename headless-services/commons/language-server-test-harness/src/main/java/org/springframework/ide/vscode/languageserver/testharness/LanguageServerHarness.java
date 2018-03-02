@@ -90,6 +90,7 @@ import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
@@ -290,6 +291,11 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 						}
 					}
 					return CompletableFuture.completedFuture(new ApplyWorkspaceEditResponse(false));
+				}
+
+				@Override
+				public CompletableFuture<Object> classpath(ClasspathParams classpathEvent) {
+					return CompletableFuture.completedFuture(null);
 				}
 
 			});

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
@@ -46,6 +47,8 @@ import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathService;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -124,6 +127,21 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	private Runnable initializedHandler;
 
 	private Runnable shutdownHandler;
+	
+	private ClasspathService classpathService = (String project, String sourceDir) -> {
+		STS4LanguageClient client = SimpleLanguageServer.this.client;
+		if (client != null) {
+			 CompletableFuture<Object> classPath = client.classpath(new ClasspathParams(project, sourceDir));
+			 try {
+				return classPath.get();
+			} catch (InterruptedException e) {
+				Log.log(e);
+			} catch (ExecutionException e) {
+				Log.log(e);
+			}
+		}
+		return null;
+	};
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -574,6 +592,11 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	@Override
 	public ProgressService getProgressService() {
 		return progressService;
+	}
+
+	@Override
+	public ClasspathService getClasspathService() {
+		return classpathService;
 	}
 
 	public void setTestListener(LanguageServerTestListener languageServerTestListener) {

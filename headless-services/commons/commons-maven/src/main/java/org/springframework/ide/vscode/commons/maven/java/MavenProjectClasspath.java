@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -51,7 +52,8 @@ public class MavenProjectClasspath extends JandexClasspath {
 	private MavenCore maven;
 	private File pom;
 	private MavenClasspathData cachedData;
-	
+	protected ClasspathService classpathService;
+
 	MavenProjectClasspath(MavenCore maven, File pom) throws Exception {
 		super();
 		this.maven = maven;
@@ -59,6 +61,14 @@ public class MavenProjectClasspath extends JandexClasspath {
 		this.cachedData = createClasspathData();
 	}
 	
+	public MavenProjectClasspath(ClasspathService classpathService, MavenCore maven, File pom)  throws Exception {
+		super();
+		this.maven = maven;
+		this.pom = pom;
+		this.classpathService = classpathService;
+		this.cachedData = createClasspathData();
+	}
+
 	@Override
 	protected JandexIndex[] getBaseIndices() {
 		return new JandexIndex[] { maven.getJavaIndexForJreLibs() };
@@ -90,7 +100,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 		return cachedData != null ? cachedData.name : null;
 	}
 	
-	private ImmutableList<Path> resolveClasspathEntries(MavenProject project) throws Exception {
+	protected ImmutableList<Path> resolveClasspathEntries(MavenProject project, String sourceDirectory) throws Exception {
 //		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
 //			return artifact.getFile().toPath();
 //		}), projectResolvedOutput());
@@ -264,8 +274,9 @@ public class MavenProjectClasspath extends JandexClasspath {
 	@Override
 	public MavenClasspathData createClasspathData() throws Exception {
 		MavenProject project = createMavenProject();
+		String sourceDirectory = project.getBuild().getSourceDirectory();
 
-		ImmutableList<Path> entries = resolveClasspathEntries(project);
+		ImmutableList<Path> entries = resolveClasspathEntries(project, sourceDirectory);
 		String name = project.getArtifact().getArtifactId();
 		ImmutableList<String> resources = resolveClasspathResources(project);
 		Path outputFolder = resolveOutputFolder(project);
@@ -279,7 +290,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 		data.testSourceDirectory = project.getBuild().getTestSourceDirectory();
 		data.artifacts = project.getArtifacts();
 		data.remoteArtifactRepositories = project.getRemoteArtifactRepositories();
-		data.sourceDirectory = project.getBuild().getSourceDirectory();
+		data.sourceDirectory = sourceDirectory ;
 		return data;
 	}
 	
