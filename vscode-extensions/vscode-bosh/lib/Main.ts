@@ -31,7 +31,6 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG : false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-bosh',
-        launcher: (context: VSCode.ExtensionContext) => Path.resolve(context.extensionPath, 'jars/language-server.jar'),
         jvmHeap: "48m",
         clientOptions: {
             documentSelector: [ 
