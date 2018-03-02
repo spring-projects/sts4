@@ -64,7 +64,7 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
 				
 					CodeLens codeLens = new CodeLens();
-					codeLens.setRange(document.toRange(node.getStartPosition(), node.getLength()));
+					codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
 					codeLens.setCommand(new Command(handlerInfo.getSymbol(), null));
 
 					resultAccumulator.add(codeLens);
