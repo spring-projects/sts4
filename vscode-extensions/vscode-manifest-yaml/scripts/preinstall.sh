@@ -14,6 +14,6 @@ npm install ../commons-vscode/commons-vscode-*.tgz
 cd ../../headless-services/manifest-yaml-language-server
 ./build.sh
 
+rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
-cp target/*.jar ${workdir}/jars/language-server.jar
-
+cp target/*.jar ${workdir}/jars
