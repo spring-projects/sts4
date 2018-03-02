@@ -2,6 +2,7 @@ import * as FS from 'fs';
 import * as Path from 'path';
 import * as ChildProcess from 'child_process';
 import { basename } from 'path';
+import * as fileUrl from 'file-url';
 
 'use strict';
 
@@ -33,6 +34,14 @@ export interface JVM {
      * then this will return null.
      */
     getToolsJar() : string | null
+
+    /**
+     * Launch an executable jar with this jvm.
+     * This autmatically adds tools.jar to the classpath if available.
+     * WARNING: For adding tools jar to work properly, the jar must be packaged
+     * using spring-boot-maven-plugin ZIP layout.
+     */
+    jarLaunch(jar: string, vmargs?: string[], execFileOptions?: ChildProcess.ExecFileOptions) : ChildProcess.ChildProcess
 }
 
 /**
@@ -195,6 +204,18 @@ class JVMImpl implements JVM {
     }
     getToolsJar(): string {
         return this.toolsJar();
+    }
+    jarLaunch(jar: string, vmargs?: [string], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess {
+        let args = [];
+        let toolsJar = this.getToolsJar();
+        if (toolsJar) {
+            args.push("-Dloader.path="+fileUrl(toolsJar));
+        }
+        if (vmargs) {
+            args.push(...vmargs);
+        }
+        args.push("-jar", jar);
+        return ChildProcess.execFile(this.getJavaExecutable(), args, execFileOptions);
     }
 }
 
