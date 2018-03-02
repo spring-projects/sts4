@@ -2,7 +2,6 @@ import * as FS from 'fs';
 import * as Path from 'path';
 import * as ChildProcess from 'child_process';
 import { basename } from 'path';
-import * as fileUrl from 'file-url';
 
 'use strict';
 
@@ -209,7 +208,7 @@ class JVMImpl implements JVM {
         let args = [];
         let toolsJar = this.getToolsJar();
         if (toolsJar) {
-            args.push("-Dloader.path="+fileUrl(toolsJar));
+            args.push("-Dloader.path="+toolsJar);
         }
         if (vmargs) {
             args.push(...vmargs);

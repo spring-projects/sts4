@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/jvm-launch-utils",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Provides utilities useful for launching Java processes from node packages.",
   "files": [
     "src",
@@ -30,8 +30,5 @@
   "devDependencies": {
     "@types/node": "^9.4.6",
     "typescript": "^2.7.2"
-  },
-  "dependencies": {
-    "file-url": "^2.0.2"
   }
 }
