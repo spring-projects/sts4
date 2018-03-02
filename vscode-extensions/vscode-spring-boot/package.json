@@ -73,9 +73,9 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "clean": "rm -fr node_modules out *.vsix package-lock.json",
-    "preinstall": "./scripts/preinstall.sh",
     "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "preinstall": "./scripts/preinstall.sh",
     "vsce-package": "vsce package"
   },
   "dependencies": {
@@ -84,8 +84,8 @@
   },
   "devDependencies": {
     "vsce": "^1.36.1",
-    "typescript": "2.6.1",
-    "@types/node": "^7.0.43",
+    "typescript": "2.7.2",
+    "@types/node": "^9.4.6",
     "vscode": "^1.1.10"
   }
 }

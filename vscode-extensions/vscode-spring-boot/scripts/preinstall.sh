@@ -15,6 +15,7 @@ curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/Ja
 cd ../../headless-services/spring-boot-language-server
 ./build.sh
 
+rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
-cp target/*.jar ${workdir}/jars/language-server.jar
+cp target/*.jar ${workdir}/jars
 

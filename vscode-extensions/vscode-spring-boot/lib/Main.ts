@@ -23,19 +23,10 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
-        launcher: (context: VSCode.ExtensionContext) => 'org.springframework.boot.loader.JarLauncher',
-        classpath: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
-            const classpath = [
-                Path.resolve(context.extensionPath, 'jars/language-server.jar')
-            ];
+        checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
             if (!jvm.isJdk()) {
                 VSCode.window.showWarningMessage('JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.');
             }
-            const toolsJar = jvm.getToolsJar();
-            if (toolsJar) {
-                classpath.unshift(toolsJar);
-            }
-            return classpath;
         },
         clientOptions: {
             documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],

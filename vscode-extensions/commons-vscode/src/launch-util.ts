@@ -32,10 +32,9 @@ export interface ActivatorOptions {
     TRACE?: boolean;
     extensionId: string;
     clientOptions: LanguageClientOptions;
-    launcher: (context: VSCode.ExtensionContext) => string;
     jvmHeap?: string;
     workspaceOptions?: VSCode.WorkspaceConfiguration;
-    classpath?: (context: VSCode.ExtensionContext, jvm: JVM) => string[];
+    checkjvm?: (context: VSCode.ExtensionContext, jvm: JVM) => any;
     preferJdk?: boolean;
 }
 
@@ -81,7 +80,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
             VSCode.window.showErrorMessage("Error trying to find JVM: "+error);
             return Promise.reject(error);
         })
-        .then(jvm => {
+        .then((jvm) => {
             if (!jvm) {
                 VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
                 return;
@@ -111,7 +110,6 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             let processLaunchoptions = {
                                 cwd: VSCode.workspace.rootPath
                             };
-                            let child: ChildProcess.ChildProcess;
                             let logfile = Path.join(tmpdir(), options.extensionId + '-' + Date.now()+'.log');
                             log('Redirecting server logs to ' + logfile);
                             const args = [
@@ -119,28 +117,19 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dsts.lsp.client=vscode',
                                 '-Dsts.log.file=' + logfile
                             ];
-                            if (options.classpath) {
-                                const classpath = options.classpath(context, jvm);
-                                if (classpath) {
-                                    args.push('-cp');
-                                    args.push(classpath.join(Path.delimiter));
-                                }
+                            if (options.checkjvm) {
+                                options.checkjvm(context, jvm);
                             }
-                            const launcher = options.launcher(context);
-                            if (launcher.endsWith('.jar')) {
-                                args.push('-jar');
-                            }
-                            args.push(options.launcher(context));
                             if (jvmHeap) {
                                 args.unshift("-Xmx"+jvmHeap);
                             }
                             if (DEBUG) {
                                 args.unshift(DEBUG_ARG);
                             }
-                            log("CMD = " + javaExecutablePath + ' ' + args.join(' '));
 
                             // Start the child java process
-                            child = ChildProcess.execFile(javaExecutablePath, args, processLaunchoptions);
+                            let launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+                            let child = jvm.jarLaunch(launcher, args, processLaunchoptions);
                             child.stdout.on('data', (data) => {
                                 log("" + data);
                             });
@@ -155,6 +144,21 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
         });
     }
 }
+
+function findServerJar(jarsDir) : string {
+    let serverJars = FS.readdirSync(jarsDir).filter(jar => 
+        jar.indexOf('language-server')>=0 &&
+        jar.endsWith(".jar")
+    );
+    if (serverJars.length==0) {
+        throw new Error("Server jar not found in "+jarsDir);
+    }
+    if (serverJars.length>1) {
+        throw new Error("Multiple server jars found in "+jarsDir);
+    }
+    return Path.resolve(jarsDir, serverJars[0]);
+}
+
 
 function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions): Promise<LanguageClient> {
     let connectionInfo = {
