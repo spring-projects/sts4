@@ -245,7 +245,7 @@ async function resolveClasspath(params) {
 
     const classpathResult = <any[]>(await executeJdtCommand("vscode.java.resolveClasspath", mainTypeClasspath, params.project));
 
-    if (mainType.length < 2) {
+    if (classpathResult.length < 2) {
         return;
     }
 
