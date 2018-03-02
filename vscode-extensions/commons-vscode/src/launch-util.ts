@@ -229,7 +229,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
 }
 
 async function resolveClasspath(params) {
-    const mainResult = <any[]>(await executeJdtCommand("vscode.java.resolveMainClass", params.main));
+    const mainResult = <any[]>(await executeJdtCommand("vscode.java.resolveMainClass", params.sourceDir));
     if (mainResult.length === 0) {
         return;
     }
@@ -287,7 +287,7 @@ interface ProgressParams {
 
 interface ClasspathParams {
     project: string
-    main: string
+    sourceDir: string
 }
 
 class ProgressService {
