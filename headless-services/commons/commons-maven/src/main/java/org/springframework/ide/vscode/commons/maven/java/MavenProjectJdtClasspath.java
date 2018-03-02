@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.apache.maven.project.MavenProject;
 import org.springframework.ide.vscode.commons.languageserver.ClasspathService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,7 +41,7 @@ public class MavenProjectJdtClasspath extends MavenProjectClasspath {
 	}
 
 	private ImmutableList<Path> fromClientClasspathService(MavenProject project, String sourceDirectory) {
-		if (classpathService != null) {
+		if (classpathService != null && project != null && StringUtil.hasText(sourceDirectory)) {
 			Object fromService = classpathService.classpathEvent(project.getName(), sourceDirectory);
 			
 			if (fromService instanceof Map<?, ?>) {
