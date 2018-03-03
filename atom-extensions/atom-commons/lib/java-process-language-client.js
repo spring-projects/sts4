@@ -130,8 +130,8 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
             return this.launchVmArgs(jvm).then(args => {
                 args.push(`-Dserver.port=${port}`);
                 return this.doLaunchProcess(
-                    jvm.getJavaExecutable(), 
-                    this.getOrInstallLauncher(), 
+                    jvm, 
+                    this.getServerJar(), 
                     port, 
                     args
                 );
@@ -143,23 +143,16 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         return Promise.resolve([]);
     }
 
-    doLaunchProcess(javaExecutable, launcher, port, args=[]) {
+    doLaunchProcess(jvm, launcher, port, args=[]) {
         let vmArgs = args.concat([
             // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
             '-Dlsp.lazy.completions.disable=true',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
         ]);
-        if (launcher.endsWith('.jar')) {
-            vmArgs.push('-jar');
-        }
-        vmArgs.push(launcher);
-        this.logger.debug(`starting "${javaExecutable} ${vmArgs.join('\n')}"`);
-        return cp.spawn(javaExecutable, vmArgs, { cwd: this.serverHome })
-    }
 
-    getOrInstallLauncher() {
-        return this.getServerJar();
+        this.logger.debug(`starting "${jvm.getJavaExecutable()} ${vmArgs.join('\n')}\n-jar ${launcher}"`);
+        return jvm.jarLaunch(launcher, vmArgs, { cwd: this.serverHome });
     }
 
     installServer () {

@@ -46,10 +46,6 @@ class SpringBootLanguageClient extends JavaProcessLanguageClient {
         super.activate();
     }
 
-    getOrInstallLauncher() {
-        return 'org.springframework.boot.loader.JarLauncher';
-    }
-
     preferJdk() {
         return true;
     }
@@ -67,11 +63,6 @@ class SpringBootLanguageClient extends JavaProcessLanguageClient {
                 'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.'
             );
         }
-        let toolsJar = jvm.getToolsJar();
-        vmargs.push(
-            "-cp",
-            `${toolsJar ? `${toolsJar}${path.delimiter}` : ''}${this.getServerJar()}`
-        );
         return Promise.resolve(vmargs);
     }
 
