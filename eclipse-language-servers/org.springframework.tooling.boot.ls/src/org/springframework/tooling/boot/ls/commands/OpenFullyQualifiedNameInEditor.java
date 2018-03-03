@@ -33,7 +33,6 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
-import org.eclipse.jdt.internal.core.search.JavaSearchScope;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -125,9 +124,7 @@ public class OpenFullyQualifiedNameInEditor extends AbstractHandler {
 				if (project != null) {
 					IJavaProject javaProject =  JavaCore.create(project);
 					if (javaProject != null) {
-						JavaSearchScope scope = new JavaSearchScope(false);
-						scope.add(javaProject);
-						return scope;
+						return SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
 						
 					}
 				}
