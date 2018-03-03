@@ -53,6 +53,8 @@ public final class SourceLinkFactory {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
 			return new VSCodeSourceLinks(server);
+		case ECLIPSE:
+			return new EclipseSourceLinks();
 		default:
 			return NO_SOURCE_LINKS;
 		}
