@@ -26,6 +26,8 @@ import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -35,6 +37,8 @@ import com.google.common.collect.ImmutableList;
 import reactor.core.publisher.Mono;
 
 public class SimpleWorkspaceService implements WorkspaceService {
+
+	private static Logger log = LoggerFactory.getLogger(SimpleWorkspaceService.class);
 
 	private SimpleLanguageServer server;
 	private Set<WorkspaceFolder> workspaceRoots = new HashSet<>();
@@ -160,7 +164,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	public synchronized void setWorkspaceFolders(List<WorkspaceFolder> workspaceFolders) {
 		workspaceRoots = new HashSet<>();
 		workspaceRoots.addAll(workspaceFolders);
+		log.debug("workspaceFolders = {}", workspaceFolders);
 	}
-
 
 }

@@ -70,6 +70,9 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -233,6 +236,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (ih!=null){
 			ih.accept(params);
 		}
+		Log.info("IntializeResult = {}");
 		return CompletableFuture.completedFuture(result);
 	}
 
@@ -251,23 +255,23 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		List<WorkspaceFolder> initialFolders = new ArrayList<>();
 
 		Object initOptions = params.getInitializationOptions();
-		if (initOptions != null && initOptions instanceof Map) {
-			Map<?, ?> initializationOptions = (Map<?, ?>) initOptions;
-			Object folders = initializationOptions.get("workspaceFolders");
-			if (folders != null && folders instanceof List) {
-				List<?> workspaceFolders = (List<?>) folders;
-				for (Object object : workspaceFolders) {
-					String folderPath = object.toString();
+		if (initOptions != null && initOptions instanceof JsonObject) {
+			JsonObject initializationOptions = (JsonObject) initOptions;
+			JsonElement folders = initializationOptions.get("workspaceFolders");
+			if (folders != null && folders instanceof JsonArray) {
+				JsonArray workspaceFolders = (JsonArray) folders;
+				for (JsonElement object : workspaceFolders) {
+					String folderUri = object.getAsString();
 					String folderName = null;
 
-					int folderNameStart = folderPath.lastIndexOf("/");
+					int folderNameStart = folderUri.lastIndexOf("/");
 					if (folderNameStart > 0) {
-						folderName = folderPath.substring(folderPath.lastIndexOf("/") + 1);
+						folderName = folderUri.substring(folderUri.lastIndexOf("/") + 1);
 					}
 
 					WorkspaceFolder folder = new WorkspaceFolder();
 					folder.setName(folderName);
-					folder.setUri(object.toString());
+					folder.setUri(folderUri);
 
 					initialFolders.add(folder);
 				}
