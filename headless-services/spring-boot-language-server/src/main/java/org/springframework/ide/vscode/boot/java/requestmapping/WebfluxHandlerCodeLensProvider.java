@@ -49,27 +49,34 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 	protected void provideCodeLens(MethodDeclaration node, TextDocument document, List<CodeLens> resultAccumulator) {
 		IMethodBinding methodBinding = node.resolveBinding();
 		
-		final String methodKey = methodBinding.getKey();
-		List<Object> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
-			if (addon instanceof WebfluxHandlerInformation) {
-				WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) addon;
-				return handlerInfo.getMethodKey() != null && handlerInfo.getMethodKey().equals(methodKey);
-			}
-			return false;
-		});
+		if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null
+				&& methodBinding.getDeclaringClass().getBinaryName() != null && methodBinding.getMethodDeclaration().toString() != null) {
 		
-		if (handlerInfos != null && handlerInfos.size() > 0) {
-			for (Object object : handlerInfos) {
-				try {
-					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
-				
-					CodeLens codeLens = new CodeLens();
-					codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
-					codeLens.setCommand(new Command(handlerInfo.getSymbol(), null));
-
-					resultAccumulator.add(codeLens);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
+			final String handlerClass = methodBinding.getDeclaringClass().getBinaryName().trim();
+			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
+			
+			List<Object> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
+				if (addon instanceof WebfluxHandlerInformation) {
+					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) addon;
+					return handlerInfo.getHandlerClass() != null && handlerInfo.getHandlerClass().equals(handlerClass)
+							&& handlerInfo.getHandlerMethod() != null && handlerInfo.getHandlerMethod().equals(handlerMethod);
+				}
+				return false;
+			});
+			
+			if (handlerInfos != null && handlerInfos.size() > 0) {
+				for (Object object : handlerInfos) {
+					try {
+						WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
+					
+						CodeLens codeLens = new CodeLens();
+						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
+						codeLens.setCommand(new Command(handlerInfo.getSymbol(), null));
+	
+						resultAccumulator.add(codeLens);
+					} catch (BadLocationException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

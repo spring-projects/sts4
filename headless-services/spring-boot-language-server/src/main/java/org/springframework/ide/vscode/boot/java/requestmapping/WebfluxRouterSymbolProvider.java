@@ -163,7 +163,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 	
 	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String symbol) {
 		List<?> arguments = node.arguments();
-		
+
 		if (arguments != null) {
 			for (Object argument : arguments) {
 				if (argument instanceof ExpressionMethodReference) {
@@ -171,11 +171,13 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 					IMethodBinding methodBinding = methodReference.resolveMethodBinding();
 
 					if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null) {
-						ITypeBinding declaringClass = methodBinding.getDeclaringClass();
-						String destinationClass = declaringClass.getBinaryName();
-						String methodKey = methodBinding.getMethodDeclaration().getKey();
-
-						return new WebfluxHandlerInformation(symbol, destinationClass, methodKey);
+						String handlerClass = methodBinding.getDeclaringClass().getBinaryName();
+						if (handlerClass != null) handlerClass = handlerClass.trim();
+						
+						String handlerMethod = methodBinding.getMethodDeclaration().toString();
+						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
+						
+						return new WebfluxHandlerInformation(symbol, handlerClass, handlerMethod);
 					}
 				}
 			}

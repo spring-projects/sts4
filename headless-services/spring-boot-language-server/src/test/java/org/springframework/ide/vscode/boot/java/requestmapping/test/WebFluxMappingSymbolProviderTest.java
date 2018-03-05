@@ -71,27 +71,23 @@ public class WebFluxMappingSymbolProviderTest {
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "@/hello -- GET").get(0);
 		assertEquals("@/hello -- GET", handlerInfo1.getSymbol());
-		assertEquals("org.test.QuoteHandler", handlerInfo1.getDestinationClass());
-		assertTrue(handlerInfo1.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo1.getMethodKey().endsWith("QuoteHandler;.hello(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.QuoteHandler", handlerInfo1.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> hello(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "@/echo -- POST").get(0);
 		assertEquals("@/echo -- POST", handlerInfo2.getSymbol());
-		assertEquals("org.test.QuoteHandler", handlerInfo2.getDestinationClass());
-		assertTrue(handlerInfo2.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo2.getMethodKey().endsWith("QuoteHandler;.echo(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.QuoteHandler", handlerInfo2.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> echo(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "@/quotes -- GET").get(0);
 		assertEquals("@/quotes -- GET", handlerInfo3.getSymbol());
-		assertEquals("org.test.QuoteHandler", handlerInfo3.getDestinationClass());
-		assertTrue(handlerInfo3.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo3.getMethodKey().endsWith("QuoteHandler;.streamQuotes(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.QuoteHandler", handlerInfo3.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> streamQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo4 = getWebfluxHandler(addons, "@/quotes -- GET").get(1);
 		assertEquals("@/quotes -- GET", handlerInfo4.getSymbol());
-		assertEquals("org.test.QuoteHandler", handlerInfo4.getDestinationClass());
-		assertTrue(handlerInfo4.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo4.getMethodKey().endsWith("QuoteHandler;.fetchQuotes(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.QuoteHandler", handlerInfo4.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> fetchQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo4.getHandlerMethod());
 	}
 
 	@Test
@@ -111,21 +107,18 @@ public class WebFluxMappingSymbolProviderTest {
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "@/person/{id} -- GET").get(0);
 		assertEquals("@/person/{id} -- GET", handlerInfo1.getSymbol());
-		assertEquals("org.test.PersonHandler", handlerInfo1.getDestinationClass());
-		assertTrue(handlerInfo1.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo1.getMethodKey().endsWith("PersonHandler;.getPerson(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.PersonHandler", handlerInfo1.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> getPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "@/person/ -- POST").get(0);
 		assertEquals("@/person/ -- POST", handlerInfo2.getSymbol());
-		assertEquals("org.test.PersonHandler", handlerInfo2.getDestinationClass());
-		assertTrue(handlerInfo2.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo2.getMethodKey().endsWith("PersonHandler;.createPerson(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.PersonHandler", handlerInfo2.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> createPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "@/person -- GET").get(0);
 		assertEquals("@/person -- GET", handlerInfo3.getSymbol());
-		assertEquals("org.test.PersonHandler", handlerInfo3.getDestinationClass());
-		assertTrue(handlerInfo3.getMethodKey().startsWith("Lorg/test/"));
-		assertTrue(handlerInfo3.getMethodKey().endsWith("PersonHandler;.listPeople(Lorg/springframework/web/reactive/function/server/ServerRequest;)Lreactor/core/publisher/Mono<Lorg/springframework/web/reactive/function/server/ServerResponse;>;"));
+		assertEquals("org.test.PersonHandler", handlerInfo3.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

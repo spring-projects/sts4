@@ -6,20 +6,17 @@
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
             default-charset="UTF-8"
-            id="org.springframework.boot.ide.manifest.yml"
+            id="org.springframework.ide.eclipse.manifest.yml"
             name="Cloudfoundry Manifest"
+            file-names="manifest.yml"
             priority="high">
       </content-type>
-      <file-association
-            content-type="org.springframework.boot.ide.manifest.yml"
-            file-names="manifest.yml">
-      </file-association>
    </extension>
    
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
-            contentTypeId="org.springframework.boot.ide.manifest.yml"
+            contentTypeId="org.springframework.ide.eclipse.manifest.yml"
             editorId="org.eclipse.ui.genericeditor.GenericEditor">
       </editorContentTypeBinding>
    </extension>
@@ -28,7 +25,7 @@
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
-            contentType="org.springframework.boot.ide.manifest.yml">
+            contentType="org.springframework.ide.eclipse.manifest.yml">
       </presentationReconciler>
    </extension>
 
@@ -39,7 +36,7 @@
             path="./syntaxes/YAML.tmLanguage" >
       </grammar>      
       <scopeNameContentTypeBinding
-            contentTypeId="org.springframework.boot.ide.manifest.yml"
+            contentTypeId="org.springframework.ide.eclipse.manifest.yml"
             scopeName="source.yaml">
       </scopeNameContentTypeBinding>
    </extension>

@@ -16,25 +16,25 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 public class WebfluxHandlerInformation {
 	
 	private final String symbol;
-	private String destinationClass;
-	private String methodKey;
+	private String handlerClass;
+	private String handlerMethod;
 	
-	public WebfluxHandlerInformation(String symbol, String destinationClass, String methodKey) {
+	public WebfluxHandlerInformation(String symbol, String handlerClass, String handlerMethod) {
 		this.symbol = symbol;
-		this.destinationClass = destinationClass;
-		this.methodKey = methodKey;
+		this.handlerClass = handlerClass;
+		this.handlerMethod = handlerMethod;
 	}
 	
 	public String getSymbol() {
 		return symbol;
 	}
 	
-	public String getDestinationClass() {
-		return destinationClass;
+	public String getHandlerClass() {
+		return handlerClass;
 	}
 	
-	public String getMethodKey() {
-		return methodKey;
+	public String getHandlerMethod() {
+		return handlerMethod;
 	}
 
 }

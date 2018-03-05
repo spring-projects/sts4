@@ -36,28 +36,17 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	
 	public SpringBootLanguageServer() {
 		super(SPRING_BOOT_SERVER);
-		JRE jre = getJRE(); 
-		List<String> vmargs = new ArrayList<>();
-		
-//		vmargs.add("-Xdebug");
-//		vmargs.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
-		
-		vmargs.add("-Dlsp.lazy.completions.disable=true");
-		vmargs.add("-Dlsp.completions.indentation.enable=true");
-		vmargs.add("-Xmx1024m");
-
-		String workingDir = getWorkingDirLocation();
-
-		setCommands(jre.jarLaunchCommand(getLanguageServerJARLocation(), 
+		setCommands(getJRE().jarLaunchCommand(getLanguageServerJARLocation(), 
 				ImmutableList.of(
 					//"-Xdebug",
 					// "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"
+					"-Dsts.lsp.client=eclipse",
 					"-Dlsp.lazy.completions.disable=true",
 					"-Dlsp.completions.indentation.enable=true",
 					"-Xmx1024m"
 				)
 		));
-		setWorkingDirectory(workingDir);
+		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
 	private JRE getJRE() {

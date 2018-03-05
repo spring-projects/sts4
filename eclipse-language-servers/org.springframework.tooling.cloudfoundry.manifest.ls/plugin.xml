@@ -11,19 +11,6 @@
             label="Cloud Foundry Manifest Language Server">
       </server>
       <contentTypeMapping
-            contentType="org.springframework.boot.ide.manifest.yml"
-            id="org.eclipse.languageserver.languages.cloudfoundrymanifest">
-      </contentTypeMapping>
-   </extension>
-
-   <extension
-         point="org.eclipse.lsp4e.languageServer">
-      <server
-            class="org.springframework.tooling.cloudfoundry.manifest.ls.CloudFoundryManifestLanguageServer"
-            id="org.eclipse.languageserver.languages.cloudfoundrymanifest"
-            label="Cloud Foundry Manifest Language Server">
-      </server>
-      <contentTypeMapping
             contentType="org.springframework.ide.eclipse.manifest.yml"
             id="org.eclipse.languageserver.languages.cloudfoundrymanifest">
       </contentTypeMapping>
