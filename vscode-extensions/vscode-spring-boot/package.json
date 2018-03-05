@@ -80,7 +80,7 @@
   },
   "dependencies": {
     "commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
-    "vscode-languageclient": "^3.4.2"
+    "vscode-languageclient": "^4.0.0"
   },
   "devDependencies": {
     "vsce": "^1.36.1",
