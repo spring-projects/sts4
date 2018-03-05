@@ -27,6 +27,8 @@ import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * @author Martin Lippert
  */
@@ -34,27 +36,27 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	
 	public SpringBootLanguageServer() {
 		super(SPRING_BOOT_SERVER);
-		List<String> commands = new ArrayList<>();
 		JRE jre = getJRE(); 
-		commands.add(jre.getJavaExecutable());
+		List<String> vmargs = new ArrayList<>();
 		
-//		commands.add("-Xdebug");
-//		commands.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
+//		vmargs.add("-Xdebug");
+//		vmargs.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
 		
-		commands.add("-Dlsp.lazy.completions.disable=true");
-		commands.add("-Dlsp.completions.indentation.enable=true");
-		commands.add("-Xmx1024m");
-		commands.add("-cp");
-		String classpath = getLanguageServerJARLocation();
-		if (jre.toolsJar!=null) {
-			classpath = jre.toolsJar + File.pathSeparator + classpath;
-		}
-		commands.add(classpath);
-		commands.add("org.springframework.boot.loader.JarLauncher");
+		vmargs.add("-Dlsp.lazy.completions.disable=true");
+		vmargs.add("-Dlsp.completions.indentation.enable=true");
+		vmargs.add("-Xmx1024m");
 
 		String workingDir = getWorkingDirLocation();
 
-		setCommands(commands);
+		setCommands(jre.jarLaunchCommand(getLanguageServerJARLocation(), 
+				ImmutableList.of(
+					//"-Xdebug",
+					// "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"
+					"-Dlsp.lazy.completions.disable=true",
+					"-Dlsp.completions.indentation.enable=true",
+					"-Xmx1024m"
+				)
+		));
 		setWorkingDirectory(workingDir);
 	}
 	

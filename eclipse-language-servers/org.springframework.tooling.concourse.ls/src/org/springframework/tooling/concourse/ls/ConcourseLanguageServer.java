@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.springframework.tooling.concourse.ls;
 
+import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.CONCOURSE_SERVER;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -24,7 +24,7 @@ import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -33,22 +33,13 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 
 	public ConcourseLanguageServer() {
 		super(CONCOURSE_SERVER);
-		List<String> commands = new ArrayList<>();
-		commands.add(JRE.currentJRE().getJavaExecutable());
-
-//		commands.add("-Xdebug");
-//		commands.add("-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n");
-
-		commands.add("-Dlsp.lazy.completions.disable=true");
-		commands.add("-Dlsp.completions.indentation.enable=true");
-
-		commands.add("-jar");
-		commands.add(getLanguageServerJARLocation());
-
-		String workingDir = getWorkingDirLocation();
-
-		setCommands(commands);
-		setWorkingDirectory(workingDir);
+		setCommands(JRE.currentJRE().jarLaunchCommand(getLanguageServerJARLocation(), ImmutableList.of(
+				//"-Xdebug",
+				//"-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n",
+				"-Dlsp.lazy.completions.disable=true",
+				"-Dlsp.completions.indentation.enable=true"
+		)));
+		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
 	protected String getLanguageServerJARLocation() {

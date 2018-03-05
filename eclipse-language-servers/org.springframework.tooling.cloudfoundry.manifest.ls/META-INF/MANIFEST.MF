@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.lsp4e;bundle-version="0.5.0",
  org.eclipse.lsp4j;bundle-version="0.4.0",
  org.eclipse.lsp4j.jsonrpc;bundle-version="0.4.0",
- org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0"
+ org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0",
+ com.google.guava
 Import-Package: org.eclipse.jface.preference,
  org.osgi.framework
 Export-Package: org.springframework.tooling.cloudfoundry.manifest.ls

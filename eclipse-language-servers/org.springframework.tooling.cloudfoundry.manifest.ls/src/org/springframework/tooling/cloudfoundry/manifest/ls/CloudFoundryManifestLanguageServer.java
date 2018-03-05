@@ -31,6 +31,8 @@ import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
+import com.google.common.collect.ImmutableList;
+
 import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
 
 /**
@@ -46,23 +48,13 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 
 	public CloudFoundryManifestLanguageServer() {
 		super(CLOUDFOUNDRY_SERVER);
-		List<String> commands = new ArrayList<>();
-		
-		commands.add(JRE.currentJRE().getJavaExecutable());
-
-//		commands.add("-Xdebug");
-//		commands.add("-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n");
-
-//		commands.add("-Dlsp.lazy.completions.disable=true");
-		commands.add("-Dlsp.completions.indentation.enable=true");
-
-		commands.add("-jar");
-		commands.add(getLanguageServerJARLocation());
-
-		String workingDir = getWorkingDirLocation();
-
-		setCommands(commands);
-		setWorkingDirectory(workingDir);
+		setCommands(JRE.currentJRE().jarLaunchCommand(getLanguageServerJARLocation(), ImmutableList.of(
+				//"-Xdebug",
+				//"-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n",
+				"-Dlsp.lazy.completions.disable=true",
+				"-Dlsp.completions.indentation.enable=true"
+		)));
+		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
 	@Override

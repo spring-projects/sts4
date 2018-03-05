@@ -18,6 +18,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.internal.launching.StandardVMType;
+import org.eclipse.ui.internal.commands.CommandService;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 @SuppressWarnings("restriction")
 public class JRE {
@@ -53,11 +57,11 @@ public class JRE {
 	 * Get a JRE, with a paired tools jar if it is needed based on current JRE version 
 	 * and whether the caller wants it.
 	 * 
-	 * @return The tools.jar, or null if none is needed.
+	 * @return The JRE.
 	 * @throws MissingToolsJarException If tools jar is needed but could not be found.
-	 * @throws MissingJava9JDKException 
+	 * @throws MissingJDKException 
 	 */
-	public static JRE findJRE(boolean needJdk) throws MissingJDKException {
+	public static JRE findJRE(boolean needJdk) throws MissingJDKException, MissingToolsJarException {
 		File mainHome = new File(System.getProperty("java.home"));
 		if (!needJdk) {
 			return new JRE(mainHome, null);
@@ -150,5 +154,24 @@ public class JRE {
 			this.javaHome = javaHome;
 		}
 		public final File javaHome;
+	}
+
+	/**
+	 * Creates a 'command' that can be used to launch a executable jar
+	 * with this jre. The tools.jar, if available, is added automatically to the classpath
+	 * via a "-Dloader.path" argument. For this to work properly, the executable
+	 * jar should be packaged with Spring Boot Properties loader (i.e. specify `ZIP` layout
+	 * in the spring-boot-maven plugin configuration)
+	 */
+	public List<String> jarLaunchCommand(String jarLocation, List<String> vmargs) {
+		ImmutableList.Builder<String> command = ImmutableList.builder();
+		command.add(getJavaExecutable());
+		if (toolsJar!=null) {
+			command.add("-Dloader.path="+toolsJar);
+		}
+		command.addAll(vmargs);
+		command.add("-jar");
+		command.add(jarLocation);
+		return command.build();
 	}
 }

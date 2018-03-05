@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.lsp4j;bundle-version="0.4.0",
  org.eclipse.ui.workbench,
  org.eclipse.jface,
- org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0"
+ org.springframework.tooling.ls.eclipse.commons;bundle-version="4.0.0",
+ com.google.guava
 Import-Package: com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
  org.osgi.framework
