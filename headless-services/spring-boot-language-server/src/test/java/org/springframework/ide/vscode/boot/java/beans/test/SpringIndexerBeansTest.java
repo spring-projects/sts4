@@ -20,7 +20,6 @@ import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.test.SpringIndexerHarness.TestSymbolInfo;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -31,7 +30,6 @@ public class SpringIndexerBeansTest {
 
 	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 	private BootJavaLanguageServerHarness harness;
-	private JavaProjectFinder projectFinder;
 
 	@Before
 	public void setup() throws Exception {
@@ -40,7 +38,6 @@ public class SpringIndexerBeansTest {
 		symbolProviders.put(Annotations.COMPONENT, new ComponentSymbolProvider());
 
 		harness = BootJavaLanguageServerHarness.builder().build();
-		projectFinder = harness.getProjectFinder();
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI()));
 	}
 
@@ -82,6 +79,18 @@ public class SpringIndexerBeansTest {
 				// @Bean(name= {"namedBean1", "namedBean2"})
 				symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
 				symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
+		);
+	}
+
+	@Test
+	public void testScanAbstractBeanConfiguration() throws Exception {
+		SpringIndexerHarness indexer = createIndexerHarness();
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
+		indexer.initialize(indexer.wsFolder(directory));
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/AbstractBeanConfiguration.java").toUri().toString();
+		indexer.assertDocumentSymbols(docUri,
+				symbol("@Configuration", "@+ 'abstractBeanConfiguration' (@Configuration <: @Component) AbstractBeanConfiguration")
 		);
 	}
 

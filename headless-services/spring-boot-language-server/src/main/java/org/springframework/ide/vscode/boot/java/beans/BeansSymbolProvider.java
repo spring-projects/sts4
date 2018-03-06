@@ -11,11 +11,14 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
@@ -48,9 +51,11 @@ public class BeansSymbolProvider implements SymbolProvider {
 
 	@Override
 	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
-		boolean isFunction = isFunctionBean(node);
-
+		if (isMethodAbstract(node)) return null;
+		
 		ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
+		
+		boolean isFunction = isFunctionBean(node);
 		String beanType = getBeanType(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
@@ -164,6 +169,19 @@ public class BeansSymbolProvider implements SymbolProvider {
 
 			return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(returnType) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(returnType)
 					|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
+		}
+		return false;
+	}
+	
+	private boolean isMethodAbstract(Annotation node) {
+		if (node != null && node.getParent() != null && node.getParent() instanceof MethodDeclaration) {
+			MethodDeclaration method = (MethodDeclaration) node.getParent();
+			List<?> modifiers = method.modifiers();
+			for (Object modifier : modifiers) {
+				if (modifier instanceof Modifier && ((Modifier) modifier).isAbstract()) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
