@@ -3458,15 +3458,20 @@ public class ConcourseEditorTest {
 				"- name: bar-resource\n" +
 				"jobs:\n" +
 				"- name: do-some-stuff\n" +
-				"- name: do-more-stuff\n"
+				"- name: do-more-stuff\n" +
+				"groups:\n" +
+				"- name: group-one\n" +
+				"- name: group-two\n"
 		);
 
-		editor.assertDocumentSymbols(
+			editor.assertDocumentSymbols(
 				"some-resource-type|ResourceType",
 				"foo-resource|Resource",
 				"bar-resource|Resource",
 				"do-some-stuff|Job",
-				"do-more-stuff|Job"
+				"do-more-stuff|Job",
+				"group-one|Group",
+				"group-two|Group"
 		);
 	}
 

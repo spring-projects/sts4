@@ -401,8 +401,11 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(resourceType, "source", resourceSource);
 		addProp(resourceType, "privileged", t_boolean);
 
+		YType t_group_name_def= f.yatomic("Group Name")
+				.parseWith(ValueParsers.NE_STRING);
+
 		AbstractType group = f.ybean("Group");
-		addProp(group, "name", t_ne_string).isPrimary(true);
+		addProp(group, "name", t_group_name_def).isPrimary(true);
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
 
@@ -414,7 +417,8 @@ public class PipelineYmlSchema implements YamlSchema {
 		definitionTypes = ImmutableList.of(
 				jobNameDef,
 				resourceTypeNameDef,
-				t_resource_name_def
+				t_resource_name_def,
+				t_group_name_def
 		);
 
 		initializeDefaultResourceTypes();
