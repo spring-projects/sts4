@@ -35,9 +35,18 @@ export function activate(context: VSCode.ExtensionContext) {
             },
             initializationOptions: {
                 workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null
-            },
-
+            }
         }
     };
-    let clientPromise = commons.activate(options, context);
+    setTimeout(() => {
+        VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.resolveClasspath", "Brocoli", "Cabbage")
+        .then(
+            (commandResult) => VSCode.window.showInformationMessage(""+commandResult),
+            (e) => {
+                VSCode.window.showErrorMessage("Error" + e);
+            }
+        );
+    }, 10000);
+
+    return commons.activate(options, context);
 }

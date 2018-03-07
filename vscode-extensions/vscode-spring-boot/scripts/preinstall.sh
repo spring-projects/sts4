@@ -11,11 +11,17 @@ npm install ../commons-vscode/commons-vscode-*.tgz
 curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YAML.tmLanguage > yaml-support/yaml.tmLanguage
 curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/JavaProperties.plist > properties-support/java-properties.tmLanguage
 
+# Clean old jars
+rm -fr ${workdir}/jars
+mkdir -p ${workdir}/jars
+
+# Use maven to build jdt ls extension
+cd ../../headless-services/org.springframework.tooling.jdt.ls.extension
+../mvnw clean package
+cp target/*.jar ${workdir}/jars/jdt-ls-extension.jar
+
 # Use maven to build fat jar of the language server
 cd ../../headless-services/spring-boot-language-server
 ./build.sh
-
-rm -fr ${workdir}/jars
-mkdir -p ${workdir}/jars
 cp target/*.jar ${workdir}/jars
 

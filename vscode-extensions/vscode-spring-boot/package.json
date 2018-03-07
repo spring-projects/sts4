@@ -31,6 +31,9 @@
     "onLanguage:java"
   ],
   "contributes": {
+    "javaExtensions": [
+      "./jars/jdt-ls-extension.jar"
+    ],
     "languages": [
       {
         "id": "spring-boot-properties-yaml",
