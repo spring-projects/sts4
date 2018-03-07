@@ -494,6 +494,41 @@ jobs:
     params:
       repository: out/repo
       rebase: true
+- name: tag-atom-release
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: atom-bosh
+      passed:
+      - prepare-bosh-atom-rc
+    - get: atom-concourse
+      passed:
+      - prepare-concourse-atom-rc
+    - get: atom-spring-boot
+      passed:
+      - prepare-spring-boot-atom-rc
+    - get: atom-cf-manifest-yaml
+      passed:
+      - prepare-manifest-yaml-atom-rc
+  - task: tag-atom-releases
+    file: sts4/concourse/tasks/tag-atom-releases.yml
+  - aggregate:
+    - put: atom-bosh
+      params:
+        repository: out/atom-bosh
+        only_tag: true
+    - put: atom-concourse
+      params:
+        repository: out/atom-concourse
+        only_tag: true
+    - put: atom-spring-boot
+      params:
+        repository: out/atom-spring-boot
+        only_tag: true
+    - put: atom-cf-manifest-yaml
+      params:
+        repository: out/atom-cf-manifest-yaml
+        only_tag: true
 - name: build-concourse-rc
   plan:
   - aggregate:
@@ -993,13 +1028,14 @@ groups:
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
   - build-spring-boot-atom-package
-- name: atom-rc
+- name: atom-release
   jobs:
   - prepare-bosh-atom-rc
   - prepare-concourse-atom-rc
   - prepare-manifest-yaml-atom-rc
   - prepare-spring-boot-atom-rc
   - promote-fatjars-to-rc
+  - tag-atom-release
 - name: setup
   jobs:
   - build-mvn-cache

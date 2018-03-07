@@ -1,0 +1,14 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+inputs:
+- name: atom-bosh
+- name: atom-concourse
+- name: atom-spring-boot
+- name: atom-cf-manifest-yaml
+outputs:
+- name: out
+run:
+  path: sts4/concourse/tasks/tag-atom-releases.sh
