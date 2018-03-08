@@ -4,6 +4,7 @@ image_resource:
   source:
     repository: kdvolder/sts4-build-env
 inputs:
+- name: sts4
 - name: atom-bosh
 - name: atom-concourse
 - name: atom-spring-boot

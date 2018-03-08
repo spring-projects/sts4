@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -32,6 +33,9 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 /**
  * @author Martin Lippert
@@ -87,9 +91,11 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 	}
 
 	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, List<EnhancedSymbolInformation> result) {
-		String foundPath = extractPathFromRouterFunction(node);
-		String path = extractPath(node, foundPath);
+		String path = extractPath(node);
 		String httpMethod = extractMethod(node);
+		
+		String contentType = extractContentType(node);
+		String acceptType = extractAcceptType(node);
 		
 		int methodNameStart = node.getName().getStartPosition();
 		int invocationStart = node.getStartPosition();
@@ -99,7 +105,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				String label = "@" + (path.startsWith("/") ? path : ("/" + path)) + (httpMethod == null || httpMethod.isEmpty() ? "" : " -- " + httpMethod);
 
-				WebfluxHandlerInformation handler = extractHandlerInformation(node, label);
+				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethod, contentType, acceptType);
 				
 				result.add(new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), handler));
 			} catch (BadLocationException e) {
@@ -108,19 +114,102 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	private String extractPathFromRouterFunction(MethodInvocation routerInvocation) {
+	private String extractPath(MethodInvocation routerInvocation) {
 		WebfluxPathFinder pathFinder = new WebfluxPathFinder(routerInvocation);
 		routerInvocation.accept(pathFinder);
 		
 		String path = pathFinder.getPath();
 		if (path == null) path = "";
 		
-		return path;
+		return extractNestedValue(routerInvocation, path, (methodInvocationPathPrefix) -> {
+			IMethodBinding methodBinding = methodInvocationPathPrefix.getT1().resolveMethodBinding();
+			String methodName = methodBinding.getName();
+			
+			if (WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(methodName)) {
+				String additionalPath = WebfluxUtils.extractStringLiteralArgument(methodInvocationPathPrefix.getT1());
+				if (additionalPath != null && additionalPath.length() > 0) {
+					return additionalPath + methodInvocationPathPrefix.getT2();
+				}
+			}
+			
+			return methodInvocationPathPrefix.getT2();
+		});
 	}
 	
-	private String extractPath(ASTNode node, String path) {
+	private String extractMethod(MethodInvocation routerInvocation) {
+		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation);
+		routerInvocation.accept(methodFinder);
+		
+		String method = methodFinder.getMethod();
+		
+		return extractNestedValue(routerInvocation, method, (methodInvocationPathPrefix) -> {
+			IMethodBinding methodBinding = methodInvocationPathPrefix.getT1().resolveMethodBinding();
+			String methodName = methodBinding.getName();
+			
+			if (WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodName)) {
+				String newMethod = WebfluxUtils.extractStringLiteralArgument(methodInvocationPathPrefix.getT1());
+				if (method == null) {
+					return newMethod;
+				}
+			}
+			
+			return methodInvocationPathPrefix.getT2();
+		});
+	}
+	
+	private String extractAcceptType(MethodInvocation routerInvocation) {
+		String acceptType = null;
+		
+		WebfluxAcceptTypeFinder acceptTypeFinder = new WebfluxAcceptTypeFinder();
+		List<?> arguments = routerInvocation.arguments();
+		for (Object argument : arguments) {
+			if (argument != null && argument instanceof ASTNode) {
+				((ASTNode)argument).accept(acceptTypeFinder);
+				if (acceptTypeFinder.getAcceptType() != null) {
+					acceptType = acceptTypeFinder.getAcceptType();
+				}
+			}
+		}
+		
+		return extractNestedValue(routerInvocation, acceptType, (methodInvocationPathPrefix) -> {
+			IMethodBinding methodBinding = methodInvocationPathPrefix.getT1().resolveMethodBinding();
+			String methodName = methodBinding.getName();
+			
+			if (WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(methodName)) {
+				String newAcceptType = WebfluxUtils.extractSimpleNameArgument(methodInvocationPathPrefix.getT1());
+				if (newAcceptType != null) {
+					return newAcceptType;
+				}
+			}
+			
+			return methodInvocationPathPrefix.getT2();
+		});
+	}
+	
+	private String extractContentType(MethodInvocation routerInvocation) {
+		WebfluxContentTypeFinder contentTypeFinder = new WebfluxContentTypeFinder(routerInvocation);
+		routerInvocation.accept(contentTypeFinder);
+		
+		String contentType = contentTypeFinder.getContentType();
+		
+		return extractNestedValue(routerInvocation, contentType, (methodInvocationPathPrefix) -> {
+			IMethodBinding methodBinding = methodInvocationPathPrefix.getT1().resolveMethodBinding();
+			String methodName = methodBinding.getName();
+			
+			if (WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(methodName)) {
+				String newContentType = WebfluxUtils.extractSimpleNameArgument(methodInvocationPathPrefix.getT1());
+				if (contentType == null) {
+					return newContentType;
+				}
+			}
+			
+			return methodInvocationPathPrefix.getT2();
+		});
+	}
+	
+	private String extractNestedValue(ASTNode node, String value, Function<Tuple2<MethodInvocation, String>, String> extractor) {
 		if (node == null || node instanceof TypeDeclaration) {
-			return path;
+			return value;
 		}
 
 		if (node instanceof MethodInvocation) {
@@ -129,39 +218,22 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			
 			if (WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
-				if ("nest".equals(name)) {
+				if (WebfluxUtils.REQUEST_PREDICATE_NEST_METHOD.equals(name)) {
 					List<?> arguments = methodInvocation.arguments();
 					for (Object argument : arguments) {
 						if (argument instanceof MethodInvocation) {
 							MethodInvocation nestedMethod = (MethodInvocation) argument;
-							IMethodBinding nestedMethodBinding = nestedMethod.resolveMethodBinding();
-							
-							String nestedMethodName = nestedMethodBinding.getName();
-							if ("path".equals(nestedMethodName)) {
-								String additionalPath = WebfluxUtils.extractPath(nestedMethod);
-								if (additionalPath != null && additionalPath.length() > 0) {
-									path = additionalPath + path;
-								}
-							}
+							value = extractor.apply(Tuples.of(nestedMethod, value));
 						}
-						
 					}
 				}
 			}
 		}
 		
-		return extractPath(node.getParent(), path);
+		return extractNestedValue(node.getParent(), value, extractor);
 	}
 
-	private String extractMethod(MethodInvocation routerInvocation) {
-		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation);
-		routerInvocation.accept(methodFinder);
-		
-		String method = methodFinder.getMethod();
-		return method;
-	}
-	
-	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String symbol) {
+	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, String httpMethod, String contentType, String acceptType) {
 		List<?> arguments = node.arguments();
 
 		if (arguments != null) {
@@ -177,7 +249,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 						String handlerMethod = methodBinding.getMethodDeclaration().toString();
 						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
 						
-						return new WebfluxHandlerInformation(symbol, handlerClass, handlerMethod);
+						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, httpMethod, contentType, acceptType);
 					}
 				}
 			}
