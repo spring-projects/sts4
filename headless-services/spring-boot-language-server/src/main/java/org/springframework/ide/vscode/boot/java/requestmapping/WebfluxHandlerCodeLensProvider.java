@@ -71,7 +71,14 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 					
 						CodeLens codeLens = new CodeLens();
 						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
-						codeLens.setCommand(new Command(handlerInfo.getSymbol(), null));
+						
+						String codeLensCommand = handlerInfo.getHttpMethod() != null ? handlerInfo.getHttpMethod() + " " : "";
+						codeLensCommand += handlerInfo.getPath();
+						
+						codeLensCommand += handlerInfo.getContentType() != null ? " Content-Type: " + handlerInfo.getContentType() : "";
+						codeLensCommand += handlerInfo.getAcceptType() != null ? " Accept: " + handlerInfo.getAcceptType() : "";
+
+						codeLens.setCommand(new Command(codeLensCommand, null));
 	
 						resultAccumulator.add(codeLens);
 					} catch (BadLocationException e) {

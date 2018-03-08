@@ -91,6 +91,9 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		String path = extractPath(node, foundPath);
 		String httpMethod = extractMethod(node);
 		
+		String contentType = null;
+		String acceptType = null;
+		
 		int methodNameStart = node.getName().getStartPosition();
 		int invocationStart = node.getStartPosition();
 		
@@ -99,7 +102,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				String label = "@" + (path.startsWith("/") ? path : ("/" + path)) + (httpMethod == null || httpMethod.isEmpty() ? "" : " -- " + httpMethod);
 
-				WebfluxHandlerInformation handler = extractHandlerInformation(node, label);
+				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethod, contentType, acceptType);
 				
 				result.add(new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), handler));
 			} catch (BadLocationException e) {
@@ -161,7 +164,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		return method;
 	}
 	
-	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String symbol) {
+	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, String httpMethod, String contentType, String acceptType) {
 		List<?> arguments = node.arguments();
 
 		if (arguments != null) {
@@ -177,7 +180,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 						String handlerMethod = methodBinding.getMethodDeclaration().toString();
 						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
 						
-						return new WebfluxHandlerInformation(symbol, handlerClass, handlerMethod);
+						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, httpMethod, contentType, acceptType);
 					}
 				}
 			}
