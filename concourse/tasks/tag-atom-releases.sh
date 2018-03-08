@@ -1,7 +1,8 @@
 #!/bin/bash
-set -e
+set -e 
+# set -x
 workdir=$(pwd)
-outdir=${workdir}/out
+out=${workdir}/out
 
 git config --global user.email "kdevolder@pivotal.io"
 git config --global user.name "Kris De Volder"
@@ -15,5 +16,6 @@ for package in atom-* ; do
 
     cd ${package}
     tag=v$(cat package.json | jq -r ".version")
+    echo "Tag: ${tag}"
     git tag $tag
 done
