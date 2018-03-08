@@ -1,8 +1,4 @@
-import * as code from 'vscode';
-
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 
 import * as VSCode from 'vscode';
 import * as Path from 'path';
@@ -19,6 +15,7 @@ import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
+import { registerClasspathService } from './classpath';
 
 let p2c = P2C.createConverter();
 
@@ -199,6 +196,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
     context.subscriptions.push(highlightService);
+
     return  client.onReady().then(() => {
         client.onNotification(progressNotification, (params: ProgressParams) => {
             progressService.handle(params);
@@ -217,6 +215,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
             }
             return { applied: true};
         });
+        registerClasspathService(client);
         return client;
     });
 }

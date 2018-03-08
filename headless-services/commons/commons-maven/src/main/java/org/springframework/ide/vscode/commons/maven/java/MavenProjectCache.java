@@ -15,9 +15,11 @@ import java.nio.file.Path;
 
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
 import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 
 /**
@@ -47,11 +49,18 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
-		MavenJavaProject mavenJavaProject = new MavenJavaProject(maven, pomFile,
+		MavenJavaProject mavenJavaProject = new MavenJavaProject(
+				getClient(),
+				maven, 
+				pomFile,
 				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)
 			);
 		performUpdate(mavenJavaProject, asyncUpdate, asyncUpdate);
 		return mavenJavaProject;
+	}
+
+	private STS4LanguageClient getClient() {
+		return ((SimpleLanguageServer) server).getClient();
 	}
 
 }

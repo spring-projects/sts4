@@ -34,4 +34,7 @@ public interface STS4LanguageClient extends LanguageClient {
 	@JsonRequest("sts/moveCursor")
 	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
 
+	@JsonRequest("sts/classpath")
+	CompletableFuture<Object> classpath(ClasspathParams classpathEvent);
+
 }

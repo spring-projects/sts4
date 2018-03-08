@@ -33,6 +33,8 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
+import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -51,9 +53,11 @@ public class MavenProjectClasspath extends JandexClasspath {
 	private MavenCore maven;
 	private File pom;
 	private MavenClasspathData cachedData;
+	private STS4LanguageClient client;
 	
-	MavenProjectClasspath(MavenCore maven, File pom) throws Exception {
+	MavenProjectClasspath(STS4LanguageClient client, MavenCore maven, File pom) throws Exception {
 		super();
+		this.client = client;
 		this.maven = maven;
 		this.pom = pom;
 		this.cachedData = createClasspathData();
@@ -94,6 +98,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 //		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
 //			return artifact.getFile().toPath();
 //		}), projectResolvedOutput());
+		Object classpath = client.classpath(new ClasspathParams(pom.toURI().toString())).get();
 		ImmutableList<Path> classpathEntries = ImmutableList.copyOf(Stream.concat(projectDependencies(project).stream().map(a -> a.getFile().toPath()),
 				projectOutput(project).stream().map(f -> f.toPath())).collect(Collectors.toList()));
 		return classpathEntries;

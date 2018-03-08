@@ -47,7 +47,7 @@ public class JavaIndexTest {
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(null, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		}
 		
 	});

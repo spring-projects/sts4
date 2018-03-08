@@ -101,7 +101,7 @@ public class ProjectsHarness {
 		switch (type) {
 		case MAVEN:
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(null, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		case CLASSPATH_TXT:
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
 			return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
