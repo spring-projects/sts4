@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,12 +32,14 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonPrimitive;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -46,6 +48,8 @@ import reactor.core.scheduler.Schedulers;
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
+
+	private static final Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class));
 
 	public static class LazyCompletionResolver {
 		private int nextId = 0; //Used to assign unique id to completion items.
@@ -65,7 +69,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				try {
 					resolveItem(doc, completion, unresolved);
 				} catch (Exception e) {
-					Log.log(e);
+					LOG.get().error("{}", e);
 				}
 			});
 			return id;
@@ -74,12 +78,12 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		public synchronized void resolveNow(CompletionItem unresolved) {
 			Object id = unresolved.getData();
 			if (id!=null) {
-				Consumer<CompletionItem> resolver = resolvers.get(id);
+				Consumer<CompletionItem> resolver = resolvers.get(id instanceof JsonPrimitive ? ((JsonPrimitive)id).getAsString() : id);
 				if (resolver!=null) {
 					resolver.accept(unresolved);
 					unresolved.setData(null); //No longer needed after item is resolved.
 				} else {
-					Log.warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved.getLabel());
+					LOG.get().warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved.getLabel());
 				}
 			}
 		}
@@ -226,7 +230,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				return Optional.of(vscodeEdit);
 			}
 		}  catch (Exception e) {
-			Log.log(e);
+			LOG.get().error("{}", e);
 			return Optional.empty();
 		}
 	}
@@ -242,7 +246,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				return  StringUtil.stripIndentation(refIndent, newText);
 			}
 		} catch (BadLocationException e) {
-			Log.log(e);
+			LOG.get().error("{}", e);
 		}
 		return newText;
 	}
