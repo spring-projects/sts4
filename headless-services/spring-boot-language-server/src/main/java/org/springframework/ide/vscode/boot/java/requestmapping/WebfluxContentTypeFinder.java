@@ -18,17 +18,17 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 /**
  * @author Martin Lippert
  */
-public class WebfluxPathFinder extends ASTVisitor {
+public class WebfluxContentTypeFinder extends ASTVisitor {
 	
-	private String path;
+	private String contentType;
 	private ASTNode root;
 	
-	public WebfluxPathFinder(ASTNode root) {
+	public WebfluxContentTypeFinder(ASTNode root) {
 		this.root = root;
 	}
 	
-	public String getPath() {
-		return path;
+	public String getContentType() {
+		return contentType;
 	}
 	
 	@Override
@@ -40,15 +40,14 @@ public class WebfluxPathFinder extends ASTVisitor {
 			
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
-				if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
-					path = WebfluxUtils.extractStringLiteralArgument(node);
+				if (name != null && WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(name)) {
+					contentType = WebfluxUtils.extractSimpleNameArgument(node);
 				}
 			}
-			
+
 			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-				visitChildren = false;				
+				visitChildren = false;
 			}
-			
 		}
 		return visitChildren;
 	}

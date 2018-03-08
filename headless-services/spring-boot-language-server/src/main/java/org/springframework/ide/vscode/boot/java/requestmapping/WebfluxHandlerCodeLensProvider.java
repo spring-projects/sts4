@@ -75,8 +75,8 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 						String codeLensCommand = handlerInfo.getHttpMethod() != null ? handlerInfo.getHttpMethod() + " " : "";
 						codeLensCommand += handlerInfo.getPath();
 						
-						codeLensCommand += handlerInfo.getContentType() != null ? " Content-Type: " + handlerInfo.getContentType() : "";
-						codeLensCommand += handlerInfo.getAcceptType() != null ? " Accept: " + handlerInfo.getAcceptType() : "";
+						codeLensCommand += handlerInfo.getAcceptType() != null ? " - Accept: " + getMediaType(handlerInfo.getAcceptType()) : "";
+						codeLensCommand += handlerInfo.getContentType() != null ? " - Content-Type: " + getMediaType(handlerInfo.getContentType()) : "";
 
 						codeLens.setCommand(new Command(codeLensCommand, null));
 	
@@ -86,6 +86,20 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 					}
 				}
 			}
+		}
+	}
+	
+	protected String getMediaType(String handlerInfo) {
+		if (handlerInfo == null) {
+			return null;
+		}
+		
+		try {
+			MediaTypeMapping mediaType = MediaTypeMapping.valueOf(handlerInfo);
+			return mediaType.getMediaType();
+		}
+		catch (IllegalArgumentException e) {
+			return handlerInfo;
 		}
 	}
 

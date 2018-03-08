@@ -17,6 +17,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 
 /**
@@ -30,12 +32,15 @@ public class WebfluxUtils {
 	
 	public static final String REQUEST_PREDICATE_PATH_METHOD = "path";
 	public static final String REQUEST_PREDICATE_METHOD_METHOD = "method";
+	public static final String REQUEST_PREDICATE_ACCEPT_TYPE_METHOD = "accept";
+	public static final String REQUEST_PREDICATE_CONTENT_TYPE_METHOD = "contentType";
+	public static final String REQUEST_PREDICATE_NEST_METHOD = "nest";
 
 	public static final Set<String> REQUEST_PREDICATE_HTTPMETHOD_METHODS = new HashSet<>(Arrays.asList("GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 	public static final Set<String> REQUEST_PREDICATE_ALL_PATH_METHODS = new HashSet<>(Arrays.asList(REQUEST_PREDICATE_PATH_METHOD, "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 
 
-	public static String extractPath(MethodInvocation node) {
+	public static String extractStringLiteralArgument(MethodInvocation node) {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
@@ -47,6 +52,36 @@ public class WebfluxUtils {
 		return null;
 	}
 	
+	public static String extractQualifiedNameArgument(MethodInvocation node) {
+		List<?> arguments = node.arguments();
+		if (arguments != null && arguments.size() > 0) {
+			Object object = arguments.get(0);
+			if (object instanceof QualifiedName) {
+				QualifiedName qualifiedName = (QualifiedName) object;
+				if (qualifiedName.getName() != null) {
+					return qualifiedName.getName().toString();
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static String extractSimpleNameArgument(MethodInvocation node) {
+		List<?> arguments = node.arguments();
+		if (arguments != null && arguments.size() > 0) {
+			Object object = arguments.get(0);
+			if (object instanceof SimpleName) {
+				SimpleName name = (SimpleName) object;
+				if (name.getFullyQualifiedName() != null) {
+					return name.getFullyQualifiedName().toString();
+				}
+			}
+		}
+		return null;
+	}
+
+
+
 	public static boolean isRouteMethodInvocation(IMethodBinding methodBinding) {
 		if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 			String name = methodBinding.getName();

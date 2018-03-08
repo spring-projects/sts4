@@ -46,8 +46,8 @@ public class WebFluxMappingSymbolProviderTest {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/UserController.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = getSymbols(docUri);
 		assertEquals(4, symbols.size());
-		assertTrue(containsSymbol(symbols, "@/users", docUri, 19, 1, 19, 74));
-		assertTrue(containsSymbol(symbols, "@/users/{username}", docUri, 24, 1, 24, 85));
+		assertTrue(containsSymbol(symbols, "@/users", docUri, 13, 1, 13, 74));
+		assertTrue(containsSymbol(symbols, "@/users/{username}", docUri, 18, 1, 18, 85));
 		
 		List<? extends Object> addons = getAdditionalInformation(docUri);
 		assertNull(addons);
@@ -73,15 +73,15 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("/hello", handlerInfo1.getPath());
 		assertEquals("GET", handlerInfo1.getHttpMethod());
 		assertNull(handlerInfo1.getContentType());
-		assertNull(handlerInfo1.getAcceptType());
+		assertEquals("TEXT_PLAIN", handlerInfo1.getAcceptType());
 		assertEquals("org.test.QuoteHandler", handlerInfo1.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> hello(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/echo", "POST").get(0);
 		assertEquals("/echo", handlerInfo2.getPath());
 		assertEquals("POST", handlerInfo2.getHttpMethod());
-		assertNull(handlerInfo2.getContentType());
-		assertNull(handlerInfo2.getAcceptType());
+		assertEquals("TEXT_PLAIN", handlerInfo2.getContentType());
+		assertEquals("TEXT_PLAIN", handlerInfo2.getAcceptType());
 		assertEquals("org.test.QuoteHandler", handlerInfo2.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> echo(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
 
@@ -89,7 +89,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("/quotes", handlerInfo3.getPath());
 		assertEquals("GET", handlerInfo3.getHttpMethod());
 		assertNull(handlerInfo3.getContentType());
-		assertNull(handlerInfo3.getAcceptType());
+		assertEquals("APPLICATION_STREAM_JSON", handlerInfo3.getAcceptType());
 		assertEquals("org.test.QuoteHandler", handlerInfo3.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> streamQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 
@@ -97,7 +97,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("/quotes", handlerInfo4.getPath());
 		assertEquals("GET", handlerInfo4.getHttpMethod());
 		assertNull(handlerInfo4.getContentType());
-		assertNull(handlerInfo4.getAcceptType());
+		assertEquals("APPLICATION_JSON", handlerInfo4.getAcceptType());
 		assertEquals("org.test.QuoteHandler", handlerInfo4.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> fetchQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo4.getHandlerMethod());
 	}
@@ -121,14 +121,14 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("/person/{id}", handlerInfo1.getPath());
 		assertEquals("GET", handlerInfo1.getHttpMethod());
 		assertNull(handlerInfo1.getContentType());
-		assertNull(handlerInfo1.getAcceptType());
+		assertEquals("APPLICATION_JSON", handlerInfo1.getAcceptType());
 		assertEquals("org.test.PersonHandler", handlerInfo1.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> getPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/person/", "POST").get(0);
 		assertEquals("/person/", handlerInfo2.getPath());
 		assertEquals("POST", handlerInfo2.getHttpMethod());
-		assertNull(handlerInfo2.getContentType());
+		assertEquals("APPLICATION_JSON", handlerInfo2.getContentType());
 		assertNull(handlerInfo2.getAcceptType());
 		assertEquals("org.test.PersonHandler", handlerInfo2.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> createPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
@@ -137,7 +137,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("/person", handlerInfo3.getPath());
 		assertEquals("GET", handlerInfo3.getHttpMethod());
 		assertNull(handlerInfo3.getContentType());
-		assertNull(handlerInfo3.getAcceptType());
+		assertEquals("APPLICATION_JSON", handlerInfo3.getAcceptType());
 		assertEquals("org.test.PersonHandler", handlerInfo3.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 	}

@@ -53,10 +53,10 @@ public class WebFluxCodeLensProviderTest {
 
 		assertEquals(4, codeLenses.size());
 		
-		assertTrue(containsCodeLens(codeLenses, "GET /hello", 25, 29, 25, 34));
-		assertTrue(containsCodeLens(codeLenses, "POST /echo", 30, 29, 30, 33));
-		assertTrue(containsCodeLens(codeLenses, "GET /quotes", 35, 29, 35, 41));
-		assertTrue(containsCodeLens(codeLenses, "GET /quotes", 41, 29, 41, 40));
+		assertTrue(containsCodeLens(codeLenses, "GET /hello - Accept: text/plain", 25, 29, 25, 34));
+		assertTrue(containsCodeLens(codeLenses, "POST /echo - Accept: text/plain - Content-Type: text/plain", 30, 29, 30, 33));
+		assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/stream+json", 35, 29, 35, 41));
+		assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/json", 41, 29, 41, 40));
 	}
 
 	private boolean containsCodeLens(List<? extends CodeLens> codeLenses, String commandTitle, int startLine, int startPosition, int endLine, int endPosition) {

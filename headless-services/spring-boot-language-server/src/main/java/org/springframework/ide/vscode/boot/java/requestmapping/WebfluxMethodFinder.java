@@ -10,13 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
-import java.util.List;
-
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.QualifiedName;
 
 /**
  * @author Martin Lippert
@@ -47,7 +44,7 @@ public class WebfluxMethodFinder extends ASTVisitor {
 					method = name;
 				}
 				else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
-					method = extractMethodValue(node);
+					method = WebfluxUtils.extractQualifiedNameArgument(node);
 				}
 			}
 
@@ -56,20 +53,6 @@ public class WebfluxMethodFinder extends ASTVisitor {
 			}
 		}
 		return visitChildren;
-	}
-
-	private String extractMethodValue(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof QualifiedName) {
-				QualifiedName qualifiedName = (QualifiedName) object;
-				if (qualifiedName.getName() != null) {
-					return qualifiedName.getName().toString();
-				}
-			}
-		}
-		return null;
 	}
 
 }
