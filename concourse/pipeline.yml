@@ -734,6 +734,52 @@ jobs:
     - put: version
       params:
         file: version/version
+- name: publish-concourse-vsix-release
+  serial: true
+  plan:
+  - aggregate:
+    - get: tasks
+    - get: sts4
+      passed:
+      - build-concourse-rc
+    - get: version
+      passed:
+      - build-concourse-rc
+      params:
+        bump: final
+    - get: s3-concourse-vsix-snapshot
+      passed:
+      - build-concourse-rc
+  - task: publish-release
+    file: tasks/concourse/tasks/publish-concourse-vsix-release.yml
+    input_mapping:
+      sts4: tasks
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: version/version
+        text: |
+          STS 4 VScode Extensions $TEXT_FILE_CONTENT released
+          Releases now available on Vscode Marketplace:
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
+  - aggregate:
+    - put: sts4-out
+      params:
+        repository: sts4
+        only_tag: true
+        tag: version/version
+        tag_prefix: V_
+    - put: version
+      params:
+        file: version/version
 - name: bump-version-patch
   serial: true
   plan:
@@ -1016,6 +1062,7 @@ groups:
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-spring-boot-vsix-snapshot
+  - publish-concourse-vsix-release
 - name: bump-versions
   jobs:
   - bump-version-patch
