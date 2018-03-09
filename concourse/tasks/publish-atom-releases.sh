@@ -2,7 +2,7 @@
 set -e
 workdir=`pwd`
 
-atom_packages=`ls -d ${workdir}/atom-*`
+atom_packages=`ls -d atom-*`
 
 for atom_package in $atom_packages
 do
