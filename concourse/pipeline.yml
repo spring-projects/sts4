@@ -551,24 +551,10 @@ jobs:
       put: slack-notification
       params:
         channel: "#tools-team-internal"
-        text_file: version/version
         text: |
-          STS 4 VScode Extensions $TEXT_FILE_CONTENT released
-          Releases now available on Vscode Marketplace:
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
-  - aggregate:
-    - put: sts4-out
-      params:
-        repository: sts4
-        only_tag: true
-        tag: version/version
-        tag_prefix: V_
-    - put: version
-      params:
-        file: version/version
+          STS 4 Atom Extensions $TEXT_FILE_CONTENT released
+          Releases now available on Atom Marketplace:
+           • <https://atom.io/packages/concourse-pipeline-yaml|Concourse CI Pipeline Editor>
 - name: build-concourse-rc
   plan:
   - aggregate:
