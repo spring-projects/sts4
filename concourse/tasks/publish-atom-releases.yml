@@ -1,0 +1,13 @@
+inputs:
+- name: sts4
+- name: atom-concourse
+params:
+  atom_token: atom_token_must_be_provided!!!
+platform: linux
+run:
+  path: sts4/concourse/tasks/publish-atom-releases.sh
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/atom-apm
+  

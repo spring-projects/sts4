@@ -529,6 +529,46 @@ jobs:
       params:
         repository: out/atom-cf-manifest-yaml
         only_tag: true
+- name: publish-atom-releases
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: atom-concourse
+      trigger: true
+      passed:
+      - tag-atom-release
+  - task: publish-atom-releases
+    file: tasks/concourse/tasks/publish-atom-releases.yml
+    params:
+      atom_token: ((atom_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: version/version
+        text: |
+          STS 4 VScode Extensions $TEXT_FILE_CONTENT released
+          Releases now available on Vscode Marketplace:
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
+  - aggregate:
+    - put: sts4-out
+      params:
+        repository: sts4
+        only_tag: true
+        tag: version/version
+        tag_prefix: V_
+    - put: version
+      params:
+        file: version/version
 - name: build-concourse-rc
   plan:
   - aggregate:
@@ -1083,6 +1123,7 @@ groups:
   - prepare-spring-boot-atom-rc
   - promote-fatjars-to-rc
   - tag-atom-release
+  - publish-atom-releases
 - name: setup
   jobs:
   - build-mvn-cache
