@@ -11,6 +11,7 @@ fatjar_version=`cat fatjar/version`
 
 #cd $atom_commons
 #npm install
+#npm run build
 
 cd $atom_package
 
@@ -23,6 +24,8 @@ cat > properties.json << EOF
 EOF
 
 npm install
+
+npm run build
 
 # push code to release repository
 

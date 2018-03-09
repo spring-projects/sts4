@@ -1,26 +1,23 @@
 {
   "name": "bosh-yaml",
-  "main": "./lib/main",
   "version": "0.1.5",
   "description": "Provides validation and content assist for various Bosh configuration files",
   "repository": "https://github.com/spring-projects/atom-bosh",
   "icon": "icon.png",
   "license": "MIT",
   "engines": {
-    "atom": ">=1.21.0"
+    "atom": ">=1.24.0"
   },
+  "main": "./build/main",
+  "types": "./build/main.d.ts",
   "files": [
     "grammars/",
     "settings/",
     "lib/",
+    "build/",
     "server/",
     "properties.json"
   ],
-  "dependencies": {
-    "atom-package-deps": "^4.6.0",
-    "download": "^6.2.5",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.2"
-  },
   "configSchema": {
     "bosh": {
       "type": "object",
@@ -50,11 +47,22 @@
       }
     }
   },
+  "dependencies": {
+    "atom-package-deps": "^4.6.0",
+    "download": "^6.2.5",
+    "@pivotal-tools/atom-languageclient-commons": "0.0.4"
+  },
   "devDependencies": {
+    "typescript": "^2.7.2",
+    "tslint": "^5.9.1",
     "coffeelint": "^1.10.1"
   },
   "scripts": {
-    "clean": "rm -fr node_modules",
+    "clean": "rm -fr build",
+    "compile": "tsc",
+    "build": "npm run clean && npm run compile ",
+    "watch": "tsc -watch",
+    "lint": "tslint -c tslint.json 'lib/**/*.ts'",
     "postinstall": "node script.js"
   },
   "package-deps": [

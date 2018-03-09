@@ -1,13 +1,12 @@
-const path = require('path');
-const { JavaProcessLanguageClient } = require('@pivotal-tools/atom-languageclient-commons');
-const PROPERTIES = require('../properties.json');
+import * as path from 'path';
+import { JavaProcessLanguageClient } from '@pivotal-tools/atom-languageclient-commons';
+import {JVM} from '@pivotal-tools/jvm-launch-utils';
 
-class ConcourseCiYamlClient extends JavaProcessLanguageClient {
+export class ConcourseCiYamlClient extends JavaProcessLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
         super(
-            PROPERTIES.jarUrl,
             path.join(__dirname, '..', 'server'),
             'concourse-language-server.jar'
         );
@@ -33,7 +32,7 @@ class ConcourseCiYamlClient extends JavaProcessLanguageClient {
         super.activate();
     }
 
-    launchVmArgs(jvm) {
+    launchVmArgs(jvm: JVM) {
         return Promise.resolve([
             '-Dorg.slf4j.simpleLogger.logFile=concourse-ci-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
@@ -42,5 +41,3 @@ class ConcourseCiYamlClient extends JavaProcessLanguageClient {
     }
 
 }
-
-module.exports = new ConcourseCiYamlClient();
