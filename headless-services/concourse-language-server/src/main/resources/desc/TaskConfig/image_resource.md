@@ -19,4 +19,4 @@ The following example configures the task to use the `golang:1.6` Docker image:
 
 You can use any resource that returns a filesystem in the correct format (a `/rootfs` directory and a `metadata.json` file in the top level) but normally this will be the [Docker Image resource](https://github.com/concourse/docker-image-resource). If you'd like to make a resource of your own that supports this please use that as a reference implementation for now.
 
-If you want to use an artifact source within the plan containing an image, you must set the [image](https://concourse.ci/task-step.html#task-image) in the plan step instead.
+If you want to use an artifact source within the plan containing an image, you must set the [image](https://concourse-ci.org/task-step.html#task-image) in the plan step instead.

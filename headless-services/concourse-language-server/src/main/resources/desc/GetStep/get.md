@@ -17,5 +17,5 @@ plan:
 get: string
 ```
 
-*Required.* The logical name of the resource being fetched. This name satisfies logical inputs to a [Task](https://concourse.ci/concepts.html#tasks), and may be referenced within the plan itself (e.g. in the `file` attribute of a `task` step).
+*Required.* The logical name of the resource being fetched. This name satisfies logical inputs to a [Task](https://concourse-ci.org/concepts.html#tasks), and may be referenced within the plan itself (e.g. in the `file` attribute of a `task` step).
 

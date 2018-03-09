@@ -2,7 +2,7 @@
 [![macOS Build Status](https://travis-ci.org/spring-projects/atom-concourse.svg?branch=master)](https://travis-ci.org/spring-projects/atom-concourse) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/1jvknxt9jhykgrxo?svg=true)](https://ci.appveyor.com/project/spring-projects/atom-concourse/branch/master) [![Dependency Status](https://david-dm.org/spring-projects/atom-concourse.svg)](https://david-dm.org/spring-projects/atom-concourse)
 
 This extension provides basic validation, content assist and hover infos
-for editing Concourse [Pipeline](https://concourse.ci/pipelines.html) and [Task Configuration](https://concourse.ci/running-tasks.html) Files.
+for editing Concourse [Pipeline](https://concourse-ci.org/pipelines.html) and [Task Configuration](https://concourse-ci.org/running-tasks.html) Files.
 
 It is recommended to use this extension package when `atom-ide-ui` atom extension package is installed. Thus, reconciling (error/warning markers) and hover support is fully functional. 
 
