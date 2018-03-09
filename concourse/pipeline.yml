@@ -552,7 +552,7 @@ jobs:
       params:
         channel: "#tools-team-internal"
         text: |
-          STS 4 Atom Extensions $TEXT_FILE_CONTENT released
+          STS 4 Atom Extensions released
           Releases now available on Atom Marketplace:
            • <https://atom.io/packages/concourse-pipeline-yaml|Concourse CI Pipeline Editor>
 - name: build-concourse-rc
@@ -1103,6 +1103,11 @@ groups:
   - build-spring-boot-atom-package
 - name: atom-release
   jobs:
+  - atom-language-servers-test
+  - build-concourse-atom-package
+  - build-bosh-atom-package
+  - build-manifest-yaml-atom-package
+  - build-spring-boot-atom-package
   - prepare-bosh-atom-rc
   - prepare-concourse-atom-rc
   - prepare-manifest-yaml-atom-rc
