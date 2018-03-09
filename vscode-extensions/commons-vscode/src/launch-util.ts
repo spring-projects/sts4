@@ -15,7 +15,8 @@ import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
-import { registerClasspathService } from './classpath';
+import { registerClasspathService } from './classpath-service';
+import { registerProjectService } from './project-service';
 
 let p2c = P2C.createConverter();
 
@@ -215,6 +216,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
             }
             return { applied: true};
         });
+        registerProjectService(client);
         registerClasspathService(client);
         return client;
     });

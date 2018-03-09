@@ -6,5 +6,10 @@
             <command id="sts.java.resolveClasspath"/>
        </delegateCommandHandler>
    </extension>
+   <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
+      <delegateCommandHandler class="org.springframework.tooling.jdt.ls.extension.ResolveProjectHandler">
+            <command id="sts.java.resolveProject"/>
+       </delegateCommandHandler>
+   </extension>
 </plugin>
  

@@ -91,8 +91,10 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathResponse;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
+import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
@@ -294,7 +296,12 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 				}
 
 				@Override
-				public CompletableFuture<Object> classpath(ClasspathParams classpathEvent) {
+				public CompletableFuture<ClasspathResponse> classpath(ClasspathParams classpathEvent) {
+					return CompletableFuture.completedFuture(null);
+				}
+
+				@Override
+				public CompletableFuture<ProjectResponse> project(String uri) {
 					return CompletableFuture.completedFuture(null);
 				}
 

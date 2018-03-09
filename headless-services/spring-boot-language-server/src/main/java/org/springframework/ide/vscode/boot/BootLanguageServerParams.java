@@ -17,6 +17,7 @@ import java.util.Arrays;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -80,13 +81,16 @@ public class BootLanguageServerParams {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
+			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server);
+			javaProjectFinder.addJavaProjectFinder(jdtProjectCache);
+			
 			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
 			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
-			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(jdtProjectCache, mavenProjectCache, gradleProjectCache));
 			
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
 			indexProvider.setProgressService(server.getProgressService());
