@@ -83,7 +83,7 @@ public class GradleProjectTest {
 	@Test
 	public void outputFolder() throws Exception {
 		GradleJavaProject project = getGradleProject("test-app-1");
-		assertTrue(project.getClasspath().getOutputFolder().endsWith("bin"));
+		assertTrue(project.getClasspath().getOutputFolder().toString().contains("/bin"));
 	}
 	
 	@Test

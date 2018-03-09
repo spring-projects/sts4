@@ -76,8 +76,8 @@ public class GradleCore {
 			 */
 			((DefaultGradleConnector) gradleConnector).daemonMaxIdleTime(1, TimeUnit.SECONDS);
 			configuration.configure(gradleConnector);
-			// Use patched Gradle 4.3 distribution as a workaround for https://github.com/gradle/gradle/issues/2483
-			gradleConnector.useDistribution(URI.create("http://s3-test.spring.io/sts4/custom-gradle-builds/gradle-4.3-build.zip"));
+			// Use patched Gradle 4.4 distribution or higher as a workaround for https://github.com/gradle/gradle/issues/2483
+			gradleConnector.useGradleVersion("4.6");
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
 		} catch (GradleConnectionException e) {
