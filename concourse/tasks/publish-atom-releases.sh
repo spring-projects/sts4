@@ -11,6 +11,7 @@ do
     echo "****************************************************************"
     cd $workdir/$atom_package
     tag=v$(cat package.json | jq -r ".version")
-    apm login --token $atom_token
+    export ATOM_ACCESS_TOKEN=$atom_token
+    # apm login --token $atom_token
     apm publish --tag $tag
 done
