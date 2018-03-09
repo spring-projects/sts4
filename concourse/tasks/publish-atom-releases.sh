@@ -14,6 +14,7 @@ do
     echo ""
     echo "     apm publish -p vsce_token --packagePath $vsix_file"
     echo ""
+    cd $workdir/$atom_package
     tag=v$(cat package.json | jq -r ".version")
     apm login --token $atom_token
     apm publish --tag $tag
