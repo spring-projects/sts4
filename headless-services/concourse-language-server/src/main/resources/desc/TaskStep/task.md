@@ -1,4 +1,4 @@
-Executes a [Task](https://concourse.ci/concepts.html#tasks), either from a file fetched via the preceding steps, or with inlined configuration.
+Executes a [Task](https://concourse-ci.org/concepts.html#tasks), either from a file fetched via the preceding steps, or with inlined configuration.
 
 	task: string
 
