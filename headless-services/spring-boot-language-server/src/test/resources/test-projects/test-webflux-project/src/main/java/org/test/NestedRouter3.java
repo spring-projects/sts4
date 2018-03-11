@@ -24,10 +24,16 @@ public class NestedRouter3 {
 		PersonHandler3 handler = new PersonHandler3();
 
 		return nest(path("/person"),
-				nest(accept(APPLICATION_JSON),
-						route(GET("/{id}"), handler::getPerson)
-						.andRoute(method(HttpMethod.GET), handler::listPeople)
-				).andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createPerson));
+				nest(path("/sub1"),
+				  nest(path("/sub2"),
+				    nest(accept(APPLICATION_JSON),
+					  route(GET("/{id}"), handler::getPerson)
+					  .andRoute(method(HttpMethod.GET), handler::listPeople))
+				    .andRoute(GET("/nestedGet"), handler::getPerson))
+				  .and(nest(path("/andNestPath"),
+					route(GET("/andNestPathGET"), handler::getPerson))))
+				.andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createPerson))
+			  .and(nest(method(HttpMethod.DELETE), route(path("/nestedDelete"), handler::deletePerson)));
 	}
 
 }

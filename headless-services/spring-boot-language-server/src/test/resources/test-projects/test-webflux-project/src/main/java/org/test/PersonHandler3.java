@@ -19,4 +19,8 @@ public class PersonHandler3 {
 		return ServerResponse.notFound().build();
 	}
 
+	public Mono<ServerResponse> deletePerson(ServerRequest request) {
+		return ServerResponse.notFound().build();
+	}
+
 }

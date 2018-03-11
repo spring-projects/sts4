@@ -28,8 +28,6 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -100,13 +98,12 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		
 		if (path != null && path.length() > 0) {
 			try {
-				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
-				String label = "@" + (path.startsWith("/") ? path : ("/" + path));
-				label += (httpMethods == null || httpMethods.length == 0 ? "" : " -- " + WebfluxUtils.getStringRep(httpMethods, string -> string));
 
+				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
-				
-				result.add(new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), handler));
+
+				result.add(RouteUtils.createRouteSymbol(location, path, httpMethods, contentTypes, acceptTypes, handler));
+
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
@@ -159,7 +156,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			String methodName = methodBinding.getName();
 			
 			if (WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodName)) {
-				return WebfluxUtils.extractStringLiteralArgument(methodInvocation);
+				return WebfluxUtils.extractQualifiedNameArgument(methodInvocation);
 			}
 			return null;
 		});

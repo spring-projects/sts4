@@ -28,8 +28,6 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
@@ -48,9 +46,11 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
 				String[] path = getPath(node);
 				String[] parentPath = getParentPath(node);
-				String[] method = getMethod(node);
+				String[] methods = getMethod(node);
+				String[] contentTypes = new String[0];
+				String[] acceptTypes = new String[0];
 
-				String methodStr = method == null || method.length == 0 ? "" : String.join(",", method);
+//				String methodStr = method == null || method.length == 0 ? "" : String.join(",", method);
 
 				return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
@@ -62,8 +62,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 									}
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
-						.map(p -> "@" + p + (methodStr.isEmpty() ? "" : " -- " + methodStr))
-						.map(symbolLabel -> new EnhancedSymbolInformation(new SymbolInformation(symbolLabel, SymbolKind.Interface, location), null))
+						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
 						.collect(Collectors.toList());
 			} catch (Exception e) {
 				e.printStackTrace();

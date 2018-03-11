@@ -153,7 +153,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals(5, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET", docUri, 29, 6, 29, 45));
 		assertTrue(containsSymbol(symbols, "@/ -- POST", docUri, 31, 6, 31, 117));
-		assertTrue(containsSymbol(symbols, "@/person -- GET, HEAD", docUri, 30, 7, 30, 113));
+		assertTrue(containsSymbol(symbols, "@/person -- GET,HEAD", docUri, 30, 7, 30, 113));
 
 		List<? extends Object> addons = getAdditionalInformation(docUri);
 		assertEquals(3, addons.size());
@@ -181,6 +181,51 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("[TEXT_PLAIN, APPLICATION_JSON]", Arrays.toString(handlerInfo3.getAcceptTypes()));
 		assertEquals("org.test.PersonHandler2", handlerInfo3.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
+	}
+
+	@Test
+	public void testNestedRoutesMappingSymbols3() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter3.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		assertEquals(8, symbols.size());
+		
+		assertTrue(containsSymbol(symbols, "@/person/sub1/sub2/{id} -- GET", docUri, 29, 7, 29, 46));
+		assertTrue(containsSymbol(symbols, "@/person/sub1/sub2 -- GET", docUri, 30, 8, 30, 61));
+		assertTrue(containsSymbol(symbols, "@/person/sub1/sub2/nestedGet -- GET", docUri, 31, 9, 31, 56));
+		assertTrue(containsSymbol(symbols, "@/person/sub1/andNestPath/andNestPathGET -- GET", docUri, 33, 5, 33, 54));
+		assertTrue(containsSymbol(symbols, "@/person/ -- POST", docUri, 34, 5, 34, 82));
+		assertTrue(containsSymbol(symbols, "@/nestedDelete -- DELETE", docUri, 35, 42, 35, 93));
+/*
+		List<? extends Object> addons = getAdditionalInformation(docUri);
+		assertEquals(3, addons.size());
+		
+		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
+		assertEquals("/person/{id}", handlerInfo1.getPath());
+		assertEquals("[GET]", Arrays.toString(handlerInfo1.getHttpMethods()));
+		assertEquals(0, handlerInfo1.getContentTypes().length);
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo1.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo1.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> getPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
+		
+		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/", "POST").get(0);
+		assertEquals("/", handlerInfo2.getPath());
+		assertEquals("[POST]", Arrays.toString(handlerInfo2.getHttpMethods()));
+		assertEquals("[APPLICATION_JSON, APPLICATION_PDF]", Arrays.toString(handlerInfo2.getContentTypes()));
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo2.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo2.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> createPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
+
+		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "/person", "HEAD").get(0);
+		assertEquals("/person", handlerInfo3.getPath());
+		assertEquals("[GET, HEAD]", Arrays.toString(handlerInfo3.getHttpMethods()));
+		assertEquals(0, handlerInfo3.getContentTypes().length);
+		assertEquals("[TEXT_PLAIN, APPLICATION_JSON]", Arrays.toString(handlerInfo3.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo3.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
+*/
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

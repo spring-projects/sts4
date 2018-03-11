@@ -117,7 +117,7 @@ public class WebfluxUtils {
 		
 		StringBuilder result = new StringBuilder(valueConverter.apply(multipleTypes[0]));
 		for (int i = 1; i < multipleTypes.length; i++) {
-			result.append(", ");
+			result.append(",");
 			result.append(valueConverter.apply(multipleTypes[i]));
 		}
 		
