@@ -17,18 +17,17 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
-public class RouterExperiments {
+public class NestedRouter3 {
 	
 	@Bean
-	public RouterFunction<ServerResponse> superRoutingFunction() {
-		PersonHandler handler = new PersonHandler();
+	public RouterFunction<ServerResponse> routingFunction() {
+		PersonHandler3 handler = new PersonHandler3();
 
-		return nest(path("/super"),
-				nest(path("/something"),
+		return nest(path("/person"),
 				nest(accept(APPLICATION_JSON),
 						route(GET("/{id}"), handler::getPerson)
 						.andRoute(method(HttpMethod.GET), handler::listPeople)
-				).andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createPerson)));
+				).andRoute(POST("/").and(contentType(APPLICATION_JSON)), handler::createPerson));
 	}
 
 }

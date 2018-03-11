@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -20,15 +23,16 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
  */
 public class WebfluxContentTypeFinder extends ASTVisitor {
 	
-	private String contentType;
+	private Set<String> contentTypes;
 	private ASTNode root;
 	
 	public WebfluxContentTypeFinder(ASTNode root) {
 		this.root = root;
+		this.contentTypes = new LinkedHashSet<>();
 	}
 	
-	public String getContentType() {
-		return contentType;
+	public Set<String> getContentTypes() {
+		return contentTypes;
 	}
 	
 	@Override
@@ -41,7 +45,10 @@ public class WebfluxContentTypeFinder extends ASTVisitor {
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if (name != null && WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(name)) {
-					contentType = WebfluxUtils.extractSimpleNameArgument(node);
+					String contentType = WebfluxUtils.extractSimpleNameArgument(node);
+					if (contentType != null) {
+						contentTypes.add(contentType);
+					}
 				}
 			}
 

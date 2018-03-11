@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,43 +72,43 @@ public class WebFluxMappingSymbolProviderTest {
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/hello", "GET").get(0);
 		assertEquals("/hello", handlerInfo1.getPath());
-		assertEquals("GET", handlerInfo1.getHttpMethod());
-		assertNull(handlerInfo1.getContentType());
-		assertEquals("TEXT_PLAIN", handlerInfo1.getAcceptType());
+		assertEquals("[GET]", Arrays.toString(handlerInfo1.getHttpMethods()));
+		assertEquals(0, handlerInfo1.getContentTypes().length);
+		assertEquals("[TEXT_PLAIN]", Arrays.toString(handlerInfo1.getAcceptTypes()));
 		assertEquals("org.test.QuoteHandler", handlerInfo1.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> hello(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/echo", "POST").get(0);
 		assertEquals("/echo", handlerInfo2.getPath());
-		assertEquals("POST", handlerInfo2.getHttpMethod());
-		assertEquals("TEXT_PLAIN", handlerInfo2.getContentType());
-		assertEquals("TEXT_PLAIN", handlerInfo2.getAcceptType());
+		assertEquals("[POST]", Arrays.toString(handlerInfo2.getHttpMethods()));
+		assertEquals("[TEXT_PLAIN]", Arrays.toString(handlerInfo2.getContentTypes()));
+		assertEquals("[TEXT_PLAIN]", Arrays.toString(handlerInfo2.getAcceptTypes()));
 		assertEquals("org.test.QuoteHandler", handlerInfo2.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> echo(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "/quotes", "GET").get(0);
 		assertEquals("/quotes", handlerInfo3.getPath());
-		assertEquals("GET", handlerInfo3.getHttpMethod());
-		assertNull(handlerInfo3.getContentType());
-		assertEquals("APPLICATION_STREAM_JSON", handlerInfo3.getAcceptType());
+		assertEquals("[GET]", Arrays.toString(handlerInfo3.getHttpMethods()));
+		assertEquals(0, handlerInfo3.getContentTypes().length);
+		assertEquals("[APPLICATION_STREAM_JSON]", Arrays.toString(handlerInfo3.getAcceptTypes()));
 		assertEquals("org.test.QuoteHandler", handlerInfo3.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> streamQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo4 = getWebfluxHandler(addons, "/quotes", "GET").get(1);
 		assertEquals("/quotes", handlerInfo4.getPath());
-		assertEquals("GET", handlerInfo4.getHttpMethod());
-		assertNull(handlerInfo4.getContentType());
-		assertEquals("APPLICATION_JSON", handlerInfo4.getAcceptType());
+		assertEquals("[GET]", Arrays.toString(handlerInfo4.getHttpMethods()));
+		assertEquals(0, handlerInfo4.getContentTypes().length);
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo4.getAcceptTypes()));
 		assertEquals("org.test.QuoteHandler", handlerInfo4.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> fetchQuotes(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo4.getHandlerMethod());
 	}
 
 	@Test
-	public void testNestedRoutesMappingSymbols() throws Exception {
+	public void testNestedRoutesMappingSymbols1() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
 
-		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter.java").toUri().toString();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter1.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = getSymbols(docUri);
 		assertEquals(5, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET", docUri, 27, 6, 27, 45));
@@ -119,26 +120,66 @@ public class WebFluxMappingSymbolProviderTest {
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
 		assertEquals("/person/{id}", handlerInfo1.getPath());
-		assertEquals("GET", handlerInfo1.getHttpMethod());
-		assertNull(handlerInfo1.getContentType());
-		assertEquals("APPLICATION_JSON", handlerInfo1.getAcceptType());
-		assertEquals("org.test.PersonHandler", handlerInfo1.getHandlerClass());
+		assertEquals("[GET]", Arrays.toString(handlerInfo1.getHttpMethods()));
+		assertEquals(0, handlerInfo1.getContentTypes().length);
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo1.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler1", handlerInfo1.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> getPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
 		
 		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/person/", "POST").get(0);
 		assertEquals("/person/", handlerInfo2.getPath());
-		assertEquals("POST", handlerInfo2.getHttpMethod());
-		assertEquals("APPLICATION_JSON", handlerInfo2.getContentType());
-		assertNull(handlerInfo2.getAcceptType());
-		assertEquals("org.test.PersonHandler", handlerInfo2.getHandlerClass());
+		assertEquals("[POST]", Arrays.toString(handlerInfo2.getHttpMethods()));
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo2.getContentTypes()));
+		assertEquals(0, handlerInfo2.getAcceptTypes().length);
+		assertEquals("org.test.PersonHandler1", handlerInfo2.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> createPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
 
 		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "/person", "GET").get(0);
 		assertEquals("/person", handlerInfo3.getPath());
-		assertEquals("GET", handlerInfo3.getHttpMethod());
-		assertNull(handlerInfo3.getContentType());
-		assertEquals("APPLICATION_JSON", handlerInfo3.getAcceptType());
-		assertEquals("org.test.PersonHandler", handlerInfo3.getHandlerClass());
+		assertEquals("[GET]", Arrays.toString(handlerInfo3.getHttpMethods()));
+		assertEquals(0, handlerInfo3.getContentTypes().length);
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo3.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler1", handlerInfo3.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
+	}
+
+	@Test
+	public void testNestedRoutesMappingSymbols2() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter2.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		assertEquals(5, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET", docUri, 29, 6, 29, 45));
+		assertTrue(containsSymbol(symbols, "@/ -- POST", docUri, 31, 6, 31, 117));
+		assertTrue(containsSymbol(symbols, "@/person -- GET, HEAD", docUri, 30, 7, 30, 113));
+
+		List<? extends Object> addons = getAdditionalInformation(docUri);
+		assertEquals(3, addons.size());
+		
+		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
+		assertEquals("/person/{id}", handlerInfo1.getPath());
+		assertEquals("[GET]", Arrays.toString(handlerInfo1.getHttpMethods()));
+		assertEquals(0, handlerInfo1.getContentTypes().length);
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo1.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo1.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> getPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo1.getHandlerMethod());
+		
+		WebfluxHandlerInformation handlerInfo2 = getWebfluxHandler(addons, "/", "POST").get(0);
+		assertEquals("/", handlerInfo2.getPath());
+		assertEquals("[POST]", Arrays.toString(handlerInfo2.getHttpMethods()));
+		assertEquals("[APPLICATION_JSON, APPLICATION_PDF]", Arrays.toString(handlerInfo2.getContentTypes()));
+		assertEquals("[APPLICATION_JSON]", Arrays.toString(handlerInfo2.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo2.getHandlerClass());
+		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> createPerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo2.getHandlerMethod());
+
+		WebfluxHandlerInformation handlerInfo3 = getWebfluxHandler(addons, "/person", "HEAD").get(0);
+		assertEquals("/person", handlerInfo3.getPath());
+		assertEquals("[GET, HEAD]", Arrays.toString(handlerInfo3.getHttpMethods()));
+		assertEquals(0, handlerInfo3.getContentTypes().length);
+		assertEquals("[TEXT_PLAIN, APPLICATION_JSON]", Arrays.toString(handlerInfo3.getAcceptTypes()));
+		assertEquals("org.test.PersonHandler2", handlerInfo3.getHandlerClass());
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> listPeople(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo3.getHandlerMethod());
 	}
 
@@ -171,7 +212,7 @@ public class WebFluxMappingSymbolProviderTest {
 		return addons.stream()
 				.filter((obj) -> obj instanceof WebfluxHandlerInformation)
 				.map((obj -> (WebfluxHandlerInformation) obj))
-				.filter((addon) -> addon.getPath().equals(path) && addon.getHttpMethod().equals(httpMethod))
+				.filter((addon) -> addon.getPath().equals(path) && Arrays.asList(addon.getHttpMethods()).contains(httpMethod))
 				.collect(Collectors.toList());
 	}
 

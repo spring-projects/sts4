@@ -19,18 +19,18 @@ public class WebfluxHandlerInformation {
 	private final String handlerMethod;
 	
 	private final String path;
-	private final String httpMethod;
-	private final String contentType;
-	private final String acceptType;
+	private final String[] httpMethods;
+	private final String[] contentTypes;
+	private final String[] acceptTypes;
 	
-	public WebfluxHandlerInformation(String handlerClass, String handlerMethod, String path, String httpMethod, String contentType, String acceptType) {
+	public WebfluxHandlerInformation(String handlerClass, String handlerMethod, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
 		this.handlerClass = handlerClass;
 		this.handlerMethod = handlerMethod;
 		
 		this.path = path;
-		this.httpMethod = httpMethod;
-		this.contentType = contentType;
-		this.acceptType = acceptType;
+		this.httpMethods = httpMethods;
+		this.contentTypes = contentTypes;
+		this.acceptTypes = acceptTypes;
 	}
 	
 	public String getHandlerClass() {
@@ -45,16 +45,16 @@ public class WebfluxHandlerInformation {
 		return path;
 	}
 	
-	public String getHttpMethod() {
-		return httpMethod;
+	public String[] getHttpMethods() {
+		return httpMethods;
 	}
 	
-	public String getContentType() {
-		return contentType;
+	public String[] getContentTypes() {
+		return contentTypes;
 	}
 	
-	public String getAcceptType() {
-		return acceptType;
+	public String[] getAcceptTypes() {
+		return acceptTypes;
 	}
 
 }

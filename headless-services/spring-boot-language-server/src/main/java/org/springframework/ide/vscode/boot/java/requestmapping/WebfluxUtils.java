@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -80,8 +81,6 @@ public class WebfluxUtils {
 		return null;
 	}
 
-
-
 	public static boolean isRouteMethodInvocation(IMethodBinding methodBinding) {
 		if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 			String name = methodBinding.getName();
@@ -97,8 +96,35 @@ public class WebfluxUtils {
 		}
 		
 		return false;
-		
 	}
+	
+	public static String getMediaType(String constantRep) {
+		if (constantRep == null) {
+			return null;
+		}
+		
+		try {
+			MediaTypeMapping mediaType = MediaTypeMapping.valueOf(constantRep);
+			return mediaType.getMediaType();
+		}
+		catch (IllegalArgumentException e) {
+			return constantRep;
+		}
+	}
+	
+	public static String getStringRep(String[] multipleTypes, Function<String, String> valueConverter) {
+		if (multipleTypes == null || multipleTypes.length == 0) return null;
+		
+		StringBuilder result = new StringBuilder(valueConverter.apply(multipleTypes[0]));
+		for (int i = 1; i < multipleTypes.length; i++) {
+			result.append(", ");
+			result.append(valueConverter.apply(multipleTypes[i]));
+		}
+		
+		return result.toString();
+	}
+
+
 	
 
 }

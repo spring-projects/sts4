@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -20,15 +23,16 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
  */
 public class WebfluxMethodFinder extends ASTVisitor {
 	
-	private String method;
+	private Set<String> methods;
 	private ASTNode root;
 	
 	public WebfluxMethodFinder(ASTNode root) {
 		this.root = root;
+		this.methods = new LinkedHashSet<>();
 	}
 	
-	public String getMethod() {
-		return method;
+	public Set<String> getMethods() {
+		return methods;
 	}
 	
 	@Override
@@ -41,10 +45,10 @@ public class WebfluxMethodFinder extends ASTVisitor {
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if (name != null && WebfluxUtils.REQUEST_PREDICATE_HTTPMETHOD_METHODS.contains(name)) {
-					method = name;
+					methods.add(name);
 				}
 				else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
-					method = WebfluxUtils.extractQualifiedNameArgument(node);
+					methods.add(WebfluxUtils.extractQualifiedNameArgument(node));
 				}
 			}
 

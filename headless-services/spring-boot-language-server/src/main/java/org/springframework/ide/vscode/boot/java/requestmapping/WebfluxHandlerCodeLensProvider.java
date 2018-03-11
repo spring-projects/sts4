@@ -72,11 +72,16 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 						CodeLens codeLens = new CodeLens();
 						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
 						
-						String codeLensCommand = handlerInfo.getHttpMethod() != null ? handlerInfo.getHttpMethod() + " " : "";
+						String httpMethod = WebfluxUtils.getStringRep(handlerInfo.getHttpMethods(), string -> string);
+						String codeLensCommand = httpMethod != null ? httpMethod + " " : "";
+
 						codeLensCommand += handlerInfo.getPath();
+
+						String acceptType = WebfluxUtils.getStringRep(handlerInfo.getAcceptTypes(), WebfluxUtils::getMediaType);
+						codeLensCommand += acceptType != null ? " - Accept: " + acceptType : "";
 						
-						codeLensCommand += handlerInfo.getAcceptType() != null ? " - Accept: " + getMediaType(handlerInfo.getAcceptType()) : "";
-						codeLensCommand += handlerInfo.getContentType() != null ? " - Content-Type: " + getMediaType(handlerInfo.getContentType()) : "";
+						String contentType = WebfluxUtils.getStringRep(handlerInfo.getContentTypes(), WebfluxUtils::getMediaType);
+						codeLensCommand += contentType != null ? " - Content-Type: " + contentType : "";
 
 						codeLens.setCommand(new Command(codeLensCommand, null));
 	
@@ -89,18 +94,4 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 		}
 	}
 	
-	protected String getMediaType(String handlerInfo) {
-		if (handlerInfo == null) {
-			return null;
-		}
-		
-		try {
-			MediaTypeMapping mediaType = MediaTypeMapping.valueOf(handlerInfo);
-			return mediaType.getMediaType();
-		}
-		catch (IllegalArgumentException e) {
-			return handlerInfo;
-		}
-	}
-
 }

@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import reactor.core.publisher.Mono;
 
-public class PersonHandler {
+public class PersonHandler1 {
 
 	public Mono<ServerResponse> getPerson(ServerRequest request) {
 		return ServerResponse.notFound().build();
