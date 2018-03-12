@@ -26,6 +26,12 @@ public class RouteUtils {
 		if (path != null && path.length() > 0) {
 			String label = "@" + (path.startsWith("/") ? path : ("/" + path));
 			label += (httpMethods == null || httpMethods.length == 0 ? "" : " -- " + WebfluxUtils.getStringRep(httpMethods, string -> string));
+			
+			String acceptType = WebfluxUtils.getStringRep(acceptTypes, WebfluxUtils::getMediaType);
+			label += acceptType != null ? " - Accept: " + acceptType : "";
+			
+			String contentType = WebfluxUtils.getStringRep(contentTypes, WebfluxUtils::getMediaType);
+			label += contentType != null ? " - Content-Type: " + contentType : "";
 
 			return new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), enhancedInformation);
 		}

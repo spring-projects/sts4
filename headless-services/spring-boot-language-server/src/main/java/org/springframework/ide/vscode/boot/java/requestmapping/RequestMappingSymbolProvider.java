@@ -47,10 +47,8 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 				String[] path = getPath(node);
 				String[] parentPath = getParentPath(node);
 				String[] methods = getMethod(node);
-				String[] contentTypes = new String[0];
-				String[] acceptTypes = new String[0];
-
-//				String methodStr = method == null || method.length == 0 ? "" : String.join(",", method);
+				String[] contentTypes = getContentTypes(node);
+				String[] acceptTypes = getAcceptTypes(node);
 
 				return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
@@ -174,6 +172,44 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 			}
 		}
 		return null;
+	}
+	
+	private String[] getAcceptTypes(Annotation node) {
+		if (node.isNormalAnnotation()) {
+			NormalAnnotation normNode = (NormalAnnotation) node;
+			List<?> values = normNode.values();
+			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
+				Object object = iterator.next();
+				if (object instanceof MemberValuePair) {
+					MemberValuePair pair = (MemberValuePair) object;
+					String valueName = pair.getName().getIdentifier();
+					if (valueName != null && valueName.equals("consumes")) {
+						Expression expression = pair.getValue();
+						return ASTUtils.getExpressionValueAsArray(expression);
+					}
+				}
+			}
+		}
+		return new String[0];
+	}
+
+	private String[] getContentTypes(Annotation node) {
+		if (node.isNormalAnnotation()) {
+			NormalAnnotation normNode = (NormalAnnotation) node;
+			List<?> values = normNode.values();
+			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
+				Object object = iterator.next();
+				if (object instanceof MemberValuePair) {
+					MemberValuePair pair = (MemberValuePair) object;
+					String valueName = pair.getName().getIdentifier();
+					if (valueName != null && valueName.equals("produces")) {
+						Expression expression = pair.getValue();
+						return ASTUtils.getExpressionValueAsArray(expression);
+					}
+				}
+			}
+		}
+		return new String[0];
 	}
 
 	@Override

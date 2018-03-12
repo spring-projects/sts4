@@ -104,6 +104,10 @@ public class WebfluxUtils {
 		}
 		
 		try {
+			if (constantRep.endsWith("_VALUE")) {
+				constantRep = constantRep.substring(0, constantRep.lastIndexOf("_VALUE"));
+			}
+			
 			MediaTypeMapping mediaType = MediaTypeMapping.valueOf(constantRep);
 			return mediaType.getMediaType();
 		}
