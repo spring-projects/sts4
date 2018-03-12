@@ -63,7 +63,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	}
 
 	@Override
-	public CompletableFuture<List<? extends Location>> provideReferences(ASTNode node, Annotation annotation,
+	public List<? extends Location> provideReferences(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {
 
 		try {
@@ -88,7 +88,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	private CompletableFuture<List<? extends Location>> provideReferences(String value, int offset, int nodeStartOffset, TextDocument doc) {
+	private List<? extends Location> provideReferences(String value, int offset, int nodeStartOffset, TextDocument doc) {
 
 		try {
 			LocalRange range = getPropertyRange(value, offset);
@@ -106,7 +106,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	public CompletableFuture<List<? extends Location>> findReferencesFromPropertyFiles(
+	public List<? extends Location> findReferencesFromPropertyFiles(
 			Collection<WorkspaceFolder> workspaceRoots,
 			String propertyKey
 	) {
@@ -121,7 +121,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 							.flatMap(Collection::stream)
 							.collect(Collectors.toList());
 
-					return CompletableFuture.completedFuture(locations);
+					return locations;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

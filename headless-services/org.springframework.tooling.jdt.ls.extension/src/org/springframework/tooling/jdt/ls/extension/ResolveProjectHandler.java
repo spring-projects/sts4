@@ -28,7 +28,9 @@ public class ResolveProjectHandler implements IDelegateCommandHandler {
 		log("ResolveProjectHandler=" + commandId);
 		try {
 			URI resourceUri = ResourceUtils.getResourceUri(arguments);
-
+			
+			log("resourceUri=" + resourceUri);
+			
 			IJavaProject javaProject = ResourceUtils.getJavaProject(resourceUri);
 
 			ProjectResponse projectResponse = new ProjectResponse(javaProject.getElementName(), javaProject.getProject().getLocationURI().toString());

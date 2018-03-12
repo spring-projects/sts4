@@ -128,6 +128,8 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private Runnable shutdownHandler;
 
+	private AsyncRunner async = new AsyncRunner();
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
@@ -614,4 +616,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		this.shutdownHandler = handler;
 	}
 
+	public AsyncRunner getAsync() {
+		return this.async;
+	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -56,14 +56,12 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class SimpleTextDocumentService implements TextDocumentService {
 
@@ -84,9 +82,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private CodeLensResolveHandler codeLensResolveHandler;
 
 	private Consumer<TextDocumentSaveChange> documentSaveListener;
+	private AsyncRunner async;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
+		this.async = server.getAsync();
 	}
 
 	public synchronized void onHover(HoverHandler h) {
@@ -141,6 +141,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public final void didChange(DidChangeTextDocumentParams params) {
+	  async.execute(() -> {
 		try {
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
@@ -154,10 +155,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		} catch (BadLocationException e) {
 			Log.log(e);
 		}
+	  });
 	}
 
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params) {
+	  async.execute(() -> {
 		TextDocumentItem docId = params.getTextDocument();
 		String url = docId.getUri();
 		//Log.info("didOpen: "+params.getTextDocument().getUri());
@@ -187,10 +190,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			TextDocumentContentChange evt = new TextDocumentContentChange(doc, ImmutableList.of(change));
 			documentChangeListeners.fire(evt);
 		}
+	  });
 	}
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {
+	  async.execute(() -> {
 		//Log.info("didClose: "+params.getTextDocument().getUri());
 		String url = params.getTextDocument().getUri();
 		if (url!=null) {
@@ -211,6 +216,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 				Log.warn("Document closed, but it didn't exist! Close event ignored");
 			}
 		}
+	  });
 	}
 
 	void didChangeContent(TextDocument doc, List<TextDocumentContentChangeEvent> changes) {
@@ -250,37 +256,42 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	public final static CompletionList NO_COMPLETIONS = new CompletionList(false, Collections.emptyList());
-	public final static CompletableFuture<Hover> NO_HOVER = CompletableFuture.completedFuture(new Hover(ImmutableList.of(), null));
-	public final static CompletableFuture<List<? extends Location>> NO_REFERENCES = CompletableFuture.completedFuture(ImmutableList.of());
+	public final static Hover NO_HOVER = new Hover(ImmutableList.of(), null);
+	public final static List<? extends Location> NO_REFERENCES = ImmutableList.of();
 	public final static List<? extends SymbolInformation> NO_SYMBOLS = ImmutableList.of();
-	public final static CompletableFuture<List<? extends CodeLens>> NO_CODELENS = CompletableFuture.completedFuture(ImmutableList.of());
+	public final static List<? extends CodeLens> NO_CODELENS = ImmutableList.of();
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
 			return completionHandler.handle(position)
-			.thenApply(Either::forRight);
+					.map(Either::<List<CompletionItem>, CompletionList>forRight)
+					.toFuture();
 		}
 		return CompletableFuture.completedFuture(Either.forRight(NO_COMPLETIONS));
 	}
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
+	  return async.invoke(() -> {
 		CompletionResolveHandler h = completionResolveHandler;
 		if (h!=null) {
 			return h.handle(unresolved);
 		}
 		return null;
+	  });
 	}
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
+	  return async.invoke(() -> {
 		HoverHandler h = hoverHandler;
 		if (h!=null) {
 			return hoverHandler.handle(position);
 		}
-		return CompletableFuture.completedFuture(null);
+		return null;
+	  });
 	}
 
 	@Override
@@ -288,62 +299,62 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		return CompletableFuture.completedFuture(null);
 	}
 
-	@SuppressWarnings({ "unchecked"})
 	@Override
 	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
+	  return async.invoke(() -> {
 		DefinitionHandler h = this.definitionHandler;
 		if (h!=null) {
-			Object r = h.handle(position); //YUCK!
-			return (CompletableFuture<List<? extends Location>>) r;
+			return h.handle(position);
 		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		return Collections.emptyList();
+	  });
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+	  return async.invoke(() -> {
 		ReferencesHandler h = this.referencesHandler;
 		if (h != null) {
 			return h.handle(params);
 		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		return Collections.emptyList();
+	  });
 	}
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
+	  return async.invoke(() -> {
 		DocumentSymbolHandler documentSymbolHandler = this.documentSymbolHandler;
 		if (documentSymbolHandler==null) {
-			return CompletableFuture.completedFuture(ImmutableList.of());
+			return ImmutableList.of();
 		}
-		return Mono.fromCallable(() -> {
-			server.waitForReconcile();
-			List<? extends SymbolInformation> r = documentSymbolHandler.handle(params);
-			//handle it when symbolHandler is sloppy and returns null instead of empty list.
-			return r == null ? ImmutableList.of() : r;
-		})
-		.toFuture()
-		.thenApply(l -> (List<? extends SymbolInformation>)l);
+		server.waitForReconcile();
+		List<? extends SymbolInformation> r = documentSymbolHandler.handle(params);
+		//handle it when symbolHandler is sloppy and returns null instead of empty list.
+		return r == null ? ImmutableList.of() : r;
+	  });
 	}
 
 	@Override
 	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
+	  return async.invoke(() -> {
 		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
 		if (doc!=null) {
-			return Flux.fromIterable(doc.getQuickfixes())
+			return doc.getQuickfixes().stream()
 					.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
 					.map(Quickfix::getCodeAction)
-					.collectList()
-					.toFuture()
-					.thenApply(l -> (List<? extends Command>) l);
+					.collect(CollectorUtil.toImmutableList());
 		} else {
-			return CompletableFuture.completedFuture(ImmutableList.of());
+			return ImmutableList.of();
 		}
+	  });
 	}
 
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
 		CodeLensHandler handler = this.codeLensHandler;
 		if (handler != null) {
-			return handler.handle(params);
+			return async.invoke(() -> handler.handle(params));
 		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
@@ -352,7 +363,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public CompletableFuture<CodeLens> resolveCodeLens(CodeLens unresolved) {
 		CodeLensResolveHandler handler = this.codeLensResolveHandler;
 		if (handler != null) {
-			return handler.handle(unresolved);
+			return async.invoke(() -> handler.handle(unresolved));
 		}
 		return CompletableFuture.completedFuture(null);
 	}
@@ -385,6 +396,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		// which extends the YEdit editor. This YEdit editor has a problem, where on save, all error markers are deleted.
 		// When STS uses the LSP4E editor and no longer needs its own YEdit-based editor, the issue with error markers disappearing
 		// on save should not be a problem anymore, and the workaround below will no longer be needed.
+	  async.execute(() -> {
 		if (documentSaveListener != null) {
 			TextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
@@ -394,6 +406,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 				documentSaveListener.accept(new TextDocumentSaveChange(doc));
 			}
 		}
+	  });
 	}
 
 	public void publishDiagnostics(TextDocumentIdentifier docId, Collection<Diagnostic> diagnostics) {

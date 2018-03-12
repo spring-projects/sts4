@@ -43,7 +43,7 @@ public class VSCodeSourceLinksTest {
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(VSCodeSourceLinksTest.class.getResource("/test-projects/" + projectName).toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(null, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		}
 
 	});

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -24,7 +23,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface ReferenceProvider {
 
-	CompletableFuture<List<? extends Location>> provideReferences(ASTNode node, Annotation annotation,
+	List<? extends Location> provideReferences(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc);
 
 }

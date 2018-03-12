@@ -38,10 +38,9 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
+		List<? extends Location> locations = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
 
-		assertNotNull(resultFuture);
-		List<? extends Location> locations = resultFuture.get();
+		assertNotNull(locations);
 		assertEquals(1, locations.size());
 		Location location = locations.get(0);
 
@@ -68,10 +67,9 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-yml/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
+		List<? extends Location> locations  = provider.findReferencesFromPropertyFiles(wsFolder(root), "test.property");
 
-		assertNotNull(resultFuture);
-		List<? extends Location> locations = resultFuture.get();
+		assertNotNull(locations);
 		assertEquals(1, locations.size());
 		Location location = locations.get(0);
 
@@ -88,10 +86,9 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/simple-case/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "server.port");
+		List<? extends Location> locations = provider.findReferencesFromPropertyFiles(wsFolder(root), "server.port");
 
-		assertNotNull(resultFuture);
-		List<? extends Location> locations = resultFuture.get();
+		assertNotNull(locations);
 		assertEquals(1, locations.size());
 		Location location = locations.get(0);
 
@@ -108,10 +105,9 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/multiple-files/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
+		List<? extends Location> locations = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
 
-		assertNotNull(resultFuture);
-		List<? extends Location> locations = resultFuture.get();
+		assertNotNull(locations);
 		assertEquals(3, locations.size());
 
 		Location location = getLocation(locations, Paths.get(root.toString(), "application-dev.properties").toUri());
@@ -151,10 +147,9 @@ public class PropertyReferenceFinderTest {
 		ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(null);
 
 		Path root = Paths.get(ProjectsHarness.class.getResource("/test-property-files/mixed-multiple-files/").toURI());
-		CompletableFuture<List<? extends Location>> resultFuture = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
+		List<? extends Location> locations = provider.findReferencesFromPropertyFiles(wsFolder(root), "appl1.prop");
 
-		assertNotNull(resultFuture);
-		List<? extends Location> locations = resultFuture.get();
+		assertNotNull(locations);
 		assertEquals(2, locations.size());
 
 		Location location = getLocation(locations, Paths.get(root.toString(), "application-dev.properties").toUri());

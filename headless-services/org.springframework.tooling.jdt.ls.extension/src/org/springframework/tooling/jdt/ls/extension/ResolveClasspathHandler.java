@@ -58,7 +58,7 @@ public class ResolveClasspathHandler implements IDelegateCommandHandler {
 			}
 		}
 		Classpath classpath = new Classpath(cpEntries, javaProject.getOutputLocation().toString());
-//		log("classpath=" + classpath);
+		log("classpath=" + classpath);
 		return classpath;
 	}
 

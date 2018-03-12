@@ -34,8 +34,6 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Mono;
-
 public class SimpleWorkspaceService implements WorkspaceService {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleWorkspaceService.class);
@@ -50,24 +48,25 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	private ListenerList<DidChangeWorkspaceFoldersParams> workspaceFolderListeners = new ListenerList<>();
 
+	private AsyncRunner async;
+
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
 		this.server = server;
+		this.async = server.getAsync();
 		this.fileObserver = new SimpleServerFileObserver(server);
 	}
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params) {
+	  return async.invoke(() -> {
 		WorkspaceSymbolHandler workspaceSymbolHandler = this.workspaceSymbolHandler;
 		if (workspaceSymbolHandler==null) {
-			return CompletableFuture.completedFuture(ImmutableList.of());
+			return ImmutableList.of();
 		}
-		return Mono.fromCallable(() -> {
-			server.waitForReconcile();
-			List<? extends SymbolInformation> symbols = workspaceSymbolHandler.handle(params);
-			return symbols==null ? ImmutableList.of() : symbols;
-		})
-		.toFuture()
-		.thenApply(l -> (List<? extends SymbolInformation>)l);
+		server.waitForReconcile();
+		List<? extends SymbolInformation> symbols = workspaceSymbolHandler.handle(params);
+		return symbols == null ? ImmutableList.of() : symbols;
+	  });
 	}
 
 	@Override

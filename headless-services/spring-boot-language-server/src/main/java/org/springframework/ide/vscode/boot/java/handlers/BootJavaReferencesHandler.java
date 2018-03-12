@@ -52,13 +52,13 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	@Override
-	public CompletableFuture<List<? extends Location>> handle(ReferenceParams params) {
+	public List<? extends Location> handle(ReferenceParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.get(params).copy();
 		if (doc != null) {
 			try {
 				int offset = doc.toOffset(params.getPosition());
-				CompletableFuture<List<? extends Location>> referencesResult = provideReferences(doc, offset);
+				List<? extends Location> referencesResult = provideReferences(doc, offset);
 				if (referencesResult != null) {
 					return referencesResult;
 				}
@@ -70,7 +70,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		return SimpleTextDocumentService.NO_REFERENCES;
 	}
 
-	private CompletableFuture<List<? extends Location>> provideReferences(TextDocument document, int offset) throws Exception {
+	private List<? extends Location> provideReferences(TextDocument document, int offset) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
@@ -99,7 +99,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		return null;
 	}
 
-	private CompletableFuture<List<? extends Location>> provideReferencesForAnnotation(ASTNode node, int offset, TextDocument doc) {
+	private List<? extends Location> provideReferencesForAnnotation(ASTNode node, int offset, TextDocument doc) {
 		Annotation annotation = null;
 
 		while (node != null && !(node instanceof Annotation)) {

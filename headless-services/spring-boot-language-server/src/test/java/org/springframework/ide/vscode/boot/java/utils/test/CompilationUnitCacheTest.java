@@ -86,6 +86,7 @@ public class CompilationUnitCacheTest {
 	}
 
 	private CompilationUnit getCompilationUnit(TextDocument doc) {
+		harness.getServerWrapper().getServer().getAsync().waitForAll();
 		return harness.getServerWrapper().getComponents().getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
 	}
 

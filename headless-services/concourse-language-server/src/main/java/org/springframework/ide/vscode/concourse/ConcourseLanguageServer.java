@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.concourse;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -43,6 +42,8 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 
 import com.google.common.collect.ImmutableList;
+
+import reactor.core.publisher.Mono;
 
 public class ConcourseLanguageServer extends SimpleLanguageServer {
 
@@ -134,11 +135,11 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 					return forTasks.completionEngine.getCompletions(params);
 				}
 			}
-			return CompletableFuture.completedFuture(new CompletionList(false, ImmutableList.of()));
+			return Mono.just(new CompletionList(false, ImmutableList.of()));
 		});
 		documents.onCompletionResolve(item -> {
 			completionResolver.resolveNow(item);
-			return CompletableFuture.completedFuture(item);
+			return item;
 		});
 		documents.onHover(params -> {
 			TextDocument doc = documents.get(params);

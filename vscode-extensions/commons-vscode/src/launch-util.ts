@@ -15,8 +15,8 @@ import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
-import { registerClasspathService } from './classpath-service';
-import { registerProjectService } from './project-service';
+import { registerClasspathService } from './classpath';
+import { registerProjectService } from './project';
 
 let p2c = P2C.createConverter();
 
@@ -48,11 +48,12 @@ function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : s
     return javaOptions.heap || dflt;
 }
 
-export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Promise<LanguageClient> {
+export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
     if (options.CONNECT_TO_LS) {
-        return connectToLS(context, options);
+        return VSCode.window.showInformationMessage("Start language server")
+        .then((x) => connectToLS(context, options));
     } else {
         let clientOptions = options.clientOptions;
 

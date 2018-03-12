@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,12 +11,12 @@
 
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import reactor.core.publisher.Mono;
+
 @FunctionalInterface
 public interface CompletionHandler {
-	CompletableFuture<CompletionList> handle(TextDocumentPositionParams params);
+	Mono<CompletionList> handle(TextDocumentPositionParams params);
 }

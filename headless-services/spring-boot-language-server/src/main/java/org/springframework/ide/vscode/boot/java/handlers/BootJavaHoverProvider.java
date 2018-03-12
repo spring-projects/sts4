@@ -64,7 +64,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	@Override
-	public CompletableFuture<Hover> handle(TextDocumentPositionParams params) {
+	public Hover handle(TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		if (documents.get(params) != null) {
 			TextDocument doc = documents.get(params).copy();
@@ -72,7 +72,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				int offset = doc.toOffset(params.getPosition());
 				Hover hoverResult = provideHover(doc, offset);
 				if (hoverResult != null) {
-					return CompletableFuture.completedFuture(hoverResult);
+					return hoverResult;
 				}
 			}
 			catch (Exception e) {

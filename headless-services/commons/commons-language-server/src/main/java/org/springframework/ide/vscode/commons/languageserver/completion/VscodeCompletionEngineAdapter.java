@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -115,8 +114,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	@Override
-	public CompletableFuture<CompletionList> getCompletions(TextDocumentPositionParams params) {
-		return getCompletionsMono(params).toFuture();
+	public Mono<CompletionList> getCompletions(TextDocumentPositionParams params) {
+		return getCompletionsMono(params);
 	}
 
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
@@ -248,8 +247,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	@Override
-	public CompletableFuture<CompletionItem> resolveCompletion(CompletionItem unresolved) {
+	public CompletionItem resolveCompletion(CompletionItem unresolved) {
 		resolver.resolveNow(unresolved);
-		return CompletableFuture.completedFuture(unresolved);
+		return unresolved;
 	}
 }

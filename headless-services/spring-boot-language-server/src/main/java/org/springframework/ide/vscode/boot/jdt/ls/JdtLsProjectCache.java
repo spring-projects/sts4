@@ -11,15 +11,12 @@
 package org.springframework.ide.vscode.boot.jdt.ls;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
@@ -29,9 +26,9 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
 import org.springframework.ide.vscode.commons.languageserver.ClasspathResponse;
 import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
-import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;

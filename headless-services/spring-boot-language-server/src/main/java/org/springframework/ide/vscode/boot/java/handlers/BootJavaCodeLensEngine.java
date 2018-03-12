@@ -36,14 +36,14 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 	}
 
 	@Override
-	public CompletableFuture<List<? extends CodeLens>> handle(CodeLensParams params) {
+	public List<? extends CodeLens> handle(CodeLensParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docURI = params.getTextDocument().getUri();
 
 		if (documents.get(docURI) != null) {
 			TextDocument doc = documents.get(docURI).copy();
 			try {
-				CompletableFuture<List<? extends CodeLens>> codeLensesResult = provideCodeLenses(doc);
+				List<? extends CodeLens> codeLensesResult = provideCodeLenses(doc);
 				if (codeLensesResult != null) {
 					return codeLensesResult;
 				}
@@ -55,7 +55,7 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 		return SimpleTextDocumentService.NO_CODELENS;
 	}
 
-	private CompletableFuture<List<? extends CodeLens>> provideCodeLenses(TextDocument document) {
+	private List<? extends CodeLens> provideCodeLenses(TextDocument document) {
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
 			
 			if (cu != null) {
@@ -65,7 +65,7 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 				}
 				
 				if (result.size() > 0) {
-					return CompletableFuture.completedFuture(result);
+					return result;
 				}
 			}
 

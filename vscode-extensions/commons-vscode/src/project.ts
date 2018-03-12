@@ -7,8 +7,8 @@ import { LanguageClient, RequestType } from 'vscode-languageclient';
 export function registerProjectService(client : LanguageClient) : void {
     let projectRequest = new RequestType<string, ProjectResponse, void, void>("sts/project");
 
-    client.onRequest(projectRequest, async (uri: string) => {
-        return await executeProjectCommand(uri);
+    client.onRequest(projectRequest,  (uri: string) => {
+        return  executeProjectCommand(uri);
     });
 }
 

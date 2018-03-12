@@ -140,7 +140,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		this.defaultLanguageId = defaultLanguageId;
 	}
 
-	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(1_000); //TODO: why does it need to be this long, that's fishy!
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(3_000);
 
 	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);
@@ -421,7 +421,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public PublishDiagnosticsParams getDiagnostics(TextDocumentInfo doc) throws Exception {
-		this.getServer().waitForReconcile();
+		waitForReconcile();
 		return diagnostics.get(doc.getUri());
 	}
 
@@ -468,7 +468,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		TextDocumentPositionParams params = new TextDocumentPositionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
-		getServer().waitForReconcile();
+		waitForReconcile();
 		Either<List<CompletionItem>, CompletionList> completions = getServer().getTextDocumentService().completion(params).get();
 		if (completions.isLeft()) {
 			List<CompletionItem> list = completions.getLeft();
@@ -476,6 +476,11 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		} else /* sompletions.isRight() */ {
 			return completions.getRight();
 		}
+	}
+
+	private void waitForReconcile() throws Exception {
+		getServer().getAsync().waitForAll();
+		getServer().waitForReconcile();
 	}
 
 	public Hover getHover(TextDocumentInfo document, Position cursor) throws Exception {
@@ -594,7 +599,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public List<? extends Location> getDefinitions(TextDocumentPositionParams params) throws Exception {
-		getServer().waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
+		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
 		return getServer().getTextDocumentService().definition(params).get();
 	}
 
@@ -661,7 +666,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
-		getServer().waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
+		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
 		return getServer().getTextDocumentService().documentSymbol(params).get();
 	}

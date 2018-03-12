@@ -99,7 +99,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		//Create composite hover handler
 		this.hoverHandler = new HoverHandler() {
 			@Override
-			public CompletableFuture<Hover> handle(TextDocumentPositionParams params) {
+			public Hover handle(TextDocumentPositionParams params) {
 				TextDocument doc = server.getTextDocumentService().get(params);
 				LanguageId language = doc.getLanguageId();
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
