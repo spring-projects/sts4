@@ -12,14 +12,14 @@
 	</parent>
 
 	<artifactId>org.springframework.tooling.bosh.ls</artifactId>
-	<version>0.1.5-SNAPSHOT</version>
+	<version>0.1.6-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>bosh-language-server</artifactId>
-			<version>0.1.5-SNAPSHOT</version>
+			<version>0.1.6-SNAPSHOT</version>
 		    <exclusions>
 		        <exclusion>
 		            <groupId>org.springframework.ide.eclipse</groupId>
