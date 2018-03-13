@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -334,6 +333,9 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (hasDocumentSymbolHandler()) {
 			c.setDocumentSymbolProvider(true);
 		}
+		if (hasDocumentHighlightHandler()) {
+			c.setDocumentHighlightProvider(true);
+		}
 		if (hasCodeLensHandler()) {
 			CodeLensOptions codeLensOptions = new CodeLensOptions();
 			codeLensOptions.setResolveProvider(hasCodeLensResolveProvider());
@@ -366,6 +368,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private boolean hasDocumentSymbolHandler() {
 		return getTextDocumentService().hasDocumentSymbolHandler();
+	}
+
+	private boolean hasDocumentHighlightHandler() {
+		return getTextDocumentService().hasDocumentHighlightHandler();
 	}
 
 	private boolean hasCodeLensHandler() {

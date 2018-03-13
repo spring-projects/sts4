@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,6 +79,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private DefinitionHandler definitionHandler;
 	private ReferencesHandler referencesHandler;
 	private DocumentSymbolHandler documentSymbolHandler;
+	private DocumentHighlightHandler documentHighlightHandler;
 
 	private CodeLensHandler codeLensHandler;
 	private CodeLensResolveHandler codeLensResolveHandler;
@@ -107,6 +108,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onDocumentSymbol(DocumentSymbolHandler h) {
 		Assert.isNull("A DocumentSymbolHandler is already set, multiple handlers not supported yet", documentSymbolHandler);
 		this.documentSymbolHandler = h;
+	}
+
+	public synchronized void onDocumentHighlight(DocumentHighlightHandler h) {
+		Assert.isNull("A DocumentHighlightHandler is already set, multiple handlers not supported yet", documentHighlightHandler);
+		this.documentHighlightHandler = h;
 	}
 
 	 public synchronized void onCompletion(CompletionHandler h) {
@@ -254,6 +260,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static CompletableFuture<List<? extends Location>> NO_REFERENCES = CompletableFuture.completedFuture(ImmutableList.of());
 	public final static List<? extends SymbolInformation> NO_SYMBOLS = ImmutableList.of();
 	public final static CompletableFuture<List<? extends CodeLens>> NO_CODELENS = CompletableFuture.completedFuture(ImmutableList.of());
+	public final static CompletableFuture<List<? extends DocumentHighlight>> NO_HIGHLIGHTS = CompletableFuture.completedFuture(ImmutableList.of());
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
@@ -424,7 +431,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		DocumentHighlightHandler handler = this.documentHighlightHandler;
+		if (handler != null) {
+			return handler.handle(position);
+		}
+		return CompletableFuture.completedFuture(null);
 	}
 
 	public boolean hasDefinitionHandler() {
@@ -437,6 +448,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public boolean hasDocumentSymbolHandler() {
 		return this.documentSymbolHandler!=null;
+	}
+
+	public boolean hasDocumentHighlightHandler() {
+		return this.documentHighlightHandler!=null;
 	}
 
 	public boolean hasCodeLensHandler() {
