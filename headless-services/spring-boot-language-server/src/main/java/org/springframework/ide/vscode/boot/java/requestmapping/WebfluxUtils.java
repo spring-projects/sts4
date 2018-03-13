@@ -14,9 +14,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 
 /**
@@ -30,12 +33,15 @@ public class WebfluxUtils {
 	
 	public static final String REQUEST_PREDICATE_PATH_METHOD = "path";
 	public static final String REQUEST_PREDICATE_METHOD_METHOD = "method";
+	public static final String REQUEST_PREDICATE_ACCEPT_TYPE_METHOD = "accept";
+	public static final String REQUEST_PREDICATE_CONTENT_TYPE_METHOD = "contentType";
+	public static final String REQUEST_PREDICATE_NEST_METHOD = "nest";
 
 	public static final Set<String> REQUEST_PREDICATE_HTTPMETHOD_METHODS = new HashSet<>(Arrays.asList("GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 	public static final Set<String> REQUEST_PREDICATE_ALL_PATH_METHODS = new HashSet<>(Arrays.asList(REQUEST_PREDICATE_PATH_METHOD, "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 
 
-	public static String extractPath(MethodInvocation node) {
+	public static String extractStringLiteralArgument(MethodInvocation node) {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
@@ -47,6 +53,34 @@ public class WebfluxUtils {
 		return null;
 	}
 	
+	public static String extractQualifiedNameArgument(MethodInvocation node) {
+		List<?> arguments = node.arguments();
+		if (arguments != null && arguments.size() > 0) {
+			Object object = arguments.get(0);
+			if (object instanceof QualifiedName) {
+				QualifiedName qualifiedName = (QualifiedName) object;
+				if (qualifiedName.getName() != null) {
+					return qualifiedName.getName().toString();
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static String extractSimpleNameArgument(MethodInvocation node) {
+		List<?> arguments = node.arguments();
+		if (arguments != null && arguments.size() > 0) {
+			Object object = arguments.get(0);
+			if (object instanceof SimpleName) {
+				SimpleName name = (SimpleName) object;
+				if (name.getFullyQualifiedName() != null) {
+					return name.getFullyQualifiedName().toString();
+				}
+			}
+		}
+		return null;
+	}
+
 	public static boolean isRouteMethodInvocation(IMethodBinding methodBinding) {
 		if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 			String name = methodBinding.getName();
@@ -62,8 +96,39 @@ public class WebfluxUtils {
 		}
 		
 		return false;
-		
 	}
+	
+	public static String getMediaType(String constantRep) {
+		if (constantRep == null) {
+			return null;
+		}
+		
+		try {
+			if (constantRep.endsWith("_VALUE")) {
+				constantRep = constantRep.substring(0, constantRep.lastIndexOf("_VALUE"));
+			}
+			
+			MediaTypeMapping mediaType = MediaTypeMapping.valueOf(constantRep);
+			return mediaType.getMediaType();
+		}
+		catch (IllegalArgumentException e) {
+			return constantRep;
+		}
+	}
+	
+	public static String getStringRep(String[] multipleTypes, Function<String, String> valueConverter) {
+		if (multipleTypes == null || multipleTypes.length == 0) return null;
+		
+		StringBuilder result = new StringBuilder(valueConverter.apply(multipleTypes[0]));
+		for (int i = 1; i < multipleTypes.length; i++) {
+			result.append(",");
+			result.append(valueConverter.apply(multipleTypes[i]));
+		}
+		
+		return result.toString();
+	}
+
+
 	
 
 }

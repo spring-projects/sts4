@@ -1,7 +1,7 @@
 # Concourse Pipeline and Task Editor for Visual Studio Code
 
 This extension provides validation, content assist and documentation hovers
-for editing [Concourse](https://concourse.ci/) Pipeline and Task configuration files.
+for editing [Concourse](https://concourse-ci.org/) Pipeline and Task configuration files.
 
 ## Usage
 
@@ -63,7 +63,7 @@ to its corresponding definition.
 
 ## Limitations
 
-This Vscode Extension is still a work in progress. At the moment only a select few of the [built-in resource-types](https://concourse.ci/resource-types.html)
+This Vscode Extension is still a work in progress. At the moment only a select few of the [built-in resource-types](https://concourse-ci.org/resource-types.html)
 have been fully defined in the Editor's Schema. 
 
 The resource-types that are already defined in the schema are:

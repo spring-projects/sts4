@@ -71,7 +71,19 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 					
 						CodeLens codeLens = new CodeLens();
 						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
-						codeLens.setCommand(new Command(handlerInfo.getSymbol(), null));
+						
+						String httpMethod = WebfluxUtils.getStringRep(handlerInfo.getHttpMethods(), string -> string);
+						String codeLensCommand = httpMethod != null ? httpMethod + " " : "";
+
+						codeLensCommand += handlerInfo.getPath();
+
+						String acceptType = WebfluxUtils.getStringRep(handlerInfo.getAcceptTypes(), WebfluxUtils::getMediaType);
+						codeLensCommand += acceptType != null ? " - Accept: " + acceptType : "";
+						
+						String contentType = WebfluxUtils.getStringRep(handlerInfo.getContentTypes(), WebfluxUtils::getMediaType);
+						codeLensCommand += contentType != null ? " - Content-Type: " + contentType : "";
+
+						codeLens.setCommand(new Command(codeLensCommand, null));
 	
 						resultAccumulator.add(codeLens);
 					} catch (BadLocationException e) {
@@ -81,5 +93,5 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 			}
 		}
 	}
-
+	
 }

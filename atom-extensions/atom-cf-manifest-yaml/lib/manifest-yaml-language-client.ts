@@ -1,13 +1,12 @@
-const path = require('path');
-const { JavaProcessLanguageClient } = require('@pivotal-tools/atom-languageclient-commons');
-const PROPERTIES = require('../properties.json');
+import * as path from 'path';
+import { JavaProcessLanguageClient } from '@pivotal-tools/atom-languageclient-commons';
+import {JVM} from '@pivotal-tools/jvm-launch-utils';
 
-class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
+export class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
         super(
-            PROPERTIES.jarUrl,
             path.join(__dirname, '..', 'server'),
             'cf-manifest-language-server.jar'
         );
@@ -33,7 +32,7 @@ class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
         super.activate();
     }
 
-    launchVmArgs(version) {
+    launchVmArgs(jvm: JVM) {
         return Promise.resolve([
             '-Dorg.slf4j.simpleLogger.logFile=manifest-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
@@ -42,5 +41,3 @@ class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
     }
 
 }
-
-module.exports = new ManifestYamlLanguageClient();

@@ -10,28 +10,29 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.QualifiedName;
 
 /**
  * @author Martin Lippert
  */
 public class WebfluxMethodFinder extends ASTVisitor {
 	
-	private String method;
+	private Set<String> methods;
 	private ASTNode root;
 	
 	public WebfluxMethodFinder(ASTNode root) {
 		this.root = root;
+		this.methods = new LinkedHashSet<>();
 	}
 	
-	public String getMethod() {
-		return method;
+	public Set<String> getMethods() {
+		return methods;
 	}
 	
 	@Override
@@ -44,10 +45,10 @@ public class WebfluxMethodFinder extends ASTVisitor {
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if (name != null && WebfluxUtils.REQUEST_PREDICATE_HTTPMETHOD_METHODS.contains(name)) {
-					method = name;
+					methods.add(name);
 				}
 				else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
-					method = extractMethodValue(node);
+					methods.add(WebfluxUtils.extractQualifiedNameArgument(node));
 				}
 			}
 
@@ -56,20 +57,6 @@ public class WebfluxMethodFinder extends ASTVisitor {
 			}
 		}
 		return visitChildren;
-	}
-
-	private String extractMethodValue(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof QualifiedName) {
-				QualifiedName qualifiedName = (QualifiedName) object;
-				if (qualifiedName.getName() != null) {
-					return qualifiedName.getName().toString();
-				}
-			}
-		}
-		return null;
 	}
 
 }

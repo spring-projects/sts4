@@ -41,7 +41,7 @@ public class WebFluxCodeLensProviderTest {
 	}
 
 	@Test
-	public void testRoutesCodeLenses() throws Exception {
+	public void testRoutesCodeLensesSimpleCase() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
 
@@ -53,10 +53,65 @@ public class WebFluxCodeLensProviderTest {
 
 		assertEquals(4, codeLenses.size());
 		
-		assertTrue(containsCodeLens(codeLenses, "@/hello -- GET", 25, 29, 25, 34));
-		assertTrue(containsCodeLens(codeLenses, "@/echo -- POST", 30, 29, 30, 33));
-		assertTrue(containsCodeLens(codeLenses, "@/quotes -- GET", 35, 29, 35, 41));
-		assertTrue(containsCodeLens(codeLenses, "@/quotes -- GET", 41, 29, 41, 40));
+		assertTrue(containsCodeLens(codeLenses, "GET /hello - Accept: text/plain", 25, 29, 25, 34));
+		assertTrue(containsCodeLens(codeLenses, "POST /echo - Accept: text/plain - Content-Type: text/plain", 30, 29, 30, 33));
+		assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/stream+json", 35, 29, 35, 41));
+		assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/json", 41, 29, 41, 40));
+	}
+
+	@Test
+	public void testRoutesCodeLensesNestedRoutes1() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler1.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(3, codeLenses.size());
+		
+		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
+		assertTrue(containsCodeLens(codeLenses, "POST /person/ - Content-Type: application/json", 13, 29, 13, 41));
+		assertTrue(containsCodeLens(codeLenses, "GET /person - Accept: application/json", 17, 29, 17, 39));
+	}
+
+	@Test
+	public void testRoutesCodeLensesNestedRoutes2() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler2.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(3, codeLenses.size());
+		
+		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
+		assertTrue(containsCodeLens(codeLenses, "POST / - Accept: application/json - Content-Type: application/json,application/pdf", 13, 29, 13, 41));
+		assertTrue(containsCodeLens(codeLenses, "GET,HEAD /person - Accept: text/plain,application/json", 17, 29, 17, 39));
+	}
+
+	@Test
+	public void testRoutesCodeLensesNestedRoutes3() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler3.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(6, codeLenses.size());
+/*		
+		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
+		assertTrue(containsCodeLens(codeLenses, "POST / - Accept: application/json - Content-Type: application/json, application/pdf", 13, 29, 13, 41));
+		assertTrue(containsCodeLens(codeLenses, "GET, HEAD /person - Accept: text/plain, application/json", 17, 29, 17, 39));
+*/
 	}
 
 	private boolean containsCodeLens(List<? extends CodeLens> codeLenses, String commandTitle, int startLine, int startPosition, int endLine, int endPosition) {

@@ -238,7 +238,6 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (ih!=null){
 			ih.accept(params);
 		}
-		Log.info("IntializeResult = {}");
 		return CompletableFuture.completedFuture(result);
 	}
 

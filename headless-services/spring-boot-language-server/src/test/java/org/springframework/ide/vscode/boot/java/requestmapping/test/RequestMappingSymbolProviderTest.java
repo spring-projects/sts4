@@ -38,7 +38,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testSimpleRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
@@ -50,7 +49,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testParentRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/ParentMappingClass.java").toUri().toString();
@@ -62,7 +60,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testEmptyPathWithParentRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/ParentMappingClass2.java").toUri().toString();
@@ -74,7 +71,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testMultiRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MultiRequestMappingClass.java").toUri().toString();
@@ -87,7 +83,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testGetMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -98,7 +93,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testDeleteMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -109,7 +103,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testPostMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -120,7 +113,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testPutMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -131,7 +123,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testPatchMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -142,7 +133,6 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testGetRequestMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
@@ -153,13 +143,31 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testMultiRequestMethodMappingSymbol() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
-
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
 		List<? extends SymbolInformation> symbols =  getSymbols(docUri);
 		assertTrue(containsSymbol(symbols, "@/postAndPutHello -- POST,PUT", docUri, 36, 1, 36, 76));
 	}
+	
+	@Test
+	public void testMediaTypes() throws Exception {
+		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI()));
+		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-request-mapping-symbols/").toURI());
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMappingMediaTypes.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		assertEquals(7, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/consume1 -- HEAD - Accept: testconsume", docUri, 8, 1, 8, 90));
+		assertTrue(containsSymbol(symbols, "@/consume2 - Accept: text/plain", docUri, 13, 1, 13, 73));
+		assertTrue(containsSymbol(symbols, "@/consume3 - Accept: text/plain,testconsumetype", docUri, 18, 1, 18, 94));
+		assertTrue(containsSymbol(symbols, "@/produce1 - Content-Type: testproduce", docUri, 23, 1, 23, 60));
+		assertTrue(containsSymbol(symbols, "@/produce2 - Content-Type: text/plain", docUri, 28, 1, 28, 73));
+		assertTrue(containsSymbol(symbols, "@/produce3 - Content-Type: text/plain,testproducetype", docUri, 33, 1, 33, 94));
+		assertTrue(containsSymbol(symbols, "@/everything - Accept: application/json,text/plain,testconsume - Content-Type: application/json", docUri, 38, 1, 38, 170));
+	}
+
+
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {

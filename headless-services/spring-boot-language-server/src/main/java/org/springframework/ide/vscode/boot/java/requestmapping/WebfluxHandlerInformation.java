@@ -15,18 +15,22 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
  */
 public class WebfluxHandlerInformation {
 	
-	private final String symbol;
-	private String handlerClass;
-	private String handlerMethod;
+	private final String handlerClass;
+	private final String handlerMethod;
 	
-	public WebfluxHandlerInformation(String symbol, String handlerClass, String handlerMethod) {
-		this.symbol = symbol;
+	private final String path;
+	private final String[] httpMethods;
+	private final String[] contentTypes;
+	private final String[] acceptTypes;
+	
+	public WebfluxHandlerInformation(String handlerClass, String handlerMethod, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
 		this.handlerClass = handlerClass;
 		this.handlerMethod = handlerMethod;
-	}
-	
-	public String getSymbol() {
-		return symbol;
+		
+		this.path = path;
+		this.httpMethods = httpMethods;
+		this.contentTypes = contentTypes;
+		this.acceptTypes = acceptTypes;
 	}
 	
 	public String getHandlerClass() {
@@ -35,6 +39,22 @@ public class WebfluxHandlerInformation {
 	
 	public String getHandlerMethod() {
 		return handlerMethod;
+	}
+	
+	public String getPath() {
+		return path;
+	}
+	
+	public String[] getHttpMethods() {
+		return httpMethods;
+	}
+	
+	public String[] getContentTypes() {
+		return contentTypes;
+	}
+	
+	public String[] getAcceptTypes() {
+		return acceptTypes;
 	}
 
 }

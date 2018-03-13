@@ -17,5 +17,5 @@ A simple grouping for the pipeline above may look like:
 
 This would display two tabs at the top of the home page: "tests" and "deploy". Once you have added groups to your pipeline then all jobs must be in a group otherwise they will not be visible.
 
-For a real world example of how groups can be used to simplify navigation and provide logical grouping, see the groups used at the top of the page in the [Concourse pipeline](https://ci.concourse.ci/).
+For a real world example of how groups can be used to simplify navigation and provide logical grouping, see the groups used at the top of the page in the [Concourse pipeline](https://ci.concourse-ci.org/).
 

@@ -1,21 +1,22 @@
-const path = require('path');
-const { JavaProcessLanguageClient } = require('@pivotal-tools/atom-languageclient-commons');
-const PROPERTIES = require('../properties.json');
+import * as path from 'path';
+import {JavaProcessLanguageClient} from '@pivotal-tools/atom-languageclient-commons';
+import {ActiveServer} from 'atom-languageclient';
+import {JVM} from '@pivotal-tools/jvm-launch-utils';
 
-class BoshYamlClient extends JavaProcessLanguageClient {
+
+export class BoshYamlClient extends JavaProcessLanguageClient {
 
     constructor() {
         //noinspection JSAnnotator
         super(
-            PROPERTIES.jarUrl,
             path.join(__dirname, '..', 'server'),
             'bosh-language-server.jar'
-        ); 
+        );
     }
 
-    postInitialization(server) {
+    postInitialization(server: ActiveServer) {
         this.sendConfig(server);
-        this._disposable.add(atom.config.observe('bosh-yaml', () => this.sendConfig(server)));
+        (<any>this)._disposable.add(atom.config.observe('bosh-yaml', () => this.sendConfig(server)));
     }
 
     getGrammarScopes() {
@@ -37,7 +38,7 @@ class BoshYamlClient extends JavaProcessLanguageClient {
         super.activate();
     }
 
-    launchVmArgs(jvm) {
+    launchVmArgs(jvm: JVM): Promise<string[]> {
         return Promise.resolve([
             '-Dorg.slf4j.simpleLogger.logFile=bosh-yaml.log',
             '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
@@ -45,10 +46,8 @@ class BoshYamlClient extends JavaProcessLanguageClient {
 
     }
 
-    sendConfig(server) {
+    sendConfig(server: ActiveServer) {
         server.connection.didChangeConfiguration({ settings: atom.config.get('bosh-yaml') });
     }
 
 }
-
-module.exports = new BoshYamlClient();

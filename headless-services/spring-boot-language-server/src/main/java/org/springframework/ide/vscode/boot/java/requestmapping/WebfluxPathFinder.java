@@ -41,7 +41,7 @@ public class WebfluxPathFinder extends ASTVisitor {
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
-					path = WebfluxUtils.extractPath(node);
+					path = WebfluxUtils.extractStringLiteralArgument(node);
 				}
 			}
 			

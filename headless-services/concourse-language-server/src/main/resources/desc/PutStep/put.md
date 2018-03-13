@@ -1,7 +1,7 @@
-Pushes to the given [Resource](https://concourse.ci/concepts.html#resources). 
+Pushes to the given [Resource](https://concourse-ci.org/concepts.html#resources). 
 All artifacts collected during the plan's execution will be available in the working directory.
 
-For example, the following plan fetches a repo using [get](https://concourse.ci/get-step.html) and pushes it to another repo (assuming `repo-develop` and `repo-master` are defined as `git` resources):
+For example, the following plan fetches a repo using [get](https://concourse-ci.org/get-step.html) and pushes it to another repo (assuming `repo-develop` and `repo-master` are defined as `git` resources):
 
 ```
 plan:
