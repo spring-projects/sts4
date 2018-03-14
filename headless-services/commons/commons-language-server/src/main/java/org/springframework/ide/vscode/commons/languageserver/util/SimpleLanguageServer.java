@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,8 @@ import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
@@ -74,6 +77,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -128,7 +132,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private Runnable shutdownHandler;
 
+	private Map<String, ExecuteCommandHandler> commands = new HashMap<>();
+
 	private AsyncRunner async = new AsyncRunner();
+	private ClasspathListenerManager classpathListenerManager;
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -295,6 +302,18 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		} catch (Exception e) {
 		}
 		return deflt;
+	}
+
+	public Disposable onCommand(String id, ExecuteCommandHandler commandHandler) {
+		synchronized (commands) {
+			Assert.isLegal(!commands.containsKey(id));
+			commands.put(id, commandHandler);
+		}
+		return () -> {
+			synchronized (commands) {
+				commands.remove(id);
+			}
+		};
 	}
 
 	public void onError(String message, Throwable error) {
@@ -617,5 +636,12 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	public AsyncRunner getAsync() {
 		return this.async;
+	}
+
+	public synchronized Disposable addClasspathListener(ClasspathListener classpathListener) {
+		if (classpathListenerManager == null) {
+			classpathListenerManager = new ClasspathListenerManager(this);
+		}
+		return classpathListenerManager.addClasspathListener(classpathListener);
 	}
 }

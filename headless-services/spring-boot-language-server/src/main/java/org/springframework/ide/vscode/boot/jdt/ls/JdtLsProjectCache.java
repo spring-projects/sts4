@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
@@ -47,6 +48,14 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	public JdtLsProjectCache(SimpleLanguageServer server) {
 		this.server = server;
+		this.server.addClasspathListener(new ClasspathListener() {
+			
+			@Override
+			public void changed(String projectUri, boolean deleted) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 
 	@Override

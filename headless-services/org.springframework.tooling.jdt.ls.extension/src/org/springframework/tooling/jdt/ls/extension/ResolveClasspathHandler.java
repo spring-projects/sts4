@@ -31,13 +31,6 @@ public class ResolveClasspathHandler implements IDelegateCommandHandler {
 	public static final String ENTRY_KIND_SOURCE = "source";
 	public static final String ENTRY_KIND_BINARY = "binary";
 	public static final String OUTPUT_LOCATION = "output_location";
-	
-	static {
-		Executors.newCachedThreadPool().execute(() -> {
-			JavaClientConnection client = JavaLanguageServerPlugin.getInstance().getClientConnection();
-			client.executeCommand("say.hello", "Hello from our redhat extension");
-		});
-	}
 
 	
 	@Override

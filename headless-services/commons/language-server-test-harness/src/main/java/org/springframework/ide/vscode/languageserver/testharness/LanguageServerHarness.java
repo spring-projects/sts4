@@ -97,6 +97,8 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerResponse;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -302,6 +304,12 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 
 				@Override
 				public CompletableFuture<ProjectResponse> project(String uri) {
+					return CompletableFuture.completedFuture(null);
+				}
+
+				@Override
+				public CompletableFuture<ClasspathListenerResponse> addClasspathListener(
+						ClasspathListenerParams params) {
 					return CompletableFuture.completedFuture(null);
 				}
 
