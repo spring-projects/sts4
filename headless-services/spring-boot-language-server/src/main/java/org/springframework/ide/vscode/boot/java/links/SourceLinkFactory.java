@@ -55,6 +55,8 @@ public final class SourceLinkFactory {
 			return new VSCodeSourceLinks(server);
 		case ECLIPSE:
 			return new EclipseSourceLinks();
+		case ATOM:
+			return new AtomSourceLinks(server);
 		default:
 			return NO_SOURCE_LINKS;
 		}
