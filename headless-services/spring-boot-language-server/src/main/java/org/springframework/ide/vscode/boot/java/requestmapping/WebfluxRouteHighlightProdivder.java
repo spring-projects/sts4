@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.Position;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -23,12 +25,30 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 
-	public WebfluxRouteHighlightProdivder(BootJavaLanguageServerComponents server) {
+	private final SpringIndexer springIndexer;
+
+	public WebfluxRouteHighlightProdivder(BootJavaLanguageServerComponents bootJavaLanguageServerComponents) {
+		this.springIndexer = bootJavaLanguageServerComponents.getSpringIndexer();
 	}
 
 	@Override
-	public void provideHighlights(TextDocument document, CompilationUnit cu,
-			List<DocumentHighlight> resultAccumulator) {
+	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator) {
+		System.out.println(" PROVIDE HIGHLIGHTS: " + position.getLine() + "/" + position.getCharacter());
+		
+		this.springIndexer.getAdditonalInformation(document.getUri())
+			.stream()
+			.filter(addon -> {
+				if (addon instanceof WebfluxElementsInformation) {
+					WebfluxElementsInformation handlerInfo = (WebfluxElementsInformation) addon;
+					
+					if (handlerInfo.contains(position)) {
+						return true;
+					}
+				}
+				return false;
+			})
+			.flatMap(addon -> Arrays.asList(((WebfluxElementsInformation) addon).getRanges()).stream())
+			.forEach(range -> resultAccumulator.add(new DocumentHighlight(range)));
 	}
 
 }

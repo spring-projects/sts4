@@ -18,9 +18,9 @@ import org.eclipse.lsp4j.SymbolInformation;
 public class EnhancedSymbolInformation {
 	
 	private final SymbolInformation symbol;
-	private final Object additionalInformation;
+	private final SymbolAddOnInformation[] additionalInformation;
 
-	public EnhancedSymbolInformation(SymbolInformation symbol, Object additionalInformation) {
+	public EnhancedSymbolInformation(SymbolInformation symbol, SymbolAddOnInformation[] additionalInformation) {
 		this.symbol = symbol;
 		this.additionalInformation = additionalInformation;
 	}
@@ -29,7 +29,7 @@ public class EnhancedSymbolInformation {
 		return symbol;
 	}
 	
-	public Object getAdditionalInformation() {
+	public SymbolAddOnInformation[] getAdditionalInformation() {
 		return additionalInformation;
 	}
 

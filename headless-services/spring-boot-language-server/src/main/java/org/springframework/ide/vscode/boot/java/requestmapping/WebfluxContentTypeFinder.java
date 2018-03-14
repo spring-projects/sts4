@@ -10,53 +10,55 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
 public class WebfluxContentTypeFinder extends ASTVisitor {
 	
-	private Set<String> contentTypes;
-	private ASTNode root;
+	private List<WebfluxRouteElement> contentTypes;
+	private TextDocument doc;
 	
-	public WebfluxContentTypeFinder(ASTNode root) {
-		this.root = root;
-		this.contentTypes = new LinkedHashSet<>();
+	public WebfluxContentTypeFinder(TextDocument doc) {
+		this.doc = doc;
+		this.contentTypes = new ArrayList<>();
 	}
 	
-	public Set<String> getContentTypes() {
+	public List<WebfluxRouteElement> getContentTypes() {
 		return contentTypes;
 	}
 	
 	@Override
 	public boolean visit(MethodInvocation node) {
-		boolean visitChildren = true;
+		IMethodBinding methodBinding = node.resolveMethodBinding();
 
-		if (node != this.root) {
-			IMethodBinding methodBinding = node.resolveMethodBinding();
-			
+		try {
 			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
 				String name = methodBinding.getName();
 				if (name != null && WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(name)) {
-					String contentType = WebfluxUtils.extractSimpleNameArgument(node);
-					if (contentType != null) {
-						contentTypes.add(contentType);
+					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(node);
+					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
+						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
+						contentTypes.add(new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range));
 					}
 				}
 			}
-
-			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-				visitChildren = false;
-			}
 		}
-		return visitChildren;
+		catch (BadLocationException e) {
+			// ignore
+		}
+
+		return !WebfluxUtils.isRouteMethodInvocation(methodBinding);
 	}
 
 }

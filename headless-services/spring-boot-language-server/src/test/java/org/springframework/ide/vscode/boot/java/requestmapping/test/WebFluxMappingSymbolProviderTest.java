@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -50,7 +51,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/users - Content-Type: application/json", docUri, 13, 1, 13, 74));
 		assertTrue(containsSymbol(symbols, "@/users/{username} - Content-Type: application/json", docUri, 18, 1, 18, 85));
 		
-		List<? extends Object> addons = getAdditionalInformation(docUri);
+		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
 		assertNull(addons);
 	}
 
@@ -67,8 +68,8 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/json", docUri, 24, 5, 24, 86));
 		assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/stream+json", docUri, 25, 5, 25, 94));
 		
-		List<? extends Object> addons = getAdditionalInformation(docUri);
-		assertEquals(4, addons.size());
+		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
+		assertEquals(8, addons.size());
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/hello", "GET").get(0);
 		assertEquals("/hello", handlerInfo1.getPath());
@@ -115,8 +116,8 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/person/ -- POST - Content-Type: application/json", docUri, 29, 6, 29, 83));
 		assertTrue(containsSymbol(symbols, "@/person -- GET - Accept: application/json", docUri, 28, 7, 28, 60));
 
-		List<? extends Object> addons = getAdditionalInformation(docUri);
-		assertEquals(3, addons.size());
+		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
+		assertEquals(6, addons.size());
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
 		assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -155,8 +156,8 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/ -- POST - Accept: application/json - Content-Type: application/json,application/pdf", docUri, 31, 6, 31, 117));
 		assertTrue(containsSymbol(symbols, "@/person -- GET,HEAD - Accept: text/plain,application/json", docUri, 30, 7, 30, 113));
 
-		List<? extends Object> addons = getAdditionalInformation(docUri);
-		assertEquals(3, addons.size());
+		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
+		assertEquals(6, addons.size());
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
 		assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -199,8 +200,8 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/person/ -- POST - Content-Type: application/json", docUri, 34, 5, 34, 82));
 		assertTrue(containsSymbol(symbols, "@/nestedDelete -- DELETE", docUri, 35, 42, 35, 93));
 
-		List<? extends Object> addons = getAdditionalInformation(docUri);
-		assertEquals(6, addons.size());
+		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
+		assertEquals(12, addons.size());
 		
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/sub1/sub2/{id}", "GET").get(0);
 		assertEquals("/person/sub1/sub2/{id}", handlerInfo1.getPath());
@@ -272,11 +273,11 @@ public class WebFluxMappingSymbolProviderTest {
 		return harness.getServerWrapper().getComponents().getSpringIndexer().getSymbols(docUri);
 	}
 
-	private List<? extends Object> getAdditionalInformation(String docUri) {
+	private List<? extends SymbolAddOnInformation> getAdditionalInformation(String docUri) {
 		return harness.getServerWrapper().getComponents().getSpringIndexer().getAdditonalInformation(docUri);
 	}
 	
-	private List<WebfluxHandlerInformation> getWebfluxHandler(List<? extends Object> addons, String path, String httpMethod) {
+	private List<WebfluxHandlerInformation> getWebfluxHandler(List<? extends SymbolAddOnInformation> addons, String path, String httpMethod) {
 		return addons.stream()
 				.filter((obj) -> obj instanceof WebfluxHandlerInformation)
 				.map((obj -> (WebfluxHandlerInformation) obj))

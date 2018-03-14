@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
@@ -43,7 +44,7 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 		if (documents.get(docURI) != null) {
 			TextDocument doc = documents.get(docURI).copy();
 			try {
-				CompletableFuture<List<? extends DocumentHighlight>> highlightResult = provideDocumentHighlights(doc);
+				CompletableFuture<List<? extends DocumentHighlight>> highlightResult = provideDocumentHighlights(doc, params.getPosition());
 				if (highlightResult != null) {
 					return highlightResult;
 				}
@@ -55,22 +56,13 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 		return SimpleTextDocumentService.NO_HIGHLIGHTS;
 	}
 
-	private CompletableFuture<List<? extends DocumentHighlight>> provideDocumentHighlights(TextDocument document) {
-		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
-			
-			if (cu != null) {
-				List<DocumentHighlight> result = new ArrayList<>();
-				for (HighlightProvider highlightProvider : highlightProviders) {
-					highlightProvider.provideHighlights(document, cu, result);
-				}
-				
-				if (result.size() > 0) {
-					return CompletableFuture.completedFuture(result);
-				}
-			}
+	private CompletableFuture<List<? extends DocumentHighlight>> provideDocumentHighlights(TextDocument document, Position position) {
+		List<DocumentHighlight> result = new ArrayList<>();
+		for (HighlightProvider highlightProvider : highlightProviders) {
+			highlightProvider.provideHighlights(document, position, result);
+		}
 
-			return null;
-		});
+		return CompletableFuture.completedFuture(result);
 	}
 
 }

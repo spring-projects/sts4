@@ -8,19 +8,30 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.handlers;
+package org.springframework.ide.vscode.boot.java.requestmapping;
 
-import java.util.List;
-
-import org.eclipse.lsp4j.DocumentHighlight;
-import org.eclipse.lsp4j.Position;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.eclipse.lsp4j.Range;
 
 /**
  * @author Martin Lippert
  */
-public interface HighlightProvider {
-
-	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator);
-
+public class WebfluxRouteElement {
+	
+	private String element;
+	private Range elementRange;
+	
+	public WebfluxRouteElement(String element, Range elementRange) {
+		super();
+		this.element = element;
+		this.elementRange = elementRange;
+	}
+	
+	public String getElement() {
+		return element;
+	}
+	
+	public Range getElementRange() {
+		return elementRange;
+	}
+	
 }

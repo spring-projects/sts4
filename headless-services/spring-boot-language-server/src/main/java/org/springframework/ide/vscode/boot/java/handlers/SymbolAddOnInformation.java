@@ -10,17 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.util.List;
-
-import org.eclipse.lsp4j.DocumentHighlight;
-import org.eclipse.lsp4j.Position;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
 /**
  * @author Martin Lippert
  */
-public interface HighlightProvider {
-
-	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator);
-
+public interface SymbolAddOnInformation {
 }

@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -25,10 +24,15 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -87,22 +91,30 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 	}
 
 	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, List<EnhancedSymbolInformation> result) {
-		String path = extractPath(node);
-		
-		String[] httpMethods = extractMethods(node);
-		String[] contentTypes = extractContentTypes(node);
-		String[] acceptTypes = extractAcceptTypes(node);
+		WebfluxRouteElement[] pathElements = extractPath(node, doc);
+		WebfluxRouteElement[] httpMethods = extractMethods(node, doc);
+		WebfluxRouteElement[] contentTypes = extractContentTypes(node, doc);
+		WebfluxRouteElement[] acceptTypes = extractAcceptTypes(node, doc);
 		
 		int methodNameStart = node.getName().getStartPosition();
 		int invocationStart = node.getStartPosition();
 		
-		if (path != null && path.length() > 0) {
+		StringBuilder pathBuilder = new StringBuilder();
+		for (WebfluxRouteElement pathElement : pathElements) {
+			pathBuilder.insert(0, pathElement.getElement());
+		}
+		
+		String path = pathBuilder.toString();
+		
+		if (path.length() > 0) {
 			try {
 
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
+				WebfluxElementsInformation elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
 
-				result.add(RouteUtils.createRouteSymbol(location, path, httpMethods, contentTypes, acceptTypes, handler));
+				result.add(RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
+						getElementStrings(contentTypes), getElementStrings(acceptTypes), new SymbolAddOnInformation[] {handler, elements}));
 
 			} catch (BadLocationException e) {
 				e.printStackTrace();
@@ -110,38 +122,55 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	private String extractPath(MethodInvocation routerInvocation) {
-		WebfluxPathFinder pathFinder = new WebfluxPathFinder(routerInvocation);
-		routerInvocation.accept(pathFinder);
+	private WebfluxElementsInformation extractElementsInformation(WebfluxRouteElement[] path, WebfluxRouteElement[] methods,
+			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
+		List<Range> allRanges = new ArrayList<>();
 		
-		List<String> path = new ArrayList<>();
-		String firstPath = pathFinder.getPath();
-		if (firstPath != null) {
-			path.add(firstPath);
+		WebfluxRouteElement[][] allElements = new WebfluxRouteElement[][] {path, methods, contentTypes, acceptTypes};
+		for (int i = 0; i < allElements.length; i++) {
+			for (int j = 0; j < allElements[i].length; j++) {
+				allRanges.add(allElements[i][j].getElementRange());
+			}
 		}
+		
+		return new WebfluxElementsInformation((Range[]) allRanges.toArray(new Range[allRanges.size()]));
+	}
+
+	private WebfluxRouteElement[] extractPath(MethodInvocation routerInvocation, TextDocument doc) {
+		WebfluxPathFinder pathFinder = new WebfluxPathFinder(routerInvocation, doc);
+		List<?> arguments = routerInvocation.arguments();
+		for (Object argument : arguments) {
+			if (argument != null && argument instanceof ASTNode) {
+				((ASTNode)argument).accept(pathFinder);
+			}
+		}
+		
+		List<WebfluxRouteElement> path = pathFinder.getPath();
 		
 		extractNestedValue(routerInvocation, path, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 			String methodName = methodBinding.getName();
 			
-			if (WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(methodName)) {
-				String additionalPath = WebfluxUtils.extractStringLiteralArgument(methodInvocation);
-				if (additionalPath != null && additionalPath.length() > 0) {
-					return additionalPath;
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(methodName)) {
+					StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(methodInvocation);
+					if (stringLiteral != null) {
+						Range range = doc.toRange(stringLiteral.getStartPosition(), stringLiteral.getLength());
+						return new WebfluxRouteElement(stringLiteral.getLiteralValue(), range);
+					}
 				}
+			}
+			catch (BadLocationException e) {
+				// ignore
 			}
 			return null;
 		});
 		
-		StringBuilder result = new StringBuilder();
-		path.stream().forEach(part -> result.insert(0, part));
-		
-		return result.toString();
-		
+		return (WebfluxRouteElement[]) path.toArray(new WebfluxRouteElement[path.size()]);
 	}
 	
-	private String[] extractMethods(MethodInvocation routerInvocation) {
-		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation);
+	private WebfluxRouteElement[] extractMethods(MethodInvocation routerInvocation, TextDocument doc) {
+		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation, doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
 			if (argument != null && argument instanceof ASTNode) {
@@ -149,23 +178,33 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			}
 		}
 
-		final Set<String> methods = methodFinder.getMethods();
+		final List<WebfluxRouteElement> methods = methodFinder.getMethods();
 		
 		extractNestedValue(routerInvocation, methods, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 			String methodName = methodBinding.getName();
 			
-			if (WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodName)) {
-				return WebfluxUtils.extractQualifiedNameArgument(methodInvocation);
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodName)) {
+					QualifiedName qualifiedName = WebfluxUtils.extractQualifiedNameArgument(methodInvocation);
+					if (qualifiedName.getName() != null) {
+						Range range = doc.toRange(qualifiedName.getStartPosition(), qualifiedName.getLength());
+						return new WebfluxRouteElement(qualifiedName.getName().toString(), range);
+					}
+				}
 			}
+			catch (BadLocationException e) {
+				// ignore
+			}
+
 			return null;
 		});
 		
-		return (String[]) methods.toArray(new String[methods.size()]);
+		return (WebfluxRouteElement[]) methods.toArray(new WebfluxRouteElement[methods.size()]);
 	}
 	
-	private String[] extractAcceptTypes(MethodInvocation routerInvocation) {
-		WebfluxAcceptTypeFinder typeFinder = new WebfluxAcceptTypeFinder();
+	private WebfluxRouteElement[] extractAcceptTypes(MethodInvocation routerInvocation, TextDocument doc) {
+		WebfluxAcceptTypeFinder typeFinder = new WebfluxAcceptTypeFinder(doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
 			if (argument != null && argument instanceof ASTNode) {
@@ -173,23 +212,33 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			}
 		}
 		
-		Set<String> acceptTypes = typeFinder.getAcceptTypes();
+		final List<WebfluxRouteElement> acceptTypes = typeFinder.getAcceptTypes();
 		
 		extractNestedValue(routerInvocation, acceptTypes, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 			String methodName = methodBinding.getName();
 			
-			if (WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(methodName)) {
-				return WebfluxUtils.extractSimpleNameArgument(methodInvocation);
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(methodName)) {
+					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
+					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
+						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
+						return new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range);
+					}
+				}
 			}
+			catch (BadLocationException e) {
+				// ignore
+			}
+
 			return null;
 		});
 		
-		return (String[]) acceptTypes.toArray(new String[acceptTypes.size()]);
+		return (WebfluxRouteElement[]) acceptTypes.toArray(new WebfluxRouteElement[acceptTypes.size()]);
 	}
 	
-	private String[] extractContentTypes(MethodInvocation routerInvocation) {
-		WebfluxContentTypeFinder contentTypeFinder = new WebfluxContentTypeFinder(routerInvocation);
+	private WebfluxRouteElement[] extractContentTypes(MethodInvocation routerInvocation, TextDocument doc) {
+		WebfluxContentTypeFinder contentTypeFinder = new WebfluxContentTypeFinder(doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
 			if (argument != null && argument instanceof ASTNode) {
@@ -197,22 +246,32 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 			}
 		}
 		
-		Set<String> contentTypes = contentTypeFinder.getContentTypes();
+		final List<WebfluxRouteElement> contentTypes = contentTypeFinder.getContentTypes();
 		
 		extractNestedValue(routerInvocation, contentTypes, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 			String methodName = methodBinding.getName();
 			
-			if (WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(methodName)) {
-				return WebfluxUtils.extractSimpleNameArgument(methodInvocation);
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(methodName)) {
+					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
+					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
+						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
+						return new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range);
+					}
+				}
 			}
+			catch (BadLocationException e) {
+				// ignore
+			}
+
 			return null;
 		});
 		
-		return (String[]) contentTypes.toArray(new String[contentTypes.size()]);
+		return (WebfluxRouteElement[]) contentTypes.toArray(new WebfluxRouteElement[contentTypes.size()]);
 	}
 	
-	private void extractNestedValue(ASTNode node, Collection<String> values, Function<MethodInvocation, String> extractor) {
+	private void extractNestedValue(ASTNode node, Collection<WebfluxRouteElement> values, Function<MethodInvocation, WebfluxRouteElement> extractor) {
 		if (node == null || node instanceof TypeDeclaration) {
 			return;
 		}
@@ -228,7 +287,7 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 					for (Object argument : arguments) {
 						if (argument instanceof MethodInvocation) {
 							MethodInvocation nestedMethod = (MethodInvocation) argument;
-							String value = extractor.apply(nestedMethod);
+							WebfluxRouteElement value = extractor.apply(nestedMethod);
 							if (value != null) {
 								values.add(value);
 							}
@@ -241,7 +300,9 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 		extractNestedValue(node.getParent(), values, extractor);
 	}
 
-	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
+	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, WebfluxRouteElement[] httpMethods,
+			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
+
 		List<?> arguments = node.arguments();
 
 		if (arguments != null) {
@@ -257,13 +318,23 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 						String handlerMethod = methodBinding.getMethodDeclaration().toString();
 						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
 						
-						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, httpMethods, contentTypes, acceptTypes);
+						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
 					}
 				}
 			}
 		}
 		
 		return null;
+	}
+	
+	private String[] getElementStrings(WebfluxRouteElement[] routeElements) {
+		List<String> result = new ArrayList<>();
+		
+		for (int i = 0; i < routeElements.length; i++) {
+			result.add(routeElements[i].getElement());
+		}
+		
+		return (String[]) result.toArray(new String[result.size()]);
 	}
 
 }

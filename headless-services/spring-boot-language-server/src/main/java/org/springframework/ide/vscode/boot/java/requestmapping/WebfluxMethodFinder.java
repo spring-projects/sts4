@@ -10,28 +10,34 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
 public class WebfluxMethodFinder extends ASTVisitor {
 	
-	private Set<String> methods;
+	private List<WebfluxRouteElement> methods;
 	private ASTNode root;
+	private TextDocument doc;
 	
-	public WebfluxMethodFinder(ASTNode root) {
+	public WebfluxMethodFinder(ASTNode root, TextDocument doc) {
 		this.root = root;
-		this.methods = new LinkedHashSet<>();
+		this.doc = doc;
+		this.methods = new ArrayList<>();
 	}
 	
-	public Set<String> getMethods() {
+	public List<WebfluxRouteElement> getMethods() {
 		return methods;
 	}
 	
@@ -42,14 +48,24 @@ public class WebfluxMethodFinder extends ASTVisitor {
 		if (node != this.root) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
 			
-			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-				String name = methodBinding.getName();
-				if (name != null && WebfluxUtils.REQUEST_PREDICATE_HTTPMETHOD_METHODS.contains(name)) {
-					methods.add(name);
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+					String name = methodBinding.getName();
+					if (name != null && WebfluxUtils.REQUEST_PREDICATE_HTTPMETHOD_METHODS.contains(name)) {
+						Range range = doc.toRange(node.getStartPosition(), node.getLength());
+						methods.add(new WebfluxRouteElement(name, range));
+					}
+					else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
+						QualifiedName qualifiedName = WebfluxUtils.extractQualifiedNameArgument(node);
+						if (qualifiedName.getName() != null) {
+							Range range = doc.toRange(qualifiedName.getStartPosition(), qualifiedName.getLength());
+							methods.add(new WebfluxRouteElement(qualifiedName.getName().toString(), range));
+						}
+					}
 				}
-				else if (name != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(name)) {
-					methods.add(WebfluxUtils.extractQualifiedNameArgument(node));
-				}
+			}
+			catch (BadLocationException e) {
+				// ignore
 			}
 
 			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
