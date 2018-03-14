@@ -15,12 +15,15 @@ import static org.springframework.tooling.jdt.ls.extension.Logger.log;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
+import org.eclipse.jdt.ls.core.internal.JavaClientConnection;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
 @SuppressWarnings("restriction")
 public class ResolveClasspathHandler implements IDelegateCommandHandler {
@@ -28,7 +31,15 @@ public class ResolveClasspathHandler implements IDelegateCommandHandler {
 	public static final String ENTRY_KIND_SOURCE = "source";
 	public static final String ENTRY_KIND_BINARY = "binary";
 	public static final String OUTPUT_LOCATION = "output_location";
+	
+	static {
+		Executors.newCachedThreadPool().execute(() -> {
+			JavaClientConnection client = JavaLanguageServerPlugin.getInstance().getClientConnection();
+			client.executeCommand("say.hello", "Hello from our redhat extension");
+		});
+	}
 
+	
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
 		log("ResolveClasspathHandler=" + commandId);
