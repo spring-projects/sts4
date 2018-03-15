@@ -77,6 +77,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private DefinitionHandler definitionHandler;
 	private ReferencesHandler referencesHandler;
 	private DocumentSymbolHandler documentSymbolHandler;
+	private DocumentHighlightHandler documentHighlightHandler;
 
 	private CodeLensHandler codeLensHandler;
 	private CodeLensResolveHandler codeLensResolveHandler;
@@ -107,6 +108,11 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized void onDocumentSymbol(DocumentSymbolHandler h) {
 		Assert.isNull("A DocumentSymbolHandler is already set, multiple handlers not supported yet", documentSymbolHandler);
 		this.documentSymbolHandler = h;
+	}
+
+	public synchronized void onDocumentHighlight(DocumentHighlightHandler h) {
+		Assert.isNull("A DocumentHighlightHandler is already set, multiple handlers not supported yet", documentHighlightHandler);
+		this.documentHighlightHandler = h;
 	}
 
 	 public synchronized void onCompletion(CompletionHandler h) {
@@ -260,6 +266,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static List<? extends Location> NO_REFERENCES = ImmutableList.of();
 	public final static List<? extends SymbolInformation> NO_SYMBOLS = ImmutableList.of();
 	public final static List<? extends CodeLens> NO_CODELENS = ImmutableList.of();
+	public final static List<DocumentHighlight> NO_HIGHLIGHTS = ImmutableList.of();
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
@@ -437,7 +444,13 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
-		return CompletableFuture.completedFuture(Collections.emptyList());
+	  return async.invoke(() -> {
+		DocumentHighlightHandler handler = this.documentHighlightHandler;
+		if (handler != null) {
+			return handler.handle(position);
+		}
+		return NO_HIGHLIGHTS;
+	  });
 	}
 
 	public boolean hasDefinitionHandler() {
@@ -450,6 +463,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public boolean hasDocumentSymbolHandler() {
 		return this.documentSymbolHandler!=null;
+	}
+
+	public boolean hasDocumentHighlightHandler() {
+		return this.documentHighlightHandler!=null;
 	}
 
 	public boolean hasCodeLensHandler() {

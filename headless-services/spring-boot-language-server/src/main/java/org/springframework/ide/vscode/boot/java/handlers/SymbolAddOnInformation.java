@@ -10,27 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import org.eclipse.lsp4j.SymbolInformation;
-
 /**
  * @author Martin Lippert
  */
-public class EnhancedSymbolInformation {
-	
-	private final SymbolInformation symbol;
-	private final SymbolAddOnInformation[] additionalInformation;
-
-	public EnhancedSymbolInformation(SymbolInformation symbol, SymbolAddOnInformation[] additionalInformation) {
-		this.symbol = symbol;
-		this.additionalInformation = additionalInformation;
-	}
-	
-	public SymbolInformation getSymbol() {
-		return symbol;
-	}
-	
-	public SymbolAddOnInformation[] getAdditionalInformation() {
-		return additionalInformation;
-	}
-
+public interface SymbolAddOnInformation {
 }

@@ -10,24 +10,34 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
 public class WebfluxPathFinder extends ASTVisitor {
 	
-	private String path;
+	private List<WebfluxRouteElement> path;
 	private ASTNode root;
+	private TextDocument doc;
 	
-	public WebfluxPathFinder(ASTNode root) {
+	public WebfluxPathFinder(ASTNode root, TextDocument doc) {
 		this.root = root;
+		this.doc = doc;
+		this.path = new ArrayList<>();
 	}
 	
-	public String getPath() {
+	public List<WebfluxRouteElement> getPath() {
 		return path;
 	}
 	
@@ -38,11 +48,20 @@ public class WebfluxPathFinder extends ASTVisitor {
 		if (node != this.root) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
 			
-			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-				String name = methodBinding.getName();
-				if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
-					path = WebfluxUtils.extractStringLiteralArgument(node);
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+					String name = methodBinding.getName();
+					if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
+						StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(node);
+						if (stringLiteral != null) {
+							Range range = doc.toRange(stringLiteral.getStartPosition(), stringLiteral.getLength());
+							path.add(new WebfluxRouteElement(stringLiteral.getLiteralValue(), range));
+						}
+					}
 				}
+			}
+			catch (BadLocationException e) {
+				// ignore
 			}
 			
 			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {

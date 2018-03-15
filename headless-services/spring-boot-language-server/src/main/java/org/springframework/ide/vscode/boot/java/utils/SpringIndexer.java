@@ -58,6 +58,7 @@ import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -82,9 +83,10 @@ public class SpringIndexer {
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 
 	private final List<SymbolInformation> symbols;
-	private final List<Object> addonInformation;
+	private final List<SymbolAddOnInformation> addonInformation;
+
 	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
-	private final ConcurrentMap<String, List<Object>> addonInformationByDoc;
+	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByDoc;
 
 	private final Thread updateWorker;
 	private final BlockingQueue<WorkerItem> updateQueue;
@@ -314,7 +316,7 @@ public class SpringIndexer {
 		return this.symbolsByDoc.get(docURI);
 	}
 
-	public List<Object> getAllAdditionalInformation(Predicate<Object> filter) {
+	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {
 		waitForInitializeTask();
 
 		if (filter != null) {
@@ -325,7 +327,7 @@ public class SpringIndexer {
 		}
 	}
 
-	public List<? extends Object> getAdditonalInformation(String docURI) {
+	public List<? extends SymbolAddOnInformation> getAdditonalInformation(String docURI) {
 		waitForInitializeTask();
 		return this.addonInformationByDoc.get(docURI);
 	}
@@ -390,9 +392,9 @@ public class SpringIndexer {
 				symbols.removeAll(oldSymbols);
 			}
 
-			List<Object> oldAddInInformation = addonInformationByDoc.remove(docURI);
-			if (oldAddInInformation != null) {
-				addonInformation.removeAll(oldAddInInformation);
+			List<SymbolAddOnInformation> oldAddOnInformation = addonInformationByDoc.remove(docURI);
+			if (oldAddOnInformation != null) {
+				addonInformation.removeAll(oldAddOnInformation);
 			}
 
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
@@ -501,8 +503,8 @@ public class SpringIndexer {
 						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
 						
 						if (enhancedSymbol.getAdditionalInformation() != null) {
-							addonInformation.add(enhancedSymbol.getAdditionalInformation());
-							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+							addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 						}
 					});
 				}
@@ -522,8 +524,8 @@ public class SpringIndexer {
 						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
 
 						if (enhancedSymbol.getAdditionalInformation() != null) {
-							addonInformation.add(enhancedSymbol.getAdditionalInformation());
-							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+							addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 						}
 					});
 				}
@@ -547,8 +549,8 @@ public class SpringIndexer {
 							symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
 
 							if (enhancedSymbol.getAdditionalInformation() != null) {
-								addonInformation.add(enhancedSymbol.getAdditionalInformation());
-								addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<Object>()).add(enhancedSymbol.getAdditionalInformation());
+								addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+								addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 							}
 						});
 					}
@@ -711,7 +713,7 @@ public class SpringIndexer {
 					symbols.removeAll(oldSymbols);
 				}
 				
-				List<Object> oldAddInInformation = addonInformationByDoc.remove(docURI);
+				List<SymbolAddOnInformation> oldAddInInformation = addonInformationByDoc.remove(docURI);
 				if (oldAddInInformation != null) {
 					addonInformation.removeAll(oldAddInInformation);
 				}

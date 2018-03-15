@@ -27,12 +27,14 @@ import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHov
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
@@ -44,6 +46,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolP
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
+import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
@@ -61,6 +64,7 @@ import org.springframework.ide.vscode.commons.languageserver.composable.Language
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
@@ -94,6 +98,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private JavaProjectFinder projectFinder;
 	private BootJavaHoverProvider hoverProvider;
 	private CodeLensHandler codeLensHandler;
+	private DocumentHighlightHandler highlightsEngine;
 
 	public BootJavaLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
 		this.server = server;
@@ -151,7 +156,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		codeLensHandler = createCodeLensEngine();
 		documents.onCodeLens(codeLensHandler);
-
+		
+		highlightsEngine = createDocumentHighlightEngine();
+		documents.onDocumentHighlight(highlightsEngine);
+		
 		workspaceService.onDidChangeConfiguraton(settings -> {
 			config.handleConfigurationChange(settings);
 			if (config.isBootHintsEnabled()) {
@@ -178,6 +186,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	
 	public CodeLensHandler getCodeLensHandler() {
 		return codeLensHandler;
+	}
+	
+	public DocumentHighlightHandler getDocumentHighlightHandler() {
+		return highlightsEngine;
 	}
 	
 	private void initialize(InitializeParams params) {
@@ -313,6 +325,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(this));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
+	}
+	
+	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine() {
+		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
+		highlightProvider.add(new WebfluxRouteHighlightProdivder(this));
+		
+		return new BootJavaDocumentHighlightEngine(this, highlightProvider);
 	}
 
 	public ProjectObserver getProjectObserver() {

@@ -10,27 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import org.eclipse.lsp4j.SymbolInformation;
+import java.util.List;
+
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.Position;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class EnhancedSymbolInformation {
-	
-	private final SymbolInformation symbol;
-	private final SymbolAddOnInformation[] additionalInformation;
+public interface HighlightProvider {
 
-	public EnhancedSymbolInformation(SymbolInformation symbol, SymbolAddOnInformation[] additionalInformation) {
-		this.symbol = symbol;
-		this.additionalInformation = additionalInformation;
-	}
-	
-	public SymbolInformation getSymbol() {
-		return symbol;
-	}
-	
-	public SymbolAddOnInformation[] getAdditionalInformation() {
-		return additionalInformation;
-	}
+	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator);
 
 }

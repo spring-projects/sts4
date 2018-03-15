@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 
 /**
  * @author Martin Lippert
@@ -21,7 +22,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 public class RouteUtils {
 	
 	public static EnhancedSymbolInformation createRouteSymbol(Location location, String path,
-			String[] httpMethods, String[] contentTypes, String[] acceptTypes, Object enhancedInformation) {
+			String[] httpMethods, String[] contentTypes, String[] acceptTypes, SymbolAddOnInformation[] enhancedInformation) {
 		
 		if (path != null && path.length() > 0) {
 			String label = "@" + (path.startsWith("/") ? path : ("/" + path));

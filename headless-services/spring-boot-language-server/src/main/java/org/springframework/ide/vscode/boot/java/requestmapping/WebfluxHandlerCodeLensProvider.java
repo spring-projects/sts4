@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -55,7 +56,7 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 			final String handlerClass = methodBinding.getDeclaringClass().getBinaryName().trim();
 			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
 			
-			List<Object> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
+			List<SymbolAddOnInformation> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
 				if (addon instanceof WebfluxHandlerInformation) {
 					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) addon;
 					return handlerInfo.getHandlerClass() != null && handlerInfo.getHandlerClass().equals(handlerClass)

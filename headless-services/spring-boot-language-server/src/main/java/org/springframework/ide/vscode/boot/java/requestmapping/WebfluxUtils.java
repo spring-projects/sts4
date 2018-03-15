@@ -41,41 +41,34 @@ public class WebfluxUtils {
 	public static final Set<String> REQUEST_PREDICATE_ALL_PATH_METHODS = new HashSet<>(Arrays.asList(REQUEST_PREDICATE_PATH_METHOD, "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 
 
-	public static String extractStringLiteralArgument(MethodInvocation node) {
+	public static StringLiteral extractStringLiteralArgument(MethodInvocation node) {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
 			if (object instanceof StringLiteral) {
-				String path = ((StringLiteral) object).getLiteralValue();
-				return path;
+				return (StringLiteral) object;
 			}
 		}
 		return null;
 	}
 	
-	public static String extractQualifiedNameArgument(MethodInvocation node) {
+	public static QualifiedName extractQualifiedNameArgument(MethodInvocation node) {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
 			if (object instanceof QualifiedName) {
-				QualifiedName qualifiedName = (QualifiedName) object;
-				if (qualifiedName.getName() != null) {
-					return qualifiedName.getName().toString();
-				}
+				return (QualifiedName) object;
 			}
 		}
 		return null;
 	}
 	
-	public static String extractSimpleNameArgument(MethodInvocation node) {
+	public static SimpleName extractSimpleNameArgument(MethodInvocation node) {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
 			if (object instanceof SimpleName) {
-				SimpleName name = (SimpleName) object;
-				if (name.getFullyQualifiedName() != null) {
-					return name.getFullyQualifiedName().toString();
-				}
+				return (SimpleName) object;
 			}
 		}
 		return null;

@@ -10,10 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+
 /**
  * @author Martin Lippert
  */
-public class WebfluxHandlerInformation {
+public class WebfluxHandlerInformation implements SymbolAddOnInformation {
 	
 	private final String handlerClass;
 	private final String handlerMethod;
