@@ -624,14 +624,28 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		this.initializeHandler = handler;
 	}
 
-	public void onInitialized(Runnable handler) {
-		Assert.isNull("Multiple initialized handlers not supported yet", this.initializedHandler);
-		this.initializedHandler = handler;
+	public synchronized void onInitialized(Runnable handler) {
+		if (this.initializedHandler==null) {
+			this.initializedHandler = handler;
+		} else {
+			Runnable oldHandler = this.initializedHandler;
+			this.initializedHandler = () -> {
+				oldHandler.run();
+				handler.run();
+			};
+		}
 	}
 
-	public void onShutdown(Runnable handler) {
-		Assert.isNull("Multiple shutdown handlers not supported yet", this.shutdownHandler);
-		this.shutdownHandler = handler;
+	public synchronized void onShutdown(Runnable handler) {
+		if (shutdownHandler==null) {
+			this.shutdownHandler = handler;
+		} else {
+			Runnable oldHandler = this.shutdownHandler;
+			this.shutdownHandler = () -> {
+				oldHandler.run();
+				handler.run();
+			};
+		}
 	}
 
 	public AsyncRunner getAsync() {

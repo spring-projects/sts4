@@ -10,10 +10,23 @@ export function registerClasspathService(client : LanguageClient) : void {
     client.onRequest(classpathRequest, async (params: ClasspathParams) => {
         return await executeClasspathCommand(params.resourceUri);
     });
+
+    let classpathListenerRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void, void>("sts/addClasspathListener");
+    client.onRequest(classpathListenerRequest, async (params: ClasspathListenerParams) => {
+        return <ClasspathListenerResponse> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.addClasspathListener", params.callbackCommandId);
+    });
 }
 
 async function executeClasspathCommand(resourceUri : string) : Promise<ClasspathResponse> {
     return <ClasspathResponse> (await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.resolveClasspath", resourceUri));
+}
+
+
+interface ClasspathListenerParams {
+    callbackCommandId: string
+}
+
+interface ClasspathListenerResponse {
 }
 
 interface ClasspathResponse {

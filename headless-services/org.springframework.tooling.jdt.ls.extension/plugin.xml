@@ -11,5 +11,11 @@
             <command id="sts.java.resolveProject"/>
        </delegateCommandHandler>
    </extension>
+   <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
+      <delegateCommandHandler class="org.springframework.tooling.jdt.ls.extension.ClasspathListenerHandler">
+            <command id="sts.java.addClasspathListener"/>
+            <command id="sts.java.removeClasspathListener"/>
+       </delegateCommandHandler>
+   </extension>
 </plugin>
  

@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.Disposable;
+
 public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	private SimpleLanguageServer server;
@@ -48,14 +51,15 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	public JdtLsProjectCache(SimpleLanguageServer server) {
 		this.server = server;
-		this.server.addClasspathListener(new ClasspathListener() {
+		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
+		this.server.onInitialized(() -> disposable.complete(server.addClasspathListener(new ClasspathListener() {
 			
 			@Override
 			public void changed(String projectUri, boolean deleted) {
-				// TODO Auto-generated method stub
-				
+				log.info("Classpath changed: "+projectUri);
 			}
-		});
+		})));
+		this.server.onShutdown(() -> disposable.thenAccept(Disposable::dispose));
 	}
 
 	@Override
