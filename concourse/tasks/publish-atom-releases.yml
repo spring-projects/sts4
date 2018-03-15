@@ -1,6 +1,6 @@
 inputs:
 - name: sts4
-# - name: atom-concourse
+- name: atom-concourse
 - name: atom-bosh
 - name: atom-cf-manifest-yaml
 - name: atom-spring-boot
