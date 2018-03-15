@@ -67,8 +67,8 @@ public class ClasspathListenerManager {
 		CompletableFuture<Void> future2 = server.getClient().registerCapability(params);
 
 		// Wait for async work
-		//future1.join();
-		//future2.join();
+		future1.join();
+		future2.join();
 
 		// Cleanups:
 		return () -> {

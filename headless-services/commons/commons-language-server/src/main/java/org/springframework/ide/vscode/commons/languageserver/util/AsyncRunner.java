@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 
 import reactor.core.publisher.Mono;
@@ -36,14 +37,24 @@ public class AsyncRunner {
 		return x;
 	}
 
+	public synchronized void withLog(Logger logger, RunnableWithException runnable) {
+		execute(runnable).handle((v, e) -> {
+			if (e!=null) {
+				logger.error("", e);
+			}
+			return null;
+		});
+	}
+
 	public synchronized CompletableFuture<Void> execute(RunnableWithException runnable) {
 		CompletableFuture<Void> x = Mono.fromCallable(() -> {
 			runnable.run();
-			return (Void) null;
+			return (Void)null;
 		}).subscribeOn(executor).toFuture();
 		lastRequest = x;
 		return x;
 	}
+
 
 	public synchronized void waitForAll() {
 		while (lastRequest != null) {

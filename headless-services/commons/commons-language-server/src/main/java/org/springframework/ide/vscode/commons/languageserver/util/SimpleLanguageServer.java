@@ -47,6 +47,8 @@ import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -89,6 +91,8 @@ import reactor.core.scheduler.Schedulers;
  * what its really doing and not the 'wiring and plumbing'.
  */
 public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
+
+	private static Logger log = LoggerFactory.getLogger(SimpleLanguageServer.class);
 
 	private static final String WORKSPACE_FOLDERS_CAPABILITY_ID = UUID.randomUUID().toString();
 	public static final String WORKSPACE_FOLDERS_CAPABILITY_NAME = "workspace/didChangeWorkspaceFolders";
@@ -254,6 +258,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	@Override
 	public void initialized() {
+	  async.withLog(log, () -> {
 		Registration registration = new Registration(WORKSPACE_FOLDERS_CAPABILITY_ID, WORKSPACE_FOLDERS_CAPABILITY_NAME, null);
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
 		getClient().registerCapability(registrationParams);
@@ -261,6 +266,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (h!=null) {
 			h.run();
 		}
+	  });
 	}
 
 	private List<WorkspaceFolder> getWorkspaceFolders(InitializeParams params) {
