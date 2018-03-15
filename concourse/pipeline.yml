@@ -567,6 +567,9 @@ jobs:
           STS 4 Atom Extensions released
           Releases now available on Atom Marketplace:
            • <https://atom.io/packages/concourse-pipeline-yaml|Concourse CI Pipeline Editor>
+           • <https://atom.io/packages/bosh-yaml|Bosh YAML Editor>
+           • <https://atom.io/packages/cf-manifest-yaml|CF Manifest YAML Editor>
+           • <https://atom.io/packages/spring-boot|Spring Boot Support>
 - name: build-concourse-rc
   plan:
   - aggregate:
