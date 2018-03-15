@@ -20,6 +20,8 @@ import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
+import static org.springframework.tooling.jdt.ls.extension.Logger.log;
+
 /**
  * An instance of this class provides a means to register
  * listeners that get notified when classpath for a IJavaProject
@@ -80,9 +82,12 @@ public class ClasspathListenerManager {
      * continually monitor them for changes from that point onward.
      */
     public ClasspathListenerManager(ClasspathListener listener, boolean initialEvent) {
+    	log("Setting up ClasspathListenerManager");
         this.listener = listener;
         if (initialEvent) {
+        	log("Sending initial event for all projects ...");
             for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            	log("project = "+p);
                 try {
                     if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
                         IJavaProject jp = JavaCore.create(p);
@@ -92,6 +97,7 @@ public class ClasspathListenerManager {
                     Logger.log(e);
                 }
             }
+        	log("Sending initial event for all projects DONE");
         }
         JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
     }

@@ -52,13 +52,14 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	public JdtLsProjectCache(SimpleLanguageServer server) {
 		this.server = server;
 		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
-		this.server.onInitialized(() -> disposable.complete(server.addClasspathListener(new ClasspathListener() {
-			
-			@Override
-			public void changed(String projectUri, boolean deleted) {
-				log.info("Classpath changed: "+projectUri);
-			}
-		})));
+		this.server.onInitialized(() -> 
+			disposable.complete(server.addClasspathListener(new ClasspathListener() {
+				@Override
+				public void changed(String projectUri, boolean deleted) {
+					log.info("Classpath changed: "+projectUri);
+				}
+			}))
+		);
 		this.server.onShutdown(() -> disposable.thenAccept(Disposable::dispose));
 	}
 

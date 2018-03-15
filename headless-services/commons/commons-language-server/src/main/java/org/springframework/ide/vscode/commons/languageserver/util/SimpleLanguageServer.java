@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -173,6 +174,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	}
 
 	protected CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
+		ExecuteCommandHandler handler = commands.get(params.getCommand());
+		if (handler!=null) {
+			return handler.handle(params);
+		}
 		if (CODE_ACTION_COMMAND_ID.equals(params.getCommand())) {
 			Assert.isLegal(params.getArguments().size()==2);
 			QuickfixResolveParams quickfixParams = new QuickfixResolveParams(

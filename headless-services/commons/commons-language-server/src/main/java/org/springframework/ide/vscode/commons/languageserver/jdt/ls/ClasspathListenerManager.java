@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonElement;
 
 import reactor.core.Disposable;
 
@@ -46,8 +47,8 @@ public class ClasspathListenerManager {
 			List<Object> args = callbackParams.getArguments();
 			//Note: not sure... but args might be deserialized as com.google.gson.JsonElement's.
 			//If so the code below is not correct (casts will fail).
-			String projectUri = (String) args.get(0);
-			boolean deleted = args.size()>=2 && (Boolean)args.get(1);
+			String projectUri = ((JsonElement) args.get(0)).getAsString();
+			boolean deleted = args.size()>=2 && ((JsonElement)args.get(1)).getAsBoolean();
 			classpathListener.changed(projectUri, deleted);
 			return "done";
 		}));

@@ -72,6 +72,8 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * @author Martin Lippert
  */
@@ -146,7 +148,7 @@ public class SpringIndexer {
 				}
 			}
 		}, "Spring Annotation Index Update Worker");
-		updateWorker.start();
+		server.onInitialized(updateWorker::start);
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
@@ -329,7 +331,8 @@ public class SpringIndexer {
 
 	public List<? extends SymbolAddOnInformation> getAdditonalInformation(String docURI) {
 		waitForInitializeTask();
-		return this.addonInformationByDoc.get(docURI);
+		List<SymbolAddOnInformation> info = this.addonInformationByDoc.get(docURI);
+		return info == null ? ImmutableList.of() : info;
 	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
