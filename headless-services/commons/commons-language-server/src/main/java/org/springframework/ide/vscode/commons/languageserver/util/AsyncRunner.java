@@ -24,7 +24,8 @@ public class AsyncRunner {
 
 	private static Scheduler executor = Schedulers.newSingle("STS4 Thread");
 
-	// Only need to remember the last request as requests are executed in order, if
+	// Used in test harness to wait for all pending request to finish.
+	// We only need to remember the last request as requests are executed in order, so if
 	// the last request is done, all requests are done
 	private CompletableFuture<?> lastRequest;
 
@@ -51,10 +52,15 @@ public class AsyncRunner {
 	}
 
 	public synchronized CompletableFuture<Void> execute(RunnableWithException runnable) {
-		CompletableFuture<Void> x = Mono.fromCallable(() -> {
-			runnable.run();
-			return (Void)null;
-		}).subscribeOn(executor).toFuture();
+		CompletableFuture<Void> x = Mono.<Void>fromRunnable(() -> {
+			try {
+				runnable.run();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		})
+		.subscribeOn(executor)
+		.toFuture();
 		lastRequest = x;
 		return x;
 	}
