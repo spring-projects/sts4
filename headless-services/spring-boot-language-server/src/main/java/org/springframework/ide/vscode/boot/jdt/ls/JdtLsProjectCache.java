@@ -27,18 +27,12 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.ClasspathParams;
-import org.springframework.ide.vscode.commons.languageserver.ClasspathResponse;
-import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
-import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
@@ -55,8 +49,10 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 		this.server.onInitialized(() -> 
 			disposable.complete(server.addClasspathListener(new ClasspathListener() {
 				@Override
-				public void changed(String projectUri, boolean deleted) {
-					log.info("Classpath changed: "+projectUri);
+				public void changed(Event event) {
+					log.info("Classpath changed: "+ event.projectUri);
+
+					
 				}
 			}))
 		);
@@ -77,66 +73,37 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	}
 
-	private synchronized IJavaProject project(ProjectResponse project) {
-		if (project == null) {
-			return null;
-		}
-		return table.computeIfAbsent(project.getUri(), uri -> 
-			new JdtLsProject(project)
-		);
-	}
-
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		try {
-			ProjectResponse projectUri = getClient().project(doc.getUri()).get();
-			return Optional.of(project(projectUri));
-		} catch (Exception e) {
-			log.error("Problems finding project for {}", doc.getUri(), e);
-		}
 		return Optional.empty();
-	}
-
-	private STS4LanguageClient getClient() {
-		return ((SimpleLanguageServer) server).getClient();
 	}
 	
 	private class JdtLsProject implements IJavaProject {
 
-		private Supplier<IClasspath> classpath = Suppliers.memoize(this::computeClasspath);
-		private ProjectResponse projectResponse;
+		private final IClasspath classpath;
 
-		public JdtLsProject(ProjectResponse projectResponse) {
-			this.projectResponse = projectResponse;
+		public JdtLsProject(String name, String uri, Classpath jdtClasspath) {
+			this.classpath = new JdtClasspath(name, uri, jdtClasspath);
 		}
 
 		@Override
 		public IClasspath getClasspath() {
-			return classpath.get();
-		}
-		
-		private IClasspath computeClasspath() {
-			try {
-				ClasspathResponse response = getClient().classpath(new ClasspathParams(projectResponse.getUri())).get();
-				return new JdtClasspath(response, projectResponse);
-			} catch (Exception e) {
-				log.error("", e);
-			} 
-			return null;
+			return classpath;
 		}
 
 	}
 	
 	private class JdtClasspath extends JandexClasspath {
 
-		private ClasspathResponse response;
+		private Classpath classpath;
 		private String name;
 		private String projectUri;
 
-		public JdtClasspath(ClasspathResponse response, ProjectResponse projectResponse) {
-			this.response = response;
-			this.name = projectResponse.getName();
-			this.projectUri = projectResponse.getUri();
+
+		public JdtClasspath(String name, String uri, Classpath classpath) {
+			this.name = name;
+			this.projectUri = uri;
+			this.classpath = classpath;
 		}
 
 		@Override
@@ -151,15 +118,15 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 		@Override
 		public Path getOutputFolder() {
-			return Paths.get(response.getDefaultOutputFolder());
+			return Paths.get(classpath.getDefaultOutputFolder());
 		}
 
 		@Override
 		public ImmutableList<Path> getClasspathEntries() throws Exception {
-			return response
+			return classpath
 					.getEntries()
 					.stream()
-					.filter(cpe -> cpe.getKind().equals(ClasspathResponse.ENTRY_KIND_BINARY))
+					.filter(cpe -> cpe.getKind().equals(Classpath.ENTRY_KIND_BINARY))
 					.map(cpe -> Paths.get(cpe.getPath()))
 					.collect(CollectorUtil.toImmutableList());
 		}

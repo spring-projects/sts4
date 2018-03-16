@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
 
+import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.thenLog;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,11 +29,10 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import reactor.core.Disposable;
-
-import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.*;
 
 public class ClasspathListenerManager {
 
@@ -40,6 +41,8 @@ public class ClasspathListenerManager {
 	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
 	private SimpleLanguageServer server;
 	private AsyncRunner async;
+
+	private static final Gson gson = new Gson();
 
 	public ClasspathListenerManager(SimpleLanguageServer server) {
 		this.server = server;
@@ -55,8 +58,12 @@ public class ClasspathListenerManager {
 			//Note: not sure... but args might be deserialized as com.google.gson.JsonElement's.
 			//If so the code below is not correct (casts will fail).
 			String projectUri = ((JsonElement) args.get(0)).getAsString();
-			boolean deleted = args.size()>=2 && ((JsonElement)args.get(1)).getAsBoolean();
-			classpathListener.changed(projectUri, deleted);
+			String name = ((JsonElement) args.get(1)).getAsString();
+			boolean deleted = ((JsonElement)args.get(2)).getAsBoolean();
+
+			Classpath classpath = gson.fromJson((JsonElement)args.get(3), Classpath.class);
+
+			classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
 			return "done";
 		}));
 

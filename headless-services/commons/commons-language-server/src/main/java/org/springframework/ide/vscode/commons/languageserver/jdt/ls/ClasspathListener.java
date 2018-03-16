@@ -12,7 +12,23 @@ package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
 
 public interface ClasspathListener {
 
-	void changed(String projectUri, boolean deleted);
+	void changed(Event event);
 
+	static class Event {
+
+		public final String projectUri;
+		public final String name;
+		public final boolean deleted;
+		public final Classpath classpath;
+
+		public Event(String projectUri, String name, boolean deleted, Classpath classpath) {
+			super();
+			this.projectUri = projectUri;
+			this.name = name;
+			this.deleted = deleted;
+			this.classpath = classpath;
+		}
+
+	}
 
 }

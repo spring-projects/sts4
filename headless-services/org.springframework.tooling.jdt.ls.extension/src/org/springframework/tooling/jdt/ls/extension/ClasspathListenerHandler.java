@@ -16,72 +16,82 @@ import org.springframework.tooling.jdt.ls.extension.ClasspathListenerManager.Cla
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
 
 	static class MyClasspathListener implements ClasspathListener {
-		
+
 		private ClasspathListenerManager manager = null;
 		private List<String> subscribers = new ArrayList<>(1);
 
 		public synchronized void subscribe(String callbackCommandId) {
-			Logger.log("subscribing to classpath changes: "+callbackCommandId);
-			if (manager==null) {
+			Logger.log("subscribing to classpath changes: " + callbackCommandId);
+			if (manager == null) {
 				this.manager = new ClasspathListenerManager(this);
 			}
 			subscribers.add(callbackCommandId);
-			Logger.log("subsribers = "+subscribers);
+			Logger.log("subsribers = " + subscribers);
 		}
 
 		@Override
 		public void classpathChanged(IJavaProject jp) {
-			log("Classpath changed "+jp.getElementName());
+			log("Classpath changed " + jp.getElementName());
 			String project = jp.getProject().getLocationURI().toString();
 			boolean deleted = !jp.exists();
 			JavaClientConnection conn = JavaLanguageServerPlugin.getInstance().getClientConnection();
+			String projectName = jp.getElementName();
+
 			for (String callbackCommandId : subscribers) {
-				conn.executeCommand(callbackCommandId, project, deleted);
+				Classpath classpath = null;
+				if (!deleted) {
+					try {
+						classpath = ClasspathUtil.resolve(jp);
+					} catch (Exception e) {
+						Logger.log(e);
+					}
+				}
+				conn.executeCommand(callbackCommandId, project, projectName, deleted, classpath);
 			}
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {
-			Logger.log("unsubscribing from classpath changes: "+callbackCommandId);
-			if (subscribers!=null) {
+			Logger.log("unsubscribing from classpath changes: " + callbackCommandId);
+			if (subscribers != null) {
 				subscribers.remove(callbackCommandId);
 				if (subscribers.isEmpty()) {
 					subscribers = null;
-					if (manager!=null) {
+					if (manager != null) {
 						manager.dispose();
 						manager = null;
 					}
 				}
 			}
-			Logger.log("subsribers = "+subscribers);
+			Logger.log("subsribers = " + subscribers);
 		}
 	}
-	
+
 	private static MyClasspathListener classpathListener = new MyClasspathListener();
 
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
-		log("ClasspathListenerHandler executeCommand "+commandId+ ", "+arguments);
+		log("ClasspathListenerHandler executeCommand " + commandId + ", " + arguments);
 		switch (commandId) {
 		case "sts.java.addClasspathListener":
-			return addClasspathListener((String)arguments.get(0));
+			return addClasspathListener((String) arguments.get(0));
 		case "sts.java.removeClasspathListener":
-			return removeClasspathListener((String)arguments.get(0));
+			return removeClasspathListener((String) arguments.get(0));
 		default:
-			throw new IllegalArgumentException("Unknown command id: "+commandId);
+			throw new IllegalArgumentException("Unknown command id: " + commandId);
 		}
 	}
 
 	private Object removeClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener "+callbackCommandId);
+		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
 		classpathListener.unsubscribe(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener "+callbackCommandId+ " => OK");
+		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
 	private Object addClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener "+callbackCommandId);
+		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
 		classpathListener.subscribe(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener "+callbackCommandId+ " => OK");
+		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 

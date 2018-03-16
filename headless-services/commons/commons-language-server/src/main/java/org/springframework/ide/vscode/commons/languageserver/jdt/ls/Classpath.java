@@ -1,36 +1,28 @@
-/*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Pivotal, Inc. - initial API and implementation
- *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver;
+package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
+
 
 import java.util.List;
 
-public class ClasspathResponse {
-
+public class Classpath {
+	
 	public static final String ENTRY_KIND_SOURCE = "source";
 	public static final String ENTRY_KIND_BINARY = "binary";
+	public static final String OUTPUT_LOCATION = "output_location";
 
-	private List<Entry> entries;
+	private List<CPE> entries;
 	private String defaultOutputFolder;
 
-	public ClasspathResponse(List<Entry> entries, String defaultOutputFolder) {
+	public Classpath(List<CPE> entries, String defaultOutputFolder) {
 		super();
 		this.entries = entries;
 		this.defaultOutputFolder = defaultOutputFolder;
 	}
 
-	public List<Entry> getEntries() {
+	public List<CPE> getEntries() {
 		return entries;
 	}
 
-	public void setEntries(List<Entry> entries) {
+	public void setEntries(List<CPE> entries) {
 		this.entries = entries;
 	}
 
@@ -47,12 +39,11 @@ public class ClasspathResponse {
 		return "Classpath [entries=" + entries + ", defaultOutputFolder=" + defaultOutputFolder + "]";
 	}
 
-	public static class Entry {
-
+	public static class CPE {
 		private String kind;
 		private String path;
 
-		public Entry(String kind, String path) {
+		public CPE(String kind, String path) {
 			super();
 			this.kind = kind;
 			this.path = path;
@@ -78,5 +69,7 @@ public class ClasspathResponse {
 		public String toString() {
 			return "CPE [kind=" + kind + ", path=" + path + "]\n";
 		}
+
 	}
+
 }
