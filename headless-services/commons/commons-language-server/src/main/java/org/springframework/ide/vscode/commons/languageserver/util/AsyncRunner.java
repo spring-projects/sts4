@@ -37,13 +37,17 @@ public class AsyncRunner {
 		return x;
 	}
 
-	public synchronized void withLog(Logger logger, RunnableWithException runnable) {
-		execute(runnable).handle((v, e) -> {
+	public static void thenLog(Logger log, CompletableFuture<?> work) {
+		work.handle((v, e) -> {
 			if (e!=null) {
-				logger.error("", e);
+				log.error("", e);
 			}
 			return null;
 		});
+	}
+
+	public synchronized void withLog(Logger logger, RunnableWithException runnable) {
+		thenLog(logger, execute(runnable));
 	}
 
 	public synchronized CompletableFuture<Void> execute(RunnableWithException runnable) {

@@ -17,7 +17,6 @@ import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerResponse;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 
 /**
@@ -43,5 +42,8 @@ public interface STS4LanguageClient extends LanguageClient {
 	CompletableFuture<ProjectResponse> project(String uri);
 
 	@JsonRequest("sts/addClasspathListener")
-	CompletableFuture<ClasspathListenerResponse> addClasspathListener(ClasspathListenerParams params);
+	CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params);
+
+	@JsonRequest("sts/removeClasspathListener")
+	CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams);
 }

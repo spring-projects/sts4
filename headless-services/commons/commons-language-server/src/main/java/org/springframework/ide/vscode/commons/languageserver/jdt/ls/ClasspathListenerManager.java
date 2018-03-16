@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.Unregistration;
 import org.eclipse.lsp4j.UnregistrationParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -28,10 +31,13 @@ import com.google.gson.JsonElement;
 
 import reactor.core.Disposable;
 
+import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.*;
+
 public class ClasspathListenerManager {
 
+	private static Logger log = LoggerFactory.getLogger(ClasspathListenerManager.class);
+
 	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
-	private int commandIdCounter = 0;
 	private SimpleLanguageServer server;
 	private AsyncRunner async;
 
@@ -41,7 +47,8 @@ public class ClasspathListenerManager {
 	}
 
 	public Disposable addClasspathListener(ClasspathListener classpathListener) {
-		String callbackCommandId = "sts4.classpath." + (commandIdCounter++);
+		String callbackCommandId = "sts4.classpath." + RandomStringUtils.randomAlphabetic(8);
+
 		// 1. register callback command handler in SimpleLanguageServer
 		Disposable unregisterCommand = server.onCommand(callbackCommandId, (ExecuteCommandParams callbackParams) -> async.invoke(() -> {
 			List<Object> args = callbackParams.getArguments();
@@ -54,7 +61,9 @@ public class ClasspathListenerManager {
 		}));
 
 		// 2. call the client to ask it to call that callback
-		CompletableFuture<ClasspathListenerResponse> future1 = server.getClient().addClasspathListener(new ClasspathListenerParams(callbackCommandId));
+		CompletableFuture<Object> future1 = server.getClient().addClasspathListener(
+				new ClasspathListenerParams(callbackCommandId)
+		);
 
 		// 2. register the callback command with the client
 		String registrationId = UUID.randomUUID().toString();
@@ -73,6 +82,7 @@ public class ClasspathListenerManager {
 		// Cleanups:
 		return () -> {
 			unregisterCommand.dispose();
+			thenLog(log, this.server.getClient().removeClasspathListener(new ClasspathListenerParams(callbackCommandId)));
 			this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
 					new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)
 			)));
