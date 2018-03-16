@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
@@ -24,6 +26,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class WebfluxRouteHighlightProdivder implements HighlightProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(WebfluxRouteHighlightProdivder.class);
 
 	private final SpringIndexer springIndexer;
 
@@ -33,7 +37,7 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 
 	@Override
 	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator) {
-		System.out.println(" PROVIDE HIGHLIGHTS: " + position.getLine() + "/" + position.getCharacter());
+		log.info("PROVIDE HIGHLIGHTS: {} / {}", position.getLine(), position.getCharacter());
 		
 		this.springIndexer.getAdditonalInformation(document.getUri())
 			.stream()

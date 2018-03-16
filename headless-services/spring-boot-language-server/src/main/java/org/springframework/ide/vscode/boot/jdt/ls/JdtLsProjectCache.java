@@ -51,8 +51,6 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 				@Override
 				public void changed(Event event) {
 					log.info("Classpath changed: "+ event.projectUri);
-
-					
 				}
 			}))
 		);

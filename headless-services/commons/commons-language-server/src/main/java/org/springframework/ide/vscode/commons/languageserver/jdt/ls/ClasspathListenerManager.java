@@ -67,11 +67,6 @@ public class ClasspathListenerManager {
 			return "done";
 		}));
 
-		// 2. call the client to ask it to call that callback
-		CompletableFuture<Object> future1 = server.getClient().addClasspathListener(
-				new ClasspathListenerParams(callbackCommandId)
-		);
-
 		// 2. register the callback command with the client
 		String registrationId = UUID.randomUUID().toString();
 		RegistrationParams params = new RegistrationParams(ImmutableList.of(
@@ -80,19 +75,20 @@ public class ClasspathListenerManager {
 						ImmutableMap.of("commands", ImmutableList.of(callbackCommandId))
 				)
 		));
-		CompletableFuture<Void> future2 = server.getClient().registerCapability(params);
+		server.getClient().registerCapability(params).join();
 
-		// Wait for async work
-		future1.join();
-		future2.join();
+		// 3. call the client to ask it to call that callback
+		server.getClient().addClasspathListener(
+				new ClasspathListenerParams(callbackCommandId)
+		).join();
 
 		// Cleanups:
 		return () -> {
 			unregisterCommand.dispose();
 			thenLog(log, this.server.getClient().removeClasspathListener(new ClasspathListenerParams(callbackCommandId)));
-			this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
+			thenLog(log, this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
 					new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)
-			)));
+			))));
 		};
 	}
 
