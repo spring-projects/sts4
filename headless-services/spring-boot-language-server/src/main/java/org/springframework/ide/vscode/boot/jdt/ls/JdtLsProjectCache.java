@@ -121,17 +121,14 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		String uri = UriUtil.normalize(doc.getUri());
-		System.out.println("finding project from = " + uri);
 
 		synchronized (table) {
 			for (Entry<String, JdtLsProject> e : table.entrySet()) {
 				String projectUri = e.getKey();
 				if (UriUtil.contains(projectUri, uri) ) {
-					System.out.println("find project found = " + projectUri);
 					return Optional.of(e.getValue());
 				} 
 			}
-			System.out.println("no project found for = " + uri);
 		}
 	
 		return Optional.empty();
