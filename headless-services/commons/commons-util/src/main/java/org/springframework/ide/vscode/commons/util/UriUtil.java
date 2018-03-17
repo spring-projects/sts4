@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,10 +18,32 @@ public class UriUtil {
 
 	public static URI toUri(File file) {
 		try {
-			return new URI("file", "", file.getAbsoluteFile().toURI().getPath(), null); //$NON-NLS-1$ //$NON-NLS-2$
+			return new URI("file", "", file.getAbsoluteFile().toURI().getPath(), null);
 		} catch (URISyntaxException e) {
 			Log.log(e);
 			return file.getAbsoluteFile().toURI();
+		}
+	}
+
+	public static String normalize(String uriVal) {
+		try {
+			if (uriVal != null && uriVal.startsWith("file:")) {
+				File file = new File(URI.create(uriVal));
+				return file.toURI().toString();
+			}
+		} catch (Exception e) {
+
+		}
+		return uriVal;
+	}
+
+	public static boolean contains(String projectUri, String uri) {
+		if (projectUri.length() < uri.length()) {
+			return uri.startsWith(projectUri) && uri.charAt(projectUri.length()) == '/';
+		} else if (projectUri.length() > uri.length()) {
+			return false;
+		} else {
+			return projectUri.equals(uri);
 		}
 	}
 

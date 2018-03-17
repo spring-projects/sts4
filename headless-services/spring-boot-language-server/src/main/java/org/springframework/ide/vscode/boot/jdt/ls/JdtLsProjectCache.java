@@ -14,8 +14,11 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,9 +32,11 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -42,6 +47,7 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	private SimpleLanguageServer server;
 	private Map<String, JdtLsProject> table = new HashMap<String, JdtLsProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
+	private List<Listener> listeners = new ArrayList<>();
 
 	public JdtLsProjectCache(SimpleLanguageServer server) {
 		this.server = server;
@@ -50,7 +56,22 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 			disposable.complete(server.addClasspathListener(new ClasspathListener() {
 				@Override
 				public void changed(Event event) {
-					log.info("Classpath changed: "+ event.projectUri);
+					synchronized (table) {
+						log.info("Classpath changed: " + event.projectUri);
+						String uri = UriUtil.normalize(event.projectUri);
+						if (event.deleted) {
+							JdtLsProject deleted = table.remove(uri);
+							notifyDelete(deleted);
+						} else {
+							JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
+							JdtLsProject oldProject = table.put(event.projectUri, newProject);
+							if (oldProject != null) {
+								notifyChanged(newProject);
+							} else {
+								notifyCreated(newProject);
+							}
+						}
+					}
 				}
 			}))
 		);
@@ -61,18 +82,58 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	@Override
 	public void addListener(Listener listener) {
-//		throw new Error("not implemented yet");
-
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
 	}
 
 	@Override
 	public void removeListener(Listener listener) {
-//		throw new Error("not implemented yet");
-
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
+	}
+	
+	private void notifyDelete(JdtLsProject deleted) {
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.deleted(deleted);
+			}
+		}
+	}
+	
+	private void notifyChanged(JdtLsProject newProject) {
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.changed(newProject);
+			}
+		}
+	}
+	
+	private void notifyCreated(JdtLsProject newProject) {
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.created(newProject);
+			}
+		}
 	}
 
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+		String uri = UriUtil.normalize(doc.getUri());
+		System.out.println("finding project from = " + uri);
+
+		synchronized (table) {
+			for (Entry<String, JdtLsProject> e : table.entrySet()) {
+				String projectUri = e.getKey();
+				if (UriUtil.contains(projectUri, uri) ) {
+					System.out.println("find project found = " + projectUri);
+					return Optional.of(e.getValue());
+				} 
+			}
+			System.out.println("no project found for = " + uri);
+		}
+	
 		return Optional.empty();
 	}
 	
@@ -80,8 +141,8 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 		private final IClasspath classpath;
 
-		public JdtLsProject(String name, String uri, Classpath jdtClasspath) {
-			this.classpath = new JdtClasspath(name, uri, jdtClasspath);
+		public JdtLsProject(String name, String projectUri, Classpath classpath) {
+			this.classpath = new JdtClasspath(name, projectUri, classpath);
 		}
 
 		@Override
