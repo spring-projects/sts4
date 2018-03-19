@@ -30,13 +30,13 @@ public class BoshCliConfig {
 	private Settings settings = new Settings(null);
 
 	public String getCommand() {
-		return (String) settings.getProperty("bosh", "cli", "command");
+		return settings.getString("bosh", "cli", "command");
 	}
 	public String getTarget() {
-		return (String) settings.getProperty("bosh", "cli", "target");
+		return settings.getString("bosh", "cli", "target");
 	}
 	public Duration getTimeout() {
-		Integer seconds = (Integer) settings.getProperty("cli", "timeout");
+		Integer seconds = settings.getInt("cli", "timeout");
 		return seconds == null ? Duration.ofSeconds(3) : Duration.ofSeconds(seconds);
 	}
 

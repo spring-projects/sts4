@@ -128,7 +128,8 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine);
 
 		workspace.onDidChangeConfiguraton(settings -> {
-			Object cfClientParamsObj = settings.getProperty("cfClientParams");
+			Object cfClientParamsObj = settings.getRawProperty("cfClientParams");
+			//TODO code below is almost certainly broken. LSP4J doesn't return Map here but JsonObject.
 			if (cfClientParamsObj instanceof Map<?,?>) {
 				applyCfLoginParameterSettings((Map<?,?>) cfClientParamsObj);
 			}

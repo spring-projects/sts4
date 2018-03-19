@@ -30,6 +30,8 @@ import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 public class BoshCommandStemcellsProviderTest {
 
@@ -83,12 +85,12 @@ public class BoshCommandStemcellsProviderTest {
 //	}
 
 	@Test public void obeysCliConfigCommandAndTarget() throws Exception {
-		Map<String, Object> settings = ImmutableMap.of("bosh", ImmutableMap.of("cli",
+		JsonElement settings = settings(ImmutableMap.of("bosh", ImmutableMap.of("cli",
 				ImmutableMap.of(
 						"command", "alternate-command",
 						"target", "some-target"
 				)
-		));
+		)));
 		cliConfig.handleConfigurationChange(new Settings(settings));
 		assertEquals(ImmutableList.of(
 				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
@@ -100,12 +102,12 @@ public class BoshCommandStemcellsProviderTest {
 	}
 
 	@Test public void obeysCliConfigTarget() throws Exception {
-		Map<String, Object> settings = ImmutableMap.of("bosh", ImmutableMap.of("cli",
+		JsonElement settings = settings(ImmutableMap.of("bosh", ImmutableMap.of("cli",
 				ImmutableMap.of(
 						"command", "alternate-command",
 						"target", "explicit-target"
 				)
-		));
+		)));
 		cliConfig.handleConfigurationChange(new Settings(settings));
 		assertEquals(ImmutableList.of(
 				new StemcellData("bosh-vsphere-esxi-centos-7-go_agent", "3421.11", "centos-7"),
@@ -116,4 +118,8 @@ public class BoshCommandStemcellsProviderTest {
 		verify(provider).executeCommand(eq(new ExternalCommand("alternate-command", "-e", "explicit-target", "stemcells", "--json")));
 	}
 
+	private JsonElement settings(Object configObject) {
+		Gson gson = new Gson();
+		return gson.toJsonTree(configObject);
+	}
 }
