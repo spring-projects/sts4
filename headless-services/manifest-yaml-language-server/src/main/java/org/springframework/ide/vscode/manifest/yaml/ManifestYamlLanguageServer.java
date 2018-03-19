@@ -19,6 +19,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
@@ -35,6 +37,7 @@ import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProv
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
@@ -57,6 +60,9 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
@@ -65,9 +71,11 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	private CFTargetCache cfTargetCache;
 	private final CloudFoundryClientFactory cfClientFactory;
 	private final CfClientConfig cfClientConfig;
+	private final Logger log = LoggerFactory.getLogger(ManifestYamlLanguageServer.class);
 
 	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
 	final private ClientParamsProvider defaultClientParamsProvider;
+	private Gson gson = new Gson();
 
 	public ManifestYamlLanguageServer() {
 		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
@@ -128,16 +136,28 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine);
 
 		workspace.onDidChangeConfiguraton(settings -> {
-			Object cfClientParamsObj = settings.getRawProperty("cfClientParams");
-			//TODO code below is almost certainly broken. LSP4J doesn't return Map here but JsonObject.
-			if (cfClientParamsObj instanceof Map<?,?>) {
-				applyCfLoginParameterSettings((Map<?,?>) cfClientParamsObj);
+			//TODO code below needs to convert to a "nicer" Java representation of the CF client params, than just a Map with nested structures
+			Map<?, ?> asMap = getAs(Map.class, settings, "cfClientParams");
+			if (asMap != null) {
+				applyCfLoginParameterSettings(asMap);
 			}
 		});
 	}
 
 	public CfClientConfig getCfClientConfig() {
 		return cfClientConfig;
+	}
+
+	protected <T> T getAs(Class<T> klass, Settings settings, String... names) {
+		try {
+			JsonElement data = settings.getRawProperty(names);
+			if (data != null) {
+				return gson.fromJson(data, klass);
+			}
+		} catch (JsonSyntaxException e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
