@@ -44,7 +44,7 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 
 				@Override
 				public void created(IJavaProject project) {
-					// ignore
+					indexes.invalidate(project);
 				}
 
 				@Override

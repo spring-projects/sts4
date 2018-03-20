@@ -50,7 +50,7 @@ public final class CompilationUnitCache {
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleTextDocumentService documentService, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
-		projectListener = new CUProjectListener();
+		projectListener = ProjectObserver.onAny(this::invalidateProject);
 
 		uriToCu = CacheBuilder.newBuilder().build();
 		projectToDocs = CacheBuilder.newBuilder().build();
@@ -184,23 +184,5 @@ public final class CompilationUnitCache {
 				writeLock.unlock();
 			}
 		}
-	}
-
-	private class CUProjectListener implements ProjectObserver.Listener {
-
-		@Override
-		public void created(IJavaProject project) {
-		}
-
-		@Override
-		public void changed(IJavaProject project) {
-			invalidateProject(project);
-		}
-
-		@Override
-		public void deleted(IJavaProject project) {
-			invalidateProject(project);
-		}
-
 	}
 }

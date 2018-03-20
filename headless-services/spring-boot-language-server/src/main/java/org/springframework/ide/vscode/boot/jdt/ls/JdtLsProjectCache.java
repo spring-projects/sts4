@@ -57,14 +57,14 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 				@Override
 				public void changed(Event event) {
 					synchronized (table) {
-						log.info("Classpath changed: " + event.projectUri);
 						String uri = UriUtil.normalize(event.projectUri);
+						log.info("Classpath changed: " + uri);
 						if (event.deleted) {
 							JdtLsProject deleted = table.remove(uri);
 							notifyDelete(deleted);
 						} else {
 							JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
-							JdtLsProject oldProject = table.put(event.projectUri, newProject);
+							JdtLsProject oldProject = table.put(uri, newProject);
 							if (oldProject != null) {
 								notifyChanged(newProject);
 							} else {
