@@ -70,7 +70,7 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 					}
 					try {
 						Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
-						conn.executeCommand(callbackCommandId, project, projectName, deleted, classpath);
+						conn.executeClientCommand(callbackCommandId, project, projectName, deleted, classpath);
 						Logger.log("executing callback "+callbackCommandId+" SUCCESS");
 					} catch (Exception e) {
 						Logger.log("executing callback "+callbackCommandId+" FAILED");
