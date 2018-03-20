@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.internal.runtime.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -67,7 +68,14 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 							Logger.log(e);
 						}
 					}
-					conn.executeCommand(callbackCommandId, project, projectName, deleted, classpath);
+					try {
+						Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
+						conn.executeCommand(callbackCommandId, project, projectName, deleted, classpath);
+						Logger.log("executing callback "+callbackCommandId+" SUCCESS");
+					} catch (Exception e) {
+						Logger.log("executing callback "+callbackCommandId+" FAILED");
+						Logger.log(e);
+					}
 					return Status.OK_STATUS;
 				}
 			}
