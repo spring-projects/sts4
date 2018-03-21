@@ -1,6 +1,9 @@
 inputs:
 - name: sts4
 - name: atom-concourse
+- name: atom-bosh
+- name: atom-cf-manifest-yaml
+- name: atom-spring-boot
 params:
   atom_token: atom_token_must_be_provided!!!
 platform: linux

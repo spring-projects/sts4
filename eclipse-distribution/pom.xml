@@ -104,10 +104,10 @@
 		<profile>
 			<id>e47</id>
 			<properties>
-				<dist.target>e4.7.2</dist.target>
+				<dist.target>e4.7.3</dist.target>
 				<dist.target.major>e4.7</dist.target.major>
 				<dist.platform.name>Oxygen</dist.platform.name>
-				<dist.platform.name.long>Oxygen.2 (4.7.2)</dist.platform.name.long>
+				<dist.platform.name.long>Oxygen.3 (4.7.3)</dist.platform.name.long>
 				<dist.platform.id>oxygen</dist.platform.id>
 				<dist.platform.version>4.7</dist.platform.version>
 				<package.qualifierPrefix>e47</package.qualifierPrefix>
@@ -141,7 +141,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180206163158/repository/</url>
 				</repository>
 				<repository>
 					<id>latest-buildship-release</id>
@@ -222,16 +222,16 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/eclipse/updates/4.8-I-builds/</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20171130170529/repository/</url>
-				</repository> -->
-				<repository>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20180302171354/repository/</url>
+				</repository>
+<!--				<repository>
 					<id>orbit-i-builds</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/tools/orbit/downloads/latest-I/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>latest-m2e</id>
 					<layout>p2</layout>

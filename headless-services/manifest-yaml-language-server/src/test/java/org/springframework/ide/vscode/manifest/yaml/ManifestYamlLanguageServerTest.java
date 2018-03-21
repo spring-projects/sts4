@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -27,7 +27,10 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public class ManifestYamlLanguageServerTest {
 
@@ -100,7 +103,11 @@ public class ManifestYamlLanguageServerTest {
 		assertEquals(Arrays.asList("test.io"), manifestYamlLanguageServer.getCfTargets());
 
 		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
-		params.setSettings(new ObjectMapper().readValue(getClass().getResourceAsStream("/cf-targets1.json"), Map.class));
+
+		JsonParser parser = new JsonParser();
+		params.setSettings(parser.parse(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json")))
+);
+
 		manifestYamlLanguageServer.getWorkspaceService().didChangeConfiguration(params);
 		assertEquals(3, manifestYamlLanguageServer.getCfClientConfig().getClientParamsProvider().getParams().size());
 		assertEquals(Arrays.asList("test.io", "api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());

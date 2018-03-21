@@ -10,7 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Convenience wrapper around a 'settings' object. Provides some useful accessor methods to
@@ -18,31 +22,60 @@ import java.util.Map;
  */
 public class Settings {
 
-	private Object settings;
+	private static final Logger log = LoggerFactory.getLogger(Settings.class);
 
-	public Settings(Object settings) {
+	private JsonElement settings;
+
+	public Settings(JsonElement settings) {
 		this.settings = settings;
 	}
 
 	public Integer getInt(String... names) {
-		Object val = getProperty(names);
-		if (val instanceof Number) {
-			return ((Number) val).intValue();
+		try {
+			JsonElement val = getRawProperty(names);
+			if (val != null) {
+				return val.getAsInt();
+			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 		return null;
 	}
 
-	public Object getProperty(String... names) {
-		return getProperty(settings, names, 0);
+	public String getString(String... names) {
+		try {
+			JsonElement val = getRawProperty(names);
+			if (val != null) {
+				return val.getAsString();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
-	@SuppressWarnings("rawtypes")
-	private static Object getProperty(Object settings, String[] names, int i) {
+	public Boolean getBoolean(String... names) {
+		try {
+			JsonElement val = getRawProperty(names);
+			if (val != null) {
+				return val.getAsBoolean();
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
+	}
+
+	public JsonElement getRawProperty(String... names) {
+		return getRawProperty(settings, names, 0);
+	}
+
+	private static JsonElement getRawProperty(JsonElement settings, String[] names, int i) {
 		if (i >= names.length) {
 			return settings;
-		} else if (settings instanceof Map) {
-			Object sub = ((Map)settings).get(names[i]);
-			return getProperty(sub, names, i+1);
+		} else if (settings instanceof JsonObject) {
+			JsonElement sub = ((JsonObject)settings).get(names[i]);
+			return getRawProperty(sub, names, i+1);
 		} else {
 			return null;
 		}
@@ -52,4 +85,5 @@ public class Settings {
 	public String toString() {
 		return settings.toString();
 	}
+
 }

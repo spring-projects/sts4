@@ -24,7 +24,7 @@ public class BootJavaConfig {
 	private Settings settings = new Settings(null);
 
 	public boolean isBootHintsEnabled() {
-		Boolean enabled = (Boolean) settings.getProperty("boot-java", "boot-hints", "on");
+		Boolean enabled = settings.getBoolean("boot-java", "boot-hints", "on");
 		return enabled == null || enabled.booleanValue();
 	}
 

@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 
 public class SimpleWorkspaceService implements WorkspaceService {
 
@@ -71,7 +72,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params) {
-		configurationListeners.fire(new Settings(params.getSettings()));
+		configurationListeners.fire(new Settings((JsonElement) params.getSettings()));
 	}
 
 	@Override

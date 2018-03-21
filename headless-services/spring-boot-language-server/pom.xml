@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
+		<version>0.2.1-SNAPSHOT</version>
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
 	
@@ -60,6 +60,11 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-boot-app-cli</artifactId>
 			<version>${dependencies.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>org.eclipse.jdt.core</artifactId>
+			<version>3.13.102.v20180320-1701_BETA_JAVA10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
