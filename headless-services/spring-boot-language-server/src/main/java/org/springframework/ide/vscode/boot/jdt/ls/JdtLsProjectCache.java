@@ -76,7 +76,7 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 			}))
 		);
 		this.server.onShutdown(() -> 
-			disposable.thenAccept(Disposable::dispose)
+			disposable.thenAccept(Disposable::dispose).join()
 		);
 	}
 

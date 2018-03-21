@@ -84,11 +84,19 @@ public class ClasspathListenerManager {
 
 		// Cleanups:
 		return () -> {
-			unregisterCommand.dispose();
-			thenLog(log, this.server.getClient().removeClasspathListener(new ClasspathListenerParams(callbackCommandId)));
-			thenLog(log, this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
-					new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)
-			))));
+			try {
+				log.info("Unregistering classpath callback "+callbackCommandId +" ...");
+				this.server.getClient().removeClasspathListener(
+						new ClasspathListenerParams(callbackCommandId)
+				).join();
+				log.info("Unregistering classpath callback "+callbackCommandId +" OK");
+				this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
+						new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)
+				))).join();
+				unregisterCommand.dispose();
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		};
 	}
 

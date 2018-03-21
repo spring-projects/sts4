@@ -432,12 +432,14 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	@Override
 	public CompletableFuture<Object> shutdown() {
+	  return async.invoke(() -> {
 		Runnable h = shutdownHandler;
 		if (h!=null) {
 			h.run();
 		}
 		getWorkspaceService().dispose();
-		return CompletableFuture.completedFuture(new Object());
+		return "OK";
+	  });
 	}
 
 	@Override
