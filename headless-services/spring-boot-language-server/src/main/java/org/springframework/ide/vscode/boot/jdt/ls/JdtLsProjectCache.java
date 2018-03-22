@@ -58,7 +58,6 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 				public void changed(Event event) {
 					synchronized (table) {
 						String uri = UriUtil.normalize(event.projectUri);
-						log.info("Classpath changed: " + uri);
 						if (event.deleted) {
 							JdtLsProject deleted = table.remove(uri);
 							notifyDelete(deleted);
@@ -95,6 +94,7 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	}
 	
 	private void notifyDelete(JdtLsProject deleted) {
+		logEvent("Deleted", deleted);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.deleted(deleted);
@@ -103,14 +103,24 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	}
 	
 	private void notifyChanged(JdtLsProject newProject) {
+		logEvent("Changed", newProject);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.changed(newProject);
 			}
 		}
 	}
+
+	private void logEvent(String type, JdtLsProject newProject) {
+		try {
+			log.info("Project "+type+": " + newProject.getLocationUri());
+			log.info("Classpath has "+newProject.getClasspath().getClasspathEntries().size()+" entries");
+		} catch (Exception e) {
+		}
+	}
 	
 	private void notifyCreated(JdtLsProject newProject) {
+		logEvent("Created", newProject);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.created(newProject);
@@ -136,7 +146,7 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 	
 	private class JdtLsProject implements IJavaProject {
 
-		private final IClasspath classpath;
+		private final JdtClasspath classpath;
 
 		public JdtLsProject(String name, String projectUri, Classpath classpath) {
 			this.classpath = new JdtClasspath(name, projectUri, classpath);
@@ -145,6 +155,10 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 		@Override
 		public IClasspath getClasspath() {
 			return classpath;
+		}
+		
+		public String getLocationUri() {
+			return classpath.projectUri;
 		}
 
 	}
