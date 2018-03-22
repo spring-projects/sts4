@@ -15,12 +15,13 @@ curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/Ja
 rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
 
+# DISABLED in master for now:
 # Use maven to build jdt ls extension
-cd ../../headless-services/org.springframework.tooling.jdt.ls.extension
-../mvnw \
-    -Djdt.ls.updatesite=file://${HOME}/git/eclipse.jdt.ls/org.eclipse.jdt.ls.repository/target/repository\
-    clean package
-cp target/*.jar ${workdir}/jars/jdt-ls-extension.jar
+#cd ../../headless-services/org.springframework.tooling.jdt.ls.extension
+#../mvnw \
+#    -Djdt.ls.updatesite=file://${HOME}/git/eclipse.jdt.ls/org.eclipse.jdt.ls.repository/target/repository\
+#    clean package
+#cp target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 
 # Use maven to build fat jar of the language server
 cd ../../headless-services/spring-boot-language-server
