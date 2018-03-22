@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -25,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -52,7 +52,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/users/{username} - Content-Type: application/json", docUri, 18, 1, 18, 85));
 		
 		List<? extends SymbolAddOnInformation> addons = getAdditionalInformation(docUri);
-		assertNull(addons);
+		Assert.noElements(addons);
 	}
 
 	@Test

@@ -11,6 +11,8 @@
 
 package org.springframework.ide.vscode.commons.util;
 
+import java.util.Collection;
+
 public class Assert {
 
 	public static void isNull(String msg, Object obj) {
@@ -39,6 +41,13 @@ public class Assert {
 
 	public static void isTrue(boolean b) {
 		isLegal(b);
+	}
+	
+	public static void noElements(Collection<?> elements) {
+		if (elements==null || elements.isEmpty()) {
+			return; //good
+		}
+		throw new IllegalArgumentException("Should not have elements: "+elements);
 	}
 
 }
