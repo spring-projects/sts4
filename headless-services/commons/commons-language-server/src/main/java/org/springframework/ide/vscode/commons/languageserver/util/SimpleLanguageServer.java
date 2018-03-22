@@ -83,6 +83,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.*;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
@@ -131,8 +132,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	private boolean hasFileWatcherRegistrationSupport;
 
 	private Consumer<InitializeParams> initializeHandler;
-
-	private Runnable initializedHandler;
+	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
 
 	private Runnable shutdownHandler;
 
@@ -262,10 +262,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		Registration registration = new Registration(WORKSPACE_FOLDERS_CAPABILITY_ID, WORKSPACE_FOLDERS_CAPABILITY_NAME, null);
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
 		getClient().registerCapability(registrationParams);
-		Runnable h = this.initializedHandler;
-		if (h!=null) {
-			h.run();
-		}
+		this.initialized.complete(null); // triggers onInitialized handlers.
 	  });
 	}
 
@@ -644,15 +641,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	}
 
 	public synchronized void onInitialized(Runnable handler) {
-		if (this.initializedHandler==null) {
-			this.initializedHandler = handler;
-		} else {
-			Runnable oldHandler = this.initializedHandler;
-			this.initializedHandler = () -> {
-				oldHandler.run();
-				handler.run();
-			};
-		}
+		thenLog(log, this.initialized.thenAccept((whocares) -> handler.run()));
 	}
 
 	public synchronized void onShutdown(Runnable handler) {
