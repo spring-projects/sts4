@@ -31,7 +31,7 @@
     "onLanguage:java"
   ],
   "contributes": {
-    "DISABLED_javaExtensions": [
+    "javaExtensions": [
       "./jars/jdt-ls-extension.jar"
     ],
     "languages": [

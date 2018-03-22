@@ -81,8 +81,8 @@ public class BootLanguageServerParams {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			// JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server);
-			// javaProjectFinder.addJavaProjectFinder(jdtProjectCache);
+			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server);
+			javaProjectFinder.addJavaProjectFinder(jdtProjectCache);
 			
 			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
@@ -90,7 +90,7 @@ public class BootLanguageServerParams {
 			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
-			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(/*jdtProjectCache,*/ mavenProjectCache, gradleProjectCache));
+			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(jdtProjectCache, mavenProjectCache, gradleProjectCache));
 			
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
 			indexProvider.setProgressService(server.getProgressService());
