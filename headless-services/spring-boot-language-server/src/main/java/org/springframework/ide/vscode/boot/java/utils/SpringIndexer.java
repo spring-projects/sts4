@@ -120,6 +120,7 @@ public class SpringIndexer {
 	private volatile InitializeItem lastInitializeItem;
 
 	public SpringIndexer(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
+		log.debug("Creating {}", this);
 		this.server = server;
 		this.params = params;
 		this.projectFinder = params.projectFinder;
@@ -137,6 +138,7 @@ public class SpringIndexer {
 				try {
 					while (true) {
 						WorkerItem workerItem = updateQueue.take();
+						log.debug("dequeued {}", workerItem);
 						workerItem.run();
 					}
 				}
@@ -148,8 +150,10 @@ public class SpringIndexer {
 				}
 			}
 		}, "Spring Annotation Index Update Worker");
-		server.onInitialized(updateWorker::start);
-
+		server.onInitialized(() -> {
+			log.debug("onServerInitialized {}", this);
+			updateWorker.start();
+		});
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 			refresh();
@@ -182,6 +186,7 @@ public class SpringIndexer {
 		synchronized(this) {
 			try {
 				if (lastInitializeItem != null && !lastInitializeItem.getFuture().isDone()) {
+					log.debug("Canceling {}", lastInitializeItem);
 					lastInitializeItem.getFuture().cancel(false);
 				}
 
@@ -189,7 +194,7 @@ public class SpringIndexer {
 				updateQueue.put(lastInitializeItem);
 				return lastInitializeItem.getFuture();
 			}
-			catch (Exception e) {
+			catch (Throwable  e) {
 				log.error("{}", e);
 			}
 		}
@@ -205,6 +210,7 @@ public class SpringIndexer {
 		synchronized (this) {
 			if (lastInitializeItem != null) {
 				try {
+					log.debug("Wating for {}", lastInitializeItem);
 					lastInitializeItem.getFuture().get();
 				} catch (InterruptedException | ExecutionException e) {
 					// ignore
@@ -626,15 +632,14 @@ public class SpringIndexer {
 	}
 
 	private class InitializeItem implements WorkerItem {
-
+		
 		private final WorkspaceFolder[] workspaceRoots;
 		private final CompletableFuture<Void> future;
 
 		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
-			log.debug("initialze spring indexer task created for roots:   " + Arrays.toString(workspaceRoots));
-
 			this.workspaceRoots = workspaceRoots;
 			this.future = new CompletableFuture<Void>();
+			log.debug("{} created ", this);
 		}
 
 		@Override
@@ -644,19 +649,25 @@ public class SpringIndexer {
 
 		@Override
 		public void run() {
-			if (!future.isCancelled()) {
-				log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
-
-				for (WorkspaceFolder root : workspaceRoots) {
-					SpringIndexer.this.scanFiles(root);
+			log.debug("{} starting...", this);
+			try {
+				if (!future.isCancelled()) {
+//					log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
+	
+					for (WorkspaceFolder root : workspaceRoots) {
+						SpringIndexer.this.scanFiles(root);
+					}
+	
+//					log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
+	
+					future.complete(null);
+					log.debug("{} completed", this);
 				}
-
-				log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
-
-				future.complete(null);
-			}
-			else {
-				log.debug("initialze spring indexer task canceled for roots:  " + Arrays.toString(workspaceRoots));
+				else {
+					log.debug("{} skipped because it was canceled", this);
+				}
+			} catch (Throwable e) {
+				log.error("{} threw exception", this, e);
 			}
 		}
 	}
