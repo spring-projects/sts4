@@ -103,10 +103,10 @@
 		<profile>
 			<id>e47</id>
 			<properties>
-				<dist.target>e4.7.2</dist.target>
+				<dist.target>e4.7.3</dist.target>
 				<dist.target.major>e4.7</dist.target.major>
 				<dist.platform.name>Oxygen</dist.platform.name>
-				<dist.platform.name.long>Oxygen.2 (4.7.2)</dist.platform.name.long>
+				<dist.platform.name.long>Oxygen.3 (4.7.3)</dist.platform.name.long>
 				<dist.platform.id>oxygen</dist.platform.id>
 				<dist.platform.version>4.7</dist.platform.version>
 				<package.qualifierPrefix>e47</package.qualifierPrefix>
