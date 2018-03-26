@@ -108,28 +108,30 @@ public class JdtLsProjectCache implements JavaProjectsService {
 
 	@Override
 	public void addListener(Listener listener) {
-		Assert.isLegal(initialized.isDone()); //Adding / removing listeners prior to inialization isn't supported. (If this is really needed, it can be
-												// bit its a bit trickier to implement that correctly)
-		if (initialized.isCompletedExceptionally()) {
-			fallback.addListener(listener);
-		} else {
-			synchronized (listeners) {
-				listeners.add(listener);
+		initialized.handle((success, failed) -> {
+			if (failed!=null) {
+				fallback.addListener(listener);
+			} else {
+				synchronized (listeners) {
+					listeners.add(listener);
+				}
 			}
-		}
+			return null;
+		});
 	}
 
 	@Override
 	public void removeListener(Listener listener) {
-		Assert.isLegal(initialized.isDone()); //Adding / removing listeners prior to inialization isn't supported. (If this is really needed, it can be
-												// bit its a bit trickier to implement that correctly)
-		if (initialized.isCompletedExceptionally()) {
-			fallback.removeListener(listener);
-		} else {
-			synchronized (listeners) {
-				listeners.remove(listener);
+		initialized.handle((success, failed) -> {
+			if (failed!=null) {
+				fallback.removeListener(listener);
+			} else {
+				synchronized (listeners) {
+					listeners.remove(listener);
+				}
 			}
-		}
+			return null;
+		});
 	}
 	
 	private void notifyDelete(JdtLsProject deleted) {

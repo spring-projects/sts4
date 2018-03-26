@@ -47,7 +47,13 @@ public class CompositeJavaProjectFinder implements JavaProjectFinder {
 	
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		return projectFinders.stream().map(finder -> finder.find(doc)).filter(Optional::isPresent).findFirst().orElseGet(() -> Optional.empty());
+		for (JavaProjectFinder finder : projectFinders) {
+			Optional<IJavaProject> project = finder.find(doc);
+			if (project.isPresent()) {
+				return project;
+			}
+		}
+		return Optional.empty();
 	}
 
 }
