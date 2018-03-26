@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.internal.runtime.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,6 +28,17 @@ import org.springframework.tooling.jdt.ls.extension.ClasspathListenerManager.Cla
 
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
+	
+	static final boolean isSupported = checkSupported();
+	private static boolean checkSupported() {
+		try {
+			JavaClientConnection.class.getMethod("executeClientCommand", String.class, Object[].class);
+			return true;
+		} catch (Exception e) {
+			Logger.log(e);
+		}
+		return false;
+	}
 
 	static class Subscribptions {
 
@@ -101,6 +111,9 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
+		if (!isSupported) {
+			throw new UnsupportedOperationException("Command '"+commandId+"' not supported on older versions of JDT Language Server");
+		}
 		log("ClasspathListenerHandler executeCommand " + commandId + ", " + arguments);
 		switch (commandId) {
 		case "sts.java.addClasspathListener":

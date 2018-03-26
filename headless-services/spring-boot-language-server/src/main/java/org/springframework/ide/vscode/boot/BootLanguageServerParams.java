@@ -13,11 +13,13 @@ package org.springframework.ide.vscode.boot;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
+import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -31,6 +33,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaP
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -80,29 +83,48 @@ public class BootLanguageServerParams {
 	public static LSFactory<BootLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
-			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server);
-			javaProjectFinder.addJavaProjectFinder(jdtProjectCache);
-			
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
-			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
-
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
-			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
-
-			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(jdtProjectCache, mavenProjectCache, gradleProjectCache));
-			
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
+			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server, createFallbackProjectCache(server));
+			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
 			indexProvider.setProgressService(server.getProgressService());
 
 			return new BootLanguageServerParams(
-					javaProjectFinder.filter(BootProjectUtil::isBootProject),
-					projectObserver,
+					jdtProjectCache.filter(BootProjectUtil::isBootProject),
+					jdtProjectCache,
 					indexProvider,
-					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
+					(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
 					RunningAppProvider.DEFAULT,
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
+		};
+	}
+
+	private static JavaProjectsService createFallbackProjectCache(SimpleLanguageServer server) {
+		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
+		
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
+
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
+
+		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+		
+		return new JavaProjectsService() {
+			
+			@Override
+			public void removeListener(Listener listener) {
+				projectObserver.removeListener(listener);
+			}
+			
+			@Override
+			public void addListener(Listener listener) {
+				projectObserver.addListener(listener);
+			}
+			
+			@Override
+			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+				return javaProjectFinder.find(doc);
+			}
 		};
 	}
 

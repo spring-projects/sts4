@@ -660,7 +660,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		return this.async;
 	}
 
-	public synchronized Disposable addClasspathListener(ClasspathListener classpathListener) {
+	public synchronized Disposable addClasspathListener(ClasspathListener classpathListener) throws Exception {
 		if (classpathListenerManager == null) {
 			classpathListenerManager = new ClasspathListenerManager(this);
 		}

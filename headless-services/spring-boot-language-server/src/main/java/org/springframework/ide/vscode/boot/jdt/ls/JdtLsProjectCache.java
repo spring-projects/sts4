@@ -30,66 +30,105 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
 
-public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
-
+public class JdtLsProjectCache implements JavaProjectsService {
+	
+	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
+	
 	private SimpleLanguageServer server;
 	private Map<String, JdtLsProject> table = new HashMap<String, JdtLsProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
-	public JdtLsProjectCache(SimpleLanguageServer server) {
+	private final JavaProjectsService fallback;
+
+	public JdtLsProjectCache(SimpleLanguageServer server, JavaProjectsService fallback) {
+		Assert.isNotNull(fallback);
+		this.fallback = fallback;
 		this.server = server;
 		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
-		this.server.onInitialized(() -> 
-			disposable.complete(server.addClasspathListener(new ClasspathListener() {
-				@Override
-				public void changed(Event event) {
-					synchronized (table) {
-						String uri = UriUtil.normalize(event.projectUri);
-						if (event.deleted) {
-							JdtLsProject deleted = table.remove(uri);
-							notifyDelete(deleted);
-						} else {
-							JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
-							JdtLsProject oldProject = table.put(uri, newProject);
-							if (oldProject != null) {
-								notifyChanged(newProject);
+		this.server.onInitialized(() -> {
+			try {
+				disposable.complete(server.addClasspathListener(new ClasspathListener() {
+					@Override
+					public void changed(Event event) {
+						synchronized (table) {
+							String uri = UriUtil.normalize(event.projectUri);
+							if (event.deleted) {
+								JdtLsProject deleted = table.remove(uri);
+								notifyDelete(deleted);
 							} else {
-								notifyCreated(newProject);
+								JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
+								JdtLsProject oldProject = table.put(uri, newProject);
+								if (oldProject != null) {
+									notifyChanged(newProject);
+								} else {
+									notifyCreated(newProject);
+								}
 							}
 						}
 					}
+				}));
+				initialized.complete(null);
+			} catch (Throwable e) {
+				if (isNoJdtError(e)) {
+					log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
+				} else if (isOldJdt(e)) {
+					log.info("JDT Lanuage Server too old. Fallback classpath provider will be used instead.");
+				} else {
+					log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", e);
 				}
-			}))
-		);
+				disposable.complete(()-> {});
+				initialized.completeExceptionally(e);
+			}
+		});
 		this.server.onShutdown(() -> 
 			disposable.thenAccept(Disposable::dispose).join()
 		);
 	}
 
+	private boolean isOldJdt(Throwable e) {
+		return ExceptionUtil.getMessage(e).contains("'sts.java.addClasspathListener' not supported");
+	}
+
+	private boolean isNoJdtError(Throwable e) {
+		return ExceptionUtil.getMessage(e).contains("command 'java.execute.workspaceCommand' not found");
+	}
+
 	@Override
 	public void addListener(Listener listener) {
-		synchronized (listeners) {
-			listeners.add(listener);
+		Assert.isLegal(initialized.isDone()); //Adding / removing listeners prior to inialization isn't supported. (If this is really needed, it can be
+												// bit its a bit trickier to implement that correctly)
+		if (initialized.isCompletedExceptionally()) {
+			fallback.addListener(listener);
+		} else {
+			synchronized (listeners) {
+				listeners.add(listener);
+			}
 		}
 	}
 
 	@Override
 	public void removeListener(Listener listener) {
-		synchronized (listeners) {
-			listeners.remove(listener);
+		Assert.isLegal(initialized.isDone()); //Adding / removing listeners prior to inialization isn't supported. (If this is really needed, it can be
+												// bit its a bit trickier to implement that correctly)
+		if (initialized.isCompletedExceptionally()) {
+			fallback.removeListener(listener);
+		} else {
+			synchronized (listeners) {
+				listeners.remove(listener);
+			}
 		}
 	}
 	
@@ -130,17 +169,21 @@ public class JdtLsProjectCache implements JavaProjectFinder, ProjectObserver {
 
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		String uri = UriUtil.normalize(doc.getUri());
-
-		synchronized (table) {
-			for (Entry<String, JdtLsProject> e : table.entrySet()) {
-				String projectUri = e.getKey();
-				if (UriUtil.contains(projectUri, uri) ) {
-					return Optional.of(e.getValue());
-				} 
+		if (initialized.isDone()) {
+			if (initialized.isCompletedExceptionally()) {
+				return fallback.find(doc);
+			}
+			String uri = UriUtil.normalize(doc.getUri());
+	
+			synchronized (table) {
+				for (Entry<String, JdtLsProject> e : table.entrySet()) {
+					String projectUri = e.getKey();
+					if (UriUtil.contains(projectUri, uri) ) {
+						return Optional.of(e.getValue());
+					} 
+				}
 			}
 		}
-	
 		return Optional.empty();
 	}
 	
