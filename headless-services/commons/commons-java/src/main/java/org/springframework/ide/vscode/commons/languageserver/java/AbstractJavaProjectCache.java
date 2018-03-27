@@ -97,7 +97,7 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 
 	@Override
 	public void addListener(Listener listener) {
-		log.info("Add listener {} to {}", listener, this);
+		log.debug("Add listener {} to {}", listener, this);
 		listeners.add(listener);
 	}
 
@@ -107,17 +107,17 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 	}
 	
 	final protected void notifyProjectCreated(P project) {
-		log.info("project created {}", project);
+		log.debug("project created {}", project);
 		listeners.forEach(l -> l.created(project));
 	}
 	
 	final protected void notifyProjectChanged(P project) {
-		log.info("project changed {}", project);
+		log.debug("project changed {}", project);
 		listeners.forEach(l -> l.changed(project));
 	}
 	
 	final protected void notifyProjectDeleted(P project) {
-		log.info("project deleted {}", project);
+		log.debug("project deleted {}", project);
 		listeners.forEach(l -> l.deleted(project));
 	}
 

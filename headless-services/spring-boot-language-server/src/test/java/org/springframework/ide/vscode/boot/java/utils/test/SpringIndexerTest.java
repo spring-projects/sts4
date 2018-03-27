@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSym
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -139,9 +140,10 @@ public class SpringIndexerTest {
 		// update document and update index
 		String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
 
+		assertTrue(containsSymbol(indexer().getSymbols(changedDocURI), "@/mapping1", changedDocURI));
+
 		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
 		CompletableFuture<Void> updateFuture = indexer().updateDocument(changedDocURI, newContent);
-
 		updateFuture.get(5, TimeUnit.SECONDS);
 
 		// check for updated index per document
@@ -166,6 +168,8 @@ public class SpringIndexerTest {
 		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 	}
+
+
 
 	@Test
 	public void testNewDocumentCreated() throws Exception {
@@ -242,12 +246,13 @@ public class SpringIndexerTest {
 
 		// update document and update index
 		String deletedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+
+		assertFalse(indexer().getSymbols(deletedDocURI).isEmpty()); //We have symbols before deletion?
 		CompletableFuture<Void> deleteFuture = indexer().deleteDocument(deletedDocURI);
-		deleteFuture.get(5, TimeUnit.SECONDS);
+		deleteFuture.get(5, TimeUnit.HOURS);
 
 		// check for updated index per document
-		List<? extends SymbolInformation> symbols = indexer().getSymbols(deletedDocURI);
-		assertNull(symbols);
+		Assert.noElements(indexer().getSymbols(deletedDocURI));
 
 		// check for updated index in all symbols
 		List<? extends SymbolInformation> allSymbols = indexer().getAllSymbols("");
@@ -312,6 +317,21 @@ public class SpringIndexerTest {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
+	}
+
+	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri) {
+		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
+			SymbolInformation symbol = iterator.next();
+
+			if (
+					symbol.getName().equals(name) && 
+					symbol.getLocation().getUri().equals(uri)
+			) {
+				return true;
+			}
+ 		}
+
+		return false;
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

@@ -26,12 +26,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.JavaCore;
@@ -67,12 +69,12 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -180,23 +182,29 @@ public class SpringIndexer {
 	}
 
 	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
-		synchronized(this) {
-			try {
-				if (lastInitializeItem != null && !lastInitializeItem.getFuture().isDone()) {
-					log.debug("Canceling {}", lastInitializeItem);
-					lastInitializeItem.getFuture().cancel(false);
-				}
-
+		InitializeItem toCancel = null;
+		try {
+			synchronized(this) {
+			toCancel = lastInitializeItem;
+			//Careful do not cancel until created and setup new item. Otherwise it creates a 
+			//race condition in the test harness which needs to be able to ensure initialization
+			//is completed.
 				lastInitializeItem = new InitializeItem(workspaceRoots.toArray(new WorkspaceFolder[workspaceRoots.size()]));
 				updateQueue.put(lastInitializeItem);
 				return lastInitializeItem.getFuture();
 			}
-			catch (Throwable  e) {
-				log.error("{}", e);
+		} catch (Throwable  e) {
+			log.error("", e);
+			return Futures.error(e);
+		} finally {
+			try {
+				if (toCancel!=null && !toCancel.getFuture().isDone()) {
+					toCancel.getFuture().cancel(false);
+				}
+			} catch (Exception e) {
+				//ignore
 			}
 		}
-
-		return null;
 	}
 
 	public boolean isInitializing() {
@@ -204,26 +212,26 @@ public class SpringIndexer {
 	}
 
 	public void waitForInitializeTask() {
-		synchronized (this) {
-			if (lastInitializeItem != null) {
+		InitializeItem lastInitializeItem = this.lastInitializeItem;
+		while (lastInitializeItem != null) {
+			if (!lastInitializeItem.getFuture().isDone()) {
 				try {
 					log.debug("Wating for {}", lastInitializeItem);
 					lastInitializeItem.getFuture().get();
-				} catch (InterruptedException | ExecutionException e) {
-					// ignore
+				} catch (Exception e) {
+					log.debug("Waiting for {} aborted", lastInitializeItem);
+					log.debug(ExceptionUtil.getMessage(e));
 				}
+				lastInitializeItem = this.lastInitializeItem;
+			} else {
+				log.debug("No need to wait for {}", lastInitializeItem);
+				lastInitializeItem = this.lastInitializeItem==lastInitializeItem ? null : this.lastInitializeItem;
 			}
 		}
 	}
 
 	private void refresh() {
 		synchronized (this) {
-			symbols.clear();
-			symbolsByDoc.clear();
-
-			addonInformation.clear();
-			addonInformationByDoc.clear();
-
 			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
 			log.debug("refresh spring indexer for roots: {}", roots.toString());
 			initialize(roots);
@@ -276,11 +284,10 @@ public class SpringIndexer {
 				return deleteItem.getFuture();
 			}
 			catch (Exception e) {
-				log.error("{}", e);
+				log.error("", e);
+				return Futures.error(e);
 			}
 		}
-
-		return null;
 	}
 
 	public CompletableFuture<Void> createDocument(String docURI) {
@@ -298,12 +305,12 @@ public class SpringIndexer {
 					}
 				}
 				catch (Exception e) {
-					log.error("{}", e);
+					log.error("", e);
+					return Futures.error(e);
 				}
 			}
 		}
-
-		return null;
+		return CompletableFuture.completedFuture(null);
 	}
 
 	public List<SymbolInformation> getAllSymbols(String query) {
@@ -628,7 +635,11 @@ public class SpringIndexer {
 
 	}
 
+	private static AtomicInteger initItemId = new AtomicInteger(0);
+
 	private class InitializeItem implements WorkerItem {
+		
+		private int id = initItemId.incrementAndGet();
 		
 		private final WorkspaceFolder[] workspaceRoots;
 		private final CompletableFuture<Void> future;
@@ -650,7 +661,12 @@ public class SpringIndexer {
 			try {
 				if (!future.isCancelled()) {
 //					log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
-	
+					symbols.clear();
+					symbolsByDoc.clear();
+
+					addonInformation.clear();
+					addonInformationByDoc.clear();
+
 					for (WorkspaceFolder root : workspaceRoots) {
 						SpringIndexer.this.scanFiles(root);
 					}
@@ -666,6 +682,11 @@ public class SpringIndexer {
 			} catch (Throwable e) {
 				log.error("{} threw exception", this, e);
 			}
+		}
+		
+		@Override
+		public String toString() {
+			return "InitItem("+id+")";
 		}
 	}
 
