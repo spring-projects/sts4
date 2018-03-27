@@ -65,21 +65,23 @@ public class JdtLsProjectCache implements JavaProjectsService {
 				disposable.complete(server.addClasspathListener(new ClasspathListener() {
 					@Override
 					public void changed(Event event) {
-						synchronized (table) {
-							String uri = UriUtil.normalize(event.projectUri);
-							if (event.deleted) {
-								JdtLsProject deleted = table.remove(uri);
-								notifyDelete(deleted);
-							} else {
-								JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
-								JdtLsProject oldProject = table.put(uri, newProject);
-								if (oldProject != null) {
-									notifyChanged(newProject);
+						initialized.thenRun(() -> {
+							synchronized (table) {
+								String uri = UriUtil.normalize(event.projectUri);
+								if (event.deleted) {
+									JdtLsProject deleted = table.remove(uri);
+									notifyDelete(deleted);
 								} else {
-									notifyCreated(newProject);
+									JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
+									JdtLsProject oldProject = table.put(uri, newProject);
+									if (oldProject != null) {
+										notifyChanged(newProject);
+									} else {
+										notifyCreated(newProject);
+									}
 								}
 							}
-						}
+						});
 					}
 				}));
 				initialized.complete(null);
@@ -135,7 +137,16 @@ public class JdtLsProjectCache implements JavaProjectsService {
 			return null;
 		});
 	}
-	
+
+	private void notifyCreated(JdtLsProject newProject) {
+		logEvent("Created", newProject);
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.created(newProject);
+			}
+		}
+	}
+
 	private void notifyDelete(JdtLsProject deleted) {
 		logEvent("Deleted", deleted);
 		synchronized (listeners) {
@@ -162,37 +173,32 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		}
 	}
 	
-	private void notifyCreated(JdtLsProject newProject) {
-		logEvent("Created", newProject);
-		synchronized (listeners) {
-			for (Listener listener : listeners) {
-				listener.created(newProject);
-			}
-		}
-	}
-
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		log.info("find {} ",doc.getUri());
+		String uri = UriUtil.normalize(doc.getUri());
+		log.debug("find {} ", uri);
 		if (initialized.isDone()) {
 			if (initialized.isCompletedExceptionally()) {
-				log.info("find {} delegating to fallback", doc.getUri());
+				log.debug("find {} delegating to fallback", uri);
 				Optional<IJavaProject> result = fallback.get().find(doc);
-				log.info("find => {}", result);
+				log.debug("find => {}", result);
 				return result;
 			}
-			String uri = UriUtil.normalize(doc.getUri());
 	
 			synchronized (table) {
 				for (Entry<String, JdtLsProject> e : table.entrySet()) {
 					String projectUri = e.getKey();
+					log.debug("projectUri = '{}'", projectUri);
 					if (UriUtil.contains(projectUri, uri) ) {
+						log.debug("found {} for {}", e.getValue(), uri);
 						return Optional.of(e.getValue());
 					} 
 				}
 			}
+		} else {
+			log.debug("find => NOT INITIALIZED YET");
 		}
-		log.info("find => NOT INITIALIZED YET");
+		log.debug("NOT FOUND {} ", uri);
 		return Optional.empty();
 	}
 	
