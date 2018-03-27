@@ -83,7 +83,7 @@ public class BootLanguageServerParams {
 	public static LSFactory<BootLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
-			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server, createFallbackProjectCache(server));
+			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server, () -> createFallbackProjectCache(server));
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
 			indexProvider.setProgressService(server.getProgressService());
 

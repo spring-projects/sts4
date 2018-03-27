@@ -38,6 +38,8 @@ import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
@@ -45,17 +47,17 @@ import reactor.core.Disposable;
 public class JdtLsProjectCache implements JavaProjectsService {
 	
 	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
-	
+
 	private SimpleLanguageServer server;
 	private Map<String, JdtLsProject> table = new HashMap<String, JdtLsProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
-	private final JavaProjectsService fallback;
+	private final Supplier<JavaProjectsService> fallback;
 
-	public JdtLsProjectCache(SimpleLanguageServer server, JavaProjectsService fallback) {
+	public JdtLsProjectCache(SimpleLanguageServer server, Supplier<JavaProjectsService> fallback) {
 		Assert.isNotNull(fallback);
-		this.fallback = fallback;
+		this.fallback = Suppliers.memoize(fallback);
 		this.server = server;
 		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
 		this.server.onInitialized(() -> {
@@ -110,7 +112,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	public void addListener(Listener listener) {
 		initialized.handle((success, failed) -> {
 			if (failed!=null) {
-				fallback.addListener(listener);
+				fallback.get().addListener(listener);
 			} else {
 				synchronized (listeners) {
 					listeners.add(listener);
@@ -124,7 +126,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	public void removeListener(Listener listener) {
 		initialized.handle((success, failed) -> {
 			if (failed!=null) {
-				fallback.removeListener(listener);
+				fallback.get().removeListener(listener);
 			} else {
 				synchronized (listeners) {
 					listeners.remove(listener);
@@ -171,9 +173,13 @@ public class JdtLsProjectCache implements JavaProjectsService {
 
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+		log.info("find {} ",doc.getUri());
 		if (initialized.isDone()) {
 			if (initialized.isCompletedExceptionally()) {
-				return fallback.find(doc);
+				log.info("find {} delegating to fallback", doc.getUri());
+				Optional<IJavaProject> result = fallback.get().find(doc);
+				log.info("find => {}", result);
+				return result;
 			}
 			String uri = UriUtil.normalize(doc.getUri());
 	
@@ -186,6 +192,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 				}
 			}
 		}
+		log.info("find => NOT INITIALIZED YET");
 		return Optional.empty();
 	}
 	

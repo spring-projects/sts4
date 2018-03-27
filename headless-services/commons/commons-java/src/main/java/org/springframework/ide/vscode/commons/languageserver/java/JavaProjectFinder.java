@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.java;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;

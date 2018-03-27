@@ -150,10 +150,7 @@ public class SpringIndexer {
 				}
 			}
 		}, "Spring Annotation Index Update Worker");
-		server.onInitialized(() -> {
-			log.debug("onServerInitialized {}", this);
-			updateWorker.start();
-		});
+		server.onInitialized(updateWorker::start);
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 			refresh();

@@ -13,7 +13,10 @@ package org.springframework.ide.vscode.commons.languageserver.java;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.util.FileObserver;
@@ -33,6 +36,8 @@ import com.google.common.cache.CacheBuilder;
  */
 public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implements JavaProjectCache<K, P> {
 	
+	private static final Logger log = LoggerFactory.getLogger(AbstractJavaProjectCache.class);
+	
 	protected Sts4LanguageServer server;
 
 	private ListenerList<Listener> listeners = new ListenerList<>();
@@ -47,15 +52,23 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 	public P project(K key) {
 		if (key != null) {
 			try {
-				return cache.get(key, () -> {
-					try {
-						P project = createProject(key);
-						attachListeners(key, project);
-						return project;
-					} catch (Throwable t) {
-						throw new ExecutionException(t);
+				AtomicReference<P> createdProject = new AtomicReference<P>(null);
+				try {
+					return cache.get(key, () -> {
+						try {
+							P project = createProject(key);
+							createdProject.set(project);
+							attachListeners(key, project);
+							return project;
+						} catch (Throwable t) {
+							throw new ExecutionException(t);
+						}
+					});
+				} finally {
+					if (createdProject.get()!=null) {
+						notifyProjectCreated(createdProject.get());
 					}
-				});
+				}
 			} catch (ExecutionException e) {
 				Log.log(e);
 				return null;
@@ -84,6 +97,7 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 
 	@Override
 	public void addListener(Listener listener) {
+		log.info("Add listener {} to {}", listener, this);
 		listeners.add(listener);
 	}
 
@@ -93,14 +107,17 @@ public abstract class AbstractJavaProjectCache<K, P extends IJavaProject> implem
 	}
 	
 	final protected void notifyProjectCreated(P project) {
+		log.info("project created {}", project);
 		listeners.forEach(l -> l.created(project));
 	}
 	
 	final protected void notifyProjectChanged(P project) {
+		log.info("project changed {}", project);
 		listeners.forEach(l -> l.changed(project));
 	}
 	
 	final protected void notifyProjectDeleted(P project) {
+		log.info("project deleted {}", project);
 		listeners.forEach(l -> l.deleted(project));
 	}
 
