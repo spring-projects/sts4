@@ -18,7 +18,6 @@ mkdir -p ${workdir}/jars
 # Use maven to build jdt ls extension
 cd ../../headless-services/org.springframework.tooling.jdt.ls.extension
 ../mvnw \
-    -Djdt.ls.updatesite=file://${HOME}/git/eclipse.jdt.ls/org.eclipse.jdt.ls.repository/target/repository\
     clean package
 cp target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 

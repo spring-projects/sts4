@@ -19,8 +19,8 @@
     <repository>
       <id>JDT.LS</id>
       <layout>p2</layout>
-      <url>${jdt.ls.updatesite}</url>
-<!--  <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url> -->
+      <!-- <url>${jdt.ls.updatesite}</url> -->
+      <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
     </repository>
   </repositories>
   <build>
