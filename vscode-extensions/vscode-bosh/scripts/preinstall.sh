@@ -8,7 +8,7 @@ curl https://raw.githubusercontent.com/textmate/yaml.tmbundle/master/Syntaxes/YA
 
 # Preinstall commons-vscode package
 (cd ../commons-vscode ; npm install ; npm pack)
-npm install ../commons-vscode/commons-vscode-*.tgz
+npm install ../commons-vscode/*-commons-vscode-*.tgz
 
 # Use maven to build fat jar of the language server
 cd ../../headless-services/bosh-language-server

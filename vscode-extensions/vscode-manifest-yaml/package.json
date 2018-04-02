@@ -58,7 +58,7 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
+    "@pivotal-tools/commons-vscode": "file:../commons-vscode/commons-vscode-0.1.4.tgz",
     "vscode-languageclient": "^4.0.0"
   },
   "devDependencies": {
