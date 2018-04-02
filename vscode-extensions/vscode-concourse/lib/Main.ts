@@ -3,7 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 
 import * as VSCode from 'vscode';
-import * as commons from 'commons-vscode';
+import * as commons from '@pivotal-tools/commons-vscode';
 import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';

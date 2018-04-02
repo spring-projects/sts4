@@ -8,7 +8,7 @@ import * as ChildProcess from 'child_process';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import { workspace, TextDocument } from 'vscode';
 
-import * as commons from 'commons-vscode';
+import * as commons from '@pivotal-tools/commons-vscode';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
