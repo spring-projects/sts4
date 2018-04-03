@@ -45,7 +45,7 @@ function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : s
         return dflt;
     }
     let javaOptions : JavaOptions = wsOpts.get("java");
-    return javaOptions.heap || dflt;
+    return (javaOptions && javaOptions.heap) || dflt;
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
@@ -112,6 +112,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             let logfile = Path.join(tmpdir(), options.extensionId + '-' + Date.now()+'.log');
                             log('Redirecting server logs to ' + logfile);
                             const args = [
+                                '-Dspring.lsp.client-port='+port,
                                 '-Dserver.port=' + port,
                                 '-Dsts.lsp.client=vscode',
                                 '-Dsts.log.file=' + logfile
