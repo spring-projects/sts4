@@ -377,7 +377,7 @@ public class GotoSymbolDialog extends PopupDialog {
 		viewer.setLabelProvider(new GotoSymbolsLabelProvider(viewer.getTree().getFont()));
 		viewer.setUseHashlookup(true);
 		disposables.add(model.getSymbols().onChange(UIValueListener.from((e, v) -> {
-			viewer.refresh();
+			if (!viewer.getControl().isDisposed()) viewer.refresh();
 		})));
 //TODO: somehow show selection in local file, (but not in other file ?)
 //		viewer.addSelectionChangedListener(event -> {
