@@ -81,9 +81,9 @@
 		<jersey-2-version>2.10</jersey-2-version>
 		<lsp4j-version>0.4.0-SNAPSHOT</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
-		<reactor-version>3.1.5.RELEASE</reactor-version>
-		<reactor-netty>0.6.0.RELEASE</reactor-netty>
-		<cloudfoundry-client-version>2.4.0.RELEASE</cloudfoundry-client-version>
+		<cloudfoundry-client-version>3.8.0.RELEASE</cloudfoundry-client-version>
+ 		<reactor-version>3.1.5.RELEASE</reactor-version>
+		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 	</properties>
 

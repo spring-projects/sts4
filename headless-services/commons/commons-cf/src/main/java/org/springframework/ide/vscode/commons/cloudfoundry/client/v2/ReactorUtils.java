@@ -163,21 +163,21 @@ public class ReactorUtils {
 		return Flux.merge(
 			operations
 			.map((Mono<Void> op) -> {
-				return op.otherwise((e) -> {
+				return op.onErrorResume((e) -> {
 					failure.compareAndSet(null, e);
 					return Mono.empty();
 				});
 			}),
 			concurrency //limit concurrency otherwise troubles (flooding/choking request broker?)
 		)
-		.then(() -> {
+		.then(Mono.defer(() -> {
 			Throwable error = failure.get();
 			if (error!=null) {
 				return Mono.error(error);
 			} else {
 				return Mono.empty();
 			}
-		});
+		}));
 	}
 
 	/**
@@ -280,6 +280,10 @@ public class ReactorUtils {
 	 * Connect a mono to a CompletableFuture so that the result of the mono
 	 * can be retrieved from the {@link CompletableFuture} by calling it's 'get'
 	 * method.
+	 * 
+	 * WARNING: this method looks like it has a bug and doesn't complete the
+	 * future for a Mono.empty() case (i.e. a Mono that terminates without either
+	 * a onNext or a onComplete call.
 	 */
 	public static <T> void completeWith(CompletableFuture<T> future, Mono<T> mono) {
 		mono.doOnNext((T v) -> {
