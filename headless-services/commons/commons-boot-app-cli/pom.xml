@@ -48,6 +48,11 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>6.1.1</version>
+		</dependency>
 	</dependencies>
 
 </project>
