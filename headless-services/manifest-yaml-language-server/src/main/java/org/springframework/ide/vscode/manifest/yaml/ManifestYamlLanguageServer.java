@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -178,8 +177,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		List<Target> cfTargets = info.getCfTargets();
 		if (cfTargets != null) {
 
-			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(cfTargets,
-					info.getCfDiagnosticMessages());
+			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(info);
 
 			cfClientConfig.setClientParamsProvider(new ClientParamsProvider() {
 

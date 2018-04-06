@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -45,9 +44,9 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 	private Supplier<Collection<CFClientParams>> paramsSupplier;
 	private Map<String, String> messages;
 	
-	public CfJsonParamsProvider(List<CfTargetsInfo.Target> targets, Map<String, String> messages) {
-		this.messages = messages;
-		this.paramsSupplier = Suppliers.memoize(() -> targets
+	public CfJsonParamsProvider(CfTargetsInfo targetsInfo) {
+		this.messages = targetsInfo.getCfDiagnosticMessages();
+		this.paramsSupplier = Suppliers.memoize(() -> targetsInfo.getCfTargets()
 				.stream()
 				.map(t -> parseCfClientParams(t))
 				.filter(Objects::nonNull)
