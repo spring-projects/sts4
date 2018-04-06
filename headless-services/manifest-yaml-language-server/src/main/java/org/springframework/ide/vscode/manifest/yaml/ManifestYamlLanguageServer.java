@@ -29,6 +29,8 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfJsonParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.Target;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
@@ -136,16 +138,27 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine);
 
 		workspace.onDidChangeConfiguraton(settings -> {
-			//TODO code below needs to convert to a "nicer" Java representation of the CF client params, than just a Map with nested structures
-			Map<?, ?> asMap = getAs(Map.class, settings, "cfClientParams");
-			if (asMap != null) {
-				applyCfLoginParameterSettings(asMap);
+			CfTargetsInfo info = fromJson(CfTargetsInfo.class, settings);
+			if (info != null) {
+				applyCfLoginParameterSettings(info);
 			}
 		});
 	}
 
 	public CfClientConfig getCfClientConfig() {
 		return cfClientConfig;
+	}
+
+	protected <T> T fromJson(Class<T> klass, Settings settings) {
+		try {
+			JsonElement rawData = settings.getRawSettings();
+			if (rawData != null) {
+				return gson.fromJson(rawData, klass);
+			}
+		} catch (JsonSyntaxException e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
 	protected <T> T getAs(Class<T> klass, Settings settings, String... names) {
@@ -161,12 +174,12 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void applyCfLoginParameterSettings(Map<?, ?> cfClientParamsData) {
-		if (cfClientParamsData.get("parameters") instanceof List<?>) {
-			List<?> loginParams = (List<?>) cfClientParamsData.get("parameters");
+	private void applyCfLoginParameterSettings(CfTargetsInfo info) {
+		List<Target> cfTargets = info.getCfTargets();
+		if (cfTargets != null) {
 
-			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(loginParams,
-					(Map<String, String>) cfClientParamsData.get("messages"));
+			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(cfTargets,
+					info.getCfDiagnosticMessages());
 
 			cfClientConfig.setClientParamsProvider(new ClientParamsProvider() {
 
@@ -193,7 +206,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 				@Override
 				public CFParamsProviderMessages getMessages() {
-					return cfClientParamsData.isEmpty() ? defaultClientParamsProvider.getMessages()
+					return cfTargets.isEmpty() ? defaultClientParamsProvider.getMessages()
 							: cfClientParamsProvider.getMessages();
 				}
 

@@ -70,6 +70,10 @@ public class Settings {
 		return getRawProperty(settings, names, 0);
 	}
 
+	public JsonElement getRawSettings() {
+		return settings;
+	}
+
 	private static JsonElement getRawProperty(JsonElement settings, String[] names, int i) {
 		if (i >= names.length) {
 			return settings;

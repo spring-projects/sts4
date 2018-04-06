@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,12 +37,6 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 	private static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry";
 	private static final String NO_ORG_SPACE = "No org/space selected";
 	
-	private static final String TARGET = "Target";
-	private static final String REFRESH_TOKEN = "RefreshToken";
-	private static final String SSL_DISABLED = "SSLDisabled";
-	private static final String ORG_NAME = "OrgName";
-	private static final String SPACE_NAME = "SpaceName";
-	
 	private static final String PROP_NO_TARGETS_FOUND = "noTargetsFound";
 	private static final String PROP_UNAUTHORISED = "unauthorised";
 	private static final String PROP_NO_NETWORK_CONNECTION = "noNetworkConnection";
@@ -51,12 +45,11 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 	private Supplier<Collection<CFClientParams>> paramsSupplier;
 	private Map<String, String> messages;
 	
-	public CfJsonParamsProvider(List<?> json, Map<String, String> messages) {
+	public CfJsonParamsProvider(List<CfTargetsInfo.Target> targets, Map<String, String> messages) {
 		this.messages = messages;
-		this.paramsSupplier = Suppliers.memoize(() -> json
+		this.paramsSupplier = Suppliers.memoize(() -> targets
 				.stream()
-				.filter(o -> o instanceof Map<?, ?>)
-				.map(m -> parseCfClientParams((Map<?,?>)m))
+				.map(t -> parseCfClientParams(t))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList()));
 	}
@@ -70,22 +63,21 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 		return params;
 	}
 	
-	private static CFClientParams parseCfClientParams(Map<?, ?> userData) {
-		String refreshToken = (String) userData.get(REFRESH_TOKEN);
+	private static CFClientParams parseCfClientParams(CfTargetsInfo.Target target) {
+		String refreshToken = target.getRefreshToken();
 		// Only support connecting to CF via refresh token for now
 		if (StringUtil.hasText(refreshToken)) {
 			CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
-			boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
-			String target = (String) userData.get(TARGET);
-			String orgName = (String) userData.get(ORG_NAME);
-			String spaceName = (String) userData.get(SPACE_NAME);
-			if (target != null && StringUtil.hasText(orgName) && StringUtil.hasText(spaceName)) {
-				return new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled);
+			boolean sslDisabled = target.getSslDisabled();
+			String api = target.getApi();
+			String orgName = target.getOrg();
+			String spaceName = target.getSpace();
+			if (api != null && StringUtil.hasText(orgName) && StringUtil.hasText(spaceName)) {
+				return new CFClientParams(api, null, credentials, orgName, spaceName, sslDisabled);
 			}
 		}
 		return null;
 	}
-
 
 	@Override
 	public CFParamsProviderMessages getMessages() {

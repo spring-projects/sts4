@@ -1,20 +1,24 @@
 {
-	"cfClientParams": {
-		"parameters": [
-			{
-				"Target": "https://api.system.demo-gcp.springapps.io",
-				"OrgName": "system",
-				"SpaceName": "p-dataflow",
-				"RefreshToken": "eyJhbGciOiJSUzI1N",
-				"SSLDisabled": true
-			},
-			{
-				"Target": "https://api.run.pivotal.io",
-				"OrgName": "test",
-				"SpaceName": "spring-testing",
-				"RefreshToken": "eyJhbGciOiJSUzI1N",
-				"SSLDisabled": true
-			}
-		]
+	"cfTargets": [
+		{
+			"api":"https://api.system.demo-gcp.springapps.io",
+			"org":"system",
+			"space": "p-dataflow",
+			"refreshToken": "eyJhbGciOiJSUzI1N",
+			"sslDisabled": true
+		},
+		{
+			"api":"https://api.run.pivotal.io",
+			"org":"test",
+			"space": "spring-testing",
+			"refreshToken": "eyJhbGciOiJSUzI1N",
+			"sslDisabled": true
+		}
+	],
+	"cfDiagnosticMessages": {
+		"noTargetsFound": "No Cloud Foundry targets found: Connect CF Target(s) in Boot Dashboard or login via CF CLI",
+		"unauthorised": "Permission denied: Verify credentials to CF Target from Boot Dashboard or CF CLI are correct",
+		"noNetworkConnection": "No connection to Cloud Foundry: Connect CF Target via Boot Dashboard or login via CF CLI or verify network connections",
+		"noOrgSpace": "No org/space selected: Connect CF Target in Boot Dashboard or login via CF CLI"
 	}
 }
