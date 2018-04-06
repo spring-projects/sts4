@@ -56,4 +56,10 @@ public interface CfClientConfig {
 	static CfClientConfig createDefault() {
 		return new CfClientConfigImpl();
 	}
+	
+	static CfClientConfig createDefault(ClientParamsProvider provider) {
+		CfClientConfigImpl config = new CfClientConfigImpl();
+		config.setClientParamsProvider(provider);
+		return config;
+	}
 }
