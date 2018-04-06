@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFPar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfJsonParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfoProvder;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.Target;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
@@ -177,7 +177,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		List<Target> cfTargets = info.getCfTargets();
 		if (cfTargets != null) {
 
-			CfJsonParamsProvider cfClientParamsProvider = new CfJsonParamsProvider(info);
+			CfTargetsInfoProvder cfClientParamsProvider = new CfTargetsInfoProvder(info);
 
 			cfClientConfig.setClientParamsProvider(new ClientParamsProvider() {
 

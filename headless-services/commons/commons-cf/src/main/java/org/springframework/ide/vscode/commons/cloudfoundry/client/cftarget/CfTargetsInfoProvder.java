@@ -22,15 +22,15 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 /**
- * CF Client parameter provider based on the JSON data. the JSON data is
- * cosidered to be data from the from config changed message defined in the LSP
- * spec
- * {@link https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#workspace_didChangeConfiguration}
+ * CF Client parameter provider based on CF targets info. These targets info contain
+ * a list of CF targets that typically already exist and contain connection information
+ * like refresh token or other type of credentials. For example, it allows external clients
+ * to integrate with the manifest LS by passing target information from that client to the LS.
  * 
  * @author Alex Boyko
  *
  */
-public class CfJsonParamsProvider implements ClientParamsProvider {
+public class CfTargetsInfoProvder implements ClientParamsProvider {
 	
 	private static final String NO_TARGETS_FOUND_MESSAGE = "No targets found";
 	private static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry";
@@ -44,7 +44,7 @@ public class CfJsonParamsProvider implements ClientParamsProvider {
 	private Supplier<Collection<CFClientParams>> paramsSupplier;
 	private Map<String, String> messages;
 	
-	public CfJsonParamsProvider(CfTargetsInfo targetsInfo) {
+	public CfTargetsInfoProvder(CfTargetsInfo targetsInfo) {
 		this.messages = targetsInfo.getCfDiagnosticMessages();
 		this.paramsSupplier = Suppliers.memoize(() -> targetsInfo.getCfTargets()
 				.stream()
