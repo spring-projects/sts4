@@ -160,18 +160,6 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		return null;
 	}
 
-	protected <T> T getAs(Class<T> klass, Settings settings, String... names) {
-		try {
-			JsonElement data = settings.getRawProperty(names);
-			if (data != null) {
-				return gson.fromJson(data, klass);
-			}
-		} catch (JsonSyntaxException e) {
-			log.error("", e);
-		}
-		return null;
-	}
-
 	@SuppressWarnings("unchecked")
 	private void applyCfLoginParameterSettings(CfTargetsInfo info) {
 		List<Target> cfTargets = info.getCfTargets();
