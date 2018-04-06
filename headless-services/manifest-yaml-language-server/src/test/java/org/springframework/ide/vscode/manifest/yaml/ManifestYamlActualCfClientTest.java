@@ -27,14 +27,14 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTar
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfoProvder;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 
-import com.google.gson.Gson;
-
 public class ManifestYamlActualCfClientTest {
 
 	private CFTargetCache cfTargetCache;
+	private CfJson cfJson;
 
 	@Before
 	public void setup() throws Exception {
+		cfJson = new CfJson();
 		CfTargetsInfo info = getTargetsInfoFromEnv();
 		CfTargetsInfoProvder provider = new CfTargetsInfoProvder(info);
 		CfClientConfig cfClientConfig = CfClientConfig.createDefault(provider);
@@ -56,7 +56,7 @@ public class ManifestYamlActualCfClientTest {
 				+ "		\"noNetworkConnection\": \"No connection to Cloud Foundry: Connect CF Target via Boot Dashboard or login via CF CLI or verify network connections\",\n"
 				+ "		\"noOrgSpace\": \"No org/space selected: Connect CF Target in Boot Dashboard or login via CF CLI\"\n"
 				+ "	}\n" + "}";
-		return new Gson().fromJson(rawJson, CfTargetsInfo.class);
+		return cfJson.from(rawJson);
 	}
 
 	@Ignore @Test

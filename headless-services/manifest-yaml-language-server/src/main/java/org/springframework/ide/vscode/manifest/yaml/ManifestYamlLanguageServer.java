@@ -68,6 +68,7 @@ import com.google.gson.JsonSyntaxException;
 public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private Yaml yaml = new Yaml();
+	private CfJson cfJson = new CfJson();
 	private ManifestYmlSchema schema;
 	private CFTargetCache cfTargetCache;
 	private final CloudFoundryClientFactory cfClientFactory;
@@ -76,7 +77,6 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 
 	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
 	final private ClientParamsProvider defaultClientParamsProvider;
-	private Gson gson = new Gson();
 
 	public ManifestYamlLanguageServer() {
 		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
@@ -137,7 +137,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		documents.onHover(hoverEngine);
 
 		workspace.onDidChangeConfiguraton(settings -> {
-			CfTargetsInfo info = fromJson(CfTargetsInfo.class, settings);
+			CfTargetsInfo info = cfJson.from(settings);
 			if (info != null) {
 				applyCfLoginParameterSettings(info);
 			}
@@ -148,17 +148,7 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		return cfClientConfig;
 	}
 
-	protected <T> T fromJson(Class<T> klass, Settings settings) {
-		try {
-			JsonElement rawData = settings.getRawSettings();
-			if (rawData != null) {
-				return gson.fromJson(rawData, klass);
-			}
-		} catch (JsonSyntaxException e) {
-			log.error("", e);
-		}
-		return null;
-	}
+
 
 	@SuppressWarnings("unchecked")
 	private void applyCfLoginParameterSettings(CfTargetsInfo info) {
