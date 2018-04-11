@@ -93,7 +93,7 @@ public class TextDocument implements IDocument {
 			}
 			this.version = newVersion;
 		} else {
-			Log.warn("Change event with bad version ignored: "+params);
+			Log.warn("Change event with bad version ignored");
 		}
 	}
 
