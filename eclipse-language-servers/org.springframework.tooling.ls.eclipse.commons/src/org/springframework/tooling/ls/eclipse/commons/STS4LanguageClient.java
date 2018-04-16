@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 /**
@@ -29,4 +32,10 @@ public interface STS4LanguageClient extends LanguageClient {
 // TODO: @JsonRequest("sts/moveCursor")
 //	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
 
+	@JsonRequest("sts/addClasspathListener")
+	CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params);
+
+	@JsonRequest("sts/removeClasspathListener")
+	CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams);
+	
 }

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,6 +43,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Futures;
 
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
@@ -173,6 +175,18 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		catch (NullPointerException e) {
 			return null;
 		}
+	}
+
+	@Override
+	public CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

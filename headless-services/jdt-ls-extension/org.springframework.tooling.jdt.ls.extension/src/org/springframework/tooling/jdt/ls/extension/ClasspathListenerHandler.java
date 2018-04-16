@@ -12,110 +12,38 @@ package org.springframework.tooling.jdt.ls.extension;
 
 import static org.springframework.tooling.jdt.ls.commons.Logger.log;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.JavaClientConnection;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.springframework.tooling.jdt.ls.commons.Logger;
-import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
-import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager;
-import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager.ClasspathListener;
-import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
+import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
+import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	
-	static final boolean isSupported = checkSupported();
-	private static boolean checkSupported() {
+	private static ReusableClasspathListenerHandler handlerImpl = checkSupported();
+	private static ReusableClasspathListenerHandler checkSupported() {
 		try {
 			JavaClientConnection.class.getMethod("executeClientCommand", String.class, Object[].class);
-			return true;
+			return new ReusableClasspathListenerHandler(new ClientCommandExecutor() {
+				@Override
+				public Object executeClientCommand(String id, Object... params) {
+					return JavaLanguageServerPlugin.getInstance().getClientConnection().executeClientCommand(id, params);
+				}
+			});
 		} catch (Exception e) {
 			Logger.log(e);
 		}
-		return false;
+		return null;
 	}
-
-	static class Subscribptions {
-
-		private static Map<String, ClasspathListenerManager> subscribers = null;
-		
-		public synchronized void subscribe(String callbackCommandId) {
-			Logger.log("subscribing to classpath changes: " + callbackCommandId);
-			if (subscribers==null) {
-				subscribers = new HashMap<>(1);
-			}
-			subscribers.computeIfAbsent(callbackCommandId, (cid) -> new ClasspathListenerManager(new ClasspathListener() {
-				@Override
-				public void classpathChanged(IJavaProject jp) {
-					sendNotification(callbackCommandId, jp);
-				}
-			}, true));
-			Logger.log("subsribers = " + subscribers.keySet());
-		}
-	
-		private void sendNotification(String callbackCommandId, IJavaProject jp) {
-			//TODO: make one Job to accumulate all requested notification and work more efficiently by batching
-			// and avoiding multiple executions of duplicated requests.
-			new Job("SendClasspath notification") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					log("Classpath changed " + jp.getElementName());
-					String project = jp.getProject().getLocationURI().toString();
-					boolean deleted = !jp.exists();
-					JavaClientConnection conn = JavaLanguageServerPlugin.getInstance().getClientConnection();
-					String projectName = jp.getElementName();
-
-					Classpath classpath = null;
-					if (!deleted) {
-						try {
-							classpath = ClasspathUtil.resolve(jp);
-						} catch (Exception e) {
-							Logger.log(e);
-						}
-					}
-					try {
-						Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
-						conn.executeClientCommand(callbackCommandId, project, projectName, deleted, classpath);
-						Logger.log("executing callback "+callbackCommandId+" SUCCESS");
-					} catch (Exception e) {
-						Logger.log("executing callback "+callbackCommandId+" FAILED");
-						Logger.log(e);
-					}
-					return Status.OK_STATUS;
-				}
-			}
-			.schedule();
-		}
-
-		public synchronized void unsubscribe(String callbackCommandId) {
-			Logger.log("unsubscribing from classpath changes: " + callbackCommandId);
-			if (subscribers != null) {
-				ClasspathListenerManager mgr = subscribers.remove(callbackCommandId);
-				if (mgr!=null) {
-					mgr.dispose();
-				}
-				if (subscribers.isEmpty()) {
-					subscribers = null;
-				}
-			}
-			Logger.log("subsribers = " + subscribers.keySet());
-		}
-	}
-	
-	private static Subscribptions subscribptions = new Subscribptions();
 
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
-		if (!isSupported) {
+		if (handlerImpl==null) {
 			throw new UnsupportedOperationException("Command '"+commandId+"' not supported on older versions of JDT Language Server");
 		}
 		log("ClasspathListenerHandler executeCommand " + commandId + ", " + arguments);
@@ -130,15 +58,13 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	}
 
 	private Object removeClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
-		subscribptions.unsubscribe(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
-		return "ok";
+		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
+		return handlerImpl.removeClasspathListener(callbackCommandId);
 	}
 
 	private Object addClasspathListener(String callbackCommandId) {
 		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
-		subscribptions.subscribe(callbackCommandId);
+		handlerImpl.addClasspathListener(callbackCommandId);
 		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
