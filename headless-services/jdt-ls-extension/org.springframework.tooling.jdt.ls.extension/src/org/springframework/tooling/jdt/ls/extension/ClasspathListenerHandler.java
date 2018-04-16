@@ -33,10 +33,6 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	
-	static {
-		Logger.log("THIS IS NEW!");
-	}
-	
 	static final boolean isSupported = checkSupported();
 	private static boolean checkSupported() {
 		try {
