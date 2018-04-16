@@ -295,11 +295,6 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 				}
 
 				@Override
-				public CompletableFuture<ProjectResponse> project(String uri) {
-					return CompletableFuture.completedFuture(null);
-				}
-
-				@Override
 				public CompletableFuture<Object> addClasspathListener(
 						ClasspathListenerParams params) {
 					return CompletableFuture.completedFuture("ok");

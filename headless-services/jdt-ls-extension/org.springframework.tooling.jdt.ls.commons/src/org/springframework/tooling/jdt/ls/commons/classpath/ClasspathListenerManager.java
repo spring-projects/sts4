@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.jdt.ls.extension;
+package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -19,8 +19,9 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.springframework.tooling.jdt.ls.commons.Logger;
 
-import static org.springframework.tooling.jdt.ls.extension.Logger.log;
+import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 /**
  * An instance of this class provides a means to register

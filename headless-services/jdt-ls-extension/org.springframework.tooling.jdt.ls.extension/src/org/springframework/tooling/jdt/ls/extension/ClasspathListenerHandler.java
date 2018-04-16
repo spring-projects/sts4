@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.extension;
 
-import static org.springframework.tooling.jdt.ls.extension.Logger.log;
+import static org.springframework.tooling.jdt.ls.commons.Logger.log;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +24,18 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.JavaClientConnection;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.springframework.tooling.jdt.ls.extension.ClasspathListenerManager.ClasspathListener;
+import org.springframework.tooling.jdt.ls.commons.Logger;
+import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
+import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager;
+import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager.ClasspathListener;
+import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
+	
+	static {
+		Logger.log("THIS IS NEW!");
+	}
 	
 	static final boolean isSupported = checkSupported();
 	private static boolean checkSupported() {

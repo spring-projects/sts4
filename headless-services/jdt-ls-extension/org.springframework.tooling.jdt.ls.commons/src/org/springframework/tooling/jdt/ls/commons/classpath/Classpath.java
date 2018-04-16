@@ -1,4 +1,4 @@
-package org.springframework.tooling.jdt.ls.extension;
+package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import java.util.List;
 

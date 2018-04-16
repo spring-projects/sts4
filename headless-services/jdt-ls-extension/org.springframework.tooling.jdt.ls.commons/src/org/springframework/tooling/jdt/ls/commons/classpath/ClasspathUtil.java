@@ -1,6 +1,18 @@
-package org.springframework.tooling.jdt.ls.extension;
+/*******************************************************************************
+ * Copyright (c) 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import static org.springframework.tooling.jdt.ls.extension.Logger.log;
+import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_BINARY;
+import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_SOURCE;
+import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,8 +20,7 @@ import java.util.List;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.springframework.tooling.jdt.ls.extension.Classpath.CPE;
-import static org.springframework.tooling.jdt.ls.extension.Classpath.*;
+import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 
 public class ClasspathUtil {
 

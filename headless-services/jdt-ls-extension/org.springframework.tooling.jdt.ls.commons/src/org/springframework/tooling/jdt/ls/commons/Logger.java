@@ -8,13 +8,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.jdt.ls.extension;
+package org.springframework.tooling.jdt.ls.commons;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.Date;
 
+/**
+ * Poor man's logger which writes log output for jdt.ls extension into a predictable location.
+ */
 public class Logger {
 
 	private static PrintWriter printwriter;
@@ -24,7 +28,7 @@ public class Logger {
 		file = new File(file, "stsjdt.log");
 		try {
 			printwriter = new PrintWriter(new FileOutputStream(file), true);
-			log("=====================================");
+			log("======== "+new Date()+" =======");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.springframework.tooling</groupId>
+	<artifactId>jdt-ls-extension-parent</artifactId>
+	<packaging>pom</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>jdt-ls-extension-parent</name>
+
+	<modules>
+		<module>org.springframework.tooling.jdt.ls.extension</module>
+		<module>org.springframework.tooling.jdt.ls.commons</module>
+	</modules>
+
+	<properties>
+		<tycho-version>1.1.0</tycho-version>
+	</properties>
+	<repositories>
+		<repository>
+			<id>eclipse-oxygen</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/releases/oxygen</url>
+		</repository>
+		<repository>
+			<id>JDT.LS</id>
+			<layout>p2</layout>
+			<!-- <url>${jdt.ls.updatesite}</url> -->
+			<url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+

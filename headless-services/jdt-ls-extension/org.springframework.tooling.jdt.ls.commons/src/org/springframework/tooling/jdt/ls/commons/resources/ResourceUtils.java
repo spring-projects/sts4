@@ -8,9 +8,9 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.jdt.ls.extension;
+package org.springframework.tooling.jdt.ls.commons.resources;
 
-import static org.springframework.tooling.jdt.ls.extension.Logger.log;
+import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 import java.io.File;
 import java.net.URI;

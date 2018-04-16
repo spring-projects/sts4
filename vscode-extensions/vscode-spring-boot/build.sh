@@ -4,9 +4,9 @@ set -e -x
 workdir=$(pwd)
 
 # Build jdt.ls
-cd ${HOME}/git/eclipse.jdt.ls
-jdt_ls_repo=$(pwd)
-./mvnw -Pserver-distro -Pupdate-site clean package
+# cd ${HOME}/git/eclipse.jdt.ls
+# jdt_ls_repo=$(pwd)
+# ./mvnw -Pserver-distro -Pupdate-site clean package
 
 # Section below disabled for now. So we can work on the 'fallbacks' with missing or old vscode-java
 # Build vscode-java
@@ -21,10 +21,12 @@ jdt_ls_repo=$(pwd)
 #code --uninstall-extension redhat.java || echo "Not installed redhat.java"
 #code --install-extension *.vsix
 
+code --install-extension redhat.java
+
 # Build spring boot ls
 cd $workdir
 npm install
 rm -fr *.vsix
 npm run vsce-package
-code --uninstall-extension Pivotal.vscode-spring-boot || echo "Not installed Pivotal.vscode-spring-boot"
+rm -fr ${home}/.vscode/extensions/Pivotal.vscode-spring-boot-*
 code --install-extension *.vsix
