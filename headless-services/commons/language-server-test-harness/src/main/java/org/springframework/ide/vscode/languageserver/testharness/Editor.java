@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
@@ -546,7 +547,8 @@ public class Editor {
 	public String hoverString(Hover hover) {
 		StringBuilder buf = new StringBuilder();
 		boolean first = true;
-		for (Either<String, MarkedString> block : hover.getContents()) {
+		Either<List<Either<String, MarkedString>>, MarkupContent> contents = hover.getContents();
+		for (Either<String, MarkedString> block : contents.getLeft()) {
 			if (!first) {
 				buf.append("\n\n");
 			}
@@ -605,7 +607,7 @@ public class Editor {
 	public void assertNoHover(String hoverOver) throws Exception {
 		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
-		List<Either<String, MarkedString>> contents = hover.getContents();
+		List<Either<String, MarkedString>> contents = hover.getContents().getLeft();
 		assertTrue(contents.toString(), contents.isEmpty());
 	}
 
