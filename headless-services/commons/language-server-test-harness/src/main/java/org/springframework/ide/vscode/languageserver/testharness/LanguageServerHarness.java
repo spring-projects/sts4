@@ -606,10 +606,10 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public static void assertDocumentation(String expected, CompletionItem completion) {
-		assertEquals(expected, getDocAsString(completion));
+		assertEquals(expected, getDocString(completion));
 	}
 
-	private static String getDocAsString(CompletionItem completion) {
+	public static String getDocString(CompletionItem completion) {
 		if (completion!=null) {
 			Either<String, MarkupContent> doc = completion.getDocumentation();
 			if (doc.isLeft()) {

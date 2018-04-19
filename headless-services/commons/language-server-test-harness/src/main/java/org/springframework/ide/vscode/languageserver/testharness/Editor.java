@@ -56,6 +56,8 @@ import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.*;
+
 public class Editor {
 
 	public static final Predicate<CompletionItem> RELAXED_COMPLETION
@@ -653,7 +655,7 @@ public class Editor {
 			assertEquals(expectDetail, it.getDetail());
 		}
 		if (expectDocSnippet!=null) {
-			assertContains(expectDocSnippet, it.getDocumentation().getLeft());
+			assertContains(expectDocSnippet, getDocString(it));
 		}
 		return it;
 	}
