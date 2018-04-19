@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -269,7 +270,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public final static List<DocumentHighlight> NO_HIGHLIGHTS = ImmutableList.of();
 
 	@Override
-	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(TextDocumentPositionParams position) {
+	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
 			return completionHandler.handle(position)

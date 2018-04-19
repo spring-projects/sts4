@@ -45,7 +45,6 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathLis
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
 
@@ -194,5 +193,4 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams params) {
 		return CompletableFuture.completedFuture(classpathService.removeClasspathListener(params.getCallbackCommandId()));
 	}
-
 }

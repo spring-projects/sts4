@@ -46,6 +46,8 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.*;
+
 public class BoshEditorTest {
 
 	LanguageServerHarness<BoshLanguageServer> harness;
@@ -1001,10 +1003,7 @@ public class BoshEditorTest {
 		assertEquals(1, completions.size());
 		CompletionItem c = completions.get(0);
 		c = harness.resolveCompletionItem(c);
-		assertContains("Couldn't connect to bosh", c.getDocumentation());
-		System.out.println("label  = " + c.getLabel());
-		System.out.println("detail = " + c.getDetail());
-		System.out.println("doc    = " + c.getDocumentation());
+		assertContains("Couldn't connect to bosh", getDocString(c));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1414,7 +1413,7 @@ public class BoshEditorTest {
 		);
 		CompletionItem completion = editor.assertCompletionLabels("TimeoutException").get(0);
 		completion = harness.resolveCompletionItem(completion);
-		assertContains("Reading cloud config timed out", completion.getDocumentation());
+		assertContains("Reading cloud config timed out", getDocString(completion));
 	}
 
 	@Test public void reconcileNetworkName() throws Exception {

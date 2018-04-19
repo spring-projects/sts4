@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextFormat;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
@@ -68,7 +69,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				try {
 					resolveItem(doc, completion, unresolved);
 				} catch (Exception e) {
-					LOG.get().error("{}", e);
+					LOG.get().error("", e);
 				}
 			});
 			return id;
@@ -183,7 +184,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
 		item.setDocumentation(toMarkdown(completion.getDocumentation()));
-		resolveEdits(doc, completion, item);
 	}
 
 	private static void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {

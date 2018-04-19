@@ -16,6 +16,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.assertDocumentation;
 
 import java.io.IOException;
 import java.util.List;
@@ -918,9 +919,8 @@ public class ManifestYamlEditorTest {
 				"stack: windows<*>"
 		).get(0);
 
-		assertEquals("an-org : a-space [test.io]", c.getDocumentation());
+		assertDocumentation("an-org : a-space [test.io]", c);
 	}
-
 
 	@Test public void domainReconcile() throws Exception {
 		List<CFDomain> domains = ImmutableList.of(mockDomain("one.com"), mockDomain("two.com"));
@@ -1332,7 +1332,7 @@ public class ManifestYamlEditorTest {
 				"  - mysql<*>"
 		).get(0);
 		assertEquals("mysql - medium", completion.getLabel());
-		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
+		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
 
 	@Test
@@ -1344,7 +1344,7 @@ public class ManifestYamlEditorTest {
 
 		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: java_buildpack<*>").get(0);
 		assertEquals("java_buildpack", completion.getLabel());
-		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
+		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
 
 	@Test
@@ -1361,7 +1361,7 @@ public class ManifestYamlEditorTest {
 
 		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: <*>").get(0);
 		assertEquals(title, completion.getLabel());
-		assertEquals(description, completion.getDocumentation());
+		assertDocumentation(description, completion);
 	}
 
 	@Test
@@ -1372,7 +1372,7 @@ public class ManifestYamlEditorTest {
 		when(cfClient.getDomains()).thenReturn(ImmutableList.of(domain));
 
 		CompletionItem completion = assertCompletions("domain: <*>", "domain: cfapps.io<*>").get(0);
-		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
+		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
 
 	@Test
@@ -1391,7 +1391,7 @@ public class ManifestYamlEditorTest {
 				"- cfapps.io<*>"
 		).get(0);
 
-		assertEquals("an-org : a-space [test.io]", completion.getDocumentation());
+		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
 
 	@Test

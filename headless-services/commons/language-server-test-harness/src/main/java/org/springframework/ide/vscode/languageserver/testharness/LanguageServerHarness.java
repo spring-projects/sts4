@@ -53,6 +53,7 @@ import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -69,6 +70,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
@@ -92,7 +94,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
-import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
@@ -466,7 +467,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public CompletionList getCompletions(TextDocumentInfo doc, Position cursor) throws Exception {
-		TextDocumentPositionParams params = new TextDocumentPositionParams();
+		CompletionParams params = new CompletionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
 		waitForReconcile();
@@ -603,6 +604,23 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
 		return getServer().getTextDocumentService().definition(params).get();
 	}
+
+	public static void assertDocumentation(String expected, CompletionItem completion) {
+		assertEquals(expected, getDocString(completion));
+	}
+
+	public static String getDocString(CompletionItem completion) {
+		if (completion!=null) {
+			Either<String, MarkupContent> doc = completion.getDocumentation();
+			if (doc.isLeft()) {
+				return doc.getLeft();
+			} else {
+				return doc.getRight().getValue();
+			}
+		}
+		return null;
+	}
+
 
 	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Diagnostic problem) throws Exception {
 		CodeActionContext context = new CodeActionContext(ImmutableList.of(problem));
