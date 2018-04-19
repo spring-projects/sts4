@@ -70,6 +70,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
@@ -603,6 +604,23 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
 		return getServer().getTextDocumentService().definition(params).get();
 	}
+
+	public static void assertDocumentation(String expected, CompletionItem completion) {
+		assertEquals(expected, getDocAsString(completion));
+	}
+
+	private static String getDocAsString(CompletionItem completion) {
+		if (completion!=null) {
+			Either<String, MarkupContent> doc = completion.getDocumentation();
+			if (doc.isLeft()) {
+				return doc.getLeft();
+			} else {
+				return doc.getRight().getValue();
+			}
+		}
+		return null;
+	}
+
 
 	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Diagnostic problem) throws Exception {
 		CodeActionContext context = new CodeActionContext(ImmutableList.of(problem));
