@@ -53,6 +53,7 @@ import org.eclipse.lsp4j.CompletionCapabilities;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -92,7 +93,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
-import org.springframework.ide.vscode.commons.languageserver.ProjectResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
@@ -466,7 +466,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public CompletionList getCompletions(TextDocumentInfo doc, Position cursor) throws Exception {
-		TextDocumentPositionParams params = new TextDocumentPositionParams();
+		CompletionParams params = new CompletionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(doc.getId());
 		waitForReconcile();

@@ -1001,7 +1001,7 @@ public class BoshEditorTest {
 		assertEquals(1, completions.size());
 		CompletionItem c = completions.get(0);
 		c = harness.resolveCompletionItem(c);
-		assertContains("Couldn't connect to bosh", c.getDocumentation());
+		assertContains("Couldn't connect to bosh", c.getDocumentation().getLeft());
 		System.out.println("label  = " + c.getLabel());
 		System.out.println("detail = " + c.getDetail());
 		System.out.println("doc    = " + c.getDocumentation());
@@ -1414,7 +1414,7 @@ public class BoshEditorTest {
 		);
 		CompletionItem completion = editor.assertCompletionLabels("TimeoutException").get(0);
 		completion = harness.resolveCompletionItem(completion);
-		assertContains("Reading cloud config timed out", completion.getDocumentation());
+		assertContains("Reading cloud config timed out", completion.getDocumentation().getLeft());
 	}
 
 	@Test public void reconcileNetworkName() throws Exception {

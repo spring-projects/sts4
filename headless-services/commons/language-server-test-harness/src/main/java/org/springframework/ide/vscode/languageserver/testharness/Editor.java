@@ -653,7 +653,7 @@ public class Editor {
 			assertEquals(expectDetail, it.getDetail());
 		}
 		if (expectDocSnippet!=null) {
-			assertContains(expectDocSnippet, it.getDocumentation());
+			assertContains(expectDocSnippet, it.getDocumentation().getLeft());
 		}
 		return it;
 	}

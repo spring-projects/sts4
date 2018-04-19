@@ -193,7 +193,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 				Mono<Object> moveCursor = edit.cursorMovement==null
 						? Mono.just(new ApplyWorkspaceEditResponse(true))
 						: Mono.fromFuture(client.moveCursor(edit.cursorMovement));
-				return applyEdit.flatMap(r -> r.getApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
+				return applyEdit.flatMap(r -> r.isApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
 			})
 			.toFuture();
 		}
