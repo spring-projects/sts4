@@ -43,7 +43,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.Futures;
 
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
@@ -51,7 +50,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
 	class UpdateHighlights extends UIJob {
-		
+
 		private String target;
 
 		UpdateHighlights(String target) {
@@ -60,7 +59,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			setSystem(true);
 			schedule();
 		}
-		
+
 		@Override
 		public IStatus runInUIThread(IProgressMonitor monitor) {
 			IWorkbenchWindow ww = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -93,23 +92,23 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			return Status.OK_STATUS;
 		}
 	};
-			
+
 	/**
 	 * Latest highlight request params. It is sufficient to only remember the last request per uri, because
 	 * each new request is expected to replace the previous highlights.
 	 */
 	private Map<String,  List<Range>> currentHighlights = new HashMap<>();
-	
+
 	/**
 	 * Current markers... indexed per document uri, needed sp we to be removed upon next update.
 	 */
-	private Map<String, Annotation[]> currentAnnotations = new HashMap<>(); 
-	
+	private Map<String, Annotation[]> currentAnnotations = new HashMap<>();
+
 	private synchronized void updateAnnotations(String target, IDocument doc, IAnnotationModelExtension annotationModel) {
 		if (target!=null) {
 			Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(doc, (x) -> true);
 			for (LSPDocumentInfo docInfo : infos) {
-				URI uri = docInfo.getFileUri(); 
+				URI uri = docInfo.getFileUri();
 				if (uri!=null && uri.toString().equals(target)) {
 					Annotation[] toRemove = currentAnnotations.get(target);
 					if (toRemove==null) {
@@ -140,7 +139,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 		return annotations.build();
 	}
-	
+
 	@Override
 	public synchronized void highlight(HighlightParams highlights) {
 		String target = highlights.getDoc().getUri();
@@ -155,7 +154,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		String status = progressEvent.getStatusMsg() != null ? progressEvent.getStatusMsg() : "";
 		showStatusMessage(status);
 	}
-	
+
 	private void showStatusMessage(final String status) {
 		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 			@Override
@@ -179,14 +178,12 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.fail(new UnsupportedOperationException("Not implemented"));
 	}
 
 	@Override
 	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams) {
-		// TODO Auto-generated method stub
-		return null;
+		return Futures.fail(new UnsupportedOperationException("Not implemented"));
 	}
-	
+
 }
