@@ -1,0 +1,6 @@
+/**/.idea
+/**/.iml
+/theia-extensions.iml
+/**/yarn-error.log
+/**/node_modules/
+/**/server/
