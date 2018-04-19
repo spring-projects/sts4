@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -38,6 +39,7 @@ import com.google.common.cache.CacheBuilder;
 
 public final class CompilationUnitCache {
 
+	private static final long CU_ACCESS_EXPIRATION_MINUTES = 3;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
@@ -52,7 +54,11 @@ public final class CompilationUnitCache {
 		this.projectObserver = projectObserver;
 		projectListener = ProjectObserver.onAny(this::invalidateProject);
 
-		uriToCu = CacheBuilder.newBuilder().build();
+		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
+		// accessed after some time
+		uriToCu = CacheBuilder.newBuilder()
+				.expireAfterAccess(CU_ACCESS_EXPIRATION_MINUTES, TimeUnit.MINUTES)
+				.build();
 		projectToDocs = CacheBuilder.newBuilder().build();
 
 		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
