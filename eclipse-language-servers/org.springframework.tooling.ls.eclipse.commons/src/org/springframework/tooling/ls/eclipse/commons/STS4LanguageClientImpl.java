@@ -40,12 +40,20 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
+
+	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler(new LSP4ECommandExecutor());
+
+
+	public STS4LanguageClientImpl() {
+		System.out.println("Instantiatin STS4LanguageClientImpl");
+	}
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
@@ -178,12 +186,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params) {
-		return Futures.fail(new UnsupportedOperationException("Not implemented"));
+		return CompletableFuture.completedFuture(classpathService.addClasspathListener(params.getCallbackCommandId()));
 	}
 
 	@Override
-	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams) {
-		return Futures.fail(new UnsupportedOperationException("Not implemented"));
+	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams params) {
+		return CompletableFuture.completedFuture(classpathService.removeClasspathListener(params.getCallbackCommandId()));
 	}
-
 }
