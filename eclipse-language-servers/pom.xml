@@ -27,6 +27,7 @@
 	</licenses>
 
 	<modules>
+		<module>../headless-services/jdt-ls-extension</module>
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
 	
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
@@ -63,7 +64,7 @@
 		<!-- OSX app signing -->
 		<skip.osx.signing>true</skip.osx.signing>
 
-		<tycho-version>0.26.0</tycho-version>
+		<tycho-version>1.1.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.accessKey>${accessKey}</dist.accessKey>

@@ -12,6 +12,10 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.jdt.ls.commons">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.eclipse.lsp4e">
 		<category name="deps"/>
 	</bundle>

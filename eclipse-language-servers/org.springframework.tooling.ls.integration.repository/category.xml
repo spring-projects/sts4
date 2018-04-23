@@ -28,6 +28,10 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.jdt.ls.commons">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
 		<category name="deps"/>
 	</bundle>
