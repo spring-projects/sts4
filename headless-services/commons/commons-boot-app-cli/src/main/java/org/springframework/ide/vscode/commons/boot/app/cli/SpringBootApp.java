@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,11 +33,12 @@ import javax.management.remote.JMXServiceURL;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
+import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -56,8 +58,10 @@ public class SpringBootApp {
 	private VirtualMachineDescriptor vmd;
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
+	private static final String SPRING_FRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
 
 	private Boolean isSpringBootApp;
+	private String domain;
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
@@ -158,8 +162,7 @@ public class SpringBootApp {
 	public String getPort() throws Exception {
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
-			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
+			jmxConnector = getJmxConnector();
 			return getPort(jmxConnector);
 		}
 		finally {
@@ -168,13 +171,13 @@ public class SpringBootApp {
 	}
 
 	public String getEnvironment() throws Exception {
-		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=environmentEndpoint", "Data");
+		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=environmentEndpoint"), "Data");
 		if (result != null) {
 			String environment = gson.toJson(result);
 			return environment;
 		}
 
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Env", "environment");
+		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Env"), "environment");
 		if (result != null) {
 			String environment = gson.toJson(result);
 			return environment;
@@ -184,13 +187,13 @@ public class SpringBootApp {
 	}
 
 	private String getBeansJson() throws Exception {
-		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=beansEndpoint", "Data");
+		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=beansEndpoint"), "Data");
 		if (result != null) {
 			String beans = gson.toJson(result);
 			return beans;
 		}
 
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Beans", "beans");
+		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Beans"), "beans");
 		if (result != null) {
 			String beans = gson.toJson(result);
 			return beans;
@@ -227,14 +230,14 @@ public class SpringBootApp {
 
 	public Collection<RequestMapping> getRequestMappings() throws Exception {
 		//Boot 1.x
-		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
+		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
 		if (result != null) {
 			String mappings = gson.toJson(result);
 			return parseRequestMappingsJson(mappings, "1.x");
 		}
 
 		//Boot 2.x
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
+		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
 		if (result != null) {
 			String mappings = gson.toJson(result);
 			return parseRequestMappingsJson(mappings, "2.x");
@@ -263,14 +266,14 @@ public class SpringBootApp {
 
 	private String getAutoConfigReport() throws Exception {
 		//Boot 1.x
-		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
+		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=autoConfigurationReportEndpoint"), "Data");
 		if (result != null) {
 			String report = gson.toJson(result);
 			return report;
 		}
 
 		//Boot 2.x
-		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Conditions", "applicationConditionEvaluation");
+		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Conditions"), "applicationConditionEvaluation");
 		if (result != null) {
 			String report = gson.toJson(result);
 			return report;
@@ -279,19 +282,19 @@ public class SpringBootApp {
 		return null;
 	}
 
-	protected Object getActuatorDataFromAttribute(String actuatorID, String attribute) throws Exception {
+	protected Object getActuatorDataFromAttribute(ObjectName objectName, String attribute) throws Exception {
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
-			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
-			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			if (objectName != null) {
+				jmxConnector = getJmxConnector();
+				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
-			try {
-				ObjectName objectName = new ObjectName(actuatorID);
-				Object result = connection.getAttribute(objectName, "Data");
-				return result;
-			}
-			catch (InstanceNotFoundException e) {
+				try {
+					Object result = connection.getAttribute(objectName, "Data");
+					return result;
+				}
+				catch (InstanceNotFoundException e) {
+				}
 			}
 			return null;
 		}
@@ -300,25 +303,30 @@ public class SpringBootApp {
 		}
 	}
 
-	protected Object getActuatorDataFromOperation(String actuatorID, String operation) throws Exception {
+	protected Object getActuatorDataFromOperation(ObjectName objectName, String operation) throws Exception {
 		JMXConnector jmxConnector = null;
 		try {
-			JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
-			jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
-			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			if (objectName != null) {
+				jmxConnector = getJmxConnector();
+				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
-			try {
-				ObjectName objectName = new ObjectName(actuatorID);
-				Object result = connection.invoke(objectName, operation, null, null);
-				return result;
-			}
-			catch (InstanceNotFoundException e) {
+				try {
+					Object result = connection.invoke(objectName, operation, null, null);
+					return result;
+				}
+				catch (InstanceNotFoundException e) {
+				}
 			}
 			return null;
 		}
 		finally {
 			if (jmxConnector != null) jmxConnector.close();
 		}
+	}
+	protected JMXConnector getJmxConnector() throws MalformedURLException, IOException {
+		JMXServiceURL serviceUrl = new JMXServiceURL(jmxConnect.get());
+		JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
+		return jmxConnector;
 	}
 
 	protected boolean contains(String[] cpElements, String element) {
@@ -426,6 +434,42 @@ public class SpringBootApp {
 		catch (InstanceNotFoundException e) {
 		}
 		return null;
+	}
+
+	protected ObjectName getObjectName(String keyProperties) throws Exception {
+		String domain = getMBeanActuatorDomain();
+		if (StringUtil.hasText(domain)  && StringUtil.hasText(keyProperties)) {
+			String fullName = domain + ":" + keyProperties;
+			return ObjectName.getInstance(fullName);
+		}
+		return null;
+	}
+
+	/**
+	 * PT 156072399: Actuator information can be defined using a different JMX MBean domain.
+	 * By default, Spring Boot exposes management endpoints as JMX MBeans under the 'org.springframework.boot' domain.
+	 * Users can however define another domain in the app's application.properties, for example using this property:
+	 * management.endpoints.jmx.domain=com.example.myapp
+	 * <b/>
+	 * Therefore we need to support other domains than just: 'org.springframework.boot'
+	 * @return JMX MBean domain containing actuator information, or null if not resolved.
+	 * @throws Exception when resolving domain from JMX
+	 */
+	protected String getMBeanActuatorDomain() throws Exception {
+		if (this.domain == null) {
+			JMXConnector jmxConnector = getJmxConnector();
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			String[] domains = connection.getDomains();
+			if (domains != null) {
+				for (String domain : domains) {
+					if (SPRING_FRAMEWORK_BOOT_DOMAIN.equals(domain)) {
+						this.domain = SPRING_FRAMEWORK_BOOT_DOMAIN;
+						break;
+					}
+				}
+			}
+		}
+		return this.domain;
 	}
 
 	@Override
