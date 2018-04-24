@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -64,40 +63,6 @@ public class PropertiesIndexTest {
 				ValueProviderRegistry.getDefault(), null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
 		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
-		PropertyInfo propertyInfo = index.get("my.server.port");
-		assertNull(propertyInfo);
-	}
-
-	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
-	public void springStandardPropertyPresent_ClasspathFile() throws Exception {
-		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault(), null);
-		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
-		PropertyInfo propertyInfo = index.get("server.port");
-		assertNotNull(propertyInfo);
-		assertEquals(Integer.class.getName(), propertyInfo.getType());
-		assertEquals("port", propertyInfo.getName());
-	}
-
-	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
-	public void customPropertyPresent_ClasspathFile() throws Exception {
-		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault(), null);
-		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
-		PropertyInfo propertyInfo = index.get("demo.settings.user");
-		assertNotNull(propertyInfo);
-		assertEquals(String.class.getName(), propertyInfo.getType());
-		assertEquals("user", propertyInfo.getName());
-	}
-
-	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
-	public void propertyNotPresent_ClasspathFile() throws Exception {
-		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
-				ValueProviderRegistry.getDefault(), null);
-		IJavaProject classpathFileProject = projects.javaProjectWithClasspathFile(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(classpathFileProject, progressService);
 		PropertyInfo propertyInfo = index.get("my.server.port");
 		assertNull(propertyInfo);
 	}

@@ -23,7 +23,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.maven.java.classpathfile.JavaProjectWithClasspathFile;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 
 import com.google.common.cache.Cache;
@@ -79,8 +78,8 @@ public class ProjectsHarness {
 	}
 
 	private enum ProjectType {
-		MAVEN,
-		CLASSPATH_TXT
+		MAVEN
+		// GRADLE?
 	}
 
 	private ProjectsHarness() {
@@ -102,9 +101,6 @@ public class ProjectsHarness {
 		case MAVEN:
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
-		case CLASSPATH_TXT:
-			MavenBuilder.newBuilder(testProjectPath).clean().pack().skipTests().execute();
-			return new JavaProjectWithClasspathFile(testProjectPath.resolve(MavenCore.CLASSPATH_TXT).toFile());
 		default:
 			throw new IllegalStateException("Bug!!! Missing case");
 		}
@@ -133,9 +129,4 @@ public class ProjectsHarness {
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);
 	}
-
-	public IJavaProject javaProjectWithClasspathFile(String name) throws Exception {
-		return project(ProjectType.CLASSPATH_TXT, name);
-	}
-
 }
