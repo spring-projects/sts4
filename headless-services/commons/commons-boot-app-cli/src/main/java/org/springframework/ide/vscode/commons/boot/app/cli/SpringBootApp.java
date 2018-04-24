@@ -61,7 +61,7 @@ public class SpringBootApp {
 	private static final String SPRING_FRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
 
 	private Boolean isSpringBootApp;
-	private String domain;
+	private String jmxMBeanDomain;
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
@@ -437,7 +437,7 @@ public class SpringBootApp {
 	}
 
 	protected ObjectName getObjectName(String keyProperties) throws Exception {
-		String domain = getMBeanActuatorDomain();
+		String domain = getJmxMbeanDomain();
 		if (StringUtil.hasText(domain)  && StringUtil.hasText(keyProperties)) {
 			String fullName = domain + ":" + keyProperties;
 			return ObjectName.getInstance(fullName);
@@ -455,21 +455,28 @@ public class SpringBootApp {
 	 * @return JMX MBean domain containing actuator information, or null if not resolved.
 	 * @throws Exception when resolving domain from JMX
 	 */
-	protected String getMBeanActuatorDomain() throws Exception {
-		if (this.domain == null) {
-			JMXConnector jmxConnector = getJmxConnector();
-			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-			String[] domains = connection.getDomains();
-			if (domains != null) {
-				for (String domain : domains) {
-					if (SPRING_FRAMEWORK_BOOT_DOMAIN.equals(domain)) {
-						this.domain = SPRING_FRAMEWORK_BOOT_DOMAIN;
-						break;
+	protected String getJmxMbeanDomain() throws Exception {
+		if (this.jmxMBeanDomain == null) {
+			JMXConnector jmxConnector = null;
+			try {
+				jmxConnector = getJmxConnector();
+				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+				String[] domains = connection.getDomains();
+				if (domains != null) {
+					for (String domain : domains) {
+						if (SPRING_FRAMEWORK_BOOT_DOMAIN.equals(domain)) {
+							this.jmxMBeanDomain = SPRING_FRAMEWORK_BOOT_DOMAIN;
+							break;
+						}
 					}
+				}
+			} finally {
+				if (jmxConnector != null) {
+					jmxConnector.close();
 				}
 			}
 		}
-		return this.domain;
+		return this.jmxMBeanDomain;
 	}
 
 	@Override
