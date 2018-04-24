@@ -68,7 +68,7 @@ public class PropertiesIndexTest {
 		assertNull(propertyInfo);
 	}
 
-	@Test
+	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
 	public void springStandardPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault(), null);
