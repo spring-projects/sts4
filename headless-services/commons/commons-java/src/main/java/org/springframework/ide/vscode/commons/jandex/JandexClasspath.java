@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -51,13 +53,16 @@ public abstract class JandexClasspath implements IClasspath {
 	}
 	
 	protected JandexIndex createIndex() {
-		Stream<Path> classpathEntries = Stream.empty();
+		Collection<Path> classpathEntries = ImmutableList.of();
 		try {
-			classpathEntries = getClasspathEntries().stream();
+			classpathEntries = getClasspathEntryPaths();
+			for (Path path : classpathEntries) {
+				System.out.println(path);
+			}
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return new JandexIndex(classpathEntries.map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
+		return new JandexIndex(classpathEntries.stream().map(p -> p.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), classpathResource -> {
 			switch (providerType) {
 //			case JAVA_PARSER:
 //				return createParserJavadocProvider(classpathResource);

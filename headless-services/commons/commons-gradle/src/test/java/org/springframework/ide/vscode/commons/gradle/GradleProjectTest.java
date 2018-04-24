@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
@@ -76,7 +77,7 @@ public class GradleProjectTest {
 	@Test
 	public void testEclipseGradleProject() throws Exception {
 		GradleJavaProject project = getGradleProject("empty-gradle-project");
-		ImmutableList<Path> calculatedClassPath = project.getClasspath().getClasspathEntries();
+		ImmutableList<CPE> calculatedClassPath = project.getClasspath().getClasspathEntries();
 		assertEquals(48, calculatedClassPath.size());
 	}
 	
@@ -122,7 +123,7 @@ public class GradleProjectTest {
 			GradleJavaProject cachedProject = manager.project(gradleFile);
 			assertNotNull(cachedProject);
 			
-			ImmutableList<Path> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
+			ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
 			assertEquals(48, calculatedClassPath.size());
 			
 			fileObserver.notifyFileChanged(gradleFile.toURI().toString());

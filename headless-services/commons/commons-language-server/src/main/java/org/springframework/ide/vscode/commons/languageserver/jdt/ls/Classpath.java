@@ -4,10 +4,9 @@ package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
 import java.util.List;
 
 public class Classpath {
-	
+
 	public static final String ENTRY_KIND_SOURCE = "source";
 	public static final String ENTRY_KIND_BINARY = "binary";
-	public static final String OUTPUT_LOCATION = "output_location";
 
 	private List<CPE> entries;
 	private String defaultOutputFolder;
@@ -43,6 +42,21 @@ public class Classpath {
 		private String kind;
 		private String path;
 
+		/**
+		 * This only applies for 'source' entries.
+		 */
+		private String outputFolder;
+
+		public String getOutputFolder() {
+			return outputFolder;
+		}
+
+		public void setOutputFolder(String outputFolder) {
+			this.outputFolder = outputFolder;
+		}
+
+		public CPE() {}
+
 		public CPE(String kind, String path) {
 			super();
 			this.kind = kind;
@@ -66,10 +80,50 @@ public class Classpath {
 		}
 
 		@Override
-		public String toString() {
-			return "CPE [kind=" + kind + ", path=" + path + "]\n";
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+			result = prime * result + ((outputFolder == null) ? 0 : outputFolder.hashCode());
+			result = prime * result + ((path == null) ? 0 : path.hashCode());
+			return result;
 		}
 
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CPE other = (CPE) obj;
+			if (kind == null) {
+				if (other.kind != null)
+					return false;
+			} else if (!kind.equals(other.kind))
+				return false;
+			if (outputFolder == null) {
+				if (other.outputFolder != null)
+					return false;
+			} else if (!outputFolder.equals(other.outputFolder))
+				return false;
+			if (path == null) {
+				if (other.path != null)
+					return false;
+			} else if (!path.equals(other.path))
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + "]";
+		}
+	}
+
+	public static boolean isSource(CPE e) {
+		return e!=null && Classpath.ENTRY_KIND_SOURCE.equals(e.getKind());
 	}
 
 }

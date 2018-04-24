@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -79,7 +80,7 @@ public class PropertiesIndexTest {
 		assertEquals("port", propertyInfo.getName());
 	}
 
-	@Test
+	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
 	public void customPropertyPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault(), null);
@@ -91,7 +92,7 @@ public class PropertiesIndexTest {
 		assertEquals("user", propertyInfo.getName());
 	}
 
-	@Test
+	@Test @Ignore //ignore because classpath file is going to disapear and pieces already removed
 	public void propertyNotPresent_ClasspathFile() throws Exception {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				ValueProviderRegistry.getDefault(), null);

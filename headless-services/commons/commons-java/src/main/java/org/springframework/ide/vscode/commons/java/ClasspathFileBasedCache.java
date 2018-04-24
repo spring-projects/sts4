@@ -23,6 +23,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.ide.vscode.commons.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ClasspathFileBasedCache {
 	
 	public static final ClasspathFileBasedCache NULL = new ClasspathFileBasedCache(null);
@@ -45,13 +47,9 @@ public class ClasspathFileBasedCache {
 			FileWriter writer = null;
 			try {
 				Files.createDirectories(file.getParentFile().toPath());
-				JSONObject json = new JSONObject();
-				json.put(NAME_PROPERTY, data.name);
-				json.put(CLASSPATH_ENTRIES_PROPERTY, data.classpathEntries.stream().map(e -> e.toString()).collect(Collectors.toList()));
-				json.put(CLASSPATH_RESOURCES_PROPERTY, data.classpathResources);
-				json.put(OUTPUT_FOLDER_PROPERTY, data.outputFolder);
 				writer = new FileWriter(file);
-				json.write(writer);
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.writeValue(writer, data);
 			} catch (IOException e) {
 				Log.log(e);
 			} finally {
@@ -69,30 +67,12 @@ public class ClasspathFileBasedCache {
 	public boolean isCached() {
 		return file != null && file.exists();
 	}
-	
-	public synchronized ClasspathData load() {
 
+	public synchronized ClasspathData load() {
 		if (file != null && file.exists()) {
+			ObjectMapper mapper = new ObjectMapper();
 			try {
-				JSONObject json = new JSONObject(new JSONTokener(new FileInputStream(file)));
-				String name = json.getString(NAME_PROPERTY);
-				JSONArray classpathEntriesJson = json.optJSONArray(CLASSPATH_ENTRIES_PROPERTY);
-				JSONArray classpathResourcesJson = json.optJSONArray(CLASSPATH_RESOURCES_PROPERTY);
-				String outputFolderStr = json.optString(OUTPUT_FOLDER_PROPERTY);
-				
-				return new ClasspathData(
-						name,
-						classpathEntriesJson == null ? Collections.emptySet() : classpathEntriesJson.toList().stream()
-								.filter(o -> o instanceof String)
-								.map(o -> (String) o)
-								.map(s -> new File(s).toPath())
-								.collect(Collectors.toSet()),
-						classpathResourcesJson == null ? Collections.emptySet() : classpathResourcesJson.toList().stream()
-								.filter(o -> o instanceof String)
-								.map(o -> (String) o)
-								.collect(Collectors.toSet()),
-						outputFolderStr == null ? null : new File(outputFolderStr).toPath()
-					);
+				return mapper.readValue(file, ClasspathData.class);
 			} catch (Throwable e) {
 				Log.log(e);
 			}

@@ -15,12 +15,14 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -41,6 +44,7 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import reactor.core.Disposable;
 
@@ -250,13 +254,8 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		}
 
 		@Override
-		public ImmutableList<Path> getClasspathEntries() throws Exception {
-			return classpath
-					.getEntries()
-					.stream()
-					.filter(cpe -> cpe.getKind().equals(Classpath.ENTRY_KIND_BINARY))
-					.map(cpe -> Paths.get(cpe.getPath()))
-					.collect(CollectorUtil.toImmutableList());
+		public Collection<CPE> getClasspathEntries() throws Exception {
+			return classpath.getEntries();
 		}
 
 		@Override
@@ -267,8 +266,18 @@ public class JdtLsProjectCache implements JavaProjectsService {
 
 		@Override
 		public ImmutableList<String> getSourceFolders() {
-			// TODO Auto-generated method stub
-			return null;
+			ImmutableList.Builder<String> sourceEntries = ImmutableList.builder();
+			try {
+				for (CPE e : getClasspathEntries()) {
+					if (Classpath.isSource(e)) {
+						sourceEntries.add(e.getPath());
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return sourceEntries.build();
+
 		}
 
 		@Override

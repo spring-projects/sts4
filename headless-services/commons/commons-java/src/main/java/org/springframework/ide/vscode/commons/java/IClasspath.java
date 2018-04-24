@@ -13,8 +13,14 @@ package org.springframework.ide.vscode.commons.java;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 
 import com.google.common.collect.ImmutableList;
 
@@ -50,7 +56,7 @@ public interface IClasspath {
 	 * @return collection of classpath entries in a form file/folder paths
 	 * @throws Exception
 	 */
-	ImmutableList<Path> getClasspathEntries() throws Exception;
+	Collection<CPE> getClasspathEntries() throws Exception;
 
 	/**
 	 * Classpath resources paths relative to the source folder path
@@ -67,4 +73,25 @@ public interface IClasspath {
 	void reindex();
 	
 	Optional<URL> sourceContainer(File classpathResource);
+
+	@Deprecated
+	default Collection<Path> getClasspathEntryPaths() throws Exception {
+		LinkedHashSet<Path> entries = new LinkedHashSet<>();
+		for (CPE cpe : this.getClasspathEntries()) {
+			if (Classpath.ENTRY_KIND_BINARY.equals(cpe.getKind())) {
+				entries.add(Paths.get(cpe.getPath()));
+			} else if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind())) {
+				String of = cpe.getOutputFolder();
+				if (of!=null) {
+					entries.add(Paths.get(cpe.getOutputFolder()));
+				} else {
+					Path op = getOutputFolder();
+					if (op!=null) {
+						entries.add(op);
+					}
+				}
+			}
+		}
+		return ImmutableList.copyOf(entries);
+	}
 }

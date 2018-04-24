@@ -13,11 +13,13 @@ package org.springframework.ide.vscode.commons.java;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.base.Objects;
@@ -79,22 +81,23 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 
 	@Override
 	public String getName() {
-		return cachedData.get().name;
+		return cachedData.get().getName();
 	}
 
 	@Override
 	public Path getOutputFolder() {
-		return cachedData.get().outputFolder;
+		String of = cachedData.get().getOutputFolder();
+		return of == null ? null : Paths.get(of);
 	}
 
 	@Override
-	public ImmutableList<Path> getClasspathEntries() throws Exception {
-		return ImmutableList.copyOf(cachedData.get().classpathEntries);
+	public ImmutableList<CPE> getClasspathEntries() throws Exception {
+		return ImmutableList.copyOf(cachedData.get().getClasspathEntries());
 	}
 
 	@Override
 	public ImmutableList<String> getClasspathResources() {
-		return ImmutableList.copyOf(cachedData.get().classpathResources);
+		return ImmutableList.copyOf(cachedData.get().getClasspathResources());
 	}
 	
 	public boolean isCached() {

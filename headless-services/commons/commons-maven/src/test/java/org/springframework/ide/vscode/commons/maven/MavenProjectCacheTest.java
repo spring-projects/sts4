@@ -48,6 +48,7 @@ import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -131,7 +132,7 @@ public class MavenProjectCacheTest {
 		MavenJavaProject cachedProject = cache.project(pomFile);
 		assertNotNull(cachedProject);
 
-		ImmutableList<Path> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
+		ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
 		assertEquals(48, calculatedClassPath.size());
 
 		fileObserver.notifyFileChanged(pomFile.toURI().toString());

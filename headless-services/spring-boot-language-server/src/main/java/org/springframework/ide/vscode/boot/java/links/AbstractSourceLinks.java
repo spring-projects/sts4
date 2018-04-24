@@ -83,37 +83,34 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	
 	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, File containerFolder) {
 		IClasspath classpath = project.getClasspath();
-		if (containerFolder.toPath().startsWith(classpath.getOutputFolder())) {
-			return project.getClasspath().getSourceFolders().stream()
-				.map(sourceFolder -> {
-					try {
-						return Paths.get(sourceFolder).toUri().toURL();
-					} catch (MalformedURLException e) {
-						LOG.get().warn("Failed to convert source folder " + sourceFolder + "to URI." + fqName, e);
-						return null;
-					}
-				})
-				.map(url -> {
-					try {
-						return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER.sourceUrl(url, fqName);
-					} catch (Exception e) {
-						LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
-						return null;
-					}
-				})
-				.map(url -> {
-					try {
-						return Paths.get(url.toURI());
-					} catch (URISyntaxException e) {
-						LOG.get().warn("Failed to convert URL " + url + " to path." + fqName, e);
-						return null;
-					}
-				})
-				.filter(sourcePath -> sourcePath != null && Files.exists(sourcePath))
-				.findFirst()
-				.map(sourcePath -> javaSourceLinkUrl(project, sourcePath, fqName));
-		}
-		return Optional.empty();
+		return project.getClasspath().getSourceFolders().stream()
+			.map(sourceFolder -> {
+				try {
+					return Paths.get(sourceFolder).toUri().toURL();
+				} catch (MalformedURLException e) {
+					LOG.get().warn("Failed to convert source folder " + sourceFolder + "to URI." + fqName, e);
+					return null;
+				}
+			})
+			.map(url -> {
+				try {
+					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER.sourceUrl(url, fqName);
+				} catch (Exception e) {
+					LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
+					return null;
+				}
+			})
+			.map(url -> {
+				try {
+					return Paths.get(url.toURI());
+				} catch (URISyntaxException e) {
+					LOG.get().warn("Failed to convert URL " + url + " to path." + fqName, e);
+					return null;
+				}
+			})
+			.filter(sourcePath -> sourcePath != null && Files.exists(sourcePath))
+			.findFirst()
+			.map(sourcePath -> javaSourceLinkUrl(project, sourcePath, fqName));
 	}
 
 	private String javaSourceLinkUrl(IJavaProject project, Path sourcePath, String fqName) {

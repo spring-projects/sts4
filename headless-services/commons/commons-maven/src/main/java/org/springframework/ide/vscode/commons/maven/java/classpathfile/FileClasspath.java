@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 
 import com.google.common.collect.ImmutableList;
@@ -36,6 +37,8 @@ import reactor.util.function.Tuple2;
  *
  */
 public class FileClasspath implements IClasspath {
+	
+	//TODO: This is obsolete and no longer used. Should delete and anything taht uses it probably too.
 
 	private Path classpathFilePath;
 
@@ -44,10 +47,11 @@ public class FileClasspath implements IClasspath {
 	}
 
 	@Override
-	public ImmutableList<Path> getClasspathEntries() throws Exception {
-		return ImmutableList.copyOf(Stream.concat(MavenCore.readClassPathFile(classpathFilePath),
-				Stream.of(classpathFilePath.getParent().resolve("target/classes"),
-						classpathFilePath.getParent().resolve("target/test-classes"))).collect(Collectors.toList()));
+	public ImmutableList<CPE> getClasspathEntries() throws Exception {
+		return ImmutableList.of();
+//		return ImmutableList.copyOf(Stream.concat(MavenCore.readClassPathFile(classpathFilePath),
+//				Stream.of(classpathFilePath.getParent().resolve("target/classes"),
+//						classpathFilePath.getParent().resolve("target/test-classes"))).collect(Collectors.toList()));
 	}
 
 	@Override

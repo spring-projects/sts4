@@ -41,6 +41,17 @@ public class Classpath {
 	public static class CPE {
 		private String kind;
 		private String path;
+		private String outputFolder;
+
+		public String getOutputFolder() {
+			return outputFolder;
+		}
+
+		public void setOutputFolder(String outputFolder) {
+			this.outputFolder = outputFolder;
+		}
+
+		public CPE() {}
 
 		public CPE(String kind, String path) {
 			super();
@@ -66,9 +77,8 @@ public class Classpath {
 
 		@Override
 		public String toString() {
-			return "CPE [kind=" + kind + ", path=" + path + "]\n";
+			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + "]";
 		}
-
 	}
 
 }

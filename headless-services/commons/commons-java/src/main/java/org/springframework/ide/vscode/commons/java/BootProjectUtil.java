@@ -20,7 +20,7 @@ public class BootProjectUtil {
 		try {
 			IClasspath cp = jp.getClasspath();
 			if (cp!=null) {
-				return cp.getClasspathEntries().stream().anyMatch(cpe -> isBootEntry(cpe));
+				return cp.getClasspathEntryPaths().stream().anyMatch(cpe -> isBootEntry(cpe));
 			}
 		} catch (Exception e) {
 			Log.log(e);

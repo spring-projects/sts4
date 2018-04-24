@@ -22,7 +22,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.gradle.tooling.model.build.BuildEnvironment;
+import org.gradle.tooling.model.eclipse.EclipseExternalDependency;
 import org.gradle.tooling.model.eclipse.EclipseProject;
+import org.gradle.tooling.model.eclipse.EclipseProjectDependency;
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
@@ -30,9 +32,12 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 /**
  * Implementation of {@link IClasspath} for Gradle projects
@@ -87,24 +92,29 @@ public class GradleProjectClasspath extends JandexClasspath {
 	}
 
 	@Override
-	public ImmutableList<Path> getClasspathEntries() throws Exception {
+	public ImmutableList<CPE> getClasspathEntries() throws Exception {
 		EclipseProject root = getRootProject();
 		if (project == null) {
 			return ImmutableList.of();
 		} else {
-			ImmutableList<Path> classpathEntries = ImmutableList.copyOf(Stream.concat(project.getClasspath().stream().map(dep -> dep.getFile().toPath()),
-					project.getProjectDependencies().stream()
-						.map(d -> findPeer(root, d.getTargetProject().getName()))
-						.filter(o -> o.isPresent())
-						.map(o -> o.get())
-						.map(p -> p.getProjectDirectory().toPath().resolve(p.getOutputLocation().getPath()))
-				).collect(Collectors.toList()));
-			return classpathEntries;
+			Builder<CPE> entries = ImmutableList.builder();
+			for (EclipseExternalDependency dep : project.getClasspath()) {
+				entries.add(new CPE(Classpath.ENTRY_KIND_BINARY, dep.getFile().toPath().toString()));
+			}
+			for (EclipseProjectDependency dep : project.getProjectDependencies()) {
+				EclipseProject peer = findPeer(root, dep.getTargetProject().getName());
+				if (peer!=null) {
+					entries.add(new CPE(Classpath.ENTRY_KIND_BINARY,
+						peer.getProjectDirectory().toPath().resolve(peer.getOutputLocation().getPath()).toString()
+					));
+				}
+			}
+			return entries.build();
 		}
 	}
 	
-	private Optional<? extends EclipseProject> findPeer(EclipseProject root, String name) {
-		return root.getChildren().stream().filter(p -> p.getName().equals(name)).findFirst();
+	private EclipseProject findPeer(EclipseProject root, String name) {
+		return root.getChildren().stream().filter(p -> p.getName().equals(name)).findFirst().orElse(null);
 	}
 	
 	@Override

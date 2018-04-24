@@ -14,6 +14,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -33,10 +34,13 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
@@ -87,21 +91,22 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	public String getName() {
-		return cachedData != null ? cachedData.name : null;
+		return cachedData != null ? cachedData.getName() : null;
 	}
 	
-	private ImmutableList<Path> resolveClasspathEntries(MavenProject project) throws Exception {
-//		return Stream.concat(maven.resolveDependencies(project, null).stream().map(artifact -> {
-//			return artifact.getFile().toPath();
-//		}), projectResolvedOutput());
-		ImmutableList<Path> classpathEntries = ImmutableList.copyOf(Stream.concat(projectDependencies(project).stream().map(a -> a.getFile().toPath()),
-				projectOutput(project).stream().map(f -> f.toPath())).collect(Collectors.toList()));
-		return classpathEntries;
+	private ImmutableList<CPE> resolveClasspathEntries(MavenProject project) throws Exception {
+		return ImmutableList.copyOf(
+				Stream.concat(
+						projectDependencies(project).stream().map(a -> a.getFile().toPath()),
+						projectOutput(project).stream().map(f -> f.toPath())
+				)
+				.map(path -> new CPE(Classpath.ENTRY_KIND_BINARY, path.toString()))
+				.collect(Collectors.toList()));
 	}
 
 	@Override
-	public ImmutableList<Path> getClasspathEntries() throws Exception {
-		return cachedData != null ? ImmutableList.copyOf(cachedData.classpathEntries) : ImmutableList.of();
+	public ImmutableList<CPE> getClasspathEntries() throws Exception {
+		return cachedData != null ? ImmutableList.copyOf(cachedData.getClasspathEntries()) : ImmutableList.of();
 	}
 	
 	private Set<Artifact> projectDependencies(MavenProject project) {
@@ -121,7 +126,11 @@ public class MavenProjectClasspath extends JandexClasspath {
 	}
 	
 	public Path getOutputFolder() {
-		return cachedData != null ? cachedData.outputFolder : null;
+		if (cachedData!=null) {
+			String of = cachedData.getOutputFolder();
+			return of == null ? null : Paths.get(of);
+		}
+		return null;
 	}
 	
 	private ImmutableList<String> resolveClasspathResources(MavenProject project) {
@@ -145,7 +154,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 	
 	@Override
 	public ImmutableList<String> getClasspathResources() {
-		return cachedData != null ? ImmutableList.copyOf(cachedData.classpathResources) : ImmutableList.of();
+		return cachedData != null ? ImmutableList.copyOf(cachedData.getClasspathResources()) : ImmutableList.of();
 	}
 
 	/*
@@ -265,7 +274,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 	public MavenClasspathData createClasspathData() throws Exception {
 		MavenProject project = createMavenProject();
 
-		ImmutableList<Path> entries = resolveClasspathEntries(project);
+		ImmutableList<CPE> entries = resolveClasspathEntries(project);
 		String name = project.getArtifact().getArtifactId();
 		ImmutableList<String> resources = resolveClasspathResources(project);
 		Path outputFolder = resolveOutputFolder(project);
@@ -283,7 +292,7 @@ public class MavenProjectClasspath extends JandexClasspath {
 		return data;
 	}
 	
-	class MavenClasspathData extends ClasspathData {
+	static class MavenClasspathData extends ClasspathData {
 
 		private String testSourceDirectory;
 		private List<ArtifactRepository> remoteArtifactRepositories;
@@ -292,11 +301,10 @@ public class MavenProjectClasspath extends JandexClasspath {
 		private String reportingOutputDirectory;
 		private String outputDirectory;
 		private String sourceDirectory;
-		
 
-		public MavenClasspathData(String name, Set<Path> classpathEntries, Set<String> classpathResources,
+		public MavenClasspathData(String name, Set<CPE> classpathEntries, Set<String> classpathResources,
 				Path outputFolder) {
-			super(name, classpathEntries, classpathResources, outputFolder);
+			super(name, classpathEntries, classpathResources, outputFolder == null ? null : outputFolder.toString());
 		}
 
 		@Override

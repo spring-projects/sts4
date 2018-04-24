@@ -55,7 +55,7 @@ public class PropertiesLoader {
 
 	public ConfigurationMetadataRepository load(IClasspath classPath) {
 		try {
-			classPath.getClasspathEntries().forEach(entry -> {
+			classPath.getClasspathEntryPaths().forEach(entry -> {
 				//Log.info("Indexing "+entry);
 				File fileEntry = entry.toFile();
 				if (fileEntry.exists()) {

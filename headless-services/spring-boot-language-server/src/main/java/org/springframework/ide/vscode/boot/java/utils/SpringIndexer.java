@@ -619,7 +619,7 @@ public class SpringIndexer {
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
-		Stream<Path> classpathEntries = classpath.getClasspathEntries().stream();
+		Stream<Path> classpathEntries = classpath.getClasspathEntryPaths().stream();
 		return classpathEntries
 				.filter(path -> path.toFile().exists())
 				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
