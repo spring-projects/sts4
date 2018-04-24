@@ -66,7 +66,8 @@ public class ClasspathUtil {
 				}
 			}
 		}
-		Classpath classpath = new Classpath(cpEntries, javaProject.getOutputLocation().toString());
+		Classpath classpath = new Classpath(cpEntries, resolveWorkspacePath(javaProject.getOutputLocation()).toString());
+		log("classpath.outputFolder=" + classpath.getDefaultOutputFolder());
 		log("classpath=" + classpath.getEntries().size() + " entries");
 		return classpath;
 	}
