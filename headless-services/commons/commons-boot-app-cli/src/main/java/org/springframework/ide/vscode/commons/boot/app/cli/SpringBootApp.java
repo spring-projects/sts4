@@ -32,12 +32,13 @@ import javax.management.remote.JMXServiceURL;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.base.Supplier;
@@ -54,6 +55,8 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  */
 public class SpringBootApp {
 
+	private Logger logger = LoggerFactory.getLogger(SpringBootApp.class);
+	
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
@@ -86,7 +89,7 @@ public class SpringBootApp {
 			try {
 				address = vm.startLocalManagementAgent();
 			} catch (IOException e) {
-				Log.log(e);
+				logger.error("Error starting local management agent", e);
 			}
 		}
 		return address;
@@ -107,7 +110,7 @@ public class SpringBootApp {
 	public SpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
-		Log.info("SpringBootApp created: "+this);
+		logger.info("SpringBootApp created: "+this);
 	}
 
 	public String getProcessID() {
@@ -207,7 +210,7 @@ public class SpringBootApp {
 			String json = getBeansJson();
 			return LiveBeansModel.parse(json);
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("Error parsing beans", e);
 			return LiveBeansModel.builder().build();
 		}
 	}
@@ -526,14 +529,14 @@ public class SpringBootApp {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("error resolving profiles from env", e);
 		}
 		return null;
 	}
 
 	public void dispose() {
 		if (vm!=null) {
-			Log.info("SpringBootApp disposed: "+this);
+			logger.info("SpringBootApp disposed: "+this);
 			try {
 				vm.detach();
 			} catch (Exception e) {
