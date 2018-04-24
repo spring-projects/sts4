@@ -55,16 +55,17 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  */
 public class SpringBootApp {
 
+	private static final String SPRINGFRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
+
 	private Logger logger = LoggerFactory.getLogger(SpringBootApp.class);
-	
+
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
-	private static final String SPRING_FRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
 
 	private Boolean isSpringBootApp;
-	private String jmxMBeanDomain;
+	private String jmxMbeanActuatorDomain;
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
@@ -189,14 +190,14 @@ public class SpringBootApp {
 		return null;
 	}
 
-	private String getBeansJson() throws Exception {
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=beansEndpoint"), "Data");
+	private String getBeansFromActuator(String domain) throws Exception {
+		Object result = getActuatorDataFromAttribute(getObjectName(domain, "type=Endpoint,name=beansEndpoint"), "Data");
 		if (result != null) {
 			String beans = gson.toJson(result);
 			return beans;
 		}
 
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Beans"), "beans");
+		result = getActuatorDataFromOperation(getObjectName(domain, "type=Endpoint,name=Beans"), "beans");
 		if (result != null) {
 			String beans = gson.toJson(result);
 			return beans;
@@ -207,7 +208,8 @@ public class SpringBootApp {
 
 	public LiveBeansModel getBeans() {
 		try {
-			String json = getBeansJson();
+			String domain = getDomainForActuator();
+			String json = getBeansFromActuator(domain);
 			return LiveBeansModel.parse(json);
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
@@ -440,7 +442,11 @@ public class SpringBootApp {
 	}
 
 	protected ObjectName getObjectName(String keyProperties) throws Exception {
-		String domain = getJmxMbeanDomain();
+		String domain = getDomainForActuator();
+		return getObjectName(domain, keyProperties);
+	}
+
+	protected ObjectName getObjectName(String domain, String keyProperties) throws Exception {
 		if (StringUtil.hasText(domain)  && StringUtil.hasText(keyProperties)) {
 			String fullName = domain + ":" + keyProperties;
 			return ObjectName.getInstance(fullName);
@@ -458,18 +464,34 @@ public class SpringBootApp {
 	 * @return JMX MBean domain containing actuator information, or null if not resolved.
 	 * @throws Exception when resolving domain from JMX
 	 */
-	protected String getJmxMbeanDomain() throws Exception {
-		if (this.jmxMBeanDomain == null) {
+	protected String getDomainForActuator() throws Exception {
+		if (this.jmxMbeanActuatorDomain == null) {
 			JMXConnector jmxConnector = null;
 			try {
 				jmxConnector = getJmxConnector();
 				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-				String[] domains = connection.getDomains();
-				if (domains != null) {
-					for (String domain : domains) {
-						if (SPRING_FRAMEWORK_BOOT_DOMAIN.equals(domain)) {
-							this.jmxMBeanDomain = SPRING_FRAMEWORK_BOOT_DOMAIN;
-							break;
+				// To be more efficient in finding the domain containing actuator information,
+				// and avoid many JMX connections
+				// first check the default springframework boot domain:
+				String beansJson = getBeansFromActuator(SPRINGFRAMEWORK_BOOT_DOMAIN);
+				if (StringUtil.hasText(beansJson)) {
+					this.jmxMbeanActuatorDomain = SPRINGFRAMEWORK_BOOT_DOMAIN;
+				}
+
+				if (this.jmxMbeanActuatorDomain == null) {
+					String[] domains = connection.getDomains();
+					if (domains != null) {
+						for (String domain : domains) {
+							// we already checked default boot domain, no need to check it again
+							// Note that default spring boot domain may still appear even if another
+							// domain contains actuator Beans (for example, "Admin" will be under default spring framework domain)
+							if (!SPRINGFRAMEWORK_BOOT_DOMAIN.equals(domain)) {
+								beansJson = getBeansFromActuator(domain);
+								if (StringUtil.hasText(beansJson)) {
+									this.jmxMbeanActuatorDomain = domain;
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -479,7 +501,7 @@ public class SpringBootApp {
 				}
 			}
 		}
-		return this.jmxMBeanDomain;
+		return this.jmxMbeanActuatorDomain;
 	}
 
 	@Override
