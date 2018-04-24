@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,10 +38,11 @@ import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Reque
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -57,6 +58,18 @@ public class SpringBootApp {
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
 	private Boolean isSpringBootApp;
+
+	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
+	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
+	// Namely:
+	// 1. Object Mapper serialises null, but not Gson by default
+	// 2. Object Mapper does not escape Html, whereas Gson does by default (for example
+	// '=' in Gson appears as '\u003d')
+	private Gson gson = new GsonBuilder()
+							.serializeNulls()
+							.disableHtmlEscaping()
+							.create();
+
 
 	private final Supplier<String> jmxConnect = Suppliers.memoize(() -> {
 		String address = null;
@@ -157,13 +170,13 @@ public class SpringBootApp {
 	public String getEnvironment() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=environmentEndpoint", "Data");
 		if (result != null) {
-			String environment = new ObjectMapper().writeValueAsString(result);
+			String environment = gson.toJson(result);
 			return environment;
 		}
 
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Env", "environment");
 		if (result != null) {
-			String environment = new ObjectMapper().writeValueAsString(result);
+			String environment = gson.toJson(result);
 			return environment;
 		}
 
@@ -173,13 +186,13 @@ public class SpringBootApp {
 	private String getBeansJson() throws Exception {
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=beansEndpoint", "Data");
 		if (result != null) {
-			String beans = new ObjectMapper().writeValueAsString(result);
+			String beans = gson.toJson(result);
 			return beans;
 		}
 
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Beans", "beans");
 		if (result != null) {
-			String beans = new ObjectMapper().writeValueAsString(result);
+			String beans = gson.toJson(result);
 			return beans;
 		}
 
@@ -216,14 +229,14 @@ public class SpringBootApp {
 		//Boot 1.x
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=requestMappingEndpoint", "Data");
 		if (result != null) {
-			String mappings = new ObjectMapper().writeValueAsString(result);
+			String mappings = gson.toJson(result);
 			return parseRequestMappingsJson(mappings, "1.x");
 		}
 
 		//Boot 2.x
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Mappings", "mappings");
 		if (result != null) {
-			String mappings = new ObjectMapper().writeValueAsString(result);
+			String mappings = gson.toJson(result);
 			return parseRequestMappingsJson(mappings, "2.x");
 		}
 
@@ -252,14 +265,14 @@ public class SpringBootApp {
 		//Boot 1.x
 		Object result = getActuatorDataFromAttribute("org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint", "Data");
 		if (result != null) {
-			String report = new ObjectMapper().writeValueAsString(result);
+			String report = gson.toJson(result);
 			return report;
 		}
 
 		//Boot 2.x
 		result = getActuatorDataFromOperation("org.springframework.boot:type=Endpoint,name=Conditions", "applicationConditionEvaluation");
 		if (result != null) {
-			String report = new ObjectMapper().writeValueAsString(result);
+			String report = gson.toJson(result);
 			return report;
 		}
 
