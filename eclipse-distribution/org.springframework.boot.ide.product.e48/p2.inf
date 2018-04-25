@@ -17,8 +17,8 @@ instructions.unconfigure=\
  # Bug 530093: make sure we have latest version of a.jre.javase included with product
  requires.0.namespace=org.eclipse.equinox.p2.iu
  requires.0.name=a.jre.javase
- requires.0.range=[9.0.0,9.0.0]
+ requires.0.range=[1.8.0,1.8.0]
  requires.1.namespace=org.eclipse.equinox.p2.iu
  requires.1.name=config.a.jre.javase
- requires.1.range=[9.0.0,9.0.0]
+ requires.1.range=[1.8.0,1.8.0]
  
