@@ -57,6 +57,10 @@ public class CompilationUnitCacheTest {
 			public IClasspath getClasspath() {
 				return new DelegatingCachedClasspath<>(() -> null, null);
 			}
+			@Override
+			public String getLocationUri() {
+				return null;
+			}
 		});
 		harness.intialize(null);
 
@@ -99,6 +103,10 @@ public class CompilationUnitCacheTest {
 			public IClasspath getClasspath() {
 				return new DelegatingCachedClasspath<>(() -> null, null);
 			}
+			@Override
+			public String getLocationUri() {
+				return null;
+			}
 		});
 		harness.intialize(null);
 
@@ -129,6 +137,10 @@ public class CompilationUnitCacheTest {
 			@Override
 			public IClasspath getClasspath() {
 				return new DelegatingCachedClasspath<>(() -> null, null);
+			}
+			@Override
+			public String getLocationUri() {
+				return null;
 			}
 		});
 		harness.intialize(null);

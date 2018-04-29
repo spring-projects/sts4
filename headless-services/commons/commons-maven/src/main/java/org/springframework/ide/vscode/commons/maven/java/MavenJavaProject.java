@@ -80,4 +80,9 @@ public class MavenJavaProject extends AbstractJavaProject {
 		return "MavenJavaProject("+classpath.getName()+")";
 	}
 
+	@Override
+	public String getLocationUri() {
+		return pom.getParentFile().toURI().toString();
+	}
+	
 }

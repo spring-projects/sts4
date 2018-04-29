@@ -73,6 +73,11 @@ public class GradleJavaProject extends AbstractJavaProject {
 	boolean update() throws Exception {
 		return classpath.update();
 	}
+
+	@Override
+	public String getLocationUri() {
+		return projectDir.toURI().toString();
+	}
 	
 
 }

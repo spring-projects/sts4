@@ -17,6 +17,7 @@ public interface IJavaProject extends IJavaElement {
 	final static String PROJECT_CACHE_FOLDER = ".sts4-cache";
 	
 	IClasspath getClasspath();
+	String getLocationUri();
 
 	@Override
 	default String getElementName() {
@@ -32,5 +33,6 @@ public interface IJavaProject extends IJavaElement {
 	default boolean exists() {
 		return getClasspath().exists();
 	}
+
 	
 }

@@ -219,6 +219,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 			return classpath;
 		}
 		
+		@Override
 		public String getLocationUri() {
 			return classpath.projectUri;
 		}

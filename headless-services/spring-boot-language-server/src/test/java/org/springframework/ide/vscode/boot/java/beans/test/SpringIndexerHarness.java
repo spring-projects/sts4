@@ -12,11 +12,9 @@ package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -24,12 +22,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.WorkspaceFolder;
-import org.springframework.ide.vscode.boot.BootLanguageServerParams;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -104,18 +97,16 @@ public class SpringIndexerHarness {
 
 	};
 
-	private SpringIndexer indexer;
-
-	public SpringIndexerHarness(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders) {
-		this.indexer = new SpringIndexer(server, params, symbolProviders);
+	public static TestSymbolInfo symbol(String coveredText, String label) {
+		return new TestSymbolInfo(coveredText, label);
 	}
 
-	public void assertDocumentSymbols(String documentUri, TestSymbolInfo... expectedSymbols) throws Exception {
-		List<TestSymbolInfo> actualSymbols = getSymbolsInFile(documentUri);
+	public static void assertDocumentSymbols(SpringIndexer indexer, String documentUri, TestSymbolInfo... expectedSymbols) throws Exception {
+		List<TestSymbolInfo> actualSymbols = getSymbolsInFile(indexer, documentUri);
 		assertEquals(symbolsString(Arrays.asList(expectedSymbols)), symbolsString(actualSymbols));
 	}
 
-	private String symbolsString(List<TestSymbolInfo> symbols) {
+	private static String symbolsString(List<TestSymbolInfo> symbols) {
 		StringBuilder buf = new StringBuilder();
 		for (TestSymbolInfo s : symbols) {
 			buf.append(s+"\n");
@@ -123,7 +114,7 @@ public class SpringIndexerHarness {
 		return buf.toString();
 	}
 
-	public List<TestSymbolInfo> getSymbolsInFile(String docURI) throws Exception {
+	public static List<TestSymbolInfo> getSymbolsInFile(SpringIndexer indexer, String docURI) throws Exception {
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docURI);
 		if (symbols!=null) {
 			symbols = new ArrayList<>(symbols);
@@ -140,17 +131,4 @@ public class SpringIndexerHarness {
 		return ImmutableList.of();
 	}
 
-	public Collection<WorkspaceFolder> wsFolder(File directory) {
-		if (directory != null) {
-			WorkspaceFolder folder = new WorkspaceFolder();
-			folder.setName(directory.getName());
-			folder.setUri(directory.toURI().toString());
-			return ImmutableList.of(folder);
-		}
-		return ImmutableList.of();
-	}
-
-	public void initialize(Collection<WorkspaceFolder> wsRoots) {
-		indexer.initialize(wsRoots);
-	}
 }
