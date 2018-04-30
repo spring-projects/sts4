@@ -23,12 +23,12 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Wrapper for Maven Core project
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class MavenJavaProject extends AbstractJavaProject {
-	
+
 	private final File pom;
 
 	private MavenJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File pom) {
@@ -37,17 +37,17 @@ public class MavenJavaProject extends AbstractJavaProject {
 	}
 
 	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom, Path projectDataCache) {
-		File file = projectDataCache == null 
+		File file = projectDataCache == null
 				? null
 				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
 		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
 		DelegatingCachedClasspath classpath = new DelegatingCachedClasspath(
 				() -> new MavenProjectClasspath(maven, pom),
-				fileBasedCache 
+				fileBasedCache
 		);
 		return new MavenJavaProject(fileObserver, projectDataCache, classpath, pom);
 	}
-	
+
 	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom) {
 		MavenJavaProject thiss = create(fileObserver, maven, pom, null);
 		if (!thiss.getClasspath().isCached()) {
@@ -59,7 +59,7 @@ public class MavenJavaProject extends AbstractJavaProject {
 		}
 		return thiss;
 	}
-	
+
 	@Override
 	public String getElementName() {
 		if (getClasspath().getName() == null) {
@@ -68,20 +68,20 @@ public class MavenJavaProject extends AbstractJavaProject {
 			return super.getElementName();
 		}
 	}
-	
+
 	@Override
 	public DelegatingCachedClasspath getClasspath() {
 		return (DelegatingCachedClasspath) super.getClasspath();
 	}
-	
+
 	boolean update() throws Exception {
 		return getClasspath().update();
 	}
-	
+
 	public File pom() {
 		return pom;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "MavenJavaProject("+getElementName()+")";

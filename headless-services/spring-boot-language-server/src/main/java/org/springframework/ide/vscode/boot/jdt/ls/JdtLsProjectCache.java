@@ -217,5 +217,4 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		log.debug("NOT FOUND {} ", uri);
 		return Optional.empty();
 	}
-	
 }

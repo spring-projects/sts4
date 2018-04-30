@@ -19,21 +19,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableList;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.JavaCore;
@@ -53,7 +52,6 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.WorkspaceFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
@@ -70,12 +68,13 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -93,34 +92,40 @@ public class SpringIndexer {
 	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
 	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByDoc;
 
-	private final Thread updateWorker;
-	private final BlockingQueue<WorkerItem> updateQueue;
+	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByProject;
+	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByProject;
+
+	private final ExecutorService updateQueue;
 
 	private static final Logger log = LoggerFactory.getLogger(SpringIndexer.class);
 
 	private final Listener projectListener = new Listener() {
-
 		@Override
 		public void created(IJavaProject project) {
 			log.debug("project created event: {}", project.getElementName());
-			refresh();
+			initializeProject(project);
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
 			log.debug("project changed event: {}", project.getElementName());
-			refresh();
+			initializeProject(project);
 		}
 
 		@Override
 		public void deleted(IJavaProject project) {
 			log.debug("project deleted event: {}", project.getElementName());
-			refresh();
+			deleteProject(project);
 		}
-
 	};
 
-	private volatile InitializeItem lastInitializeItem;
+	private SimpleWorkspaceService getWorkspaceService() {
+		return server.getServer().getWorkspaceService();
+	}
+
+	private ProjectObserver getProjectObserver() {
+		return params.projectObserver;
+	}
 
 	public SpringIndexer(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
 		log.debug("Creating {}", this);
@@ -131,41 +136,20 @@ public class SpringIndexer {
 
 		this.symbols = Collections.synchronizedList(new ArrayList<>());
 		this.symbolsByDoc = new ConcurrentHashMap<>();
+		this.symbolsByProject = new ConcurrentHashMap<>();
 		this.addonInformation = Collections.synchronizedList(new ArrayList<>());
 		this.addonInformationByDoc = new ConcurrentHashMap<>();
+		this.addonInformationByProject = new ConcurrentHashMap<>();
 
-		this.updateQueue = new LinkedBlockingQueue<>();
-		this.updateWorker = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					while (true) {
-						WorkerItem workerItem = updateQueue.take();
-						log.debug("dequeued {}", workerItem);
-						workerItem.run();
-					}
-				}
-				catch (InterruptedException e) {
-					// ignore
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}, "Spring Annotation Index Update Worker");
-		server.onInitialized(updateWorker::start);
+		this.updateQueue = Executors.newSingleThreadExecutor();
+		
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
-			refresh();
 		});
 
 		if (getProjectObserver() != null) {
 			getProjectObserver().addListener(projectListener);
 		}
-	}
-
-	private ProjectObserver getProjectObserver() {
-		return params.projectObserver;
 	}
 
 	public void serverInitialized() {
@@ -178,72 +162,11 @@ public class SpringIndexer {
 		});
 	}
 
-	private SimpleWorkspaceService getWorkspaceService() {
-		return server.getServer().getWorkspaceService();
-	}
-
-	public CompletableFuture<Void> initialize(Collection<WorkspaceFolder> workspaceRoots) {
-		InitializeItem toCancel = null;
-		try {
-			synchronized(this) {
-			toCancel = lastInitializeItem;
-			//Careful do not cancel until created and setup new item. Otherwise it creates a 
-			//race condition in the test harness which needs to be able to ensure initialization
-			//is completed.
-				lastInitializeItem = new InitializeItem(workspaceRoots.toArray(new WorkspaceFolder[workspaceRoots.size()]));
-				updateQueue.put(lastInitializeItem);
-				return lastInitializeItem.getFuture();
-			}
-		} catch (Throwable  e) {
-			log.error("", e);
-			return Futures.error(e);
-		} finally {
-			try {
-				if (toCancel!=null && !toCancel.getFuture().isDone()) {
-					toCancel.getFuture().cancel(false);
-				}
-			} catch (Exception e) {
-				//ignore
-			}
-		}
-	}
-
-	public boolean isInitializing() {
-		return lastInitializeItem != null && !lastInitializeItem.getFuture().isDone();
-	}
-
-	public void waitForInitializeTask() {
-		InitializeItem lastInitializeItem = this.lastInitializeItem;
-		while (lastInitializeItem != null) {
-			if (!lastInitializeItem.getFuture().isDone()) {
-				try {
-					log.debug("Wating for {}", lastInitializeItem);
-					lastInitializeItem.getFuture().get();
-				} catch (Exception e) {
-					log.debug("Waiting for {} aborted", lastInitializeItem);
-					log.debug(ExceptionUtil.getMessage(e));
-				}
-				lastInitializeItem = this.lastInitializeItem;
-			} else {
-				log.debug("No need to wait for {}", lastInitializeItem);
-				lastInitializeItem = this.lastInitializeItem==lastInitializeItem ? null : this.lastInitializeItem;
-			}
-		}
-	}
-
-	private void refresh() {
-		synchronized (this) {
-			Collection<WorkspaceFolder> roots = server.getWorkspaceRoots();
-			log.debug("refresh spring indexer for roots: {}", roots.toString());
-			initialize(roots);
-		}
-	}
-
 	public void shutdown() {
 		try {
 			synchronized(this) {
-				if (updateWorker != null && updateWorker.isAlive()) {
-					updateWorker.interrupt();
+				if (updateQueue != null && !updateQueue.isShutdown()) {
+					updateQueue.shutdownNow();
 				}
 
 				if (getProjectObserver() != null) {
@@ -255,17 +178,36 @@ public class SpringIndexer {
 		}
 	}
 
+	public CompletableFuture<Void> initializeProject(IJavaProject project) {
+		try {
+			InitializeProject initializeItem = new InitializeProject(project);
+			return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+		} catch (Throwable  e) {
+			log.error("", e);
+			return Futures.error(e);
+		}
+	}
+
+	public CompletableFuture<Void> deleteProject(IJavaProject project) {
+		try {
+			DeleteProject initializeItem = new DeleteProject(project);
+			return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+		} catch (Throwable  e) {
+			log.error("", e);
+			return Futures.error(e);
+		}
+	}
+
 	public CompletableFuture<Void> updateDocument(String docURI, String content) {
 		synchronized(this) {
-			if (docURI.endsWith(".java") && lastInitializeItem != null) {
+			if (docURI.endsWith(".java")) {
 				try {
 					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						String[] classpathEntries = getClasspathEntries(maybeProject.get());
-
-						UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries);
-						updateQueue.put(updateItem);
-						return updateItem.getFuture();
+						
+						UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, classpathEntries);
+						return CompletableFuture.runAsync(updateItem, this.updateQueue);
 					}
 				}
 				catch (Exception e) {
@@ -280,29 +222,32 @@ public class SpringIndexer {
 	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
 		synchronized(this) {
 			try {
-				DeleteItem deleteItem = new DeleteItem(deletedDocURI);
-				updateQueue.put(deleteItem);
-				return deleteItem.getFuture();
+				Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(deletedDocURI));
+				if (maybeProject.isPresent()) {
+					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI);
+					return CompletableFuture.runAsync(deleteItem, this.updateQueue);
+				}
 			}
 			catch (Exception e) {
 				log.error("", e);
 				return Futures.error(e);
 			}
 		}
+		
+		return null;
 	}
 
 	public CompletableFuture<Void> createDocument(String docURI) {
 		synchronized(this) {
-			if (docURI.endsWith(".java") && lastInitializeItem != null) {
+			if (docURI.endsWith(".java")) {
 				try {
 					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						String[] classpathEntries = getClasspathEntries(maybeProject.get());
 
 						String content = FileUtils.readFileToString(new File(new URI(docURI)));
-						UpdateItem updateItem = new UpdateItem(docURI, content, classpathEntries);
-						updateQueue.put(updateItem);
-						return updateItem.getFuture();
+						UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, classpathEntries);
+						return CompletableFuture.runAsync(updateItem, this.updateQueue);
 					}
 				}
 				catch (Exception e) {
@@ -315,8 +260,6 @@ public class SpringIndexer {
 	}
 
 	public List<SymbolInformation> getAllSymbols(String query) {
-		waitForInitializeTask();
-
 		if (query != null && query.length() > 0) {
 			return searchMatchingSymbols(this.symbols, query);
 		} else {
@@ -325,13 +268,10 @@ public class SpringIndexer {
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		waitForInitializeTask();
 		return this.symbolsByDoc.get(docURI);
 	}
 
 	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {
-		waitForInitializeTask();
-
 		if (filter != null) {
 			return addonInformation.stream().filter(filter).collect(Collectors.toList());
 		}
@@ -341,31 +281,27 @@ public class SpringIndexer {
 	}
 
 	public List<? extends SymbolAddOnInformation> getAdditonalInformation(String docURI) {
-		waitForInitializeTask();
 		List<SymbolAddOnInformation> info = this.addonInformationByDoc.get(docURI);
 		return info == null ? ImmutableList.of() : info;
 	}
+	
+	/**
+	 * inserts a noop operation into the worker/update quene, which allows invokers to use the
+	 * returned future to wait for the queue items in the queue to be completed which got inserted before
+	 * this noop.
+	 */
+	public CompletableFuture<Void> waitOperation() {
+		return CompletableFuture.runAsync(new Runnable() {
+			@Override
+			public void run() {
+			}
+		}, this.updateQueue);
+	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
-		waitForInitializeTask();
 		return allsymbols.stream()
 				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), query))
 				.collect(Collectors.toList());
-	}
-
-	private void scanFiles(WorkspaceFolder directory) {
-		try {
-			Map<Optional<IJavaProject>, List<String>> projects = Files.walk(Paths.get(new URI(directory.getUri())))
-					.filter(path -> path.getFileName().toString().endsWith(".java"))
-					.filter(Files::isRegularFile)
-					.map(path -> path.toAbsolutePath().toString())
-					.collect(Collectors.groupingBy((javaFile) -> projectFinder.find(new TextDocumentIdentifier(new File(javaFile).toURI().toString()))));
-
-			projects.forEach((maybeProject, files) -> maybeProject.ifPresent(project -> scanProject(project, files.toArray(new String[0]))));
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void scanProject(IJavaProject project, String[] files) {
@@ -373,14 +309,14 @@ public class SpringIndexer {
 			ASTParser parser = ASTParser.newParser(AST.JLS10);
 			String[] classpathEntries = getClasspathEntries(project);
 
-			scanFiles(parser, files, classpathEntries);
+			scanFiles(project, parser, files, classpathEntries);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void scanFile(String docURI, String content, String[] classpathEntries) throws Exception {
+	private void scanFile(IJavaProject project, String docURI, String content, String[] classpathEntries) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS10);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
@@ -401,22 +337,12 @@ public class SpringIndexer {
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		if (cu != null) {
-			List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
-			if (oldSymbols != null) {
-				symbols.removeAll(oldSymbols);
-			}
-
-			List<SymbolAddOnInformation> oldAddOnInformation = addonInformationByDoc.remove(docURI);
-			if (oldAddOnInformation != null) {
-				addonInformation.removeAll(oldAddOnInformation);
-			}
-
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
-			scanAST(cu, docURI, docRef, content);
+			scanAST(project, cu, docURI, docRef, content);
 		}
 	}
 
-	private void scanFiles(ASTParser parser, String[] javaFiles, String[] classpathEntries) throws Exception {
+	private void scanFiles(IJavaProject project, ASTParser parser, String[] javaFiles, String[] classpathEntries) throws Exception {
 
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
@@ -435,20 +361,20 @@ public class SpringIndexer {
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				String docURI = UriUtil.toUri(new File(sourceFilePath)).toString();
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-				scanAST(cu, docURI, docRef, null);
+				scanAST(project, cu, docURI, docRef, null);
 			}
 		};
 
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 	}
 
-	private void scanAST(final CompilationUnit cu, final String docURI, AtomicReference<TextDocument> docRef, final String content) {
+	private void scanAST(final IJavaProject project, final CompilationUnit cu, final String docURI, AtomicReference<TextDocument> docRef, final String content) {
 		cu.accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef, content);
+					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -459,7 +385,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(MethodDeclaration node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef, content);
+					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -470,7 +396,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef, content);
+					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -482,7 +408,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef, content);
+					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -494,7 +420,7 @@ public class SpringIndexer {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					extractSymbolInformation(node, docURI, docRef, content);
+					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -505,7 +431,7 @@ public class SpringIndexer {
 		});
 	}
 
-	private void extractSymbolInformation(TypeDeclaration typeDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+	private void extractSymbolInformation(IJavaProject project, TypeDeclaration typeDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		Collection<SymbolProvider> providers = symbolProviders.getAll();
 		if (!providers.isEmpty()) {
 			TextDocument doc = getTempTextDocument(docURI, docRef, content);
@@ -513,20 +439,14 @@ public class SpringIndexer {
 				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
 				if (sbls != null) {
 					sbls.forEach(enhancedSymbol -> {
-						symbols.add(enhancedSymbol.getSymbol());
-						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
-						
-						if (enhancedSymbol.getAdditionalInformation() != null) {
-							addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-						}
+						addSymbol(project, docURI, enhancedSymbol);
 					});
 				}
 			}
 		}
 	}
 
-	private void extractSymbolInformation(MethodDeclaration methodDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+	private void extractSymbolInformation(IJavaProject project, MethodDeclaration methodDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		Collection<SymbolProvider> providers = symbolProviders.getAll();
 		if (!providers.isEmpty()) {
 			TextDocument doc = getTempTextDocument(docURI, docRef, content);
@@ -534,20 +454,14 @@ public class SpringIndexer {
 				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(methodDeclaration, doc);
 				if (sbls != null) {
 					sbls.forEach(enhancedSymbol -> {
-						symbols.add(enhancedSymbol.getSymbol());
-						symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
-
-						if (enhancedSymbol.getAdditionalInformation() != null) {
-							addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-							addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-						}
+						addSymbol(project, docURI, enhancedSymbol);
 					});
 				}
 			}
 		}
 	}
 
-	private void extractSymbolInformation(Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+	private void extractSymbolInformation(IJavaProject project, Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
@@ -559,21 +473,14 @@ public class SpringIndexer {
 					Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(node, typeBinding, metaAnnotations, doc);
 					if (sbls != null) {
 						sbls.forEach(enhancedSymbol -> {
-							symbols.add(enhancedSymbol.getSymbol());
-							symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
-
-							if (enhancedSymbol.getAdditionalInformation() != null) {
-								addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-								addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-							}
+							addSymbol(project, docURI, enhancedSymbol);
 						});
 					}
 				}
 			} else {
 				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef, content);
 				if (symbol != null) {
-					symbols.add(symbol);
-					symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(symbol);
+					addSymbol(project, docURI, new EnhancedSymbolInformation(symbol, null));
 				}
 			}
 		}
@@ -627,136 +534,176 @@ public class SpringIndexer {
 				.toArray(String[]::new);
 	}
 
-	/**
-	 * inner class to capture items for the update worker
-	 */
-	private interface WorkerItem {
 
-		public void run();
-		public CompletableFuture<Void> getFuture();
-
-	}
-
-	private static AtomicInteger initItemId = new AtomicInteger(0);
-
-	private class InitializeItem implements WorkerItem {
+	private class InitializeProject implements Runnable {
 		
-		private int id = initItemId.incrementAndGet();
-		
-		private final WorkspaceFolder[] workspaceRoots;
-		private final CompletableFuture<Void> future;
+		private final IJavaProject project;
 
-		public InitializeItem(WorkspaceFolder[] workspaceRoots) {
-			this.workspaceRoots = workspaceRoots;
-			this.future = new CompletableFuture<Void>();
+		public InitializeProject(IJavaProject project) {
+			this.project = project;
 			log.debug("{} created ", this);
-		}
-
-		@Override
-		public CompletableFuture<Void> getFuture() {
-			return future;
 		}
 
 		@Override
 		public void run() {
 			log.debug("{} starting...", this);
 			try {
-				if (!future.isCancelled()) {
-//					log.debug("initialze spring indexer task started for roots:   " + Arrays.toString(workspaceRoots));
-					symbols.clear();
-					symbolsByDoc.clear();
+				removeSymbolsByProject(project);
 
-					addonInformation.clear();
-					addonInformationByDoc.clear();
+				URI projectUri = project.getLocationUri();
+				List<String> files = Files.walk(Paths.get(projectUri))
+					.filter(path -> path.getFileName().toString().endsWith(".java"))
+					.filter(Files::isRegularFile)
+					.map(path -> path.toAbsolutePath().toString())
+					.collect(Collectors.toList());
 
-					for (WorkspaceFolder root : workspaceRoots) {
-						SpringIndexer.this.scanFiles(root);
-					}
+				SpringIndexer.this.scanProject(project, (String[]) files.toArray(new String[files.size()]));
 	
-//					log.debug("initialze spring indexer task completed for roots: " + Arrays.toString(workspaceRoots));
-	
-					future.complete(null);
-					log.debug("{} completed", this);
-				}
-				else {
-					log.debug("{} skipped because it was canceled", this);
-				}
+				log.debug("{} completed", this);
 			} catch (Throwable e) {
 				log.error("{} threw exception", this, e);
 			}
 		}
 		
-		@Override
-		public String toString() {
-			return "InitItem("+id+")";
-		}
 	}
 
-	private class UpdateItem implements WorkerItem {
+	private class DeleteProject implements Runnable {
+		
+		private final IJavaProject project;
+
+		public DeleteProject(IJavaProject project) {
+			this.project = project;
+			log.debug("{} created ", this);
+		}
+
+		@Override
+		public void run() {
+			log.debug("{} starting...", this);
+			try {
+				removeSymbolsByProject(project);
+				log.debug("{} completed", this);
+			} catch (Throwable e) {
+				log.error("{} threw exception", this, e);
+			}
+		}
+		
+	}
+
+	private class UpdateItem implements Runnable {
 
 		private final String docURI;
 		private final String content;
 		private final String[] classpathEntries;
+		private final IJavaProject project;
 
-		private final CompletableFuture<Void> future;
-
-		public UpdateItem(String docURI, String content, String[] classpathEntries) {
+		public UpdateItem(IJavaProject project, String docURI, String content, String[] classpathEntries) {
+			this.project = project;
 			this.docURI = docURI;
 			this.content = content;
 			this.classpathEntries = classpathEntries;
-			this.future = new CompletableFuture<Void>();
-		}
-
-		@Override
-		public CompletableFuture<Void> getFuture() {
-			return future;
 		}
 
 		@Override
 		public void run() {
 			try {
-				SpringIndexer.this.scanFile(docURI, content, classpathEntries);
+				removeSymbolsByDoc(project, docURI);
+				SpringIndexer.this.scanFile(project, docURI, content, classpathEntries);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
-			future.complete(null);
 		}
 	}
 
-	private class DeleteItem implements WorkerItem {
+	private class DeleteItem implements Runnable {
 
 		private final String docURI;
-		private final CompletableFuture<Void> future;
+		private IJavaProject project;
 
-		public DeleteItem(String docURI) {
+		public DeleteItem(IJavaProject project, String docURI) {
+			this.project = project;
 			this.docURI = docURI;
-			this.future = new CompletableFuture<Void>();
-		}
-
-		@Override
-		public CompletableFuture<Void> getFuture() {
-			return future;
 		}
 
 		@Override
 		public void run() {
 			try {
-
-				List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
-				if (oldSymbols != null) {
-					symbols.removeAll(oldSymbols);
-				}
-				
-				List<SymbolAddOnInformation> oldAddInInformation = addonInformationByDoc.remove(docURI);
-				if (oldAddInInformation != null) {
-					addonInformation.removeAll(oldAddInInformation);
-				}
-
+				removeSymbolsByDoc(project, docURI);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
-			future.complete(null);
 		}
+	}
+	
+	private void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
+		symbols.add(enhancedSymbol.getSymbol());
+		symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
+		symbolsByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
+		
+		if (enhancedSymbol.getAdditionalInformation() != null) {
+			addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+			addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+			addonInformationByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
+		}
+	}
+	
+	private void removeSymbolsByDoc(IJavaProject project, String docURI) {
+		List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
+		if (oldSymbols != null) {
+			symbols.removeAll(oldSymbols);
+
+			List<SymbolInformation> projectSymbols = symbolsByProject.get(project.getElementName());
+			if (projectSymbols != null) {
+				projectSymbols.removeAll(oldSymbols);
+			}
+		}
+		
+		List<SymbolAddOnInformation> oldAddInInformation = addonInformationByDoc.remove(docURI);
+		if (oldAddInInformation != null) {
+			addonInformation.removeAll(oldAddInInformation);
+
+			List<SymbolAddOnInformation> projectAddOns = addonInformationByProject.get(project.getElementName());
+			if (projectAddOns != null) {
+				projectAddOns.removeAll(oldAddInInformation);
+			}
+		}
+		
+	}
+
+	private void removeSymbolsByProject(IJavaProject project) {
+		List<SymbolInformation> oldSymbols = symbolsByProject.remove(project.getElementName());
+		if (oldSymbols != null) {
+			symbols.removeAll(oldSymbols);
+
+			Set<String> keySet = symbolsByDoc.keySet();
+			Iterator<String> docIter = keySet.iterator();
+			while (docIter.hasNext()) {
+				String docURI = docIter.next();
+				List<SymbolInformation> docSymbols = symbolsByDoc.get(docURI);
+				docSymbols.removeAll(oldSymbols);
+				
+				if (docSymbols.isEmpty()) {
+					docIter.remove();
+				}
+			}
+		}
+		
+		List<SymbolAddOnInformation> oldAddInInformation = addonInformationByProject.remove(project.getElementName());
+		if (oldAddInInformation != null) {
+			addonInformation.removeAll(oldAddInInformation);
+
+			Set<String> keySet = addonInformationByDoc.keySet();
+			Iterator<String> docIter = keySet.iterator();
+			while (docIter.hasNext()) {
+				String docURI = docIter.next();
+				List<SymbolAddOnInformation> docAddons = addonInformationByDoc.get(docURI);
+				docAddons.removeAll(oldAddInInformation);
+				
+				if (docAddons.isEmpty()) {
+					docIter.remove();
+				}
+			}
+		}
+		
 	}
 
 }

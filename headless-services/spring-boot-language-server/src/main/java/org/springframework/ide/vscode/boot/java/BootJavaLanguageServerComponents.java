@@ -193,7 +193,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 	
 	private void initialize(InitializeParams params) {
-		this.indexer.initialize(server.getWorkspaceRoots());
+//		this.indexer.initialize(server.getWorkspaceRoots());
 	}
 
 	private void initialized() {

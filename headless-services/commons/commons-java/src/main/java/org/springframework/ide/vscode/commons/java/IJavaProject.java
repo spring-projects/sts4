@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ public interface IJavaProject extends IJavaElement {
 
 	IClasspath getClasspath();
 	ClasspathIndex getIndex();
+	URI getLocationUri();
 
 	@Override
 	default String getElementName() {

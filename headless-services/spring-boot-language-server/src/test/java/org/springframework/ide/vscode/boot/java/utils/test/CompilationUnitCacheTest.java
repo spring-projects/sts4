@@ -54,6 +54,7 @@ public class CompilationUnitCacheTest {
 		harness = BootJavaLanguageServerHarness.builder()
 				.mockDefaults().build();
 		harness.useProject(ProjectsHarness.dummyProject());
+
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +

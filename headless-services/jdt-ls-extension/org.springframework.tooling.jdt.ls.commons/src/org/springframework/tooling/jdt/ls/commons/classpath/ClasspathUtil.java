@@ -12,7 +12,6 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_BINARY;
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_SOURCE;
-import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,8 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
+
+import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 public class ClasspathUtil {
 
