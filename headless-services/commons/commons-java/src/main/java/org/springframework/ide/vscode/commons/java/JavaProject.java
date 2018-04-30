@@ -29,6 +29,7 @@ public class JavaProject implements IJavaProject, Disposable {
 		super();
 		this.classpath = classpath;
 		this.fileObserver = fileObserver;
+		this.uri = uri;
 	}
 
 	@Override
@@ -44,6 +45,7 @@ public class JavaProject implements IJavaProject, Disposable {
 		return index;
 	}
 
+	@Override
 	public URI getLocationUri() {
 		return uri;
 	}
