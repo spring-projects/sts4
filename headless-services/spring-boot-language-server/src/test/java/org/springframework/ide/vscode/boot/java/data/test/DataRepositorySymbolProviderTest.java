@@ -16,10 +16,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -29,19 +34,28 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 public class DataRepositorySymbolProviderTest {
 
 	private BootJavaLanguageServerHarness harness;
+	private SpringIndexer indexer;
+	private File directory;
 
 	@Before
 	public void setup() throws Exception {
 		harness = BootJavaLanguageServerHarness.builder().build();
+		
+		harness.intialize(null);
+		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
+		
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-data-symbols/").toURI());
+		String projectDir = directory.toURI().toString();
+		IJavaProject project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+
+		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		initProject.get(5, TimeUnit.SECONDS);
 	}
 
 	@Test
 	public void testSimpleReppositorySymbol() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-spring-data-symbols/").toURI()));
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-data-symbols/").toURI());
-
 		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = getSymbols(docUri);
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
 	}
@@ -63,7 +77,4 @@ public class DataRepositorySymbolProviderTest {
 		return false;
 	}
 
-	private List<? extends SymbolInformation> getSymbols(String docUri) {
-		return harness.getServerWrapper().getComponents().getSpringIndexer().getSymbols(docUri);
-	}
 }
