@@ -155,7 +155,7 @@ public class GradleProjectTest {
 		assertTrue(project.isPresent());
 		assertTrue(project.get() instanceof GradleJavaProject);
 		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
-		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-1").toURI()), gradleProject.getLocation());
+		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-1").toURI()), new File(gradleProject.getLocationUri()));
 	}
 
 	@Test
@@ -166,7 +166,7 @@ public class GradleProjectTest {
 		assertTrue(project.isPresent());
 		assertTrue(project.get() instanceof GradleJavaProject);
 		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
-		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), gradleProject.getLocation());
+		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), new File(gradleProject.getLocationUri()));
 	}
 
 }

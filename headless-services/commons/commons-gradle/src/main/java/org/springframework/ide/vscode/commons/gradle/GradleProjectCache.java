@@ -40,7 +40,7 @@ public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaPro
 			return project.update();
 		} catch (Exception e) {
 			server.getDiagnosticService().diagnosticEvent(new ShowMessageException(
-					new MessageParams(MessageType.Error, "Cannot load Gradle project model from folder: " + project.getLocation()), e));
+					new MessageParams(MessageType.Error, "Cannot load Gradle project model from folder: " + project.getLocationUri()), e));
 			return true;
 		}
 	}
