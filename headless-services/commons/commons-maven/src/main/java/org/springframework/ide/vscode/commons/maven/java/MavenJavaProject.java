@@ -61,15 +61,6 @@ public class MavenJavaProject extends AbstractJavaProject {
 	}
 
 	@Override
-	public String getElementName() {
-		if (getClasspath().getName() == null) {
-			return pom.getParentFile().getName();
-		} else {
-			return super.getElementName();
-		}
-	}
-
-	@Override
 	public DelegatingCachedClasspath getClasspath() {
 		return (DelegatingCachedClasspath) super.getClasspath();
 	}

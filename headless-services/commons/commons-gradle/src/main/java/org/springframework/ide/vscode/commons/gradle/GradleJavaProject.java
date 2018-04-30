@@ -28,11 +28,8 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class GradleJavaProject extends AbstractJavaProject {
 
-	private final File projectDir;
-
 	private GradleJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File projectDir) {
 		super(fileObserver, projectDir.toURI(), projectDataCache, classpath);
-		this.projectDir = projectDir;
 	}
 
 	public static GradleJavaProject create(FileObserver fileObserver, GradleCore gradle, File projectDir, Path projectDataCache) {
@@ -57,19 +54,6 @@ public class GradleJavaProject extends AbstractJavaProject {
 			}
 		}
 		return thiss;
-	}
-
-	@Override
-	public String getElementName() {
-		if (getClasspath().getName() == null) {
-			return projectDir.getName();
-		} else {
-			return super.getElementName();
-		}
-	}
-
-	public File getLocation() {
-		return projectDir;
 	}
 
 	@Override
