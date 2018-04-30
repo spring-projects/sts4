@@ -63,6 +63,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -619,10 +620,11 @@ public class SpringIndexer {
 
 	private String[] getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
-		Stream<Path> classpathEntries = classpath.getClasspathEntryPaths().stream();
+		Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath).stream();
 		return classpathEntries
-				.filter(path -> path.toFile().exists())
-				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
+				.filter(file -> file.exists())
+				.map(file -> file.getAbsolutePath())
+				.toArray(String[]::new);
 	}
 
 	/**

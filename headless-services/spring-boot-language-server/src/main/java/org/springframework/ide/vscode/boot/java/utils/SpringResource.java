@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Renderables;
 
@@ -83,9 +85,12 @@ public class SpringResource {
 	private String projectRelativePath(String pathStr) {
 		Path path = Paths.get(pathStr);
 		IClasspath classpath = project.getClasspath();
-		Path outputFolder = classpath.getOutputFolder();
-		if (path.startsWith(outputFolder)) {
-			return outputFolder.relativize(path).toString();
+		Iterable<File> ofs = () -> IClasspathUtil.getOutputFolders(classpath).iterator();
+		for (File _outputFolder : ofs) {
+			Path outputFolder = _outputFolder.toPath();
+			if (path.startsWith(outputFolder)) {
+				return outputFolder.relativize(path).toString();
+			}
 		}
 		return pathStr;
 	}

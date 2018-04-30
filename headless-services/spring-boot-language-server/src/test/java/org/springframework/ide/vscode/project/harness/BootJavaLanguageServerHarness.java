@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.project.harness;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 
 import org.junit.Assert;
@@ -20,10 +21,13 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -135,9 +139,16 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 		indexHarness.useProject(p);
 	}
 
-	public Path getOutputFolder() {
-		return getProjectFinder().find(null).get().getClasspath().getOutputFolder();
+	public Path getOutputFolder() throws Exception {
+		IClasspath classpath = getProjectFinder().find(null).get().getClasspath();
+		for (CPE cpe : classpath.getClasspathEntries()) {
+			if (Classpath.isSource(cpe)) {
+				if (cpe.getPath().endsWith("main/java")) {
+					return Paths.get(cpe.getOutputFolder());
+				}
+			}
+		}
+		return null;
 	}
-
 
 }

@@ -25,13 +25,14 @@ import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseExternalDependency;
 import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.gradle.tooling.model.eclipse.EclipseProjectDependency;
+import org.gradle.tooling.model.eclipse.EclipseSourceDirectory;
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -41,46 +42,46 @@ import com.google.common.collect.ImmutableList.Builder;
 
 /**
  * Implementation of {@link IClasspath} for Gradle projects
- * 
+ *
  * @author Alex Boyko
  *
  */
-public class GradleProjectClasspath extends JandexClasspath {
-	
+public class GradleProjectClasspath implements IClasspath {
+
 	private static final String JAVA_HOME = "java.home";
 	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
 	private static final String JAVA_BOOT_CLASS_PATH = "sun.boot.class.path";
-	
+
 	private EclipseProject project;
 	private BuildEnvironment buildEnvironment;
-	
+
 	public GradleProjectClasspath(GradleCore gradle, File projectDir) throws GradleException {
 		super();
 		this.project = gradle.getModel(projectDir, EclipseProject.class);
 		this.buildEnvironment = gradle.getModel(projectDir, BuildEnvironment.class);
 	}
 
-	@Override
-	protected JandexIndex[] getBaseIndices() {
-		return new JandexIndex[] { new JandexIndex(getJreLibs().map(path -> path.toFile()).collect(Collectors.toList()),
-				jarFile -> findIndexFile(jarFile), (classpathResource) -> {
-					try {
-						String javaVersion = getJavaRuntimeMinorVersion();
-						if (javaVersion == null) {
-							javaVersion = "8";
-						}
-						URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
-						return new HtmlJavadocProvider(
-								(type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
-										.sourceUrl(javadocUrl, type.getFullyQualifiedName()));
-					} catch (MalformedURLException e) {
-						Log.log(e);
-						return null;
-					}
-				}) };
-	}
-	
-	public EclipseProject getRootProject() {
+//	@Override
+//	protected JandexIndex[] getBaseIndices() {
+//		return new JandexIndex[] { new JandexIndex(getJreLibs().map(path -> path.toFile()).collect(Collectors.toList()),
+//				jarFile -> findIndexFile(jarFile), (classpathResource) -> {
+//					try {
+//						String javaVersion = getJavaRuntimeMinorVersion();
+//						if (javaVersion == null) {
+//							javaVersion = "8";
+//						}
+//						URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
+//						return new HtmlJavadocProvider(
+//								(type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
+//										.sourceUrl(javadocUrl, type.getFullyQualifiedName()));
+//					} catch (MalformedURLException e) {
+//						Log.log(e);
+//						return null;
+//					}
+//				}) };
+//	}
+
+	private EclipseProject getRootProject() {
 		EclipseProject root = project;
 		if (root == null) {
 			return root;
@@ -99,7 +100,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 		} else {
 			Builder<CPE> entries = ImmutableList.builder();
 			for (EclipseExternalDependency dep : project.getClasspath()) {
-				entries.add(new CPE(Classpath.ENTRY_KIND_BINARY, dep.getFile().toPath().toString()));
+				entries.add(new CPE(Classpath.ENTRY_KIND_BINARY, dep.getFile().getAbsolutePath()));
 			}
 			for (EclipseProjectDependency dep : project.getProjectDependencies()) {
 				EclipseProject peer = findPeer(root, dep.getTargetProject().getName());
@@ -109,50 +110,24 @@ public class GradleProjectClasspath extends JandexClasspath {
 					));
 				}
 			}
+			for (EclipseSourceDirectory sf : project.getSourceDirectories()) {
+				File sourceFolder = sf.getDirectory();
+				String of = sf.getOutput();
+				entries.add(CPE.source(sourceFolder.getAbsoluteFile(), new File(project.getProjectDirectory(), of)));
+			}
 			return entries.build();
 		}
 	}
-	
+
 	private EclipseProject findPeer(EclipseProject root, String name) {
 		return root.getChildren().stream().filter(p -> p.getName().equals(name)).findFirst().orElse(null);
 	}
-	
+
 	@Override
-	public ImmutableList<String> getClasspathResources() {
-		if (project == null) {
-			return ImmutableList.of();
-		} else {
-			return ImmutableList.copyOf(project.getSourceDirectories().stream().map(sourceDirectory -> sourceDirectory.getDirectory()).flatMap(folder -> {
-				try {
-					return Files.walk(folder.toPath())
-							.filter(path -> Files.isRegularFile(path))
-							.map(path -> folder.toPath().relativize(path))
-							.map(relativePath -> relativePath.toString())
-							.filter(pathString -> !pathString.endsWith(".java") && !pathString.endsWith(".class"));
-				} catch (IOException e) {
-					return Stream.empty();
-				}
-			}).toArray(String[]::new));
-		}
-	}
-
-	public Path getOutputFolder() {
-		return project == null ? null : project.getProjectDirectory().toPath().resolve(project.getOutputLocation().getPath());
-	}
-
 	public String getName() {
 		return project == null ? null : project.getName();
 	}
 
-	public boolean exists() {
-		return project != null;
-	}
-
-	@Override
-	protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
-		return null;
-	}
-	
 	public String getGradleVersion()  throws GradleException {
 		if (buildEnvironment == null) {
 			throw new GradleException(new Exception("Cannot find Gradle version"));
@@ -160,7 +135,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 			return buildEnvironment.getGradle().getGradleVersion();
 		}
 	}
-	
+
 	public File getGradleHome() throws GradleException {
 		if (buildEnvironment == null) {
 			throw new GradleException(new Exception("Cannot find Gradle home folder"));
@@ -168,11 +143,11 @@ public class GradleProjectClasspath extends JandexClasspath {
 			return buildEnvironment.getGradle().getGradleUserHome();
 		}
 	}
-	
+
 	public String getJavaRuntimeVersion() {
 		return System.getProperty(JAVA_RUNTIME_VERSION);
 	}
-	
+
 	public String getJavaRuntimeMinorVersion() {
 		String fullVersion = getJavaRuntimeVersion();
 		String[] tokenized = fullVersion.split("\\.");
@@ -183,7 +158,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 			return null;
 		}
 	}
-	
+
 	private String getJavaHome() {
 		if (buildEnvironment == null) {
 			return System.getProperty(JAVA_HOME);
@@ -191,7 +166,7 @@ public class GradleProjectClasspath extends JandexClasspath {
 			return buildEnvironment.getJava().getJavaHome().toString();
 		}
 	}
-	
+
 	private Stream<Path> getJreLibs() {
 		String s = System.getProperty(JAVA_BOOT_CLASS_PATH);
 		return Arrays.stream(s.split(File.pathSeparator))
@@ -200,44 +175,13 @@ public class GradleProjectClasspath extends JandexClasspath {
 				.filter(f -> f.canRead())
 				.map(f -> f.toPath());
 	}
-	
-	private File findIndexFile(File jarFile) {
-		String suffix = null;
-			String javaHome = getJavaHome();
-			if (javaHome != null) {
-				int index = javaHome.lastIndexOf('/');
-				if (index != -1) {
-					javaHome = javaHome.substring(0, index);
-				}
-			}
-			if (jarFile.toString().startsWith(javaHome)) {
-				suffix = getJavaRuntimeVersion();
-			}
-		return new File(JandexIndex.getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
-	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof GradleProjectClasspath) {
 			return super.equals(obj);
 		}
 		return false;
-	}
-
-	@Override
-	public ImmutableList<String> getSourceFolders() {
-		return ImmutableList.copyOf(project.getSourceDirectories().stream()
-				.map(dir -> dir.getDirectory().toPath().toString()).collect(Collectors.toList()));
-	}
-	
-	@Override
-	public ClasspathData createClasspathData() throws Exception {
-		return ClasspathData.from(getName(), getClasspathEntries(), getClasspathResources(), getOutputFolder());
-	}
-
-	@Override
-	public Optional<URL> sourceContainer(File classpathResource) {
-		return Optional.empty();
 	}
 
 }

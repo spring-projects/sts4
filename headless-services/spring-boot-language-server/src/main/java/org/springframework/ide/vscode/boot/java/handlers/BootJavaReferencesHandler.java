@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
@@ -125,10 +127,11 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
 		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
 		IClasspath classpath = project.getClasspath();
-		Stream<Path> classpathEntries = classpath.getClasspathEntryPaths().stream();
+		Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath).stream();
 		return classpathEntries
-				.filter(path -> path.toFile().exists())
-				.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
+				.filter(file -> file.exists())
+				.map(file -> file.getAbsolutePath())
+				.toArray(String[]::new);
 	}
 
 }

@@ -10,14 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -25,44 +19,41 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
-
 /**
- * 
+ *
  * This wrapper around a classpath manages classpath data from and to a file-based cache (e.g. ".sts4-cache/classpath-data.json") with classpath data obtained
- * from a project (e.g., maven or gradle project) through an "update" operation. 
- * 
+ * from a project (e.g., maven or gradle project) through an "update" operation.
+ *
  * The cached classpath data is written to the file and loaded from it when instance of this classpath is created
- * 
+ *
  * NOTE: Classpath data may not be available until an actual update is requested on this wrapper.
- * 
+ *
  * As the wrapper is a classpath itself ,it delegates to the underlying classpath for classpath operations (e.g. getting classpath entries, resources, etc..). However, the data may not
  * be available until update is performed.
- *  
+ *
  * The wrapper caches some of classpath data such as
  * <li> Classpath entries </li>
  * <li> Classpath resources </li>
  * <li> Output folder </li>
  * <li> Projects' name </li>
- * 
- * 
+ *
+ *
  * Implementation is somewhat experimental at the moment...
- * 
+ *
  * @author Alex Boyko
  *
  * @param <T> a subclass of {@link IClasspath} the delegated to classpath created from current data
  */
-public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspath {
-	
+public class DelegatingCachedClasspath implements IClasspath {
+
 	private AtomicReference<ClasspathData> cachedData;
-	private Callable<T> classpathCreator;
-	private AtomicReference<T> cachedClasspath;
+	private Callable<IClasspath> classpathCreator;
+	private AtomicReference<IClasspath> cachedClasspath;
 
 	private final ClasspathFileBasedCache fileBasedCache;
-	
-	
-	public DelegatingCachedClasspath(Callable<T> delegateCreator, ClasspathFileBasedCache fileCache) {
+
+
+	public DelegatingCachedClasspath(Callable<IClasspath> delegateCreator, ClasspathFileBasedCache fileCache) {
 		super();
 		Assert.isLegal(delegateCreator != null);
 		this.fileBasedCache = fileCache != null ? fileCache : ClasspathFileBasedCache.NULL;
@@ -74,8 +65,8 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	private ClasspathData loadFileBasedCache(ClasspathFileBasedCache fileCache) {
 		return fileCache != null ? fileCache.load() : ClasspathData.EMPTY_CLASSPATH_DATA;
 	}
-	
-	public T delegate() {
+
+	public IClasspath delegate() {
 		return cachedClasspath.get();
 	}
 
@@ -85,25 +76,14 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 	}
 
 	@Override
-	public Path getOutputFolder() {
-		String of = cachedData.get().getOutputFolder();
-		return of == null ? null : Paths.get(of);
-	}
-
-	@Override
 	public ImmutableList<CPE> getClasspathEntries() throws Exception {
 		return ImmutableList.copyOf(cachedData.get().getClasspathEntries());
 	}
 
-	@Override
-	public ImmutableList<String> getClasspathResources() {
-		return ImmutableList.copyOf(cachedData.get().getClasspathResources());
-	}
-	
 	public boolean isCached() {
 		return fileBasedCache.isCached();
 	}
-	
+
 	public boolean update() throws Exception {
 		try {
 			final ClasspathData newData = createClasspathData();
@@ -119,74 +99,20 @@ public class DelegatingCachedClasspath<T extends IClasspath> implements IClasspa
 			throw e;
 		}
 	}
-	
-	@Override
-	public boolean exists() {
-		T t = cachedClasspath.get();
-		return t != null && t.exists();
-	}
 
-	@Override
-	public IType findType(String fqName) {
-		T t = cachedClasspath.get();
-		return t == null ? null : t.findType(fqName);
-	}
-
-	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
-		T t = cachedClasspath.get();
-		return t == null ? Flux.empty() : t.fuzzySearchTypes(searchTerm, typeFilter);
-	}
-
-	@Override
-	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		T t = cachedClasspath.get();
-		return t == null ? Flux.empty() : t.fuzzySearchPackages(searchTerm);
-	}
-
-	@Override
-	public Flux<IType> allSubtypesOf(IType type) {
-		T t = cachedClasspath.get();
-		return t == null ? Flux.empty() : t.allSubtypesOf(type);
-	}
-
-	@Override
-	public ClasspathData createClasspathData() throws Exception {
-		T newDelegate = classpathCreator.call();
+	private ClasspathData createClasspathData() throws Exception {
+		IClasspath newDelegate = classpathCreator.call();
 		cachedClasspath.set(newDelegate);
 		if (newDelegate != null) {
-			ClasspathData data = newDelegate.createClasspathData();
+			ClasspathData data = createClasspathData(newDelegate);
 			if (data != null) {
 				return data;
 			}
-		} 
+		}
 		return ClasspathData.EMPTY_CLASSPATH_DATA;
 	}
 
-	@Override
-	public ImmutableList<String> getSourceFolders() {
-		T t = cachedClasspath.get();
-		return t == null ? ImmutableList.of() : t.getSourceFolders();
+	private ClasspathData createClasspathData(IClasspath d) {
+		return ClasspathData.from(d);
 	}
-
-	@Override
-	public Optional<File> findClasspathResourceContainer(String fqName) {
-		T t = cachedClasspath.get();
-		return t == null ? Optional.empty() : t.findClasspathResourceContainer(fqName);
-	}
-	
-	@Override
-	public void reindex() {
-		T t = cachedClasspath.get();
-		if (t != null) {
-			t.reindex();
-		}
-	}
-
-	@Override
-	public Optional<URL> sourceContainer(File classpathResource) {
-		T t = cachedClasspath.get();
-		return t == null ? Optional.empty() : t.sourceContainer(classpathResource);
-	}
-	
 }

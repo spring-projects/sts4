@@ -37,19 +37,21 @@ import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CP
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
+import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.*;
+
 import com.google.common.collect.ImmutableList;
 
 /**
  * Tests covering Gradle project data
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class GradleProjectTest {
-	
+
 	private Sts4LanguageServer server;
 	private BasicFileObserver fileObserver;
-	
+
 	@Before
 	public void setup() throws Exception {
 		fileObserver = new BasicFileObserver();
@@ -58,7 +60,7 @@ public class GradleProjectTest {
 		when(workspaceService.getFileObserver()).thenReturn(fileObserver);
 		when(server.getWorkspaceService()).thenReturn(workspaceService);
 	}
-	
+
 	private static void writeContent(File file, String content) throws IOException {
 		FileWriter writer = null;
 		try {
@@ -68,39 +70,40 @@ public class GradleProjectTest {
 			writer.close();
 		}
 	}
-	
+
 	private GradleJavaProject getGradleProject(String projectName) throws Exception {
 		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/" + projectName).toURI());
-		return new GradleJavaProject(GradleCore.getDefault(), testProjectPath.toFile());
+		return GradleJavaProject.create(fileObserver, GradleCore.getDefault(), testProjectPath.toFile());
 	}
 
 	@Test
 	public void testEclipseGradleProject() throws Exception {
 		GradleJavaProject project = getGradleProject("empty-gradle-project");
 		ImmutableList<CPE> calculatedClassPath = project.getClasspath().getClasspathEntries();
-		assertEquals(48, calculatedClassPath.size());
+		assertEquals(51, calculatedClassPath.size());
 	}
-	
+
 	@Test
 	public void outputFolder() throws Exception {
 		GradleJavaProject project = getGradleProject("test-app-1");
-		assertTrue(project.getClasspath().getOutputFolder().toString().contains("/bin"));
+		String of = getOutputFolder(project).toString();
+		assertTrue(of.endsWith("/bin") || of.endsWith("/bin/main"));
 	}
-	
+
 	@Test
 	public void gradleClasspathResource() throws Exception {
 		GradleJavaProject project = getGradleProject("test-app-1");
-		List<String> resources = project.getClasspath().getClasspathResources();
+		List<String> resources = project.getClasspathResources();
 		assertArrayEquals(new String[] {"test-resource-1.txt"}, resources.toArray(new String[resources.size()]));
 	}
-	
+
 	@Test
 	public void testGradleFileChanges() throws Exception {
 		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/empty-gradle-project").toURI());
 		File gradleFile = testProjectPath.resolve(GradleCore.GRADLE_BUILD_FILE).toFile();
-		
+
 		String gradelFileContents = Files.contentOf(gradleFile, Charset.defaultCharset());
-		
+
 		try {
 			GradleProjectCache manager = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
 			IJavaProject[] projectChanged = new IJavaProject[] { null };
@@ -108,7 +111,7 @@ public class GradleProjectTest {
 			manager.addListener(new Listener() {
 				@Override
 				public void created(IJavaProject project) {}
-	
+
 				@Override
 				public void changed(IJavaProject project) {
 					projectChanged[0] = project;
@@ -118,25 +121,25 @@ public class GradleProjectTest {
 					projectDeleted[0] = project;
 				}
 			});
-			
+
 			// Get the project from cache
 			GradleJavaProject cachedProject = manager.project(gradleFile);
 			assertNotNull(cachedProject);
-			
+
 			ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-			assertEquals(48, calculatedClassPath.size());
-			
+			assertEquals(51, calculatedClassPath.size());
+
 			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
 			assertNull(projectChanged[0]);
-			
+
 			writeContent(gradleFile, Files.contentOf(testProjectPath.resolve("build.newgradle").toFile(), Charset.defaultCharset()));
 			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
 			assertNotNull(projectChanged[0]);
 			assertEquals(cachedProject, projectChanged[0]);
 			calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-			assertEquals(49, calculatedClassPath.size());
-	
-			
+			assertEquals(52, calculatedClassPath.size());
+
+
 			fileObserver.notifyFileDeleted(gradleFile.toURI().toString());
 			assertEquals(cachedProject, projectDeleted[0]);
 		} finally {
@@ -165,5 +168,5 @@ public class GradleProjectTest {
 		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
 		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), gradleProject.getLocation());
 	}
-	
+
 }

@@ -1,7 +1,20 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
 
-
+import java.io.File;
+import java.net.URL;
 import java.util.List;
+
+import org.springframework.ide.vscode.commons.util.Assert;
 
 public class Classpath {
 
@@ -9,12 +22,10 @@ public class Classpath {
 	public static final String ENTRY_KIND_BINARY = "binary";
 
 	private List<CPE> entries;
-	private String defaultOutputFolder;
 
-	public Classpath(List<CPE> entries, String defaultOutputFolder) {
+	public Classpath(List<CPE> entries) {
 		super();
 		this.entries = entries;
-		this.defaultOutputFolder = defaultOutputFolder;
 	}
 
 	public List<CPE> getEntries() {
@@ -25,33 +36,34 @@ public class Classpath {
 		this.entries = entries;
 	}
 
-	public String getDefaultOutputFolder() {
-		return defaultOutputFolder;
-	}
-
-	public void setDefaultOutputFolder(String defaultOutputFolder) {
-		this.defaultOutputFolder = defaultOutputFolder;
-	}
-
 	@Override
 	public String toString() {
-		return "Classpath [entries=" + entries + ", defaultOutputFolder=" + defaultOutputFolder + "]";
+		return "Classpath [entries=" + entries + "]";
 	}
 
 	public static class CPE {
-		private String kind;
-		private String path;
 
-		/**
-		 * This only applies for 'source' entries.
-		 */
+		// TODO: it seems like a good idea to make all classpath entries the same in that they all have
+		// - a place with source code
+		// - a place with compiled code
+		// - a place with java doc
+		// So it seems like we should be able to chnage this so that the same named attribute is used
+		// in both cases (rather then one be 'getOutputFolder' and one 'getPath' to obtain location of the compiled code).
+
+		private String kind;
+
+		private String path; // TODO: Change to File, Path or URL?
 		private String outputFolder;
+		private URL sourceContainerUrl;
+		private URL javadocContainerUrl;
+		private boolean isSystem = false;
 
 		public String getOutputFolder() {
 			return outputFolder;
 		}
 
 		public void setOutputFolder(String outputFolder) {
+			Assert.isLegal(outputFolder==null || new File(outputFolder).isAbsolute());
 			this.outputFolder = outputFolder;
 		}
 
@@ -60,7 +72,7 @@ public class Classpath {
 		public CPE(String kind, String path) {
 			super();
 			this.kind = kind;
-			this.path = path;
+			setPath(path);
 		}
 
 		public String getKind() {
@@ -76,16 +88,54 @@ public class Classpath {
 		}
 
 		public void setPath(String path) {
+			Assert.isLegal(path == null || new File(path).isAbsolute());
 			this.path = path;
+		}
+
+		public URL getJavadocContainerUrl() {
+			return javadocContainerUrl;
+		}
+
+		public void setJavadocContainerUrl(URL javadocContainerUrl) {
+			this.javadocContainerUrl = javadocContainerUrl;
+		}
+
+		public URL getSourceContainerUrl() {
+			return sourceContainerUrl;
+		}
+
+		public void setSourceContainerUrl(URL sourceContainerUrl) {
+			this.sourceContainerUrl = sourceContainerUrl;
+		}
+
+		public static CPE binary(String path) {
+			return new CPE(ENTRY_KIND_BINARY, path);
+		}
+
+		public static CPE source(File sourceFolder, File outputFolder) {
+			CPE cpe = new CPE(ENTRY_KIND_SOURCE, sourceFolder.getAbsolutePath());
+			cpe.setOutputFolder(outputFolder.getAbsolutePath());
+			return cpe;
+		}
+
+		public boolean isSystem() {
+			return isSystem;
+		}
+
+		public void setSystem(boolean isSystem) {
+			this.isSystem = isSystem;
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + (isSystem ? 1231 : 1237);
+			result = prime * result + ((javadocContainerUrl == null) ? 0 : javadocContainerUrl.hashCode());
 			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
 			result = prime * result + ((outputFolder == null) ? 0 : outputFolder.hashCode());
 			result = prime * result + ((path == null) ? 0 : path.hashCode());
+			result = prime * result + ((sourceContainerUrl == null) ? 0 : sourceContainerUrl.hashCode());
 			return result;
 		}
 
@@ -98,6 +148,13 @@ public class Classpath {
 			if (getClass() != obj.getClass())
 				return false;
 			CPE other = (CPE) obj;
+			if (isSystem != other.isSystem)
+				return false;
+			if (javadocContainerUrl == null) {
+				if (other.javadocContainerUrl != null)
+					return false;
+			} else if (!javadocContainerUrl.equals(other.javadocContainerUrl))
+				return false;
 			if (kind == null) {
 				if (other.kind != null)
 					return false;
@@ -113,12 +170,17 @@ public class Classpath {
 					return false;
 			} else if (!path.equals(other.path))
 				return false;
+			if (sourceContainerUrl == null) {
+				if (other.sourceContainerUrl != null)
+					return false;
+			} else if (!sourceContainerUrl.equals(other.sourceContainerUrl))
+				return false;
 			return true;
 		}
 
 		@Override
 		public String toString() {
-			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + "]";
+			return "CPE [kind=" + kind + ", path=" + path + ", isSystem=" + isSystem + "]";
 		}
 	}
 

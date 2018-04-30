@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import reactor.core.Disposable;
+
 /**
  * Basic implementation of File Observer interface
  * 
@@ -87,10 +89,26 @@ public class BasicFileObserver implements FileObserver {
 		Path path = Paths.get(URI.create(uri));
 		registry.values().stream()
 			.filter(pair -> pair.left.stream()
-					.filter(matcher -> matcher.matches(path))
+					.filter(matcher -> 
+						matcher.matches(path)
+					)
 					.findFirst()
 					.isPresent())
 			.forEach(pair -> pair.right.accept(uri));
+	}
+
+	@Override
+	public Disposable onAnyChange(List<String> globPattern, Consumer<String> handler) {
+		String[] ids = {
+				onFileChanged(globPattern, handler),
+				onFileCreated(globPattern, handler),
+				onFileDeleted(globPattern, handler)
+		};
+		return () -> {
+			for (String id : ids) {
+				unsubscribe(id);
+			}
+		};
 	}
 
 }

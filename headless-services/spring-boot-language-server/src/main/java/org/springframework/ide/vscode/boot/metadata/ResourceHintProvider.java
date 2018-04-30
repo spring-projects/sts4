@@ -63,7 +63,11 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 	private static class ClasspathHints extends CachingValueProvider {
 		@Override
 		protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
-			return Flux.fromStream(javaProject.getClasspath().getClasspathResources().stream().distinct().map(r -> r.replaceAll("\\\\", "/")).map(StsValueHint::create));
+			return Flux.fromStream(
+				javaProject.getClasspathResources().stream()
+				.distinct().map(r -> r.replaceAll("\\\\", "/"))
+				.map(StsValueHint::create)
+			);
 		}
 	}
 

@@ -56,7 +56,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				.build();
 
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
-		assertTrue(jp.getClasspath().findType("hello.Foo").exists());
+		assertTrue(jp.findType("hello.Foo").exists());
 		harness.useProject(jp);
 		harness.intialize(null);
 	}

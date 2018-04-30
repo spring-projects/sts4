@@ -16,7 +16,9 @@ import java.nio.file.Path;
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
 
 /**
@@ -27,35 +29,40 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class MavenJavaProject extends AbstractJavaProject {
 	
-	private DelegatingCachedClasspath<MavenProjectClasspath> classpath;
-	private File pom;
-	
-	public MavenJavaProject(MavenCore maven, File pom, Path projectDataCache) {
-		super(projectDataCache);
+	private final File pom;
+
+	private MavenJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File pom) {
+		super(fileObserver, pom.getParentFile().toURI(), projectDataCache, classpath);
 		this.pom = pom;
-		File file = projectDataCache == null ? null
+	}
+
+	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom, Path projectDataCache) {
+		File file = projectDataCache == null 
+				? null
 				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
 		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
-		this.classpath = new DelegatingCachedClasspath<>(
+		DelegatingCachedClasspath classpath = new DelegatingCachedClasspath(
 				() -> new MavenProjectClasspath(maven, pom),
 				fileBasedCache 
-			);
+		);
+		return new MavenJavaProject(fileObserver, projectDataCache, classpath, pom);
 	}
 	
-	public MavenJavaProject(MavenCore maven, File pom) {
-		this(maven, pom, null);
-		if (!classpath.isCached()) {
+	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom) {
+		MavenJavaProject thiss = create(fileObserver, maven, pom, null);
+		if (!thiss.getClasspath().isCached()) {
 			try {
-				classpath.update();
+				thiss.getClasspath().update();
 			} catch (Exception e) {
 				Log.log(e);
 			}
 		}
+		return thiss;
 	}
 	
 	@Override
 	public String getElementName() {
-		if (classpath.getName() == null) {
+		if (getClasspath().getName() == null) {
 			return pom.getParentFile().getName();
 		} else {
 			return super.getElementName();
@@ -63,12 +70,12 @@ public class MavenJavaProject extends AbstractJavaProject {
 	}
 	
 	@Override
-	public DelegatingCachedClasspath<MavenProjectClasspath> getClasspath() {
-		return classpath;
+	public DelegatingCachedClasspath getClasspath() {
+		return (DelegatingCachedClasspath) super.getClasspath();
 	}
 	
 	boolean update() throws Exception {
-		return classpath.update();
+		return getClasspath().update();
 	}
 	
 	public File pom() {
@@ -77,7 +84,6 @@ public class MavenJavaProject extends AbstractJavaProject {
 	
 	@Override
 	public String toString() {
-		return "MavenJavaProject("+classpath.getName()+")";
+		return "MavenJavaProject("+getElementName()+")";
 	}
-
 }

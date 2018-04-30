@@ -131,11 +131,11 @@ public class ClassReferenceProvider extends CachingValueProvider {
 
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
-		IType targetType = target == null || target.isEmpty() ? javaProject.getClasspath().findType("java.lang.Object") : javaProject.getClasspath().findType(target);
+		IType targetType = target == null || target.isEmpty() ? javaProject.findType("java.lang.Object") : javaProject.findType(target);
 		if (targetType == null) {
 			return Flux.empty();
 		}
-		Set<IType> allSubclasses = javaProject.getClasspath()
+		Set<IType> allSubclasses = javaProject
 				.allSubtypesOf(targetType)
 				.filter(t -> Flags.isPublic(t.getFlags()) && !concrete || !isAbstract(t))
 				.collect(Collectors.toSet())
@@ -143,7 +143,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 		if (allSubclasses.isEmpty()) {
 			return Flux.empty();
 		} else {
-			return javaProject.getClasspath()
+			return javaProject
 					.fuzzySearchTypes(query, type -> allSubclasses.contains(type))
 					.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 					.flatMapIterable(l -> l)

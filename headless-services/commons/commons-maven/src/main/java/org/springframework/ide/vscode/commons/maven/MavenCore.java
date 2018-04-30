@@ -57,7 +57,7 @@ import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
@@ -95,7 +95,7 @@ public class MavenCore {
 						javaVersion = "8";
 					}
 					URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
-					return new HtmlJavadocProvider((type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER.sourceUrl(javadocUrl, type.getFullyQualifiedName()));
+					return new HtmlJavadocProvider((type) -> TypeUrlProviderFromContainerUrl.JAVADOC_FOLDER_URL_SUPPLIER.url(javadocUrl, type.getFullyQualifiedName()));
 				} catch (MalformedURLException e) {
 					Log.log(e);
 					return null;

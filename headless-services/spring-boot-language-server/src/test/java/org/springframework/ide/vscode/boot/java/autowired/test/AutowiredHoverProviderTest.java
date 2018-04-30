@@ -73,7 +73,7 @@ public class AutowiredHoverProviderTest {
 				.build();
 
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
-		assertTrue(jp.getClasspath().findType("com.example.Foo").exists());
+		assertTrue(jp.findType("com.example.Foo").exists());
 		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 		harness.intialize(null);
 	}

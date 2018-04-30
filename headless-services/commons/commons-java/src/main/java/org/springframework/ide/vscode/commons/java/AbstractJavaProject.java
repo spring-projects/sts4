@@ -10,19 +10,23 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.net.URI;
 import java.nio.file.Path;
+
+import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
  * Abstract java project. Has a folder to store some project calculated data to speed up access
- * 
+ *
  * @author Alex Boyko
  *
  */
-public abstract class AbstractJavaProject implements IJavaProject {
-	
+public abstract class AbstractJavaProject extends JavaProject {
+
 	final protected Path projectDataCache;
-	
-	public AbstractJavaProject(Path projectDataCache) {
+
+	public AbstractJavaProject(FileObserver fileObserver, URI loactionUri, Path projectDataCache, IClasspath classpath) {
+		super(fileObserver, loactionUri, classpath);
 		this.projectDataCache = projectDataCache;
 	}
 

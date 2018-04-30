@@ -11,32 +11,22 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.stream.Collectors;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClasspathFileBasedCache {
-	
+
 	public static final ClasspathFileBasedCache NULL = new ClasspathFileBasedCache(null);
-	
+
 	public static final String CLASSPATH_DATA_CACHE_FILE = "classpath-data.json";
-	
-	private static final String OUTPUT_FOLDER_PROPERTY = "outputFolder";
-	private static final String CLASSPATH_RESOURCES_PROPERTY = "classpathResources";
-	private static final String CLASSPATH_ENTRIES_PROPERTY = "classpathEntries";
-	private static final String NAME_PROPERTY = "name";
+
 	final private File file;
-	
+
 	public ClasspathFileBasedCache(File file) {
 		super();
 		this.file = file;
@@ -63,7 +53,7 @@ public class ClasspathFileBasedCache {
 			}
 		}
 	}
-	
+
 	public boolean isCached() {
 		return file != null && file.exists();
 	}
@@ -80,7 +70,7 @@ public class ClasspathFileBasedCache {
 		return ClasspathData.EMPTY_CLASSPATH_DATA;
 	}
 
-	
+
 	public void delete() {
 		if (file != null && file.exists()) {
 			file.delete();

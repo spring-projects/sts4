@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import org.springframework.ide.vscode.commons.util.Log;
@@ -20,7 +21,7 @@ public class BootProjectUtil {
 		try {
 			IClasspath cp = jp.getClasspath();
 			if (cp!=null) {
-				return cp.getClasspathEntryPaths().stream().anyMatch(cpe -> isBootEntry(cpe));
+				return IClasspathUtil.getBinaryRoots(cp).stream().anyMatch(cpe -> isBootEntry(cpe));
 			}
 		} catch (Exception e) {
 			Log.log(e);
@@ -28,8 +29,8 @@ public class BootProjectUtil {
 		return false;
 	}
 
-	private static boolean isBootEntry(Path cpe) {
-		String name = cpe.getFileName().toString();
+	private static boolean isBootEntry(File cpe) {
+		String name = cpe.getName();
 		return name.endsWith(".jar") && name.startsWith("spring-boot");
 	}
 

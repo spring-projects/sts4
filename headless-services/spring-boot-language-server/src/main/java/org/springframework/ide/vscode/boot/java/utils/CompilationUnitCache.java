@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -172,10 +173,10 @@ public final class CompilationUnitCache {
 			return new String[0];
 		} else {
 			IClasspath classpath = project.getClasspath();
-			Stream<Path> classpathEntries = classpath.getClasspathEntryPaths().stream();
+			Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath).stream();
 			return classpathEntries
-					.filter(path -> path.toFile().exists())
-					.map(path -> path.toAbsolutePath().toString()).toArray(String[]::new);
+					.filter(file -> file.exists())
+					.map(file -> file.getAbsolutePath()).toArray(String[]::new);
 		}
 	}
 

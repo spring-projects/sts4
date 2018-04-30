@@ -47,7 +47,7 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
-		MavenJavaProject mavenJavaProject = new MavenJavaProject(
+		MavenJavaProject mavenJavaProject = MavenJavaProject.create(getFileObserver(),
 				maven, 
 				pomFile,
 				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)

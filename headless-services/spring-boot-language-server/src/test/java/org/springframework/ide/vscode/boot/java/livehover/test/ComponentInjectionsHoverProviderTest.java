@@ -70,7 +70,7 @@ public class ComponentInjectionsHoverProviderTest {
 				.build();
 
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", EXTRA_TYPES);
-		assertTrue(jp.getClasspath().findType("com.example.Foo").exists());
+		assertTrue(jp.findType("com.example.Foo").exists());
 		harness.useProject(jp);
 		harness.intialize(null);
 	}

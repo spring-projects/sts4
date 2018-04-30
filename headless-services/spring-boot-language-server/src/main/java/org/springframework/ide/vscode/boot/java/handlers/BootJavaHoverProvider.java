@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -267,8 +268,8 @@ public class BootJavaHoverProvider implements HoverHandler {
 		try {
 			IClasspath classpath = project.getClasspath();
 			if (classpath!=null) {
-				return classpath.getClasspathEntryPaths().stream().anyMatch(cpe -> {
-					String name = cpe.getFileName().toString();
+				return IClasspathUtil.getBinaryRoots(classpath).stream().anyMatch(cpe -> {
+					String name = cpe.getName();
 					return name.startsWith("spring-boot-actuator-");
 				});
 			}

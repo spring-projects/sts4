@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.util;
 import java.util.List;
 import java.util.function.Consumer;
 
+import reactor.core.Disposable;
+
 /**
  * Object able to add/remove {@link FileListener} objects and fire events via these listeners
  * 
@@ -28,5 +30,7 @@ public interface FileObserver {
 	String onFileDeleted(List<String> globPattern, Consumer<String> handler);
 	
 	boolean unsubscribe(String subscriptionId);
+
+	Disposable onAnyChange(List<String> globPattern, Consumer<String> handler);
 	
 }

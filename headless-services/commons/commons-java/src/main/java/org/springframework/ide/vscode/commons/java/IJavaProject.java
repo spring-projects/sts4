@@ -10,27 +10,57 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
+
 public interface IJavaProject extends IJavaElement {
-	
+
 	final static String PROJECT_CACHE_FOLDER = ".sts4-cache";
-	
+
 	IClasspath getClasspath();
+	ClasspathIndex getIndex();
 
 	@Override
 	default String getElementName() {
 		return getClasspath().getName();
 	}
 
-	@Override
-	default IJavadoc getJavaDoc() {
-		return null;
+	default IType findType(String fqName) {
+		return getIndex().findType(fqName);
 	}
 
-	@Override
-	default boolean exists() {
-		return getClasspath().exists();
+	default Flux<IType> allSubtypesOf(IType targetType) {
+		return getIndex().allSubtypesOf(targetType);
 	}
-	
+
+	default Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
+		return getIndex().fuzzySearchTypes(searchTerm, typeFilter);
+	}
+
+	default Optional<URL> sourceContainer(File classpathResource) {
+		return getIndex().sourceContainer(classpathResource);
+	}
+
+	default List<String> getClasspathResources() {
+		return getIndex().getClasspathResources();
+	}
+
+	default Optional<File> findClasspathResourceContainer(String fqName) {
+		return getIndex().findClasspathResourceContainer(fqName);
+	}
+
+
+	@Override
+	default IJavadoc getJavaDoc() {
+		//?? why is this here ??
+		return null;
+	}
 }

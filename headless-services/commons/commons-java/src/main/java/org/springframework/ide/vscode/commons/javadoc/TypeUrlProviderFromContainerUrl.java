@@ -15,44 +15,44 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 @FunctionalInterface
-public interface SourceUrlProviderFromSourceContainer {
+public interface TypeUrlProviderFromContainerUrl {
 	
 	static String extractTopLevelType(String fqName) {
 		int innerTypeIdx = fqName.indexOf('$');
 		return innerTypeIdx > 0 ? fqName.substring(0, innerTypeIdx) : fqName;
 	}
 	
-	public static final SourceUrlProviderFromSourceContainer JAR_SOURCE_URL_PROVIDER = (sourceContainerUrl, fqName) -> {
-		StringBuilder sourceUrlStr = new StringBuilder();
-		sourceUrlStr.append("jar:");
-		sourceUrlStr.append(sourceContainerUrl);
-		sourceUrlStr.append("!");
-		sourceUrlStr.append('/');
-		sourceUrlStr.append(extractTopLevelType(fqName).replaceAll("\\.", "/"));
-		sourceUrlStr.append(".java");
-		return new URL(sourceUrlStr.toString());
+	public static final TypeUrlProviderFromContainerUrl JAR_SOURCE_URL_PROVIDER = (jarSourceUrl, fqName) -> {
+		StringBuilder urlStr = new StringBuilder();
+		urlStr.append("jar:");
+		urlStr.append(jarSourceUrl);
+		urlStr.append("!");
+		urlStr.append('/');
+		urlStr.append(extractTopLevelType(fqName).replaceAll("\\.", "/"));
+		urlStr.append(".java");
+		return new URL(urlStr.toString());
 
 	};
 	
-	public static final SourceUrlProviderFromSourceContainer SOURCE_FOLDER_URL_SUPPLIER = (sourceContainerUrl, fqName) -> {
+	public static final TypeUrlProviderFromContainerUrl SOURCE_FOLDER_URL_SUPPLIER = (sourceContainerUrl, fqName) -> {
 		return Paths.get(sourceContainerUrl.toURI()).resolve(extractTopLevelType(fqName).replaceAll("\\.", "/") + ".java").toUri().toURL();
 	};
 	
-	public static final SourceUrlProviderFromSourceContainer JAR_JAVADOC_URL_PROVIDER = (javadocContainerUrl, fqName) -> {
-		StringBuilder sourceUrlStr = new StringBuilder();
-		sourceUrlStr.append("jar:");
-		sourceUrlStr.append(javadocContainerUrl);
-		sourceUrlStr.append("!");
-		sourceUrlStr.append('/');
+	public static final TypeUrlProviderFromContainerUrl JAR_JAVADOC_URL_PROVIDER = (javadocContainerUrl, fqName) -> {
+		StringBuilder urlStr = new StringBuilder();
+		urlStr.append("jar:");
+		urlStr.append(javadocContainerUrl);
+		urlStr.append("!");
+		urlStr.append('/');
 		// Inner classes are in separate Top.Nesting1.Nesting2.Nesting3.MyType.html files
-		sourceUrlStr.append(fqName.replaceAll("\\.", "/").replaceAll("\\$", "."));
-		sourceUrlStr.append(".html");
-		return new URL(sourceUrlStr.toString());
+		urlStr.append(fqName.replaceAll("\\.", "/").replaceAll("\\$", "."));
+		urlStr.append(".html");
+		return new URL(urlStr.toString());
 
 	};
 	
-	public static final SourceUrlProviderFromSourceContainer JAVADOC_FOLDER_URL_SUPPLIER = (sourceContainerUrl, fqName) -> {
-		String urlStr = sourceContainerUrl.toString();
+	public static final TypeUrlProviderFromContainerUrl JAVADOC_FOLDER_URL_SUPPLIER = (javadocContainerUrl, fqName) -> {
+		String urlStr = javadocContainerUrl.toString();
 		StringBuilder sb = new StringBuilder(urlStr);
 		if (!urlStr.endsWith("/")) {
 			sb.append('/');
@@ -62,6 +62,6 @@ public interface SourceUrlProviderFromSourceContainer {
 		return new URL(sb.toString());
 	};
 	
-	URL sourceUrl(URL sourceContainerUrl, String fqName) throws Exception;
+	URL url(URL containerUrl, String fqName) throws Exception;
 
 }

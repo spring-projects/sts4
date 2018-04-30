@@ -33,8 +33,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.javadoc.SourceUrlProviderFromSourceContainer;
+import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -59,7 +60,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
-		Optional<File> classpathResource = project.getClasspath().findClasspathResourceContainer(fqName);
+		Optional<File> classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
 		if (classpathResource.isPresent()) {
 			File file = classpathResource.get();
 			if (file.isDirectory()) {
@@ -83,10 +84,10 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	
 	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, File containerFolder) {
 		IClasspath classpath = project.getClasspath();
-		return project.getClasspath().getSourceFolders().stream()
+		return IClasspathUtil.getSourceFolders(classpath)
 			.map(sourceFolder -> {
 				try {
-					return Paths.get(sourceFolder).toUri().toURL();
+					return sourceFolder.toURI().toURL();
 				} catch (MalformedURLException e) {
 					LOG.get().warn("Failed to convert source folder " + sourceFolder + "to URI." + fqName, e);
 					return null;
@@ -94,7 +95,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 			})
 			.map(url -> {
 				try {
-					return SourceUrlProviderFromSourceContainer.SOURCE_FOLDER_URL_SUPPLIER.sourceUrl(url, fqName);
+					return TypeUrlProviderFromContainerUrl.SOURCE_FOLDER_URL_SUPPLIER.url(url, fqName);
 				} catch (Exception e) {
 					LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
 					return null;
@@ -163,10 +164,10 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, File jarFile, String clientSourceUri, String fqName) {
 		Optional<CompilationUnit> cu = findCUfromCache(clientSourceUri);
 		if (cu == null) {
-			cu = project.getClasspath().sourceContainer(jarFile)
+			cu = project.sourceContainer(jarFile)
 					.map(url -> {
 						try {
-							return SourceUrlProviderFromSourceContainer.JAR_SOURCE_URL_PROVIDER.sourceUrl(url, fqName);
+							return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName);
 						} catch (Exception e) {
 							LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
 							return null;

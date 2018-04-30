@@ -21,19 +21,19 @@ import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageExc
 
 /**
  * Tests whether document belongs to a Gradle project
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaProject> {
 
 	private GradleCore gradle;
-	
+
 	public GradleProjectCache(Sts4LanguageServer server, GradleCore gradle, boolean asyncUpdate, Path projectCacheFolder) {
 		super(server, asyncUpdate, projectCacheFolder);
 		this.gradle = gradle;
 	}
-	
+
 	@Override
 	protected boolean update(GradleJavaProject project) {
 		try {
@@ -48,7 +48,7 @@ public class GradleProjectCache extends AbstractFileToProjectCache<GradleJavaPro
 	@Override
 	protected GradleJavaProject createProject(File gradleBuild) throws Exception {
 		File gradleFile = gradleBuild.getParentFile();
-		GradleJavaProject gradleJavaProject = new GradleJavaProject(gradle, gradleFile,
+		GradleJavaProject gradleJavaProject = GradleJavaProject.create(getFileObserver(), gradle, gradleFile,
 				projectCacheFolder == null ? null : gradleFile.toPath().resolve(projectCacheFolder)
 			);
 		performUpdate(gradleJavaProject, asyncUpdate, asyncUpdate);

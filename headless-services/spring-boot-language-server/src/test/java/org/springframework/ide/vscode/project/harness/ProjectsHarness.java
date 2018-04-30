@@ -19,10 +19,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.JavaProject;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.util.BasicFileObserver;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 
 import com.google.common.cache.Cache;
@@ -40,9 +46,11 @@ import reactor.util.function.Tuples;
  */
 public class ProjectsHarness {
 
-	public static final ProjectsHarness INSTANCE = new ProjectsHarness();;
+	public static final ProjectsHarness INSTANCE = new ProjectsHarness(new BasicFileObserver());
 
 	public Cache<Object, IJavaProject> cache = CacheBuilder.newBuilder().concurrencyLevel(1).build();
+
+	private final FileObserver fileObserver;
 
 	/**
 	 * A callback that is given a chance to make changes to test project contents before the test project
@@ -81,8 +89,13 @@ public class ProjectsHarness {
 		MAVEN
 		// GRADLE?
 	}
+	
+	public static final IJavaProject dummyProject() throws URISyntaxException {
+		return new JavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), new DelegatingCachedClasspath(() -> null, null));
+	}
 
-	private ProjectsHarness() {
+	private ProjectsHarness(FileObserver fileObserver) {
+		this.fileObserver = fileObserver;
 	}
 
 	public IJavaProject project(ProjectType type, String name, ProjectCustomizer customizer) throws Exception {
@@ -100,7 +113,7 @@ public class ProjectsHarness {
 		switch (type) {
 		case MAVEN:
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return new MavenJavaProject(MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		default:
 			throw new IllegalStateException("Bug!!! Missing case");
 		}
@@ -129,4 +142,5 @@ public class ProjectsHarness {
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);
 	}
+	
 }

@@ -39,7 +39,7 @@ public class ClasspathUtil {
 				switch (kind) {
 				case Classpath.ENTRY_KIND_BINARY: {
 					String path = entry.getPath().toString();
-					CPE cpe = new CPE(kind, path);
+					CPE cpe = CPE.binary(path);
 					cpEntries.add(cpe);
 					break;
 				}
@@ -49,15 +49,15 @@ public class ClasspathUtil {
 					IPath absoluteSourcePath = resolveWorkspacePath(sourcePath);
 					//log("absoluteSourcePath =" + absoluteSourcePath);
 					if (absoluteSourcePath!=null) {
-						CPE cpe = new CPE(kind, absoluteSourcePath.toString());
 						IPath of = entry.getOutputLocation();
 						//log("outputFolder =" + of);
+						IPath absoluteOutFolder;
 						if (of!=null) {
-							IPath absoluteOutFolder = resolveWorkspacePath(of);
-							//log("absoluteOutFolder =" + absoluteOutFolder);
-							cpe.setOutputFolder(absoluteOutFolder.toString());
+							absoluteOutFolder = resolveWorkspacePath(of);
+						} else {
+							absoluteOutFolder = resolveWorkspacePath(javaProject.getOutputLocation());
 						}
-						cpEntries.add(cpe);
+						cpEntries.add(CPE.source(absoluteSourcePath.toFile(), absoluteOutFolder.toFile()));
 					}
 					break;
 				}
@@ -66,8 +66,7 @@ public class ClasspathUtil {
 				}
 			}
 		}
-		Classpath classpath = new Classpath(cpEntries, resolveWorkspacePath(javaProject.getOutputLocation()).toString());
-		log("classpath.outputFolder=" + classpath.getDefaultOutputFolder());
+		Classpath classpath = new Classpath(cpEntries);
 		log("classpath=" + classpath.getEntries().size() + " entries");
 		return classpath;
 	}

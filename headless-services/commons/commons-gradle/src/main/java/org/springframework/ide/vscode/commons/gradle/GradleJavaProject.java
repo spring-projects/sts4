@@ -16,45 +16,52 @@ import java.nio.file.Path;
 import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Implementation of Gradle Java project
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class GradleJavaProject extends AbstractJavaProject {
-	
-	private DelegatingCachedClasspath<GradleProjectClasspath> classpath;
-	private File projectDir;
-	
-	public GradleJavaProject(GradleCore gradle, File projectDir, Path projectDataCache) {
-		super(projectDataCache);
+
+	private final File projectDir;
+
+	private GradleJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File projectDir) {
+		super(fileObserver, projectDir.toURI(), projectDataCache, classpath);
 		this.projectDir = projectDir;
-		File file = projectDataCache == null ? null
+	}
+
+	public static GradleJavaProject create(FileObserver fileObserver, GradleCore gradle, File projectDir, Path projectDataCache) {
+		File file = projectDataCache == null
+				? null
 				: projectDataCache.resolve(ClasspathFileBasedCache.CLASSPATH_DATA_CACHE_FILE).toFile();
 		ClasspathFileBasedCache fileBasedCache = new ClasspathFileBasedCache(file);
-		this.classpath = new DelegatingCachedClasspath<GradleProjectClasspath>(
+		IClasspath classpath = new DelegatingCachedClasspath(
 				() -> new GradleProjectClasspath(gradle, projectDir),
 				fileBasedCache
 			);
+		return new GradleJavaProject(fileObserver, projectDataCache, classpath, projectDir);
 	}
-	
-	public GradleJavaProject(GradleCore gradle, File projectDir) {
-		this(gradle, projectDir, null);
-		if (!classpath.isCached()) {
+
+	public static GradleJavaProject create(FileObserver fileObserver, GradleCore gradle, File projectDir) {
+		GradleJavaProject thiss = create(fileObserver, gradle, projectDir, null);
+		if (!thiss.getClasspath().isCached()) {
 			try {
-				classpath.update();
+				thiss.getClasspath().update();
 			} catch (Exception e) {
 				Log.log(e);
 			}
 		}
+		return thiss;
 	}
-	
+
 	@Override
 	public String getElementName() {
-		if (classpath.getName() == null) {
+		if (getClasspath().getName() == null) {
 			return projectDir.getName();
 		} else {
 			return super.getElementName();
@@ -66,13 +73,17 @@ public class GradleJavaProject extends AbstractJavaProject {
 	}
 
 	@Override
-	public DelegatingCachedClasspath<GradleProjectClasspath> getClasspath() {
-		return classpath;
+	public DelegatingCachedClasspath getClasspath() {
+		return (DelegatingCachedClasspath) super.getClasspath();
 	}
-	
+
 	boolean update() throws Exception {
-		return classpath.update();
+		return getClasspath().update();
 	}
-	
+
+	@Override
+	public String toString() {
+		return "GradleJavaProject("+getElementName()+")";
+	}
 
 }

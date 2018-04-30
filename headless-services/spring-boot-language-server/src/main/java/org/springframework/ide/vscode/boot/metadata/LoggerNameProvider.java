@@ -37,10 +37,10 @@ public class LoggerNameProvider extends CachingValueProvider {
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
 		return Flux.concat(
-			javaProject.getClasspath()
+			javaProject.getIndex()
 				.fuzzySearchPackages(query)
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
-			javaProject.getClasspath()
+			javaProject.getIndex()
 				.fuzzySearchTypes(query, null)
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2()))
 			)

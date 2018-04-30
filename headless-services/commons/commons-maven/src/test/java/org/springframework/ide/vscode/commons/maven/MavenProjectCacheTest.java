@@ -133,7 +133,7 @@ public class MavenProjectCacheTest {
 		assertNotNull(cachedProject);
 
 		ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-		assertEquals(48, calculatedClassPath.size());
+		assertEquals(50, calculatedClassPath.stream().filter(cpe -> !cpe.isSystem()).count());
 
 		fileObserver.notifyFileChanged(pomFile.toURI().toString());
 		assertNull(projectChanged[0]);
@@ -144,7 +144,7 @@ public class MavenProjectCacheTest {
 		assertNotNull(projectChanged[0]);
 		assertEquals(cachedProject, projectChanged[0]);
 		calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-		assertEquals(49, calculatedClassPath.size());
+		assertEquals(51, calculatedClassPath.stream().filter(cpe -> !cpe.isSystem()).count());
 
 		fileObserver.notifyFileDeleted(pomFile.toURI().toString());
 		assertEquals(cachedProject, projectDeleted[0]);
@@ -190,7 +190,7 @@ public class MavenProjectCacheTest {
 		}).get(30, TimeUnit.SECONDS);
 
 		assertTrue(classpathCacheFile.exists());
-		assertEquals(48, project.getClasspath().getClasspathEntries().size());
+		assertEquals(50, project.getClasspath().getClasspathEntries().stream().filter(cpe -> !cpe.isSystem()).count());
 
 		progressDone.set(false);
 
@@ -199,7 +199,7 @@ public class MavenProjectCacheTest {
 
 		// Check loaded from cache file
 		project = cache.project(pomFile);
-		assertEquals(48, project.getClasspath().getClasspathEntries().size());
+		assertEquals(50, project.getClasspath().getClasspathEntries().stream().filter(cpe -> !cpe.isSystem()).count());
 	}
 
 	@Test

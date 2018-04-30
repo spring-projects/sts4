@@ -60,14 +60,6 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 			notifyProjectDeleted(project);
 			dispose();
 		}));
-		
-		Path outputFolder = project.getClasspath().getOutputFolder();
-		if (outputFolder != null) {
-			final List<String> rebuildGlobPattern = Arrays.asList(outputFolder.toString().replace(File.separator, "/") + "/**/*.class");
-			subscriptions.add(getFileObserver().onFileChanged(rebuildGlobPattern, (uri) -> project.getClasspath().reindex()));
-			subscriptions.add(getFileObserver().onFileCreated(rebuildGlobPattern, (uri) -> project.getClasspath().reindex()));
-			subscriptions.add(getFileObserver().onFileDeleted(rebuildGlobPattern, (uri) -> project.getClasspath().reindex()));
-		}
 	}
 	
 	private void dispose() {

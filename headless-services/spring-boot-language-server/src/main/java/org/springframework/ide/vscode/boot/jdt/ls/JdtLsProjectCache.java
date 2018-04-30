@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.jdt.ls;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +33,7 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.java.JavaProject;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
@@ -39,6 +41,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.base.Supplier;
@@ -53,7 +56,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
 
 	private SimpleLanguageServer server;
-	private Map<String, JdtLsProject> table = new HashMap<String, JdtLsProject>();
+	private Map<String, JavaProject> table = new HashMap<String, JavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
@@ -70,20 +73,24 @@ public class JdtLsProjectCache implements JavaProjectsService {
 					@Override
 					public void changed(Event event) {
 						initialized.thenRun(() -> {
-							synchronized (table) {
-								String uri = UriUtil.normalize(event.projectUri);
-								if (event.deleted) {
-									JdtLsProject deleted = table.remove(uri);
-									notifyDelete(deleted);
-								} else {
-									JdtLsProject newProject = new JdtLsProject(event.name, uri, event.classpath);
-									JdtLsProject oldProject = table.put(uri, newProject);
-									if (oldProject != null) {
-										notifyChanged(newProject);
+							try {
+								synchronized (table) {
+									String uri = UriUtil.normalize(event.projectUri);
+									if (event.deleted) {
+										JavaProject deleted = table.remove(uri);
+										notifyDelete(deleted);
 									} else {
-										notifyCreated(newProject);
+										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()));
+										JavaProject oldProject = table.put(uri, newProject);
+										if (oldProject != null) {
+											notifyChanged(newProject);
+										} else {
+											notifyCreated(newProject);
+										}
 									}
 								}
+							} catch (Exception e) {
+								log.error("", e);
 							}
 						});
 					}
@@ -104,6 +111,10 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		this.server.onShutdown(() -> 
 			disposable.thenAccept(Disposable::dispose).join()
 		);
+	}
+
+	private FileObserver getFileObserver() {
+		return server.getWorkspaceService().getFileObserver();
 	}
 
 	private boolean isOldJdt(Throwable e) {
@@ -142,7 +153,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		});
 	}
 
-	private void notifyCreated(JdtLsProject newProject) {
+	private void notifyCreated(JavaProject newProject) {
 		logEvent("Created", newProject);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
@@ -151,16 +162,17 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		}
 	}
 
-	private void notifyDelete(JdtLsProject deleted) {
+	private void notifyDelete(JavaProject deleted) {
 		logEvent("Deleted", deleted);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.deleted(deleted);
 			}
 		}
+		deleted.dispose();
 	}
 	
-	private void notifyChanged(JdtLsProject newProject) {
+	private void notifyChanged(JavaProject newProject) {
 		logEvent("Changed", newProject);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
@@ -169,7 +181,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		}
 	}
 
-	private void logEvent(String type, JdtLsProject newProject) {
+	private void logEvent(String type, JavaProject newProject) {
 		try {
 			log.info("Project "+type+": " + newProject.getLocationUri());
 			log.info("Classpath has "+newProject.getClasspath().getClasspathEntries().size()+" entries");
@@ -190,7 +202,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 			}
 	
 			synchronized (table) {
-				for (Entry<String, JdtLsProject> e : table.entrySet()) {
+				for (Entry<String, JavaProject> e : table.entrySet()) {
 					String projectUri = e.getKey();
 					log.debug("projectUri = '{}'", projectUri);
 					if (UriUtil.contains(projectUri, uri) ) {
@@ -206,98 +218,4 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		return Optional.empty();
 	}
 	
-	private class JdtLsProject implements IJavaProject {
-
-		private final JdtClasspath classpath;
-
-		public JdtLsProject(String name, String projectUri, Classpath classpath) {
-			this.classpath = new JdtClasspath(name, projectUri, classpath);
-		}
-
-		@Override
-		public IClasspath getClasspath() {
-			return classpath;
-		}
-		
-		public String getLocationUri() {
-			return classpath.projectUri;
-		}
-
-	}
-	
-	private class JdtClasspath extends JandexClasspath {
-
-		private Classpath classpath;
-		private String name;
-		private String projectUri;
-
-
-		public JdtClasspath(String name, String uri, Classpath classpath) {
-			this.name = name;
-			this.projectUri = uri;
-			this.classpath = classpath;
-		}
-
-		@Override
-		public String getName() {
-			return this.name;
-		}
-
-		@Override
-		public boolean exists() {
-			return new File(projectUri).exists();
-		}
-
-		@Override
-		public Path getOutputFolder() {
-			return Paths.get(classpath.getDefaultOutputFolder());
-		}
-
-		@Override
-		public Collection<CPE> getClasspathEntries() throws Exception {
-			return classpath.getEntries();
-		}
-
-		@Override
-		public ImmutableList<String> getClasspathResources() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public ImmutableList<String> getSourceFolders() {
-			ImmutableList.Builder<String> sourceEntries = ImmutableList.builder();
-			try {
-				for (CPE e : getClasspathEntries()) {
-					if (Classpath.isSource(e)) {
-						sourceEntries.add(e.getPath());
-					}
-				}
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return sourceEntries.build();
-
-		}
-
-		@Override
-		public ClasspathData createClasspathData() throws Exception {
-			// We should not be needing this as we dont use DelegatingCachedClasspath
-			throw new UnsupportedOperationException("Not supported for JDT classpath: ");
-		}
-
-		@Override
-		public Optional<URL> sourceContainer(File classpathResource) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		protected IJavadocProvider createHtmlJavdocProvider(File classpathResource) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
-	}
-
 }

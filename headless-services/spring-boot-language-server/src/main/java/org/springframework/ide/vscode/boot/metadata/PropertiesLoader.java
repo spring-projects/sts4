@@ -25,6 +25,7 @@ import java.util.zip.ZipEntry;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 
 public class PropertiesLoader {
@@ -55,14 +56,12 @@ public class PropertiesLoader {
 
 	public ConfigurationMetadataRepository load(IClasspath classPath) {
 		try {
-			classPath.getClasspathEntryPaths().forEach(entry -> {
-				//Log.info("Indexing "+entry);
-				File fileEntry = entry.toFile();
+			IClasspathUtil.getBinaryRoots(classPath).forEach(fileEntry -> {
 				if (fileEntry.exists()) {
 					if (fileEntry.isDirectory()) {
-						loadFromOutputFolder(entry);
+						loadFromOutputFolder(fileEntry.toPath());
 					} else {
-						loadFromJar(entry);
+						loadFromJar(fileEntry.toPath());
 					}
 				}
 			});
