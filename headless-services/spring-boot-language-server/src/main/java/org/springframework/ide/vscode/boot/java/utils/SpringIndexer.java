@@ -283,6 +283,19 @@ public class SpringIndexer {
 		List<SymbolAddOnInformation> info = this.addonInformationByDoc.get(docURI);
 		return info == null ? ImmutableList.of() : info;
 	}
+	
+	/**
+	 * inserts a noop operation into the worker/update quene, which allows invokers to use the
+	 * returned future to wait for the queue items in the queue to be completed which got inserted before
+	 * this noop.
+	 */
+	public CompletableFuture<Void> waitOperation() {
+		return CompletableFuture.runAsync(new Runnable() {
+			@Override
+			public void run() {
+			}
+		}, this.updateQueue);
+	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query) {
 		return allsymbols.stream()

@@ -24,7 +24,6 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -46,9 +45,11 @@ public class DataRepositorySymbolProviderTest {
 		
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-data-symbols/").toURI());
 		String projectDir = directory.toURI().toString();
-		IJavaProject project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+		
+		// trigger project creation
+		harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
-		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 

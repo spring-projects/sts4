@@ -23,7 +23,6 @@ import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
@@ -50,9 +49,11 @@ public class SpringIndexerBeansTest {
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 
 		String projectDir = directory.toURI().toString();
-		IJavaProject project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
-		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		// trigger project creation
+		harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+
+		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 

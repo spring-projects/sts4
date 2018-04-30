@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -51,9 +50,11 @@ public class WebFluxMappingSymbolProviderTest {
 		
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
 		String projectDir = directory.toURI().toString();
-		IJavaProject project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
-		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		// trigger project creation
+		harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+
+		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 

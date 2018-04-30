@@ -53,9 +53,11 @@ public class SpringIndexerTest {
 		
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
+		
+		// trigger project creation
 		project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
-		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
