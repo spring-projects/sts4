@@ -16,12 +16,17 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.TextDocumentInfo;
 import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
@@ -34,17 +39,26 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 public class WebFluxCodeLensProviderTest {
 
 	private BootJavaLanguageServerHarness harness;
+	private SpringIndexer indexer;
+	private File directory;
 
 	@Before
 	public void setup() throws Exception {
 		harness = BootJavaLanguageServerHarness.builder().build();
+		
+		harness.intialize(null);
+		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
+		
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
+		String projectDir = directory.toURI().toString();
+		IJavaProject project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+
+		CompletableFuture<Void> initProject = indexer.initializeProject(project);
+		initProject.get(5, TimeUnit.SECONDS);
 	}
 
 	@Test
 	public void testRoutesCodeLensesSimpleCase() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
-
 		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteHandler.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
@@ -61,9 +75,6 @@ public class WebFluxCodeLensProviderTest {
 
 	@Test
 	public void testRoutesCodeLensesNestedRoutes1() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
-
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler1.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
@@ -79,9 +90,6 @@ public class WebFluxCodeLensProviderTest {
 
 	@Test
 	public void testRoutesCodeLensesNestedRoutes2() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
-
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler2.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
@@ -97,9 +105,6 @@ public class WebFluxCodeLensProviderTest {
 
 	@Test
 	public void testRoutesCodeLensesNestedRoutes3() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI()));
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
-
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler3.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
