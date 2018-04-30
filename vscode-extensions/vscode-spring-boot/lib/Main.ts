@@ -17,8 +17,8 @@ const JAVA_LANGUAGE_ID = "java";
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
     let options : commons.ActivatorOptions = {
-        DEBUG: true,
-        CONNECT_TO_LS: true,
+        DEBUG: false,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
