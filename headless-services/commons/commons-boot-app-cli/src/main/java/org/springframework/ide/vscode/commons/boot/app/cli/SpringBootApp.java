@@ -69,12 +69,9 @@ public class SpringBootApp {
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
-	// Namely:
-	// 1. Object Mapper serialises null, but not Gson by default
-	// 2. Object Mapper does not escape Html, whereas Gson does by default (for example
+	// Namely: Object Mapper does not escape Html, whereas Gson does by default (for example
 	// '=' in Gson appears as '\u003d')
 	private Gson gson = new GsonBuilder()
-							.serializeNulls()
 							.disableHtmlEscaping()
 							.create();
 
