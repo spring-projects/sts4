@@ -41,7 +41,7 @@ public class JandexClasspathTest {
 			this.name = name;
 			this.root = new File(JandexClasspathTest.class.getResource("/" + name ).toURI());
 			testClassesFolder = new File(root, "bin");
-			this.outputFolder = folder.newFolder();
+			this.outputFolder = folder.newFolder().getCanonicalFile();
 		}
 
 		void createClass(String fqName) throws Exception {
