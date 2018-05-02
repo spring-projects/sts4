@@ -22,7 +22,6 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;

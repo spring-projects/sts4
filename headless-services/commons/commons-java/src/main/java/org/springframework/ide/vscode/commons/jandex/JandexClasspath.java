@@ -23,6 +23,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -51,6 +53,8 @@ import reactor.util.function.Tuple2;
  */
 public final class JandexClasspath implements ClasspathIndex {
 
+	public static final Logger log = LoggerFactory.getLogger(JandexClasspath.class);
+
 	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
 
 	public enum JavadocProviderTypes {
@@ -70,6 +74,7 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	protected JandexIndex createIndex() {
+		log.info("Creating JandexIndex for "+classpath.getName());
 		attachFolderListeners();
 		Collection<File> classpathEntries = ImmutableList.of();
 		try {
