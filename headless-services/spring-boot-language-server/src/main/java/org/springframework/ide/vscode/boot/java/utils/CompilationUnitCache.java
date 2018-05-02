@@ -40,7 +40,7 @@ import com.google.common.cache.CacheBuilder;
 
 public final class CompilationUnitCache {
 
-	private static final long CU_ACCESS_EXPIRATION_MINUTES = 3;
+	private static final long CU_ACCESS_EXPIRATION = 1;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
@@ -58,7 +58,7 @@ public final class CompilationUnitCache {
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
 		// accessed after some time
 		uriToCu = CacheBuilder.newBuilder()
-				.expireAfterAccess(CU_ACCESS_EXPIRATION_MINUTES, TimeUnit.MINUTES)
+				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
 				.build();
 		projectToDocs = CacheBuilder.newBuilder().build();
 

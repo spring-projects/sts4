@@ -49,6 +49,7 @@ public class SpringLiveHoverWatchdog {
 	private RunningAppProvider runningAppProvider;
 
 	private boolean highlightsEnabled = true;
+	private boolean hadPreviousRunningBootApps = false;
 
 	private Timer timer;
 
@@ -148,17 +149,23 @@ public class SpringLiveHoverWatchdog {
 					runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 				}
 
-				if (runningBootApps != null && runningBootApps.length > 0) {
+				boolean hasCurrentRunningBootApps = runningBootApps != null && runningBootApps.length > 0;
+				if (hasCurrentRunningBootApps) {
 					TextDocument doc = this.server.getTextDocumentService().get(docURI);
 					if (doc != null) {
 						Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
 						publishLiveHints(docURI, ranges);
 					}
 				}
-				else {
+				else if (this.hadPreviousRunningBootApps) {
+					// PT 156688501:
+					// Only clean up live hovers if there were running boot apps in the previous update, but not
+					// in the current one.
+					// This is to avoid unnecessary publishing of live hovers when there have been no running apps
+					// at all between consecutive updates.
 					cleanupLiveHints(docURI);
 				}
-
+				this.hadPreviousRunningBootApps = hasCurrentRunningBootApps;
 			} catch (Exception e) {
 				logger.error("", e);
 			}
