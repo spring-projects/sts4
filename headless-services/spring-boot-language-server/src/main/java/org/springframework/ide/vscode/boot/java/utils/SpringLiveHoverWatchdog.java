@@ -20,17 +20,16 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -40,6 +39,8 @@ public class SpringLiveHoverWatchdog {
 
 
 	public static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
+	
+	Logger logger = LoggerFactory.getLogger(SpringLiveHoverWatchdog.class);
 
 	private final long POLLING_INTERVAL_MILLISECONDS;
 	private final Set<String> watchedDocs;
@@ -101,7 +102,7 @@ public class SpringLiveHoverWatchdog {
 
 	private synchronized void start() {
 		if (highlightsEnabled && timer == null) {
-			Log.debug("Starting SpringLiveHoverWatchdog");
+			logger.debug("Starting SpringLiveHoverWatchdog");
 			this.timer = new Timer();
 
 			TimerTask task = new TimerTask() {
@@ -117,7 +118,7 @@ public class SpringLiveHoverWatchdog {
 
 	public synchronized void shutdown() {
 		if (timer != null) {
-			Log.info("Shutting down SpringLiveHoverWatchdog");
+			logger.info("Shutting down SpringLiveHoverWatchdog");
 			timer.cancel();
 			timer = null;
 			watchedDocs.forEach(uri -> cleanupLiveHints(uri));
@@ -159,7 +160,7 @@ public class SpringLiveHoverWatchdog {
 				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("", e);
 			}
 		}
 	}
@@ -172,7 +173,7 @@ public class SpringLiveHoverWatchdog {
 					update(docURI, runningBootApps);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("", e);
 			}
 		}
 	}
