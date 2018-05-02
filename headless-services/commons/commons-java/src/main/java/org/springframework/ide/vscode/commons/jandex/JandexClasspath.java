@@ -172,6 +172,7 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	private void reindex() {
+		log.info("Clearing JandexIndex for "+classpath.getName());
 		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 
