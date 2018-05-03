@@ -32,6 +32,7 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-bosh',
         jvmHeap: "48m",
+        workspaceOptions: VSCode.workspace.getConfiguration("bosh.ls"),
         clientOptions: {
             documentSelector: [ 
                 "bosh-deployment-manifest",

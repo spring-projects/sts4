@@ -45,7 +45,20 @@
         "scopeName": "source.yaml",
         "path": "./yaml-support/yaml.tmLanguage"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Cloudfoundry Manifest Language Server Configuration",
+      "properties": {
+        "cloudfoundry-manifest.ls.java.heap": {
+          "type": ["string", "null"],
+          "description": "Passed as an `-Xmx` argument to the language server JVM process"
+        },
+        "cloudfoundry-manifest.ls.java.home": {
+          "type": ["string", "null"],
+          "description": "Overrides JAVA_HOME used for launching the language server JVM process"
+        }
+      }
+    }
   },
   "main": "./out/lib/Main",
   "scripts": {
@@ -58,7 +71,7 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.1.tgz",
+    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
     "vscode-languageclient": "^4.0.0"
   },
   "devDependencies": {

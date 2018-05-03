@@ -31,6 +31,7 @@ export function activate(context: VSCode.ExtensionContext) {
         DEBUG : false,
         CONNECT_TO_LS: false,
         extensionId: 'vscode-manifest-yaml',
+        workspaceOptions: VSCode.workspace.getConfiguration("cloudfoundry-manifest.ls"),
         jvmHeap: '64m',
         clientOptions: {
             documentSelector: ["manifest-yaml"]

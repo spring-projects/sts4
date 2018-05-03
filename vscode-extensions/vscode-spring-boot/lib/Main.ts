@@ -26,6 +26,7 @@ export function activate(context: VSCode.ExtensionContext) {
                 VSCode.window.showWarningMessage('JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.');
             }
         },
+        workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
             documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],
             synchronize: {

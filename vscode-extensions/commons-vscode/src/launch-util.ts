@@ -31,13 +31,14 @@ export interface ActivatorOptions {
     extensionId: string;
     clientOptions: LanguageClientOptions;
     jvmHeap?: string;
-    workspaceOptions?: VSCode.WorkspaceConfiguration;
+    workspaceOptions: VSCode.WorkspaceConfiguration;
     checkjvm?: (context: VSCode.ExtensionContext, jvm: JVM) => any;
     preferJdk?: boolean;
 }
 
 type JavaOptions = {
     heap?: string
+    home?: string
 }
 
 function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : string) : string {
@@ -46,6 +47,14 @@ function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : s
     }
     let javaOptions : JavaOptions = wsOpts.get("java");
     return (javaOptions && javaOptions.heap) || dflt;
+}
+
+function getUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration) : string {
+    if (!wsOpts) {
+        return null;
+    }
+    let javaOptions : JavaOptions = wsOpts.get("java");
+    return javaOptions && javaOptions.home;
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
@@ -74,7 +83,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
 
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
-        return findJRE()
+        return findJRE(getUserDefinedJavaHome(options.workspaceOptions))
         .catch(error => {
             VSCode.window.showErrorMessage("Error trying to find JVM: "+error);
             return Promise.reject(error);
