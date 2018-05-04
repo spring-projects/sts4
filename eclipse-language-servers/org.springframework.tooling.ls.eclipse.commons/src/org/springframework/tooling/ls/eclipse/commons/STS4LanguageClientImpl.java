@@ -35,6 +35,7 @@ import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -74,30 +75,40 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			if (ww!=null) {
 				IWorkbenchPage page = ww.getActivePage();
 				if (page!=null) {
-					IEditorPart editorPart = page.getActiveEditor();
-					if (editorPart instanceof AbstractTextEditor) {
-						try {
-							Method m = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer");
-							m.setAccessible(true);
-							ISourceViewer sourceViewer = (ISourceViewer) m.invoke(editorPart);
-							if (sourceViewer!=null) {
-								IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
-								if (annotationModel!=null) {
-									IDocument doc = sourceViewer.getDocument();
-									if (sourceViewer!=null) {
-										if (doc!=null && annotationModel instanceof IAnnotationModelExtension) {
-											updateAnnotations(target, doc, (IAnnotationModelExtension) annotationModel);
-										}
-									}
-								}
-							}
-						} catch (Exception e) {
-							//ignore reflection errors
+					IEditorReference[] references = page.getEditorReferences();
+					if (references != null) {
+						boolean restore = false;
+						for (IEditorReference reference : references) {
+							IEditorPart editorPart = reference.getEditor(restore);
+							updateEditorPart(editorPart);
 						}
 					}
 				}
 			}
 			return Status.OK_STATUS;
+		}
+
+		protected void updateEditorPart(IEditorPart editorPart) {
+			if (editorPart instanceof AbstractTextEditor) {
+				try {
+					Method m = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer");
+					m.setAccessible(true);
+					ISourceViewer sourceViewer = (ISourceViewer) m.invoke(editorPart);
+					if (sourceViewer!=null) {
+						IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
+						if (annotationModel!=null) {
+							IDocument doc = sourceViewer.getDocument();
+							if (sourceViewer!=null) {
+								if (doc!=null && annotationModel instanceof IAnnotationModelExtension) {
+									updateAnnotations(target, doc, (IAnnotationModelExtension) annotationModel);
+								}
+							}
+						}
+					}
+				} catch (Exception e) {
+					//ignore reflection errors
+				}
+			}
 		}
 	};
 
