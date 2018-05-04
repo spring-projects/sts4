@@ -14,13 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -31,10 +29,10 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -78,9 +76,9 @@ public final class JandexClasspath implements ClasspathIndex {
 		attachFolderListeners();
 		Collection<File> classpathEntries = ImmutableList.of();
 		try {
-			classpathEntries = IClasspathUtil.getBinaryRoots(classpath);
+			classpathEntries = IClasspathUtil.getBinaryRoots(classpath, (cpe) -> !cpe.isSystem());
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("Cannot obtain binary root from classpath entries for " + classpath.getName(), e);
 		}
 		return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> {
 			switch (providerType) {
@@ -101,12 +99,10 @@ public final class JandexClasspath implements ClasspathIndex {
 			subscriptions.dispose();
 			subscriptions = Disposables.composite();
 		}
-		for (File cpe : IClasspathUtil.getBinaryRoots(classpath)) {
-			if (!cpe.toString().endsWith(".jar")) {
-				final List<String> rebuildGlobPattern = Arrays.asList(cpe.toString().replace(File.separator, "/") + "/**/*.class");
-				Disposable disposable = fileObserver.onAnyChange(rebuildGlobPattern, (uri) -> reindex());
-				subscriptions.add(disposable);
-			}
+		for (File cpe : IClasspathUtil.getBinaryRoots(classpath, Classpath::isSource)) {
+			final List<String> rebuildGlobPattern = Arrays.asList(cpe.toString().replace(File.separator, "/") + "/**/*.class");
+			Disposable disposable = fileObserver.onAnyChange(rebuildGlobPattern, (uri) -> reindex());
+			subscriptions.add(disposable);
 		}
 	}
 
@@ -131,7 +127,7 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	protected JandexIndex[] getBaseIndices() {
-		return new JandexIndex[0];
+		return JandexSystemLibsIndex.getInstance().fromJars(IClasspathUtil.getBinaryRoots(classpath, CPE::isSystem));
 	}
 
 	@Override

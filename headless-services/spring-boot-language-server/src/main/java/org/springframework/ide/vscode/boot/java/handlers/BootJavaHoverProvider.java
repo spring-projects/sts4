@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -268,7 +267,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		try {
 			IClasspath classpath = project.getClasspath();
 			if (classpath!=null) {
-				return IClasspathUtil.getBinaryRoots(classpath).stream().anyMatch(cpe -> {
+				return IClasspathUtil.getBinaryRoots(classpath, (cpe) -> !cpe.isSystem()).stream().anyMatch(cpe -> {
 					String name = cpe.getName();
 					return name.startsWith("spring-boot-actuator-");
 				});

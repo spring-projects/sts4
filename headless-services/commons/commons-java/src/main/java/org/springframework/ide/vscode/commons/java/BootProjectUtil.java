@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,20 +11,23 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.nio.file.Path;
 
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BootProjectUtil {
+
+	public static final Logger log = LoggerFactory.getLogger(BootProjectUtil.class);
+
 
 	public static boolean isBootProject(IJavaProject jp) {
 		try {
 			IClasspath cp = jp.getClasspath();
 			if (cp!=null) {
-				return IClasspathUtil.getBinaryRoots(cp).stream().anyMatch(cpe -> isBootEntry(cpe));
+				return IClasspathUtil.getBinaryRoots(cp, (cpe) -> !cpe.isSystem()).stream().anyMatch(cpe -> isBootEntry(cpe));
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("Failed to determine whether '" + jp.getElementName() + "' is Spring Boot project", e);
 		}
 		return false;
 	}

@@ -12,19 +12,15 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
-import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
 
@@ -45,14 +41,20 @@ public class IClasspathUtil {
 		return null;
 	}
 
-	public static List<File> getBinaryRoots(IClasspath cp) {
+	public static List<File> getAllBinaryRoots(IClasspath cp) {
+		return getBinaryRoots(cp, null);
+	}
+
+	public static List<File> getBinaryRoots(IClasspath cp, Predicate<CPE> filter) {
 		ImmutableList.Builder<File> roots = ImmutableList.builder();
 		try {
 			for (CPE cpe : cp.getClasspathEntries()) {
-				 File loc = binaryLocation(cpe);
-				 if (loc!=null) {
-					 roots.add(loc);
-				 }
+				if (filter == null || filter.test(cpe)) {
+					File loc = binaryLocation(cpe);
+					if (loc!=null) {
+						roots.add(loc);
+					}
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);

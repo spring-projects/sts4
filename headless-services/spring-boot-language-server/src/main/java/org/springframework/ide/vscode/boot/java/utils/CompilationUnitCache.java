@@ -173,7 +173,7 @@ public final class CompilationUnitCache {
 			return new String[0];
 		} else {
 			IClasspath classpath = project.getClasspath();
-			Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath).stream();
+			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 			return classpathEntries
 					.filter(file -> file.exists())
 					.map(file -> file.getAbsolutePath()).toArray(String[]::new);

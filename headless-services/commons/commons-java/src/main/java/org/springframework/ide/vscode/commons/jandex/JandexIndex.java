@@ -34,6 +34,8 @@ import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.jandex.JarIndexer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
@@ -41,7 +43,6 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -54,6 +55,8 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 public class JandexIndex {
+
+	private static final Logger log = LoggerFactory.getLogger(JandexIndex.class);
 
 	private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 
@@ -132,7 +135,7 @@ public class JandexIndex {
 			knownPackages.put(file, Suppliers.memoize(() -> getKnownPackages(file).collect(Collectors.toList())));
 		});
 	}
-	
+
 	private Optional<IndexView> createIndex(File file, IndexFileFinder indexFileFinder) {
 		if (file != null && file.isFile() && file.getName().endsWith(".jar")) {
 			return indexJar(file, indexFileFinder);
@@ -160,7 +163,7 @@ public class JandexIndex {
 						}
 					}
 				} catch (Exception e) {
-					Log.log(e);
+					log.error("Failed to index file " + file, e);
 				}
 			}
 		}
@@ -171,27 +174,30 @@ public class JandexIndex {
 		File indexFile = indexFileFinder.findIndexFile(file);
 		if (indexFile != null) {
 			try {
+				if (!indexFile.getParentFile().exists()) {
+					indexFile.getParentFile().mkdirs();
+				}
 				if (indexFile.createNewFile()) {
 					try {
 						return Optional.of(JarIndexer.createJarIndex(file, new Indexer(), indexFile, false, false,
 								false, System.out, System.err).getIndex());
 					} catch (IOException e) {
-						Log.log("Failed to index '" + file + "'", e);
+						log.error("Failed to index '" + file + "'", e);
 					}
 				} else {
 					try {
 						return Optional.of(new IndexReader(new FileInputStream(indexFile)).read());
 					} catch (IOException e) {
-						Log.log("Failed to read index file '" + indexFile + "'. Creating new index file.", e);
+						log.error("Failed to read index file '" + indexFile + "'. Creating new index file.", e);
 						if (indexFile.delete()) {
 							return indexJar(file, indexFileFinder);
 						} else {
-							Log.log("Failed to read index file '" + indexFile);
+							log.error("Failed to read index file '" + indexFile);
 						}
 					}
 				}
 			} catch (IOException e) {
-				Log.log("Unable to create index file '" + indexFile + "'");
+				log.error("Unable to create index file '" + indexFile + "'", e);
 			}
 		} else {
 			try {
@@ -199,7 +205,7 @@ public class JandexIndex {
 						.createJarIndex(file, new Indexer(), file.canWrite(), file.getParentFile().canWrite(), false)
 						.getIndex());
 			} catch (IOException e) {
-				Log.log("Failed to index '" + file + "'", e);
+				log.error("Failed to index '" + file + "'", e);
 			}
 		}
 		return Optional.empty();
@@ -227,7 +233,7 @@ public class JandexIndex {
 										.orElse(null));
 
 	}
-	
+
 	private Optional<Tuple2<File, ClassInfo>> findMatch(DotName fqName) {
 		return (baseIndex == null ? Stream.<Optional<Tuple2<File, ClassInfo>>>empty()
 				: Arrays.stream(
@@ -248,7 +254,7 @@ public class JandexIndex {
 										.filter(t -> t.getT2().isPresent())
 										.map(e -> Tuples.of(e.getT1(), e.getT2().get())).findFirst());
 	}
-	
+
 	public Optional<File> findClasspathResourceForType(String fqName) {
 		Optional<Tuple2<File, ClassInfo>> match = findMatch(DotName.createSimple(fqName));
 		return Optional.ofNullable(match.isPresent() ? match.get().getT1() : null);
@@ -266,7 +272,7 @@ public class JandexIndex {
 				return provider == null ? ABSENT_JAVADOC_PROVIDER : provider;
 			});
 		} catch (ExecutionException e) {
-			Log.log(e);
+			log.error("Failed to retrieve javadoc provider for resource " + classpathResource, e);
 		}
 		return Wrappers.wrap(this, match.getT2(), javadocProvider);
 	}

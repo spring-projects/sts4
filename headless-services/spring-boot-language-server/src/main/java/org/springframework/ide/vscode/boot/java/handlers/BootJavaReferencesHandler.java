@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -127,7 +126,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	private String[] getClasspathEntries(IDocument doc) throws Exception {
 		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
 		IClasspath classpath = project.getClasspath();
-		Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath).stream();
+		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 		return classpathEntries
 				.filter(file -> file.exists())
 				.map(file -> file.getAbsolutePath())
