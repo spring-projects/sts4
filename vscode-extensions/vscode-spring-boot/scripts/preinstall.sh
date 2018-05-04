@@ -17,9 +17,9 @@ mkdir -p ${workdir}/jars
 
 # Use maven to build jdt ls extension
 cd ../../headless-services/jdt-ls-extension
-if command -v xvfbrun ; then
+if command -v xvfb-run ; then
     echo "Using xvfb to run in headless environment..."
-    xvfbrun ../mvnw clean integration-test
+    xvfb-run ../mvnw clean integration-test
 else
     ../mvnw clean integration-test
 fi
