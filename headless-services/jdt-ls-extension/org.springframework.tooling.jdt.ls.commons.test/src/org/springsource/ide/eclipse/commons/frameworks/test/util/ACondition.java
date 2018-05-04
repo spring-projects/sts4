@@ -44,15 +44,6 @@ import junit.framework.AssertionFailedError;
  */
 public abstract class ACondition {
 
-	private static boolean headless;
-	static {
-		try {
-			Display.getDefault();
-			headless = false;
-		} catch (Exception e) {
-			headless = true;
-		}
-	}
 	private String description = null;
 
 	/**
@@ -249,7 +240,7 @@ public abstract class ACondition {
 	}
 	
 	public static boolean inUIThread() {
-		return !headless && Display.getDefault().getThread() == Thread.currentThread();
+		return Display.getDefault().getThread() == Thread.currentThread();
 	}
 
 	public static StringBuffer getStackDumps() {
