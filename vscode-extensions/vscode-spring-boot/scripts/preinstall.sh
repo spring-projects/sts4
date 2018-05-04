@@ -17,7 +17,12 @@ mkdir -p ${workdir}/jars
 
 # Use maven to build jdt ls extension
 cd ../../headless-services/jdt-ls-extension
-../mvnw clean integration-test
+if command -v xvfbrun ; then
+    echo "Using xvfb to run in headless environment..."
+    xvfbrun ../mvnw clean integration-test
+else
+    ../mvnw clean integration-test
+fi
 cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-ls-commons.jar
 
