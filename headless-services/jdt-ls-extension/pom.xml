@@ -13,6 +13,7 @@
 	<modules>
 		<module>org.springframework.tooling.jdt.ls.extension</module>
 		<module>org.springframework.tooling.jdt.ls.commons</module>
+		<module>org.springframework.tooling.jdt.ls.commons.test</module>
 	</modules>
 
 	<properties>

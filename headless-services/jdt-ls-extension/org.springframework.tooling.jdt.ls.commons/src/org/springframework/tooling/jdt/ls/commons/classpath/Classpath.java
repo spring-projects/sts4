@@ -125,10 +125,19 @@ public class Classpath {
 		public void setSystem(boolean isSystem) {
 			this.isSystem = isSystem;
 		}
+
+		@Override
+		public String toString() {
+			return "CPE [kind=" + kind + ", path=" + path + "]";
+		}
 	}
 
 	public static boolean isSource(CPE e) {
 		return e!=null && Classpath.ENTRY_KIND_SOURCE.equals(e.getKind());
+	}
+
+	public static boolean isBinary(CPE e) {
+		return e!=null && Classpath.ENTRY_KIND_BINARY.equals(e.getKind());
 	}
 
 }

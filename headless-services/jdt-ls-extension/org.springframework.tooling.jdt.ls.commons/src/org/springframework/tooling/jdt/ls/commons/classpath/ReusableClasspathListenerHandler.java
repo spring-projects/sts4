@@ -98,7 +98,11 @@ public class ReusableClasspathListenerHandler {
 					subscribers = null;
 				}
 			}
-			Logger.log("subsribers = " + subscribers.keySet());
+			Logger.log("subsribers = " + (subscribers == null ? "null" : subscribers.keySet()));
+		}
+
+		public boolean isEmpty() {
+			return subscribers == null || subscribers.isEmpty();
 		}
 	}
 	
@@ -116,6 +120,10 @@ public class ReusableClasspathListenerHandler {
 		subscribptions.subscribe(callbackCommandId);
 		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
+	}
+
+	public boolean hasNoActiveSubscriptions() {
+		return subscribptions.isEmpty();
 	}
 
 }

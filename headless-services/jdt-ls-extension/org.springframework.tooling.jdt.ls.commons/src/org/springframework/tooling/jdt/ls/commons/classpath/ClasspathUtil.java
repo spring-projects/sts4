@@ -10,11 +10,15 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
+import static org.springframework.tooling.jdt.ls.commons.Logger.log;
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_BINARY;
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_SOURCE;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -22,17 +26,48 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.internal.core.JavaProject;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 
-import static org.springframework.tooling.jdt.ls.commons.Logger.*;
-
 public class ClasspathUtil {
+
+	private static final Object JRE_CONTAINER_ID = "org.eclipse.jdt.launching.JRE_CONTAINER";
+
+	private static Set<String> getSystemLibraryPaths(IJavaProject javaProject) {
+		try {
+			IClasspathEntry jreContainer = getJreContainer(javaProject.getRawClasspath());
+			IClasspathEntry[] resolvedJreEntries = ((JavaProject)javaProject).resolveClasspath(new IClasspathEntry[] {jreContainer});
+			Set<String> paths = new HashSet<>();
+			for (IClasspathEntry systemEntry : resolvedJreEntries) {
+				paths.add(systemEntry.getPath().toString());
+			}
+			return paths;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Collections.emptySet();
+	}
+	
+	private static IClasspathEntry getJreContainer(IClasspathEntry[] rawClasspath) {
+		for (IClasspathEntry cpe : rawClasspath) {
+			if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {
+				if (cpe.getPath().segment(0).equals(JRE_CONTAINER_ID)) {
+					return cpe;
+				}
+			}
+		}
+		return null;
+	}
 
 	public static Classpath resolve(IJavaProject javaProject) throws Exception {
 		//log("resolving classpath " + javaProject.getElementName() +" ...");
 
 		List<CPE> cpEntries = new ArrayList<>();
+		
+
+		
 		IClasspathEntry[] entries = javaProject.getResolvedClasspath(true);
+		Set<String> systemLibs = getSystemLibraryPaths(javaProject);
 
 		if (entries != null) {
 			for (IClasspathEntry entry : entries) {
@@ -41,6 +76,9 @@ public class ClasspathUtil {
 				case Classpath.ENTRY_KIND_BINARY: {
 					String path = entry.getPath().toString();
 					CPE cpe = CPE.binary(path);
+					if (systemLibs.contains(path)) {
+						cpe.setSystem(true);
+					}
 					cpEntries.add(cpe);
 					break;
 				}

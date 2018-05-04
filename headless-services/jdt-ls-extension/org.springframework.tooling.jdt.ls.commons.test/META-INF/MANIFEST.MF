@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Commons
+Bundle-SymbolicName: org.springframework.tooling.jdt.ls.commons.test
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: org.springframework.tooling.jdt.ls.commons.test
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.springframework.tooling.jdt.ls.commons,
+ org.eclipse.core.runtime,
+ org.eclipse.jdt.core,
+ org.eclipse.core.resources,
+ org.apache.commons.lang3,
+ org.junit,
+ org.apache.commons.io,
+ org.eclipse.swt
+
