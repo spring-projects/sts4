@@ -17,7 +17,7 @@ mkdir -p ${workdir}/jars
 
 # Use maven to build jdt ls extension
 cd ../../headless-services/jdt-ls-extension
-../mvnw clean package
+../mvnw clean integration-test
 cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-ls-commons.jar
 

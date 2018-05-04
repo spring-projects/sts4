@@ -128,8 +128,11 @@ public class Classpath {
 
 		@Override
 		public String toString() {
-			return "CPE [kind=" + kind + ", path=" + path + "]";
+			return "CPE [kind=" + kind + ", isSystem=" + isSystem + ", path=" + path + ", outputFolder=" + outputFolder
+					+ ", sourceContainerUrl=" + sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl
+					+ "]";
 		}
+
 	}
 
 	public static boolean isSource(CPE e) {

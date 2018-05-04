@@ -30,9 +30,12 @@ import org.eclipse.jdt.core.JavaCore;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
+import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
+
+import junit.framework.AssertionFailedError;
 
 public class ClasspathListenerHandlerTest {
 
@@ -99,8 +102,19 @@ public class ClasspathListenerHandlerTest {
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 			Classpath cp = classpaths.getFor(project).classpath;
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
-			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
+			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 		});
+	}
+
+	private static void assertClasspath(Classpath cp, boolean b) {
+		if (!b) {
+			StringBuilder buf = new StringBuilder();
+			for (CPE cpe : cp.getEntries()) {
+				buf.append("\n   ");
+				buf.append(cpe);
+			}
+			throw new AssertionFailedError("Unexpected classpath:" + buf);
+		}
 	}
 
 	private IProject createTestProject(String name) throws Exception {

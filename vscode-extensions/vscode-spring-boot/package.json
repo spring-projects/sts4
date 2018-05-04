@@ -69,12 +69,18 @@
           "description": "Enable/Disable Spring running Boot application live hints decorators in Java source code"
         },
         "spring-boot.ls.java.home": {
-          "type": ["string", null],
+          "type": [
+            "string",
+            null
+          ],
           "default": null,
           "description": "Override JAVA_HOME used for launching the spring-boot-language-server JVM process."
         },
         "spring-boot.ls.java.heap": {
-          "type": ["string", null],
+          "type": [
+            "string",
+            null
+          ],
           "default": null,
           "description": "Max JVM heap value, passed via -Xmx argument when launching spring-boot-language-server JVM process."
         }
