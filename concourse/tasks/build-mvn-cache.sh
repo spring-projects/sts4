@@ -6,7 +6,7 @@ cd ${workdir}/sts4/headless-services
 ./mvnw -DskipTests package
 
 cd ${workdir}/sts4/headless-services/jdt-ls-extension
-./mvnw -DskipTests package
+../mvnw -DskipTests package
 
 timestamp=`date +%s`
 tarfile=${workdir}/out/sts4-mvn-cache-${timestamp}.tar.gz
