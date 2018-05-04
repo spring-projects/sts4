@@ -32,86 +32,96 @@ import static org.springframework.tooling.jdt.ls.commons.Logger.*;
  */
 public class ClasspathListenerManager {
 
-    public interface ClasspathListener {
-        public abstract void classpathChanged(IJavaProject jp);
-    }
+	public interface ClasspathListener {
+		public abstract void classpathChanged(IJavaProject jp);
+	}
 
-    private class MyListener implements IElementChangedListener {
+	private class MyListener implements IElementChangedListener {
 
-        @Override
-        public void elementChanged(ElementChangedEvent event) {
-            visit(event.getDelta());
-        }
+		@Override
+		public void elementChanged(ElementChangedEvent event) {
+			Logger.log("changeEvent = "+event);
+			visit(event.getDelta());
+		}
 
-        private void visit(IJavaElementDelta delta) {
-            IJavaElement el = delta.getElement();
-            switch (el.getElementType()) {
-            case IJavaElement.JAVA_MODEL:
-                visitChildren(delta);
-                break;
-            case IJavaElement.JAVA_PROJECT:
-                if (isClasspathChanged(delta.getFlags())) {
-                    listener.classpathChanged((IJavaProject)el);
-                }
-                break;
-            default:
-                break;
-            }
-        }
+		private void visit(IJavaElementDelta delta) {
+			IJavaElement el = delta.getElement();
+			switch (el.getElementType()) {
+			case IJavaElement.JAVA_MODEL:
+				visitChildren(delta);
+				break;
+			case IJavaElement.JAVA_PROJECT:
+				if (isCreatedOrDeleted(delta) || isClasspathChanged(delta.getFlags())) {
+					listener.classpathChanged((IJavaProject)el);
+				}
+				break;
+			default:
+				break;
+			}
+		}
 
-        private boolean isClasspathChanged(int flags) {
-            return 0!= (flags & (
-                    IJavaElementDelta.F_CLASSPATH_CHANGED |
-                    IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED
-            ));
-        }
+		private boolean isCreatedOrDeleted(IJavaElementDelta delta) {
+			int kind = delta.getKind();
+			return kind == IJavaElementDelta.ADDED || kind==IJavaElementDelta.REMOVED;
+		}
 
-        public void visitChildren(IJavaElementDelta delta) {
-            for (IJavaElementDelta c : delta.getAffectedChildren()) {
-                visit(c);
-            }
-        }
-    }
+		private boolean isClasspathChanged(int flags) {
+			return 0!= (flags & (
+					IJavaElementDelta.F_CLASSPATH_CHANGED |
+					IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED |
+					IJavaElementDelta.F_CLOSED |
+					IJavaElementDelta.F_OPENED
+			));
+		}
 
-    private ClasspathListener listener;
-    private MyListener myListener;
+		public void visitChildren(IJavaElementDelta delta) {
+			for (IJavaElementDelta c : delta.getAffectedChildren()) {
+				visit(c);
+			}
+		}
+	}
 
-    /**
-     * @param initialEvent If true, events are fired immediately on all existing java 
-     * projects, treating the connection of the listener itself as a change event. 
-     * This allows clients to become aware of all classpaths from the start and 
-     * continually monitor them for changes from that point onward.
-     */
-    public ClasspathListenerManager(ClasspathListener listener, boolean initialEvent) {
-    	log("Setting up ClasspathListenerManager");
-        this.listener = listener;
-        if (initialEvent) {
-        	log("Sending initial event for all projects ...");
-            for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            	log("project = "+p);
-                try {
-                    if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
-                        IJavaProject jp = JavaCore.create(p);
-                        listener.classpathChanged(jp);
-                    }
-                } catch (CoreException e) {
-                    Logger.log(e);
-                }
-            }
-        	log("Sending initial event for all projects DONE");
-        }
-        JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
-    }
+	private ClasspathListener listener;
+	private MyListener myListener;
 
-    public ClasspathListenerManager(ClasspathListener listener) {
-        this(listener, false);
-    }
+	/**
+	 * @param initialEvent If true, events are fired immediately on all existing java 
+	 * projects, treating the connection of the listener itself as a change event. 
+	 * This allows clients to become aware of all classpaths from the start and 
+	 * continually monitor them for changes from that point onward.
+	 */
+	public ClasspathListenerManager(ClasspathListener listener, boolean initialEvent) {
+		log("Setting up ClasspathListenerManager");
+		this.listener = listener;
+		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
+		if (initialEvent) {
+			log("Sending initial event for all projects ...");
+			for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+				log("project "+p.getName() +" ..." );
+				try {
+					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
+						IJavaProject jp = JavaCore.create(p);
+						listener.classpathChanged(jp);
+					} else {
+						log("project "+p.getName() +" SKIPPED" );
+					}
+				} catch (CoreException e) {
+					Logger.log(e);
+				}
+			}
+			log("Sending initial event for all projects DONE");
+		}
+	}
 
-    public void dispose() {
-        if (myListener!=null) {
-            JavaCore.removeElementChangedListener(myListener);
-            myListener = null;
-        }
-    }
+	public ClasspathListenerManager(ClasspathListener listener) {
+		this(listener, false);
+	}
+
+	public void dispose() {
+		if (myListener!=null) {
+			JavaCore.removeElementChangedListener(myListener);
+			myListener = null;
+		}
+	}
 
 }

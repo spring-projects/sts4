@@ -12,6 +12,8 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import static org.springframework.tooling.jdt.ls.commons.Logger.log;
 
+import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,24 @@ public class ReusableClasspathListenerHandler {
 		this.conn = conn;
 		log("Instantiating ReusableClasspathListenerHandler");
 	}
+	
+	/**
+	 * To keep track of project locations. Without this we can't properly handle deleting events because
+	 * deleted projects (no longer) have a location. So we can only send a proper 'project with this location'
+	 * was deleted' events if we keep track of project locations ourselves.
+	 */
+	private Map<String, URI> projectLocations = new HashMap<>();
+	
+	private URI getProjectLocation(IJavaProject jp) {
+		URI loc = jp.getProject().getLocationURI();
+		if (loc!=null) {
+			return loc;
+		} else {
+			//fallback on what we stored ourselves.
+			return projectLocations.get(jp.getElementName());
+		}
+	}
+
 
 	class Subscribptions {
 
@@ -56,35 +76,55 @@ public class ReusableClasspathListenerHandler {
 		private void sendNotification(String callbackCommandId, IJavaProject jp) {
 			//TODO: make one Job to accumulate all requested notification and work more efficiently by batching
 			// and avoiding multiple executions of duplicated requests.
-			new Job("SendClasspath notification") {
+			Job job = new Job("SendClasspath notification") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					log("Classpath changed " + jp.getElementName());
-					String project = jp.getProject().getLocationURI().toString();
-					boolean deleted = !jp.exists();
-//					JavaClientConnection conn = JavaLanguageServerPlugin.getInstance().getClientConnection();
-					String projectName = jp.getElementName();
-
-					Classpath classpath = null;
-					if (!deleted) {
+					synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
 						try {
-							classpath = ClasspathUtil.resolve(jp);
+							log("Preparing classpath changed notification " + jp.getElementName());
+							URI projectLoc = getProjectLocation(jp);
+							if (projectLoc==null) {
+								Logger.log("Could not send event for project because no project location: "+jp.getElementName());
+							} else {
+								boolean exsits = jp.exists();
+								boolean open = true; // WARNING: calling is jp.isOpen is unreliable and subject to race condition. After a POST_CHAGE project open event
+													// this should be true but it typically is not unless you wait for some time. No idea how you would know
+													// how long you should wait (200ms is not enough, and that seems pretty long). Isn't it kind of the point 
+													// for a 'POST_CHANGE' event to come **after** model has already changed? I guess not in Eclipse.
+													// So we will just pretend / assume project is always open. If resolving classpath fails because it is not
+													// open... so be it (there will be no classpath... this is expected for closed project, so that is fine).
+								boolean deleted = !(exsits && open);
+								Logger.log("exists = "+exsits +" open = "+open +" => deleted = "+deleted);
+								String projectName = jp.getElementName();
+	
+								Classpath classpath = null;
+								if (deleted) {
+									projectLocations.remove(projectName);
+								} else {
+									projectLocations.put(projectName, projectLoc);
+									try {
+										classpath = ClasspathUtil.resolve(jp);
+									} catch (Exception e) {
+										Logger.log(e);
+									}
+								}
+								try {
+									Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
+									conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+									Logger.log("executing callback "+callbackCommandId+" SUCCESS");
+								} catch (Exception e) {
+									Logger.log("executing callback "+callbackCommandId+" FAILED");
+									Logger.log(e);
+								}
+							}
 						} catch (Exception e) {
 							Logger.log(e);
 						}
+						return Status.OK_STATUS;
 					}
-					try {
-						Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
-						conn.executeClientCommand(callbackCommandId, project, projectName, deleted, classpath);
-						Logger.log("executing callback "+callbackCommandId+" SUCCESS");
-					} catch (Exception e) {
-						Logger.log("executing callback "+callbackCommandId+" FAILED");
-						Logger.log(e);
-					}
-					return Status.OK_STATUS;
 				}
-			}
-			.schedule();
+			};
+			job.schedule();
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {
@@ -109,9 +149,9 @@ public class ReusableClasspathListenerHandler {
 	private Subscribptions subscribptions = new Subscribptions();
 
 	public Object removeClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
+		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
 		subscribptions.unsubscribe(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
+		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
