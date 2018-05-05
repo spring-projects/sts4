@@ -41,13 +41,15 @@ export class HighlightService {
     }
 
     refresh(uri : String) {
-        let editor = VSCode.window.activeTextEditor;
-        let activeUri = editor.document.uri.toString();
-        if (uri===activeUri) {
-            //We only update highlights in the active editor for now
-            let highlights : Range[] = this.highlights.get(uri) || [];
-            let decorations = highlights.map(hl => toDecoration(hl));
-            editor.setDecorations(this.DECORATION, decorations);
+        let editors = VSCode.window.visibleTextEditors;
+        for (let editor of editors) {
+            let activeUri = editor.document.uri.toString();
+            if (uri===activeUri) {
+                //We only update highlights in the active editor for now
+                let highlights : Range[] = this.highlights.get(uri) || [];
+                let decorations = highlights.map(hl => toDecoration(hl));
+                editor.setDecorations(this.DECORATION, decorations);
+            }
         }
     }
 }
