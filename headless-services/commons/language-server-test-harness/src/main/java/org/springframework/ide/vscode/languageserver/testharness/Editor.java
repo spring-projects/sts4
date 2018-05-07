@@ -209,8 +209,9 @@ public class Editor {
 
 
 	public List<Range> assertHighlights(String... expectedHighlights) throws Exception {
-		HighlightParams highlights = harness.getHighlights(doc);
-		List<Range> ranges = new ArrayList<>(highlights.getRanges());
+		HighlightParams highlights = expectedHighlights == null || expectedHighlights.length == 0 ? harness.getHighlights(false, doc)
+				: harness.getHighlights(doc);
+		List<Range> ranges = highlights != null ? new ArrayList<>(highlights.getRanges()) : ImmutableList.of();
 		Collections.sort(ranges, RANGE_COMPARATOR);
 		List<String> actualHighlights = ranges.stream()
 			.map(this::getText)
@@ -218,7 +219,6 @@ public class Editor {
 		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
 		return ranges;
 	}
-
 
 	/**
 	 * Get the editor text, with cursor markers inserted (for easy textual comparison

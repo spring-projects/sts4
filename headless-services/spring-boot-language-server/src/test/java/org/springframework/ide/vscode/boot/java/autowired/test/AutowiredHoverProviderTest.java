@@ -156,7 +156,7 @@ public class AutowiredHoverProviderTest {
 				"}\n"
 		);
 
-		editor.assertHighlights(/*MONE*/);
+		editor.assertHighlights(/*NONE*/);
 		editor.assertNoHover("@Autowired");
 	}
 

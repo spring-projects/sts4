@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -434,7 +435,32 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public HighlightParams getHighlights(TextDocumentInfo doc) throws Exception {
-		return getHighlightsFuture(doc).get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+		return getHighlights(true, doc);
+	}
+
+	/**
+	 * Set expectServerHighlights to false if NO highlights are expected from the server (for example, test cases
+	 * that test that no highlights are received from the server because there are no running apps).
+	 * @param expectServerHighlights false if NOT expecting any highlights from the server
+	 * @param doc
+	 * @return highlights, if they are expected, or null if they are not expected.
+	 * @throws Exception
+	 */
+	public HighlightParams getHighlights(boolean expectServerHighlights, TextDocumentInfo doc) throws Exception {
+		try {
+			return getHighlightsFuture(doc).get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+		} catch (TimeoutException e) {
+			// highlight requestor will timeout if the server does not send any highlights. This
+			// is not always an error. For example, if there are no initial running apps, the server will
+			// NOT send highlights (see PT 156688501), so in this case we expect to time out as part of
+			// the expected behaviour
+			if (!expectServerHighlights) {
+				return null;
+			}
+			else {
+				throw e;
+			}
+		}
 	}
 
 	public static Condition<Diagnostic> isDiagnosticWithSeverity(DiagnosticSeverity severity) {

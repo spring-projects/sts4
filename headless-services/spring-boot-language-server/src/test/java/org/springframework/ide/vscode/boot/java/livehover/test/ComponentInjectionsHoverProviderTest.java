@@ -471,7 +471,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"	}\n" +
 				"}\n"
 		);
-		editor.assertHighlights(/*MONE*/);
+		editor.assertHighlights(/*NONE*/);
 		editor.assertNoHover("@Component");
 	}
 
