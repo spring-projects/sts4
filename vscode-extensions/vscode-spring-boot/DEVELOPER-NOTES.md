@@ -41,7 +41,7 @@ You can then connect a 'Remote Java' debugger on port 8000.
 
 To debug the language server, open `lib/Main.ts` and edit to set the
 `CONNECT_TO_LS` option to `true`. When you launch the app next by pressing
-`F5`... When it needs a language server it not launch a process but instead
+`F5`... When it needs a language server it will not launch a process but instead
 try to connect to an already running server on port `5007`. It is up to you
 to ensure a server is running on that port by launching it beforehand 
 with a commandline arguments: `-Dstandalone-startup=true`.
