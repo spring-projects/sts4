@@ -1,4 +1,5 @@
-# CF Manifest YAML editor for Theia IDE
+# Spring Boot Extension
+Spring Boot support extension for Theia IDE
 
 ## Getting started
 
@@ -33,7 +34,7 @@ Open http://localhost:3000 in the browser.
 
 Start watching of the hello world extension.
 
-    cd cf-manifest-yaml
+    cd spring-boot
     yarn watch
 
 Start watching of the browser example.
@@ -50,7 +51,7 @@ Open http://localhost:3000 in the browser.
 
 Start watching of the hello world extension.
 
-    cd cf-manifest-yaml
+    cd spring-boot
     yarn watch
 
 Start watching of the electron example.
@@ -61,7 +62,7 @@ Start watching of the electron example.
 
 Launch `Start Electron Backend` configuration from VS code.
 
-## Publishing cf-manifest-yaml-extension
+## Publishing @theia/spring-boot
 
 Create a npm user and login to the npm registry, [more on npm publishing](https://docs.npmjs.com/getting-started/publishing-npm-packages).
 

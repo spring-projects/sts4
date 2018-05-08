@@ -3,11 +3,10 @@
  */
 
 import { CfManifestYamlClientContribution } from './language-client-contribution';
-import { LanguageClientContribution } from "@theia/languages/lib/browser";
+import { LanguageClientContribution } from '@theia/languages/lib/browser';
+import { ContainerModule } from 'inversify';
 
-import { ContainerModule } from "inversify";
-
-import "./monaco-contribution";
+import './monaco-contribution';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here    

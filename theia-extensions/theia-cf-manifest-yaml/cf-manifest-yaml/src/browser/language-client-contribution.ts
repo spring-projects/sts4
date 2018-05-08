@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify";
+import { injectable, inject } from 'inversify';
 import { BaseLanguageClientContribution, Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import { CF_MANIFEST_YAML_LANGUAGE_ID, CF_MANIFEST_YAML_LANGUAGE_NAME } from '../common';
 
