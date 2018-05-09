@@ -2,8 +2,9 @@ import { injectable, inject } from 'inversify';
 import { NotificationType } from 'vscode-jsonrpc';
 import { TextDocumentIdentifier, Range } from 'vscode-base-languageclient/lib/base';
 import { EditorDecorationsService, SetDecorationParams, EditorDecorationStyle } from '@theia/editor/lib/browser';
+import { ILanguageClient } from '@theia/languages/lib/common';
 
-export const HIGHLIGHTS_NOTIFICATION_TYPE = new NotificationType<HighlightParams,void>("sts/highlight");
+const HIGHLIGHTS_NOTIFICATION_TYPE = new NotificationType<HighlightParams,void>("sts/highlight");
 
 const BOOT_LIVE_HINTS = 'Boot-Live-Hints';
 
@@ -28,6 +29,10 @@ export class HighlightService {
         @inject(EditorDecorationsService) protected readonly decorationService: EditorDecorationsService
     ) {}
 
+    attach(client: ILanguageClient) {
+        client.onNotification(HIGHLIGHTS_NOTIFICATION_TYPE, (params) => this.highlight(params));
+    }
+
     highlight(params: HighlightParams) {
         const decorationParams: SetDecorationParams = {
             uri: params.doc.uri,
@@ -45,7 +50,6 @@ export class HighlightService {
             })
         };
         this.decorationService.setDecorations(decorationParams);
-
     }
 
 }
