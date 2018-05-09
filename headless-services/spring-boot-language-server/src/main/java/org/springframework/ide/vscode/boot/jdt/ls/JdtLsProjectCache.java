@@ -78,7 +78,9 @@ public class JdtLsProjectCache implements JavaProjectsService {
 									String uri = UriUtil.normalize(event.projectUri);
 									if (event.deleted) {
 										JavaProject deleted = table.remove(uri);
-										notifyDelete(deleted);
+										if (deleted!=null) {
+											notifyDelete(deleted);
+										}
 									} else {
 										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()));
 										JavaProject oldProject = table.put(uri, newProject);
