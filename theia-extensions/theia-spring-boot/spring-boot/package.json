@@ -6,11 +6,13 @@
   "version": "0.0.0",
   "files": [
     "lib",
-    "src"
+    "src",
+    "images"
   ],
   "dependencies": {
     "@theia/core": "latest",
     "@theia/languages": "latest",
+    "@theia/editor": "latest",
     "@theia/monaco": "latest",
     "@theia/java": "latest",
     "@pivotal-tools/jvm-launch-utils": "0.0.11",

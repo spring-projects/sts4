@@ -1,6 +1,7 @@
 node_modules
 .browser_modules
 lib
+server
 *.log
 *-app/*
 !*-app/package.json

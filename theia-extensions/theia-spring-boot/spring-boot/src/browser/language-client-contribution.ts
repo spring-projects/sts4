@@ -8,6 +8,7 @@ import {
 } from '../common';
 import { DocumentSelector } from '@theia/languages/lib/common';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
+import {HIGHLIGHTS_NOTIFICATION_TYPE, HighlightService} from "./highlight-service";
 
 @injectable()
 export class SpringBootClientContribution extends BaseLanguageClientContribution {
@@ -19,8 +20,12 @@ export class SpringBootClientContribution extends BaseLanguageClientContribution
         @inject(Workspace) protected readonly workspace: Workspace,
         @inject(Languages) protected readonly languages: Languages,
         @inject(LanguageClientFactory) protected readonly languageClientFactory: LanguageClientFactory,
+        @inject(HighlightService) protected readonly highlightService: HighlightService
     ) {
         super(workspace, languages, languageClientFactory);
+        this.languageClient.then(client => {
+            client.onNotification(HIGHLIGHTS_NOTIFICATION_TYPE, (params) => this.highlightService.highlight(params))
+        })
     }
 
     protected get documentSelector(): DocumentSelector | undefined {
@@ -36,4 +41,5 @@ export class SpringBootClientContribution extends BaseLanguageClientContribution
             '**/bootstrap*.properties'
         ];
     }
+
 }
