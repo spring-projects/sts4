@@ -23,6 +23,7 @@ public class LspClient {
 		VSCODE,
 		ECLIPSE,
 		ATOM,
+		THEIA,
 		INTELLIJ
 	}
 

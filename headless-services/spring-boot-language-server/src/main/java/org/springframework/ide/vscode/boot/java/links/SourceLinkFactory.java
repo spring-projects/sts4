@@ -52,6 +52,7 @@ public final class SourceLinkFactory {
 	public static SourceLinks createSourceLinks(BootJavaLanguageServerComponents server) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
+		case THEIA:	
 			return new VSCodeSourceLinks(server);
 		case ECLIPSE:
 			return new EclipseSourceLinks();
