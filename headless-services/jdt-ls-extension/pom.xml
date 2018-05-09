@@ -31,6 +31,12 @@
 			<!-- <url>${jdt.ls.updatesite}</url> -->
 			<url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
 		</repository>
+		<repository>
+			<id>jboss-apt</id>
+			<layout>p2</layout>
+			<!--URL copied from jdt.ls target platform file, needed to satisfy some of its dependencies -->
+			<url>http://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-04-06_03-47-50-H10</url>
+		</repository>
 	</repositories>
 	<build>
 		<plugins>
