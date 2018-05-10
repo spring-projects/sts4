@@ -8,8 +8,8 @@ import {
 } from '../common';
 import { DocumentSelector } from '@theia/languages/lib/common';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
-import { HighlightService} from "./highlight-service";
-import {ClasspathService} from "./classpath-service";
+import { HighlightService} from './highlight-service';
+import { ClasspathService } from './classpath-service';
 
 @injectable()
 export class SpringBootClientContribution extends BaseLanguageClientContribution {
