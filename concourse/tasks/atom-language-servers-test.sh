@@ -14,7 +14,7 @@ else
 fi
 
 cd ${sources}
-./mvnw clean package
+./mvnw clean package -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
 
 timestamp=`date -u +%Y%m%d%H%M`
 for i in `ls *-language-server/target/*.jar`; do
