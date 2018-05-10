@@ -110,8 +110,8 @@ public class ReusableClasspathListenerHandler {
 								}
 								try {
 									Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
-									conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
-									Logger.log("executing callback "+callbackCommandId+" SUCCESS");
+									Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+									Logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 								} catch (Exception e) {
 									Logger.log("executing callback "+callbackCommandId+" FAILED");
 									Logger.log(e);

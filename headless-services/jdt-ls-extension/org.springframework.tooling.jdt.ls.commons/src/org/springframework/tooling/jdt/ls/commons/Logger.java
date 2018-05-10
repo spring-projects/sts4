@@ -21,17 +21,23 @@ import java.util.Date;
  */
 public class Logger {
 
+	private static boolean USE_SYS_ERR = false;
+	
 	private static PrintWriter printwriter;
 
 	static {
-		File file = new File(System.getProperty("java.io.tmpdir"));
-		file = new File(file, "stsjdt.log");
-		try {
-			printwriter = new PrintWriter(new FileOutputStream(file), true);
-			log("======== "+new Date()+" =======");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (USE_SYS_ERR) {
+			printwriter = new PrintWriter(System.err);
+		} else {
+			File file = new File(System.getProperty("java.io.tmpdir"));
+			file = new File(file, "stsjdt.log");
+			try {
+				printwriter = new PrintWriter(new FileOutputStream(file), true);
+				log("======== "+new Date()+" =======");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

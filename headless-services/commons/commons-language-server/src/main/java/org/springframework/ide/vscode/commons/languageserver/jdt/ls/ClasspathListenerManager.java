@@ -10,11 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
 
-import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.thenLog;
-
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.lsp4j.ExecuteCommandParams;
@@ -54,14 +51,20 @@ public class ClasspathListenerManager {
 
 		// 1. register callback command handler in SimpleLanguageServer
 		Disposable unregisterCommand = server.onCommand(callbackCommandId, (ExecuteCommandParams callbackParams) -> async.invoke(() -> {
+			log.debug("callback {} received {}", callbackCommandId, callbackParams);
 			List<Object> args = callbackParams.getArguments();
+			log.debug("args = {}", args);
 			//Note: not sure... but args might be deserialized as com.google.gson.JsonElement's.
 			//If so the code below is not correct (casts will fail).
 			String projectUri = ((JsonElement) args.get(0)).getAsString();
+			log.debug("projectUri = {}", args);
 			String name = ((JsonElement) args.get(1)).getAsString();
+			log.debug("name = {}", args);
 			boolean deleted = ((JsonElement)args.get(2)).getAsBoolean();
+			log.debug("deleted = {}", deleted);
 
 			Classpath classpath = gson.fromJson((JsonElement)args.get(3), Classpath.class);
+			log.debug("classpath = {}", classpath);
 
 			classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
 			return "done";

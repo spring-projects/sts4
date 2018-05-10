@@ -29,7 +29,17 @@ public class UriUtil {
 		try {
 			if (uriVal != null && uriVal.startsWith("file:")) {
 				File file = new File(URI.create(uriVal));
-				return file.toURI().toString();
+				uriVal = file.toURI().toString();
+				//Careful!!! If the project uri points to a existing project... then it will be
+				//a directory and then the uri we computed will get a slash at the end.
+				//If, on the other hand, it doesn't exist because it got deleted. Then it will not get a slash 
+				//(because something that doesn't exist isn't considered to be a directory).
+				//We really don't want the uri to change after it got deleted. 
+				//So... make sure we never have the slash:
+				while (uriVal.endsWith("/")) {
+					uriVal = uriVal.substring(0, uriVal.length()-1);
+				}
+				return uriVal;
 			}
 		} catch (Exception e) {
 
@@ -37,6 +47,10 @@ public class UriUtil {
 		return uriVal;
 	}
 
+	/**
+	 * Caution, the implementation assumes that it is only called with
+	 * normalized uris!
+	 */
 	public static boolean contains(String projectUri, String uri) {
 		if (projectUri.length() < uri.length()) {
 			return uri.startsWith(projectUri) && (

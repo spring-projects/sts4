@@ -14,7 +14,7 @@ public interface ClasspathListener {
 
 	void changed(Event event);
 
-	static class Event {
+	public static class Event {
 
 		public final String projectUri;
 		public final String name;
@@ -29,6 +29,13 @@ public interface ClasspathListener {
 			this.classpath = classpath;
 		}
 
+		@Override
+		public String toString() {
+			return "Event [projectUri=" + projectUri + ", name=" + name + ", deleted=" + deleted + ", classpath="
+					+ classpath + "]";
+		}
 	}
+
+
 
 }

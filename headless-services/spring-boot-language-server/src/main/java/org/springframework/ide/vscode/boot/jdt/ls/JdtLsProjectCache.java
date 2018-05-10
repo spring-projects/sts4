@@ -10,44 +10,30 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
-import java.io.File;
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
-import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.JavaProject;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import reactor.core.Disposable;
 
@@ -72,16 +58,24 @@ public class JdtLsProjectCache implements JavaProjectsService {
 				disposable.complete(server.addClasspathListener(new ClasspathListener() {
 					@Override
 					public void changed(Event event) {
+						log.info("claspath event received {}", event);
 						initialized.thenRun(() -> {
+							log.info("initialized.thenRun block entered");
 							try {
 								synchronized (table) {
 									String uri = UriUtil.normalize(event.projectUri);
+									log.info("uri = {}", uri);
 									if (event.deleted) {
+										log.info("event.deleted = true");
 										JavaProject deleted = table.remove(uri);
 										if (deleted!=null) {
+											log.info("removed from table = true");
 											notifyDelete(deleted);
+										} else {
+											log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
 										}
 									} else {
+										log.info("deleted = false");
 										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()));
 										JavaProject oldProject = table.put(uri, newProject);
 										if (oldProject != null) {
@@ -183,10 +177,10 @@ public class JdtLsProjectCache implements JavaProjectsService {
 		}
 	}
 
-	private void logEvent(String type, JavaProject newProject) {
+	private void logEvent(String type, JavaProject project) {
 		try {
-			log.info("Project "+type+": " + newProject.getLocationUri());
-			log.info("Classpath has "+newProject.getClasspath().getClasspathEntries().size()+" entries");
+			log.info("Project "+type+": " + project.getLocationUri());
+			log.info("Classpath has "+project.getClasspath().getClasspathEntries().size()+" entries");
 		} catch (Exception e) {
 		}
 	}

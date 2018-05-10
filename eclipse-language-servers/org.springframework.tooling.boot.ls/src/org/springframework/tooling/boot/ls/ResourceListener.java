@@ -11,6 +11,7 @@
 package org.springframework.tooling.boot.ls;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.FileChangeType;
@@ -79,7 +81,12 @@ public class ResourceListener implements IResourceChangeListener {
 	}
 
 	private boolean isApplicableFile(IFile resource) {
-		return pathMatchers.stream().filter(m -> m.matches(resource.getLocation().toFile().toPath())).findFirst().isPresent();
+		IPath loc = resource.getLocation();
+		if (loc!=null) { // Avoid NPE for resource that has no location (happens when project deleted)
+			Path locPath = resource.getLocation().toFile().toPath();
+			return pathMatchers.stream().filter(m -> m.matches(locPath)).findFirst().isPresent();
+		}
+		return false;
 	}
 
 	private static boolean isRelevantDelta(IResourceDelta delta) {
