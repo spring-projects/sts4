@@ -49,7 +49,6 @@ public class SpringLiveHoverWatchdog {
 	private RunningAppProvider runningAppProvider;
 
 	private boolean highlightsEnabled = true;
-	private boolean hadPreviousRunningBootApps = false;
 
 	private Timer timer;
 
@@ -157,17 +156,9 @@ public class SpringLiveHoverWatchdog {
 						publishLiveHints(docURI, ranges);
 					}
 				}
-				else if (this.hadPreviousRunningBootApps) {
-					// PT 156688501:
-					// Only clean up live hovers if there were running boot apps in the previous
-					// update, but not
-					// in the current one.
-					// This is to avoid unnecessary publishing of live hovers when there have been
-					// no running apps
-					// at all between consecutive updates.
+				else  {
 					cleanupLiveHints(docURI);
 				}
-				this.hadPreviousRunningBootApps = hasCurrentRunningBootApps;
 			} catch (Exception e) {
 				logger.error("", e);
 			}

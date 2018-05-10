@@ -209,8 +209,7 @@ public class Editor {
 
 
 	public List<Range> assertHighlights(String... expectedHighlights) throws Exception {
-		HighlightParams highlights = expectedHighlights == null || expectedHighlights.length == 0 ? harness.getHighlights(false, doc)
-				: harness.getHighlights(doc);
+		HighlightParams highlights = harness.getHighlights(doc);
 		List<Range> ranges = highlights != null ? new ArrayList<>(highlights.getRanges()) : ImmutableList.of();
 		Collections.sort(ranges, RANGE_COMPARATOR);
 		List<String> actualHighlights = ranges.stream()
