@@ -58,24 +58,24 @@ public class JdtLsProjectCache implements JavaProjectsService {
 				disposable.complete(server.addClasspathListener(new ClasspathListener() {
 					@Override
 					public void changed(Event event) {
-						log.info("claspath event received {}", event);
+						log.debug("claspath event received {}", event);
 						initialized.thenRun(() -> {
-							log.info("initialized.thenRun block entered");
+							//log.info("initialized.thenRun block entered");
 							try {
 								synchronized (table) {
 									String uri = UriUtil.normalize(event.projectUri);
-									log.info("uri = {}", uri);
+									log.debug("uri = {}", uri);
 									if (event.deleted) {
-										log.info("event.deleted = true");
+										log.debug("event.deleted = true");
 										JavaProject deleted = table.remove(uri);
 										if (deleted!=null) {
-											log.info("removed from table = true");
+											log.debug("removed from table = true");
 											notifyDelete(deleted);
 										} else {
 											log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
 										}
 									} else {
-										log.info("deleted = false");
+										log.debug("deleted = false");
 										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()));
 										JavaProject oldProject = table.put(uri, newProject);
 										if (oldProject != null) {
