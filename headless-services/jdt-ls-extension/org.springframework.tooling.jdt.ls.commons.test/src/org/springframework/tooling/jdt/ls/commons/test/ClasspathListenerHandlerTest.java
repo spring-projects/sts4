@@ -43,6 +43,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.tooling.jdt.ls.commons.Logger;
+import org.springframework.tooling.jdt.ls.commons.Logger.DefaultLogger;
+import org.springframework.tooling.jdt.ls.commons.Logger.TestLogger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
@@ -50,12 +52,15 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathLis
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.Asserter;
 
+import com.google.common.collect.ImmutableList;
+
 import junit.framework.AssertionFailedError;
 
 public class ClasspathListenerHandlerTest {
 
+	private TestLogger logger = new TestLogger();
 	private MockClasspathCache classpaths = new MockClasspathCache();
-	private ReusableClasspathListenerHandler service = new ReusableClasspathListenerHandler(classpaths);
+	private ReusableClasspathListenerHandler service = new ReusableClasspathListenerHandler(logger, classpaths);
 
 	@Test public void classpathIsSentForExistingProject() throws Exception {
 		String projectName = "classpath-test-simple-java-project";
@@ -82,7 +87,7 @@ public class ClasspathListenerHandlerTest {
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 		});
-		Logger.log("=== Deleteing project");
+		logger.log("=== Deleteing project");
 		project.delete(false, true, null);
 		ACondition.waitFor("Project classpath to disapear", Duration.ofSeconds(5), () -> {
 			Info cp = classpaths.getFor(loc);
@@ -96,7 +101,7 @@ public class ClasspathListenerHandlerTest {
 		File loc = project.getLocation().toFile();
 
 		service.addClasspathListener(classpaths.commandId);
-		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
+		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
@@ -105,7 +110,7 @@ public class ClasspathListenerHandlerTest {
 		FileUtils.deleteQuietly(loc);
 		safe(() -> project.refreshLocal(IResource.DEPTH_INFINITE, null));
 
-		ACondition.waitFor("Project to disapear", Duration.ofSeconds(50), () -> {
+		ACondition.waitFor("Project to disapear", Duration.ofSeconds(5), () -> {
 			Info cp = classpaths.getFor(loc);
 			assertNull(cp);
 		});
@@ -133,17 +138,18 @@ public class ClasspathListenerHandlerTest {
 		Map<File, Info> classpaths = new HashMap<>();
 
 		@Override
-		public synchronized Object executeClientCommand(String id, Object... params) throws Exception {
+		public synchronized Object executeClientCommand(String id, Object... _params) throws Exception {
 			if (id.equals(commandId)) {
+				ImmutableList<Object> params = ImmutableList.copyOf(_params);
 				System.out.println("received: "+Arrays.asList(params));
-				File projectLoc = new File(new URI((String) params[0]));
-				String name = (String) params[1];
-				boolean deleted = (boolean) params[2];
+				File projectLoc = new File(new URI((String) params.get(0)));
+				String name = (String) params.get(1);
+				boolean deleted = (boolean) params.get(2);
 				if (deleted) {
 					System.out.println("DELETING "+name);
 					classpaths.remove(projectLoc);
 				} else {
-					Classpath cp = (Classpath) params[3];
+					Classpath cp = (Classpath) params.get(3);
 					System.out.println("PUT "+name+" "+cp.getEntries().size()+" entries");
 					classpaths.put(projectLoc, new Info(name, cp));
 				}
@@ -166,6 +172,7 @@ public class ClasspathListenerHandlerTest {
 		classpaths.dispose();
 		deleteAllProjects();
 		assertTrue(service.hasNoActiveSubscriptions());
+		logger.assertNoErrors();
 	}
 
 	private static void assertClasspath(Classpath cp, boolean b) {

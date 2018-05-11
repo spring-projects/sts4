@@ -12,6 +12,7 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
@@ -20,6 +21,7 @@ public class Classpath {
 
 	public static final String ENTRY_KIND_SOURCE = "source";
 	public static final String ENTRY_KIND_BINARY = "binary";
+	public static final Classpath EMPTY = new Classpath(Collections.emptyList());
 
 	private List<CPE> entries;
 

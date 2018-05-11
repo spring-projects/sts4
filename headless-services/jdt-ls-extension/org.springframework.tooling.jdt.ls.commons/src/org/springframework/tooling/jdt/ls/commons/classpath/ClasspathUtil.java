@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import static org.springframework.tooling.jdt.ls.commons.Logger.log;
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_BINARY;
 import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_SOURCE;
 
@@ -27,6 +26,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaProject;
+import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 
 public class ClasspathUtil {
@@ -59,7 +59,7 @@ public class ClasspathUtil {
 		return null;
 	}
 
-	public static Classpath resolve(IJavaProject javaProject) throws Exception {
+	public static Classpath resolve(IJavaProject javaProject, Logger logger) throws Exception {
 		//log("resolving classpath " + javaProject.getElementName() +" ...");
 
 		List<CPE> cpEntries = new ArrayList<>();
@@ -106,7 +106,7 @@ public class ClasspathUtil {
 			}
 		}
 		Classpath classpath = new Classpath(cpEntries);
-		log("classpath=" + classpath.getEntries().size() + " entries");
+		logger.log("classpath=" + classpath.getEntries().size() + " entries");
 		return classpath;
 	}
 	

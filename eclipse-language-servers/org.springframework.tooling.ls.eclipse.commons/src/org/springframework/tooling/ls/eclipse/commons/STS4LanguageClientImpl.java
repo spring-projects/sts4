@@ -41,6 +41,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 
 import com.google.common.collect.ImmutableList;
@@ -49,8 +50,10 @@ import com.google.common.collect.ImmutableMap;
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
 
-	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler(new LSP4ECommandExecutor());
-
+	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler(
+			Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance),
+			new LSP4ECommandExecutor()
+	);
 
 	public STS4LanguageClientImpl() {
 		System.out.println("Instantiatin STS4LanguageClientImpl");

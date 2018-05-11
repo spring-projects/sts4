@@ -40,7 +40,7 @@ public class ClasspathListenerManager {
 
 		@Override
 		public void elementChanged(ElementChangedEvent event) {
-			Logger.log("changeEvent = "+event);
+			logger.log("changeEvent = "+event);
 			visit(event.getDelta());
 		}
 
@@ -83,6 +83,7 @@ public class ClasspathListenerManager {
 
 	private ClasspathListener listener;
 	private MyListener myListener;
+	private final Logger logger;
 
 	/**
 	 * @param initialEvent If true, events are fired immediately on all existing java 
@@ -90,31 +91,32 @@ public class ClasspathListenerManager {
 	 * This allows clients to become aware of all classpaths from the start and 
 	 * continually monitor them for changes from that point onward.
 	 */
-	public ClasspathListenerManager(ClasspathListener listener, boolean initialEvent) {
-		log("Setting up ClasspathListenerManager");
+	public ClasspathListenerManager(Logger logger, ClasspathListener listener, boolean initialEvent) {
+		this.logger = logger;
+		logger.log("Setting up ClasspathListenerManager");
 		this.listener = listener;
 		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
 		if (initialEvent) {
-			log("Sending initial event for all projects ...");
+			logger.log("Sending initial event for all projects ...");
 			for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-				log("project "+p.getName() +" ..." );
+				logger.log("project "+p.getName() +" ..." );
 				try {
 					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
 						IJavaProject jp = JavaCore.create(p);
 						listener.classpathChanged(jp);
 					} else {
-						log("project "+p.getName() +" SKIPPED" );
+						logger.log("project "+p.getName() +" SKIPPED" );
 					}
 				} catch (CoreException e) {
-					Logger.log(e);
+					logger.log(e);
 				}
 			}
-			log("Sending initial event for all projects DONE");
+			logger.log("Sending initial event for all projects DONE");
 		}
 	}
 
-	public ClasspathListenerManager(ClasspathListener listener) {
-		this(listener, false);
+	public ClasspathListenerManager(Logger logger, ClasspathListener listener) {
+		this(logger, listener, false);
 	}
 
 	public void dispose() {

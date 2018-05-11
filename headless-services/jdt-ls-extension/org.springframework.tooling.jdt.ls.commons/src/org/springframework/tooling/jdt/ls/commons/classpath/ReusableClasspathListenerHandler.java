@@ -10,14 +10,11 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import static org.springframework.tooling.jdt.ls.commons.Logger.log;
-
 import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,11 +28,13 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerMan
  */
 public class ReusableClasspathListenerHandler {
 
-	private ClientCommandExecutor conn;
+	private final ClientCommandExecutor conn;
+	private final Logger logger;
 	
-	public ReusableClasspathListenerHandler(ClientCommandExecutor conn) {
+	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn) {
 		this.conn = conn;
-		log("Instantiating ReusableClasspathListenerHandler");
+		this.logger = logger;
+		logger.log("Instantiating ReusableClasspathListenerHandler");
 	}
 	
 	/**
@@ -81,17 +80,17 @@ public class ReusableClasspathListenerHandler {
 		private Map<String, ClasspathListenerManager> subscribers = null;
 		
 		public synchronized void subscribe(String callbackCommandId) {
-			Logger.log("subscribing to classpath changes: " + callbackCommandId);
+			logger.log("subscribing to classpath changes: " + callbackCommandId);
 			if (subscribers==null) {
 				subscribers = new HashMap<>(1);
 			}
-			subscribers.computeIfAbsent(callbackCommandId, (cid) -> new ClasspathListenerManager(new ClasspathListener() {
+			subscribers.computeIfAbsent(callbackCommandId, (cid) -> new ClasspathListenerManager(logger, new ClasspathListener() {
 				@Override
 				public void classpathChanged(IJavaProject jp) {
 					sendNotification(callbackCommandId, jp);
 				}
 			}, true));
-			Logger.log("subsribers = " + subscribers.keySet());
+			logger.log("subsribers = " + subscribers.keySet());
 		}
 	
 		private void sendNotification(String callbackCommandId, IJavaProject jp) {
@@ -102,10 +101,10 @@ public class ReusableClasspathListenerHandler {
 				protected IStatus run(IProgressMonitor monitor) {
 					synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
 						try {
-							log("Preparing classpath changed notification " + jp.getElementName());
+							logger.log("Preparing classpath changed notification " + jp.getElementName());
 							URI projectLoc = getProjectLocation(jp);
 							if (projectLoc==null) {
-								Logger.log("Could not send event for project because no project location: "+jp.getElementName());
+								logger.log("Could not send event for project because no project location: "+jp.getElementName());
 							} else {
 								boolean exsits = projectExists(jp);
 								boolean open = true; // WARNING: calling is jp.isOpen is unreliable and subject to race condition. After a POST_CHAGE project open event
@@ -115,31 +114,31 @@ public class ReusableClasspathListenerHandler {
 													// So we will just pretend / assume project is always open. If resolving classpath fails because it is not
 													// open... so be it (there will be no classpath... this is expected for closed project, so that is fine).
 								boolean deleted = !(exsits && open);
-								Logger.log("exists = "+exsits +" open = "+open +" => deleted = "+deleted);
+								logger.log("exists = "+exsits +" open = "+open +" => deleted = "+deleted);
 								String projectName = jp.getElementName();
 	
-								Classpath classpath = null;
+								Classpath classpath = Classpath.EMPTY;
 								if (deleted) {
 									projectLocations.remove(projectName);
 								} else {
 									projectLocations.put(projectName, projectLoc);
 									try {
-										classpath = ClasspathUtil.resolve(jp);
+										classpath = ClasspathUtil.resolve(jp, logger);
 									} catch (Exception e) {
-										Logger.log(e);
+										logger.log(e);
 									}
 								}
 								try {
-									Logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+(classpath==null ? "" : classpath.getEntries().size()));
+									logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
 									Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
-									Logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+									logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 								} catch (Exception e) {
-									Logger.log("executing callback "+callbackCommandId+" FAILED");
-									Logger.log(e);
+									logger.log("executing callback "+callbackCommandId+" FAILED");
+									logger.log(e);
 								}
 							}
 						} catch (Exception e) {
-							Logger.log(e);
+							logger.log(e);
 						}
 						return Status.OK_STATUS;
 					}
@@ -149,7 +148,7 @@ public class ReusableClasspathListenerHandler {
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {
-			Logger.log("unsubscribing from classpath changes: " + callbackCommandId);
+			logger.log("unsubscribing from classpath changes: " + callbackCommandId);
 			if (subscribers != null) {
 				ClasspathListenerManager mgr = subscribers.remove(callbackCommandId);
 				if (mgr!=null) {
@@ -159,7 +158,7 @@ public class ReusableClasspathListenerHandler {
 					subscribers = null;
 				}
 			}
-			Logger.log("subsribers = " + (subscribers == null ? "null" : subscribers.keySet()));
+			logger.log("subsribers = " + (subscribers == null ? "null" : subscribers.keySet()));
 		}
 
 		public boolean isEmpty() {
@@ -170,16 +169,16 @@ public class ReusableClasspathListenerHandler {
 	private Subscribptions subscribptions = new Subscribptions();
 
 	public Object removeClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
+		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
 		subscribptions.unsubscribe(callbackCommandId);
-		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
+		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
 	public Object addClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
+		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
 		subscribptions.subscribe(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
+		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 

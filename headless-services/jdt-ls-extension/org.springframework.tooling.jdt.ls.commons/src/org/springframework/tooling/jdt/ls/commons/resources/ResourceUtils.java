@@ -34,22 +34,22 @@ public final class ResourceUtils {
 	 */
 	public static IJavaProject getJavaProject(URI resourceUri) throws Exception {
 		IContainer[] containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(resourceUri);
-		log("containers=" + containers);
+//		log("containers=" + containers);
 		if (containers.length > 0) {
-			log("containers.length=" + containers.length);
+//			log("containers.length=" + containers.length);
 			Optional<IContainer> shortest = Arrays.stream(containers)
 					.min((f1, f2) -> f1.getFullPath().segmentCount() - f2.getFullPath().segmentCount());
-			log("shortest=" + shortest.isPresent());
+//			log("shortest=" + shortest.isPresent());
 
 			if (shortest.isPresent()) {
-				log("shortest.fullpath=" + shortest.get().getFullPath());
+//				log("shortest.fullpath=" + shortest.get().getFullPath());
 
 				IProject project = shortest.get().getProject();
-				log("project=" + project.getName());
+//				log("project=" + project.getName());
 
 				if (project.isAccessible() && project.hasNature(JavaCore.NATURE_ID)) {
 					IJavaProject javaProject = JavaCore.create(project);
-					log("javaProject=" + javaProject.getElementName());
+//					log("javaProject=" + javaProject.getElementName());
 
 					return javaProject;
 				}

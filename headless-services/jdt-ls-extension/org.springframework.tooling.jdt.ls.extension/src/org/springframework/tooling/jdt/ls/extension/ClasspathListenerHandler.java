@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.extension;
 
-import static org.springframework.tooling.jdt.ls.commons.Logger.log;
-
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,18 +23,19 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathLis
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	
+	private static final Logger logger = Logger.DEFAULT;
 	private static ReusableClasspathListenerHandler handlerImpl = checkSupported();
 	private static ReusableClasspathListenerHandler checkSupported() {
 		try {
 			JavaClientConnection.class.getMethod("executeClientCommand", String.class, Object[].class);
-			return new ReusableClasspathListenerHandler(new ClientCommandExecutor() {
+			return new ReusableClasspathListenerHandler(logger, new ClientCommandExecutor() {
 				@Override
 				public Object executeClientCommand(String id, Object... params) {
 					return JavaLanguageServerPlugin.getInstance().getClientConnection().executeClientCommand(id, params);
 				}
 			});
 		} catch (Exception e) {
-			Logger.log(e);
+			logger.log(e);
 		}
 		return null;
 	}
@@ -46,7 +45,7 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 		if (handlerImpl==null) {
 			throw new UnsupportedOperationException("Command '"+commandId+"' not supported on older versions of JDT Language Server");
 		}
-		log("ClasspathListenerHandler executeCommand " + commandId + ", " + arguments);
+		logger.log("ClasspathListenerHandler executeCommand " + commandId + ", " + arguments);
 		switch (commandId) {
 		case "sts.java.addClasspathListener":
 			return addClasspathListener((String) arguments.get(0));
@@ -58,14 +57,14 @@ public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	}
 
 	private Object removeClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
+		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
 		return handlerImpl.removeClasspathListener(callbackCommandId);
 	}
 
 	private Object addClasspathListener(String callbackCommandId) {
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
+		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
 		handlerImpl.addClasspathListener(callbackCommandId);
-		log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
+		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
