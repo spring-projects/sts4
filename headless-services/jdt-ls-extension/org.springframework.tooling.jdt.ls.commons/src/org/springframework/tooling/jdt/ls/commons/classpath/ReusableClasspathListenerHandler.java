@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -54,6 +55,26 @@ public class ReusableClasspathListenerHandler {
 		}
 	}
 
+	private boolean projectExists(IJavaProject jp) {
+		//We can't really deal with projects that don't exist in disk. So using this more strict 'exists' check
+		//makes sure anything that looks like it doesn't exist on disk is treated as if it simply doesn't exist 
+		//at all. This kind of addresses a issue caused by Eclipse's idiotic behavior when it comes to deleting
+		//a project's files from the file system... Eclipse recreates a 'vanilla' project in the workspace,
+		//simply refusing to accept the fact that the project is actually gone.
+		if (jp.exists()) {
+			try {
+				URI loc = getProjectLocation(jp);
+				if (loc!=null) {
+					File f = new File(loc);
+					return f.isDirectory();
+				}
+			} catch (Exception e) {
+				//Something bogus about this project... so just pretend it doesn't exist.
+			}
+		}
+		return false;
+	}
+
 
 	class Subscribptions {
 
@@ -86,7 +107,7 @@ public class ReusableClasspathListenerHandler {
 							if (projectLoc==null) {
 								Logger.log("Could not send event for project because no project location: "+jp.getElementName());
 							} else {
-								boolean exsits = jp.exists();
+								boolean exsits = projectExists(jp);
 								boolean open = true; // WARNING: calling is jp.isOpen is unreliable and subject to race condition. After a POST_CHAGE project open event
 													// this should be true but it typically is not unless you wait for some time. No idea how you would know
 													// how long you should wait (200ms is not enough, and that seems pretty long). Isn't it kind of the point 

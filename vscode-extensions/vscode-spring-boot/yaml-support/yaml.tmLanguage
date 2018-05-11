@@ -220,12 +220,12 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.block.scalar.literal.yaml</string>
+					<string>keyword.control.flow.block-scalar.literal.yaml</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.block.scalar.folded.yaml</string>
+					<string>keyword.control.flow.block-scalar.folded.yaml</string>
 				</dict>
 				<key>3</key>
 				<dict>
@@ -235,7 +235,7 @@
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>support.other.chomping-indicator.yaml</string>
+					<string>storage.modifier.chomping-indicator.yaml</string>
 				</dict>
 				<key>5</key>
 				<dict>
@@ -271,7 +271,7 @@
 		<key>block-sequence</key>
 		<dict>
 			<key>match</key>
-			<string>(-)( |\t|$)</string>
+			<string>(-)(?!\S)</string>
 			<key>name</key>
 			<string>punctuation.definition.block.sequence.item.yaml</string>
 		</dict>
@@ -370,8 +370,8 @@
                         (?:[ \t]+
                             ((?:!(?:[0-9A-Za-z\-]*!)?))
                             (?:[ \t]+ (
-                                  !              (?x: %\p{XDigit}{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )*
-                                | (?![,!\[\]{}]) (?x: %\p{XDigit}{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )+
+                                  !              (?x: %[0-9A-Fa-f]{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )*
+                                | (?![,!\[\]{}]) (?x: %[0-9A-Fa-f]{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )+
                                 )
                             )?
                         )?
@@ -1124,8 +1124,8 @@
 					<string>(?x)
                         \G
                         (?:
-                            ! &lt; (?: %\p{XDigit}{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )+ &gt;
-                          | (?:!(?:[0-9A-Za-z\-]*!)?) (?: %\p{XDigit}{2} | [0-9A-Za-z\-#;/?:@&amp;=+$_.~*'()] )+
+                            ! &lt; (?: %[0-9A-Fa-f]{2} | [0-9A-Za-z\-#;/?:@&amp;=+$,_.!~*'()\[\]] )+ &gt;
+                          | (?:!(?:[0-9A-Za-z\-]*!)?) (?: %[0-9A-Fa-f]{2} | [0-9A-Za-z\-#;/?:@&amp;=+$_.~*'()] )+
                           | !
                         )
                         (?=\ |\t|$)
