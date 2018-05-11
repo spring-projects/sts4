@@ -7,6 +7,7 @@ import {ActiveServer, LanguageServerProcess} from 'atom-languageclient';
 import {AutoLanguageClient} from 'atom-languageclient';
 import {findJdk, findJvm, JVM} from '@pivotal-tools/jvm-launch-utils';
 import {InitializeParams} from 'vscode-languageserver-protocol';
+import {Writable} from 'stream';
 
 export class JavaProcessLanguageClient extends AutoLanguageClient {
 
@@ -80,12 +81,35 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
             this.socket = connect({
                 port: 5007
             });
-            resolve(<LanguageServerProcess> {
+            const stdout: any = {
+                setEncoding: () => {
+                    return stdout;
+                },
+                on: () => stdout
+            };
+            const process: LanguageServerProcess = {
+                stdin: <Writable>{},
+                stdout: stdout,
+                stderr: stdout,
                 pid: -1,
                 kill: () => {
                     console.log('fake shutdown');
-                }
-            })
+                },
+                on: () => process,
+                addListener: () => process,
+                prependListener: () => process,
+                once: () => process,
+                prependOnceListener: () => process,
+                removeListener: () => process,
+                removeAllListeners: () => process,
+                setMaxListeners: () => process,
+                getMaxListeners: () => 0,
+                listeners: () => [],
+                emit: () => false,
+                eventNames: () => [],
+                listenerCount: () => 0
+            };
+            resolve(process);
         });
     }
 

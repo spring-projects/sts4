@@ -52,8 +52,7 @@ export class SpringBootLanguageClient extends JavaProcessLanguageClient {
         let vmargs = [
             // '-Xdebug',
             // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
-            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+            '-Dorg.slf4j.simpleLogger.logFile=boot-java.log'
         ];
         if (!jvm.isJdk()) {
             this.showErrorMessage(

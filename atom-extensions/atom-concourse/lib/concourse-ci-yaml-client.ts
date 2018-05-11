@@ -34,8 +34,7 @@ export class ConcourseCiYamlClient extends JavaProcessLanguageClient {
 
     launchVmArgs(jvm: JVM) {
         return Promise.resolve([
-            '-Dorg.slf4j.simpleLogger.logFile=concourse-ci-yaml.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+            '-Dorg.slf4j.simpleLogger.logFile=concourse-ci-yaml.log'
         ]);
 
     }

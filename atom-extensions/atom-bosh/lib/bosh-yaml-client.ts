@@ -40,8 +40,7 @@ export class BoshYamlClient extends JavaProcessLanguageClient {
 
     launchVmArgs(jvm: JVM): Promise<string[]> {
         return Promise.resolve([
-            '-Dorg.slf4j.simpleLogger.logFile=bosh-yaml.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
+            '-Dorg.slf4j.simpleLogger.logFile=bosh-yaml.log'
         ]);
 
     }
