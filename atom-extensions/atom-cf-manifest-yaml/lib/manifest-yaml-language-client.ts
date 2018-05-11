@@ -10,6 +10,7 @@ export class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
             path.join(__dirname, '..', 'server'),
             'cf-manifest-language-server.jar'
         );
+        // this.DEBUG = true;
     }
 
     getGrammarScopes() {
@@ -34,8 +35,9 @@ export class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
 
     launchVmArgs(jvm: JVM) {
         return Promise.resolve([
+            // '-Xdebug',
+            // '-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n',
             '-Dorg.slf4j.simpleLogger.logFile=manifest-yaml.log',
-            '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug',
         ]);
 
     }
