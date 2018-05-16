@@ -12,6 +12,7 @@
   "dependencies": {
     "@theia/core": "latest",
     "@theia/languages": "latest",
+    "@theia/preferences": "latest",
     "@theia/editor": "latest",
     "@theia/monaco": "latest",
     "@theia/java": "latest",

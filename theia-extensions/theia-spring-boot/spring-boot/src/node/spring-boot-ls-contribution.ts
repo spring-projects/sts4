@@ -56,8 +56,7 @@ export class SpringBootLsContribution extends BaseLanguageServerContribution {
                         '-Dsts.lsp.client=theia',
                         '-Dlsp.completions.indentation.enable=true',
                         '-Dlsp.yaml.completions.errors.disable=true',
-                        '-Dorg.slf4j.simpleLogger.logFile=boot-java.log',
-                        '-Dorg.slf4j.simpleLogger.defaultLogLevel=debug'
+                        '-Dorg.slf4j.simpleLogger.logFile=boot-java.log'
                     ];
 
                     args.push(`-Dserver.port=${env.CLIENT_PORT}`);

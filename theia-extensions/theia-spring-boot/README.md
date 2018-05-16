@@ -32,7 +32,7 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the browser example
 
-Start watching of the hello world extension.
+Start watching of the extension.
 
     cd spring-boot
     yarn watch
@@ -49,7 +49,7 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the Electron example
 
-Start watching of the hello world extension.
+Start watching of extension.
 
     cd spring-boot
     yarn watch
