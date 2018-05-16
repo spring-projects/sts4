@@ -17,7 +17,7 @@ export const BootConfigSchema: PreferenceSchema = {
         'boot-java.boot-hints.on': {
             type: 'boolean',
             description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
-            default: false
+            default: true
         },
         'spring-boot.ls.java.home': {
             type: 'string',
