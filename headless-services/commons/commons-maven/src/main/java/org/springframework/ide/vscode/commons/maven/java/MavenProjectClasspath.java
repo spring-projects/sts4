@@ -11,45 +11,26 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Generated;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
-import org.springframework.ide.vscode.commons.jandex.JandexIndex;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.gson.internal.Streams;
 
 /**
  * Classpath for a maven project

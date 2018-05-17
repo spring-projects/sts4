@@ -11,15 +11,20 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 public class ClasspathFileBasedCache {
+
+	private static final Gson gson = new Gson();
+	private static final Logger log = LoggerFactory.getLogger(ClasspathFileBasedCache.class);
 
 	public static final ClasspathFileBasedCache NULL = new ClasspathFileBasedCache(null);
 
@@ -38,16 +43,15 @@ public class ClasspathFileBasedCache {
 			try {
 				Files.createDirectories(file.getParentFile().toPath());
 				writer = new FileWriter(file);
-				ObjectMapper mapper = new ObjectMapper();
-				mapper.writeValue(writer, data);
+				gson.toJson(data, writer);
 			} catch (IOException e) {
-				Log.log(e);
+				log.error("Failed to write JSON data to " + file, e);
 			} finally {
 				if (writer != null) {
 					try {
 						writer.close();
 					} catch (IOException e) {
-						Log.log(e);
+						log.error("Failed to close file writer for file: " + file, e);
 					}
 				}
 			}
@@ -60,11 +64,20 @@ public class ClasspathFileBasedCache {
 
 	public synchronized ClasspathData load() {
 		if (file != null && file.exists()) {
-			ObjectMapper mapper = new ObjectMapper();
+			FileReader fileReader = null;
 			try {
-				return mapper.readValue(file, ClasspathData.class);
+				fileReader = new FileReader(file);
+				return gson.fromJson(fileReader, ClasspathData.class);
 			} catch (Throwable e) {
-				Log.log(e);
+				log.error("Failed to read JSON data from " + file, e);
+			} finally {
+				if (fileReader != null) {
+					try {
+						fileReader.close();
+					} catch (IOException e) {
+						log.error("Failed to close file reader for file: " + file, e);
+					}
+				}
 			}
 		}
 		return ClasspathData.EMPTY_CLASSPATH_DATA;

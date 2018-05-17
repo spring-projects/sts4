@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.thenLog;
+
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -78,12 +80,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
-import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.*;
 
 /**
  * Abstract base class to implement LanguageServer. Bits and pieces copied from
@@ -185,7 +187,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		if (CODE_ACTION_COMMAND_ID.equals(params.getCommand())) {
 			Assert.isLegal(params.getArguments().size()==2);
 			QuickfixResolveParams quickfixParams = new QuickfixResolveParams(
-					(String)params.getArguments().get(0), params.getArguments().get(1)
+					((JsonPrimitive)params.getArguments().get(0)).getAsString(), params.getArguments().get(1)
 			);
 			return quickfixResolve(quickfixParams)
 			.flatMap((QuickfixEdit edit) -> {

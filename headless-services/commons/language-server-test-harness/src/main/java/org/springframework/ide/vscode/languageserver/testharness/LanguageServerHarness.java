@@ -110,10 +110,11 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import reactor.core.publisher.Mono;
 
@@ -134,6 +135,7 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	private Multimap<String, CompletableFuture<HighlightParams>> highlights = MultimapBuilder.hashKeys().linkedListValues().build();
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 	private List<Editor> activeEditors = new ArrayList<>();
+	private Gson gson = new Gson();
 
 
 	public LanguageServerHarness(Callable<S> factory, LanguageId defaultLanguageId) {
@@ -657,14 +659,14 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 				.collect(Collectors.toList());
 	}
 
-	ObjectMapper mapper = new ObjectMapper();
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void perform(Command command) throws Exception {
 		List<Object> args = command.getArguments();
 		//Note convert the params to a 'typeless' Object because that is more representative on how it will be
 		// received when we get it in a real client/server setting (i.e. parsed from json).
-		List untypedParams = mapper.convertValue(args, List.class);
+		JsonArray jsonArray = gson.toJsonTree(args).getAsJsonArray();
+		List<Object> untypedParams = new ArrayList<>(jsonArray.size());
+		jsonArray.forEach(e -> untypedParams.add(e));
 		getServer().getWorkspaceService()
 			.executeCommand(new ExecuteCommandParams(command.getCommand(), untypedParams))
 			.get();
