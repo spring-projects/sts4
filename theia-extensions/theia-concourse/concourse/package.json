@@ -1,0 +1,36 @@
+{
+  "name": "@theia/concourse",
+  "keywords": [
+    "theia-extension"
+  ],
+  "version": "0.0.0",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@theia/core": "latest",
+    "@theia/languages": "latest",
+    "@pivotal-tools/jvm-launch-utils": "0.0.11",
+    "@types/glob": "^5.0.30",
+    "glob": "^7.1.2"
+  },
+  "devDependencies": {
+    "rimraf": "latest",
+    "typescript": "latest",
+    "download": "^6.2.5"
+  },
+  "scripts": {
+    "prepare": "yarn run clean && yarn run download && yarn run build",
+    "download": "node script.js",
+    "clean": "rimraf lib",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/concourse-frontend-module",
+      "backend": "lib/node/concourse-backend-module"
+    }
+  ]
+}
