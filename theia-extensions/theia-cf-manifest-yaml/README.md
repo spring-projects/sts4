@@ -15,12 +15,12 @@ Install yarn.
 
     npm install -g yarn
     
-## Install dependencies
+## Install dependencies and server JARs
 
 Install dependencies and compile the code.
 
-    yarn
-
+    ./build.sh
+    
 Note: it is also running `yarn rebuild:browser` and `yarn rebuild:electron`, thus one could navigate to the proper folder and launch it
 
 ## Running the browser example

@@ -14,7 +14,7 @@ export class SpringBootLsContribution extends BaseLanguageServerContribution {
     readonly name = SPRING_BOOT_SERVER_NAME;
 
     start(clientConnection: IConnection): void {
-        const serverPath = path.resolve(__dirname, '../../server');
+        const serverPath = path.resolve(__dirname, '../../jars');
         const jarPaths = glob.sync('spring-boot-language-server*.jar', { cwd: serverPath });
         if (jarPaths.length === 0) {
             throw new Error('The Spring Boot server launcher is not found.');
@@ -49,8 +49,12 @@ export class SpringBootLsContribution extends BaseLanguageServerContribution {
 
                     // this.logInfo('logs at ' + path.resolve(workspacePath, '.metadata', '.log'));
                     const env = Object.create(process.env);
-                    env.CLIENT_HOST = server.address().address;
-                    env.CLIENT_PORT = server.address().port;
+                    const addressInfo = server.address();
+                    if (typeof addressInfo === 'string') {
+                        throw new Error(`Address info was string ${addressInfo}`);
+                    }
+                    env.CLIENT_HOST = addressInfo.address;
+                    env.CLIENT_PORT = addressInfo.port;
                     const command = jvm.getJavaExecutable();
                     const args = [
                         '-Dsts.lsp.client=theia',

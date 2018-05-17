@@ -6,7 +6,8 @@
   "version": "0.0.1",
   "files": [
     "lib",
-    "src"
+    "src",
+    "jars"
   ],
   "dependencies": {
     "@theia/core": "latest",
@@ -18,12 +19,10 @@
   },
   "devDependencies": {
     "rimraf": "latest",
-    "typescript": "latest",
-    "download": "^6.2.5"
+    "typescript": "latest"
   },
   "scripts": {
-    "prepare": "yarn run clean && yarn run download && yarn run build",
-    "download": "node script.js",
+    "prepare": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
     "build": "tsc",
     "watch": "tsc -w"

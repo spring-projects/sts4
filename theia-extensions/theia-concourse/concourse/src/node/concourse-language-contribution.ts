@@ -21,7 +21,7 @@ export class ConcourseLanguageContribution extends BaseLanguageServerContributio
     readonly name = CONCOURSE_SERVER_NAME;
 
     start(clientConnection: IConnection): void {
-        const serverPath = path.resolve(__dirname, '../../server');
+        const serverPath = path.resolve(__dirname, '../../jars');
         const jarPaths = glob.sync('concourse-language-server*.jar', { cwd: serverPath });
         if (jarPaths.length === 0) {
             throw new Error('The Concourse YAML server launcher is not found.');
