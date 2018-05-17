@@ -238,9 +238,14 @@ public abstract class ACondition {
 			}
 		}
 	}
-	
+
 	public static boolean inUIThread() {
-		return Display.getDefault().getThread() == Thread.currentThread();
+		try {
+			return Display.getDefault().getThread() == Thread.currentThread();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public static StringBuffer getStackDumps() {
