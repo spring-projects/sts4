@@ -3,21 +3,21 @@ import * as glob from 'glob';
 import { injectable } from 'inversify';
 // import { DEBUG_MODE } from '@theia/core/lib/node';
 import { IConnection, BaseLanguageServerContribution } from '@theia/languages/lib/node';
-import { CONCOURSE_SERVER_ID, CONCOURSE_SERVER_NAME } from '../common';
+import { BOSH_SERVER_ID, BOSH_SERVER_NAME } from '../common';
 import { findJvm } from '@pivotal-tools/jvm-launch-utils';
 
 
 @injectable()
-export class ConcourseLanguageContribution extends BaseLanguageServerContribution {
+export class BoshLanguageContribution extends BaseLanguageServerContribution {
 
-    readonly id = CONCOURSE_SERVER_ID;
-    readonly name = CONCOURSE_SERVER_NAME;
+    readonly id = BOSH_SERVER_ID;
+    readonly name = BOSH_SERVER_NAME;
 
     start(clientConnection: IConnection): void {
         const serverPath = path.resolve(__dirname, '../../jars');
-        const jarPaths = glob.sync('concourse-language-server*.jar', { cwd: serverPath });
+        const jarPaths = glob.sync('bosh-language-server*.jar', { cwd: serverPath });
         if (jarPaths.length === 0) {
-            throw new Error('The Concourse YAML server launcher is not found.');
+            throw new Error(`The ${this.name} server launcher is not found.`);
         }
 
         const jarPath = path.resolve(serverPath, jarPaths[0]);

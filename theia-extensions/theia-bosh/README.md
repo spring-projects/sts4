@@ -1,5 +1,5 @@
-# Concourse Extension for Theia IDE
-Concouse pipelines and task YAML editor support
+# Bosh Extension for Theia IDE
+Bosh deployment YAML editor support
 
 ## Getting started
 
@@ -40,9 +40,9 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the browser example
 
-Start watching of Concourse extension.
+Start watching of the Bosh extension.
 
-    cd concourse
+    cd bosh
     yarn watch
 
 Start watching of the browser example.
@@ -57,9 +57,9 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the Electron example
 
-Start watching of the Concourse extension.
+Start watching of the Bosh extension.
 
-    cd concourse
+    cd bosh
     yarn watch
 
 Start watching of the electron example.
@@ -70,7 +70,7 @@ Start watching of the electron example.
 
 Launch `Start Electron Backend` configuration from VS code.
 
-## Publishing Concourse extension
+## Publishing Bosh extension
 
 Create a npm user and login to the npm registry, [more on npm publishing](https://docs.npmjs.com/getting-started/publishing-npm-packages).
 
