@@ -14,6 +14,25 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+	
+	<properties>
+		<test.argLine></test.argLine>
+	</properties>
+	
+	<profiles>
+		<profile>
+			<id>osx</id>
+			<activation>
+				<property>
+					<name>java.vendor.url</name>
+					<value>http://www.apple.com/</value>
+				</property>
+			</activation>
+			<properties>
+				<test.argLine>-XstartOnFirstThread</test.argLine>
+			</properties>
+		</profile>
+	</profiles>
 
 	<build>
 		<plugins>
@@ -50,6 +69,8 @@
 				<configuration>
 					<forkedProcessTimeoutInSeconds>200</forkedProcessTimeoutInSeconds>
 					<includes>**/*Test.java</includes>
+					<useUIHarness>true</useUIHarness>
+					<argLine>${test.argLine}</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
