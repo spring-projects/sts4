@@ -76,6 +76,7 @@
 					<includes>**/*Test.java</includes>
 					<useUIHarness>true</useUIHarness>
 					<argLine>${test.argLine}</argLine>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 		</plugins>
