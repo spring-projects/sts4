@@ -1,21 +1,16 @@
 {
-  "name": "@theia/spring-boot",
+  "name": "@theia/concourse",
   "keywords": [
     "theia-extension"
   ],
   "version": "0.0.0",
   "files": [
     "lib",
-    "src",
-    "images"
+    "src"
   ],
   "dependencies": {
     "@theia/core": "latest",
     "@theia/languages": "latest",
-    "@theia/preferences": "latest",
-    "@theia/editor": "latest",
-    "@theia/monaco": "latest",
-    "@theia/java": "latest",
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
     "@types/glob": "^5.0.30",
     "glob": "^7.1.2"
@@ -34,8 +29,8 @@
   },
   "theiaExtensions": [
     {
-      "frontend": "lib/browser/spring-boot-frontend-module",
-      "backend": "lib/node/spring-boot-backend-module"
+      "frontend": "lib/browser/concourse-frontend-module",
+      "backend": "lib/node/concourse-backend-module"
     }
   ]
 }

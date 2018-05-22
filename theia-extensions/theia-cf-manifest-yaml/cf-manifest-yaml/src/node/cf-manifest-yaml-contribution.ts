@@ -33,6 +33,7 @@ export class CfManifestYamlContribution extends BaseLanguageServerContribution {
             '-Dsts.lsp.client=theia',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
+            '-Dorg.slf4j.simpleLogger.logFile=cf-manifest-yaml.log'
         ];
     }
 

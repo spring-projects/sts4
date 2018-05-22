@@ -6,9 +6,11 @@ import './monaco-yaml-contribution';
 import './monaco-properties-contribution';
 import { HighlightService } from './highlight-service';
 import { ClasspathService } from './classpath-service';
+import { bindBootPreferences } from './boot-preferences';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here
+    bindBootPreferences(bind);
     bind(LanguageClientContribution).to(SpringBootClientContribution).inSingletonScope();
     bind(HighlightService).toSelf().inSingletonScope();
     bind(ClasspathService).toSelf().inSingletonScope();

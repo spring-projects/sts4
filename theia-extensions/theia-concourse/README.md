@@ -1,5 +1,5 @@
-# Spring Boot Extension
-Spring Boot support extension for Theia IDE
+# Concourse Extension for Theia IDE
+The example of how to build the Theia-based applications with the concourse-extension.
 
 ## Getting started
 
@@ -40,9 +40,9 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the browser example
 
-Start watching of the extension.
+Start watching of the hello world extension.
 
-    cd spring-boot
+    cd concourse-extension
     yarn watch
 
 Start watching of the browser example.
@@ -57,9 +57,9 @@ Open http://localhost:3000 in the browser.
 
 ## Developing with the Electron example
 
-Start watching of extension.
+Start watching of the hello world extension.
 
-    cd spring-boot
+    cd concourse-extension
     yarn watch
 
 Start watching of the electron example.
@@ -70,7 +70,7 @@ Start watching of the electron example.
 
 Launch `Start Electron Backend` configuration from VS code.
 
-## Publishing @theia/spring-boot
+## Publishing concourse-extension
 
 Create a npm user and login to the npm registry, [more on npm publishing](https://docs.npmjs.com/getting-started/publishing-npm-packages).
 

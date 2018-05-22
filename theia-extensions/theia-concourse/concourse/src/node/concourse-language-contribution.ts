@@ -1,27 +1,34 @@
+/*
+ * Copyright (C) 2017 TypeFox and others.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ */
+
 import * as path from 'path';
 import * as glob from 'glob';
 import { injectable } from 'inversify';
 // import { DEBUG_MODE } from '@theia/core/lib/node';
 import { IConnection, BaseLanguageServerContribution } from '@theia/languages/lib/node';
-import { SPRING_BOOT_SERVER_ID, SPRING_BOOT_SERVER_NAME } from '../common';
-import { findJdk } from '@pivotal-tools/jvm-launch-utils';
+import { CONCOURSE_SERVER_ID, CONCOURSE_SERVER_NAME } from '../common';
+import { findJvm } from '@pivotal-tools/jvm-launch-utils';
 
 
 @injectable()
-export class SpringBootLsContribution extends BaseLanguageServerContribution {
+export class ConcourseLanguageContribution extends BaseLanguageServerContribution {
 
-    readonly id = SPRING_BOOT_SERVER_ID;
-    readonly name = SPRING_BOOT_SERVER_NAME;
+    readonly id = CONCOURSE_SERVER_ID;
+    readonly name = CONCOURSE_SERVER_NAME;
 
     start(clientConnection: IConnection): void {
         const serverPath = path.resolve(__dirname, '../../server');
-        const jarPaths = glob.sync('spring-boot-language-server*.jar', { cwd: serverPath });
+        const jarPaths = glob.sync('concourse-language-server*.jar', { cwd: serverPath });
         if (jarPaths.length === 0) {
-            throw new Error('The Spring Boot server launcher is not found.');
+            throw new Error('The Concourse YAML server launcher is not found.');
         }
 
         const jarPath = path.resolve(serverPath, jarPaths[0]);
-        findJdk()
+        findJvm()
             .catch(error => {
                 throw new Error('Error trying to find JVM');
             })
@@ -29,37 +36,26 @@ export class SpringBootLsContribution extends BaseLanguageServerContribution {
                 if (!jvm) {
                     throw new Error("Couldn't locate java in $JAVA_HOME or $PATH");
                 }
-                let version = jvm.getMajorVersion();
-                if (version<1) {
-                    throw new Error(
-                        'No compatible Java Runtime Environment found. The Java Runtime Environment is either below version "1.8" or is missing from the system'
-                    );
-                }
-
-                if (!jvm.isJdk()) {
-                    // TODO: show message that functionality is limited for non-JDK
-                    // this.showErrorMessage(
-                    //     '"Boot-Java" Package Functionality Limited',
-                    //     'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.'
-                    // );
-                }
 
                 this.startSocketServer().then(server => {
                     const socket = this.accept(server);
 
                     // this.logInfo('logs at ' + path.resolve(workspacePath, '.metadata', '.log'));
                     const env = Object.create(process.env);
-                    env.CLIENT_HOST = server.address().address;
-                    env.CLIENT_PORT = server.address().port;
+                    const addressInfo = server.address();
+                    if (typeof addressInfo === 'string') {
+                        throw new Error(`Address info was string ${addressInfo}`);
+                    }
+                    env.CLIENT_HOST = addressInfo.address;
+                    env.CLIENT_PORT = addressInfo.port;
                     const command = jvm.getJavaExecutable();
                     const args = [
                         '-Dsts.lsp.client=theia',
                         '-Dlsp.completions.indentation.enable=true',
                         '-Dlsp.yaml.completions.errors.disable=true',
-                        '-Dorg.slf4j.simpleLogger.logFile=boot-java.log'
+                        '-Dorg.slf4j.simpleLogger.logFile=concourse-yaml.log',
+                        `-Dserver.port=${env.CLIENT_PORT}`
                     ];
-
-                    args.push(`-Dserver.port=${env.CLIENT_PORT}`);
 
                     // if (DEBUG_MODE) {
                     args.push(
