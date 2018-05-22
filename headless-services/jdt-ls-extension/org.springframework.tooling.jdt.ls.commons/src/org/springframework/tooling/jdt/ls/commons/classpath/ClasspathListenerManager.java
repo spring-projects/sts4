@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.function.Supplier;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -20,8 +24,6 @@ import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.tooling.jdt.ls.commons.Logger;
-
-import static org.springframework.tooling.jdt.ls.commons.Logger.*;
 
 /**
  * An instance of this class provides a means to register
@@ -91,14 +93,20 @@ public class ClasspathListenerManager {
 	 * This allows clients to become aware of all classpaths from the start and 
 	 * continually monitor them for changes from that point onward.
 	 */
-	public ClasspathListenerManager(Logger logger, ClasspathListener listener, boolean initialEvent) {
+	public ClasspathListenerManager(Logger logger, ClasspathListener listener, boolean initialEvent, Supplier<Comparator<IProject>> projectSorterFactory) {
 		this.logger = logger;
 		logger.log("Setting up ClasspathListenerManager");
 		this.listener = listener;
 		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
 		if (initialEvent) {
 			logger.log("Sending initial event for all projects ...");
-			for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+			
+			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+			if (projectSorterFactory != null) {
+				Arrays.sort(projects, projectSorterFactory.get());
+			}
+
+			for (IProject p : projects) {
 				logger.log("project "+p.getName() +" ..." );
 				try {
 					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
@@ -116,7 +124,7 @@ public class ClasspathListenerManager {
 	}
 
 	public ClasspathListenerManager(Logger logger, ClasspathListener listener) {
-		this(logger, listener, false);
+		this(logger, listener, false, null);
 	}
 
 	public void dispose() {

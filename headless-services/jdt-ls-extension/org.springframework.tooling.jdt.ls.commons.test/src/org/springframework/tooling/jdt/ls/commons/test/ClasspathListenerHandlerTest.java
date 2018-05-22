@@ -42,8 +42,6 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.springframework.tooling.jdt.ls.commons.Logger;
-import org.springframework.tooling.jdt.ls.commons.Logger.DefaultLogger;
 import org.springframework.tooling.jdt.ls.commons.Logger.TestLogger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;

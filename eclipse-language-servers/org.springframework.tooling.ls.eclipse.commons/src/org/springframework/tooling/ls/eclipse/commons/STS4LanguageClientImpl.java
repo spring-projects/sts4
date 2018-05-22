@@ -50,9 +50,10 @@ import com.google.common.collect.ImmutableMap;
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
 
-	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler(
+	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler (
 			Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance),
-			new LSP4ECommandExecutor()
+			new LSP4ECommandExecutor(),
+			() -> new ProjectSorter()
 	);
 
 	public STS4LanguageClientImpl() {

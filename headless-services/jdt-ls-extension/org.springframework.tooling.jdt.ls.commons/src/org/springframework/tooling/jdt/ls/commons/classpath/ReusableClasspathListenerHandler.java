@@ -12,9 +12,12 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,10 +33,16 @@ public class ReusableClasspathListenerHandler {
 
 	private final ClientCommandExecutor conn;
 	private final Logger logger;
+	private final Supplier<Comparator<IProject>> projectSorterFactory;
 	
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn) {
+		this(logger, conn, null);
+	}
+	
+	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn, Supplier<Comparator<IProject>> projectSorterFactory) {
 		this.conn = conn;
 		this.logger = logger;
+		this.projectSorterFactory = projectSorterFactory;
 		logger.log("Instantiating ReusableClasspathListenerHandler");
 	}
 	
@@ -89,7 +98,7 @@ public class ReusableClasspathListenerHandler {
 				public void classpathChanged(IJavaProject jp) {
 					sendNotification(callbackCommandId, jp);
 				}
-			}, true));
+			}, true, projectSorterFactory));
 			logger.log("subsribers = " + subscribers.keySet());
 		}
 	

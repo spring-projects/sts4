@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  com.google.guava,
  org.eclipse.debug.ui,
  org.eclipse.ui.console,
- org.springframework.tooling.jdt.ls.commons
+ org.springframework.tooling.jdt.ls.commons,
+ org.eclipse.ui.ide
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.tooling.ls.eclipse.commons,
