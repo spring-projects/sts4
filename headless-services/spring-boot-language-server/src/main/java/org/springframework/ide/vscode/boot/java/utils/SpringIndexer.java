@@ -60,6 +60,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -180,8 +181,12 @@ public class SpringIndexer {
 
 	public CompletableFuture<Void> initializeProject(IJavaProject project) {
 		try {
-			InitializeProject initializeItem = new InitializeProject(project);
-			return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+			if (BootProjectUtil.isBootProject(project)) {
+				InitializeProject initializeItem = new InitializeProject(project);
+				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+			} else {
+				return deleteProject(project);
+			}
 		} catch (Throwable  e) {
 			log.error("", e);
 			return Futures.error(e);
