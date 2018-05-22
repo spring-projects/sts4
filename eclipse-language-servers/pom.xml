@@ -188,11 +188,11 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/tools/orbit/downloads/latest-I/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>lsp4j-snapshots</id>
 					<layout>p2</layout>
 					<url>http://services.typefox.io/open-source/jenkins/job/lsp4j/job/master/lastStableBuild/artifact/build/p2-repository/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
