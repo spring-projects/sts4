@@ -36,12 +36,14 @@ public class ClasspathUtil {
 	private static Set<String> getSystemLibraryPaths(IJavaProject javaProject) {
 		try {
 			IClasspathEntry jreContainer = getJreContainer(javaProject.getRawClasspath());
-			IClasspathEntry[] resolvedJreEntries = ((JavaProject)javaProject).resolveClasspath(new IClasspathEntry[] {jreContainer});
-			Set<String> paths = new HashSet<>();
-			for (IClasspathEntry systemEntry : resolvedJreEntries) {
-				paths.add(systemEntry.getPath().toString());
+			if (jreContainer!=null) {
+				IClasspathEntry[] resolvedJreEntries = ((JavaProject)javaProject).resolveClasspath(new IClasspathEntry[] {jreContainer});
+				Set<String> paths = new HashSet<>();
+				for (IClasspathEntry systemEntry : resolvedJreEntries) {
+					paths.add(systemEntry.getPath().toString());
+				}
+				return paths;
 			}
-			return paths;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,10 +51,12 @@ public class ClasspathUtil {
 	}
 	
 	private static IClasspathEntry getJreContainer(IClasspathEntry[] rawClasspath) {
-		for (IClasspathEntry cpe : rawClasspath) {
-			if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {
-				if (cpe.getPath().segment(0).equals(JRE_CONTAINER_ID)) {
-					return cpe;
+		if (rawClasspath!=null) {
+			for (IClasspathEntry cpe : rawClasspath) {
+				if (cpe.getEntryKind()==IClasspathEntry.CPE_CONTAINER) {
+					if (cpe.getPath().segment(0).equals(JRE_CONTAINER_ID)) {
+						return cpe;
+					}
 				}
 			}
 		}
