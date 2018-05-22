@@ -114,6 +114,24 @@ public class ClasspathListenerHandlerTest {
 		});
 	}
 
+	@Test public void sourceJar() throws Exception {
+		String projectName = "maven-with-jar-dependency";
+		IProject project = createTestProject(projectName);
+		File loc = project.getLocation().toFile();
+
+		service.addClasspathListener(classpaths.commandId);
+		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
+			Classpath cp = classpaths.getFor(loc).classpath;
+			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()>=1); //has source entries
+			CPE dependency = cp.getEntries().stream()
+				.filter(Classpath::isBinary)
+				.filter(cpe -> new File(cpe.getPath()).getName().startsWith("commons-io"))
+				.findFirst().get();
+			assertClasspath(cp, dependency!=null);
+			assertTrue(new File(dependency.getSourceContainerUrl().toURI()).exists());
+		});
+	}
+
 	///////////// harness stuff below ///////////////////////////////////////////////
 
 	@Rule public TemporaryFolder tmp = new TemporaryFolder();

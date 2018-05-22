@@ -79,6 +79,15 @@ public class ClasspathUtil {
 					if (systemLibs.contains(path)) {
 						cpe.setSystem(true);
 					}
+					IPath sp = entry.getSourceAttachmentPath();
+					if (sp!=null) {
+						cpe.setSourceContainerUrl(sp.toFile().toURI().toURL());
+						//TODO:
+//	 					IPath srp = entry.getSourceAttachmentRootPath();
+//	 					if (srp!=null) {
+//	 						
+//	 					}
+					}
 					cpEntries.add(cpe);
 					break;
 				}

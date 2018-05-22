@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.JavaProject;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -180,11 +185,28 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	private void logEvent(String type, JavaProject project) {
 		try {
 			log.info("Project "+type+": " + project.getLocationUri());
-			log.info("Classpath has "+project.getClasspath().getClasspathEntries().size()+" entries");
+			log.info("Classpath has "+project.getClasspath().getClasspathEntries().size()+" entries "
+					+countSourceAttachments(project.getClasspath().getClasspathEntries()) + " source attachements");
 		} catch (Exception e) {
 		}
 	}
 	
+	private static int countSourceAttachments(Collection<CPE> classpathEntries) {
+		int count = 0;
+		for (CPE cpe : classpathEntries) {
+			URL sourceJar = cpe.getSourceContainerUrl();
+			if (sourceJar!=null) {
+				try {
+					if (new File(sourceJar.toURI()).exists()) {
+						count++;
+					}
+				} catch (URISyntaxException e) {
+				}
+			}
+		}
+		return count;
+	}
+
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		String uri = UriUtil.normalize(doc.getUri());

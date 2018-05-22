@@ -58,6 +58,11 @@
 								<id>org.eclipse.rcp</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
+							<requirement>
+								<type>eclipse-feature</type>
+								<id>org.eclipse.m2e.feature</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>
