@@ -23,10 +23,12 @@ if [ "$dist_type" != release ]; then
     qualified_version=${base_version}-${timestamp}
     npm version ${qualified_version}
     cd "$sources"/browser-app
+    pwd
     tmp=$(mktemp)
     jq ".dependencies.@theia/${server_id} = ${qualified_version}" package.json > "$tmp" && mv "$tmp" package.json
     npm version ${qualified_version}
     cd "$sources"/electron-app
+    pwd
     tmp=$(mktemp)
     jq ".dependencies.@theia/${server_id} = ${qualified_version}" package.json > "$tmp" && mv "$tmp" package.json
     npm version ${qualified_version}
