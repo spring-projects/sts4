@@ -2,11 +2,13 @@
 
 update_package_json() {
     echo "Folder ${1}"
-    echo "Server id ${1}"
-    echo "Extension id ${1}"
+    echo "Server id ${2}"
+    echo "Extension id ${3}"
     cd $1
     tmp=$(mktemp)
-    jq ".dependencies.@theia/${2} = ${3}" package.json > "$tmp" && mv "$tmp" package.json
+    jq_cmd=".dependencies[\"@theia/${2}\"] = ${3}"
+    echo "Command=${jq_cmd}"
+    jq "${jq_cmd}" package.json > "$tmp" && mv "$tmp" package.json
     npm version $3
 }
 
