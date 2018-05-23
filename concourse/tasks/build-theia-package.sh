@@ -13,7 +13,7 @@ else
    echo "!!!This may slow down the build!!!"
 fi
 
-cd "$sxt_folder"
+cd "$ext_folder"
 
 timestamp=`date -u +%Y%m%d%H%M`
 
