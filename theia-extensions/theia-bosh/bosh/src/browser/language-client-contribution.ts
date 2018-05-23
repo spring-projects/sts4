@@ -1,48 +1,27 @@
-import { injectable, inject, postConstruct } from 'inversify';
-import { BaseLanguageClientContribution, Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
-import { NotificationType } from 'vscode-jsonrpc';
-import { DidChangeConfigurationParams } from 'vscode-base-languageclient/lib/base';
+import { injectable, inject } from 'inversify';
+import { Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
+import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
 import {
     BOSH_DEPLOYMENT_YAML_LANGUAGE_ID,
     BOSH_CLOUDCONFIG_YAML_LANGUAGE_ID,
     BOSH_SERVER_ID,
     BOSH_SERVER_NAME
 } from '../common';
-import { BoshPreferences } from './bosh-preferences';
-import { Utils } from './utils';
-
-const CONFIG_CHANGED_NOTIFICATION_TYPE = new NotificationType<DidChangeConfigurationParams,void>('workspace/didChangeConfiguration');
+import { BoshConfiguration, BoshPreferences } from './bosh-preferences';
 
 @injectable()
-export class BoshClientContribution extends BaseLanguageClientContribution {
+export class BoshClientContribution extends StsLanguageClientContribution<BoshConfiguration> {
 
     readonly id = BOSH_SERVER_ID;
     readonly name = BOSH_SERVER_NAME;
 
     constructor(
-        @inject(Workspace) protected readonly workspace: Workspace,
-        @inject(Languages) protected readonly languages: Languages,
-        @inject(LanguageClientFactory) protected readonly languageClientFactory: LanguageClientFactory,
+        @inject(Workspace) workspace: Workspace,
+        @inject(Languages) languages: Languages,
+        @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
         @inject(BoshPreferences) protected readonly preferences: BoshPreferences
     ) {
         super(workspace, languages, languageClientFactory);
-    }
-
-    @postConstruct()
-    protected async init() {
-        await this.preferences.ready;
-        // Send settings to LS
-        this.sendConfig();
-        this.preferences.onPreferenceChanged(() => this.sendConfig());
-    }
-
-    private sendConfig() {
-        return this.languageClient.then(client => {
-            const params = Utils.convertDotToNested(Object.assign({}, this.preferences));
-            return client.sendNotification(CONFIG_CHANGED_NOTIFICATION_TYPE, {
-                settings: params
-            });
-        })
     }
 
     protected get documentSelector() {
