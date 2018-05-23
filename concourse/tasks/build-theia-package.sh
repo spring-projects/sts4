@@ -20,7 +20,9 @@ timestamp=`date -u +%Y%m%d%H%M`
 base_version=`jq -r .version package.json`
 if [ "$dist_type" != release ]; then
     # for snapshot build, work the timestamp into package.json version qualifier
+    echo "Building Snapshot"
     qualified_version=${base_version}-${timestamp}
+    echo "Version: ${qualified_version}"
     npm version ${qualified_version}
     cd "$sources"/browser-app
     pwd
