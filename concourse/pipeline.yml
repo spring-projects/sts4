@@ -1143,9 +1143,6 @@ groups:
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
   - build-spring-boot-atom-package
-- name: theia-snapshots
-  jobs:
-  - build-concourse-theia-snapshot
 - name: atom-release
   jobs:
   - atom-language-servers-test
@@ -1160,6 +1157,9 @@ groups:
   - promote-fatjars-to-rc
   - tag-atom-release
   - publish-atom-releases
+- name: theia-snapshots
+  jobs:
+  - build-concourse-theia-snapshot
 - name: setup
   jobs:
   - build-mvn-cache

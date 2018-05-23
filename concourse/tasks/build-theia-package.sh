@@ -22,6 +22,9 @@ if [ "$dist_type" != release ]; then
     # for snapshot build, work the timestamp into package.json version qualifier
     qualified_version=${base_version}-${timestamp}
     npm version ${qualified_version}
+    cd "$sources"/browser-app
+    npm version ${qualified_version}
+    cd "$sources"/electron-app
     echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 else
     echo -e "\n\n*Version: ${base_version}-RELEASE*" >> README.md
