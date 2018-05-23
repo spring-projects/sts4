@@ -402,7 +402,7 @@ jobs:
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
   - put: s3-concourse-theia-snapshot
     params: 
-      file: out/theia-concourse-*.tar
+      file: out/theia-concourse-*.tgz
       acl: public-read
 - name: promote-fatjars-to-rc
   serial: true
