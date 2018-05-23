@@ -1,0 +1,37 @@
+{
+  "name": "@pivotal-tools/theia-languageclient",
+  "version": "0.0.1",
+  "description": "Theia IDE language client for STS4 language servers",
+  "repository": "https://github.com/spring-projects/sts4",
+  "license": "MIT",
+  "keywords": [
+    "theia-extension"
+  ],
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@pivotal-tools/jvm-launch-utils": "0.0.11",
+    "@theia/core": "latest",
+    "@theia/editor": "latest",
+    "@theia/languages": "latest",
+    "@types/glob": "^5.0.30",
+    "glob": "^7.1.2"
+  },
+  "devDependencies": {
+    "rimraf": "latest",
+    "typescript": "latest"
+  },
+  "scripts": {
+    "prepublish": "yarn run clean && yarn run build",
+    "clean": "rimraf lib",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/language-client-frontend-module"
+    }
+  ]
+}

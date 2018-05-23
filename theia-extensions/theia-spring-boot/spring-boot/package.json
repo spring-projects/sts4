@@ -17,9 +17,8 @@
     "@theia/editor": "latest",
     "@theia/monaco": "latest",
     "@theia/java": "latest",
-    "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "@types/glob": "^5.0.30",
-    "glob": "^7.1.2"
+    "@pivotal-tools/theia-languageclient": "0.0.1",
+    "@pivotal-tools/jvm-launch-utils": "0.0.11"
   },
   "devDependencies": {
     "rimraf": "latest",

@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "strict": false,
+        "declaration": true,
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "emitDecoratorMetadata": true,

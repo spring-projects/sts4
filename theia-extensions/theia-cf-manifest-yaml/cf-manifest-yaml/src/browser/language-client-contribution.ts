@@ -1,17 +1,18 @@
-import { injectable, inject } from 'inversify';
-import { BaseLanguageClientContribution, Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
+import { inject, injectable } from 'inversify';
+import { Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import { CF_MANIFEST_YAML_LANGUAGE_ID, CF_MANIFEST_YAML_LANGUAGE_NAME } from '../common';
+import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
 
 @injectable()
-export class CfManifestYamlClientContribution extends BaseLanguageClientContribution {
+export class CfManifestYamlClientContribution extends StsLanguageClientContribution<null> {
 
     readonly id = CF_MANIFEST_YAML_LANGUAGE_ID;
     readonly name = CF_MANIFEST_YAML_LANGUAGE_NAME;
 
     constructor(
-        @inject(Workspace) protected readonly workspace: Workspace,
-        @inject(Languages) protected readonly languages: Languages,
-        @inject(LanguageClientFactory) protected readonly languageClientFactory: LanguageClientFactory,
+        @inject(Workspace) workspace: Workspace,
+        @inject(Languages) languages: Languages,
+        @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
     ) {
         super(workspace, languages, languageClientFactory);
     }

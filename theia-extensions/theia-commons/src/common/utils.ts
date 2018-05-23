@@ -24,4 +24,5 @@ export class Utils {
         });
         return result;
     }
+
 }

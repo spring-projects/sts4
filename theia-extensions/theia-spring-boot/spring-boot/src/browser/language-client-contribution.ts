@@ -1,5 +1,5 @@
-import { injectable, inject, postConstruct } from 'inversify';
-import { BaseLanguageClientContribution, Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
+import { injectable, inject } from 'inversify';
+import { Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import {
     SPRING_BOOT_SERVER_ID,
     SPRING_BOOT_SERVER_NAME,
@@ -9,25 +9,21 @@ import {
 import { DocumentSelector } from '@theia/languages/lib/common';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
 import { HighlightService} from './highlight-service';
-import { ClasspathService } from './classpath-service';
-import { BootPreferences } from './boot-preferences';
-import { NotificationType } from 'vscode-jsonrpc';
-import { DidChangeConfigurationParams } from 'vscode-base-languageclient/lib/base';
-import { Utils } from './utils';
-
-const CONFIG_CHANGED_NOTIFICATION_TYPE = new NotificationType<DidChangeConfigurationParams,void>('workspace/didChangeConfiguration');
+import { BootConfiguration, BootPreferences } from './boot-preferences';
+import { StsLanguageClientContribution } from "@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution";
+import { ClasspathService } from '@pivotal-tools/theia-languageclient/lib/browser/classpath-service';
 
 
 @injectable()
-export class SpringBootClientContribution extends BaseLanguageClientContribution {
+export class SpringBootClientContribution extends StsLanguageClientContribution<BootConfiguration> {
 
     readonly id = SPRING_BOOT_SERVER_ID;
     readonly name = SPRING_BOOT_SERVER_NAME;
 
     constructor(
-        @inject(Workspace) protected readonly workspace: Workspace,
-        @inject(Languages) protected readonly languages: Languages,
-        @inject(LanguageClientFactory) protected readonly languageClientFactory: LanguageClientFactory,
+        @inject(Workspace) workspace: Workspace,
+        @inject(Languages) languages: Languages,
+        @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
         @inject(HighlightService) protected readonly highlightService: HighlightService,
         @inject(ClasspathService) protected readonly classpathService: ClasspathService,
         @inject(BootPreferences) protected readonly preferences: BootPreferences
@@ -35,27 +31,12 @@ export class SpringBootClientContribution extends BaseLanguageClientContribution
         super(workspace, languages, languageClientFactory);
     }
 
-    @postConstruct()
-    protected async init() {
-        await this.preferences.ready;
-
-        // Send settings to LS
-        this.sendConfig();
-        this.preferences.onPreferenceChanged(() => this.sendConfig());
-
+    protected attachMessageHandlers() {
+        super.attachMessageHandlers();
         this.languageClient.then(client => {
             this.highlightService.attach(client);
             // this.classpathService.attach(client);
         });
-    }
-
-    private sendConfig() {
-        return this.languageClient.then(client => {
-            const params = Utils.convertDotToNested(Object.assign({}, this.preferences));
-            return client.sendNotification(CONFIG_CHANGED_NOTIFICATION_TYPE, {
-                settings: params
-            });
-        })
     }
 
     protected get documentSelector(): DocumentSelector | undefined {
