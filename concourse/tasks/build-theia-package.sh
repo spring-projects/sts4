@@ -1,13 +1,9 @@
 #!/bin/bash
 
 update_package_json() {
-    echo "Folder ${1}"
-    echo "Server id ${2}"
-    echo "Extension id ${3}"
     cd $1
     tmp=$(mktemp)
     jq_cmd=".dependencies[\"@theia/${2}\"] = \"${3}\""
-    echo "Command=${jq_cmd}"
     jq "${jq_cmd}" package.json > "$tmp" && mv "$tmp" package.json
     npm version $3
 }
@@ -38,7 +34,8 @@ echo "Version: ${qualified_version}"
 npm version ${qualified_version}
 update_package_json "$sources"/browser-app $server_id $qualified_version
 update_package_json "$sources"/electron-app $server_id $qualified_version
-cd "$sources"
+
+cd "$ext_sources"
 echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 
 cd "$sources"
@@ -46,5 +43,5 @@ cd "$sources"
 cd "$ext_folder"
 yarn pack
 
-cp *.tar $workdir/out
+cp *.tgz $workdir/out
 
