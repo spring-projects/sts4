@@ -36,6 +36,7 @@ if [ "$dist_type" != release ]; then
     npm version ${qualified_version}
     echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 else
+    echo "Building Release"
     echo -e "\n\n*Version: ${base_version}-RELEASE*" >> README.md
 fi
 
