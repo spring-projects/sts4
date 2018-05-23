@@ -1,4 +1,15 @@
 #!/bin/bash
+
+update_package_json() {
+    echo "Folder ${1}"
+    echo "Server id ${1}"
+    echo "Extension id ${1}"
+    cd $1
+    tmp=$(mktemp)
+    jq ".dependencies.@theia/${2} = ${3}" package.json > "$tmp" && mv "$tmp" package.json
+    npm version $3
+}
+
 set -e
 workdir=`pwd`
 sources=$workdir/sts4/theia-extensions/$extension_id
@@ -18,45 +29,20 @@ cd "$ext_folder"
 timestamp=`date -u +%Y%m%d%H%M`
 
 base_version=`jq -r .version package.json`
-if [ "$dist_type" != release ]; then
-    # for snapshot build, work the timestamp into package.json version qualifier
-    echo "Building Snapshot"
-    qualified_version=${base_version}-${timestamp}
-    echo "Version: ${qualified_version}"
-    npm version ${qualified_version}
-    cd "$sources"/browser-app
-    pwd
-    tmp=$(mktemp)
-    jq ".dependencies.@theia/${server_id} = ${qualified_version}" package.json > "$tmp" && mv "$tmp" package.json
-    npm version ${qualified_version}
-    cd "$sources"/electron-app
-    pwd
-    tmp=$(mktemp)
-    jq ".dependencies.@theia/${server_id} = ${qualified_version}" package.json > "$tmp" && mv "$tmp" package.json
-    npm version ${qualified_version}
-    echo -e "\n\n*Version: ${qualified_version}*" >> README.md
-else
-    echo "Building Release"
-    echo -e "\n\n*Version: ${base_version}-RELEASE*" >> README.md
-fi
+
+# for snapshot build, work the timestamp into package.json version qualifier
+qualified_version=${base_version}-${timestamp}
+echo "Version: ${qualified_version}"
+npm version ${qualified_version}
+update_package_json "$sources"/browser-app $server_id $qualified_version
+update_package_json "$sources"/electron-app $server_id $qualified_version
+cd "$sources"
+echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 
 cd "$sources"
 ./build.sh
 cd "$ext_folder"
 yarn pack
 
-# for release build we don't don't add version-qualifier to package.json
-# So we must instead rename the file ourself to add a qualifier
-if [ "$dist_type" == release ]; then
-    tar_file=`ls *.tar`
-    release_name=`git tag --points-at HEAD | grep ${extension_id}`
-    echo "release_name=$release_name"
-    if [ -z "$release_name" ]; then
-        echo "Release Candidates must be tagged" >&2
-        exit 1
-    else
-        mv $tar_file ${release_name}.tar
-    fi
-fi
-
 cp *.tar $workdir/out
+
