@@ -115,7 +115,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-concourse-(.*).tgz
+    regexp: sts4/theia-extensions/snapshots/theia-concourse-v(.*).tgz
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
