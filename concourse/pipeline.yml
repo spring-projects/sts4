@@ -108,6 +108,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
+- name: s3-concourse-theia-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/theia-extensions/snapshots/theia-concourse-(.*).tar
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
@@ -377,6 +385,25 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
+- name: build-concourse-theia-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-consourse-theia-snapshot
+    file: sts4/concourse/tasks/build-theia-package.yml
+    params:
+      extension_id: theia-concourse
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-concourse-theia-snapshot
+    params: 
+      file: out/theia-concourse-*.tar
+      acl: public-read
 - name: promote-fatjars-to-rc
   serial: true
   plan:
@@ -1116,6 +1143,9 @@ groups:
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
   - build-spring-boot-atom-package
+- name: theia-snapshots
+  jobs:
+  - build-concourse-theia-snapshot
 - name: atom-release
   jobs:
   - atom-language-servers-test
