@@ -6,7 +6,7 @@ update_package_json() {
     echo "Extension id ${3}"
     cd $1
     tmp=$(mktemp)
-    jq_cmd=".dependencies[\"@theia/${2}\"] = ${3}"
+    jq_cmd=".dependencies[\"@theia/${2}\"] = \"${3}\""
     echo "Command=${jq_cmd}"
     jq "${jq_cmd}" package.json > "$tmp" && mv "$tmp" package.json
     npm version $3
