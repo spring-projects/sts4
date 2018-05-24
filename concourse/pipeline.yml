@@ -108,6 +108,22 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
+- name: s3-bosh-theia-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/theia-extensions/snapshots/theia-bosh-v(.*).tgz
+- name: s3-cf-manifest-yaml-theia-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/theia-extensions/snapshots/theia-cf-manifest-yaml-v(.*).tgz
 - name: s3-concourse-theia-snapshot
   type: s3
   source:
@@ -116,6 +132,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/theia-extensions/snapshots/theia-concourse-v(.*).tgz
+- name: s3-spring-boot-theia-snapshot
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/theia-extensions/snapshots/theia-spring-boot-v(.*).tgz
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
@@ -385,6 +409,44 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
+- name: build-bosh-theia-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-bosh-theia-snapshot
+    file: sts4/concourse/tasks/build-theia-package.yml
+    params:
+      extension_id: theia-bosh
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-bosh-theia-snapshot
+    params: 
+      file: out/theia-bosh-*.tgz
+      acl: public-read
+- name: build-cf-manifest-yaml-theia-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-cf-manifest-yaml-theia-snapshot
+    file: sts4/concourse/tasks/build-theia-package.yml
+    params:
+      extension_id: theia-cf-manifest-yaml
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-cf-manifest-yaml-theia-snapshot
+    params: 
+      file: out/theia-cf-manifest-yaml-*.tgz
+      acl: public-read
 - name: build-concourse-theia-snapshot
   plan:
   - aggregate:
@@ -403,6 +465,25 @@ jobs:
   - put: s3-concourse-theia-snapshot
     params: 
       file: out/theia-concourse-*.tgz
+      acl: public-read
+- name: build-spring-boot-theia-snapshot
+  plan:
+  - aggregate:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-spring-boot-theia-snapshot
+    file: sts4/concourse/tasks/build-theia-package.yml
+    params:
+      extension_id: theia-spring-boot
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - put: s3-spring-boot-theia-snapshot
+    params: 
+      file: out/theia-spring-boot-*.tgz
       acl: public-read
 - name: promote-fatjars-to-rc
   serial: true
@@ -1159,7 +1240,10 @@ groups:
   - publish-atom-releases
 - name: theia-snapshots
   jobs:
+  - build-bosh-theia-snapshot
+  - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
+  - build-spring-boot-theia-snapshot
 - name: setup
   jobs:
   - build-mvn-cache
