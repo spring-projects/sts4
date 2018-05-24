@@ -32,8 +32,4 @@
 		<category name="deps"/>
 	</bundle>
 
-	<bundle id="com.google.gson">
-		<category name="deps"/>
-	</bundle>
-
 </site>

@@ -72,10 +72,6 @@
 		<category name="deps"/>
 	</bundle>
 
-	<bundle id="com.google.gson">
-		<category name="deps"/>
-	</bundle>
-
 	<bundle id="org.jcodings">
 		<category name="deps"/>
 	</bundle>
