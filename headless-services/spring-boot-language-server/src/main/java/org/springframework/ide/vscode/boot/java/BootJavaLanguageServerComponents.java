@@ -18,6 +18,8 @@ import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -86,6 +88,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	
 	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA);
 	
+	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
+	
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
@@ -141,8 +145,12 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //			if (testHightlighter != null) {
 //				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
 //			} else {
+			try {
 				liveHoverWatchdog.watchDocument(doc.getUri());
 				liveHoverWatchdog.update(doc.getUri(), null);
+			} catch (Throwable t) {
+				log.error("", t);
+			}
 //			}
 		});
 
