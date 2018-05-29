@@ -102,9 +102,9 @@
   version "0.0.11"
   resolved "https://registry.yarnpkg.com/@pivotal-tools/jvm-launch-utils/-/jvm-launch-utils-0.0.11.tgz#11e8cc4850aa16a91c7579a8e3ed2a071acc36ba"
 
-"@pivotal-tools/theia-languageclient@0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.1.tgz#5cbc35776657aa705adc3fb126c07e4f712f4c74"
+"@pivotal-tools/theia-languageclient@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.2.tgz#99656061834085b6fca3628cff798e20a13e104b"
   dependencies:
     "@pivotal-tools/jvm-launch-utils" "0.0.11"
     "@theia/core" latest

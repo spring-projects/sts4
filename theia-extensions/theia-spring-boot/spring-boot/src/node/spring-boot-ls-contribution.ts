@@ -9,6 +9,7 @@ export class SpringBootLsContribution extends StsLanguageServerContribution {
 
     readonly id = SPRING_BOOT_SERVER_ID;
     readonly name = SPRING_BOOT_SERVER_NAME;
+    protected readonly preferJdk = true;
     protected readonly lsJarContainerFolder = path.resolve(__dirname, '../../jars');
     protected readonly lsJarGlob = 'spring-boot-language-server*.jar';
     protected readonly jvmArguments = [

@@ -5,7 +5,6 @@ import { DEBUG_MODE } from '@theia/core/lib/node';
 import { IConnection, BaseLanguageServerContribution } from '@theia/languages/lib/node';
 import {findJdk, findJvm, JVM} from '@pivotal-tools/jvm-launch-utils';
 
-
 @injectable()
 export abstract class StsLanguageServerContribution extends BaseLanguageServerContribution {
 
@@ -68,6 +67,11 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
                         `-Dserver.port=${env.CLIENT_PORT}`
                     ];
 
+                    let toolsJar = jvm.getToolsJar();
+                    if (toolsJar) {
+                        args.push("-Dloader.path="+toolsJar);
+                    }
+
                     args.push(...this.jvmArguments);
 
                     if (DEBUG_MODE) {
@@ -84,9 +88,11 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
 
                     this.createProcessSocketConnection(socket, socket, command, args, { env })
                         .then(serverConnection => this.forward(clientConnection, serverConnection));
+
                 });
 
             });
 
     }
+
 }
