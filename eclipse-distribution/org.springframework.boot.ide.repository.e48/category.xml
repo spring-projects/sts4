@@ -172,34 +172,34 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
-    <bundle id="bcpkix" version="0.0.0"/>
+    <bundle id="bcpkix" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcpkix.source" version="0.0.0"/>
+    <bundle id="bcpkix.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcprov" version="0.0.0"/>
+    <bundle id="bcprov" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcprov.source" version="0.0.0"/>
+    <bundle id="bcprov.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="com.hierynomus.sshj" version="0.0.0"/>
+    <bundle id="com.hierynomus.sshj" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="com.hierynomus.sshj.source" version="0.0.0"/>
+    <bundle id="com.hierynomus.sshj.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="com.jcraft.jzlib" version="0.0.0"/>
+    <bundle id="com.jcraft.jzlib" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="com.jcraft.jzlib.source" version="0.0.0"/>
+    <bundle id="com.jcraft.jzlib.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="net.i2p.crypto.eddsa" version="0.0.0"/>
+    <bundle id="net.i2p.crypto.eddsa" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0"/>
+    <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
 
