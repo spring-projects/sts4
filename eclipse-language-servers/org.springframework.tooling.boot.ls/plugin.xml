@@ -14,7 +14,7 @@
             contentType="org.eclipse.jdt.core.javaSource"
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
-<!--      <contentTypeMapping
+      <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties">
@@ -23,9 +23,9 @@
             contentType="org.springframework.boot.ide.properties.application.yml"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties-yaml">
-      </contentTypeMapping> -->
+      </contentTypeMapping>
    </extension>
-<!--   
+
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
@@ -53,7 +53,7 @@
             file-names="application.yml,bootstrap.yml,application-dev.yml">
       </file-association>
    </extension>
--->
+
    <extension
          id="springbootjava-completion-computer"
          point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
@@ -133,7 +133,7 @@
       </command>
    </extension>
    
-<!--
+
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
@@ -153,7 +153,7 @@
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
-            class="org.springframework.tooling.boot.ls.SpringPropertiesPresentationReconciler"
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.properties.application.properties">
       </presentationReconciler>
    </extension>
@@ -177,6 +177,18 @@
             scopeName="source.yaml">
       </scopeNameContentTypeBinding>
    </extension>
--->
+
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <grammar
+      		scopeName="source.java-properties"
+            path="./syntaxes/JavaProperties.tmLanguage" >
+      </grammar>      
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.properties.application.properties"
+            scopeName="source.java-properties">
+      </scopeNameContentTypeBinding>
+   </extension>
+
 
 </plugin>
