@@ -57,7 +57,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	);
 
 	public STS4LanguageClientImpl() {
-		System.out.println("Instantiatin STS4LanguageClientImpl");
 	}
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";

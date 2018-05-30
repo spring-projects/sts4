@@ -10,12 +10,34 @@ import { workspace, TextDocument } from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 
+import {generate_pipeline, UserQuestioner} from '@pivotal-tools/pipeline-builder';
+
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
+
+    context.subscriptions.push(VSCode.commands.registerCommand('springboot.generate-concourse-pipeline', () => {
+        let q = (property, defaultValue) => {
+            defaultValue = defaultValue || '';
+            return ;
+        }
+        let projectRoot = VSCode.workspace.rootPath;
+        if (projectRoot) {
+            return generate_pipeline(projectRoot, (property, defaultValue) => 
+                new Promise<string>((resolve, reject) => {
+                    VSCode.window.showInputBox({
+                        prompt: `Enter '${property}': `,
+                        value: defaultValue,
+                        valueSelection: [0, defaultValue.length]
+                    }).then(resolve, reject);
+                })
+            );
+        }
+    }));
+
     let options : commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
