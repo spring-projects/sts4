@@ -122,7 +122,7 @@ public class TypeUtil {
 	}
 
 	private IJavaProject javaProject;
-
+	
 	public TypeUtil(IJavaProject jp) {
 		//Note javaProject is allowed to be null, but only in unit testing context
 		// (This is so some tests can be run without an explicit jp needing to be created)
@@ -313,10 +313,10 @@ public class TypeUtil {
 					type.getFields().filter(f -> f.isEnumConstant()).forEach(f -> {
 						String rawName = f.getElementName();
 						if (addOriginal) {
-							enums.add(StsValueHint.create(rawName, f));
+							enums.add(StsValueHint.create(rawName, javaProject, f));
 						}
 						if (addLowerCased) {
-							enums.add(StsValueHint.create(StringUtil.upperCaseToHyphens(rawName), f));
+							enums.add(StsValueHint.create(StringUtil.upperCaseToHyphens(rawName), javaProject, f));
 						}
 					});
 					return enums.build();

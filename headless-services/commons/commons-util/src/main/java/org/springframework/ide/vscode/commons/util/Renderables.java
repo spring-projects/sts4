@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,6 +63,21 @@ public class Renderables {
 		return htmlBlob(buffer -> buffer.raw(html));
 	}
 	
+	public static Renderable mdBlob(String md) {
+		return new Renderable() {
+			
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				buffer.append(md);
+			}
+			
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				throw new UnsupportedOperationException("Not implemented");
+			}
+		};
+	}
+	
 	public static Renderable concat(Renderable... pieces) {
 		return concat(ImmutableList.copyOf(pieces));
 	}
@@ -92,6 +107,25 @@ public class Renderables {
 				buffer.raw("<i>");
 				text.renderAsHtml(buffer);
 				buffer.raw("</i>");
+			}
+		};
+	}
+	
+	public static Renderable inlineSnippet(Renderable text) {
+		return new Renderable() {
+
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				buffer.append("`");
+				text.renderAsMarkdown(buffer);
+				buffer.append("`");
+			}
+
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				buffer.raw("<pre>");
+				text.renderAsHtml(buffer);
+				buffer.raw("</pre>");
 			}
 		};
 	}

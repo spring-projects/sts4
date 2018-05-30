@@ -20,10 +20,10 @@ import org.springframework.ide.vscode.commons.java.IMemberValuePair;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class AnnotationImpl implements IAnnotation {
-	
+
 	private AnnotationInstance annotation;
 	private IJavadocProvider javadocProvider;
-	
+
 	AnnotationImpl(AnnotationInstance annotation, IJavadocProvider javadocProvider) {
 		this.annotation = annotation;
 		this.javadocProvider = javadocProvider;
@@ -50,7 +50,7 @@ public class AnnotationImpl implements IAnnotation {
 			return Wrappers.wrap(av);
 		});
 	}
-	
+
 	@Override
 	public String toString() {
 		return annotation.toString();
@@ -67,6 +67,11 @@ public class AnnotationImpl implements IAnnotation {
 			return annotation.toString().equals(((AnnotationImpl)obj).annotation.toString());
 		}
 		return super.equals(obj);
+	}
+
+	@Override
+	public String getBindingKey() {
+		return BindingKeyUtils.getBindingKey(annotation);
 	}
 
 }

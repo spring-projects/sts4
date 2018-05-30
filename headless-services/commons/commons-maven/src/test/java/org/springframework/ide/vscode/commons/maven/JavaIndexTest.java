@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -33,7 +34,6 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -41,12 +41,10 @@ import com.google.common.cache.LoadingCache;
 
 import reactor.util.function.Tuple2;
 
-import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.*;
-
 public class JavaIndexTest {
-	
+
 	private static BasicFileObserver fileObserver = new BasicFileObserver();
-	
+
 	private static LoadingCache<String, MavenJavaProject> mavenProjectsCache = CacheBuilder.newBuilder().build(new CacheLoader<String, MavenJavaProject>() {
 
 		@Override
@@ -55,93 +53,100 @@ public class JavaIndexTest {
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
 		}
-		
+
 	});
-	
+
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
-		List<Tuple2<IType, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
-				.fuzzySearchTypes("util.Map", null)
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		List<Tuple2<IType, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", null)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
-		assertEquals("java.util.Map", results.get(0).getT1().getFullyQualifiedName());
+		IType type = results.get(0).getT1();
+		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
+		assertEquals("java.util.Map", type.getFullyQualifiedName());
 	}
-	
+
 	@Test
 	public void fuzzySearchWithFilter() throws Exception {
-		List<Tuple2<IType, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		List<Tuple2<IType, Double>> results =  project.getIndex()
 				.fuzzySearchTypes("util.Map", (type) -> Flags.isPrivate(type.getFlags()))
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
-		assertEquals("java.util.EnumMap$KeySet", results.get(0).getT1().getFullyQualifiedName());
+		IType type = results.get(0).getT1();
+		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
+		assertEquals("java.util.EnumMap$KeySet", type.getFullyQualifiedName());
 	}
-	
+
 	@Test
 	public void fuzzySearchPackage() throws Exception {
-		List<Tuple2<String, Double>> results = MavenCore.getDefault().getJavaIndexForJreLibs()
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		List<Tuple2<String, Double>> results = project.getIndex()
 				.fuzzySearchPackages("util")
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
 		assertEquals("java.util", results.get(0).getT1());
 	}
-	
+
 	@Test
 	public void findClassInJar() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("org.springframework.test.web.client.ExpectedCount");
 		assertNotNull(type);
 	}
-	
+
 	@Test
 	public void findClassInOutputFolder() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("hello.Greeting");
 		assertNotNull(type);
 	}
-	
+
 	@Test
 	public void classNotFound() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("hello.NonExistentClass");
 		assertNull(type);
 	}
-	
+
 	@Test
 	public void voidMethodNoParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("clear", Stream.empty());
+		System.out.println("Method clear: " + m.getBindingKey());
 		assertEquals("clear", m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(0, m.parameters().count());
 	}
-	
+
 	@Test
 	public void voidConstructor() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("java.util.ArrayList");
-		assertNotNull(type);		
+		assertNotNull(type);
 		IMethod m = type.getMethod("<init>", Stream.empty());
 		assertEquals(type.getElementName(), m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(0, m.parameters().count());
 	}
-	
+
 	@Test
 	public void constructorMethodWithParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		IType type = project.findType("java.util.ArrayList");
-		assertNotNull(type);		
+		assertNotNull(type);
 		IMethod m = type.getMethod("<init>", Stream.of(IPrimitiveType.INT));
 		assertEquals(m.getDeclaringType().getElementName(), m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
-		assertEquals(Collections.singletonList(IPrimitiveType.INT), m.parameters().collect(Collectors.toList()));		
+		assertEquals(Collections.singletonList(IPrimitiveType.INT), m.parameters().collect(Collectors.toList()));
 	}
-	
+
 	@Test
 	public void testFindJarResource() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");

@@ -6,6 +6,12 @@
             <command id="sts.java.addClasspathListener"/>
             <command id="sts.java.removeClasspathListener"/>
        </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.JavadocHandler">
+         <command
+               id="sts.java.javadoc">
+         </command>
+      </delegateCommandHandler>
    </extension>
 </plugin>
  

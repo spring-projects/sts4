@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -19,10 +21,10 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 
 	public LanguageServerCommonsActivator() {
 	}
-	
+
 	@Override
 	public void start(BundleContext context) throws Exception {
-		instance = this; 
+		instance = this;
 		super.start(context);
 	}
 
@@ -30,5 +32,7 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 		return instance;
 	}
 
-
+	public static void logError(Throwable t, String message) {
+		instance.getLog().log(new Status(IStatus.ERROR, instance.getBundle().getSymbolicName(), message, t));
+	}
 }

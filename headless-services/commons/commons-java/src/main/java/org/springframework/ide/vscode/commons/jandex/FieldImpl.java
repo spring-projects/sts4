@@ -22,13 +22,13 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 class FieldImpl implements IField {
-	
-	private JandexIndex index;
+
 	private FieldInfo field;
 	private IJavadocProvider javadocProvider;
-	
-	FieldImpl(JandexIndex index, FieldInfo field, IJavadocProvider javadocProvider) {
-		this.index = index;
+	private IType declaringType;
+
+	FieldImpl(IType declaringType, FieldInfo field, IJavadocProvider javadocProvider) {
+		this.declaringType = declaringType;
 		this.field = field;
 		this.javadocProvider = javadocProvider;
 	}
@@ -40,7 +40,7 @@ class FieldImpl implements IField {
 
 	@Override
 	public IType getDeclaringType() {
-		return Wrappers.wrap(index, field.declaringClass(), javadocProvider);
+		return declaringType;
 	}
 
 	@Override
@@ -69,7 +69,7 @@ class FieldImpl implements IField {
 	public boolean isEnumConstant() {
 		return Flags.isEnum(field.flags());
 	}
-	
+
 	@Override
 	public String toString() {
 		return field.toString();
@@ -87,7 +87,10 @@ class FieldImpl implements IField {
 		}
 		return super.equals(obj);
 	}
-	
-	
+
+	@Override
+	public String getBindingKey() {
+		return BindingKeyUtils.getBindingKey(field);
+	}
 
 }

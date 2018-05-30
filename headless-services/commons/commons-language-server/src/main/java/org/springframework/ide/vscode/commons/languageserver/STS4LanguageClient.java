@@ -40,4 +40,7 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonRequest("sts/removeClasspathListener")
 	CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams);
+
+	@JsonRequest("sts/javadoc")
+	CompletableFuture<JavadocResponse> javadoc(JavadocParams params);
 }

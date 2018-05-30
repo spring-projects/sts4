@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import static org.springframework.ide.vscode.commons.util.Assert.isNotNull;
 
+import java.io.File;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -32,32 +34,32 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
 
 public class Wrappers {
-	
-	public static IType wrap(JandexIndex index, ClassInfo info, IJavadocProvider javadocProvider) {
+
+	public static IType wrap(JandexIndex index, File classpathContainer, ClassInfo info, IJavadocProvider javadocProvider) {
 		if (info == null) {
 			return null;
 		}
-		return new TypeImpl(index, info, javadocProvider);
+		return new TypeImpl(index, classpathContainer, info, javadocProvider);
 	}
-	
-	public static IField wrap(JandexIndex index, FieldInfo field, IJavadocProvider javadocProvider) {
+
+	public static IField wrap(IType declaringType, FieldInfo field, IJavadocProvider javadocProvider) {
 		if (field == null) {
 			return null;
 		}
-		return new FieldImpl(index, field, javadocProvider);
+		return new FieldImpl(declaringType, field, javadocProvider);
 	}
 
-	public static IMethod wrap(JandexIndex index, MethodInfo method, IJavadocProvider javadocProvider) {
-		isNotNull(index);
+	public static IMethod wrap(IType declaringType, MethodInfo method, IJavadocProvider javadocProvider) {
+		isNotNull(declaringType);
 		isNotNull(method);
-		return new MethodImpl(index, method, javadocProvider);
+		return new MethodImpl(declaringType, method, javadocProvider);
 	}
-	
+
 	public static IAnnotation wrap(AnnotationInstance annotation, IJavadocProvider javadocProvider) {
 		isNotNull(annotation);
 		return new AnnotationImpl(annotation, javadocProvider);
 	}
-	
+
 	public static IMemberValuePair wrap(AnnotationValue annotationValue) {
 		if (annotationValue == null) {
 			return null;
@@ -73,14 +75,14 @@ public class Wrappers {
 			public Object getValue() {
 				return annotationValue.value();
 			}
-			
+
 			@Override
 			public String toString() {
 				return annotationValue.toString();
 			}
 		};
 	}
-	
+
 	public static IPrimitiveType wrap(PrimitiveType type) {
 		switch (type.primitive()) {
 		case SHORT:
@@ -102,7 +104,7 @@ public class Wrappers {
 		}
 		throw new IllegalArgumentException("Invalid Java primitive type! " + type.toString());
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	static Type from(IJavaType type) {
 		if (type == IPrimitiveType.BOOLEAN) {
@@ -128,7 +130,7 @@ public class Wrappers {
 		}
 		throw new IllegalArgumentException("Not a Jandex wrapped typed!");
 	}
-	
+
 	public static IJavaType wrap(Type type) {
 		switch (type.kind()) {
 		case ARRAY:
@@ -150,5 +152,5 @@ public class Wrappers {
 		}
 		throw new IllegalArgumentException("Invalid Java Type " + type.toString());
 	}
-	
+
 }

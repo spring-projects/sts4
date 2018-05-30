@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
 import java.util.stream.Stream;
 
 public interface IMethod extends IMember {
@@ -57,13 +58,18 @@ public interface IMethod extends IMember {
 //	 * @see Signature
 //	 */
 //	String getSignature();
-	
+
 	/**
 	 * Returns parameter types of this method
 	 * @return
 	 */
 	Stream<IJavaType> parameters();
-	
+
 	boolean isConstructor();
+
+	@Override
+	default File classpathContainer() {
+		return getDeclaringType().classpathContainer();
+	}
 
 }

@@ -94,6 +94,8 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
+import org.springframework.ide.vscode.commons.languageserver.JavadocParams;
+import org.springframework.ide.vscode.commons.languageserver.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -308,6 +310,11 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 				public CompletableFuture<Object> removeClasspathListener(
 						ClasspathListenerParams classpathListenerParams) {
 					return CompletableFuture.completedFuture("ok");
+				}
+
+				@Override
+				public CompletableFuture<JavadocResponse> javadoc(JavadocParams params) {
+					return CompletableFuture.completedFuture(new JavadocResponse());
 				}
 
 			});

@@ -15,8 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,71 +53,45 @@ import org.eclipse.aether.util.graph.transformer.NearestVersionSelector;
 import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector;
 import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
-import org.springframework.ide.vscode.commons.jandex.JandexIndex;
-import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.util.Log;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Maven Core functionality
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class MavenCore {
-	
+
 	private static final String CLASSIFIER_SOURCES = "sources";
 	private static final String CLASSIFIER_JAVADOC = "javadoc";
 	private static final String CLASSIFIER_TESTS = "tests";
 	private static final String CLASSIFIER_TESTSOURCES = "test-sources";
-	  
+
 	private static final String JAVA_HOME = "java.home";
 	private static final String JAVA_RUNTIME_VERSION = "java.runtime.version";
 	private static final String JAVA_BOOT_CLASS_PATH = "sun.boot.class.path";
 	public static final String CLASSPATH_TXT = "classpath.txt";
 	public static final String POM_XML = "pom.xml";
-	
+
 	private static MavenCore defaultInstance = null;
-	
+
 	private MavenBridge maven;
-	
-	private Supplier<JandexIndex> javaCoreIndex = Suppliers.memoize(() -> {
-		try {
-			return new JandexIndex(getJreLibs().map(path -> path.toFile()).collect(Collectors.toList()), jarFile -> findIndexFile(jarFile), (classpathResource) -> {
-				try {
-					String javaVersion = getJavaRuntimeMinorVersion();
-					if (javaVersion == null) {
-						javaVersion = "8";
-					}
-					URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
-					return new HtmlJavadocProvider((type) -> TypeUrlProviderFromContainerUrl.JAVADOC_FOLDER_URL_SUPPLIER.url(javadocUrl, type.getFullyQualifiedName()));
-				} catch (MalformedURLException e) {
-					Log.log(e);
-					return null;
-				}
-			});
-		} catch (MavenException e) {
-			return null;
-		}
-	});
-	
+
 	public static MavenCore getDefault() {
 		if (defaultInstance == null) {
 			defaultInstance = new MavenCore(IMavenConfiguration.DEFAULT);
 		}
 		return defaultInstance;
 	}
-	
+
 	public MavenCore(IMavenConfiguration config) {
 		this.maven = new MavenBridge(config);
 	}
-	
+
 	/**
 	 * Reads maven classpath text file
-	 * 
+	 *
 	 * @param classPathFilePath
 	 * @return set of classpath entries
 	 * @throws IOException
@@ -130,10 +102,10 @@ public class MavenCore {
 		Path dir = classPathFilePath.getParent();
 		return Arrays.stream(text.split(File.pathSeparator)).map(dir::resolve);
 	}
-	
+
 	/**
 	 * Creates Maven Project descriptor based on the pom file.
-	 * 
+	 *
 	 * @param pom The pom file
 	 * @return Maven project instance
 	 * @throws MavenException
@@ -141,14 +113,14 @@ public class MavenCore {
 	public MavenProject readProject(File pom, boolean resolveDependencies) throws MavenException {
 		return maven.readProject(pom, maven.createExecutionRequest(), resolveDependencies);
 	}
-	
+
 	public MavenExecutionResult build(File pom) throws MavenException {
 		return maven.compileAndGenerateJavadoc(pom);
 	}
-		
+
 	/**
 	 * Taken from M2E same named method from MavenModelManager
-	 * 
+	 *
 	 * @param repositorySystem
 	 * @param repositorySession
 	 * @param mavenProject
@@ -214,10 +186,10 @@ public class MavenCore {
 
 		return node;
 	}
-	
+
 	/**
 	 * Calculates dependency graph for a Maven project provided the scope.
-	 * 
+	 *
 	 * @param project Maven Project descriptor
 	 * @param scope Dependency scope
 	 * @return Set of all dependencies including transient ones
@@ -229,9 +201,10 @@ public class MavenCore {
 
 		DependencyNode graph = readDependencyTree(maven.lookupComponent(org.eclipse.aether.RepositorySystem.class), session, project, scope);
 		if (graph != null) {
-			
+
 			ArrayList<DependencyNode> dependencyNodes = new ArrayList<>();
 			graph.accept(new DependencyVisitor() {
+				@Override
 				public boolean visitEnter(DependencyNode node) {
 					if (node.getDependency() != null) {
 						dependencyNodes.add(node);
@@ -239,15 +212,16 @@ public class MavenCore {
 					return true;
 				}
 
+				@Override
 				public boolean visitLeave(DependencyNode dependencynode) {
 					return true;
 				}
 			});
 
-			LinkedHashSet<Artifact> artifacts = new LinkedHashSet<>(); 
+			LinkedHashSet<Artifact> artifacts = new LinkedHashSet<>();
 			RepositoryUtils.toArtifacts(artifacts, dependencyNodes,
 					Collections.singletonList(project.getArtifact().getId()), null);
-			
+
 			return artifacts.parallelStream().map(artifact -> {
 				if (!artifact.isResolved()) {
 					try {
@@ -264,42 +238,42 @@ public class MavenCore {
 				return artifact;
 			}).collect(Collectors.toSet());
 		}
-		
+
 		return Collections.emptySet();
 	}
-	
+
 	public File localRepositoryFolder() throws MavenException {
 		MavenExecutionRequest request = maven.createExecutionRequest();
 		DefaultRepositorySystemSession session = maven.createRepositorySession(request);
 		LocalRepositoryManager lrm = session.getLocalRepositoryManager();
 		return lrm.getRepository().getBasedir();
 	}
-	
+
 	public Artifact getSources(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
 		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_SOURCES, repositories, maven.createExecutionRequest());
 	}
-	
+
 	public Artifact getJavadoc(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
 		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_JAVADOC, repositories, maven.createExecutionRequest());
 	}
-	
+
 	public Artifact getTests(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
 		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTS, repositories, maven.createExecutionRequest());
 	}
-	
+
 	public Artifact getTestSources(Artifact artifact, List<ArtifactRepository> repositories) throws MavenException {
 		return maven.resolve(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getType(), CLASSIFIER_TESTSOURCES, repositories, maven.createExecutionRequest());
 	}
- 	
+
 	public Stream<Path> getJreLibs() throws MavenException {
 		String s = (String) maven.createExecutionRequest().getSystemProperties().get(JAVA_BOOT_CLASS_PATH);
 		return s == null ? Stream.empty() : Arrays.stream(s.split(File.pathSeparator)).map(File::new).filter(f -> f.canRead()).map(f -> Paths.get(f.toURI()));
 	}
-	
+
 	public String getJavaRuntimeVersion() throws MavenException {
 		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_RUNTIME_VERSION);
 	}
-	
+
 	public String getJavaRuntimeMinorVersion() {
 		try {
 			String fullVersion = getJavaRuntimeVersion();
@@ -314,32 +288,9 @@ public class MavenCore {
 		}
 		return null;
 	}
-	
+
 	private String getJavaHome() throws MavenException {
 		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_HOME);
 	}
-	
-	private File findIndexFile(File jarFile) {
-		String suffix = null;
-		try {
-			String javaHome = getJavaHome();
-			if (javaHome != null) {
-				int index = javaHome.lastIndexOf('/');
-				if (index != -1) {
-					javaHome = javaHome.substring(0, index);
-				}
-			}
-			if (jarFile.toString().startsWith(javaHome)) {
-				suffix = getJavaRuntimeVersion();
-			}
-		} catch (MavenException e) {
-			Log.log(e);
-		}
-		return new File(JandexIndex.getIndexFolder().toString(), jarFile.getName() + "-" + suffix + ".jdx");
-	}
-	
-	public JandexIndex getJavaIndexForJreLibs() {
-		return javaCoreIndex.get();
-	}
-	
+
 }

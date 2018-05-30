@@ -21,8 +21,6 @@ import java.util.stream.Stream;
 
 import org.junit.Assume;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
-import org.springframework.ide.vscode.commons.jandex.JandexClasspath.JavadocProviderTypes;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
@@ -35,12 +33,11 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 public class HtmlJavadocTest {
-	
+
 	private static FileObserver fileObserver = new BasicFileObserver();
 	private static Supplier<MavenJavaProject> projectSupplier = Suppliers.memoize(() -> {
 		Path testProjectPath;
 		try {
-			JandexClasspath.providerType = JavadocProviderTypes.HTML;
 			testProjectPath = Paths.get(HtmlJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
 			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
@@ -52,9 +49,9 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testClassJavadoc() throws Exception {
 		Assume.assumeTrue(javaVersionHigherThan(6));
-	
+
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("java.util.Map");
 		assertNotNull(type);
 		String expected = String.join("\n",
@@ -68,39 +65,39 @@ public class HtmlJavadocTest {
 
 	@Test
 	public void html_testConstructorJavadoc() throws Exception {
-		Assume.assumeTrue(javaVersionHigherThan(6));		
+		Assume.assumeTrue(javaVersionHigherThan(6));
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("<init>", Stream.empty());
 		assertNotNull(method);
-		
+
 		String expected = String.join("\n",
 				"<h4>ArrayList</h4>"
 				);
 		IJavadoc javaDoc = method.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml().substring(0, expected.length()));
-		
+
 	}
 
 	@Test
 	public void html_testEmptyJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("hello.Application");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
 	}
 
 	@Test
-	public void html_testFieldAndMethodJavadocForJar() throws Exception {	
+	public void html_testFieldAndMethodJavadocForJar() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("org.springframework.boot.SpringApplication");
 		assertNotNull(type);
-		
+
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
 		assertNotNull(field);
 		String expected = String.join("\n",
@@ -115,10 +112,10 @@ public class HtmlJavadocTest {
 		IJavadoc javaDoc = field.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml());
-		
+
 		IMethod method = type.getMethod("getListeners", Stream.empty());
 		assertNotNull(method);
-		expected = String.join("\n", 
+		expected = String.join("\n",
 				"<h4>getListeners</h4>",
 				"<pre>public&nbsp;<a href=\"http://docs.oracle.com/javase/6/docs/api/java/util/Set.html?is-external=true\" title=\"class or interface in java.util\">Set</a>&lt;org.springframework.context.ApplicationListener&lt;?&gt;&gt;&nbsp;getListeners()</pre>",
 				"<div class=\"block\">Returns read-only ordered Set of the <code>ApplicationListener</code>s that will be",
@@ -137,16 +134,16 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals("<div class=\"block\">Comment for inner class</div>", javaDoc.getRenderable().toHtml());
-	
+
 		IField field = type.getField("innerField");
 		assertNotNull(field);
-		String expected = String.join("\n", 
+		String expected = String.join("\n",
 				"<h4>innerField</h4>",
 				"<pre>protected&nbsp;int innerField</pre>",
 				"<div class=\"block\">Comment for inner field</div>"
@@ -154,7 +151,7 @@ public class HtmlJavadocTest {
 		javaDoc = field.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml());
-	
+
 		IMethod method = type.getMethod("getInnerField", Stream.empty());
 		assertNotNull(method);
 		expected = String.join("\n",
@@ -170,16 +167,16 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testInnerClassLevel2_JavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals("<div class=\"block\">Comment for level 2 nested class</div>", javaDoc.getRenderable().toHtml());
-	
+
 		IField field = type.getField("innerLevel2Field");
 		assertNotNull(field);
-		String expected = String.join("\n", 
+		String expected = String.join("\n",
 				"<h4>innerLevel2Field</h4>",
 				"<pre>protected&nbsp;int innerLevel2Field</pre>",
 				"<div class=\"block\">Comment for level 2 inner field</div>"
@@ -187,7 +184,7 @@ public class HtmlJavadocTest {
 		javaDoc = field.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml());
-	
+
 		IMethod method = type.getMethod("getInnerLevel2Field", Stream.empty());
 		assertNotNull(method);
 		expected = String.join("\n",
@@ -204,13 +201,13 @@ public class HtmlJavadocTest {
 	public void html_testJavadocOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 		IType type = project.findType("hello.Greeting");
-		
+
 		assertNotNull(type);
 		String expected = "<div class=\"block\">Comment for Greeting class</div>";
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml());
-		
+
 		IField field = type.getField("id");
 		assertNotNull(field);
 		expected = String.join("\n",
@@ -221,7 +218,7 @@ public class HtmlJavadocTest {
 		javaDoc = field.getJavaDoc();
 		assertNotNull(javaDoc);
 		assertEquals(expected, javaDoc.getRenderable().toHtml());
-		
+
 		IMethod method = type.getMethod("getId", Stream.empty());
 		assertNotNull(method);
 		expected = String.join("\n",
@@ -237,14 +234,14 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testMethodJavadoc() throws Exception {
 		Assume.assumeTrue(javaVersionHigherThan(6));
-	
+
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("size", Stream.empty());
 		assertNotNull(method);
-		
+
 		String expected = String.join("\n",
 				"<h4>size</h4>",
 				"<pre>public&nbsp;int&nbsp;size()</pre>",
@@ -258,9 +255,9 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testNestedClassJavadoc() throws Exception {
 		Assume.assumeTrue(javaVersionHigherThan(6));
-	
+
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("java.util.Map$Entry");
 		assertNotNull(type);
 		String expected = String.join("\n",
@@ -274,7 +271,7 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testNoJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();;
-		
+
 		IType type = project.findType("hello.GreetingController");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
@@ -283,12 +280,12 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testNoJavadocField() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("hello.GreetingController");
 		assertNotNull(type);
 		IField field = type.getField("template");
 		assertNotNull(field);
-		String expected = String.join("\n", 
+		String expected = String.join("\n",
 				"<h4>template</h4>",
 				"<pre>public static final&nbsp;<a href=\"http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> template</pre>",
 				"<dl>",
@@ -304,12 +301,12 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testNoJavadocMethod() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		
+
 		IType type = project.findType("hello.Application");
 		assertNotNull(type);
 		IMethod method = type.getMethod("corsConfigurer", Stream.empty());
 		assertNotNull(method);
-		String expected = String.join("\n", 
+		String expected = String.join("\n",
 				"<h4>corsConfigurer</h4>",
 				"<pre>@Bean",
 				"public&nbsp;org.springframework.web.servlet.config.annotation.WebMvcConfigurer&nbsp;corsConfigurer()</pre>"

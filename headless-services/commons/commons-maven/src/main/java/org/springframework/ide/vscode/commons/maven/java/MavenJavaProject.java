@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.maven.java;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.springframework.ide.vscode.commons.java.AbstractJavaProject;
+import org.springframework.ide.vscode.commons.java.LegacyJavaProject;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -27,7 +27,7 @@ import org.springframework.ide.vscode.commons.util.Log;
  * @author Alex Boyko
  *
  */
-public class MavenJavaProject extends AbstractJavaProject {
+public class MavenJavaProject extends LegacyJavaProject {
 
 	private final File pom;
 

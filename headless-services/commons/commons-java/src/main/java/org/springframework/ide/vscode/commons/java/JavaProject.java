@@ -14,6 +14,7 @@ import java.io.File;
 import java.net.URI;
 
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
+import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import reactor.core.Disposable;
@@ -24,12 +25,14 @@ public class JavaProject implements IJavaProject, Disposable {
 	private ClasspathIndex index;
 	private URI uri;
 	private final FileObserver fileObserver;
+	private final JavadocProviderFactory javadocProviderFactory;
 
-	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath) {
+	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath, JavadocProviderFactory javadocProviderFactory) {
 		super();
 		this.classpath = classpath;
 		this.fileObserver = fileObserver;
 		this.uri = uri;
+		this.javadocProviderFactory = javadocProviderFactory;
 	}
 
 	@Override
@@ -40,7 +43,7 @@ public class JavaProject implements IJavaProject, Disposable {
 	@Override
 	public synchronized ClasspathIndex getIndex() {
 		if (index==null) {
-			index = new JandexClasspath(classpath, fileObserver);
+			index = new JandexClasspath(classpath, fileObserver, javadocProviderFactory);
 		}
 		return index;
 	}

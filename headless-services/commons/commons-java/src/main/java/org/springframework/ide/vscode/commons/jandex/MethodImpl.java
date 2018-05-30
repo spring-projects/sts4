@@ -22,16 +22,15 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 public class MethodImpl implements IMethod {
-	
+
 	private static final String JANDEX_CONTRUCTOR_NAME = "<init>";
 
-	
-	private JandexIndex index;
+	private IType declaringType;
 	private MethodInfo method;
 	private IJavadocProvider javadocProvider;
-	
-	MethodImpl(JandexIndex index, MethodInfo method, IJavadocProvider javadocProvider) {
-		this.index = index;
+
+	MethodImpl(IType declaringType, MethodInfo method, IJavadocProvider javadocProvider) {
+		this.declaringType = declaringType;
 		this.method = method;
 		this.javadocProvider =javadocProvider;
 	}
@@ -40,7 +39,7 @@ public class MethodImpl implements IMethod {
 	public int getFlags() {
 		return method.flags();
 	}
-	
+
 	@Override
 	public boolean isConstructor() {
 		return method.name().equals(JANDEX_CONTRUCTOR_NAME);
@@ -48,7 +47,7 @@ public class MethodImpl implements IMethod {
 
 	@Override
 	public IType getDeclaringType() {
-		return Wrappers.wrap(index, method.declaringClass(), javadocProvider);
+		return declaringType;
 	}
 
 	@Override
@@ -85,7 +84,7 @@ public class MethodImpl implements IMethod {
 //		sb.append(getReturnType());
 //		return sb.toString();
 //	}
-	
+
 	@Override
 	public String toString() {
 		return method.toString();
@@ -109,5 +108,9 @@ public class MethodImpl implements IMethod {
 		return super.equals(obj);
 	}
 
+	@Override
+	public String getBindingKey() {
+		return BindingKeyUtils.getBindingKey(method);
+	}
 
 }

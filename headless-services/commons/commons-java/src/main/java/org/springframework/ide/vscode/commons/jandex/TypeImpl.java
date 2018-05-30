@@ -11,6 +11,7 @@
 
 package org.springframework.ide.vscode.commons.jandex;
 
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,14 +30,16 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 class TypeImpl implements IType {
-	
+
 	private ClassInfo info;
 	private JandexIndex index;
 	private IJavadocProvider javadocProvider;
-	
-	TypeImpl(JandexIndex index, ClassInfo info, IJavadocProvider javadocProvider) {
+	private File classpathContainer;
+
+	TypeImpl(JandexIndex index, File classpathContainer, ClassInfo info, IJavadocProvider javadocProvider) {
 		this.info = info;
 		this.index = index;
+		this.classpathContainer = classpathContainer;
 		this.javadocProvider = javadocProvider;
 	}
 
@@ -48,7 +51,7 @@ class TypeImpl implements IType {
 	@Override
 	public IType getDeclaringType() {
 		DotName enclosingClass = info.enclosingClass();
-		return enclosingClass == null ? null : index.getClassByName(enclosingClass);
+		return enclosingClass == null ? null : index.findType(enclosingClass.toString());
 	}
 
 	@Override
@@ -92,7 +95,7 @@ class TypeImpl implements IType {
 	public boolean isAnnotation() {
 		return Flags.isAnnotation(info.flags());
 	}
-				
+
 	@Override
 	public String getFullyQualifiedName() {
 		return info.name().toString();
@@ -100,26 +103,26 @@ class TypeImpl implements IType {
 
 	@Override
 	public IField getField(String name) {
-		return Wrappers.wrap(index, info.field(name), javadocProvider);
+		return Wrappers.wrap(this, info.field(name), javadocProvider);
 	}
 
 	@Override
 	public Stream<IField> getFields() {
 		return info.fields().stream().map(f -> {
-			return Wrappers.wrap(index, f, javadocProvider);
+			return Wrappers.wrap(this, f, javadocProvider);
 		});
 	}
 
 	@Override
 	public IMethod getMethod(String name, Stream<IJavaType> parameters) {
 		List<Type> typeParameters = parameters.map(Wrappers::from).collect(Collectors.toList());
-		return Wrappers.wrap(index, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), javadocProvider);
+		return Wrappers.wrap(this, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), javadocProvider);
 	}
 
 	@Override
 	public Stream<IMethod> getMethods() {
 		return info.methods().stream().map(m -> {
-			return Wrappers.wrap(index, m, javadocProvider);
+			return Wrappers.wrap(this, m, javadocProvider);
 		});
 	}
 
@@ -141,5 +144,14 @@ class TypeImpl implements IType {
 		return super.equals(obj);
 	}
 
-	
+	@Override
+	public String getBindingKey() {
+		return BindingKeyUtils.getBindingKey(info);
+	}
+
+	@Override
+	public File classpathContainer() {
+		return classpathContainer;
+	}
+
 }

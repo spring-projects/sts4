@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,12 +13,14 @@ package org.springframework.ide.vscode.boot.metadata.hints;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.util.DeprecationUtil;
+import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -58,8 +60,8 @@ public class StsValueHint {
 	/**
 	 * Creates a hint out of an IJavaElement.
 	 */
-	public static StsValueHint create(String value, IJavaElement javaElement) {
-		return new StsValueHint(value, javaDocSnippet(javaElement), DeprecationUtil.extract(javaElement)) {
+	public static StsValueHint create(String value, IJavaProject project, IJavaElement javaElement) {
+		return new StsValueHint(value, javaDocSnippet(project, javaElement), DeprecationUtil.extract(javaElement)) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return javaElement;
@@ -81,7 +83,7 @@ public class StsValueHint {
 			if (jp!=null) {
 				IType type = jp.findType(fqName);
 				if (type!=null) {
-					return create(type);
+					return create(jp, type);
 				}
 			}
 		} catch (Exception e) {
@@ -90,8 +92,8 @@ public class StsValueHint {
 		return null;
 	}
 
-	public static StsValueHint create(IType klass) {
-		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(klass), DeprecationUtil.extract(klass)) {
+	public static StsValueHint create(IJavaProject project, IType klass) {
+		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(project, klass), DeprecationUtil.extract(klass)) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return klass;
@@ -117,14 +119,10 @@ public class StsValueHint {
 		return description;
 	}
 	
-	private static Renderable javaDocSnippet(IJavaElement je) {
+	private static Renderable javaDocSnippet(IJavaProject project, IJavaElement je) {
 		return Renderables.lazy(() -> {
-			IJavadoc jdoc = je.getJavaDoc();
-			if (jdoc != null) {
-				return jdoc.getRenderable();
-			} else {
-				return Renderables.NO_DESCRIPTION;
-			}
+			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+			return PropertyDocUtils.documentation(sourceLinks, project, je);
 		});
 	}
 

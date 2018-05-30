@@ -10,12 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.jandex;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.channels.IllegalSelectorException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,8 +28,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -58,13 +52,13 @@ public class JandexSystemLibsIndex {
 
 	private static final Supplier<JandexSystemLibsIndex> INSTANCE = Suppliers.memoize(() -> new JandexSystemLibsIndex());
 
-	private Cache<Path, JandexIndex> cache;
+	private Cache<Path, BasicJandexIndex> cache;
 
 	private JandexSystemLibsIndex() {
-		this.cache = CacheBuilder.newBuilder().build(new CacheLoader<Path, JandexIndex>() {
+		this.cache = CacheBuilder.newBuilder().build(new CacheLoader<Path, BasicJandexIndex>() {
 
 			@Override
-			public JandexIndex load(Path key) throws Exception {
+			public BasicJandexIndex load(Path key) throws Exception {
 				return createIndex(key);
 			}
 
@@ -76,7 +70,7 @@ public class JandexSystemLibsIndex {
 	 * @param path the path containing jars
 	 * @return Jandex Index of the jars contained in the folder
 	 */
-	public JandexIndex index(Path path) {
+	public BasicJandexIndex index(Path path) {
 		try {
 			return cache.get(path, () -> createIndex(path));
 		} catch (ExecutionException e) {
@@ -90,15 +84,15 @@ public class JandexSystemLibsIndex {
 	 * @param jars system lib jars
 	 * @return Jandex Indexs for jars
 	 */
-	public JandexIndex[] fromJars(Collection<File> jars) {
-		return jars.stream().map(jar -> jar.toPath().getParent()).distinct().map(folder -> index(folder)).filter(Objects::nonNull).toArray(JandexIndex[]::new);
+	public BasicJandexIndex[] fromJars(Collection<File> jars) {
+		return jars.stream().map(jar -> jar.toPath().getParent()).distinct().map(folder -> index(folder)).filter(Objects::nonNull).toArray(BasicJandexIndex[]::new);
 	}
 
 	public static JandexSystemLibsIndex getInstance() {
 		return INSTANCE.get();
 	}
 
-	private JandexIndex createIndex(Path path) {
+	private BasicJandexIndex createIndex(Path path) {
 		List<File> jars = Collections.emptyList();
 		try {
 			jars = Files.list(path).filter(p -> p.getFileName().toString().endsWith(".jar") && Files.isRegularFile(p)).map(p -> p.toFile()).collect(Collectors.toList());
@@ -106,7 +100,7 @@ public class JandexSystemLibsIndex {
 			// Shouldn't happen - there should at least be one jar file
 			log.error("Cannot list files in folder " + path, e);
 		}
-		return new JandexIndex(jars, jarFile -> findIndexFile(jarFile), (classpathResource) -> createHtmlJavadocProvider(path));
+		return new BasicJandexIndex(jars, jarFile -> findIndexFile(jarFile));
 	}
 
 	private File findIndexFile(File jarFile) {
@@ -126,46 +120,36 @@ public class JandexSystemLibsIndex {
 		}
 	}
 
-	private static HtmlJavadocProvider createHtmlJavadocProvider(Path path) {
-		try {
-			String javaVersion = getJavaVersion(path);
-			URL javadocUrl = new URL("https://docs.oracle.com/javase/" + extractVersionForJavadoc(javaVersion) + "/docs/api/");
-			return new HtmlJavadocProvider((type) -> TypeUrlProviderFromContainerUrl.JAVADOC_FOLDER_URL_SUPPLIER.url(javadocUrl, type.getFullyQualifiedName()));
-		} catch (MalformedURLException e) {
-			return null;
-		}
-	}
-
-	private static String getJavaVersion(Path path) {
-		// Find valid /bin folder
-		for (; path != null && !(Files.isDirectory(path.resolve("bin")) && Files.isReadable(path.resolve("bin"))); path = path.getParent());
-		// If found, assume it's the java home bin folder
-		if (path != null) {
-			Path javaBin = path.resolve("bin");
-			try {
-				Process p = new ProcessBuilder().directory(javaBin.toFile()).command("./java", "-version").start();
-				BufferedReader buffer = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-				int exitCode = p.waitFor();
-				if (exitCode == 0) {
-					return buffer.lines().map(l -> JAVA_VERSION_PATTERN.matcher(l)).filter(m -> m.find()).findFirst().map(m -> m.group(1)).orElse(DEFAULT_JAVA_VERSION);
-				} else {
-					log.error("Failed to compute java version in folder: " + javaBin + ". 'java -version' exit code is " + exitCode);
-				}
-			} catch (IOException | InterruptedException e) {
-				log.error("Failed to compute java version in folder: " + javaBin, e);
-			}
-		}
-		return DEFAULT_JAVA_VERSION;
-	}
-
-	private static String extractVersionForJavadoc(String javaVersion) {
-		if (javaVersion.startsWith("1.")) {
-			int idx = javaVersion.indexOf('.', 2);
-			return idx >= 0 ? javaVersion.substring(2, idx) : javaVersion.substring(2);
-		} else {
-			int idx = javaVersion.indexOf('.');
-			return idx >= 0 ? javaVersion.substring(0, idx) : javaVersion;
-		}
-	}
+//	private static String getJavaVersion(Path path) {
+//		// Find valid /bin folder
+//		for (; path != null && !(Files.isDirectory(path.resolve("bin")) && Files.isReadable(path.resolve("bin"))); path = path.getParent());
+//		// If found, assume it's the java home bin folder
+//		if (path != null) {
+//			Path javaBin = path.resolve("bin");
+//			try {
+//				Process p = new ProcessBuilder().directory(javaBin.toFile()).command("./java", "-version").start();
+//				BufferedReader buffer = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+//				int exitCode = p.waitFor();
+//				if (exitCode == 0) {
+//					return buffer.lines().map(l -> JAVA_VERSION_PATTERN.matcher(l)).filter(m -> m.find()).findFirst().map(m -> m.group(1)).orElse(DEFAULT_JAVA_VERSION);
+//				} else {
+//					log.error("Failed to compute java version in folder: " + javaBin + ". 'java -version' exit code is " + exitCode);
+//				}
+//			} catch (IOException | InterruptedException e) {
+//				log.error("Failed to compute java version in folder: " + javaBin, e);
+//			}
+//		}
+//		return DEFAULT_JAVA_VERSION;
+//	}
+//
+//	private static String extractVersionForJavadoc(String javaVersion) {
+//		if (javaVersion.startsWith("1.")) {
+//			int idx = javaVersion.indexOf('.', 2);
+//			return idx >= 0 ? javaVersion.substring(2, idx) : javaVersion.substring(2);
+//		} else {
+//			int idx = javaVersion.indexOf('.');
+//			return idx >= 0 ? javaVersion.substring(0, idx) : javaVersion;
+//		}
+//	}
 
 }

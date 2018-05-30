@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
+
 public interface IMember extends IJavaElement, IAnnotatable {
 
 	/**
@@ -32,7 +34,7 @@ public interface IMember extends IJavaElement, IAnnotatable {
 	 * @see Flags
 	 */
 	int getFlags();
-	
+
 	/**
 	 * Returns the type in which this member is declared, or <code>null</code>
 	 * if this member is not declared in a type (for example, a top-level type).
@@ -42,5 +44,7 @@ public interface IMember extends IJavaElement, IAnnotatable {
 	 * if this member is not declared in a type (for example, a top-level type)
 	 */
 	IType getDeclaringType();
+
+	File classpathContainer();
 
 }

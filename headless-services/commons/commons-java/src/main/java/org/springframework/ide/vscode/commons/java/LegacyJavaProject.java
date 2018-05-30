@@ -13,20 +13,28 @@ package org.springframework.ide.vscode.commons.java;
 import java.net.URI;
 import java.nio.file.Path;
 
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
- * Abstract java project. Has a folder to store some project calculated data to speed up access
+ * Legacy java project. Base implementation for projects calculating classpath
+ * and other Java related data locally on this LS. Data calculation is
+ * expensive, hence there is a folder to store some project calculated data to
+ * speed up access
  *
  * @author Alex Boyko
  *
  */
-public abstract class AbstractJavaProject extends JavaProject {
+public class LegacyJavaProject extends JavaProject {
 
 	final protected Path projectDataCache;
 
-	public AbstractJavaProject(FileObserver fileObserver, URI loactionUri, Path projectDataCache, IClasspath classpath) {
-		super(fileObserver, loactionUri, classpath);
+	public LegacyJavaProject(FileObserver fileObserver, URI loactionUri, Path projectDataCache, IClasspath classpath) {
+		super(fileObserver, loactionUri, classpath, classpathResource -> {
+			CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, classpathResource);
+			return JavaDocProviders.createFor(cpe);
+		});
 		this.projectDataCache = projectDataCache;
 	}
 

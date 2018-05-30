@@ -60,7 +60,7 @@ public class JandexClasspathTest {
 		}
 
 		JandexClasspath getJandexClasspath() {
-			return new JandexClasspath(getClasspath(), fileObserver);
+			return new JandexClasspath(getClasspath(), fileObserver, null);
 		}
 
 		public void deleteClass(String fqName, BiConsumer<BasicFileObserver, String> eventNoficator) {

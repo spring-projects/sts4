@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.yaml.completions;
 
+import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_EXISTS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
@@ -33,10 +38,10 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
+import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IMember;
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
@@ -44,12 +49,11 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Scoreabl
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
-import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.completion.AbstractYamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.TopLevelAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
@@ -66,13 +70,13 @@ import org.springframework.ide.vscode.commons.yaml.util.YamlUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.*;
-
 /**
  * Represents a context insied a "application.yml" file relative to which we can provide
  * content assistance.
  */
 public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistContext {
+	
+	private static Logger log = LoggerFactory.getLogger(ApplicationYamlAssistContext.class);
 
 	protected final RelaxedNameConfig conf;
 
@@ -241,7 +245,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					}
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("", e);
 			}
 			return Collections.emptySet();
 		}
@@ -545,15 +549,12 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (jes != null) {
 				for (IJavaElement je : jes) {
 					if (je instanceof IMember) {
-						IJavadoc javadoc = je.getJavaDoc();
-						if (javadoc != null) {
-							return javadoc.getRenderable();
-						}
+						return PropertyDocUtils.documentation(SourceLinkFactory.createSourceLinks(null), typeUtil.getJavaProject(), je);
 					}
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return Renderables.NO_DESCRIPTION;
 	}

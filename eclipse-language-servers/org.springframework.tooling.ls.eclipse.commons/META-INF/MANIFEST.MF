@@ -16,9 +16,14 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.debug.ui,
  org.eclipse.ui.console,
  org.springframework.tooling.jdt.ls.commons,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.jdt.core,
+ org.eclipse.jdt.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.tooling.ls.eclipse.commons,
  org.springframework.tooling.ls.eclipse.commons.console.preferences
 Bundle-Activator: org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator
+Bundle-ClassPath: .,
+ lib/remark-1.0.0.jar,
+ lib/jsoup-1.9.2.jar

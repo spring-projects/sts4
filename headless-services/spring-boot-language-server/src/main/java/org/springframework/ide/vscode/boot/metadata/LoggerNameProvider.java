@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,7 +42,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
 			javaProject.getIndex()
 				.fuzzySearchTypes(query, null)
-				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2()))
+				.map(t -> Tuples.of(StsValueHint.create(javaProject, t.getT1()), t.getT2()))
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 		.flatMapIterable(l -> l)

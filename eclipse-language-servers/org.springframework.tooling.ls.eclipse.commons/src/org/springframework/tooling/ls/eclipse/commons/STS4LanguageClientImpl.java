@@ -43,6 +43,9 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
+import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
+import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
+import org.springframework.tooling.ls.eclipse.commons.javadoc.JavaDoc2MarkdownConverter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -207,4 +210,18 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams params) {
 		return CompletableFuture.completedFuture(classpathService.removeClasspathListener(params.getCallbackCommandId()));
 	}
+
+	@Override
+	public CompletableFuture<JavadocResponse> javadoc(JavadocParams params) {
+		JavadocResponse response = new JavadocResponse();
+		try {
+			String content = JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
+					URI.create(params.getProjectUri()), params.getBindingKey());
+			response.setContent(content);
+		} catch (Exception e) {
+			LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
+		}
+		return CompletableFuture.completedFuture(response);
+	}
+
 }

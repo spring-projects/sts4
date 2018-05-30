@@ -10,6 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.io.File;
+
 public interface IField extends IMember {
 	boolean isEnumConstant();
+
+	@Override
+	default File classpathContainer() {
+		return getDeclaringType().classpathContainer();
+	}
+
 }

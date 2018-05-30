@@ -23,12 +23,11 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
@@ -53,8 +52,6 @@ public final class JandexClasspath implements ClasspathIndex {
 
 	public static final Logger log = LoggerFactory.getLogger(JandexClasspath.class);
 
-	public static JavadocProviderTypes providerType = JavadocProviderTypes.HTML;
-
 	public enum JavadocProviderTypes {
 //		JAVA_PARSER, //Used to be based on githb java parser. If need something back that can extract docs from source code, we have to implement
 						// based on JDT parser. But at the moment this wasn't being used so just got removed.
@@ -64,10 +61,12 @@ public final class JandexClasspath implements ClasspathIndex {
 	private Supplier<JandexIndex> javaIndex;
 	private final IClasspath classpath;
 	private final FileObserver fileObserver;
+	private final JavadocProviderFactory javadocProviderFactory;
 
-	public JandexClasspath(IClasspath classpath, FileObserver fileObserver) {
+	public JandexClasspath(IClasspath classpath, FileObserver fileObserver, JavadocProviderFactory javadocProviderFactory) {
 		this.fileObserver = fileObserver;
 		this.classpath = classpath;
+		this.javadocProviderFactory = javadocProviderFactory;
 		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
 	}
 
@@ -80,16 +79,7 @@ public final class JandexClasspath implements ClasspathIndex {
 		} catch (Exception e) {
 			log.error("Cannot obtain binary root from classpath entries for " + classpath.getName(), e);
 		}
-		return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), classpathResource -> {
-			switch (providerType) {
-//			case JAVA_PARSER:
-//				return createParserJavadocProvider(classpathResource);
-			case HTML:
-				return createHtmlJavdocProvider(classpathResource);
-			default:
-				throw new IllegalStateException("Missing switch case?");
-			}
-		}, getBaseIndices());
+		return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), javadocProviderFactory, getBaseIndices());
 	}
 
 	private Disposable.Composite subscriptions = Disposables.composite();
@@ -115,18 +105,13 @@ public final class JandexClasspath implements ClasspathIndex {
 		}
 	}
 
-	private IJavadocProvider createHtmlJavdocProvider(File binaryClasspathRoot) {
-		CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, binaryClasspathRoot);
-		return JavaDocProviders.createFor(cpe);
-	}
-
 	@Override
 	public Optional<URL> sourceContainer(File binaryClasspathRoot) {
 		CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, binaryClasspathRoot);
 		return cpe == null ? Optional.empty() : Optional.ofNullable(cpe.getSourceContainerUrl());
 	}
 
-	protected JandexIndex[] getBaseIndices() {
+	protected BasicJandexIndex[] getBaseIndices() {
 		return JandexSystemLibsIndex.getInstance().fromJars(IClasspathUtil.getBinaryRoots(classpath, CPE::isSystem));
 	}
 

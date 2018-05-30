@@ -26,9 +26,12 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.JavaProject;
+import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
+import org.springframework.ide.vscode.commons.languageserver.JavadocParams;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -52,7 +55,7 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	private List<Listener> listeners = new ArrayList<>();
 
 	private final Supplier<JavaProjectsService> fallback;
-
+	
 	public JdtLsProjectCache(SimpleLanguageServer server, Supplier<JavaProjectsService> fallback) {
 		Assert.isNotNull(fallback);
 		this.fallback = Suppliers.memoize(fallback);
@@ -81,7 +84,8 @@ public class JdtLsProjectCache implements JavaProjectsService {
 										}
 									} else {
 										log.debug("deleted = false");
-										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()));
+										JdtLsJavadocProvider javadocProvider = new JdtLsJavadocProvider(server.getClient(), uri);
+										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), classpathResource -> javadocProvider);
 										JavaProject oldProject = table.put(uri, newProject);
 										if (oldProject != null) {
 											notifyChanged(newProject);

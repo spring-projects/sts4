@@ -147,7 +147,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 					.fuzzySearchTypes(query, type -> allSubclasses.contains(type))
 					.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 					.flatMapIterable(l -> l)
-					.map(t -> StsValueHint.create(t.getT1()));
+					.map(t -> StsValueHint.create(javaProject, t.getT1()));
 		}
 	}
 

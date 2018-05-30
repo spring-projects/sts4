@@ -17,20 +17,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
-
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public interface IJavaProject extends IJavaElement {
+public interface IJavaProject {
 
 	final static String PROJECT_CACHE_FOLDER = ".sts4-cache";
 
 	IClasspath getClasspath();
 	ClasspathIndex getIndex();
 	URI getLocationUri();
+	boolean exists();
 
-	@Override
 	default String getElementName() {
 		return getClasspath().getName();
 	}
@@ -59,10 +57,4 @@ public interface IJavaProject extends IJavaElement {
 		return getIndex().findClasspathResourceContainer(fqName);
 	}
 
-
-	@Override
-	default IJavadoc getJavaDoc() {
-		//?? why is this here ??
-		return null;
-	}
 }

@@ -21,9 +21,7 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.JavaProject;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.java.LegacyJavaProject;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -91,7 +89,7 @@ public class ProjectsHarness {
 	}
 	
 	public static final IJavaProject dummyProject() throws URISyntaxException {
-		return new JavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), new DelegatingCachedClasspath(() -> null, null));
+		return new LegacyJavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), null, new DelegatingCachedClasspath(() -> null, null));
 	}
 
 	private ProjectsHarness(FileObserver fileObserver) {

@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
@@ -183,7 +184,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
-		item.setDocumentation(toMarkdown(completion.getDocumentation()));
+		MarkupContent content = new MarkupContent();
+		content.setKind(MarkupKind.MARKDOWN);
+		content.setValue(toMarkdown(completion.getDocumentation()));
+		item.setDocumentation(content);
 	}
 
 	private static void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {

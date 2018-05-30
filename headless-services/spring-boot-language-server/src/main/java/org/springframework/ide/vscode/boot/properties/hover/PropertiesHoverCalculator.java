@@ -130,19 +130,25 @@ class PropertiesHoverCalculator {
 	
 	private Renderable createRenderable(StsValueHint hint) {
 		Renderable description = hint.getDescription();
-		/*
-		 * HACK: javadoc comment from HTML javadoc provider coming from
-		 * generated HTML javadoc is very rich and decorating it further
-		 * with some header like labels just makes it look worse
-		 */
-		if (description.toHtml().indexOf("<h") == -1) {
-			Builder<Renderable> renderableBuilder = ImmutableList.builder();
-			renderableBuilder.add(bold(text(hint.getValue())));
-			renderableBuilder.add(paragraph(description));
-			return concat(renderableBuilder.build());
-		} else {
-			return description;
+		try {
+			/**
+			 * TODO: remove in the future once javadoc is obtained via the client from JDT LS
+			 */
+			/*
+			 * HACK: javadoc comment from HTML javadoc provider coming from
+			 * generated HTML javadoc is very rich and decorating it further
+			 * with some header like labels just makes it look worse
+			 */
+			if (description.toHtml().indexOf("<h") == -1) {
+				Builder<Renderable> renderableBuilder = ImmutableList.builder();
+				renderableBuilder.add(bold(text(hint.getValue())));
+				renderableBuilder.add(paragraph(description));
+				return concat(renderableBuilder.build());
+			}
+		} catch (Throwable t) {
+			// Ignore. Might be that HTML content not supported
 		}
+		return description;
 	}
 
 	/**
