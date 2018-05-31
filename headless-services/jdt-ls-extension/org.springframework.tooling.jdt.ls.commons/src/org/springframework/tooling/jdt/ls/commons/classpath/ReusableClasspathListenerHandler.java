@@ -84,7 +84,7 @@ public class ReusableClasspathListenerHandler {
 	}
 
 
-	class Subscribptions {
+	class Subscriptions {
 
 		private Map<String, ClasspathListenerManager> subscribers = null;
 		
@@ -175,7 +175,7 @@ public class ReusableClasspathListenerHandler {
 		}
 	}
 	
-	private Subscribptions subscribptions = new Subscribptions();
+	private Subscriptions subscribptions = new Subscriptions();
 
 	public Object removeClasspathListener(String callbackCommandId) {
 		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
