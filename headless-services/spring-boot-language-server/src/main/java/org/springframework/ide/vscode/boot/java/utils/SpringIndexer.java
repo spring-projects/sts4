@@ -333,7 +333,7 @@ public class SpringIndexer {
 		parser.setIgnoreMethodBodies(false);
 
 		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
+		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 
 		String unitName = docURI.substring(docURI.lastIndexOf("/"));
 		parser.setUnitName(unitName);
@@ -359,7 +359,7 @@ public class SpringIndexer {
 		parser.setIgnoreMethodBodies(false);
 
 		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
+		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 
 		FileASTRequestor requestor = new FileASTRequestor() {
 			@Override

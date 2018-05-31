@@ -158,7 +158,7 @@ public final class CompilationUnitCache {
 		parser.setResolveBindings(true);
 
 		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
+		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 
 		parser.setUnitName(unitName);
 		parser.setSource(source);
