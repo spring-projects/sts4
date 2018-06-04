@@ -15,7 +15,7 @@
     "vscode": "^1.19.0"
   },
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Linters"
   ],
   "keywords": [
@@ -33,11 +33,17 @@
       "title": "Concourse Language Server Options",
       "properties": {
         "concourse.ls.java.heap": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Passed as an `-Xmx` argument to the language server JVM process"
         },
         "concourse.ls.java.home": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Overrides JAVA_HOME used for launching the language server JVM process"
         }
       }
@@ -92,7 +98,7 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
-    "vscode-languageclient": "^4.0.0"
+    "vscode-languageclient": "4.1.3"
   },
   "devDependencies": {
     "vsce": "^1.36.1",

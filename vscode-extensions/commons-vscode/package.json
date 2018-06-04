@@ -31,6 +31,6 @@
     "typescript": "2.6.1",
     "@types/node": "^7.0.43",
     "vscode": "^1.1.10",
-    "vscode-languageclient": "^4.0.0"
+    "vscode-languageclient": "4.1.3"
   }
 }
