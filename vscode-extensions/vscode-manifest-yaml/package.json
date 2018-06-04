@@ -3,7 +3,7 @@
   "displayName": "Cloudfoundry Manifest YML Support",
   "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml`) files.",
   "icon": "icon.png",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -50,11 +50,17 @@
       "title": "Cloudfoundry Manifest Language Server Configuration",
       "properties": {
         "cloudfoundry-manifest.ls.java.heap": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Passed as an `-Xmx` argument to the language server JVM process"
         },
         "cloudfoundry-manifest.ls.java.home": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Overrides JAVA_HOME used for launching the language server JVM process"
         }
       }
