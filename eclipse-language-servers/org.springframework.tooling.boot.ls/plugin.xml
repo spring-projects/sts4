@@ -133,7 +133,23 @@
       </command>
    </extension>
    
-
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            icon="icons/spring_obj.gif"
+            id="SpringBootPropertyEditor"
+            name="Generic Editor - Spring Properties"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+            <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.properties.application.properties"
+            /> 
+      </editor>
+   </extension>
+   
+<!--
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
@@ -141,7 +157,24 @@
             editorId="org.eclipse.ui.genericeditor.GenericEditor">
       </editorContentTypeBinding>
    </extension>
+-->
 
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            icon="icons/spring_obj.gif"
+            id="SpringBootYMLPropertyEditor"
+            name="Generic Editor - Spring YAML Properties"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+            <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            /> 
+      </editor>
+   </extension>
+
+<!--
    <extension
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
@@ -149,6 +182,7 @@
             editorId="org.eclipse.ui.genericeditor.GenericEditor">
       </editorContentTypeBinding>
    </extension>
+-->
 
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
