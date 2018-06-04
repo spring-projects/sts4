@@ -1710,12 +1710,15 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - put: my-docker-image\n" +
 				"    params:\n" +
+				"      additional_tags: path/to/tags\n" +
 				"      build: path/to/docker/dir\n" +
 				"      load: path/to/image\n" +
 				"      dockerfile: path/to/Dockerfile\n"+
 				"      cache: cache-it\n" +
 				"      cache_tag: the-cache-tag\n" +
+				"      cache_from: cache-from-value\n" +
 				"      load_base: path/to/base-image\n" +
+				"      load_bases: load-bases-value\n" +
 				"      load_file: path/to/file-to-load\n" +
 				"      load_repository: some-repo\n" +
 				"      load_tag: some-tag\n" +
@@ -1727,6 +1730,7 @@ public class ConcourseEditorTest {
 				"      tag_as_latest: tag-latest\n" +
 				"      build_args: the-build-args\n" +
 				"      build_args_file: path/to/file-with-build-args.json\n" +
+				"      target_name: some-build-stage\n" +
 				"    get_params:\n" +
 				"      save: save-it\n" +
 				"      rootfs: tar-it\n" +
@@ -1735,6 +1739,8 @@ public class ConcourseEditorTest {
 
 		editor.assertProblems(
 				"cache-it|'boolean'",
+				"cache-from-value|Expecting a 'Sequence'",
+				"load-bases-value|Expecting a 'Sequence'",
 				"pull_repository|Deprecated",
 				"pull_tag|Deprecated",
 				"tag-latest|'boolean'",
@@ -1764,10 +1770,13 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("tag_as_latest", "tagged as `latest`");
 		editor.assertHoverContains("build_args", "map of Docker build arguments");
 		editor.assertHoverContains("build_args_file", "JSON file containing");
-
 		editor.assertHoverContains("save", "docker save");
 		editor.assertHoverContains("rootfs", "a `.tar` file of the image");
 		editor.assertHoverContains("skip_download", "Skip `docker pull`");
+		editor.assertHoverContains("additional_tags", "Path to a space separated list of tags");
+		editor.assertHoverContains("cache_from", "An array of images to consider as cache");
+		editor.assertHoverContains("load_bases", "Same as `load_base`, but takes an array");
+		editor.assertHoverContains("target_name", "Specify the name of the target build stage");
 	}
 
 	@Test public void s3ResourceSourceReconcileAndHovers() throws Exception {

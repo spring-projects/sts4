@@ -498,18 +498,18 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(get, "skip_download", t_boolean);
 
 			AbstractType put = f.ybean("DockerImagePutParams");
-			//TODO 'additional_tags'
+			addProp(put, "additional_tags", t_ne_string);
 			addProp(put, "build", t_ne_string);
 			addProp(put, "build_args", t_string_params);
 			addProp(put, "build_args_file", t_ne_string);
 			addProp(put, "cache", t_boolean);
-			//TODO 'cache_from'
+			addProp(put, "cache_from", t_strings);
 			addProp(put, "cache_tag", t_ne_string);
 			addProp(put, "dockerfile", t_ne_string);
 			addProp(put, "import_file", t_ne_string);
 			addProp(put, "load", t_ne_string);
 			addProp(put, "load_base", t_ne_string);
-			//TODO 'load_bases'
+			addProp(put, "load_bases", t_strings);
 			addProp(put, "load_file", t_ne_string);
 			addProp(put, "load_repository", t_ne_string);
 			addProp(put, "load_tag", t_ne_string);
@@ -518,7 +518,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "tag", t_ne_string);
 			addProp(put, "tag_as_latest", t_boolean);
 			addProp(put, "tag_prefix", t_ne_string);
-			//TODO 'target_name'
+			addProp(put, "target_name", t_ne_string);
 
 			resourceTypes.def("docker-image", source, get, put);
 		}

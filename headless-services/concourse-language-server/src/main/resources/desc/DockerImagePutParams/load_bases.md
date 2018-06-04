@@ -1,0 +1,1 @@
+*Optional*. Same as `load_base`, but takes an array to load multiple images.
