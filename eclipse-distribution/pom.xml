@@ -218,14 +218,9 @@
 					<url>http://download.eclipse.org/staging/photon/</url>
 				</repository>
 				<repository>
-					<id>platform-i-builds</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/eclipse/updates/4.8-I-builds/</url>
-				</repository>
-				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20180504181223/repository/</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180531190352/repository/</url>
 				</repository>
 <!--				<repository>
 					<id>orbit-i-builds</id>
@@ -252,11 +247,11 @@
 					<layout>p2</layout>
 					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>maven-egit</id>
 					<layout>p2</layout>
 					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.14.0/N/0.14.0.201504071521/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
