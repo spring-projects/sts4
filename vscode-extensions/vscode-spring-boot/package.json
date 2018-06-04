@@ -31,12 +31,6 @@
     "onLanguage:java"
   ],
   "contributes": {
-    "commands": [
-      {
-        "command": "springboot.generate-concourse-pipeline",
-        "title": "Spring Boot: Generate Concourse Pipeline"
-      }
-    ],
     "javaExtensions": [
       "./jars/jdt-ls-commons.jar",
       "./jars/jdt-ls-extension.jar"
