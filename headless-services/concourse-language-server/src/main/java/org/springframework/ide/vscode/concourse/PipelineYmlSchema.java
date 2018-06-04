@@ -477,6 +477,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "password", t_ne_string);
 			addProp(source, "aws_access_key_id", t_ne_string);
 			addProp(source, "aws_secret_access_key", t_ne_string);
+			addProp(source, "aws_session_token", t_ne_string);
 			addProp(source, "insecure_registries", t_strings);
 			addProp(source, "registry_mirror", t_ne_string);
 			addProp(source, "ca_certs", f.yseq(f.ybean("CaCertsEntry",
@@ -488,6 +489,8 @@ public class PipelineYmlSchema implements YamlSchema {
 					f.yprop("key", t_ne_string),
 					f.yprop("cert", t_ne_string)
 			)));
+			addProp(source, "max_concurrent_downloads", t_pos_integer);
+			addProp(source, "max_concurrent_uploads", t_pos_integer);
 
 			AbstractType get = f.ybean("DockerImageGetParams");
 			addProp(get, "save", t_boolean);
@@ -495,23 +498,27 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(get, "skip_download", t_boolean);
 
 			AbstractType put = f.ybean("DockerImagePutParams");
+			//TODO 'additional_tags'
 			addProp(put, "build", t_ne_string);
-			addProp(put, "load", t_ne_string);
-			addProp(put, "dockerfile", t_ne_string);
+			addProp(put, "build_args", t_string_params);
+			addProp(put, "build_args_file", t_ne_string);
 			addProp(put, "cache", t_boolean);
+			//TODO 'cache_from'
 			addProp(put, "cache_tag", t_ne_string);
+			addProp(put, "dockerfile", t_ne_string);
+			addProp(put, "import_file", t_ne_string);
+			addProp(put, "load", t_ne_string);
 			addProp(put, "load_base", t_ne_string);
+			//TODO 'load_bases'
 			addProp(put, "load_file", t_ne_string);
 			addProp(put, "load_repository", t_ne_string);
 			addProp(put, "load_tag", t_ne_string);
-			addProp(put, "import_file", t_ne_string);
 			addProp(put, "pull_repository", t_ne_string).isDeprecated(true);
 			addProp(put, "pull_tag", t_ne_string).isDeprecated(true);
 			addProp(put, "tag", t_ne_string);
-			addProp(put, "tag_prefix", t_ne_string);
 			addProp(put, "tag_as_latest", t_boolean);
-			addProp(put, "build_args", t_string_params);
-			addProp(put, "build_args_file", t_ne_string);
+			addProp(put, "tag_prefix", t_ne_string);
+			//TODO 'target_name'
 
 			resourceTypes.def("docker-image", source, get, put);
 		}

@@ -1622,8 +1622,11 @@ public class ConcourseEditorTest {
 				"    password: {{docker_password}}\n" +
 				"    aws_access_key_id: {{aws_access_key}}\n" +
 				"    aws_secret_access_key: {{aws_secret_key}}\n" +
+				"    aws_session_token: ((aws_token))\n" +
 				"    insecure_registries: no-list\n" +
 				"    registry_mirror: https://my-docker-registry.com\n" +
+				"    max_concurrent_downloads: num-down\n" +
+				"    max_concurrent_uploads: num-up\n" +
 				"    ca_certs:\n" +
 				"    - domain: example.com:443\n" +
 				"      cert: |\n" +
@@ -1646,6 +1649,8 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"my-docker-image|Unused 'Resource'",
 				"no-list|Expecting a 'Sequence'",
+				"num-down|NumberFormat",
+				"num-up|NumberFormat",
 				"bogus_ca_certs_prop|Unknown property", //ca_certs
 				"bogus_client_cert_prop|Unknown property" //client_certs
 		);
@@ -1656,10 +1661,13 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("password", "password to use");
 		editor.assertHoverContains("aws_access_key_id",  "AWS access key to use");
 		editor.assertHoverContains("aws_secret_access_key", "AWS secret key to use");
+		editor.assertHoverContains("aws_session_token", "AWS session token (assumed role)");
 		editor.assertHoverContains("insecure_registries", "array of CIDRs");
 		editor.assertHoverContains("registry_mirror", "URL pointing to a docker registry");
 		editor.assertHoverContains("ca_certs", "Each entry specifies the x509 CA certificate for");
 		editor.assertHoverContains("client_certs", "Each entry specifies the x509 certificate and key");
+		editor.assertHoverContains("max_concurrent_downloads", "Limits the number of concurrent download threads");
+		editor.assertHoverContains("max_concurrent_uploads", "Limits the number of concurrent upload threads");
 	}
 
 	@Test public void dockerImageResourceGetParamsReconcileAndHovers() throws Exception {
