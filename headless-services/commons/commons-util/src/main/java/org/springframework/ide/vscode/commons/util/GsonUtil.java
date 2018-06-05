@@ -52,4 +52,13 @@ public class GsonUtil {
 			return Stream.empty();
 		}
 	}
+
+	public static String getAsString(JsonElement target) {
+		// Need to check if it is a primitive before get as string, otherwise
+		// exceptions can be thrown. See the JsonElement javadoc
+		if (target != null && target.isJsonPrimitive()) {
+			return target.getAsString();
+		}
+		return null;
+	}
 }

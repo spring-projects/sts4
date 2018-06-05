@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
+import org.springframework.ide.vscode.commons.util.GsonUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -143,7 +144,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	protected Collection<String> getNames(JSONCursor _cursor, YamlTraversal path) {
 		return path.traverseAmbiguously(_cursor)
 		.flatMap((cursor) -> {
-			String text = cursor.target.getAsString();
+			String text = GsonUtil.getAsString(cursor.target);
 			if (StringUtil.hasText(text)) {
 				return Stream.of(text);
 			} else {

@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.GsonUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
@@ -56,7 +57,7 @@ public class BoshCommandReleasesProvider  extends BoshCommandBasedModelProvider<
 			private String getStringProperty(JSONCursor c, String prop) {
 				c = YamlPath.EMPTY.thenValAt(prop).traverse(c);
 				if (c!=null) {
-					return c.target.getAsString();
+					return GsonUtil.getAsString(c.target);
 				}
 				return null;
 			}
