@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Provides existing Cloud Foundry client params, like target and credentials,
@@ -36,6 +38,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	public static final String NAME = "Name";
 	public static final String SSL_DISABLED = "SSLDisabled";
 	private CfCliProviderMessages cfCliProviderMessages = new CfCliProviderMessages();
+	private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 	
 	private static CfCliParamsProvider instance;
 	
@@ -64,8 +67,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		try {
 			File file = getConfigJsonFile();
 			if (file != null) {
-				ObjectMapper mapper = new ObjectMapper();
-				Map<String, Object> userData = mapper.readValue(file, Map.class);
+				Map<String, Object> userData = gson.fromJson(new FileReader(file), Map.class);
 				if (userData != null) {
 					String refreshToken = (String) userData.get(REFRESH_TOKEN);
 					// Only support connecting to CF via refresh token for now
