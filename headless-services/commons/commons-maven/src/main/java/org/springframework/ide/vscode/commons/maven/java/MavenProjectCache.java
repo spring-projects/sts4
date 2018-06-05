@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.AbstractFileToProjectCache;
+import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 
@@ -28,10 +29,12 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProject> {
 
 	private MavenCore maven;
-	
-	public MavenProjectCache(Sts4LanguageServer server, MavenCore maven, boolean asyncUpdate, Path projectCacheFolder) {
+	private JavadocService javadocService;
+
+	public MavenProjectCache(Sts4LanguageServer server, MavenCore maven, boolean asyncUpdate, Path projectCacheFolder, JavadocService javadocService) {
 		super(server, asyncUpdate, projectCacheFolder);
 		this.maven = maven;
+		this.javadocService = javadocService;
 	}
 
 	@Override
@@ -48,9 +51,10 @@ public class MavenProjectCache extends AbstractFileToProjectCache<MavenJavaProje
 	@Override
 	protected MavenJavaProject createProject(File pomFile) throws Exception {
 		MavenJavaProject mavenJavaProject = MavenJavaProject.create(getFileObserver(),
-				maven, 
+				maven,
 				pomFile,
-				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder)
+				projectCacheFolder == null ? null : pomFile.getParentFile().toPath().resolve(projectCacheFolder),
+				javadocService
 			);
 		performUpdate(mavenJavaProject, asyncUpdate, asyncUpdate);
 		return mavenJavaProject;

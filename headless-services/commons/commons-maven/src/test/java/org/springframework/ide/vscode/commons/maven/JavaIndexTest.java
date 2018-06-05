@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.IVoidType;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
@@ -51,7 +52,7 @@ public class JavaIndexTest {
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(DependencyTreeTest.class.getResource("/" + projectName).toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		}
 
 	});

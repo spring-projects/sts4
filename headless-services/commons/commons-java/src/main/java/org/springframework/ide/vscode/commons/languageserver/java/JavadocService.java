@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,13 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
+package org.springframework.ide.vscode.commons.languageserver.java;
 
-package org.springframework.ide.vscode.commons.javadoc;
+import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 
-import org.springframework.ide.vscode.commons.util.Renderable;
+public interface JavadocService {
 
-public interface IJavadoc {
-
-	Renderable getRenderable();
+	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
 
 }

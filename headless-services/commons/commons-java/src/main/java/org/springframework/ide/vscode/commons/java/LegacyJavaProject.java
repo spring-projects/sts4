@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,7 @@ package org.springframework.ide.vscode.commons.java;
 import java.net.URI;
 import java.nio.file.Path;
 
-import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
@@ -30,11 +29,8 @@ public class LegacyJavaProject extends JavaProject {
 
 	final protected Path projectDataCache;
 
-	public LegacyJavaProject(FileObserver fileObserver, URI loactionUri, Path projectDataCache, IClasspath classpath) {
-		super(fileObserver, loactionUri, classpath, classpathResource -> {
-			CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, classpathResource);
-			return JavaDocProviders.createFor(cpe);
-		});
+	public LegacyJavaProject(FileObserver fileObserver, URI loactionUri, Path projectDataCache, IClasspath classpath, JavadocService javadocService) {
+		super(fileObserver, loactionUri, classpath, javadocService);
 		this.projectDataCache = projectDataCache;
 	}
 

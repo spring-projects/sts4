@@ -11,7 +11,8 @@
 package org.springframework.ide.vscode.boot.jdt.ls;
 
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 
-public interface JavaProjectsService extends JavaProjectFinder, ProjectObserver {
+public interface JavaProjectsService extends JavaProjectFinder, ProjectObserver, JavadocService {	
 }

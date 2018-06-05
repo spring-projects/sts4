@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,6 +44,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
@@ -59,7 +60,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Tests for {@link MavenProjectCache}
- * 
+ *
  * @author Alex Boyko
  *
  */
@@ -109,7 +110,7 @@ public class MavenProjectCacheTest {
 
 	@Test
 	public void testPomFileChanges() throws Exception {
-		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), false, null);
+		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		IJavaProject[] projectChanged = new IJavaProject[] { null };
 		IJavaProject[] projectDeleted = new IJavaProject[] { null };
 		cache.addListener(new Listener() {
@@ -175,7 +176,7 @@ public class MavenProjectCacheTest {
 
 		assertFalse(classpathCacheFile.exists());
 
-		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
+		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		MavenJavaProject project = cache.project(pomFile);
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
 
@@ -195,7 +196,7 @@ public class MavenProjectCacheTest {
 		progressDone.set(false);
 
 		// Reset the cache
-		cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
+		cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 
 		// Check loaded from cache file
 		project = cache.project(pomFile);
@@ -225,7 +226,7 @@ public class MavenProjectCacheTest {
 		DiagnosticService diagnosticService = mock(DiagnosticService.class);
 		when(server.getDiagnosticService()).thenReturn(diagnosticService);
 
-		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder);
+		MavenProjectCache cache = new MavenProjectCache(server, MavenCore.getDefault(), true, cacheFolder, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		MavenJavaProject project = cache.project(pomFile);
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
 

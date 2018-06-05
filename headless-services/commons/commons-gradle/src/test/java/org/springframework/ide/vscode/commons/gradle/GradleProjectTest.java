@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ import org.assertj.core.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
@@ -73,7 +74,7 @@ public class GradleProjectTest {
 
 	private GradleJavaProject getGradleProject(String projectName) throws Exception {
 		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/" + projectName).toURI());
-		return GradleJavaProject.create(fileObserver, GradleCore.getDefault(), testProjectPath.toFile());
+		return GradleJavaProject.create(fileObserver, GradleCore.getDefault(), testProjectPath.toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 	}
 
 	@Test
@@ -105,7 +106,7 @@ public class GradleProjectTest {
 		String gradelFileContents = Files.contentOf(gradleFile, Charset.defaultCharset());
 
 		try {
-			GradleProjectCache manager = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
+			GradleProjectCache manager = createProjectCache();
 			IJavaProject[] projectChanged = new IJavaProject[] { null };
 			IJavaProject[] projectDeleted = new IJavaProject[] { null };
 			manager.addListener(new Listener() {
@@ -147,9 +148,13 @@ public class GradleProjectTest {
 		}
 	}
 
+	private GradleProjectCache createProjectCache() {
+		return new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
+	}
+
 	@Test
 	public void findGradleProjectWithStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(server, GradleCore.getDefault(), false, null));
+		GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
 		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-1/src/main/java/Library.java").toURI());
 		Optional<IJavaProject> project = finder.find(sourceFile);
 		assertTrue(project.isPresent());
@@ -160,7 +165,7 @@ public class GradleProjectTest {
 
 	@Test
 	public void findGradleProjectWithNonStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(new GradleProjectCache(server, GradleCore.getDefault(), false, null));
+		GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
 		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-2/src/main/java/Library.java").toURI());
 		Optional<IJavaProject> project = finder.find(sourceFile);
 		assertTrue(project.isPresent());

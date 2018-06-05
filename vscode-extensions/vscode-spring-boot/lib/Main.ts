@@ -19,24 +19,7 @@ const JAVA_LANGUAGE_ID = "java";
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
 
-    context.subscriptions.push(VSCode.commands.registerCommand('springboot.generate-concourse-pipeline', () => {
-        let q = (property, defaultValue) => {
-            defaultValue = defaultValue || '';
-            return ;
-        }
-        let projectRoot = VSCode.workspace.rootPath;
-        if (projectRoot) {
-            return generate_pipeline(projectRoot, (property, defaultValue) => 
-                new Promise<string>((resolve, reject) => {
-                    VSCode.window.showInputBox({
-                        prompt: `Enter '${property}': `,
-                        value: defaultValue,
-                        valueSelection: [0, defaultValue.length]
-                    }).then(resolve, reject);
-                })
-            );
-        }
-    }));
+    // registerPipelineGenerator(context);
 
     let options : commons.ActivatorOptions = {
         DEBUG: false,
@@ -62,3 +45,31 @@ export function activate(context: VSCode.ExtensionContext) {
 
     return commons.activate(options, context);
 }
+
+// NOTE: Be sure to add this under "contributes" in package.json to enable the command:
+//
+// "commands": [
+//     {
+//       "command": "springboot.generate-concourse-pipeline",
+//       "title": "Spring Boot: Generate Concourse Pipeline"
+//     }
+//   ],
+function registerPipelineGenerator(context: VSCode.ExtensionContext) {
+    context.subscriptions.push(VSCode.commands.registerCommand('springboot.generate-concourse-pipeline', () => {
+        let q = (property, defaultValue) => {
+            defaultValue = defaultValue || '';
+            return;
+        };
+        let projectRoot = VSCode.workspace.rootPath;
+        if (projectRoot) {
+            return generate_pipeline(projectRoot, (property, defaultValue) => new Promise<string>((resolve, reject) => {
+                VSCode.window.showInputBox({
+                    prompt: `Enter '${property}': `,
+                    value: defaultValue,
+                    valueSelection: [0, defaultValue.length]
+                }).then(resolve, reject);
+            }));
+        }
+    }));
+}
+
