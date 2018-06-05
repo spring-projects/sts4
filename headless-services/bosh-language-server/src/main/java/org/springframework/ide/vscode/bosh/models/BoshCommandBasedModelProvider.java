@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,10 +32,10 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Abstract base class to aid in implementing a Dynamic model provider that executes a bosh
@@ -44,7 +44,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelProvider<T> {
 
 	private final YamlParser yamlParser;
-	protected final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+	// NOTE: By default, Gson skips unknown fields, so this hopefully is equivalent to the Jackson mapper configuration that was replaced:
+    // protected final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	protected final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+
 	private final BoshCliConfig config;
 
 	protected BoshCommandBasedModelProvider(BoshCliConfig config) {
@@ -58,12 +62,13 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	 * For deserializing the output from bosh cloud-config command.
 	 */
 	public static class BoshCommandResponse {
+		@SerializedName("Blocks")
 		private String[] blocks;
 
-		@JsonProperty("Blocks")
 		public String[] getBlocks() {
 			return blocks;
 		}
+
 		public void setBlocks(String[] blocks) {
 			this.blocks = blocks;
 		}
@@ -71,7 +76,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected String getBlock() throws Exception {
 		String out = executeCommand(getCommand());
-		BoshCommandResponse response = mapper.readValue(out, BoshCommandResponse.class);
+		BoshCommandResponse response = gson.fromJson(out, BoshCommandResponse.class);
 		String[] blocks = response.getBlocks();
 		Assert.isLegal(blocks!=null);
 		Assert.isLegal(blocks.length==1);
@@ -100,9 +105,10 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		return new ExternalCommand(commandAndArgs.toArray(new String[commandAndArgs.size()]));
 	}
 
-	protected JsonNode getJsonTree() throws Exception {
+	protected JsonElement getJsonTree() throws Exception {
 		String out = executeCommand(getCommand());
-		return mapper.readTree(out);
+		JsonElement element = gson.fromJson(out, JsonElement.class);
+		return element;
 	}
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
@@ -137,7 +143,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 	protected Collection<String> getNames(JSONCursor _cursor, YamlTraversal path) {
 		return path.traverseAmbiguously(_cursor)
 		.flatMap((cursor) -> {
-			String text = cursor.target.asText();
+			String text = cursor.target.getAsString();
 			if (StringUtil.hasText(text)) {
 				return Stream.of(text);
 			} else {

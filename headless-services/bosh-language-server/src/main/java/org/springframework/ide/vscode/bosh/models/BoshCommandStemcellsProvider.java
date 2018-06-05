@@ -64,7 +64,7 @@ public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<
 			private String getStringProperty(JSONCursor c, String prop) {
 				c = YamlPath.EMPTY.thenValAt(prop).traverse(c);
 				if (c!=null) {
-					return c.target.asText();
+					return c.target.getAsString();
 				}
 				return null;
 			}

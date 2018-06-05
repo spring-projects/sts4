@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.yaml.util;
+package org.springframework.ide.vscode.commons.util;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;

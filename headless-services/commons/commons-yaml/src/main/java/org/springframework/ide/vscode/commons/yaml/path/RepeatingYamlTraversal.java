@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.yaml.path;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.yaml.util.Streams;
+import org.springframework.ide.vscode.commons.util.Streams;
 
 public class RepeatingYamlTraversal extends AbstractYamlTraversal {
 

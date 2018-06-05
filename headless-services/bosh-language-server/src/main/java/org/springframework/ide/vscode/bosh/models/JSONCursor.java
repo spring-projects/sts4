@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,21 +12,22 @@ package org.springframework.ide.vscode.bosh.models;
 
 import java.util.stream.Stream;
 
+import org.springframework.ide.vscode.commons.util.GsonUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
-import org.springframework.ide.vscode.commons.yaml.util.Streams;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+
 
 /**
- * Allows using {@link YamlPath} / {@link YamlNavigable} on {@link JsonNode}s
+ * Allows using {@link YamlPath} / {@link YamlNavigable}
  */
 public class JSONCursor implements YamlNavigable<JSONCursor> {
 
-	public final JsonNode target;
+	public final JsonElement target;
 
-	public JSONCursor(JsonNode target) {
+	public JSONCursor(JsonElement target) {
 		super();
 		this.target = target;
 	}
@@ -36,22 +37,22 @@ public class JSONCursor implements YamlNavigable<JSONCursor> {
 		return oneStep(s).map(JSONCursor::new);
 	}
 
-	private Stream<JsonNode> oneStep(YamlPathSegment s) {
+	private Stream<JsonElement> oneStep(YamlPathSegment s) {
 		if (target==null) {
 			return Stream.empty();
 		}
 		switch (s.getType()) {
 			case KEY_AT_KEY: {
-				return Streams.fromNullable(target.get(s.toPropString()));
+				return GsonUtil.getFromKey(target, s.toPropString());
 			}
 			case ANY_CHILD: {
-				return Streams.fromIterable(target);
+				return GsonUtil.getFromElements(target);
 			}
 			case VAL_AT_INDEX: {
-				return Streams.fromNullable(target.get(s.toIndex()));
+				return GsonUtil.getFromIndex(target, s.toIndex());
 			}
 			case VAL_AT_KEY: {
-				return Streams.fromNullable(target.get(s.toPropString()));
+				return GsonUtil.getFromKey(target, s.toPropString());
 			}
 			default:
 				throw new IllegalStateException("Missing case for "+s.getType());

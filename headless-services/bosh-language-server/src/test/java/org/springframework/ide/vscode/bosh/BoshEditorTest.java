@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.DEDENTED_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.SNIPPET_COMPLETION;
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.io.IOException;
@@ -45,8 +46,6 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-
-import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.*;
 
 public class BoshEditorTest {
 
@@ -1155,7 +1154,7 @@ public class BoshEditorTest {
 		return new BoshCommandStemcellsProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
-				String rows = mapper.writeValueAsString(stemcellData);
+				String rows = gson.toJson(stemcellData);
 				return "{\n" +
 						"    \"Tables\": [\n" +
 						"        {\n" +
@@ -1324,7 +1323,7 @@ public class BoshEditorTest {
 		return new BoshCommandReleasesProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
-				String rows = mapper.writeValueAsString(stemcellData);
+				String rows = gson.toJson(stemcellData);
 				return "{\n" +
 						"    \"Tables\": [\n" +
 						"        {\n" +

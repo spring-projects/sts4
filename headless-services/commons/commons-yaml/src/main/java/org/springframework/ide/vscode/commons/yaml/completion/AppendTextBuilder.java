@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import org.springframework.ide.vscode.commons.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.commons.yaml.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.util.YamlIndentUtil;
 
 /**
