@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
@@ -40,7 +41,7 @@ public class HtmlJavadocTest {
 		try {
 			testProjectPath = Paths.get(HtmlJavadocTest.class.getResource("/gs-rest-service-cors-boot-1.4.1-with-classpath-file").toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		} catch (Exception e) {
 			return null;
 		}

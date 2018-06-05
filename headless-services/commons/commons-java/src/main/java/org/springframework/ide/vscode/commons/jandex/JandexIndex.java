@@ -20,12 +20,8 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.java.IAnnotation;
-import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -42,30 +38,6 @@ public class JandexIndex extends BasicJandexIndex {
 	public static interface JavadocProviderFactory {
 		IJavadocProvider createJavadocProvider(File jarContainer);
 	}
-
-	private static final IJavadocProvider ABSENT_JAVADOC_PROVIDER = new IJavadocProvider() {
-
-		@Override
-		public IJavadoc getJavadoc(IType type) {
-			return null;
-		}
-
-		@Override
-		public IJavadoc getJavadoc(IField field) {
-			return null;
-		}
-
-		@Override
-		public IJavadoc getJavadoc(IMethod method) {
-			return null;
-		}
-
-		@Override
-		public IJavadoc getJavadoc(IAnnotation method) {
-			return null;
-		}
-
-	};
 
 	private JavadocProviderFactory javadocProviderFactory;
 
@@ -101,7 +73,7 @@ public class JandexIndex extends BasicJandexIndex {
 				if (javadocProviderFactory != null) {
 					provider = javadocProviderFactory.createJavadocProvider(classpathResource);
 				}
-				return provider == null ? ABSENT_JAVADOC_PROVIDER : provider;
+				return provider == null ? IJavadocProvider.NULL : provider;
 			});
 		} catch (ExecutionException e) {
 			log.error("Failed to retrieve javadoc provider for resource " + classpathResource, e);

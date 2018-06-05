@@ -21,101 +21,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.JavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.JavadocParams;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
 import reactor.core.Disposable;
 
-public class JdtLsProjectCache implements JavaProjectsService {
+public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	
-	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
-
 	private SimpleLanguageServer server;
 	private Map<String, JavaProject> table = new HashMap<String, JavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
-	private final Supplier<JavaProjectsService> fallback;
-	
-	public JdtLsProjectCache(SimpleLanguageServer server, Supplier<JavaProjectsService> fallback) {
-		Assert.isNotNull(fallback);
-		this.fallback = Suppliers.memoize(fallback);
+	public JdtLsProjectCache(SimpleLanguageServer server) {
 		this.server = server;
-		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
-		this.server.onInitialized(() -> {
-			try {
-				disposable.complete(server.addClasspathListener(new ClasspathListener() {
-					@Override
-					public void changed(Event event) {
-						log.debug("claspath event received {}", event);
-						initialized.thenRun(() -> {
-							//log.info("initialized.thenRun block entered");
-							try {
-								synchronized (table) {
-									String uri = UriUtil.normalize(event.projectUri);
-									log.debug("uri = {}", uri);
-									if (event.deleted) {
-										log.debug("event.deleted = true");
-										JavaProject deleted = table.remove(uri);
-										if (deleted!=null) {
-											log.debug("removed from table = true");
-											notifyDelete(deleted);
-										} else {
-											log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
-										}
-									} else {
-										log.debug("deleted = false");
-										JdtLsJavadocProvider javadocProvider = new JdtLsJavadocProvider(server.getClient(), uri);
-										JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), classpathResource -> javadocProvider);
-										JavaProject oldProject = table.put(uri, newProject);
-										if (oldProject != null) {
-											notifyChanged(newProject);
-										} else {
-											notifyCreated(newProject);
-										}
-									}
-								}
-							} catch (Exception e) {
-								log.error("", e);
-							}
-						});
-					}
-				}));
-				initialized.complete(null);
-			} catch (Throwable e) {
-				if (isNoJdtError(e)) {
-					log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
-				} else if (isOldJdt(e)) {
-					log.info("JDT Lanuage Server too old. Fallback classpath provider will be used instead.");
-				} else {
-					log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", e);
-				}
-				disposable.complete(()-> {});
-				initialized.completeExceptionally(e);
-			}
-		});
-		this.server.onShutdown(() -> 
-			disposable.thenAccept(Disposable::dispose).join()
-		);
 	}
 
 	private FileObserver getFileObserver() {
@@ -132,30 +64,16 @@ public class JdtLsProjectCache implements JavaProjectsService {
 
 	@Override
 	public void addListener(Listener listener) {
-		initialized.handle((success, failed) -> {
-			if (failed!=null) {
-				fallback.get().addListener(listener);
-			} else {
-				synchronized (listeners) {
-					listeners.add(listener);
-				}
-			}
-			return null;
-		});
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
 	}
 
 	@Override
 	public void removeListener(Listener listener) {
-		initialized.handle((success, failed) -> {
-			if (failed!=null) {
-				fallback.get().removeListener(listener);
-			} else {
-				synchronized (listeners) {
-					listeners.remove(listener);
-				}
-			}
-			return null;
-		});
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
 	}
 
 	private void notifyCreated(JavaProject newProject) {
@@ -215,28 +133,72 @@ public class JdtLsProjectCache implements JavaProjectsService {
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		String uri = UriUtil.normalize(doc.getUri());
 		log.debug("find {} ", uri);
-		if (initialized.isDone()) {
-			if (initialized.isCompletedExceptionally()) {
-				log.debug("find {} delegating to fallback", uri);
-				Optional<IJavaProject> result = fallback.get().find(doc);
-				log.debug("find => {}", result);
-				return result;
-			}
-	
-			synchronized (table) {
-				for (Entry<String, JavaProject> e : table.entrySet()) {
-					String projectUri = e.getKey();
-					log.debug("projectUri = '{}'", projectUri);
-					if (UriUtil.contains(projectUri, uri) ) {
-						log.debug("found {} for {}", e.getValue(), uri);
-						return Optional.of(e.getValue());
-					} 
+		synchronized (table) {
+			for (Entry<String, JavaProject> e : table.entrySet()) {
+				String projectUri = e.getKey();
+				log.debug("projectUri = '{}'", projectUri);
+				if (UriUtil.contains(projectUri, uri)) {
+					log.debug("found {} for {}", e.getValue(), uri);
+					return Optional.of(e.getValue());
 				}
 			}
-		} else {
-			log.debug("find => NOT INITIALIZED YET");
 		}
-		log.debug("NOT FOUND {} ", uri);
 		return Optional.empty();
+	}
+	
+	@Override
+	public IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry) {
+		return new JdtLsJavadocProvider(server.getClient(), projectUri);
+	}
+
+	@Override
+	public Disposable initialize() throws Exception {
+		try {
+			return server.addClasspathListener(new ClasspathListener() {
+				@Override
+				public void changed(Event event) {
+					log.debug("claspath event received {}", event);
+					server.onInitialized(() -> {
+						//log.info("initialized.thenRun block entered");
+						try {
+							synchronized (table) {
+								String uri = UriUtil.normalize(event.projectUri);
+								log.debug("uri = {}", uri);
+								if (event.deleted) {
+									log.debug("event.deleted = true");
+									JavaProject deleted = table.remove(uri);
+									if (deleted!=null) {
+										log.debug("removed from table = true");
+										notifyDelete(deleted);
+									} else {
+										log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
+									}
+								} else {
+									log.debug("deleted = false");
+									JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), JdtLsProjectCache.this);
+									JavaProject oldProject = table.put(uri, newProject);
+									if (oldProject != null) {
+										notifyChanged(newProject);
+									} else {
+										notifyCreated(newProject);
+									}
+								}
+							}
+						} catch (Exception e) {
+							log.error("", e);
+						}
+					});
+				}
+			});
+		} catch (Throwable t) {
+			if (isNoJdtError(t)) {
+				log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
+			} else if (isOldJdt(t)) {
+				log.info("JDT Lanuage Server too old. Fallback classpath provider will be used instead.");
+			} else {
+				log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
+			}
+			throw t;
+		}
 	}
 }

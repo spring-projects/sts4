@@ -21,11 +21,11 @@ import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -45,8 +45,10 @@ public class VSCodeSourceLinksTest {
 		public MavenJavaProject load(String projectName) throws Exception {
 			Path testProjectPath = Paths.get(VSCodeSourceLinksTest.class.getResource("/test-projects/" + projectName).toURI());
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return MavenJavaProject.create(new BasicFileObserver(), MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
-		}
+					return MavenJavaProject.create(new BasicFileObserver(), MavenCore.getDefault(),
+							testProjectPath.resolve(MavenCore.POM_XML).toFile(),
+							(uri, cpe) -> JavaDocProviders.createFor(cpe));
+				}
 
 	});
 

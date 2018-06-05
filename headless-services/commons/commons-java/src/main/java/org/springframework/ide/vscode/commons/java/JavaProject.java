@@ -15,6 +15,8 @@ import java.net.URI;
 
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
+import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import reactor.core.Disposable;
@@ -27,12 +29,15 @@ public class JavaProject implements IJavaProject, Disposable {
 	private final FileObserver fileObserver;
 	private final JavadocProviderFactory javadocProviderFactory;
 
-	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath, JavadocProviderFactory javadocProviderFactory) {
+	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath, JavadocService javadocService) {
 		super();
 		this.classpath = classpath;
 		this.fileObserver = fileObserver;
 		this.uri = uri;
-		this.javadocProviderFactory = javadocProviderFactory;
+		this.javadocProviderFactory = (classpathResource) -> {
+			CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, classpathResource);
+			return javadocService.javadocProvider(uri.toString(), cpe);
+		};
 	}
 
 	@Override

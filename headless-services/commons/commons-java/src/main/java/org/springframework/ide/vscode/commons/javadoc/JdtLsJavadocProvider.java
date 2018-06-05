@@ -48,11 +48,6 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 			return new IJavadoc() {
 
 				@Override
-				public String raw() {
-					throw new UnsupportedOperationException("Raw content unavailable");
-				}
-
-				@Override
 				public Renderable getRenderable() {
 					return renderableDoc;
 				}

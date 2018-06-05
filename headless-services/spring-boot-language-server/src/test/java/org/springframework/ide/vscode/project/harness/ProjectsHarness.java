@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.LegacyJavaProject;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -89,7 +90,8 @@ public class ProjectsHarness {
 	}
 	
 	public static final IJavaProject dummyProject() throws URISyntaxException {
-		return new LegacyJavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), null, new DelegatingCachedClasspath(() -> null, null));
+		return new LegacyJavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), null,
+				new DelegatingCachedClasspath(() -> null, null), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 	}
 
 	private ProjectsHarness(FileObserver fileObserver) {
@@ -111,7 +113,8 @@ public class ProjectsHarness {
 		switch (type) {
 		case MAVEN:
 			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
-			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(), testProjectPath.resolve(MavenCore.POM_XML).toFile());
+			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(),
+					testProjectPath.resolve(MavenCore.POM_XML).toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		default:
 			throw new IllegalStateException("Bug!!! Missing case");
 		}

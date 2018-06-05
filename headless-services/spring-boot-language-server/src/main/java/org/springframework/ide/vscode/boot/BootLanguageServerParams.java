@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,8 +18,9 @@ import java.util.Optional;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
-import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
+import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsServiceWithFallback;
+import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -29,11 +30,14 @@ import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
 import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
@@ -83,7 +87,11 @@ public class BootLanguageServerParams {
 	public static LSFactory<BootLanguageServerParams> createDefault() {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
-			JdtLsProjectCache jdtProjectCache = new JdtLsProjectCache(server, () -> createFallbackProjectCache(server));
+			JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
+					server,
+					new JdtLsProjectCache(server),
+					() -> createFallbackProjectCache(server)
+			);
 			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
 			indexProvider.setProgressService(server.getProgressService());
 
@@ -101,10 +109,12 @@ public class BootLanguageServerParams {
 	private static JavaProjectsService createFallbackProjectCache(SimpleLanguageServer server) {
 		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 		
-		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+		JavadocService javadocService = (uri, cpe) -> JavaDocProviders.createFor(cpe); 
+		
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER), javadocService);
 		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-		GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER));
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER), javadocService);
 		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
 		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
@@ -125,6 +135,11 @@ public class BootLanguageServerParams {
 			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 				return javaProjectFinder.find(doc);
 			}
+
+			@Override
+			public IJavadocProvider javadocProvider(String projectUri, CPE cpe) {
+				return javadocService.javadocProvider(projectUri, cpe);
+			}
 		};
 	}
 
@@ -132,11 +147,11 @@ public class BootLanguageServerParams {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null);
+			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
+			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
@@ -157,11 +172,11 @@ public class BootLanguageServerParams {
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null);
+			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null);
+			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
 			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
