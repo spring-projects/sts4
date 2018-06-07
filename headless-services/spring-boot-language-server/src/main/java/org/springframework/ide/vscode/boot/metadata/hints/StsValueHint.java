@@ -124,7 +124,7 @@ public class StsValueHint {
 	private static Renderable javaDocSnippet(IJavaProject project, IJavaElement je) {
 		return Renderables.lazy(() -> {
 			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
-			return PropertyDocUtils.documentJavaValue(sourceLinks, project, je);
+			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 		});
 	}
 

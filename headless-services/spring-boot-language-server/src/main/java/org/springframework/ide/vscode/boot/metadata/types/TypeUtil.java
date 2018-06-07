@@ -35,10 +35,13 @@ import java.util.stream.Stream;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ResourceHintProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.boot.metadata.util.DeprecationUtil;
+import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
@@ -638,6 +641,8 @@ public class TypeUtil {
 
 			//TODO: handle type parameters.
 			if (typeFromIndex != null) {
+				SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+				IJavaProject project = getJavaProject();
 				ArrayList<TypedProperty> properties = new ArrayList<>();
 				getGetterMethods(typeFromIndex).forEach(m -> {
 					Deprecation deprecation = DeprecationUtil.extract(m);
@@ -649,11 +654,11 @@ public class TypeUtil {
 					}
 					if (beanMode.includesHyphenated()) {
 						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
-								deprecation));
+								PropertyDocUtils.documentJavaElement(sourceLinks, project, m), deprecation));
 					}
 					if (beanMode.includesCamelCase()) {
 						properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
-								deprecation));
+								PropertyDocUtils.documentJavaElement(sourceLinks, project, m), deprecation));
 					}
 				});
 				return properties;

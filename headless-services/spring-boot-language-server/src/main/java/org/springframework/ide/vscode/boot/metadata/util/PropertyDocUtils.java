@@ -41,7 +41,7 @@ public class PropertyDocUtils {
 	 * @param je
 	 * @return
 	 */
-	public static Renderable documentation(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
+	public static Renderable javadocContent(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
 		Builder<Renderable> renderableBuilder = ImmutableList.builder();
 		IJavadoc javadoc = je.getJavaDoc();
 		renderableBuilder.add(Renderables.lineBreak());
@@ -57,7 +57,7 @@ public class PropertyDocUtils {
 	 * @param je
 	 * @return
 	 */
-	public static Renderable documentJavaValue(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
+	public static Renderable documentJavaElement(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
 		Builder<Renderable> renderableBuilder = ImmutableList.builder();
 		if (je instanceof IMember) {
 			IMember member = (IMember) je;
