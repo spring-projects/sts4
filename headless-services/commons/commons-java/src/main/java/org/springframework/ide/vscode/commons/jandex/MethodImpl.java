@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -75,16 +75,6 @@ public class MethodImpl implements IMethod {
 		return Wrappers.wrap(method.returnType());
 	}
 
-//	@Override
-//	public String getSignature() {
-//		StringBuilder sb = new StringBuilder();
-//		sb.append('(');
-//		method.parameters().forEach(p -> sb.append(signature(p)));
-//		sb.append(')');
-//		sb.append(getReturnType());
-//		return sb.toString();
-//	}
-
 	@Override
 	public String toString() {
 		return method.toString();
@@ -111,6 +101,12 @@ public class MethodImpl implements IMethod {
 	@Override
 	public String getBindingKey() {
 		return BindingKeyUtils.getBindingKey(method);
+	}
+
+	@Override
+	public String signature() {
+		//Return Jandex signature for now
+		return method.toString();
 	}
 
 }

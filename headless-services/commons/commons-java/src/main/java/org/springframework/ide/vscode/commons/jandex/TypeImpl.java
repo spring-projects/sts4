@@ -154,4 +154,9 @@ class TypeImpl implements IType {
 		return classpathContainer;
 	}
 
+	@Override
+	public String signature() {
+		return info.toString();
+	}
+
 }

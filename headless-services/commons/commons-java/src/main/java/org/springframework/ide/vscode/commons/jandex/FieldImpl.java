@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,12 +11,14 @@
 
 package org.springframework.ide.vscode.commons.jandex;
 
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.jboss.jandex.FieldInfo;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
+import org.springframework.ide.vscode.commons.java.IJavaType;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
@@ -91,6 +93,28 @@ class FieldImpl implements IField {
 	@Override
 	public String getBindingKey() {
 		return BindingKeyUtils.getBindingKey(field);
+	}
+
+	@Override
+	public IJavaType type() {
+		return Wrappers.wrap(field.type());
+	}
+
+	@Override
+	public String signature() {
+		String jandexSignature = field.toString();
+		int typeEndIdx = jandexSignature.indexOf(' ');
+		if (typeEndIdx < 0) {
+			return jandexSignature;
+		} else {
+			if (isEnumConstant()) {
+				// Chop off field type completely for enum constant
+				return jandexSignature.substring(typeEndIdx + 1);
+			} else {
+				// Chop off prefix of the FQ name of the field type
+				return Pattern.compile(field.type().name().toString(), Pattern.LITERAL).matcher(jandexSignature).replaceFirst(Wrappers.simpleName(field.type().name()));
+			}
+		}
 	}
 
 }

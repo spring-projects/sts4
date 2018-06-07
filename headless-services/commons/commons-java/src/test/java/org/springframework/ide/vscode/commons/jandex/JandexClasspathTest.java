@@ -10,16 +10,21 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.jandex;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
+import org.springframework.ide.vscode.commons.java.IField;
+import org.springframework.ide.vscode.commons.java.IMethod;
+import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
@@ -98,5 +103,36 @@ public class JandexClasspathTest {
 
 		assertNull(subject.findType("demo.Hello"));
 		assertNull(subject.findType("demo.Goodbye"));
+	}
+
+
+	@Test public void fieldSignature() throws Exception {
+		TestProject project = new TestProject("simple-java-project");
+		project.createClass("demo.Hello");
+
+		JandexClasspath subject = project.getJandexClasspath();
+
+		IType type = subject.findType("demo.Hello");
+		assertNotNull(type);
+
+		IField field = type.getField("message");
+		assertNotNull(field);
+
+		assertEquals("String demo.Hello.message", field.signature());
+	}
+
+	@Test public void methodSignature() throws Exception {
+		TestProject project = new TestProject("simple-java-project");
+		project.createClass("demo.Hello");
+
+		JandexClasspath subject = project.getJandexClasspath();
+
+		IType type = subject.findType("demo.Hello");
+		assertNotNull(type);
+
+		IMethod method = type.getMethod("getMessage", Stream.of());
+		assertNotNull(method);
+
+		assertEquals("java.util.List<java.lang.String> getMessage()", method.signature());
 	}
 }

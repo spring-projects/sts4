@@ -15,6 +15,8 @@ import java.io.File;
 public interface IField extends IMember {
 	boolean isEnumConstant();
 
+	IJavaType type();
+
 	@Override
 	default File classpathContainer() {
 		return getDeclaringType().classpathContainer();

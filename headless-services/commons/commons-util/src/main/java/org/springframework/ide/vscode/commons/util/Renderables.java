@@ -206,7 +206,7 @@ public class Renderables {
 
 			@Override
 			public void renderAsMarkdown(StringBuilder buffer) {
-				if (buffer.charAt(buffer.length() - 1) != '\n') {
+				if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '\n') {
 					// 2 spaces and then new line would create a line break in text
 					buffer.append("  ");
 				}
