@@ -20,26 +20,19 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonPrimitive;
 
 import reactor.core.publisher.Mono;
@@ -153,7 +146,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						break;
 					}
 					try {
-						items.add(adaptItem(doc, c, sortkeys));
+						items.add(adaptItem(doc, offset, c, sortkeys));
 					} catch (Exception e) {
 						logger.error("error computing completion", e);
 					}
@@ -166,14 +159,14 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return Mono.just(SimpleTextDocumentService.NO_COMPLETIONS);
 	}
 
-	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
+	private CompletionItem adaptItem(TextDocument doc, int cursor, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
 		CompletionItem item = new CompletionItem();
 		item.setLabel(completion.getLabel());
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
 		item.setDetail(completion.getDetail());
-		resolveEdits(doc, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
+		resolveEdits(doc, cursor, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
 											//lazy as we used to do in the past.
 		if (resolver!=null) {
 			item.setData(resolver.resolveLater(completion, doc));
@@ -190,20 +183,28 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setDocumentation(content);
 	}
 
-	private static void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
-		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
-		if (mainEdit.isPresent()) {
-			item.setTextEdit(mainEdit.get());
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
-		} else {
-			item.setInsertText("");
-		}
+	/**
+	 * Fill in the text edit related fields in completion Item: textEdit, additionalTextEdits, command
+	 *
+	 */
+	private void resolveEdits(TextDocument doc, int cursor, ICompletionProposal completion, CompletionItem item) {
 
-		completion.getAdditionalEdit().ifPresent(edit -> {
-			adaptEdits(doc, edit).ifPresent(extraEdit -> {
-				item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
-			});
-		});
+		try {
+
+			LspCompletionInterpreter lspCompletionInterpreter = new LspCompletionInterpreter(doc, cursor, server);
+			Optional<DocumentEdits> additionalEdit = completion.getAdditionalEdit();
+			if (additionalEdit.isPresent()) {
+				additionalEdit.get().apply(lspCompletionInterpreter);
+			}
+
+			DocumentEdits mainEdit = completion.getTextEdit();
+			mainEdit.apply(lspCompletionInterpreter);
+
+			lspCompletionInterpreter.resolveEdits(item);
+
+		} catch (Exception e) {
+			LOG.get().error("", e);
+		}
 	}
 
 	private static String toMarkdown(Renderable r) {
@@ -213,46 +214,33 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private static Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
-		try {
-			TextReplace replaceEdit = edits.asReplacement(doc);
-			if (replaceEdit==null) {
-				//The original edit does nothing.
-				return Optional.empty();
-			} else {
-				TextDocument newDoc = doc.copy();
-				edits.apply(newDoc);
-				TextEdit vscodeEdit = new TextEdit();
-				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-				if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
-					vscodeEdit.setNewText(replaceEdit.newText);
-				} else {
-					vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
-				}
-				//TODO: cursor offset within newText? for now we assume its always at the end.
-				return Optional.of(vscodeEdit);
-			}
-		}  catch (Exception e) {
-			LOG.get().error("{}", e);
-			return Optional.empty();
-		}
-	}
 
-	private static String vscodeIndentFix(TextDocument doc, Position start, String newText) {
-		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
-		// and do some kind of 'inverse magic' here.
-		//See here: https://github.com/Microsoft/language-server-protocol/issues/83
-		IndentUtil indenter = new IndentUtil(doc);
-		try {
-			String refIndent = indenter.getReferenceIndent(doc.toOffset(start), doc);
-			if (!refIndent.isEmpty()) {
-				return  StringUtil.stripIndentation(refIndent, newText);
-			}
-		} catch (BadLocationException e) {
-			LOG.get().error("{}", e);
-		}
-		return newText;
-	}
+//	private static Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
+//		try {
+//			TextReplace replaceEdit = edits.asReplacement(doc);
+//			if (replaceEdit==null) {
+//				//The original edit does nothing.
+//				return Optional.empty();
+//			} else {
+//				TextDocument newDoc = doc.copy();
+//				edits.apply(newDoc);
+//				TextEdit vscodeEdit = new TextEdit();
+//				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
+//				if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
+//					vscodeEdit.setNewText(replaceEdit.newText);
+//				} else {
+//					vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+//				}
+//				//TODO: cursor offset within newText? for now we assume its always at the end.
+//				return Optional.of(vscodeEdit);
+//			}
+//		}  catch (Exception e) {
+//			LOG.get().error("{}", e);
+//			return Optional.empty();
+//		}
+//	}
+
+
 
 	@Override
 	public CompletionItem resolveCompletion(CompletionItem unresolved) {

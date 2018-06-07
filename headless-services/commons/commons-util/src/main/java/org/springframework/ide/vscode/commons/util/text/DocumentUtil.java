@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,20 @@ public class DocumentUtil {
 		} catch (BadLocationException e) {
 			//unless the code above is wrong... this is supposed to be impossible!
 			throw new IllegalStateException("Bug!", e);
+		}
+	}
+	
+	/**
+	 * Determine the 'known minimum' of two document offsets. Correctly handle
+	 * when either one or both are '-1' (unknown).
+	 */
+	public static int min(int a, int b) {
+		if (a==-1) {
+			return b;
+		} else if (b==-1) {
+			return a;
+		} else {
+			return Math.min(a, b);
 		}
 	}
 

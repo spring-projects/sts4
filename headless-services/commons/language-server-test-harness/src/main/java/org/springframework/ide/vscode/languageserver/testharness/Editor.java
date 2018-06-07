@@ -14,6 +14,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
 
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
 
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
@@ -48,15 +50,15 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentState;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
-
-import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.*;
 
 public class Editor {
 
@@ -445,7 +447,9 @@ public class Editor {
 	public void apply(CompletionItem completion) throws Exception {
 		completion = harness.resolveCompletionItem(completion);
 		TextEdit edit = completion.getTextEdit();
-		String docText = doc.getText();
+		TextDocument textDoc = new TextDocument(getUri(), languageId);
+		textDoc.setText(doc.getText());
+		DocumentState docState = new DocumentState(textDoc);
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();
 			int cursorReplaceOffset = 0;
@@ -474,9 +478,32 @@ public class Editor {
 			Range rng = edit.getRange();
 			int start = doc.toOffset(rng.getStart());
 			int end = doc.toOffset(rng.getEnd());
-			replaceText(start, end, replaceWith);
-			selectionStart = selectionEnd = start+cursorReplaceOffset;
+			docState.delete(true, start, end);
+			docState.insert(true, start, replaceWith.substring(0, cursorReplaceOffset));
+			docState.insert(false, start, replaceWith.substring(cursorReplaceOffset));
+
+			List<TextEdit> additionalTextEdits = completion.getAdditionalTextEdits();
+			if (additionalTextEdits != null) {
+				for (TextEdit textEdit : additionalTextEdits) {
+					int textEditStart = doc.toOffset(textEdit.getRange().getStart());
+					docState.delete(false, textEditStart, doc.toOffset(textEdit.getRange().getEnd()));
+					docState.insert(false, textEditStart, textEdit.getNewText());
+				}
+			}
+
+			setRawText(docState.getDocument().get());
+
+			int cursor = docState.getCursor();
+			if (cursor >= 0) {
+				this.selectionStart = this.selectionEnd = cursor;
+			}
+
+			Command command = completion.getCommand();
+			if (command != null) {
+				harness.perform(command);
+			}
 		} else {
+			String docText = doc.getText();
 			String insertText = getInsertText(completion);
 			String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
 
@@ -485,6 +512,7 @@ public class Editor {
 			setRawText(newText);
 		}
 	}
+
 
 	private String getInsertText(CompletionItem completion) {
 		String s = completion.getInsertText();

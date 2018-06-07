@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
@@ -64,6 +65,7 @@ import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathLis
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -77,6 +79,8 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -102,8 +106,11 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
+
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
+	public final String MOVE_CURSOR_COMMAND_ID;
+
 	protected final LazyCompletionResolver completionResolver = createCompletionResolver();
 
 	private SimpleTextDocumentService tds;
@@ -139,6 +146,10 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	private Runnable shutdownHandler;
 
 	private Map<String, ExecuteCommandHandler> commands = new HashMap<>();
+
+	private Gson gson = new GsonBuilder()
+							.disableHtmlEscaping()
+							.create();
 
 	private AsyncRunner async = new AsyncRunner();
 	private ClasspathListenerManager classpathListenerManager;
@@ -177,6 +188,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	public SimpleLanguageServer(String extensionId) {
 		this.EXTENSION_ID = extensionId;
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
+		this.MOVE_CURSOR_COMMAND_ID = "sts."+EXTENSION_ID+".moveCursor";
 	}
 
 	protected CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
@@ -198,6 +210,12 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 				return applyEdit.flatMap(r -> r.isApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
 			})
 			.toFuture();
+		} else if (MOVE_CURSOR_COMMAND_ID.equals(params.getCommand())) {
+			Assert.isLegal(params.getArguments().size()==2);
+
+			String uri = ((JsonPrimitive)params.getArguments().get(0)).getAsString();
+			Position position = gson.fromJson((JsonObject)params.getArguments().get(1), Position.class);
+			return client.moveCursor(new CursorMovement(uri, position));
 		}
 		Log.warn("Unknown command ignored: "+params.getCommand());
 		return CompletableFuture.completedFuture(false);
@@ -372,10 +390,15 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 			codeLensOptions.setResolveProvider(hasCodeLensResolveProvider());
 			c.setCodeLensProvider(codeLensOptions );
 		}
-		if (hasExecuteCommandSupport && hasQuickFixes()) {
-			c.setExecuteCommandProvider(new ExecuteCommandOptions(ImmutableList.of(
-					CODE_ACTION_COMMAND_ID
-			)));
+		if (hasExecuteCommandSupport ) {
+			ImmutableList.Builder<String> builder = ImmutableList.builder();
+			if (hasQuickFixes()) {
+				builder.add(CODE_ACTION_COMMAND_ID);
+			}
+			builder.add(MOVE_CURSOR_COMMAND_ID);
+
+			c.setExecuteCommandProvider(new ExecuteCommandOptions(builder.build()));
+
 		}
 		if (hasWorkspaceSymbolHandler()) {
 			c.setWorkspaceSymbolProvider(true);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.util.text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,6 +139,16 @@ public class DocumentRegion implements CharSequence, IRegion {
 	 */
 	public boolean containsOffset(int absoluteOffset) {
 		return absoluteOffset>=start && absoluteOffset <= end;
+	}
+	
+	public Optional<DocumentRegion> intersection(DocumentRegion other) {
+		int newStart = Math.max(this.start, other.start);
+		int newEnd = Math.min(this.end, other.end);
+		if (newEnd >= newStart) {
+			return Optional.of(new DocumentRegion(doc, newStart, newEnd));
+		} else {
+			return Optional.empty();
+		}
 	}
 
 	@Override
@@ -337,6 +348,19 @@ public class DocumentRegion implements CharSequence, IRegion {
 	@Override
 	public int getOffset() {
 		return getStart();
+	}
+
+	/**
+	 * Computes smallest document region that encompasses this region and the other region.
+	 */
+	public DocumentRegion merge(DocumentRegion otherEdit) {
+		if (otherEdit == null) {
+			return this;
+		} else {
+			int newStart = Math.min(otherEdit.getStart(), this.getStart());
+			int newEnd = Math.max(otherEdit.getEnd(), this.getEnd());
+			return new DocumentRegion(doc, newStart, newEnd);
+		}
 	}
 
 }

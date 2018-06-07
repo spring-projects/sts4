@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -142,7 +142,7 @@ public class DocumentEdits implements ProposalApplier {
 		}
 
 		@Override
-		void apply(DocumentState doc) throws BadLocationException {
+		void apply(IDocumentState doc) throws BadLocationException {
 			doc.insert(grabCursor, offset, text);
 		}
 
@@ -169,7 +169,7 @@ public class DocumentEdits implements ProposalApplier {
 		}
 		public abstract int getStart();
 		public abstract int getEnd();
-		abstract void apply(DocumentState doc) throws BadLocationException;
+		abstract void apply(IDocumentState doc) throws BadLocationException;
 		@Override
 		public abstract String toString();
 	}
@@ -186,13 +186,17 @@ public class DocumentEdits implements ProposalApplier {
 		}
 
 		@Override
-		void apply(DocumentState doc) throws BadLocationException {
+		void apply(IDocumentState doc) throws BadLocationException {
 			doc.delete(grabCursor, start, end);
 		}
 
 		@Override
 		public String toString() {
-			return "del("+start+"->"+end+")";
+			try {
+				return "del("+start+"->"+end+", ["+ doc.textBetween(start, end)+"])";
+			} catch (BadLocationException e) {
+				return "del("+start+"->"+end+")";
+			}
 		}
 
 		@Override
@@ -207,111 +211,16 @@ public class DocumentEdits implements ProposalApplier {
 
 	}
 
-	private interface OffsetTransformer {
+	public interface OffsetTransformer {
 		int transform(int offset, Direction dir);
 	}
 
-	private static final OffsetTransformer NULL_TRANSFORM = new OffsetTransformer() {
+	static final OffsetTransformer NULL_TRANSFORM = new OffsetTransformer() {
 		@Override
 		public int transform(int offset, Direction dir) {
 			return offset;
 		}
 	};
-
-	/**
-	 * DocumentState provides methods to modify a document, its methods accept
-	 * offsets expressed relative to the original document contents and keeps track
-	 * of a OffsetTransformer that maps them to offsets in the current document.
-	 */
-	private static class DocumentState {
-		private IDocument doc; //may be null, in which case no actual modifications are performed
-		private OffsetTransformer org2new = NULL_TRANSFORM;
-		private int selection = -1; //-1 Means no edits where applied that change selection so
-									// the current selection is unknown
-
-		public DocumentState(IDocument doc) {
-			this.doc = doc;
-		}
-
-		public void insert(boolean grabCursor, int start, final String text) throws BadLocationException {
-			final int tStart = org2new.transform(start, Direction.AFTER);
-			if (!text.isEmpty()) {
-				if (doc!=null) {
-					doc.replace(tStart, 0, text);
-				}
-				final OffsetTransformer parent = org2new;
-				org2new = new OffsetTransformer() {
-					@Override
-					public int transform(int org, Direction dir) {
-						int tOffset = parent.transform(org, dir);
-						if (tOffset<tStart) {
-							return tOffset;
-						} else if (tOffset>tStart) {
-							return tOffset + text.length();
-						} else /* tOffset==tStart*/ {
-							if (dir==Direction.BEFORE) {
-								return tOffset;
-							} else {
-								return tOffset + text.length();
-							}
-						}
-					}
-				};
-			}
-			if (grabCursor) {
-				selection = tStart+text.length();
-			} else if (selection > tStart) {
-				selection += text.length();
-			}
-		}
-
-		public void delete(boolean grabCursor, final int start, final int end) throws BadLocationException {
-			final int tStart = org2new.transform(start, Direction.AFTER);
-			if (end>start) { // skip work for 'delete nothing' op
-				final int tEnd = org2new.transform(end, Direction.AFTER);
-				if (tEnd>tStart) { // skip work for 'delete nothing' op
-					if (doc!=null) {
-						doc.replace(tStart, tEnd-tStart, "");
-					}
-
-					final OffsetTransformer parent = org2new;
-					org2new = new OffsetTransformer() {
-						@Override
-						public int transform(int org, Direction dir) {
-							int tOffset = parent.transform(org, dir);
-							if (tOffset<=tStart) {
-								return tOffset;
-							} else if (tOffset>=tEnd) {
-								return tOffset - tEnd + tStart;
-							} else {
-								return start;
-							}
-						}
-					};
-				}
-			}
-			if (grabCursor) {
-				selection = tStart;
-			} else if (selection>tStart) {
-				int len = end - start;
-				if (len > 0) {
-					selection = Math.max(tStart, selection-len);
-				}
-			}
-		}
-
-		@Override
-		public String toString() {
-			if (doc==null) {
-				return super.toString();
-			}
-			StringBuilder buf = new StringBuilder();
-			buf.append("DocumentState(\n");
-			buf.append(doc.get()+"\n");
-			buf.append(")\n");
-			return buf.toString();
-		}
-	}
 
 	private List<Edit> edits = new ArrayList<Edit>();
 	private IDocument doc;
@@ -372,7 +281,11 @@ public class DocumentEdits implements ProposalApplier {
 
 	@Override
 	public void apply(IDocument _doc) throws Exception {
-		DocumentState doc = new DocumentState(_doc);
+		IDocumentState doc = new DocumentState(_doc);
+		apply(doc);
+	}
+
+	public void apply(IDocumentState doc) throws Exception {
 		for (Edit edit : edits) {
 			edit.apply(doc);
 		}

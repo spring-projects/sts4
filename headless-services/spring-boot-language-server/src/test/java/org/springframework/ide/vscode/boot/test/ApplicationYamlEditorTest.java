@@ -1406,23 +1406,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  nested:\n" +
 				"    bar:\n" +
 				"      foo:\n" +
-				"other:\n" +
-				"foo.nested.nested.b<*>"
-				,
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"    nested:\n" +
-				"      bar: <*>\n"+
-				"other:\n"
-		);
-
-		assertCompletion(
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
 				"foo.nested.nested.b<*>"
 				,
 				"foo:\n" +
@@ -1431,22 +1414,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      foo:\n" +
 				"    nested:\n" +
 				"      bar: <*>\n"
-		);
-
-		assertCompletion(
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"other:\n" +
-				"foo.nested.bar.b<*>"
-				,
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"      bar: <*>\n" +
-				"other:\n"
 		);
 
 		assertCompletion(
@@ -1465,6 +1432,62 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
+	@Test public void testJumpyInsertion() throws Exception {
+		String[] names = {"foo", "nested", "bar"};
+		int levels = 4;
+		generateNestedProperties(levels, names, "");
+
+		assertCompletion(
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"other:\n" +
+				"foo.nested.bar.b<*>"
+				,
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"      bar: <*>\n" +
+				"other:"
+		);
+
+		assertCompletion(
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"other:\n" +
+				"foo.nested.nested.b<*>"
+				,
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"    nested:\n" +
+				"      bar: <*>\n"+
+				"other:"
+		);
+		
+		assertCompletion(
+				"foo.nested.nested.b<*>\n" +
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"other:"
+				,
+				"foo:\n" +
+				"  nested:\n" +
+				"    bar:\n" +
+				"      foo:\n" +
+				"    nested:\n" +
+				"      bar: <*>\n"+
+				"other:"
+		);
+	}
+	
 	@Test public void testBooleanValueCompletion() throws Exception {
 		defaultTestData();
 		assertCompletions(

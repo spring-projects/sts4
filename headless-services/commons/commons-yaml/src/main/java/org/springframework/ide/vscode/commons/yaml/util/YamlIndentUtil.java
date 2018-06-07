@@ -53,20 +53,6 @@ public class YamlIndentUtil {
 		this(doc.getDefaultLineDelimiter());
 	}
 
-	/**
-	 * Determine the 'known minimum' of two indentation levels. Correctly handle
-	 * when either one or both indent levels are '-1' (unknown).
-	 */
-	public static int minIndent(int a, int b) {
-		if (a==-1) {
-			return b;
-		} else if (b==-1) {
-			return a;
-		} else {
-			return Math.min(a, b);
-		}
-	}
-
 	public static void addIndent(int indent, StringBuilder buf) {
 		for (int i = 0; i < indent; i++) {
 			buf.append(' ');

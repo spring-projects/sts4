@@ -118,6 +118,7 @@ public class TextDocument implements IDocument {
 	}
 
 
+	@Override
 	public Position toPosition(int offset) throws BadLocationException {
 		int line = lineNumber(offset);
 		int startOfLine = startOfLine(line);

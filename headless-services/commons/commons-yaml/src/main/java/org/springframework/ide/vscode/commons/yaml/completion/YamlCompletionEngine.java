@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.DocumentUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -87,7 +88,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			SNode current = root.find(offset);
 			int cursorIndent = doc.getColumn(offset);
 			int nodeIndent = current.getIndent();
-			int baseIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
+			int baseIndent = DocumentUtil.min(cursorIndent, nodeIndent);
 			List<SNode> contextNodes = getContextNodes(doc, current, offset, baseIndent);
 			if (current.getNodeType()==SNodeType.RAW) {
 				//relaxed indentation
@@ -460,7 +461,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			// rather than the structur-tree to determine the 'context' node.
 			int cursorIndent = doc.getColumn(offset);
 			int nodeIndent = node.getIndent();
-			int currentIndent = YamlIndentUtil.minIndent(cursorIndent, nodeIndent);
+			int currentIndent = DocumentUtil.min(cursorIndent, nodeIndent);
 			while (node.getIndent()==-1 || (node.getIndent()>=currentIndent && node.getNodeType()!=SNodeType.DOC)) {
 				node = node.getParent();
 			}
