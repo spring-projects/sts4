@@ -81,7 +81,7 @@ public class DocumentState implements IDocumentState {
 	public void delete(boolean grabCursor, final int start, final int end) throws BadLocationException {
 		final int tStart = org2new.transform(start, Direction.AFTER);
 		if (end>start) { // skip work for 'delete nothing' op
-			final int tEnd = org2new.transform(end, Direction.AFTER);
+			final int tEnd = org2new.transform(end, Direction.BEFORE);
 			if (tEnd>tStart) { // skip work for 'delete nothing' op
 				if (doc!=null) {
 					doc.replace(tStart, tEnd-tStart, "");

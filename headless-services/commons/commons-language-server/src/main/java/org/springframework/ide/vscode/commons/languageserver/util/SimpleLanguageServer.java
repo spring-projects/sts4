@@ -106,6 +106,18 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
 
+//	private static final List<String> DEFAULT_TRIGGER_CHARS;
+//
+//	static {
+//		ImmutableList.Builder<String> builder = ImmutableList.builder();
+//		for (char c = 'a'; c <= 'z'; c++) {
+//			String ch = ""+c;
+//			builder.add(ch);
+//			builder.add(ch.toUpperCase());
+//		}
+//		DEFAULT_TRIGGER_CHARS = builder.build();
+//	}
+
 
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
@@ -367,6 +379,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		c.setHoverProvider(true);
 
 		CompletionOptions completionProvider = new CompletionOptions();
+//		completionProvider.setTriggerCharacters(DEFAULT_TRIGGER_CHARS);
 		completionProvider.setResolveProvider(hasLazyCompletionResolver());
 		c.setCompletionProvider(completionProvider);
 

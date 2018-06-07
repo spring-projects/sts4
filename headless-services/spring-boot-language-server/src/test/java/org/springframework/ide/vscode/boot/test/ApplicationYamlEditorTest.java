@@ -1488,6 +1488,20 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 	
+	@Test public void almostJumpyCompletion() throws Exception {
+		defaultTestData();
+		
+		assertCompletion(
+				"server:\n" + 
+				"  address: bark\n" +
+				"port<*>\n"
+				, // ==>
+				"server:\n" + 
+				"  address: bark\n" +
+				"  port: <*>\n"
+		);
+	}
+	
 	@Test public void testBooleanValueCompletion() throws Exception {
 		defaultTestData();
 		assertCompletions(

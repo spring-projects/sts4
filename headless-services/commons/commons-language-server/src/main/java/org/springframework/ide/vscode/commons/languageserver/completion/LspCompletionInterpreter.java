@@ -112,8 +112,8 @@ public class LspCompletionInterpreter implements IDocumentState {
 
 		ImmutableList.Builder<TextEdit> additionalEdits = ImmutableList.builder();
 
-		resolveAdditionalEdit(beforeMainEditRegion, additionalEdits);
-		resolveAdditionalEdit(afterMainEditRegion, additionalEdits);
+		resolveAdditionalEdit(beforeMainEditRegion, additionalEdits, Direction.BEFORE);
+		resolveAdditionalEdit(afterMainEditRegion, additionalEdits, Direction.AFTER);
 
 		item.setAdditionalTextEdits(additionalEdits.build());
 
@@ -123,15 +123,15 @@ public class LspCompletionInterpreter implements IDocumentState {
 		}
 	}
 
-	protected void resolveAdditionalEdit(DocumentRegion editRegion, ImmutableList.Builder<TextEdit> builder)
+	protected void resolveAdditionalEdit(DocumentRegion editRegion, ImmutableList.Builder<TextEdit> builder, Direction direction)
 			throws BadLocationException {
 		if (editRegion != null) {
 			TextEdit edit = new TextEdit();
 			edit.setRange(originalDoc.toRange(editRegion));
 			OffsetTransformer org2New = docState.getOrg2New();
 			String newText = docState.getDocument().textBetween(
-					org2New.transform(editRegion.getStart(), Direction.BEFORE),
-					org2New.transform(editRegion.getEnd(), Direction.AFTER));
+					org2New.transform(editRegion.getStart(), direction),
+					org2New.transform(editRegion.getEnd(), direction));
 			edit.setNewText(newText);
 			builder.add(edit);
 		}
