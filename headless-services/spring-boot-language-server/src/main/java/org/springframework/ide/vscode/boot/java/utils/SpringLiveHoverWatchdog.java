@@ -37,7 +37,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringLiveHoverWatchdog {
 
-
 	public static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
 	
 	Logger logger = LoggerFactory.getLogger(SpringLiveHoverWatchdog.class);

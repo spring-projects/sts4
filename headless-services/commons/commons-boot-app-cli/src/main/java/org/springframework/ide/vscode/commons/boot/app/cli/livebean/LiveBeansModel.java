@@ -11,14 +11,19 @@
 package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Martin Lippert
@@ -208,6 +213,10 @@ public class LiveBeansModel {
 
 	public boolean isEmpty() {
 		return beansViaName.isEmpty(); //Assumes every bean has a name.
+	}
+
+	public Set<String> getBeanNames() {
+		return beansViaName.keySet();
 	}
 
 }

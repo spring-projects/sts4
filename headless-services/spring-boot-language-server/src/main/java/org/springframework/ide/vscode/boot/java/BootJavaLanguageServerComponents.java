@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -95,6 +96,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final SpringIndexer indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
+	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
 	private final BootJavaConfig config;
 	private final CompilationUnitCache cuCache;
@@ -162,6 +164,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //			}
 		});
 		
+		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(this, server, serverParams.projectObserver, serverParams.runningAppProvider, projectFinder, serverParams.watchDogInterval);
+		
 		codeLensHandler = createCodeLensEngine();
 		documents.onCodeLens(codeLensHandler);
 		
@@ -170,10 +174,20 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		workspaceService.onDidChangeConfiguraton(settings -> {
 			config.handleConfigurationChange(settings);
+			
+			// live hover watchdog
 			if (config.isBootHintsEnabled()) {
 				liveHoverWatchdog.enableHighlights();
 			} else {
 				liveHoverWatchdog.disableHighlights();
+			}
+			
+			// live change detection watchdog
+			if (config.isChangeDetectionEnabled()) {
+				liveChangeDetectionWatchdog.enableHighlights();
+			}
+			else {
+				liveChangeDetectionWatchdog.disableHighlights();
 			}
 		});
 
@@ -206,6 +220,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private void initialized() {
 		this.indexer.serverInitialized();
+		this.liveChangeDetectionWatchdog.start();
+	
 		// TODO: due to a missing message from lsp4e this "initialized" is not called in
 		// the LSP4E case
 		// if this gets fixed, the code should move here (from "initialize" above)
@@ -216,6 +232,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private void shutdown() {
 		this.liveHoverWatchdog.shutdown();
+		this.liveChangeDetectionWatchdog.shutdown();
 		this.indexer.shutdown();
 		this.cuCache.dispose();
 	}
