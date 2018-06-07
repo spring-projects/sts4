@@ -29,8 +29,8 @@ import org.springframework.ide.vscode.commons.util.Renderables;
  */
 public class SpringResource {
 
-	private static final String FILE = "file";
-	private static final String CLASS_PATH_RESOURCE = "class path resource";
+	public static final String FILE = "file";
+	public static final String CLASS_PATH_RESOURCE = "class path resource";
 
 	private SourceLinks sourceLinks;
 	private String type;
@@ -65,7 +65,7 @@ public class SpringResource {
 		Optional<String> linkUrl;
 		switch (type) {
 		case FILE:
-			String relativePath = projectRelativePath(path);
+			String relativePath = projectRelativePath(project, path);
 			if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
 				linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath);
 			} else {
@@ -73,7 +73,7 @@ public class SpringResource {
 			}
 			// not a project relative path
 			return linkUrl.isPresent() ? Renderables.link(relativePath, linkUrl.get()).toMarkdown()
-					: "`" + projectRelativePath(path) + "`";
+					: "`" + projectRelativePath(project, path) + "`";
 		case CLASS_PATH_RESOURCE:
 			linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, path);
 			return linkUrl.isPresent() ? Renderables.link(path, linkUrl.get()).toMarkdown() : "`"+path+"`";
@@ -82,7 +82,7 @@ public class SpringResource {
 		}
 	}
 
-	private String projectRelativePath(String pathStr) {
+	public static String projectRelativePath(IJavaProject project, String pathStr) {
 		Path path = Paths.get(pathStr);
 		IClasspath classpath = project.getClasspath();
 		Iterable<File> ofs = () -> IClasspathUtil.getOutputFolders(classpath).iterator();

@@ -148,12 +148,25 @@ public class SpringBootApp {
 	}
 
 	private boolean isSpringBootAppClasspath() throws IOException {
-		Properties props = this.vm.getSystemProperties();
-		String classpath = (String) props.get("java.class.path");
-		String[] cpElements = getClasspath(classpath);
-		return contains(cpElements, "spring-boot");
+		return contains(getClasspath(), "spring-boot");
 	}
 
+	public String[] getClasspath() throws IOException {
+		Properties props = this.vm.getSystemProperties();
+		String classpath = (String) props.get("java.class.path");
+		String[] cpElements = splitClasspath(classpath);
+		return cpElements;
+	}
+
+	public String getJavaCommand() throws IOException {
+		Properties props = this.vm.getSystemProperties();
+		if (props.contains("sun.java.command")) {
+			return props.getProperty("sun.java.command");
+		}
+		else {
+			return null;
+		}
+	}
 
 	public boolean containsSystemProperty(Object key) throws IOException {
 		Properties props = this.vm.getSystemProperties();
@@ -340,7 +353,7 @@ public class SpringBootApp {
 		return false;
 	}
 
-	protected String[] getClasspath(String classpath) {
+	protected String[] splitClasspath(String classpath) {
 		List<String> classpathElements = new ArrayList<>();
 		if (classpath != null) {
 			StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
