@@ -94,7 +94,7 @@ public class ClasspathListenerHandlerTest {
 		});
 	}
 
-	@Test public void classpathIsRemovedWhenProjectDeletedFromFileSystem() throws Exception {
+	@Ignore @Test public void classpathIsRemovedWhenProjectDeletedFromFileSystem() throws Exception {
 		String projectName = "classpath-test-simple-java-project";
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();

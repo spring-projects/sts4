@@ -26,12 +26,12 @@
     "yaml"
   ],
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Linters",
     "Extension Packs"
   ],
   "engines": {
-    "vscode": "^1.19.0"
+    "vscode": "^1.23.1"
   },
   "extensionDependencies": [
     "Pivotal.vscode-spring-boot",
