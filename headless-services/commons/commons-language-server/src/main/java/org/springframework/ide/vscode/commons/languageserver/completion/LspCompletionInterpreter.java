@@ -90,8 +90,9 @@ public class LspCompletionInterpreter implements IDocumentState {
 	}
 
 	public void resolveEdits(CompletionItem item) throws BadLocationException {
+		TextEdit mainEdit = null;
 		if (mainEditRegion != null) {
-			TextEdit mainEdit = new TextEdit();
+			mainEdit = new TextEdit();
 			mainEdit.setRange(originalDoc.toRange(mainEditRegion));
 			OffsetTransformer org2New = docState.getOrg2New();
 			String newText = docState.getDocument().textBetween(
@@ -112,9 +113,26 @@ public class LspCompletionInterpreter implements IDocumentState {
 
 		ImmutableList.Builder<TextEdit> additionalEdits = ImmutableList.builder();
 
-		resolveAdditionalEdit(beforeMainEditRegion, additionalEdits, Direction.BEFORE);
-		resolveAdditionalEdit(afterMainEditRegion, additionalEdits, Direction.AFTER);
+		TextEdit beforeEdit = resolveAdditionalEdit(beforeMainEditRegion, Direction.BEFORE);
+		TextEdit afterEdit = resolveAdditionalEdit(afterMainEditRegion, Direction.AFTER);
 
+		if (isAdjoining(beforeMainEditRegion, mainEditRegion) && beforeEdit.getNewText().equals("")) {
+			//Special case because vscode seems to have some bug when additional edits deletes newline preceding
+			// the insertion point (and we are adding it back in the mainEdit). This is actually a bit of
+			// a weird thing for us to do anyways...
+			//So we detect if the beforeEdit is a deletion that is canceled out by the main edits's insertion
+			//and simplify the result.
+			String deletedText = beforeMainEditRegion.toString();
+			String insertedText = mainEdit.getNewText();
+			if (insertedText.startsWith(deletedText)) {
+				//cancels eachother!
+				beforeEdit = null;
+				mainEdit.setNewText(insertedText.substring(deletedText.length()));
+			}
+		}
+
+		if (beforeEdit!=null) additionalEdits.add(beforeEdit);
+		if (afterEdit!=null) additionalEdits.add(afterEdit);
 		item.setAdditionalTextEdits(additionalEdits.build());
 
 		if (needsCursorMove) {
@@ -123,7 +141,11 @@ public class LspCompletionInterpreter implements IDocumentState {
 		}
 	}
 
-	protected void resolveAdditionalEdit(DocumentRegion editRegion, ImmutableList.Builder<TextEdit> builder, Direction direction)
+	private boolean isAdjoining(DocumentRegion left, DocumentRegion right) {
+		return left!=null && right!=null && left.getEnd()==right.getStart();
+	}
+
+	protected TextEdit resolveAdditionalEdit(DocumentRegion editRegion, Direction direction)
 			throws BadLocationException {
 		if (editRegion != null) {
 			TextEdit edit = new TextEdit();
@@ -133,8 +155,9 @@ public class LspCompletionInterpreter implements IDocumentState {
 					org2New.transform(editRegion.getStart(), direction),
 					org2New.transform(editRegion.getEnd(), direction));
 			edit.setNewText(newText);
-			builder.add(edit);
+			return edit;
 		}
+		return null;
 	}
 
 	private boolean isMainEdit(int start, int end) {
