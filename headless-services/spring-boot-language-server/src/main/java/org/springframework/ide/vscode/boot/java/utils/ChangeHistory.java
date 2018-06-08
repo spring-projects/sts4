@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,23 +29,38 @@ public class ChangeHistory {
 
 	private static final List<LiveBean> EMPTY_BEANS_LIST = new ArrayList<>(0);
 
-	private final String virtualAppID;
-	
-	private SpringBootApp runningProcess;
+	private SpringBootApp associatedProcess;
+	private String associatedProcessCommand;
+	private String[] associatedProcessClasspath;
+
 	private LiveBeansModel lastBeans;
 
-	public ChangeHistory(String virtualAppID) {
-		this.virtualAppID = virtualAppID;
+	public ChangeHistory() {
 	}
 	
 	public void updateProcess(SpringBootApp app) {
-		this.runningProcess = app;
+		if (this.associatedProcess != app) {
+			this.associatedProcess = app;
+			
+			try {
+				this.associatedProcessCommand = app.getJavaCommand();
+				this.associatedProcessClasspath = app.getClasspath();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public boolean matchesProcess(String commandLine, String[] classpath) {
+		return this.associatedProcessCommand != null && this.associatedProcessCommand.equals(commandLine)
+				&& this.associatedProcessClasspath != null && Arrays.deepEquals(this.associatedProcessClasspath, classpath);
 	}
 
 	public Change checkForUpdates() {
 		Change result = null;
 
-		LiveBeansModel currentBeans = this.runningProcess.getBeans();
+		LiveBeansModel currentBeans = this.associatedProcess.getBeans();
 		if (!currentBeans.isEmpty()) {
 
 			if (lastBeans == null) {
@@ -87,7 +104,7 @@ public class ChangeHistory {
 			if (!contains(currentBeans, bean)) {
 
 				if (result == null) {
-					result = new Change();
+					result = new Change(associatedProcess);
 				}
 
 				result.addDeletedBean(bean);
@@ -98,7 +115,7 @@ public class ChangeHistory {
 			if (!contains(previousBeans, bean)) {
 				
 				if (result == null) {
-					result = new Change();
+					result = new Change(associatedProcess);
 				}
 
 				result.addNewBean(bean);
@@ -111,7 +128,7 @@ public class ChangeHistory {
 	private boolean contains(List<LiveBean> beans, LiveBean bean) {
 		for (LiveBean beansFromList : beans) {
 			if (StringUtils.equals(beansFromList.getId(), bean.getId())
-					&& StringUtils.equals(beansFromList.getType(), bean.getType())
+					&& StringUtils.equals(beansFromList.getType(true), bean.getType(true))
 					&& StringUtils.equals(beansFromList.getResource(), bean.getResource())) {
 				return true;
 			}
