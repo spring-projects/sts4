@@ -135,6 +135,11 @@ public class LspCompletionInterpreter implements IDocumentState {
 		if (afterEdit!=null) additionalEdits.add(afterEdit);
 		item.setAdditionalTextEdits(additionalEdits.build());
 
+		if (mainEdit!=null && mainEdit.getNewText().equals("")) {
+			//Vscode handles this poorly and adds 'junk' instead.
+			mainEdit.setNewText(" "); // Adding a space. It is still junk but it is at least not immediately visible.
+		}
+
 		if (needsCursorMove) {
 			Position position  = docState.getDocument().toPosition(docState.getCursor());
 			item.setCommand(new Command("Move Cursor", server.MOVE_CURSOR_COMMAND_ID, ImmutableList.of(originalDoc.getUri(), position)));
