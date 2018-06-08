@@ -44,13 +44,15 @@ public class ChangeHistory {
 		Change result = null;
 
 		LiveBeansModel currentBeans = this.runningProcess.getBeans();
-		
-		if (lastBeans == null) {
-			lastBeans = currentBeans;
-		}
-		else if (currentBeans != null) {
-			result = calculateBeansDiff(lastBeans, currentBeans, result);
-			lastBeans = currentBeans;
+		if (!currentBeans.isEmpty()) {
+
+			if (lastBeans == null) {
+				lastBeans = currentBeans;
+			}
+			else if (lastBeans != null && currentBeans != null) {
+				result = calculateBeansDiff(lastBeans, currentBeans, result);
+				lastBeans = currentBeans;
+			}
 		}
 		
 		return result;
