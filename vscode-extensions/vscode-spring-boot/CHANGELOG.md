@@ -1,6 +1,7 @@
 ## 2018-06-08 (M12)
 
 * _(Spring Boot)_ live hovers now updated in all open editors, not just the active one
+* _(Spring Boot)_ more detailed context shown in hover documentation when editing property files ([#265](https://github.com/spring-projects/spring-ide/issues/265))
 * _(Spring Boot)_ performance improvement: project symbols now show up a lot faster for the open editors/projects (in a multi-root folder workspace)
 * _(Spring Boot)_ bugfix: JDK9 and JDK10 projects supported now even if main editor and/or language server runs on JDK8
 * _(Spring Boot)_ bugfix: various NPEs in Spring indexer fixed
