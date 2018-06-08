@@ -183,7 +183,7 @@ public class LiveBeansModel {
 		for (Exception e : exceptions) {
 			Log.log(e);
 		}
-		return LiveBeansModel.builder().build(); // allways return at least an empty model.
+		return LiveBeansModel.builder().build(); // always return at least an empty model.
 	}
 
 	private final ImmutableListMultimap<String, LiveBean> beansViaType;
