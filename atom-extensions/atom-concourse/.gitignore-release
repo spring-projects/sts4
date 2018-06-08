@@ -1,6 +1,7 @@
 /.idea
 /node_modules
 /server
+/build
 *.tgz
 *iml
 *.log

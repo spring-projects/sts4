@@ -23,7 +23,7 @@ For all other files containing boot properties select grammar to be `Spring-Boot
 
 To build all these pieces you normally only need to run:
 
-    npm install
+    npm install && npm run build
 
 Now you can link it to Atom:
 
