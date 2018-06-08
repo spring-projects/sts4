@@ -160,12 +160,7 @@ public class SpringBootApp {
 
 	public String getJavaCommand() throws IOException {
 		Properties props = this.vm.getSystemProperties();
-		if (props.contains("sun.java.command")) {
-			return props.getProperty("sun.java.command");
-		}
-		else {
-			return null;
-		}
+		return (String) props.get("sun.java.command");
 	}
 
 	public boolean containsSystemProperty(Object key) throws IOException {

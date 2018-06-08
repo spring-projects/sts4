@@ -135,6 +135,12 @@ public class SpringLiveChangeDetectionWatchdog {
 		if (changeDetectionEnabled) {
 			try {
 				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+				Change[] changes = changeHistory.checkForChanges(runningBootApps);
+				if (changes != null && changes.length > 0) {
+					for (Change change : changes) {
+						publishDetectedChange(change);
+					}
+				}
 				for (SpringBootApp app : runningBootApps) {
 					updateApp(app);
 				}
@@ -145,16 +151,12 @@ public class SpringLiveChangeDetectionWatchdog {
 	}
 
 	private void updateApp(SpringBootApp app) {
-		Change change = changeHistory.checkForChanges(app);
-		if (change != null) {
-			publishDetectedChange(change, app);
-		}
 	}
 
-	private void publishDetectedChange(Change change, SpringBootApp app) {
+	private void publishDetectedChange(Change change) {
 		Map<String, List<Diagnostic>> diagnostics = new HashMap<>();
 		
-		IJavaProject[] projects = findProjectsFor(app);
+		IJavaProject[] projects = findProjectsFor(change.getRunningApp());
 		
 		List<LiveBean> deletedBeans = change.getDeletedBeans();
 		if (deletedBeans != null) {
