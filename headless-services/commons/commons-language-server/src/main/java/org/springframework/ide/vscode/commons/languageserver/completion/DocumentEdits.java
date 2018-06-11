@@ -307,7 +307,14 @@ public class DocumentEdits implements ProposalApplier {
 			}
 			StringBuilder buf = new StringBuilder();
 			buf.append("DocumentState(\n");
-			buf.append(doc.get()+"\n");
+			if (selection>=0) {
+				//show cursor location for ease in debugging
+				buf.append(doc.get().substring(0, selection));
+				buf.append("<*>");
+				buf.append(doc.get().substring(selection));
+			} else {
+				buf.append(doc.get()+"\n");
+			}
 			buf.append(")\n");
 			return buf.toString();
 		}

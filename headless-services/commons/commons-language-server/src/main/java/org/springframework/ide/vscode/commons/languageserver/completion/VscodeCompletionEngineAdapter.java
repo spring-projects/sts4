@@ -31,10 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.base.Supplier;
@@ -190,7 +192,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setDocumentation(content);
 	}
 
-	private static void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
+	private void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
 		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(mainEdit.get());
@@ -213,7 +215,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private static Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
+	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
 		try {
 			TextReplace replaceEdit = edits.asReplacement(doc);
 			if (replaceEdit==null) {
@@ -224,18 +226,38 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				edits.apply(newDoc);
 				TextEdit vscodeEdit = new TextEdit();
 				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
-				if (Boolean.getBoolean("lsp.completions.indentation.enable")) {
-					vscodeEdit.setNewText(replaceEdit.newText);
-				} else {
-					vscodeEdit.setNewText(vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText));
+				String newText = replaceEdit.newText;
+				IRegion selection = edits.getSelection();
+				if (selection!=null) {
+					//Special handling for the case where cursor is *not* just at the end of the newText
+					int cursor = selection.getOffset() + selection.getLength();
+					cursor = cursor - replaceEdit.start;
+					if (cursor<newText.length()) {
+						newText = server.createSnippetBuilder()
+								.text(newText.substring(0, cursor))
+								.finalTabStop()
+								.text(newText.substring(cursor))
+								.build()
+								.toString();
+					}
 				}
-				//TODO: cursor offset within newText? for now we assume its always at the end.
+				if (isMagicIndentingClient()) {
+					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
+				}
+				vscodeEdit.setNewText(newText);
 				return Optional.of(vscodeEdit);
 			}
 		}  catch (Exception e) {
 			LOG.get().error("{}", e);
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * When this is true, it means the client does 'magic indents' (basically.. that is only on vscode since the magics aren't part of the LSP spec).
+	 */
+	private boolean isMagicIndentingClient() {
+		return !Boolean.getBoolean("lsp.completions.indentation.enable");
 	}
 
 	private static String vscodeIndentFix(TextDocument doc, Position start, String newText) {

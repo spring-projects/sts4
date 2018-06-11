@@ -16,6 +16,8 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
 import java.time.Duration;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.CompletionItem;
@@ -35,6 +37,7 @@ import org.springframework.ide.vscode.commons.languageserver.composable.Composab
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -100,6 +103,88 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 		editor.assertProblems(
 				"z|expected <block end>"
+		);
+	}
+
+	@Test public void testJumpyInsertion() throws Exception {
+		//This test not working in vscode. It is only meant to work in environment that
+		// a) don't apply magic indents
+		// b) allow completions with no restrictions on the main edit.
+		withSystemProperty("lsp.completions.indentation.enable", "true", () -> {
+			String[] names = {"foo", "nested", "bar"};
+			int levels = 4;
+			generateNestedProperties(levels, names, "");
+
+			//Note: jumpy completions use the snippet '$0' placeholder to move the cursor
+			//Our harness actually does not understand / interpret snippet placeholders.
+			//Thus the examples below expected outcome will have both a '$0' and '<*>'
+			//showing the cursor position. You can think of the second '<*>' as showing
+			//where the cursor will end up when the client doesn't have snippet support capability.
+
+			assertCompletion(
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:\n" +
+					"foo.nested.bar.b<*>"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"      bar: $0\n" +
+					"other:<*>"
+			);
+
+			assertCompletion(
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:\n" +
+					"foo.nested.nested.b<*>"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"    nested:\n" +
+					"      bar: $0\n"+
+					"other:<*>"
+			);
+
+			assertCompletion(
+					"foo.nested.nested.b<*>\n" +
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"    nested:\n" +
+					"      bar: <*>\n"+
+					"other:"
+			);
+			return; // Skip running this test
+		});
+	}
+
+	@Test public void almostJumpyCompletion() throws Exception {
+		defaultTestData();
+
+		assertCompletion(
+				"server:\n" +
+				"  address: bark\n" +
+				"port<*>\n"
+				, // ==>
+				"server:\n" +
+				"  address: bark\n" +
+				"  port: <*>\n"
 		);
 	}
 
@@ -3690,7 +3775,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		String collectionType = "java.util.List";
 		doCollectionOfEnumReconcileTest(collectionType);
 	}
-	
+
 	private void doCollectionOfEnumReconcileTest(String collectionType) throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.colors", collectionType + "<demo.Color>", null, "Ooh! nice colors!");
@@ -3716,7 +3801,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  colors: [red, green, BLUE, not-a-color]"
 		);
 		editor.assertProblems("not-a-color|demo.Color");
-		
+
 		//block list
 		editor = newEditor(
 				"my:\n" +
@@ -3728,11 +3813,11 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 		editor.assertProblems("not-a-color|demo.Color");
 	}
-	
+
 	@Test public void testSetOfEnumCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.colors", "java.util.Set<demo.Color>", null, "Ooh! nice colors!");
-		
+
 		Editor editor = newEditor(
 				"my:\n" +
 				"  colors:\n" +
@@ -3743,8 +3828,22 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertContextualCompletions("B<*>", "BLUE<*>");
 	}
 
-	
+
 	///////////////// cruft ////////////////////////////////////////////////////////
+
+	private void withSystemProperty(String prop, String value, RunnableWithException doit) throws Exception {
+		Optional<String> oldValue = System.getProperties().containsKey(prop) ? Optional.of(System.getProperty(prop)) : Optional.empty();
+		try {
+			System.setProperty(prop, value);
+			doit.run();
+		} finally {
+			if (oldValue.isPresent()) {
+				System.setProperty(prop, oldValue.get());
+			} else {
+				System.getProperties().remove(prop);
+			}
+		}
+	}
 
 	private void generateNestedProperties(int levels, String[] names, String prefix) {
 		if (levels==0) {
@@ -3767,8 +3866,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	protected SimpleLanguageServer newLanguageServer() {
 		ComposableLanguageServer<?> server = BootLanguageServer.create(
 				s -> new BootLanguageServerParams(
-						javaProjectFinder, 
-						ProjectObserver.NULL, 
+						javaProjectFinder,
+						ProjectObserver.NULL,
 						md.getIndexProvider(),
 						typeUtilProvider,
 						RunningAppProvider.NULL,
@@ -3788,5 +3887,5 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	protected LanguageId getLanguageId() {
 		return LanguageId.BOOT_PROPERTIES_YAML;
 	}
-	
+
 }
