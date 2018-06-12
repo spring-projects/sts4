@@ -204,38 +204,6 @@ resources:
     secret_access_key: ((s3_prod_secretkey))
     region_name: ((s3_prod_region))
     regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
-- name: s3-manifest-yaml-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/cf-manifest-yaml-(.*).tgz
-- name: s3-concourse-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/concourse-pipeline-yaml-(.*).tgz
-- name: s3-bosh-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/bosh-yaml-(.*).tgz
-- name: s3-spring-boot-atom-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/atom/snapshots/spring-boot-(.*).tgz
 - name: vscode-snapshot-website
   type: s3-multi
   source:
@@ -246,16 +214,16 @@ resources:
     path: snapshot/STS4/vscode-extensions
     options:
     - "--acl public-read"
-- name: atom-snapshot-website
-  type: s3-multi
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_region))
-    path: snapshot/STS4/atom-packages
-    options:
-    - "--acl public-read"
+# - name: atom-snapshot-website
+#   type: s3-multi
+#   source:
+#     bucket: ((s3_prod_bucket))
+#     access_key_id: ((s3_prod_accesskey))
+#     secret_access_key: ((s3_prod_secretkey))
+#     region_name: ((s3_region))
+#     path: snapshot/STS4/atom-packages
+#     options:
+#     - "--acl public-read"
 - name: slack-notification
   type: slack-notification
   source:
@@ -963,32 +931,32 @@ jobs:
   - put: version
     params:
       file: version/version
-- name: build-atom-snapshot-website
-  serial: true
-  plan:
-  - aggregate:
-    - get: sts4
-    - get: s3-bosh-atom-snapshot
-      trigger: true
-      passed:
-      - build-bosh-atom-package
-    - get: s3-manifest-yaml-atom-snapshot
-      trigger: true
-      passed:
-      - build-manifest-yaml-atom-package
-    - get: s3-concourse-atom-snapshot
-      trigger: true
-      passed:
-      - build-concourse-atom-package
-    - get: s3-spring-boot-atom-snapshot
-      trigger: true
-      passed:
-      - build-spring-boot-atom-package
-  - task: build-website
-    file: sts4/concourse/tasks/build-atom-website.yml
-  - put: atom-snapshot-website
-    params:
-      path: website
+# - name: build-atom-snapshot-website
+#   serial: true
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#     - get: s3-bosh-atom-snapshot
+#       trigger: true
+#       passed:
+#       - build-bosh-atom-package
+#     - get: s3-manifest-yaml-atom-snapshot
+#       trigger: true
+#       passed:
+#       - build-manifest-yaml-atom-package
+#     - get: s3-concourse-atom-snapshot
+#       trigger: true
+#       passed:
+#       - build-concourse-atom-package
+#     - get: s3-spring-boot-atom-snapshot
+#       trigger: true
+#       passed:
+#       - build-spring-boot-atom-package
+#   - task: build-website
+#     file: sts4/concourse/tasks/build-atom-website.yml
+#   - put: atom-snapshot-website
+#     params:
+#       path: website
 - name: build-vscode-snapshot-website
   serial: true
   plan:
@@ -1066,10 +1034,6 @@ jobs:
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
-    - put: s3-manifest-yaml-atom-snapshot
-      params:
-        file: out/cf-manifest-yaml-*.tgz
-        acl: public-read
     - put: atom-cf-manifest-yaml
       params:
         repository: out/repo
@@ -1099,10 +1063,6 @@ jobs:
       fatjar: s3-concourse-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
-    - put: s3-concourse-atom-snapshot
-      params:
-        file: out/concourse-pipeline-yaml-*.tgz
-        acl: public-read
     - put: atom-concourse
       params:
         repository: out/repo
@@ -1132,10 +1092,6 @@ jobs:
       release_repo: atom-bosh
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
-    - put: s3-bosh-atom-snapshot
-      params:
-        file: out/bosh-yaml-*.tgz
-        acl: public-read
     - put: atom-bosh
       params:
         repository: out/repo
@@ -1165,10 +1121,6 @@ jobs:
       release_repo: atom-spring-boot
     file: sts4/concourse/tasks/build-atom-package.yml
   - aggregate:
-    - put: s3-spring-boot-atom-snapshot
-      params:
-        file: out/spring-boot-*.tgz
-        acl: public-read
     - put: atom-spring-boot
       params:
         repository: out/repo
@@ -1218,7 +1170,7 @@ groups:
   - bump-version-minor
 - name: atom-snapshots
   jobs:
-  - build-atom-snapshot-website
+  # - build-atom-snapshot-website
   - atom-language-servers-test
   - build-concourse-atom-package
   - build-bosh-atom-package

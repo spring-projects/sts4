@@ -49,20 +49,3 @@ git add .
 
 git commit \
     -m "Publish $fatjar_version"
-
-# Publish linkable artifact to S3
-
-cd $atom_package
-npm install bundle-deps
-
-node ./node_modules/bundle-deps/bundle-deps .
-
-timestamp=`date -u +%Y%m%d%H%M`
-
-basename=$(npm pack | tee /dev/tty)
-
-length=${#basename}
-
-newName=${basename:0:${length}-4}-$timestamp${basename:${length}-4:${length}}
-
-cp ${basename} $output/${newName}
