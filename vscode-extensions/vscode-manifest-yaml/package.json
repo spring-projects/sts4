@@ -24,9 +24,16 @@
     "manifest.yml"
   ],
   "activationEvents": [
+    "onCommand:subscribeCommands.pksGetCredentials",
     "onLanguage:manifest-yaml"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "subscribeCommands.pksGetCredentials",
+        "title": "PKS: Get Credentials"
+      }
+    ],
     "languages": [
       {
         "id": "manifest-yaml",
@@ -78,7 +85,8 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
-    "vscode-languageclient": "4.1.3"
+    "vscode-languageclient": "4.1.3",
+    "shelljs": "^0.7.7"
   },
   "devDependencies": {
     "vsce": "^1.36.1",
