@@ -80,16 +80,18 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
 			if (windows != null) {
 				for (IWorkbenchWindow ww : windows) {
-					IWorkbenchPage[] pages = ww.getPages();
-					if (pages != null) {
-						for (IWorkbenchPage page : pages) {
-							if (page != null) {
-								IEditorReference[] references = page.getEditorReferences();
-								if (references != null) {
-									boolean restore = false;
-									for (IEditorReference reference : references) {
-										IEditorPart editorPart = reference.getEditor(restore);
-										updateEditorPart(editorPart);
+					if (ww != null) {
+						IWorkbenchPage[] pages = ww.getPages();
+						if (pages != null) {
+							for (IWorkbenchPage page : pages) {
+								if (page != null) {
+									IEditorReference[] references = page.getEditorReferences();
+									if (references != null) {
+										boolean restore = false;
+										for (IEditorReference reference : references) {
+											IEditorPart editorPart = reference.getEditor(restore);
+											updateEditorPart(editorPart);
+										}
 									}
 								}
 							}
