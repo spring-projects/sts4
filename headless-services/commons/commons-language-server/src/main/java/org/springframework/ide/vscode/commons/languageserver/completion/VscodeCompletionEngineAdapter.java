@@ -29,9 +29,11 @@ import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -160,6 +162,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				list.setItems(items);
+				if (LspClient.currentClient()==Client.ECLIPSE) {
+					list.setIsIncomplete(true); //This is a hack. It bypasses lsp4e filtering / sorting because it
+												// it behaves totally bonkers. See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
+				}
 				return list;
 			})
 			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.

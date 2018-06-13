@@ -28,5 +28,5 @@ cd $workdir
 npm install
 rm -fr *.vsix
 npm run vsce-package
-rm -fr ${home}/.vscode/extensions/Pivotal.vscode-spring-boot-*
+rm -fr ${home}/.vscode/extensions/*vscode-spring-boot-*
 code --install-extension *.vsix
