@@ -839,9 +839,16 @@ public class TypeUtil {
 		IType type = findType(beanType);
 
 		IMethod m = type.getMethod(getterName, Stream.empty());
-		if (m.exists()) {
+		if (m != null && m.exists()) {
 			return m;
 		}
+
+		getterName = "is" + StringUtil.hyphensToCamelCase(propName, true);
+		m = type.getMethod(getterName, Stream.empty());
+		if (m != null && m.exists()) {
+			return m;
+		}
+
 		return null;
 	}
 
