@@ -118,7 +118,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 						}
 					}
 				} catch (Exception e) {
-					e.getCause();
 					//ignore reflection errors
 				}
 			}
