@@ -1,0 +1,19 @@
+## 2018-05-14 (M11)
+
+* _(all)_ JVM used to run the language servers can now be specified via custom settings ([#51](https://github.com/spring-projects/sts4/issues/51))
+
+## 2018-03-15 (M10)
+
+* _(all)_ language server processes now show up with their real name when using `jps` instead of just `JarLauncher`
+
+## 2018-02-23 (M9)
+
+* _(all)_ improved the way the JDK to run the language server is found together with an improved error message if no JDK can be found
+
+## 2017-12-15 (M7)
+
+* _(all)_ issues solved when running on Windows ([#25](https://github.com/spring-projects/sts4/issues/25), [#26](https://github.com/spring-projects/sts4/issues/26), [#29](https://github.com/spring-projects/sts4/issues/29))
+
+## 2017-12-04
+
+* initial public beta launch

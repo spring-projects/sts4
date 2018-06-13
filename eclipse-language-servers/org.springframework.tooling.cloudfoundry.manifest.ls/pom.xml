@@ -12,14 +12,14 @@
 	</parent>
 
 	<artifactId>org.springframework.tooling.cloudfoundry.manifest.ls</artifactId>
-	<version>0.2.1-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>manifest-yaml-language-server</artifactId>
-			<version>0.2.1-SNAPSHOT</version>
+			<version>0.3.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

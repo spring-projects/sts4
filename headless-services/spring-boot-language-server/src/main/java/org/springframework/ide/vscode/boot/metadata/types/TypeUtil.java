@@ -35,10 +35,13 @@ import java.util.stream.Stream;
 import javax.inject.Provider;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ResourceHintProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.boot.metadata.util.DeprecationUtil;
+import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
@@ -53,6 +56,7 @@ import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 
@@ -122,7 +126,7 @@ public class TypeUtil {
 	}
 
 	private IJavaProject javaProject;
-	
+
 	public TypeUtil(IJavaProject jp) {
 		//Note javaProject is allowed to be null, but only in unit testing context
 		// (This is so some tests can be run without an explicit jp needing to be created)
@@ -638,6 +642,8 @@ public class TypeUtil {
 
 			//TODO: handle type parameters.
 			if (typeFromIndex != null) {
+				SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+				IJavaProject project = getJavaProject();
 				ArrayList<TypedProperty> properties = new ArrayList<>();
 				getGetterMethods(typeFromIndex).forEach(m -> {
 					Deprecation deprecation = DeprecationUtil.extract(m);
@@ -649,11 +655,11 @@ public class TypeUtil {
 					}
 					if (beanMode.includesHyphenated()) {
 						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
-								deprecation));
+								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
 					}
 					if (beanMode.includesCamelCase()) {
 						properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
-								deprecation));
+								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
 					}
 				});
 				return properties;
@@ -817,15 +823,15 @@ public class TypeUtil {
 	}
 
 
-	public Optional<IMethod> getSetter(Type beanType, String propName) {
+	public IMethod getSetter(Type beanType, String propName) {
 		try {
 			String setterName = "set" + StringUtil.hyphensToCamelCase(propName, true);
 			IType type = findType(beanType);
-			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst();
+			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst().orElse(null);
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Optional.empty();
+		return null;
 	}
 
 	public IJavaElement getGetter(Type beanType, String propName) {
@@ -833,9 +839,16 @@ public class TypeUtil {
 		IType type = findType(beanType);
 
 		IMethod m = type.getMethod(getterName, Stream.empty());
-		if (m.exists()) {
+		if (m != null && m.exists()) {
 			return m;
 		}
+
+		getterName = "is" + StringUtil.hyphensToCamelCase(propName, true);
+		m = type.getMethod(getterName, Stream.empty());
+		if (m != null && m.exists()) {
+			return m;
+		}
+
 		return null;
 	}
 

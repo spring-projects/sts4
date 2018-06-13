@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
@@ -103,7 +105,8 @@ class TypeImpl implements IType {
 
 	@Override
 	public IField getField(String name) {
-		return Wrappers.wrap(this, info.field(name), javadocProvider);
+		FieldInfo fieldInfo = info.field(name);
+		return fieldInfo == null ? null : Wrappers.wrap(this, fieldInfo, javadocProvider);
 	}
 
 	@Override
@@ -116,7 +119,8 @@ class TypeImpl implements IType {
 	@Override
 	public IMethod getMethod(String name, Stream<IJavaType> parameters) {
 		List<Type> typeParameters = parameters.map(Wrappers::from).collect(Collectors.toList());
-		return Wrappers.wrap(this, info.method(name, typeParameters.toArray(new Type[typeParameters.size()])), javadocProvider);
+		MethodInfo methodInfo = info.method(name, typeParameters.toArray(new Type[typeParameters.size()]));
+		return methodInfo == null ? null : Wrappers.wrap(this, methodInfo, javadocProvider);
 	}
 
 	@Override
@@ -152,6 +156,11 @@ class TypeImpl implements IType {
 	@Override
 	public File classpathContainer() {
 		return classpathContainer;
+	}
+
+	@Override
+	public String signature() {
+		return info.toString();
 	}
 
 }

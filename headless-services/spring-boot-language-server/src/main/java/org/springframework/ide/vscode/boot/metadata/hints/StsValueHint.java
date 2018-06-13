@@ -11,6 +11,8 @@
 
 package org.springframework.ide.vscode.boot.metadata.hints;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
@@ -22,7 +24,6 @@ import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -39,6 +40,7 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
  */
 public class StsValueHint {
 
+	private static final Logger log = LoggerFactory.getLogger(StsValueHint.class);
 
 	private final String value;
 	private final Renderable description;
@@ -87,7 +89,7 @@ public class StsValueHint {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}
@@ -122,7 +124,7 @@ public class StsValueHint {
 	private static Renderable javaDocSnippet(IJavaProject project, IJavaElement je) {
 		return Renderables.lazy(() -> {
 			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
-			return PropertyDocUtils.documentation(sourceLinks, project, je);
+			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 		});
 	}
 

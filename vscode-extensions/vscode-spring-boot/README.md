@@ -1,4 +1,4 @@
-# VS Code Language Server for Spring Boot Application Properties
+# VS Code Language Server for Spring Boot
 
 VSCode extension and Language Server providing support for working with Spring Boot 
 `application.properties`, `application.yml` and `.java` files.
@@ -8,9 +8,9 @@ VSCode extension and Language Server providing support for working with Spring B
 The extension will automatically activate when you edit files with the following
 name patterns:
 
+ - `*.java` =>  activates Spring Boot specific support editing `.java` files.
  - `application*.properties` => activates support for Spring Boot properties in `.properties`format.
  - `application*.yml` =>  activates support for Spring Boot properties in `.yml` format.
- - `*.java` =>  activates Spring Boot specific support editing `.java` files.
 
 You can also define your own patterns and map them to the language-ids
 `spring-boot-properties` or `spring-boot-properties-yaml` by defining `files.associations`

@@ -41,17 +41,33 @@ public class PropertyDocUtils {
 	 * @param je
 	 * @return
 	 */
-	public static Renderable documentation(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
-		IJavadoc javadoc = je.getJavaDoc();
+	public static Renderable javadocContent(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
 		Builder<Renderable> renderableBuilder = ImmutableList.builder();
-		renderableBuilder.add(javadoc == null ? Renderables.NO_DESCRIPTION: javadoc.getRenderable());
+		IJavadoc javadoc = je.getJavaDoc();
+		renderableBuilder.add(Renderables.lineBreak());
+		renderableBuilder.add(Renderables.paragraph(javadoc == null ? Renderables.NO_DESCRIPTION: javadoc.getRenderable()));
+		return Renderables.concat(renderableBuilder.build());
+	}
+	
+	/**
+	 * Generates documentation for the value of some Java type. Includes signature, javadoc, link to container type.
+	 * 
+	 * @param sourceLinks
+	 * @param project
+	 * @param je
+	 * @return
+	 */
+	public static Renderable documentJavaElement(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
+		Builder<Renderable> renderableBuilder = ImmutableList.builder();
 		if (je instanceof IMember) {
-			IType containingType = je instanceof IType ? (IType) je : ((IMember)je).getDeclaringType();						
+			IMember member = (IMember) je;
+			renderableBuilder.add(Renderables.lineBreak());
+			renderableBuilder.add(Renderables.inlineSnippet(Renderables.text(member.signature())));
+			IType containingType = je instanceof IType ? (IType) je : ((IMember)je).getDeclaringType();
 			if (je != null) {
-				renderableBuilder.add(Renderables.lineBreak());
-				renderableBuilder.add(Renderables.text("Type: "));
 				String type = containingType.getFullyQualifiedName();
 				Optional<String> url = SourceLinkFactory.createSourceLinks(null).sourceLinkUrlForFQName(project, type);
+				renderableBuilder.add(Renderables.lineBreak());
 				if (url.isPresent()) {
 					renderableBuilder.add(Renderables.link(type, url.get()));
 				} else {
@@ -59,6 +75,9 @@ public class PropertyDocUtils {
 				}
 			}
 		}
+		IJavadoc javadoc = je.getJavaDoc();
+		renderableBuilder.add(Renderables.lineBreak());
+		renderableBuilder.add(Renderables.paragraph(javadoc == null ? Renderables.NO_DESCRIPTION: javadoc.getRenderable()));
 		return Renderables.concat(renderableBuilder.build());
 	}
 

@@ -599,10 +599,6 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 				}
 			};
 
-//			try {
-//				Thread.sleep(2000);
-//			} catch (InterruptedException e) {
-//			}
 			engine.reconcile(doc, problems);
 		})
 		.onErrorResume(error -> {

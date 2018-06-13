@@ -142,6 +142,12 @@ public class Renderables {
 				// The correct implementation should probably check wether text in buffer already
 				// ends with newline(s) and add more only if needed. Then it should 
 				// also append double newline at its end.
+				
+				//TODO: verify that the if below solves the above "todo"
+				if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '\n') {
+					// 2 spaces and then new line would create a line break in text
+					buffer.append("  ");
+				}
 				buffer.append("\n");
 				text.renderAsMarkdown(buffer);
 				buffer.append("\n");
@@ -206,7 +212,7 @@ public class Renderables {
 
 			@Override
 			public void renderAsMarkdown(StringBuilder buffer) {
-				if (buffer.charAt(buffer.length() - 1) != '\n') {
+				if (buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != '\n') {
 					// 2 spaces and then new line would create a line break in text
 					buffer.append("  ");
 				}

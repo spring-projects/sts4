@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Pivotal, Inc.
+ * Copyright (c) 2015, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
@@ -41,6 +42,7 @@ import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -75,7 +77,7 @@ import com.google.common.collect.ImmutableList;
  * content assistance.
  */
 public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistContext {
-	
+
 	private static Logger log = LoggerFactory.getLogger(ApplicationYamlAssistContext.class);
 
 	protected final RelaxedNameConfig conf;
@@ -549,7 +551,9 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (jes != null) {
 				for (IJavaElement je : jes) {
 					if (je instanceof IMember) {
-						return PropertyDocUtils.documentation(SourceLinkFactory.createSourceLinks(null), typeUtil.getJavaProject(), je);
+						SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+						IJavaProject project = typeUtil.getJavaProject();
+						return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 					}
 				}
 			}
@@ -573,7 +577,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			} else {
 				ArrayList<IJavaElement> elements = new ArrayList<IJavaElement>(3);
 				maybeAdd(elements, typeUtil.getField(beanType, propName));
-				maybeAdd(elements, typeUtil.getSetter(beanType, propName).get());
+				maybeAdd(elements, typeUtil.getSetter(beanType, propName));
 				maybeAdd(elements, typeUtil.getGetter(beanType, propName));
 				if (!elements.isEmpty()) {
 					return elements;

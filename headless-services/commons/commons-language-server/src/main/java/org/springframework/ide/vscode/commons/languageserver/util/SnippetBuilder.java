@@ -37,15 +37,21 @@ public class SnippetBuilder {
 				}
 				return "";
 			}
+
+			@Override
+			protected String createFinalTabStop() {
+				return ""; //Better these be invisible on server that doesn't support snippet.
+			}
 		};
 	}
 
 	private static final int FIRST_PLACE_HOLDER_ID = 1;
 	private int nextPlaceHolderId = FIRST_PLACE_HOLDER_ID;
-	private StringBuilder buf = new StringBuilder();
+	protected StringBuilder buf = new StringBuilder();
 	private Multimap<Object, PlaceHolder> placeHolders = MultimapBuilder.hashKeys().arrayListValues().build();
 
 	private Map<String,Object> idMap = new HashMap<>();
+	private boolean isFinalTabStopUsed = true;
 
 	public SnippetBuilder text(String text) {
 		buf.append(text);
@@ -62,6 +68,17 @@ public class SnippetBuilder {
 		int end = buf.length();
 		placeHolders.put(id, new PlaceHolderString.PlaceHolder(id, new Region(offset, end-offset)));
 		return this;
+	}
+
+	public SnippetBuilder finalTabStop() {
+		Assert.isLegal(isFinalTabStopUsed, "Final tab stop should only be used once");
+		isFinalTabStopUsed = true;
+		buf.append(createFinalTabStop());
+		return this;
+	}
+
+	protected String createFinalTabStop() {
+		return "$0";
 	}
 
 	public SnippetBuilder placeHolder(String name, String _value) {

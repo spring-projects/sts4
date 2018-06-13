@@ -1,6 +1,6 @@
 {
   "name": "spring-boot",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Spring Boot support for Atom",
   "repository": "https://github.com/spring-projects/atom-spring-boot",
   "icon": "icon.png",
@@ -27,6 +27,7 @@
     }
   },
   "dependencies": {
+    "atom-languageclient": "0.9.2",
     "@pivotal-tools/atom-languageclient-commons": "0.0.5",
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5"

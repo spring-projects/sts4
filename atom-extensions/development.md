@@ -1,5 +1,12 @@
 # Development Notes
 
+## Testing Release repo with Atom
+1. Clone the release repository for Atom package 'X'
+2. Navigate to `X` folder
+3. Run `npm install` and nothing more
+4. Run `apm link .`
+5. Either start Atom or Reload Window in Atom 
+
 ## Releasing Atom Extension
 
 Before Atom package is released the RC language server `JAR` needs to be produced. Open [promote-fatjars-to-rc](https://ci.spring.io/teams/tools/pipelines/sts4-master/jobs/promote-fatjars-to-rc/builds/1) task in Concourse and kick off the build.

@@ -59,7 +59,7 @@ class BindingKeyUtils {
 		}
 		sb.append(')');
 		sb.append(getGeneralTypeBindingKey(method.returnType()));
-		return method.name().toString();
+		return sb.toString();
 	}
 
 	public static String getGeneralTypeBindingKey(Type type) {

@@ -18,6 +18,7 @@ import java.io.File;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.PrimitiveType;
@@ -151,6 +152,12 @@ public class Wrappers {
 			return new WildcardTypeWrapper(type.asWildcardType());
 		}
 		throw new IllegalArgumentException("Invalid Java Type " + type.toString());
+	}
+
+	public static String simpleName(DotName dotName) {
+		String fqName = dotName.toString();
+		int idx = fqName.lastIndexOf('.');
+		return idx < 0 ? fqName : fqName.substring(idx + 1);
 	}
 
 }
