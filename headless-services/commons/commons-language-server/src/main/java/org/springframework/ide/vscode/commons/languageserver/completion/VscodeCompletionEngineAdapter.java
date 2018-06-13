@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -129,7 +128,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		if (documents.get(params) != null) {
-			TextDocument doc = documents.get(params).copy();
+			TextDocument doc = documents.getDocumentSnapshot(params.getTextDocument());
 			return Mono.fromCallable(() -> {
 				if (resolver!=null) {
 					//Assumes we don't have more than one completion request in flight from the client.

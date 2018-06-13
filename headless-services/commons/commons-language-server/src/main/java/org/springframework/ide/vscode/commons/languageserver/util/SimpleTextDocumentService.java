@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -476,6 +478,20 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	public boolean hasCodeLensResolveProvider() {
 		return this.codeLensResolveHandler != null;
+	}
+
+	public TextDocument getDocumentSnapshot(TextDocumentIdentifier textDocumentIdentifier) {
+		try {
+			return async.invoke(() -> {
+				TextDocument doc = get(textDocumentIdentifier.getUri());
+				if (doc!=null) {
+					return doc.copy();
+				}
+				return null;
+			}).get();
+		} catch (Exception e) {
+			throw ExceptionUtil.unchecked(e);
+		}
 	}
 
 }
