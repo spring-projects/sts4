@@ -155,6 +155,16 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				list.setItems(items);
+				System.err.println(">>> completions [isInconplete = "+list.isIncomplete()+"]");
+				for (CompletionItem item : items) {
+					System.err.println(
+							"lbl = '"+item.getLabel()+"' " +
+							"sort = '"+item.getSortText()+"' " +
+							"filt = '"+item.getFilterText()+"' " +
+							"newText = '"+item.getTextEdit().getNewText()+"'"
+					);
+				}
+				System.err.println("<<< completions");
 				return list;
 			})
 			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.

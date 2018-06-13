@@ -1450,59 +1450,64 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Test public void testJumpyInsertion() throws Exception {
-		String[] names = {"foo", "nested", "bar"};
-		int levels = 4;
-		generateNestedProperties(levels, names, "");
+		//We care more about eclipse for this test case because it fails for vscode
+		// because we have to add some extra in vscode as a workaround for this bug:
+		// https://github.com/Microsoft/vscode-languageserver-node/issues/361
+		withSystemProperty("sts.lsp.client", "eclipse", () -> {
+			String[] names = {"foo", "nested", "bar"};
+			int levels = 4;
+			generateNestedProperties(levels, names, "");
 
-		assertCompletion(
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"other:\n" +
-				"foo.nested.bar.b<*>"
-				,
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"      bar: <*>\n" +
-				"other:"
-		);
+			assertCompletion(
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:\n" +
+					"foo.nested.bar.b<*>"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"      bar: <*>\n" +
+					"other:"
+			);
 
-		assertCompletion(
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"other:\n" +
-				"foo.nested.nested.b<*>"
-				,
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"    nested:\n" +
-				"      bar: <*>\n"+
-				"other:"
-		);
+			assertCompletion(
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:\n" +
+					"foo.nested.nested.b<*>"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"    nested:\n" +
+					"      bar: <*>\n"+
+					"other:"
+			);
 
-		assertCompletion(
-				"foo.nested.nested.b<*>\n" +
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"other:"
-				,
-				"foo:\n" +
-				"  nested:\n" +
-				"    bar:\n" +
-				"      foo:\n" +
-				"    nested:\n" +
-				"      bar: <*>\n"+
-				"other:"
-		);
+			assertCompletion(
+					"foo.nested.nested.b<*>\n" +
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"other:"
+					,
+					"foo:\n" +
+					"  nested:\n" +
+					"    bar:\n" +
+					"      foo:\n" +
+					"    nested:\n" +
+					"      bar: <*>\n"+
+					"other:"
+			);
+		});
 	}
 
 	@Test public void testBooleanValueCompletion() throws Exception {

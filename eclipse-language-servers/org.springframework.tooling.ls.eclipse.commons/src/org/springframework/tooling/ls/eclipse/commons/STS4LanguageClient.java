@@ -30,8 +30,8 @@ public interface STS4LanguageClient extends LanguageClient {
 	@JsonNotification("sts/progress")
 	void progress(ProgressParams progressEvent);
 
-// TODO: @JsonRequest("sts/moveCursor")
-//	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
+	@JsonRequest("sts/moveCursor")
+	CompletableFuture<Object> moveCursor(CursorMovement cursorMovement);
 
 	@JsonRequest("sts/addClasspathListener")
 	CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params);

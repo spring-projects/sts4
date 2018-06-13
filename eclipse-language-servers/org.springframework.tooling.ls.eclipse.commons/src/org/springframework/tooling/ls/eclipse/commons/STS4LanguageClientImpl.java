@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,10 +26,12 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
@@ -222,6 +225,34 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
 		}
 		return CompletableFuture.completedFuture(response);
+	}
+
+	@Override
+	public CompletableFuture<Object> moveCursor(CursorMovement cursorMovement) {
+		//WARNING: this code never ran. It is meant to be called by server 'moveCursor' command
+		// when appplying jumpy completions. But lsp4e doesn't execute commands from completions
+		// because they haven't implemented support for that part of the protocol yet.
+		Throwable problem = null;
+		for (Pair<IDocument, AbstractTextEditor> editorAndDoc : StsLspEclipseUtil.getTextEditorsForUri(cursorMovement.getUri())) {
+			try {
+				AbstractTextEditor editor = editorAndDoc.getRight();
+				IDocument doc = editorAndDoc.getLeft();
+				int cursor = LSPEclipseUtils.toOffset(cursorMovement.getPosition(), doc);
+				moveCursor(editor, cursor);
+			} catch (Exception e) {
+				if (problem==null) {
+					problem = e;
+				}
+			}
+		}
+		return problem == null
+				? CompletableFuture.completedFuture("ok")
+				: Futures.fail(problem);
+	}
+
+	private void moveCursor(AbstractTextEditor editor, int cursor) {
+		ISelectionProvider sp = editor.getSelectionProvider();
+		sp.setSelection(new TextSelection(cursor, 0));
 	}
 
 }

@@ -35,6 +35,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -60,6 +61,7 @@ public abstract class LaunguageServerApp {
 	private static final int SERVER_STANDALONE_PORT = 5007;
 
 	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
+		Log.info("ClientType = "+LspClient.currentClient());
 		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
 		LaunguageServerApp app = new LaunguageServerApp() {
 			@Override

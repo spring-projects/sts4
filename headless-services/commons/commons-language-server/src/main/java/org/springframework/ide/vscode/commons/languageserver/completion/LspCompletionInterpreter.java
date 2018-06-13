@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.Direction;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.OffsetTransformer;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -135,7 +137,7 @@ public class LspCompletionInterpreter implements IDocumentState {
 		if (afterEdit!=null) additionalEdits.add(afterEdit);
 		item.setAdditionalTextEdits(additionalEdits.build());
 
-		if (mainEdit!=null && mainEdit.getNewText().equals("")) {
+		if (LspClient.currentClient()==Client.VSCODE && mainEdit!=null && mainEdit.getNewText().equals("")) {
 			//Vscode handles this poorly and adds 'junk' instead.
 			mainEdit.setNewText(" "); // Adding a space. It is still junk but it is at least not immediately visible.
 		}
