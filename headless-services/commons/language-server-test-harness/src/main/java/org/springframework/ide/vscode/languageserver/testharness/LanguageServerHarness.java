@@ -552,6 +552,10 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 		.collect(Collectors.toList());
 	}
 
+	/**
+	 * @deprecated use {@link #newEditor(LanguageId, String)}
+	 */
+	@Deprecated
 	public Editor newEditor(String contents) throws Exception {
 		return newEditor(getDefaultLanguageId(), contents);
 	}

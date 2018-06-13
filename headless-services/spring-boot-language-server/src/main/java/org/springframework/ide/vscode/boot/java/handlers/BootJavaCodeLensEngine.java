@@ -42,13 +42,16 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 
 		if (documents.get(docURI) != null) {
 			TextDocument doc = documents.get(docURI).copy();
-			try {
-				List<? extends CodeLens> codeLensesResult = provideCodeLenses(doc);
-				if (codeLensesResult != null) {
-					return codeLensesResult;
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
+				try {
+					List<? extends CodeLens> codeLensesResult = provideCodeLenses(doc);
+					if (codeLensesResult != null) {
+						return codeLensesResult;
+					}
 				}
-			}
-			catch (Exception e) {
+				catch (Exception e) {
+				}
 			}
 		}
 
@@ -57,13 +60,13 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 
 	private List<? extends CodeLens> provideCodeLenses(TextDocument document) {
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
-			
+
 			if (cu != null) {
 				List<CodeLens> result = new ArrayList<>();
 				for (CodeLensProvider codeLensProvider : codelensProviders) {
 					codeLensProvider.provideCodeLenses(document, cu, result);
 				}
-				
+
 				if (result.size() > 0) {
 					return result;
 				}

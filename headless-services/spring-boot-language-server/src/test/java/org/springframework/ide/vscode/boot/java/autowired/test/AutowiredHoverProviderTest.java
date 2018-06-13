@@ -270,7 +270,7 @@ public class AutowiredHoverProviderTest {
 			.build();
 
 
-		Editor editor = harness.newEditor(
+		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package com.example;\n" +
 				"\n" +
 				"import org.springframework.beans.factory.annotation.Autowired;\n" +
@@ -332,7 +332,7 @@ public class AutowiredHoverProviderTest {
 			.build();
 
 
-		Editor editor = harness.newEditor(
+		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package com.example;\n" +
 				"\n" +
 				"import org.springframework.beans.factory.annotation.Autowired;\n" +

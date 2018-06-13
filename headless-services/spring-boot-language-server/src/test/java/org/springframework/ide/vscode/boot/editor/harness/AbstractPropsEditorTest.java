@@ -40,11 +40,11 @@ import org.springframework.ide.vscode.languageserver.testharness.LanguageServerH
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 public abstract class AbstractPropsEditorTest {
-	
+
 	public static final String INTEGER = Integer.class.getName();
 	public static final String BOOLEAN = Boolean.class.getName();
 	public static final String STRING = String.class.getName();
-	
+
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	protected PropertyIndexHarness md;
@@ -54,10 +54,10 @@ public abstract class AbstractPropsEditorTest {
 			return Optional.ofNullable(getTestProject());
 		}
 	}));
-			
-	private LanguageServerHarness harness;
+
+	protected LanguageServerHarness harness;
 	private IJavaProject testProject;
-	private TypeUtil typeUtil;	
+	private TypeUtil typeUtil;
 
 	protected TypeUtilProvider typeUtilProvider = (IDocument doc) -> {
 		if (typeUtil==null) {
@@ -66,10 +66,8 @@ public abstract class AbstractPropsEditorTest {
 		return typeUtil;
 	};
 
-	public Editor newEditor(String contents) throws Exception {
-		return harness.newEditor(contents);
-	}
-	
+	abstract public Editor newEditor(String contents) throws Exception;
+
 	private IJavaProject getTestProject() {
 		return testProject;
 	}
@@ -82,13 +80,14 @@ public abstract class AbstractPropsEditorTest {
 			protected LanguageId getDefaultLanguageId() {
 				return AbstractPropsEditorTest.this.getLanguageId();
 			}
+			@Override
 			protected String getFileExtension() {
 				return AbstractPropsEditorTest.this.getFileExtension();
 			}
 		};
 		harness.intialize(null);
 	}
-	
+
 	protected abstract LanguageId getLanguageId();
 
 	/**
@@ -97,27 +96,27 @@ public abstract class AbstractPropsEditorTest {
 	 * extension (e.g. different validation, completions etc. for .yml versus .properties
 	 */
 	protected abstract String getFileExtension();
-	
+
 	protected abstract SimpleLanguageServer newLanguageServer();
-	
+
 	public ItemConfigurer data(String id, String type, Object deflt, String description, String... sources) {
 		return md.data(id, type, deflt, description, sources);
 	}
-	
+
 	public void defaultTestData() {
 		md.defaultTestData();
 	}
-	
+
 	public MavenJavaProject createPredefinedMavenProject(String name) throws Exception {
 		return projects.mavenProject(name);
 	}
-	
+
 	public void useProject(IJavaProject p) throws Exception {
 		md.useProject(p);
 		this.testProject = p;
 		this.typeUtil = null;
 	}
-	
+
 	/**
 	 * Simulates applying the first completion to a text buffer and checks the result.
 	 */
@@ -134,7 +133,7 @@ public abstract class AbstractPropsEditorTest {
 		Editor editor = newEditor(editorText);
 		editor.assertCompletionDetails(expectLabel, null, expectInfoSnippet);
 	}
-	
+
 	/**
 	 * Checks that completions contains a completion with a given display string, detail and documentation text
 	 */
@@ -142,7 +141,7 @@ public abstract class AbstractPropsEditorTest {
 		Editor editor = newEditor(editorText);
 		editor.assertCompletionDetails(expectLabel, expectDetail, expectDocumenation);
 	}
-	
+
 	public boolean isEmptyMetadata() {
 		return md.isEmpty();
 	}
@@ -198,7 +197,7 @@ public abstract class AbstractPropsEditorTest {
 		}
 		assertElements(actualLabels, completionsLabels);
 	}
-	
+
 	public void assertCompletionsDisplayStringAndDetail(String editorText, String[]...expectCompletions) throws Exception {
 		String[] completionsLabels = new String[expectCompletions.length];
 		String[] completionDetails = new String[expectCompletions.length];
@@ -221,7 +220,7 @@ public abstract class AbstractPropsEditorTest {
 	public SpringPropertyIndexProvider getIndexProvider() {
 		return md.getIndexProvider();
 	}
-	
+
 	@SafeVarargs
 	public static <T> void assertElements(T[] actual, T... expect) {
 		assertElements(Arrays.asList(actual), expect);
@@ -245,7 +244,7 @@ public abstract class AbstractPropsEditorTest {
 			fail("Missing elements: \n"+missing);
 		}
 	}
-	
+
 	public void assertStyledCompletions(String editorText, StyledStringMatcher... expectStyles) throws Exception {
 		Editor editor = newEditor(editorText);
 		List<CompletionItem> completions = editor.getCompletions();
@@ -262,7 +261,7 @@ public abstract class AbstractPropsEditorTest {
 	public void deprecate(String key, String replacedBy, String reason) {
 		md.deprecate(key, replacedBy, reason);
 	}
-	
+
 	public void keyHints(String id, String... hintValues) {
 		md.keyHints(id, hintValues);
 	}

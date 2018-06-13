@@ -85,11 +85,11 @@ import com.google.common.collect.ImmutableSet;
  * @author Martin Lippert
  */
 public class BootJavaLanguageServerComponents implements LanguageServerComponents {
-	
+
 	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA);
-	
+
 	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
-	
+
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
@@ -124,9 +124,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		indexer = createAnnotationIndexer(server, serverParams);
 		documents.onDidSave(params -> {
-			String docURI = params.getDocument().getId().getUri();
-			String content = params.getDocument().get();
-			indexer.updateDocument(docURI, content);
+			TextDocument document = params.getDocument();
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (getInterestingLanguages().contains(document.getLanguageId())) {
+				String docURI = document.getId().getUri();
+				String content = document.get();
+				indexer.updateDocument(docURI, content);
+			}
 		});
 
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
@@ -137,21 +141,24 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //		documents.onCodeLens(codeLensHandler::createCodeLenses);
 //		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider);		
+		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider);
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, serverParams.runningAppProvider,
 				projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
-//			if (testHightlighter != null) {
-//				getClient().highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
-//			} else {
-			try {
-				liveHoverWatchdog.watchDocument(doc.getUri());
-				liveHoverWatchdog.update(doc.getUri(), null);
-			} catch (Throwable t) {
-				log.error("", t);
+			if (getInterestingLanguages().contains(doc.getLanguageId())) {
+//				if (testHightlighter != null) {
+//					getClient()
+//							.highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
+//				} else {
+					try {
+						liveHoverWatchdog.watchDocument(doc.getUri());
+						liveHoverWatchdog.update(doc.getUri(), null);
+					} catch (Throwable t) {
+						log.error("", t);
+					}
+//				}
 			}
-//			}
 		});
 
 		documents.onDidClose(doc -> {
@@ -161,13 +168,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				liveHoverWatchdog.unwatchDocument(doc.getUri());
 //			}
 		});
-		
+
 		codeLensHandler = createCodeLensEngine();
 		documents.onCodeLens(codeLensHandler);
-		
+
 		highlightsEngine = createDocumentHighlightEngine();
 		documents.onDocumentHighlight(highlightsEngine);
-		
+
 		workspaceService.onDidChangeConfiguraton(settings -> {
 			config.handleConfigurationChange(settings);
 			if (config.isBootHintsEnabled()) {
@@ -181,25 +188,25 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		server.onInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 	}
-	
+
 	@Override
 	public ICompletionEngine getCompletionEngine() {
 		return createCompletionEngine(projectFinder, propertyIndexProvider);
 	}
-	
+
 	@Override
 	public HoverHandler getHoverProvider() {
 		return hoverProvider;
 	}
-	
+
 	public CodeLensHandler getCodeLensHandler() {
 		return codeLensHandler;
 	}
-	
+
 	public DocumentHighlightHandler getDocumentHighlightHandler() {
 		return highlightsEngine;
 	}
-	
+
 	private void initialize(InitializeParams params) {
 //		this.indexer.initialize(server.getWorkspaceRoots());
 	}
@@ -313,7 +320,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());
 		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
-		
+
 		providers.put(Annotations.REPOSITORY, new DataRepositorySymbolProvider());
 		providers.put("", new WebfluxRouterSymbolProvider());
 
@@ -325,7 +332,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
 				new ValuePropertyReferencesProvider(server));
 
-		return new BootJavaReferencesHandler(server, projectFinder, providers);
+		return new BootJavaReferencesHandler(this, projectFinder, providers);
 	}
 
 	protected BootJavaCodeLensEngine createCodeLensEngine() {
@@ -334,11 +341,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
-	
+
 	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine() {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
 		highlightProvider.add(new WebfluxRouteHighlightProdivder(this));
-		
+
 		return new BootJavaDocumentHighlightEngine(this, highlightProvider);
 	}
 

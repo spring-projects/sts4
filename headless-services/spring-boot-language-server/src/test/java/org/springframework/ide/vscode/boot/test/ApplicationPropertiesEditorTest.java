@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -1604,7 +1604,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("my.color-set", "java.util.Set<demo.Color>", null, "Set of colors that can be used.");
 
-		assertCompletions("my.colos<*>", 
+		assertCompletions("my.colos<*>",
 				"my.color-set=<*>"
 		);
 		assertCompletions("my.color-set=<*>",
@@ -1621,13 +1621,13 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	////////////// harness code below /////////////////////////
-	
+
 	@Override
 	protected SimpleLanguageServer newLanguageServer() {
 		ComposableLanguageServer<?> server = BootLanguageServer.create(
 				s -> new BootLanguageServerParams(
-						javaProjectFinder, 
-						ProjectObserver.NULL, 
+						javaProjectFinder,
+						ProjectObserver.NULL,
 						md.getIndexProvider(),
 						typeUtilProvider,
 						RunningAppProvider.NULL,
@@ -1673,6 +1673,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Override
 	protected LanguageId getLanguageId() {
 		return LanguageId.BOOT_PROPERTIES;
+	}
+
+	@Override
+	public Editor newEditor(String contents) throws Exception {
+		return harness.newEditor(LanguageId.BOOT_PROPERTIES, contents);
 	}
 
 }

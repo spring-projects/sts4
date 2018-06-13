@@ -26,12 +26,12 @@ import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -42,10 +42,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class BootJavaReferencesHandler implements ReferencesHandler {
 
 	private JavaProjectFinder projectFinder;
-	private SimpleLanguageServer server;
+	private BootJavaLanguageServerComponents server;
 	private Map<String, ReferenceProvider> referenceProviders;
 
-	public BootJavaReferencesHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
+	public BootJavaReferencesHandler(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.referenceProviders = specificProviders;
@@ -56,14 +56,17 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.get(params).copy();
 		if (doc != null) {
-			try {
-				int offset = doc.toOffset(params.getPosition());
-				List<? extends Location> referencesResult = provideReferences(doc, offset);
-				if (referencesResult != null) {
-					return referencesResult;
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
+				try {
+					int offset = doc.toOffset(params.getPosition());
+					List<? extends Location> referencesResult = provideReferences(doc, offset);
+					if (referencesResult != null) {
+						return referencesResult;
+					}
 				}
-			}
-			catch (Exception e) {
+				catch (Exception e) {
+				}
 			}
 		}
 

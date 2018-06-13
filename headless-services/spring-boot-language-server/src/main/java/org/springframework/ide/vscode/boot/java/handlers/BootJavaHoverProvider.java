@@ -68,14 +68,17 @@ public class BootJavaHoverProvider implements HoverHandler {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		if (documents.get(params) != null) {
 			TextDocument doc = documents.get(params).copy();
-			try {
-				int offset = doc.toOffset(params.getPosition());
-				Hover hoverResult = provideHover(doc, offset);
-				if (hoverResult != null) {
-					return hoverResult;
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
+				try {
+					int offset = doc.toOffset(params.getPosition());
+					Hover hoverResult = provideHover(doc, offset);
+					if (hoverResult != null) {
+						return hoverResult;
+					}
 				}
-			}
-			catch (Exception e) {
+				catch (Exception e) {
+				}
 			}
 		}
 

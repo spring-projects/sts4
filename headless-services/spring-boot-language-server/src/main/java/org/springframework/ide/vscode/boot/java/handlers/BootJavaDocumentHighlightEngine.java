@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler {
 
 	private static Logger log = LoggerFactory.getLogger(BootJavaDocumentHighlightEngine.class);
-	
+
 	private BootJavaLanguageServerComponents server;
 	private Collection<HighlightProvider> highlightProviders;
 
@@ -46,11 +46,14 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 
 		if (documents.get(docURI) != null) {
 			TextDocument doc = documents.get(docURI).copy();
-			try {
-				return provideDocumentHighlights(doc, params.getPosition());
-			}
-			catch (Exception e) {
-				log.error("", e);
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (doc != null && server.getInterestingLanguages().contains(doc.getLanguageId())) {
+				try {
+					return provideDocumentHighlights(doc, params.getPosition());
+				}
+				catch (Exception e) {
+					log.error("", e);
+				}
 			}
 		}
 

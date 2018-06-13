@@ -44,13 +44,13 @@ public class WebFluxCodeLensProviderTest {
 	@Before
 	public void setup() throws Exception {
 		harness = BootJavaLanguageServerHarness.builder().build();
-		
+
 		harness.intialize(null);
 		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
-		
+
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-webflux-project/").toURI());
 		String projectDir = directory.toURI().toString();
-		
+
 		// trigger project creation
 		harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
@@ -61,13 +61,13 @@ public class WebFluxCodeLensProviderTest {
 	@Test
 	public void testRoutesCodeLensesSimpleCase() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteHandler.java").toUri().toString();
-		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
-		
+
 		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
 
 		assertEquals(4, codeLenses.size());
-		
+
 		assertTrue(containsCodeLens(codeLenses, "GET /hello - Accept: text/plain", 25, 29, 25, 34));
 		assertTrue(containsCodeLens(codeLenses, "POST /echo - Accept: text/plain - Content-Type: text/plain", 30, 29, 30, 33));
 		assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/stream+json", 35, 29, 35, 41));
@@ -77,13 +77,13 @@ public class WebFluxCodeLensProviderTest {
 	@Test
 	public void testRoutesCodeLensesNestedRoutes1() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler1.java").toUri().toString();
-		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
-		
+
 		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
 
 		assertEquals(3, codeLenses.size());
-		
+
 		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
 		assertTrue(containsCodeLens(codeLenses, "POST /person/ - Content-Type: application/json", 13, 29, 13, 41));
 		assertTrue(containsCodeLens(codeLenses, "GET /person - Accept: application/json", 17, 29, 17, 39));
@@ -92,13 +92,13 @@ public class WebFluxCodeLensProviderTest {
 	@Test
 	public void testRoutesCodeLensesNestedRoutes2() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler2.java").toUri().toString();
-		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
-		
+
 		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
 
 		assertEquals(3, codeLenses.size());
-		
+
 		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
 		assertTrue(containsCodeLens(codeLenses, "POST / - Accept: application/json - Content-Type: application/json,application/pdf", 13, 29, 13, 41));
 		assertTrue(containsCodeLens(codeLenses, "GET,HEAD /person - Accept: text/plain,application/json", 17, 29, 17, 39));
@@ -107,13 +107,13 @@ public class WebFluxCodeLensProviderTest {
 	@Test
 	public void testRoutesCodeLensesNestedRoutes3() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler3.java").toUri().toString();
-		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.toString());
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
-		
+
 		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
 
 		assertEquals(6, codeLenses.size());
-/*		
+/*
 		assertTrue(containsCodeLens(codeLenses, "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
 		assertTrue(containsCodeLens(codeLenses, "POST / - Accept: application/json - Content-Type: application/json, application/pdf", 13, 29, 13, 41));
 		assertTrue(containsCodeLens(codeLenses, "GET, HEAD /person - Accept: text/plain, application/json", 17, 29, 17, 39));
@@ -132,7 +132,7 @@ public class WebFluxCodeLensProviderTest {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

@@ -136,7 +136,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"@Bean({\"beanId\", \"alias\"})",
 		};
 		for (String beanAnnotation : beanAnnotations) {
-			Editor editor = harness.newEditor(
+			Editor editor = harness.newEditor(LanguageId.JAVA,
 					"package hello;\n" +
 					"\n" +
 					"import org.springframework.context.annotation.Bean;\n" +
