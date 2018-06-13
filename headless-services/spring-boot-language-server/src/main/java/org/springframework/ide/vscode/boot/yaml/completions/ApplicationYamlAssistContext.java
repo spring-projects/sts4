@@ -77,7 +77,7 @@ import com.google.common.collect.ImmutableList;
  * content assistance.
  */
 public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistContext {
-	
+
 	private static Logger log = LoggerFactory.getLogger(ApplicationYamlAssistContext.class);
 
 	protected final RelaxedNameConfig conf;
@@ -577,7 +577,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			} else {
 				ArrayList<IJavaElement> elements = new ArrayList<IJavaElement>(3);
 				maybeAdd(elements, typeUtil.getField(beanType, propName));
-				maybeAdd(elements, typeUtil.getSetter(beanType, propName).get());
+				maybeAdd(elements, typeUtil.getSetter(beanType, propName));
 				maybeAdd(elements, typeUtil.getGetter(beanType, propName));
 				if (!elements.isEmpty()) {
 					return elements;

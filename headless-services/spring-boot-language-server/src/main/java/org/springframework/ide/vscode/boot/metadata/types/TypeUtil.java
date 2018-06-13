@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 
@@ -125,7 +126,7 @@ public class TypeUtil {
 	}
 
 	private IJavaProject javaProject;
-	
+
 	public TypeUtil(IJavaProject jp) {
 		//Note javaProject is allowed to be null, but only in unit testing context
 		// (This is so some tests can be run without an explicit jp needing to be created)
@@ -654,11 +655,11 @@ public class TypeUtil {
 					}
 					if (beanMode.includesHyphenated()) {
 						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
-								PropertyDocUtils.documentJavaElement(sourceLinks, project, m), deprecation));
+								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
 					}
 					if (beanMode.includesCamelCase()) {
 						properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
-								PropertyDocUtils.documentJavaElement(sourceLinks, project, m), deprecation));
+								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
 					}
 				});
 				return properties;
@@ -822,15 +823,15 @@ public class TypeUtil {
 	}
 
 
-	public Optional<IMethod> getSetter(Type beanType, String propName) {
+	public IMethod getSetter(Type beanType, String propName) {
 		try {
 			String setterName = "set" + StringUtil.hyphensToCamelCase(propName, true);
 			IType type = findType(beanType);
-			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst();
+			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst().orElse(null);
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Optional.empty();
+		return null;
 	}
 
 	public IJavaElement getGetter(Type beanType, String propName) {
