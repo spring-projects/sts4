@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,16 +77,22 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 		@Override
 		public IStatus runInUIThread(IProgressMonitor monitor) {
-			IWorkbenchWindow ww = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-			if (ww!=null) {
-				IWorkbenchPage page = ww.getActivePage();
-				if (page!=null) {
-					IEditorReference[] references = page.getEditorReferences();
-					if (references != null) {
-						boolean restore = false;
-						for (IEditorReference reference : references) {
-							IEditorPart editorPart = reference.getEditor(restore);
-							updateEditorPart(editorPart);
+			IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+			if (windows != null) {
+				for (IWorkbenchWindow ww : windows) {
+					IWorkbenchPage[] pages = ww.getPages();
+					if (pages != null) {
+						for (IWorkbenchPage page : pages) {
+							if (page != null) {
+								IEditorReference[] references = page.getEditorReferences();
+								if (references != null) {
+									boolean restore = false;
+									for (IEditorReference reference : references) {
+										IEditorPart editorPart = reference.getEditor(restore);
+										updateEditorPart(editorPart);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -112,6 +118,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 						}
 					}
 				} catch (Exception e) {
+					e.getCause();
 					//ignore reflection errors
 				}
 			}
