@@ -90,7 +90,7 @@ public class IndexNavigator {
 		// the index is at the 'root' of the tree and we don't need a '.' to navigate
 		String extendedPrefix = prefix==null?"":prefix + NAV_CHAR;
 		PropertyInfo candidate = index.findLongestCommonPrefixEntry(extendedPrefix);
-		if (candidate.getId().startsWith(extendedPrefix)) {
+		if (candidate!=null && candidate.getId().startsWith(extendedPrefix)) {
 			return candidate;
 		}
 		return null;
