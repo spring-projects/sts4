@@ -605,8 +605,13 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType swift_source = f.ybean("SwiftSemverSource");
 			addProp(swift_source, "openstack", t_any).isPrimary(true);
 
+			AbstractType gcs_source = f.ybean("GcsSemverSource");
+			addProp(gcs_source, "bucket", t_ne_string).isRequired(true);
+			addProp(gcs_source, "key", t_ne_string).isRequired(true);
+			addProp(gcs_source, "json_key", t_ne_string).isRequired(true);
+
 			AbstractType[] driverSpecificSources = {
-					git_source, s3_source, swift_source
+					git_source, s3_source, swift_source, gcs_source
 			};
 
 			AbstractType source = f.contextAware("SemverSource", (dc) -> {
@@ -617,12 +622,14 @@ public class PipelineYmlSchema implements YamlSchema {
 					return s3_source;
 				case "swift":
 					return swift_source;
+				case "gcs":
+					return gcs_source;
 				default:
 					return null;
 				}
 			}).treatAsBean();
 			addProp(source, "initial_version", t_semver);
-			addProp(source, "driver", f.yenum("SemverDriver", "git", "s3", "swift")).isPrimary(true, false);
+			addProp(source, "driver", f.yenum("SemverDriver", "git", "s3", "swift", "gcs")).isPrimary(true, false);
 			for (AbstractType s : driverSpecificSources) {
 				for (YTypedProperty p : source.getProperties()) {
 					s.addProperty(p);

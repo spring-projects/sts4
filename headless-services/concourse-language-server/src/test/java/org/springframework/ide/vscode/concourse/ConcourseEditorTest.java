@@ -2143,6 +2143,20 @@ public class ConcourseEditorTest {
 				"version|Unused",
 				"source|'openstack' is required"
 		);
+
+		//required props for gcs driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  check_every: 1h  \n" +
+				"  source:\n" +
+				"    driver: gcs"
+		);
+		editor.assertProblems(
+				"version|Unused",
+				"source|Properties [bucket, json_key, key] are required"
+		);
 	}
 
 	@Test public void semverResourceSourceBadDriver() throws Exception {
@@ -2157,6 +2171,53 @@ public class ConcourseEditorTest {
 				"version|Unused",
 				"bad-driver|'SemverDriver'"
 		);
+	}
+
+	@Test public void semverGcsResourceSourceContentAssist() throws Exception {
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: gcs\n" +
+				"    <*>"
+				, // ===========
+				"<*>"
+				, // ==>
+				    "bucket: $1\n" +
+				"    key: $2\n" +
+				"    json_key: $3<*>"
+				, // --
+				"bucket: <*>",
+				"json_key: <*>",
+				"key: <*>"
+		);
+	}
+
+	@Test public void semverGcsResourceReconcileAndHover() throws Exception {
+		Editor editor;
+
+		// required props for git driver
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: version\n" +
+				"  type: semver\n" +
+				"  source:\n" +
+				"    driver: gcs\n" +
+				"    bucket: some-bucket\n" +
+				"    key: some-key\n" +
+				"    json_key: some-json-key-string\n" +
+				"    bogus: bad"
+		);
+		editor.assertProblems(
+				"version|Unused",
+				"bogus|Unknown property"
+		);
+
+		editor.assertHoverContains("driver", "The driver to use");
+		editor.assertHoverContains("bucket", "The name of the bucket");
+		editor.assertHoverContains("key", "key to use for the object in the bucket tracking the version");
+		editor.assertHoverContains("json_key", "contents of your GCP Account JSON Key");
 	}
 
 	@Test public void semverGitResourceSourceContentAssist() throws Exception {
