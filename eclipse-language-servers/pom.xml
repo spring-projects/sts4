@@ -29,6 +29,7 @@
 	<modules>
 		<module>../headless-services/jdt-ls-extension</module>
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
+		<module>org.springframework.tooling.ls.eclipse.commons.test</module>
 	
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>

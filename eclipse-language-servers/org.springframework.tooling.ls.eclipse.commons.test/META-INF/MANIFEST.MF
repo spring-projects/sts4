@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test
+Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.commons.test
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: org.springframework.tooling.ls.eclipse.commons.test
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.junit,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.springframework.tooling.ls.eclipse.commons,
+ org.eclipse.jdt.core,
+ org.apache.commons.io,
+ org.springframework.tooling.jdt.ls.commons
