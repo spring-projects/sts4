@@ -553,9 +553,8 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	/**
-	 * @deprecated use {@link #newEditor(LanguageId, String)}
+	 * Create editor with 'default' language id.
 	 */
-	@Deprecated
 	public Editor newEditor(String contents) throws Exception {
 		return newEditor(getDefaultLanguageId(), contents);
 	}
