@@ -34,8 +34,11 @@ public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage
 
 	@Override
 	protected void createFieldEditors() {
-		BooleanFieldEditor editor = new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", getFieldEditorParent());
-		addField(editor);
+		BooleanFieldEditor liveHintsPrefEditor = new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", getFieldEditorParent());
+		addField(liveHintsPrefEditor);
+		
+		BooleanFieldEditor liveChangeDetectionPrefEditor = new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", getFieldEditorParent());
+		addField(liveChangeDetectionPrefEditor);
 	}
 
 }

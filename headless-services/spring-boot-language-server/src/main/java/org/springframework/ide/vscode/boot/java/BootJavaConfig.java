@@ -30,7 +30,7 @@ public class BootJavaConfig {
 
 	public boolean isChangeDetectionEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "change-detection", "on");
-		return enabled == null || enabled.booleanValue();
+		return enabled != null && enabled.booleanValue();
 	}
 
 	public void handleConfigurationChange(Settings newConfig) {

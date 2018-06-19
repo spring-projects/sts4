@@ -19,5 +19,6 @@ public class Constants {
 	public static final String LANGUAGE_SERVER_VERSION = "0.3.2-SNAPSHOT.jar";
 	
 	public static final String PREF_BOOT_HINTS = "boot-java.boot-hints.on";
+	public static final String PREF_CHANGE_DETECTION = "boot-java.change-detection.on";
 
 }

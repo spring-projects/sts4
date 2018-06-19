@@ -124,8 +124,13 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> settings = new HashMap<>();
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		Map<String, Object> bootHint = new HashMap<>();
+		Map<String, Object> bootChangeDetection = new HashMap<>();
+
 		bootHint.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_BOOT_HINTS));
+		bootChangeDetection.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_CHANGE_DETECTION));
+
 		bootJavaObj.put("boot-hints", bootHint);
+		bootJavaObj.put("change-detection", bootChangeDetection);
 		settings.put("boot-java", bootJavaObj);
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}

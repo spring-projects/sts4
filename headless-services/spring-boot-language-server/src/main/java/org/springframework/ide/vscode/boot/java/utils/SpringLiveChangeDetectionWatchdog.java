@@ -53,7 +53,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class SpringLiveChangeDetectionWatchdog {
 
 	public static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
-	
+
 	Logger logger = LoggerFactory.getLogger(SpringLiveChangeDetectionWatchdog.class);
 
 	private final long POLLING_INTERVAL_MILLISECONDS;
@@ -61,11 +61,11 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final SimpleLanguageServer server;
 	private final RunningAppProvider runningAppProvider;
 	private final SourceLinks sourceLinks;
-	
+
 	private final ChangeDetectionHistory changeHistory;
 	private final Set<IJavaProject> observedProjects;
 
-	private boolean changeDetectionEnabled = true;
+	private boolean changeDetectionEnabled = false;
 	private Timer timer;
 
 	public SpringLiveChangeDetectionWatchdog(
@@ -77,28 +77,28 @@ public class SpringLiveChangeDetectionWatchdog {
 			Duration pollingInterval
 	) {
 		this.observedProjects = new HashSet<>();
-		
+
 		this.server = server;
 		this.runningAppProvider = runningAppProvider;
 
 		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
-		
+
 		this.changeHistory = new ChangeDetectionHistory();
 		this.sourceLinks = new VSCodeSourceLinks(bootJavaLanguageServerComponents);
-		
+
 		if (projectObserver != null) {
 			projectObserver.addListener(new Listener() {
-				
+
 				@Override
 				public void deleted(IJavaProject project) {
 					observedProjects.remove(project);
 				}
-				
+
 				@Override
 				public void created(IJavaProject project) {
 					observedProjects.add(project);
 				}
-				
+
 				@Override
 				public void changed(IJavaProject project) {
 					// do nothing
@@ -155,9 +155,9 @@ public class SpringLiveChangeDetectionWatchdog {
 
 	private void publishDetectedChange(Change change) {
 		Map<String, List<Diagnostic>> diagnostics = new HashMap<>();
-		
+
 		IJavaProject[] projects = findProjectsFor(change.getRunningApp());
-		
+
 		List<LiveBean> deletedBeans = change.getDeletedBeans();
 		if (deletedBeans != null) {
 			for (LiveBean liveBean : deletedBeans) {
@@ -167,7 +167,7 @@ public class SpringLiveChangeDetectionWatchdog {
 				diag.setSource("Spring Boot Change Detection Mechanism");
 
 				diag.setMessage("bean removed from app: " + liveBean.getId());
-				
+
 				String docURI = getDocURI(liveBean, projects);
 				if (docURI != null) {
 					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
@@ -178,7 +178,7 @@ public class SpringLiveChangeDetectionWatchdog {
 				}
 			}
 		}
-		
+
 		List<LiveBean> newBeans = change.getNewBeans();
 		if (newBeans != null) {
 			for (LiveBean liveBean : newBeans) {
@@ -188,7 +188,7 @@ public class SpringLiveChangeDetectionWatchdog {
 				diag.setSource("Spring Boot Change Detection Mechanism");
 
 				diag.setMessage("new bean detected: " + liveBean.getId());
-				
+
 				String docURI = getDocURI(liveBean, projects);
 				if (docURI != null) {
 					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
@@ -199,7 +199,7 @@ public class SpringLiveChangeDetectionWatchdog {
 				}
 			}
 		}
-		
+
 		for (String docURI : diagnostics.keySet()) {
 			PublishDiagnosticsParams params = new PublishDiagnosticsParams(docURI, diagnostics.get(docURI));
 			server.getClient().publishDiagnostics(params);
@@ -209,11 +209,11 @@ public class SpringLiveChangeDetectionWatchdog {
 
 	private IJavaProject[] findProjectsFor(SpringBootApp app) {
 		List<IJavaProject> result = new ArrayList<>();
-		
+
 		try {
 			Set<String> runningClasspath = new HashSet<>();
 			Collections.addAll(runningClasspath, app.getClasspath());
-			
+
 			for (IJavaProject project : this.observedProjects) {
 				IClasspath classpath = project.getClasspath();
 				Collection<CPE> entries = classpath.getClasspathEntries();
@@ -231,25 +231,25 @@ public class SpringLiveChangeDetectionWatchdog {
 		catch (Exception e) {
 			logger.error("find projects failed with: ", e);
 		}
-		
+
 		return (IJavaProject[]) result.toArray(new IJavaProject[result.size()]);
 	}
 
 	private String getDocURI(LiveBean liveBean, IJavaProject[] projects) {
 		String result = null;
-		
+
 		String resource = liveBean.getResource();
 		Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
-		
+
 		Matcher matcher = BRACKETS.matcher(resource);
 		if (matcher.find()) {
 			String type = resource.substring(0, matcher.start()).trim();
 			String path = resource.substring(matcher.start()+1, matcher.end()-1);
-			
+
 			for (IJavaProject project : projects) {
 				if (SpringResource.FILE.equals(type)) {
 					String relativePath = SpringResource.projectRelativePath(project, path);
-					
+
 					if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
 						result = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath).get();
 						break;
