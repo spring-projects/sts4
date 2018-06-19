@@ -68,6 +68,11 @@
           "default": true,
           "description": "Enable/Disable Spring running Boot application live hints decorators in Java source code"
         },
+        "boot-java.change-detection.on": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/Disable detecting changes of running Spring Boot applications"
+        },
         "spring-boot.ls.java.home": {
           "type": [
             "string",

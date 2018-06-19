@@ -11,12 +11,18 @@ export const BootConfigSchema: PreferenceSchema = {
             type: 'boolean',
             description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
             default: true
+        },
+        'boot-java.change-detection.on': {
+            type: 'boolean',
+            description: 'Enable/Disable detecting changes of running Spring Boot applications.',
+            default: false
         }
     }
 };
 
 export interface BootConfiguration {
     'boot-java.boot-hints.on': boolean;
+    'boot-java.change-detection.on': boolean;
 }
 
 export const BootPreferences = Symbol('BootPreferences');
