@@ -247,11 +247,11 @@
 					<layout>p2</layout>
 					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>maven-egit</id>
 					<layout>p2</layout>
-					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.14.0/N/0.14.0.201504071521/</url>
-				</repository> -->
+					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
+				</repository>
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
