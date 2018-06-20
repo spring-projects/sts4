@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -30,17 +31,13 @@ import java.util.Optional;
 import org.assertj.core.util.Files;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
-
-import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.*;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Tests covering Gradle project data
@@ -80,8 +77,8 @@ public class GradleProjectTest {
 	@Test
 	public void testEclipseGradleProject() throws Exception {
 		GradleJavaProject project = getGradleProject("empty-gradle-project");
-		ImmutableList<CPE> calculatedClassPath = project.getClasspath().getClasspathEntries();
-		assertEquals(51, calculatedClassPath.size());
+		List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(project.getClasspath(), (cpe) -> !cpe.isSystem());
+		assertEquals(51, nonSystemClasspathEntries.size());
 	}
 
 	@Test
@@ -127,8 +124,8 @@ public class GradleProjectTest {
 			GradleJavaProject cachedProject = manager.project(gradleFile);
 			assertNotNull(cachedProject);
 
-			ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-			assertEquals(51, calculatedClassPath.size());
+			List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
+			assertEquals(51, nonSystemClasspathEntries.size());
 
 			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
 			assertNull(projectChanged[0]);
@@ -137,8 +134,8 @@ public class GradleProjectTest {
 			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
 			assertNotNull(projectChanged[0]);
 			assertEquals(cachedProject, projectChanged[0]);
-			calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
-			assertEquals(52, calculatedClassPath.size());
+			nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
+			assertEquals(52, nonSystemClasspathEntries.size());
 
 
 			fileObserver.notifyFileDeleted(gradleFile.toURI().toString());

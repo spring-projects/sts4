@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +52,9 @@ import org.eclipse.aether.util.graph.transformer.NearestVersionSelector;
 import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector;
 import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaUtils;
 
 /**
  * Maven Core functionality
@@ -75,6 +76,8 @@ public class MavenCore {
 	public static final String POM_XML = "pom.xml";
 
 	private static MavenCore defaultInstance = null;
+
+	private static Logger log = LoggerFactory.getLogger(MavenCore.class);
 
 	private MavenBridge maven;
 
@@ -227,7 +230,7 @@ public class MavenCore {
 					try {
 						artifact = maven.resolve(artifact, project.getRemoteArtifactRepositories(), request);
 					} catch (MavenException e) {
-						Log.log(e);
+						log.error("", e);
 						// Maven 2.x quirk: an artifact always points at the local repo,
 						// regardless whether resolved or not
 						LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -266,8 +269,23 @@ public class MavenCore {
 	}
 
 	public Stream<Path> getJreLibs() throws MavenException {
-		String s = (String) maven.createExecutionRequest().getSystemProperties().get(JAVA_BOOT_CLASS_PATH);
-		return s == null ? Stream.empty() : Arrays.stream(s.split(File.pathSeparator)).map(File::new).filter(f -> f.canRead()).map(f -> Paths.get(f.toURI()));
+		return JavaUtils.jreLibs(this::getJavaRuntimeMinorVersion, () -> {
+				try {
+					return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_HOME);
+				} catch (MavenException e) {
+					log.error("Cannot determine java home", e);
+					return null;
+				}
+			},
+			() -> {
+				try {
+					return (String) maven.createExecutionRequest().getSystemProperties().get(JAVA_BOOT_CLASS_PATH);
+				} catch (MavenException e) {
+					log.error("Cannot determine boot classpath", e);
+					return null;
+				}
+			}
+		);
 	}
 
 	public String getJavaRuntimeVersion() throws MavenException {
@@ -276,21 +294,11 @@ public class MavenCore {
 
 	public String getJavaRuntimeMinorVersion() {
 		try {
-			String fullVersion = getJavaRuntimeVersion();
-			String[] tokenized = fullVersion.split("\\.");
-			if (tokenized.length > 1) {
-				return tokenized[1];
-			} else {
-				Log.log("Cannot determine minor version for the Java Runtime Version: " + fullVersion);
-			}
+			return JavaUtils.getJavaRuntimeMinorVersion(getJavaRuntimeVersion());
 		} catch (MavenException e) {
-			Log.log("Cannot determine Java runtime version. Defaulting to version 8", e);
+			log.error("Cannot determine Java runtime version. Defaulting to version 8", e);
 		}
 		return null;
-	}
-
-	private String getJavaHome() throws MavenException {
-		return maven.createExecutionRequest().getSystemProperties().getProperty(JAVA_HOME);
 	}
 
 }

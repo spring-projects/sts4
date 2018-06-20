@@ -11,14 +11,9 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.gradle.tooling.model.build.BuildEnvironment;
@@ -26,16 +21,10 @@ import org.gradle.tooling.model.eclipse.EclipseExternalDependency;
 import org.gradle.tooling.model.eclipse.EclipseProject;
 import org.gradle.tooling.model.eclipse.EclipseProjectDependency;
 import org.gradle.tooling.model.eclipse.EclipseSourceDirectory;
-import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
-import org.springframework.ide.vscode.commons.jandex.JandexIndex;
-import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.HtmlJavadocProvider;
-import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaUtils;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -61,26 +50,6 @@ public class GradleProjectClasspath implements IClasspath {
 		this.buildEnvironment = gradle.getModel(projectDir, BuildEnvironment.class);
 	}
 
-//	@Override
-//	protected JandexIndex[] getBaseIndices() {
-//		return new JandexIndex[] { new JandexIndex(getJreLibs().map(path -> path.toFile()).collect(Collectors.toList()),
-//				jarFile -> findIndexFile(jarFile), (classpathResource) -> {
-//					try {
-//						String javaVersion = getJavaRuntimeMinorVersion();
-//						if (javaVersion == null) {
-//							javaVersion = "8";
-//						}
-//						URL javadocUrl = new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/");
-//						return new HtmlJavadocProvider(
-//								(type) -> SourceUrlProviderFromSourceContainer.JAVADOC_FOLDER_URL_SUPPLIER
-//										.sourceUrl(javadocUrl, type.getFullyQualifiedName()));
-//					} catch (MalformedURLException e) {
-//						Log.log(e);
-//						return null;
-//					}
-//				}) };
-//	}
-
 	private EclipseProject getRootProject() {
 		EclipseProject root = project;
 		if (root == null) {
@@ -99,6 +68,22 @@ public class GradleProjectClasspath implements IClasspath {
 			return ImmutableList.of();
 		} else {
 			Builder<CPE> entries = ImmutableList.builder();
+			getJreLibs().forEach(path -> {
+				CPE cpe = CPE.binary(path.toString());
+				String javaVersion = JavaUtils.getJavaRuntimeMinorVersion(getJavaRuntimeVersion());
+				if (javaVersion == null) {
+					javaVersion = "8";
+				}
+				String urlStr = "https://docs.oracle.com/javase/" + javaVersion + "/docs/api/";
+				try {
+					cpe.setJavadocContainerUrl(new URL(urlStr));
+				} catch (MalformedURLException e) {
+					log.error("Invalid javadoc URL: " + urlStr, e);
+				}
+				cpe.setSystem(true);
+				entries.add(cpe);
+			});
+
 			for (EclipseExternalDependency dep : project.getClasspath()) {
 				entries.add(new CPE(Classpath.ENTRY_KIND_BINARY, dep.getFile().getAbsolutePath()));
 			}
@@ -148,17 +133,6 @@ public class GradleProjectClasspath implements IClasspath {
 		return System.getProperty(JAVA_RUNTIME_VERSION);
 	}
 
-	public String getJavaRuntimeMinorVersion() {
-		String fullVersion = getJavaRuntimeVersion();
-		String[] tokenized = fullVersion.split("\\.");
-		if (tokenized.length > 1) {
-			return tokenized[1];
-		} else {
-			Log.log("Cannot determine minor version for the Java Runtime Version: " + fullVersion);
-			return null;
-		}
-	}
-
 	private String getJavaHome() {
 		if (buildEnvironment == null) {
 			return System.getProperty(JAVA_HOME);
@@ -168,12 +142,7 @@ public class GradleProjectClasspath implements IClasspath {
 	}
 
 	private Stream<Path> getJreLibs() {
-		String s = System.getProperty(JAVA_BOOT_CLASS_PATH);
-		return Arrays.stream(s.split(File.pathSeparator))
-				.map(strPath -> strPath.replace(System.getProperty(JAVA_HOME), getJavaHome()))
-				.map(File::new)
-				.filter(f -> f.canRead())
-				.map(f -> f.toPath());
+		return JavaUtils.jreLibs(() -> JavaUtils.getJavaRuntimeMinorVersion(getJavaRuntimeVersion()), this::getJavaHome, () -> System.getProperty(JAVA_BOOT_CLASS_PATH));
 	}
 
 	@Override
