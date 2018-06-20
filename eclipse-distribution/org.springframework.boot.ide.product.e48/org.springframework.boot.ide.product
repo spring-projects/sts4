@@ -56,6 +56,8 @@ openFile</programArgs>
 
       <feature id="org.eclipse.jdt" installMode="root"/>
       <feature id="org.eclipse.jgit" installMode="root"/>
+      <feature id="org.eclipse.jgit.lfs" installMode="root"/>
+
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.logback.feature" installMode="root"/>
 
