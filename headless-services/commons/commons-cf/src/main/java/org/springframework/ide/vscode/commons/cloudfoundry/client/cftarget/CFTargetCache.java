@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,57 +12,64 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
-import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.TargetDiagnosticMessages;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 
 public class CFTargetCache {
 
-	private final CfClientConfig cfClientConfig;
+	private Logger logger = LoggerFactory.getLogger(CFTargetCache.class);
 	private final CloudFoundryClientFactory clientFactory;
 	private final ClientTimeouts timeouts;
 	private LoadingCache<ClientParamsCacheKey, CFTarget> cache;
-	private CFCallableContext cacheCallableContext;
+	private List<ClientParamsProvider> _providers;
 
 	public static final Duration SERVICES_EXPIRATION = Duration.ofSeconds(10);
 	public static final Duration TARGET_EXPIRATION = Duration.ofHours(1);
 	public static final Duration ERROR_EXPIRATION = Duration.ofSeconds(10);
 
-	public CFTargetCache(CfClientConfig cfClientConfig, CloudFoundryClientFactory clientFactory,
+	public CFTargetCache(List<ClientParamsProvider> providers, CloudFoundryClientFactory clientFactory,
 			ClientTimeouts timeouts) {
-		Assert.isLegal(cfClientConfig != null,
-				"A Cloud Foundry client parameters provider must be set when creating a target cache.");
-		this.cfClientConfig = cfClientConfig;
 		this.clientFactory = clientFactory;
 		this.timeouts = timeouts;
-		//TODO: I suspect that addClientParamsProviderChangedListener below is not necessary. 
-		// I think it results in unnessary refreshes of the cache, any time the providers are
-		// changed. The cached results doesn't really depend on the providers, only on the targets. So I think, 
-		// it shouldn't need to refresh when the providers are changed.
-		cfClientConfig.addClientParamsProviderChangedListener((newProvider, oldProvider) -> initCache());
+		this._providers = providers;
 		initCache();
 	}
+
 	
 	private void initCache() {
 		CacheLoader<ClientParamsCacheKey, CFTarget> loader = new CacheLoader<ClientParamsCacheKey, CFTarget>() {
 
 			@Override
-			public CFTarget load(ClientParamsCacheKey params) throws Exception {
-				return create(params.fullParams);
+			public CFTarget load(ClientParamsCacheKey key) throws Exception {
+				return create(key.fullParams, key.getProvider());
 			}
 
 		};
 		cache = CacheBuilder.newBuilder()./*maximumSize(1).*/expireAfterAccess(TARGET_EXPIRATION.toMillis(), TimeUnit.MILLISECONDS)
 				.build(loader);
-		this.cacheCallableContext = new CFCallableContext(cfClientConfig.getClientParamsProvider().getMessages());
+	}
+	
+	/**
+	 * 
+	 * @param providers list of providers that will be called in order.
+	 */
+	public synchronized void setProviders(ClientParamsProvider... providers) {
+		this._providers = providers != null ? Arrays.asList(providers) : ImmutableList.of();
 	}
 
 	/**
@@ -73,39 +80,67 @@ public class CFTargetCache {
 	 *             for any other error encountered
 	 */
 	public synchronized List<CFTarget> getOrCreate() throws NoTargetsException, Exception {
-		return cacheCallableContext.checkConnection(() -> doGetOrCreate());
-	}
-
-	protected synchronized List<CFTarget> doGetOrCreate() throws NoTargetsException, Exception {
-
-		Collection<CFClientParams> allParams = cfClientConfig.getClientParamsProvider().getParams();
+		// Obtain an uptodate list of params from the providers and refresh the list of targets.
 		List<CFTarget> targets = new ArrayList<>();
-		if (allParams != null) {
-			for (CFClientParams params : allParams) {
-				ClientParamsCacheKey key = ClientParamsCacheKey.from(params);
-				CFTarget target = cache.get(key);
-				if (target != null) {
-					// If any CF errors occurred in the target, refresh once
-					if (target.hasExpiredConnectionError()) {
-						cache.refresh(key);
-						target = cache.get(key);
-					}
-					targets.add(target);
-				}
+
+		Exception lastError = null;
+		for (ClientParamsProvider provider : this._providers) {
+
+			// IMPORTANT: do not let errors stop iterating through all the providers.
+			// If one provider cannot provide targets, try the next one.
+			try {
+				Collection<CFClientParams> providerParams = provider.getParams();
+				getTargets(targets, provider, providerParams);
+			} catch (Exception e) {
+				lastError = e;
 			}
 		}
-		
+
+		if (targets.isEmpty() && lastError != null) {
+			throw lastError;
+		}
 		return targets;
 	}
+
+
+	private void getTargets(List<CFTarget> targets, ClientParamsProvider provider,
+			Collection<CFClientParams> providerParams) throws ExecutionException {
+		for (CFClientParams params : providerParams) {
+			ClientParamsCacheKey key = ClientParamsCacheKey.from(params, provider);
+			CFTarget target = cache.get(key);
+			if (target != null) {
+				// If any CF errors occurred in the target, refresh once
+				if (target.hasExpiredConnectionError()) {
+					cache.refresh(key);
+					target = cache.get(key);
+				}
+				targets.add(target);
+			}
+		}
+	}
 	
-	protected CFTarget create(CFClientParams params) throws Exception {
-		/*
-		 * Must pass a NEW callable context. Cannot be
-		 * the same as the target cache callable context, as
-		 * contexts may contain error state
-		 */
-		return new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts),
-				new CFCallableContext(cfClientConfig.getClientParamsProvider().getMessages()));
+	public synchronized List<ClientParamsProvider> getParamsProviders() {
+		return this._providers;
+	}
+
+
+	protected CFTarget create(CFClientParams params, ClientParamsProvider provider) throws Exception {
+		TargetDiagnosticMessages messages = provider.getMessages();
+		CFCallableContext context = createCallingContext(provider);
+
+		CFTarget target = new CFTarget(getTargetName(params), params, clientFactory.getClient(params, timeouts),
+				context);
+		if (messages != null && StringUtil.hasText(messages.getTargetSource())) {
+			logger.info("Created CF target for [{}/{}], from {}", params.getOrgName(), params.getSpaceName(),
+					messages.getTargetSource());
+		} else {
+			logger.info("Created CF target for [{}/{}]", params.getOrgName(), params.getSpaceName());
+		}
+		return target;
+	}
+
+	private CFCallableContext createCallingContext(ClientParamsProvider provider) {
+		return new CFCallableContext(provider.getMessages());
 	}
 
 	protected static String getTargetName(CFClientParams params) {
@@ -120,9 +155,5 @@ public class CFTargetCache {
 		} else {
 			return cfApiUrl;
 		}
-	}
-
-	public CfClientConfig getCfClientConfig() {
-		return cfClientConfig;
 	}
 }

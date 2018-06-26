@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,12 +15,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.mockito.Mockito;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFCredentials;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliProviderMessages;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
@@ -33,18 +30,16 @@ public class MockCfCli {
 
 	public final CloudFoundryClientFactory factory = mock(CloudFoundryClientFactory.class);
 	public final ClientRequests client = mock(ClientRequests.class);
-	public final CfClientConfig cfClientConfig = CfClientConfig.createDefault();
 	public final ClientParamsProvider paramsProvider = mock(ClientParamsProvider.class);
-	public final CfCliProviderMessages actualCfCliMessages = new CfCliProviderMessages();
+
 
 	public MockCfCli() {
 		try {
-			cfClientConfig.setClientParamsProvider(paramsProvider);
 			//program some default behavior into mocks... most tests will use this.
 			//other tests should 'reset' the mocks and reprogram them as needed.
 			when(factory.getClient(any(), any())).thenReturn(client);
 			when(paramsProvider.getParams()).thenReturn(ImmutableList.of(DEFAULT_PARAMS));
-			when(paramsProvider.getMessages()).thenReturn(actualCfCliMessages);
+			when(paramsProvider.getMessages()).thenReturn(CfCliParamsProvider.CLI_PROVIDER_MESSAGES);
 
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);

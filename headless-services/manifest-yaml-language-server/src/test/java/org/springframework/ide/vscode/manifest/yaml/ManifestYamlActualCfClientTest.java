@@ -22,10 +22,11 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfClientConfig;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfoProvder;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
+
+import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlActualCfClientTest {
 
@@ -37,9 +38,8 @@ public class ManifestYamlActualCfClientTest {
 		cfJson = new CfJson();
 		CfTargetsInfo info = getTargetsInfoFromEnv();
 		CfTargetsInfoProvder provider = new CfTargetsInfoProvder(info);
-		CfClientConfig cfClientConfig = CfClientConfig.createDefault(provider);
 		CloudFoundryClientFactory clientFactory = DefaultCloudFoundryClientFactoryV2.INSTANCE;
-		cfTargetCache = new CFTargetCache(cfClientConfig, clientFactory, new ClientTimeouts());
+		cfTargetCache = new CFTargetCache(ImmutableList.of(provider), clientFactory, new ClientTimeouts());
 	}
 
 	private CfTargetsInfo getTargetsInfoFromEnv() {

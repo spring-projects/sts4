@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.TargetDiagnosticMessages;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.gson.Gson;
@@ -37,7 +38,32 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	public static final String SPACE_FIELDS = "SpaceFields";
 	public static final String NAME = "Name";
 	public static final String SSL_DISABLED = "SSLDisabled";
-	private CfCliProviderMessages cfCliProviderMessages = new CfCliProviderMessages();
+	
+	public static final TargetDiagnosticMessages CLI_PROVIDER_MESSAGES = new TargetDiagnosticMessages() {
+
+		@Override
+		public String getNoTargetsFound() {
+			// Make this a "generic" message, instead of using "cf CLI" prefix as it shows general instructions when there are not targets
+			return "No Cloud Foundry targets found: Use 'cf' CLI to login";
+		}
+
+		@Override
+		public String getConnectionError() {
+			return "cf CLI - Connection error: Verify connection or use 'cf' CLI to login again";
+		}
+
+		@Override
+		public String getNoOrgSpace() {
+			return "cf CLI - No org/space selected: Use 'cf' CLI to login";
+		}
+
+		@Override
+		public String getTargetSource() {
+			return "cf CLI";
+		}
+
+	};
+
 	private Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 	
 	private static CfCliParamsProvider instance;
@@ -81,7 +107,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 							String orgName = (String) orgFields.get(NAME);
 							String spaceName = (String) spaceFields.get(NAME);
 							if (!StringUtil.hasText(orgName) || !StringUtil.hasText(spaceName)) {
-								throw new NoTargetsException(getMessages().noOrgSpace());
+								throw new NoTargetsException(getMessages().getNoOrgSpace());
 							}
 							params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
 						}
@@ -93,7 +119,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		}
 
 		if (params.isEmpty()) {
-			throw new NoTargetsException(getMessages().noTargetsFound());
+			throw new NoTargetsException(getMessages().getNoTargetsFound());
 		} else {
 			return params;
 		}
@@ -123,8 +149,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 	}
 
 	@Override
-	public CFParamsProviderMessages getMessages() {
-		return cfCliProviderMessages;
+	public TargetDiagnosticMessages getMessages() {
+		return CLI_PROVIDER_MESSAGES;
 	}
-
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,6 +44,7 @@ public class CFTarget {
 	private LoadingCache<String, List<CFDomain>> domainCache;
 	private LoadingCache<String, List<CFStack>> stacksCache;
 	private CFCallableContext callableContext;
+	
 	public CFTarget(String targetName, CFClientParams params, ClientRequests requests,
 			CFCallableContext callableContext) {
 		this.params = params;
@@ -107,7 +108,7 @@ public class CFTarget {
 	}
 
 	protected <T> T runAndCheckForFailure(Callable<T> callable) throws Exception {
-		return callableContext.checkConnection(callable);
+		return callableContext.run(callable);
 	}
 
 	public boolean hasExpiredConnectionError() {

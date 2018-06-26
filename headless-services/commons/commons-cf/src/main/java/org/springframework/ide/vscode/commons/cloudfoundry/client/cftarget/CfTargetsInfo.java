@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  *  JSON-friendly representation of Cloud Foundry targets, used for integrations that need
@@ -25,7 +24,7 @@ import java.util.Map;
 public class CfTargetsInfo {
 
 	private List<Target> cfTargets;
-	private Map<String, String> cfDiagnosticMessages;
+	private TargetDiagnosticMessages diagnosticMessages;
 
 	public List<Target> getCfTargets() {
 		return cfTargets;
@@ -35,12 +34,61 @@ public class CfTargetsInfo {
 		this.cfTargets = cfTargets;
 	}
 
-	public Map<String, String> getCfDiagnosticMessages() {
-		return this.cfDiagnosticMessages;
+	public TargetDiagnosticMessages getDiagnosticMessages() {
+		return diagnosticMessages;
 	}
 
-	public void setCfDiagnosticMessages(Map<String, String> cfDiagnosticMessages) {
-		this.cfDiagnosticMessages = cfDiagnosticMessages;
+	public void setDiagnosticMessages(TargetDiagnosticMessages diagnosticMessages) {
+		this.diagnosticMessages = diagnosticMessages;
+	}
+
+	public static class TargetDiagnosticMessages {
+
+
+		private String noTargetsFound;
+		private String connectionError;
+		private String noOrgSpace;
+		private String targetSource;
+
+		/**
+		 * 
+		 * @return only when there are no targets available (e.g. cf CLI is not connected or no boot dash targets)
+		 */
+		public String getNoTargetsFound() {
+			return noTargetsFound;
+		}
+
+		public void setNoTargetsFound(String noTargetsFound) {
+			this.noTargetsFound = noTargetsFound;
+		}
+
+		/**
+		 * 
+		 * @return error if any existing target cannot connect.
+		 */
+		public String getConnectionError() {
+			return connectionError;
+		}
+
+		public void setConnectionError(String connectionError) {
+			this.connectionError = connectionError;
+		}
+
+		public String getNoOrgSpace() {
+			return noOrgSpace;
+		}
+
+		public void setNoOrgSpace(String noOrgSpace) {
+			this.noOrgSpace = noOrgSpace;
+		}
+
+		public String getTargetSource() {
+			return targetSource;
+		}
+
+		public void setTargetSource(String targetSource) {
+			this.targetSource = targetSource;
+		}
 	}
 
 	public static class Target {
@@ -66,7 +114,7 @@ public class CfTargetsInfo {
 		public void setOrg(String org) {
 			this.org = org;
 		}
-	
+
 		public void setSpace(String space) {
 			this.space = space;
 		}
@@ -89,6 +137,11 @@ public class CfTargetsInfo {
 
 		public void setRefreshToken(String refreshToken) {
 			this.refreshToken = refreshToken;
+		}
+
+		@Override
+		public String toString() {
+			return "Target [api=" + api + ", org=" + org + ", space=" + space + "]";
 		}
 	}
 }

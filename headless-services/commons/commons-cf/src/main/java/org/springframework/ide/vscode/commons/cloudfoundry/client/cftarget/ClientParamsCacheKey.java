@@ -19,15 +19,23 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 public class ClientParamsCacheKey {
 
 	public final CFClientParams fullParams;
+	private final ClientParamsProvider provider;
 
 	/**
 	 * Use static API to create: {@link #from(CFClientParams)}
 	 * @param fullParams
 	 */
-	private ClientParamsCacheKey(CFClientParams fullParams) {
+	private ClientParamsCacheKey(CFClientParams fullParams, ClientParamsProvider provider) {
 		this.fullParams = fullParams;
+		
+		// Not used in evaluating key equality. It's passed into the key because when a 
+		// target is created from this key, it requires a provider context. See the CFTargetCache
+		this.provider = provider;
 	}
 	
+	public ClientParamsProvider getProvider() {
+		return this.provider;
+	}
 	
 
 //	@Override
@@ -100,11 +108,9 @@ public class ClientParamsCacheKey {
 			return false;
 		return true;
 	}
-
-
-
-	public static ClientParamsCacheKey from(CFClientParams params) {
-		return new ClientParamsCacheKey(params);
+	
+	public static ClientParamsCacheKey from(CFClientParams params, ClientParamsProvider provider) {
+		return new ClientParamsCacheKey(params, provider);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.TargetDiagnosticMessages;
+
 public interface ClientParamsProvider {
 	
 	/**
@@ -23,6 +25,7 @@ public interface ClientParamsProvider {
 	 */
 	Collection<CFClientParams> getParams() throws NoTargetsException, ExecutionException;
 	
-	CFParamsProviderMessages getMessages();
+	TargetDiagnosticMessages getMessages();
+
 	
 }

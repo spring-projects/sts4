@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,13 +18,14 @@ import static org.mockito.Mockito.when;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
+import org.cloudfoundry.uaa.UaaException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFParamsProviderMessages;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliProviderMessages;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfCliParamsProvider;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.TargetDiagnosticMessages;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -36,19 +37,19 @@ public class CFClientTest {
 	MockCfCli cloudfoundry = new MockCfCli();
 	ClientTimeouts timeouts = new ClientTimeouts();
 	CFTargetCache targetCache;
-	CFParamsProviderMessages expectedMessages = new CfCliProviderMessages();
+	TargetDiagnosticMessages expectedMessages = CfCliParamsProvider.CLI_PROVIDER_MESSAGES;
 
 	@Before
 	public void setup() throws Exception {
-		targetCache = new CFTargetCache(cloudfoundry.cfClientConfig, cloudfoundry.factory, timeouts);
+		targetCache = new CFTargetCache(ImmutableList.of(cloudfoundry.paramsProvider), cloudfoundry.factory, timeouts);
 	}
 
 	@Test
 	public void testNoTarget() throws Exception {
 
 		when(cloudfoundry.paramsProvider.getParams())
-				.thenThrow(new NoTargetsException(expectedMessages.noTargetsFound()));
-		assertError(() -> targetCache.getOrCreate(), NoTargetsException.class, expectedMessages.noTargetsFound());
+				.thenThrow(new NoTargetsException(expectedMessages.getNoTargetsFound()));
+		assertError(() -> targetCache.getOrCreate(), NoTargetsException.class, expectedMessages.getNoTargetsFound());
 	}
 
 	@Test
@@ -63,7 +64,7 @@ public class CFClientTest {
 		ClientRequests client = cloudfoundry.client;
 		when(client.getServices()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
 		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getServices(), ConnectionException.class, expectedMessages.noNetworkConnection());
+		assertError(() -> target.getServices(), ConnectionException.class, expectedMessages.getConnectionError());
 	}
 
 	@Test
@@ -71,7 +72,7 @@ public class CFClientTest {
 		ClientRequests client = cloudfoundry.client;
 		when(client.getBuildpacks()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
 		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getBuildpacks(), ConnectionException.class, expectedMessages.noNetworkConnection());
+		assertError(() -> target.getBuildpacks(), ConnectionException.class, expectedMessages.getConnectionError());
 	}
 	
 	@Test
@@ -79,7 +80,16 @@ public class CFClientTest {
 		ClientRequests client = cloudfoundry.client;
 		when(client.getDomains()).thenThrow(new UnknownHostException("api.run.pivotal.io"));
 		CFTarget target = targetCache.getOrCreate().get(0);
-		assertError(() -> target.getDomains(), ConnectionException.class, expectedMessages.noNetworkConnection());
+		assertError(() -> target.getDomains(), ConnectionException.class, expectedMessages.getConnectionError());
+	}
+	
+	@Test
+	public void testInvalidRefreshToken() throws Exception {
+		ClientRequests client = cloudfoundry.client;
+		String mockedError = "org.cloudfoundry.uaa.UaaException: invalid_token: Invalid refresh token expired at Wed Mar 28 18:58:20 UTC 2018";
+		when(client.getDomains()).thenThrow(new UaaException(1111, mockedError, mockedError));
+		CFTarget target = targetCache.getOrCreate().get(0);
+		assertError(() -> target.getDomains(), ConnectionException.class, expectedMessages.getConnectionError());
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ConnectionException;
@@ -29,7 +31,10 @@ import com.google.common.collect.ImmutableList;
 public abstract class AbstractCFHintsProvider implements Callable<Collection<YValueHint>> {
 
 	public static final String EMPTY_VALUE = "";
+	public static final String PROBLEM_RESOLVING_FROM_TARGETS = "Unable to resolve hints from: ";
+
 	protected final CFTargetCache targetCache;
+	private Logger logger = LoggerFactory.getLogger(AbstractCFHintsProvider.class);
 
 	public AbstractCFHintsProvider(CFTargetCache targetCache) {
 		Assert.isNotNull(targetCache);
@@ -59,12 +64,10 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 			// resolving the error message. Instead, log the full error, and
 			// only throw a
 			// new exception with a "nicer" message
-			Throwable errorNoAppending = getErrorNoAppending(e);
-			if (errorNoAppending != null) {
-				// Do not log the no-targets exception as it may be encountered
-				// frequently
-				// if a user does not have a CF client installed
-				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(errorNoAppending));
+			Throwable targetErrors = getErrorOfType(e, ImmutableList.of(NoTargetsException.class, ConnectionException.class));
+			if (targetErrors != null) {
+				// This error may appear in the UI (e.g. hover pop-up) so only show the error message , not the full error with stack trace
+				throw new ValueParseException(ExceptionUtil.getMessageNoAppendedInformation(targetErrors));
 			} else {
 				// Log any other error
 				//logger.log(Level.SEVERE, ExceptionUtil.getMessage(e), e);
@@ -80,9 +83,9 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 	 * @return an error that requires no additional information when showing its
 	 *         message, or null if no such error is found
 	 */
-	protected Throwable getErrorNoAppending(Throwable e) {
+	protected Throwable getErrorOfType(Throwable e, List<Class<? extends Throwable>> toLookFor) {
 		return ExceptionUtil.findThrowable(e,
-				ImmutableList.of(NoTargetsException.class, ConnectionException.class));
+				toLookFor);
 	}
 
 	/**
@@ -97,20 +100,31 @@ public abstract class AbstractCFHintsProvider implements Callable<Collection<YVa
 		}
 		List<YValueHint> hints = new ArrayList<>();
 		boolean validTargetsPresent = false;
+		Exception lastErrorEncountered = null;
+
 		for (CFTarget cfTarget : targets) {
 			try {
 				// TODO: check if duplicate proposals can be the list of all hints. Duplicates don't seem to cause duplicate proposals. Verify this!
 				getHints(cfTarget).stream().filter(hint -> !hints.contains(hint)).forEach(hint -> hints.add(hint));
 				validTargetsPresent = true;
 			} catch (Exception e) {
-				// Drop individual target error
+				// PT 156579665 - Log the Connection exceptions, as it means there are existing targets that have connection errors
+				// and this information could be useful to the user,
+				// but don't log the "NoTarget" errors, as they may be logged frequently and dont necessarily indicate an issue (e.g. cf CLI is not installed).
+				Throwable connectionError = getErrorOfType(e, ImmutableList.of(ConnectionException.class));
+				if (connectionError != null) {
+					logger.error("{}", ExceptionUtil.getMessageNoAppendedInformation(connectionError));
+				}
+				lastErrorEncountered = e;
 			}
 		}
+
 		if (validTargetsPresent) {
 			return hints;
+		} else if (lastErrorEncountered != null){
+			throw lastErrorEncountered;
 		} else {
-			throw new ConnectionException(
-					targetCache.getCfClientConfig().getClientParamsProvider().getMessages().noNetworkConnection());
+			throw new ConnectionException(PROBLEM_RESOLVING_FROM_TARGETS + " " + targets.toString());
 		}
 	}
 

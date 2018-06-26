@@ -18,19 +18,21 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 
 public class ManifestYamlLanguageServerTest {
 
@@ -99,20 +101,30 @@ public class ManifestYamlLanguageServerTest {
 		);
 		harness.intialize(null);
 
-		assertEquals(1, manifestYamlLanguageServer.getCfClientConfig().getClientParamsProvider().getParams().size());
+		// This is an initial target, for example from cf CLI
+		assertEquals(1, getAllParams(manifestYamlLanguageServer.getParamsProvider()).size());
 		assertEquals(Arrays.asList("test.io"), manifestYamlLanguageServer.getCfTargets());
 
+		// This tests a change in workspace (e.g. boot dash) that results in two more targets created.
 		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
 
 		JsonParser parser = new JsonParser();
-		params.setSettings(parser.parse(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json")))
-);
+		params.setSettings(parser.parse(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json"))));
 
 		manifestYamlLanguageServer.getWorkspaceService().didChangeConfiguration(params);
-		assertEquals(3, manifestYamlLanguageServer.getCfClientConfig().getClientParamsProvider().getParams().size());
+		assertEquals(3, getAllParams(manifestYamlLanguageServer.getParamsProvider()).size());
+
+		// End result should have the initial target as well as the two additional targets obtained on workspace change
 		assertEquals(Arrays.asList("test.io", "api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());
 	}
 
-
+	private List<CFClientParams> getAllParams(List<ClientParamsProvider> providers) throws Exception {
+		List<CFClientParams> all = new ArrayList<>();
+		for (ClientParamsProvider clientParamsProvider : providers) {
+			Collection<CFClientParams> params = clientParamsProvider.getParams();
+			all.addAll(params);
+		}
+		return all;
+	}
 
 }

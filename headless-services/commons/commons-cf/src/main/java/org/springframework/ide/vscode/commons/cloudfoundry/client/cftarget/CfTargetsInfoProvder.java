@@ -11,11 +11,11 @@
 package org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CfTargetsInfo.TargetDiagnosticMessages;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.base.Supplier;
@@ -33,19 +33,31 @@ import com.google.common.base.Suppliers;
 public class CfTargetsInfoProvder implements ClientParamsProvider {
 	
 	private static final String NO_TARGETS_FOUND_MESSAGE = "No targets found";
-	private static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry";
+	public static final String NO_NETWORK_CONNECTION = "No connection to Cloud Foundry";
 	private static final String NO_ORG_SPACE = "No org/space selected";
-	
-	private static final String PROP_NO_TARGETS_FOUND = "noTargetsFound";
-	private static final String PROP_UNAUTHORISED = "unauthorised";
-	private static final String PROP_NO_NETWORK_CONNECTION = "noNetworkConnection";
-	private static final String PROP_NO_ORG_SPACE = "noOrgSpace";
-	
+	public static final TargetDiagnosticMessages DEFAULT_MESSAGES = new TargetDiagnosticMessages() {
+
+		@Override
+		public String getNoTargetsFound() {
+			return NO_TARGETS_FOUND_MESSAGE;
+		}
+
+		@Override
+		public String getConnectionError() {
+			return NO_NETWORK_CONNECTION;
+		}
+
+		@Override
+		public String getNoOrgSpace() {
+			return NO_ORG_SPACE;
+		}
+	};
+		
 	private Supplier<Collection<CFClientParams>> paramsSupplier;
-	private Map<String, String> messages;
-	
+	private TargetDiagnosticMessages messages;
+
 	public CfTargetsInfoProvder(CfTargetsInfo targetsInfo) {
-		this.messages = targetsInfo.getCfDiagnosticMessages();
+		this.messages = targetsInfo.getDiagnosticMessages();
 		this.paramsSupplier = Suppliers.memoize(() -> targetsInfo.getCfTargets()
 				.stream()
 				.map(t -> parseCfClientParams(t))
@@ -57,7 +69,7 @@ public class CfTargetsInfoProvder implements ClientParamsProvider {
 	public Collection<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
 		Collection<CFClientParams> params = paramsSupplier.get();
 		if (params == null || params.isEmpty()) {
-			throw new NoTargetsException(getMessages().noTargetsFound());
+			throw new NoTargetsException(getMessages().getNoTargetsFound());
 		}
 		return params;
 	}
@@ -79,42 +91,7 @@ public class CfTargetsInfoProvder implements ClientParamsProvider {
 	}
 
 	@Override
-	public CFParamsProviderMessages getMessages() {
-		return new CFParamsProviderMessages() {
-
-			@Override
-			public String noTargetsFound() {
-				if (messages != null && messages.containsKey(PROP_NO_TARGETS_FOUND)) {
-					return messages.get(PROP_NO_TARGETS_FOUND);
-				}
-				return NO_TARGETS_FOUND_MESSAGE;
-			}
-
-			@Override
-			public String unauthorised() {
-				if (messages != null && messages.containsKey(PROP_UNAUTHORISED)) {
-					return messages.get(PROP_UNAUTHORISED);
-				}
-				return NO_NETWORK_CONNECTION;
-			}
-
-			@Override
-			public String noNetworkConnection() {
-				if (messages != null && messages.containsKey(PROP_NO_NETWORK_CONNECTION)) {
-					return messages.get(PROP_NO_NETWORK_CONNECTION);
-				}
-				return NO_NETWORK_CONNECTION;
-			}
-
-			@Override
-			public String noOrgSpace() {
-				if (messages != null && messages.containsKey(PROP_NO_ORG_SPACE)) {
-					return messages.get(PROP_NO_ORG_SPACE);
-				}
-				return NO_ORG_SPACE;
-			}
-
-		};
+	public TargetDiagnosticMessages getMessages() {
+		return messages != null ? messages : DEFAULT_MESSAGES;
 	}
-
 }
