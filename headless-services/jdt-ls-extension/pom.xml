@@ -18,7 +18,23 @@
 
 	<properties>
 		<tycho-version>1.1.0</tycho-version>
+
+		<!-- Signing -->
+		<signing.skip>true</signing.skip>
+		<signing.alias>pivotal</signing.alias>
+		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
 	</properties>
+	
+	<profiles>
+		<profile>
+			<id>bamboo-signing</id>
+			<properties>
+				<signing.store.password>${env.bamboo_signing_store_password}</signing.store.password>
+				<signing.key.password>${env.bamboo_signing_store_password}</signing.key.password>
+			</properties>
+		</profile>
+	</profiles>
+
 	<repositories>
 		<repository>
 			<id>eclipse-photon</id>
@@ -54,6 +70,43 @@
 				<configuration>
 					<skip>true</skip>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jarsigner-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>sign</id>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>${signing.skip}</skip>
+					<alias>${signing.alias}</alias>
+					<keystore>${signing.keystore}</keystore>
+					<storepass>${signing.store.password}</storepass>
+					<keypass>${signing.key.password}</keypass>
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>second-generate-p2-metadata</id>
+						<goals>
+							<goal>p2-metadata</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
