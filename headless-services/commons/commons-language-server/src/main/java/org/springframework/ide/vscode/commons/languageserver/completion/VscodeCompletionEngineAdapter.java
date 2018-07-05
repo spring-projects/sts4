@@ -162,10 +162,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				list.setItems(items);
-				if (LspClient.currentClient()==Client.ECLIPSE) {
-					list.setIsIncomplete(true); //This is a hack. It bypasses lsp4e filtering / sorting because it
-												// it behaves totally bonkers. See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
-				}
 				return list;
 			})
 			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.
