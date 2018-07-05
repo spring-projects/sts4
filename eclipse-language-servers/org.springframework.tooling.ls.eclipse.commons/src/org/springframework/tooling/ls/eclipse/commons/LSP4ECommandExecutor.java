@@ -27,7 +27,7 @@ public class LSP4ECommandExecutor implements ClientCommandExecutor {
 
 	@Override
 	public Object executeClientCommand(String id, Object... params) throws Exception {
-		List<LanguageServer> commandHandlers = LanguageServiceAccessor.getLanguageServers(handlesCommand(id));
+		List<LanguageServer> commandHandlers = LanguageServiceAccessor.getActiveLanguageServers(handlesCommand(id));
 		if (commandHandlers!=null) {
 			if (commandHandlers.size()==1) {
 				LanguageServer handler = commandHandlers.get(0);
