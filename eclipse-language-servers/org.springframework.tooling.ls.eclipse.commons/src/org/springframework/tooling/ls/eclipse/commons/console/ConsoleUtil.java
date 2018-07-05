@@ -29,7 +29,7 @@ import org.eclipse.ui.console.IOConsoleOutputStream;
  */
 @SuppressWarnings("restriction")
 public class ConsoleUtil {
-	
+
 	public static class Console {
 		public final InputStream in;
 		public final OutputStream out;
@@ -67,15 +67,15 @@ public class ConsoleUtil {
 	public static Color getOutputColor() {
 		return DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CONSOLE_SYS_OUT_COLOR);
 	}
-	
+
 	public static Color getErrorColor() {
 		return DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CONSOLE_SYS_ERR_COLOR);
 	}
-	
+
 	public static Color getInputColor() {
 		return DebugUIPlugin.getPreferenceColor(IDebugPreferenceConstants.CONSOLE_SYS_IN_COLOR);
 	}
-	
+
 	private LinkedList<IOConsole> history = new LinkedList<IOConsole>();
 
 	private void add(IOConsole console) {
@@ -96,18 +96,18 @@ public class ConsoleUtil {
 	private static void close(IOConsole console) {
 		ConsolePlugin.getDefault().getConsoleManager().removeConsoles(new IConsole[] {console});
 	}
-	
+
 	public Console getConsole(String title) {
-		
-		final IOConsole console = new IOConsole(title, null);
+
+		final IOConsole console = new LanguageServerIOConsole(title);
 		final IOConsoleInputStream in  = console.getInputStream();
 		final IOConsoleOutputStream out = console.newOutputStream();
 		final IOConsoleOutputStream err = console.newOutputStream();
-		
+
 		in.setColor(getInputColor());
 		out.setColor(getOutputColor());
 		err.setColor(getErrorColor());
-		
+
 		add(console);
 		return new Console(in, out, err);
 	}

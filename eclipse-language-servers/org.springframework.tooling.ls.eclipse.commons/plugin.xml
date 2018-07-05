@@ -40,4 +40,14 @@
             class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPrefsInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsolePageParticipant"
+            id="org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsolePageParticipant">
+         <enablement>
+            <instanceof value="org.springframework.tooling.ls.eclipse.commons.console.LanguageServerIOConsole"/>
+         </enablement>
+      </consolePageParticipant>
+   </extension>
 </plugin>
