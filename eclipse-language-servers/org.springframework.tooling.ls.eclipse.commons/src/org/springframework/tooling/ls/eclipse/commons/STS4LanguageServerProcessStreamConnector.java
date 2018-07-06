@@ -31,23 +31,26 @@ import org.springframework.tooling.ls.eclipse.commons.console.preferences.Langua
 public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
-	
+
 	private Supplier<Console> consoles = null;
-	
+
 	public STS4LanguageServerProcessStreamConnector(ServerInfo server) {
 		this.consoles = LanguageServerConsoles.getConsoleFactory(server);
 	}
-	
+
 	@Override
 	public void start() throws IOException {
 		super.start();
 		Process process = LanguageServerProcessReaper.getProcess(this);
 		processReaper.addProcess(process);
 		if (consoles!=null) {
-			forwardTo(getLanguageServerLog(), consoles.get().out);
+			Console console = consoles.get();
+			if (console!=null) {
+				forwardTo(getLanguageServerLog(), console.out);
+			}
 		}
 	}
-	
+
 	@Override
 	protected ProcessBuilder createProcessBuilder() {
 		if (consoles==null) {
@@ -59,7 +62,7 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 		//builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 		return builder;
 	}
-	
+
 	private void forwardTo(InputStream is, OutputStream os) {
 		Job consoleJob = new Job("Forward Language Server log output to console") {
 			@Override
@@ -78,7 +81,7 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 				}
 				return Status.OK_STATUS;
 			}
-			
+
 			void pipe(InputStream input, OutputStream output) throws IOException {
 				try {
 				    byte[] buf = new byte[1024*4];
@@ -101,15 +104,15 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 	private InputStream getLanguageServerLog() {
 		return super.getErrorStream();
 	}
- 	
+
 	@Override
 	public void stop() {
 		super.stop();
 		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
 	}
-	
+
 	protected String getWorkingDirLocation() {
 		return System.getProperty("user.dir");
 	}
-	
+
 }

@@ -22,11 +22,8 @@ import com.google.common.base.Supplier;
 public class LanguageServerConsoles {
 
 	private static Map<String, Supplier<Console>> managers;
-	
+
 	public static synchronized Supplier<Console> getConsoleFactory(ServerInfo server) {
-		if (!isConsoleEnabled(server)) {
-			return null;
-		}
 		if (managers==null) {
 			managers = new HashMap<>();
 		}
@@ -34,10 +31,13 @@ public class LanguageServerConsoles {
 			ConsoleUtil consoleMgr = new ConsoleUtil(); //one console manager per language server type. This way each has their
 														// own history (which limits number of open consoles per type)
 			int consoleCounter = 0;
-			
+
 			@Override
 			public Console get() {
-				return consoleMgr.getConsole(server.label+" Language Server "+consoleCounter());
+				if (isConsoleEnabled(server)) {
+					return consoleMgr.getConsole(server.label+" Language Server "+consoleCounter());
+				}
+				return null;
 			}
 
 			private synchronized int consoleCounter() {
