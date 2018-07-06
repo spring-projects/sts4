@@ -80,8 +80,9 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		for (Object modifier : modifiers) {
 			if (modifier instanceof MarkerAnnotation) {
 				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null && typeBinding.getQualifiedName().equals(Annotations.AUTOWIRED)) {
-					return true;
+				if (typeBinding != null) {
+					String fqName = typeBinding.getQualifiedName();
+					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName);
 				}
 			}
 		}
@@ -198,7 +199,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		}
 		return false;
 	}
-	
+
 	private boolean isComponentAnnotation(ITypeBinding type) {
 		Set<String> transitiveSuperAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(type);
 		for (String annotationType : transitiveSuperAnnotations) {
@@ -206,7 +207,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

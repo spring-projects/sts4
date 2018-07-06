@@ -55,7 +55,6 @@ public class AutowiredHoverProviderTest {
 				"public class DependencyB {\n" +
 				"}\n"
 		);
-
 	};
 
 	private BootJavaLanguageServerHarness harness;
@@ -76,6 +75,57 @@ public class AutowiredHoverProviderTest {
 		assertTrue(jp.findType("com.example.Foo").exists());
 		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 		harness.intialize(null);
+	}
+
+	@Test
+	public void javaxInjectAnnotationHover() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("autowiredClass")
+						.type("com.example.AutowiredClass")
+						.dependencies("dependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.fileResource(harness.getOutputFolder() + Paths.get("/com/example/DependencyA.class").toString())
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import javax.inject.Inject;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AutowiredClass {\n" +
+				"\n" +
+				"   @Inject\n" +
+				"	private DependencyA depA;\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Inject");
+		editor.assertTrimmedHover("@Inject",
+				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
+				"\n" +
+				"Process [PID=111, name=`the-app`]:\n" +
+				"\n" +
+				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
+				"\n" +
+				"- Bean: dependencyA  \n" +
+				"  Type: `com.example.DependencyA`  \n" +
+				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`"
+		);
 	}
 
 	@Test

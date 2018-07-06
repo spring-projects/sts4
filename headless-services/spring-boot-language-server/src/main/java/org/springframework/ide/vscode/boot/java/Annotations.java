@@ -19,11 +19,12 @@ public class Annotations {
 	public static final String BEAN = "org.springframework.context.annotation.Bean";
 	public static final String PROFILE = "org.springframework.context.annotation.Profile";
 	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
-	
+
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
 	public static final String REPOSITORY = "org.springframework.stereotype.Repository";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
+	public static final String INJECT = "javax.inject.Inject";
 
 	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
 	public static final String SPRING_GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";

@@ -21,6 +21,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -32,8 +34,6 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -43,9 +43,11 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class AutowiredHoverProvider implements HoverProvider {
-	
+
+	final static Logger log = LoggerFactory.getLogger(AutowiredHoverProvider.class);
+
 	private BootJavaLanguageServerComponents server;
-	
+
 	public AutowiredHoverProvider(BootJavaLanguageServerComponents server) {
 		this.server = server;
 	}
@@ -70,13 +72,13 @@ public class AutowiredHoverProvider implements HoverProvider {
 						}
 					}
 					catch (Exception e) {
-						Log.log(e);
+						log.error("", e);
 					}
 				}
 			}
 		}
 		catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 
 		return null;
@@ -178,8 +180,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
 		return null;
 	}
 
