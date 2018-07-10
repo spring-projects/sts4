@@ -15,34 +15,35 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
-public class SpringBootAppCache {
+public class LocalSpringBootAppCache {
 
 	private static final Duration EXPIRE_AFTER = Duration.ofMillis(500); //Limits rate at which we refresh list of apps
 	private long nextRefreshAfter = Long.MIN_VALUE;
 
-	private ImmutableMap<VirtualMachineDescriptor, SpringBootApp> apps = ImmutableMap.of();
+	private ImmutableMap<VirtualMachineDescriptor, LocalSpringBootApp> apps = ImmutableMap.of();
 
 	public synchronized Collection<SpringBootApp> getAllRunningJavaApps() {
 		if (System.currentTimeMillis()>=nextRefreshAfter) {
 			refresh();
 		}
-		return apps.values();
+		return ImmutableList.copyOf(apps.values());
 	}
 
 	private void refresh() {
 		List<VirtualMachineDescriptor> currentVms = VirtualMachine.list();
-		ImmutableMap.Builder<VirtualMachineDescriptor, SpringBootApp> newAppsBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<VirtualMachineDescriptor, LocalSpringBootApp> newAppsBuilder = ImmutableMap.builder();
 		for (VirtualMachineDescriptor vm : currentVms) {
-			SpringBootApp existingApp = apps.get(vm);
+			LocalSpringBootApp existingApp = apps.get(vm);
 			if (existingApp!=null) {
 				newAppsBuilder.put(vm, existingApp);
 			} else {
 				try {
-					newAppsBuilder.put(vm, new SpringBootApp(vm));
+					newAppsBuilder.put(vm, new LocalSpringBootApp(vm));
 				} catch (Exception e) {
 					//Ignore problems attaching to a VM. We will try again on next polling loop, if vm still exists.
 					//The most likely cause is that the VM already died since we obtained a reference to it.
@@ -50,7 +51,7 @@ public class SpringBootAppCache {
 			}
 		}
 		HashSet<VirtualMachineDescriptor> oldVms = new HashSet<>(apps.keySet());
-		ImmutableMap<VirtualMachineDescriptor, SpringBootApp> newApps = newAppsBuilder.build();
+		ImmutableMap<VirtualMachineDescriptor, LocalSpringBootApp> newApps = newAppsBuilder.build();
 		oldVms.removeAll(newApps.keySet());
 		for (VirtualMachineDescriptor oldVm : oldVms) {
 			apps.get(oldVm).dispose();

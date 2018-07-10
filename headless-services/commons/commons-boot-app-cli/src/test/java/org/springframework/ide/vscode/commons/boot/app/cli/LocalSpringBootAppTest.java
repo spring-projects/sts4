@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.json.JSONObject;
@@ -39,7 +40,7 @@ import org.springframework.ide.vscode.commons.util.test.ACondition;
 
 import com.google.common.collect.ImmutableList;
 
-public class SpringBootAppTest {
+public class LocalSpringBootAppTest {
 
 	private static final String[] appNames = {
 			"actuator-client-15-test-subject", // Boot 1.5 test app
@@ -57,7 +58,7 @@ public class SpringBootAppTest {
 	public static void setupClass() throws Exception {
 		testAppRunners = Arrays.asList(appNames).stream().map(appName -> {
 			try {
-				return startTestApplication(SpringBootAppTest.class.getResource("/boot-apps/"+appName+"-0.0.1-SNAPSHOT.jar"));
+				return startTestApplication(LocalSpringBootAppTest.class.getResource("/boot-apps/"+appName+"-0.0.1-SNAPSHOT.jar"));
 			} catch (Exception e) {
 				throw ExceptionUtil.unchecked(e);
 			}
@@ -88,11 +89,13 @@ public class SpringBootAppTest {
 		);
 	}
 
-	private SpringBootApp getAppContaining(String nameFragment) {
+	private LocalSpringBootApp getAppContaining(String nameFragment) {
 		try {
-			Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
+			Collection<SpringBootApp> allApps = LocalSpringBootApp.getAllRunningJavaApps();
 			try {
-				return allApps.stream().filter(app -> app.getProcessName().contains(nameFragment)).findAny().get();
+				SpringBootApp result = allApps.stream().filter(localAppWithNameContaining(nameFragment))
+				.findAny().get();
+				return (LocalSpringBootApp) result;
 			} catch (NoSuchElementException e) {
 				//Improve error message for debugging...
 				StringBuilder foundAppNames = new StringBuilder();
@@ -107,35 +110,44 @@ public class SpringBootAppTest {
 		}
 	}
 
+	private Predicate<SpringBootApp> localAppWithNameContaining(String nameFragment) {
+		return app -> {
+			if (app instanceof LocalSpringBootApp) {
+				return ((LocalSpringBootApp)app).getProcessName().contains(nameFragment);
+			}
+			return false;
+		};
+	}
+
 	@Ignore @Test public void dumpJvmInfo() throws Exception {
 		//Ignored because this test may have timing issues. Still useful to
 		// run locally and inspect dump results, but may need some tweaking.
 		for (String appName : appNames) {
-			SpringBootApp testApp = getAppContaining(appName);
+			LocalSpringBootApp testApp = getAppContaining(appName);
 			testApp.dumpJvmInfo();
 			System.out.println("======================================");
 		}
 	}
 
 	@Test public void getAllJavaApps() throws Exception {
-		Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningJavaApps();
+		Collection<SpringBootApp> allApps = LocalSpringBootApp.getAllRunningJavaApps();
 		for (String appName : appNames) {
-			Optional<SpringBootApp> myProcess = allApps.stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			Optional<SpringBootApp> myProcess = allApps.stream().filter(localAppWithNameContaining(appName)).findAny();
 			assertTrue(appName, myProcess.isPresent());
 		}
 	}
 
 	@Test public void getAllBootApps() throws Exception {
-		Collection<SpringBootApp> allApps = SpringBootApp.getAllRunningSpringApps();
+		Collection<SpringBootApp> allApps = LocalSpringBootApp.getAllRunningSpringApps();
 		for (String appName : appNames) {
-			Optional<SpringBootApp> myProcess = allApps.stream().filter(app -> app.getProcessName().contains(appName)).findAny();
+			Optional<SpringBootApp> myProcess = allApps.stream().filter(localAppWithNameContaining(appName)).findAny();
 			assertTrue(myProcess.isPresent());
 		}
 	}
 
 	@Test
 	public void getPort() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			ACondition.waitFor(TIMEOUT, () -> {
 				int port = Integer.parseInt(testApp.getPort());
 				assertTrue(port > 0);
@@ -144,7 +156,7 @@ public class SpringBootAppTest {
 		}
 	}
 
-	private Collection<SpringBootApp> getTestApps() throws Exception {
+	private Collection<LocalSpringBootApp> getTestApps() throws Exception {
 		return ACondition.waitForValue(TIMEOUT, () -> Arrays.asList(appNames).stream()
 				.map(this::getAppContaining)
 				.collect(Collectors.toList())
@@ -153,7 +165,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getHost() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			System.err.println("getHost for "+testApp);
 			ACondition.waitFor(TIMEOUT, () -> {
 				String host = testApp.getHost();
@@ -165,7 +177,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getEnvironment() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			ACondition.waitFor(TIMEOUT, () -> {
 				String env = testApp.getEnvironment();
 				assertNonEmptyJsonObject(env);
@@ -175,7 +187,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getBeans() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
 					LiveBeansModel beansModel = testApp.getBeans();
@@ -191,7 +203,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getRequestMappings() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
 					Collection<RequestMapping> result = testApp.getRequestMappings();
@@ -206,7 +218,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getLiveConditionals() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			try {
 				ACondition.waitFor(TIMEOUT, () -> {
 					Optional<List<LiveConditional>> result = testApp.getLiveConditionals();
@@ -221,7 +233,7 @@ public class SpringBootAppTest {
 
 	@Test
 	public void getProfiles() throws Exception {
-		for (SpringBootApp testApp : getTestApps()) {
+		for (LocalSpringBootApp testApp : getTestApps()) {
 			ACondition.waitFor(TIMEOUT, () -> {
 				List<String> result = testApp.getActiveProfiles();
 				assertEquals(ImmutableList.copyOf(TEST_PROFILES), result);

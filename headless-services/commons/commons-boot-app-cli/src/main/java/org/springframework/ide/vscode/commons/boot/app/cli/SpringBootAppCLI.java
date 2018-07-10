@@ -18,7 +18,7 @@ import java.util.Collection;
 public class SpringBootAppCLI {
 
 	public static void main(String[] args) throws Exception {
-		Collection<SpringBootApp> allRunningJavaApps = SpringBootApp.getAllRunningJavaApps();
+		Collection<SpringBootApp> allRunningJavaApps = LocalSpringBootApp.getAllRunningJavaApps();
 		for (SpringBootApp app : allRunningJavaApps) {
 			if (app.isSpringBootApp()) {
 				printBootAppDetails(app);

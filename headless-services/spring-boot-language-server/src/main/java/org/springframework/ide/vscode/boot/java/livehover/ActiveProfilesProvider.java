@@ -57,13 +57,13 @@ public class ActiveProfilesProvider implements HoverProvider {
 			for (SpringBootApp app : runningApps) {
 				List<String> profiles = app.getActiveProfiles();
 				if (profiles==null) {
-					markdown.append(niceAppName(app)+" : _Unknown_\n\n");
+					markdown.append(LiveHoverUtils.niceAppName(app)+" : _Unknown_\n\n");
 				} else {
 					hasInterestingApp = true;
 					if (profiles.isEmpty()) {
-						markdown.append(niceAppName(app)+" : _None_\n\n");
+						markdown.append(LiveHoverUtils.niceAppName(app)+" : _None_\n\n");
 					} else {
-						markdown.append(niceAppName(app)+" :\n");
+						markdown.append(LiveHoverUtils.niceAppName(app)+" :\n");
 						for (String profile : profiles) {
 							markdown.append("- "+profile+"\n");
 						}
@@ -78,10 +78,6 @@ public class ActiveProfilesProvider implements HoverProvider {
 			}
 		}
 		return null;
-	}
-
-	private String niceAppName(SpringBootApp app) {
-		return "Process [PID="+app.getProcessID()+", name=`"+app.getProcessName()+"`]";
 	}
 
 	@Override

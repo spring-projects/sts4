@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
@@ -106,13 +107,13 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder requestMappings(String mappings) throws Exception {
-			Collection<RequestMapping> requestMappings = SpringBootApp.parseRequestMappingsJson(mappings, "1.x");
+			Collection<RequestMapping> requestMappings = LocalSpringBootApp.parseRequestMappingsJson(mappings, "1.x");
 			when(app.getRequestMappings()).thenReturn(requestMappings);
 			return this;
 		}
 
 		public MockAppBuilder liveConditionalsJson(String rawJson) throws Exception{
-			when(app.getLiveConditionals()).thenReturn(SpringBootApp.getLiveConditionals(rawJson, processId, processName));
+			when(app.getLiveConditionals()).thenReturn(LocalSpringBootApp.getLiveConditionals(rawJson, processId, processName));
 			return this;
 		}
 

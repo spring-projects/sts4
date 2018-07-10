@@ -36,9 +36,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
-	
+
 	protected BootJavaLanguageServerComponents server;
-	
+
 	public AbstractInjectedIntoHoverProvider(BootJavaLanguageServerComponents server) {
 		this.server = server;
 	}

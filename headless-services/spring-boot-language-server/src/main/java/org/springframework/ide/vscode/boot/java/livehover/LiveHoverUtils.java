@@ -26,7 +26,7 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class LiveHoverUtils {
-	
+
 	public static String showBean(LiveBean bean) {
 		StringBuilder buf = new StringBuilder("Bean [id: " + bean.getId());
 		String type = bean.getType(true);
@@ -69,14 +69,6 @@ public class LiveHoverUtils {
 		return new SpringResource(sourceLinks, resource, project).toMarkdown();
 	}
 
-	public static String niceAppName(SpringBootApp app) {
-		return niceAppName(app.getProcessID() ,app.getProcessName());
-	}
-
-	public static String niceAppName(String processId, String processName) {
-		return "Process [PID=" + processId + ", name=`" + processName + "`]";
-	}
-
 	public static boolean hasRelevantBeans(SpringBootApp app, LiveBean definedBean) {
 		return findRelevantBeans(app, definedBean).findAny().isPresent();
 	}
@@ -93,5 +85,14 @@ public class LiveHoverUtils {
 		}
 		return Stream.empty();
 	}
+
+	public static String niceAppName(SpringBootApp app) {
+		return niceAppName(app.getProcessID(), app.getProcessName());
+	}
+
+	public static String niceAppName(String processId, String processName) {
+		return "Process [PID="+processId+", name=`"+processName+"`]";
+	}
+
 
 }
