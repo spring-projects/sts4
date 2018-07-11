@@ -29,6 +29,8 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -50,6 +52,8 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class BootJavaHoverProvider implements HoverHandler {
+
+	private static Logger logger = LoggerFactory.getLogger(BootJavaHoverProvider.class);
 
 	private JavaProjectFinder projectFinder;
 	private BootJavaLanguageServerComponents server;
@@ -220,14 +224,17 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private Hover provideHoverForAnnotation(ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
+			logger.info("Hover requested for "+type.getName());
 			SpringBootApp[] runningApps = getRunningSpringApps(project);
 			if (runningApps.length > 0) {
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, runningApps);
 					if (hover!=null) {
+						logger.info("Hover found: "+hover);
 						//TODO: compose multiple hovers somehow instead of just returning the first one?
 						return hover;
 					}
+					logger.info("NO Hover!");
 				}
 				//Only reaching here if we didn't get a hover.
 				if (!hasActuatorDependency(project)) {

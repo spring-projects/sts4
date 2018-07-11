@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,21 +36,21 @@ public class ChangeHistory {
 
 	public ChangeHistory() {
 	}
-	
+
 	public void updateProcess(SpringBootApp app) {
 		if (this.associatedProcess != app) {
 			this.associatedProcess = app;
-			
+
 			try {
 				this.associatedProcessCommand = app.getJavaCommand();
 				this.associatedProcessClasspath = app.getClasspath();
 			}
-			catch (IOException e) {
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	public boolean matchesProcess(String commandLine, String[] classpath) {
 		return this.associatedProcessCommand != null && this.associatedProcessCommand.equals(commandLine)
 				&& this.associatedProcessClasspath != null && Arrays.deepEquals(this.associatedProcessClasspath, classpath);
@@ -71,7 +70,7 @@ public class ChangeHistory {
 				lastBeans = currentBeans;
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -79,20 +78,20 @@ public class ChangeHistory {
 		if (previous == current) {
 			return result;
 		}
-		
+
 		Set<String> currentNames = current.getBeanNames();
 		Set<String> previousNames = previous.getBeanNames();
-		
+
 		Set<String> allNames = new HashSet<>(currentNames);
 		allNames.addAll(previousNames);
-		
+
 		for (String name : allNames) {
 			List<LiveBean> currentBeans = current.getBeansOfName(name);
 			List<LiveBean> previousBeans = previous.getBeansOfName(name);
-			
+
 			result = calculateBeansDiff(previousBeans, currentBeans, result);
 		}
-		
+
 		return result;
 	}
 
@@ -110,10 +109,10 @@ public class ChangeHistory {
 				result.addDeletedBean(bean);
 			}
 		}
-		
+
 		for (LiveBean bean : currentBeans) {
 			if (!contains(previousBeans, bean)) {
-				
+
 				if (result == null) {
 					result = new Change(associatedProcess);
 				}
@@ -121,7 +120,7 @@ public class ChangeHistory {
 				result.addNewBean(bean);
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -133,7 +132,7 @@ public class ChangeHistory {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

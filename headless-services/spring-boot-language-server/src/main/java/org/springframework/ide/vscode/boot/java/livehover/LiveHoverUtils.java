@@ -87,7 +87,12 @@ public class LiveHoverUtils {
 	}
 
 	public static String niceAppName(SpringBootApp app) {
-		return niceAppName(app.getProcessID(), app.getProcessName());
+		try {
+			return niceAppName(app.getProcessID(), app.getProcessName());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return app.toString();
+		}
 	}
 
 	public static String niceAppName(String processId, String processName) {

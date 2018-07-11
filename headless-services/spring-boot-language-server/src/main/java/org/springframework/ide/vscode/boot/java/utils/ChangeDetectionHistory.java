@@ -23,25 +23,25 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
  * @author Martin Lippert
  */
 public class ChangeDetectionHistory {
-	
+
 	private Map<String, ChangeHistory> changeHistory;
-	
+
 	public ChangeDetectionHistory() {
 		this.changeHistory = new HashMap<>();
 	}
 
 	public Change[] checkForChanges(SpringBootApp[] runningApps) {
 		List<Change> result = null;
-		
+
 		for (SpringBootApp runningApp : runningApps) {
 			String virtualID = getVirtualAppID(runningApp);
-			
+
 			if (changeHistory.containsKey(virtualID)) {
 				// the standard case
 				ChangeHistory appHistory = changeHistory.get(virtualID);
 				appHistory.updateProcess(runningApp);
 
-				Change change = appHistory.checkForUpdates();				
+				Change change = appHistory.checkForUpdates();
 				if (change != null) {
 					if (result == null) {
 						result = new ArrayList<>();
@@ -55,8 +55,8 @@ public class ChangeDetectionHistory {
 					ChangeHistory oldHistory = changeHistory.remove(oldAppID);
 					oldHistory.updateProcess(runningApp);
 					changeHistory.put(virtualID, oldHistory);
-					
-					Change change = oldHistory.checkForUpdates();				
+
+					Change change = oldHistory.checkForUpdates();
 					if (change != null) {
 						if (result == null) {
 							result = new ArrayList<>();
@@ -68,12 +68,12 @@ public class ChangeDetectionHistory {
 					ChangeHistory newHistory = new ChangeHistory();
 					newHistory.updateProcess(runningApp);
 					changeHistory.put(virtualID, newHistory);
-					
+
 					newHistory.checkForUpdates();
 				}
 			}
 		}
-		
+
 		if (result != null) {
 			return (Change[]) result.toArray(new Change[result.size()]);
 		}
@@ -85,10 +85,10 @@ public class ChangeDetectionHistory {
 	private String getVirtualAppID(SpringBootApp app) {
 		return app.getProcessID();
 	}
-	
+
 	private String getOldApp(SpringBootApp app, SpringBootApp[] allApps) {
 		Set<String> histories = this.changeHistory.keySet();
-		
+
 		try {
 			String commandLine = app.getJavaCommand();
 			String[] classpath = app.getClasspath();
@@ -100,10 +100,10 @@ public class ChangeDetectionHistory {
 				}
 			}
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
@@ -119,7 +119,7 @@ public class ChangeDetectionHistory {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return true;
 	}
 

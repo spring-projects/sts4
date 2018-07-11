@@ -85,7 +85,7 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
-		public MockAppBuilder processName(String name) {
+		public MockAppBuilder processName(String name) throws Exception {
 			this.processName = name;
 			when(app.getProcessName()).thenReturn(name);
 			return this;
