@@ -38,7 +38,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class SpringLiveHoverWatchdog {
 
 	public static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
-	
+
 	Logger logger = LoggerFactory.getLogger(SpringLiveHoverWatchdog.class);
 
 	private final long POLLING_INTERVAL_MILLISECONDS;
@@ -52,6 +52,7 @@ public class SpringLiveHoverWatchdog {
 	private Timer timer;
 
 	private JavaProjectFinder projectFinder;
+
 
 	private void refreshEnablement() {
 		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.stream());
@@ -144,7 +145,8 @@ public class SpringLiveHoverWatchdog {
 
 			try {
 				if (runningBootApps == null) {
-					runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+					IJavaProject project = identifyProject(docURI);
+					runningBootApps = runningAppProvider.getAllRunningSpringApps(project).toArray(new SpringBootApp[0]);
 				}
 
 				boolean hasCurrentRunningBootApps = runningBootApps != null && runningBootApps.length > 0;
@@ -167,13 +169,25 @@ public class SpringLiveHoverWatchdog {
 	protected void update() {
 		if (this.watchedDocs.size() > 0) {
 			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 				for (String docURI : watchedDocs) {
+					IJavaProject project = identifyProject(docURI);
+					SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps(project).toArray(new SpringBootApp[0]);
+
 					update(docURI, runningBootApps);
 				}
 			} catch (Exception e) {
 				logger.error("", e);
 			}
+		}
+	}
+
+	private IJavaProject identifyProject(String docURI) {
+		TextDocument doc = this.server.getTextDocumentService().get(docURI);
+		if (doc != null) {
+			return projectFinder.find(doc.getId()).orElse(null);
+		}
+		else {
+			return null;
 		}
 	}
 

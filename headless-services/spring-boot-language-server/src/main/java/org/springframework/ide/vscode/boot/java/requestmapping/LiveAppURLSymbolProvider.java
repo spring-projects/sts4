@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,7 +41,7 @@ public class LiveAppURLSymbolProvider {
 		List<SymbolInformation> result = new ArrayList<>();
 
 		try {
-			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps(null).toArray(new SpringBootApp[0]);
 			for (SpringBootApp app : runningApps) {
 				try {
 					String host = app.getHost();

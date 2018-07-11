@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +33,7 @@ public class MockRunningAppProvider {
 
 	public MockRunningAppProvider() {
 		try {
-			when(provider.getAllRunningSpringApps()).thenReturn(mockedApps);
+			when(provider.getAllRunningSpringApps(anyObject())).thenReturn(mockedApps);
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
 		}

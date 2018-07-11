@@ -27,6 +27,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_BOOT_HINTS, true);
 		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_CHANGE_DETECTION, false);
+		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_STRICT_PROJECT_MATCH, false);
 	}
 
 }

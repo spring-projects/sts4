@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
@@ -48,7 +49,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * Parameters for creating Boot Properties language server
- * 
+ *
  * @author Alex Boyko
  * @author Kris De Volder
  */
@@ -58,10 +59,10 @@ public class BootLanguageServerParams {
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
-	
+
 	//Boot Properies
 	public final TypeUtilProvider typeUtilProvider;
-	
+
 	//Boot Java
 	public final RunningAppProvider runningAppProvider;
 	public final Duration watchDogInterval;
@@ -100,7 +101,7 @@ public class BootLanguageServerParams {
 					jdtProjectCache,
 					indexProvider,
 					(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-					RunningAppProvider.DEFAULT,
+					new DefaultRunningAppProvider(),
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
@@ -108,9 +109,9 @@ public class BootLanguageServerParams {
 
 	private static JavaProjectsService createFallbackProjectCache(SimpleLanguageServer server) {
 		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-		
-		JavadocService javadocService = (uri, cpe) -> JavaDocProviders.createFor(cpe); 
-		
+
+		JavadocService javadocService = (uri, cpe) -> JavaDocProviders.createFor(cpe);
+
 		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), true, Paths.get(IJavaProject.PROJECT_CACHE_FOLDER), javadocService);
 		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
@@ -118,19 +119,19 @@ public class BootLanguageServerParams {
 		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
 		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
-		
+
 		return new JavaProjectsService() {
-			
+
 			@Override
 			public void removeListener(Listener listener) {
 				projectObserver.removeListener(listener);
 			}
-			
+
 			@Override
 			public void addListener(Listener listener) {
 				projectObserver.addListener(listener);
 			}
-			
+
 			@Override
 			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 				return javaProjectFinder.find(doc);

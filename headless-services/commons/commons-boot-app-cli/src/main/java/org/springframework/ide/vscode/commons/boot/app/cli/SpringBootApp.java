@@ -53,6 +53,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
+@SuppressWarnings("restriction")
 public class SpringBootApp {
 
 	private static final String SPRINGFRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
@@ -161,6 +162,11 @@ public class SpringBootApp {
 	public String getJavaCommand() throws IOException {
 		Properties props = this.vm.getSystemProperties();
 		return (String) props.get("sun.java.command");
+	}
+
+	public String getSystemProperty(String propName) throws IOException {
+		Properties props = this.vm.getSystemProperties();
+		return (String) props.get(propName);
 	}
 
 	public boolean containsSystemProperty(Object key) throws IOException {

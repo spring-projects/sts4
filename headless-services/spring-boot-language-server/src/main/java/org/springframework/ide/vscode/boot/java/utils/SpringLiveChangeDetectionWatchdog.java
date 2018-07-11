@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,18 +32,16 @@ import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 /**
@@ -66,6 +63,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final Set<IJavaProject> observedProjects;
 
 	private boolean changeDetectionEnabled = false;
+
 	private Timer timer;
 
 	public SpringLiveChangeDetectionWatchdog(
@@ -134,7 +132,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	public void update() {
 		if (changeDetectionEnabled) {
 			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps(null).toArray(new SpringBootApp[0]);
 				Change[] changes = changeHistory.checkForChanges(runningBootApps);
 				if (changes != null && changes.length > 0) {
 					for (Change change : changes) {
@@ -215,16 +213,9 @@ public class SpringLiveChangeDetectionWatchdog {
 			Collections.addAll(runningClasspath, app.getClasspath());
 
 			for (IJavaProject project : this.observedProjects) {
-				IClasspath classpath = project.getClasspath();
-				Collection<CPE> entries = classpath.getClasspathEntries();
-				for (CPE cpe : entries) {
-					if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind())) {
-						String path = cpe.getOutputFolder();
-						if (runningClasspath.contains(path)) {
-							result.add(project);
-							break;
-						}
-					}
+				if (DefaultRunningAppProvider.doesClasspathMatch(runningClasspath, project)) {
+					result.add(project);
+					break;
 				}
 			}
 		}

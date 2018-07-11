@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandl
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
@@ -195,6 +196,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			}
 			else {
 				liveChangeDetectionWatchdog.disableHighlights();
+			}
+
+			if (serverParams.runningAppProvider instanceof DefaultRunningAppProvider) {
+				((DefaultRunningAppProvider) serverParams.runningAppProvider).setStrictProjectMatching(config.isStrictProjectMatchingEnabled());
 			}
 		});
 

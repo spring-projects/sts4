@@ -20,5 +20,6 @@ public class Constants {
 	
 	public static final String PREF_BOOT_HINTS = "boot-java.boot-hints.on";
 	public static final String PREF_CHANGE_DETECTION = "boot-java.change-detection.on";
+	public static final String PREF_STRICT_PROJECT_MATCH = "boot-java.strict-project-matching.on";
 
 }
