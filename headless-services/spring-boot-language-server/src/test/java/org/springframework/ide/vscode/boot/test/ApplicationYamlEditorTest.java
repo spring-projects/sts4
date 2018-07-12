@@ -28,6 +28,7 @@ import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
+import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
@@ -3870,7 +3871,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 						ProjectObserver.NULL,
 						md.getIndexProvider(),
 						typeUtilProvider,
-						RunningAppProvider.NULL,
+						ProjectAwareRunningAppProvider.NULL,
 						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 				)
 		);

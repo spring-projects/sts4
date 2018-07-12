@@ -100,7 +100,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
 	public static InWorkspaceSymbolsProvider createFor(IProject project) {
 		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
-				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()));
+				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
 		if (!languageServers.isEmpty()) {
 			return new InWorkspaceSymbolsProvider(languageServers);
 		}

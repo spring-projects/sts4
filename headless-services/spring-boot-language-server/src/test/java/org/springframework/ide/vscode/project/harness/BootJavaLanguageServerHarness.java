@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
@@ -35,7 +36,7 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 
 	private PropertyIndexHarness indexHarness;
 	private final JavaProjectFinder projectFinder = (doc) -> getServerWrapper().getComponents().getProjectFinder().find(doc);
-	
+
 	/**
 	 * Creates a builder and initializes it so that it sets up a test harness with
 	 * the 'real stuff'. I.e project finder and other injected components are like
@@ -54,7 +55,7 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 		private JavaProjectFinder projectFinder = null;
 		private ProjectObserver projectObserver = null;
 		private SpringPropertyIndexProvider indexProvider = null;
-		private RunningAppProvider runningAppProvider = null;
+		private ProjectAwareRunningAppProvider runningAppProvider = null;
 		private PropertyIndexHarness indexHarness = null;
 		private Duration watchDogInterval = null;
 		private TypeUtilProvider typeUtilProvider = null;
@@ -69,12 +70,12 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 			projectFinder = indexHarness.getProjectFinder();
 			indexProvider = indexHarness.getIndexProvider();
 			projectObserver = ProjectObserver.NULL;
-			runningAppProvider = RunningAppProvider.NULL;
+			runningAppProvider = ProjectAwareRunningAppProvider.NULL;
 			return this;
 		}
 
 		public Builder runningAppProvider(RunningAppProvider provider) {
-			this.runningAppProvider = provider;
+			this.runningAppProvider = (project) -> provider.getAllRunningSpringApps();
 			return this;
 		}
 

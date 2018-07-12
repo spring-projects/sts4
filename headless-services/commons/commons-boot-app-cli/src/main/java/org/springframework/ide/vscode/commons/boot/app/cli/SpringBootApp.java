@@ -30,4 +30,11 @@ public interface SpringBootApp {
 	Properties getSystemProperties() throws Exception;
 	JMXConnector getJmxConnector() throws MalformedURLException, IOException;
 
+	default String getSystemProperties(String string) throws Exception {
+		Object r = getSystemProperties().get(string);
+		if (r instanceof String) {
+			return (String) r;
+		}
+		return null;
+	}
 }

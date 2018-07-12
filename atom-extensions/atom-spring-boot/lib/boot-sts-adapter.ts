@@ -1,10 +1,15 @@
 import {StsAdapter, HighlightParams} from '@pivotal-tools/atom-languageclient-commons';
 import {Convert} from 'atom-languageclient';
 import { Range } from 'vscode-languageserver-protocol';
-import {TextEditor} from 'atom';
+import {TextEditor, DecorationOptions } from 'atom';
 
-const BOOT_DATA_MARKER_TYPE: any = 'BootApp-Hint';
 const BOOT_HINT_GUTTER_NAME = 'boot-hint-gutter';
+
+const DECORATION_OPTIONS: DecorationOptions = {
+    type: 'highlight',
+    class: 'boot-hint',
+    gutterName: BOOT_HINT_GUTTER_NAME
+};
 
 export class BootStsAdapter extends StsAdapter {
 
@@ -17,7 +22,7 @@ export class BootStsAdapter extends StsAdapter {
     }
 
     private markHintsForEditor(editor: TextEditor, ranges: Range[]) {
-        editor.findMarkers(BOOT_DATA_MARKER_TYPE).forEach(m => m.destroy());
+        editor.getDecorations(DECORATION_OPTIONS).map(decoration => decoration.getMarker()).forEach(m => m.destroy());
         if (Array.isArray(ranges)) {
             ranges.forEach(range => this.createHintMarker(editor, range));
         }
@@ -33,13 +38,10 @@ export class BootStsAdapter extends StsAdapter {
 
     private createHintMarker(editor: TextEditor, range: Range) {
         // Create marker model
-        const marker = editor.markBufferRange(Convert.lsRangeToAtomRange(range), BOOT_DATA_MARKER_TYPE);
+        const marker = editor.markBufferRange(Convert.lsRangeToAtomRange(range));
 
         // Marker around the text in the editor
-        editor.decorateMarker(marker, {
-            type: 'highlight',
-            class: 'boot-hint'
-        });
+        editor.decorateMarker(marker, DECORATION_OPTIONS);
 
         // Marker in the diagnostic gutter
         let gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
@@ -53,4 +55,5 @@ export class BootStsAdapter extends StsAdapter {
         iconElement.setAttribute('class', 'gutter-boot-hint');
         gutter.decorateMarker(marker, {item: iconElement});
     }
+
 }

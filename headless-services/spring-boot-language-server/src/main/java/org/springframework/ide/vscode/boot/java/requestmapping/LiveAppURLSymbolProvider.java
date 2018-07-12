@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
@@ -31,9 +32,9 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class LiveAppURLSymbolProvider {
 
-	private final RunningAppProvider runningAppProvider;
+	private final ProjectAwareRunningAppProvider runningAppProvider;
 
-	public LiveAppURLSymbolProvider(RunningAppProvider runningAppProvider) {
+	public LiveAppURLSymbolProvider(ProjectAwareRunningAppProvider runningAppProvider) {
 		this.runningAppProvider = runningAppProvider;
 	}
 
@@ -43,7 +44,7 @@ public class LiveAppURLSymbolProvider {
 		List<SymbolInformation> result = new ArrayList<>();
 
 		try {
-			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps(null).toArray(new SpringBootApp[0]);
 			for (SpringBootApp app : runningApps) {
 				try {
 					String host = app.getHost();

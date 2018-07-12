@@ -33,6 +33,11 @@ public class BootJavaConfig {
 		return enabled != null && enabled.booleanValue();
 	}
 
+	public boolean isStrictProjectMatchingEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "strict-project-matching", "on");
+		return enabled != null && enabled.booleanValue();
+	}
+
 	public void handleConfigurationChange(Settings newConfig) {
 		Log.info("Settings received: "+newConfig);
 		this.settings = newConfig;
