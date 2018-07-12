@@ -40,9 +40,6 @@ public interface RunningAppProvider {
 
 	public static final RunningAppProvider NULL = () -> ImmutableList.of();
 
-	/**
-	 * returns all running spring boot applications on the local machine.
-	 */
 	Collection<SpringBootApp> getAllRunningSpringApps() throws Exception;
 
 	static RunningAppProvider createDefault(SimpleLanguageServer server) {

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
@@ -30,7 +40,7 @@ public interface SpringBootApp {
 	Properties getSystemProperties() throws Exception;
 	JMXConnector getJmxConnector() throws MalformedURLException, IOException;
 
-	default String getSystemProperties(String string) throws Exception {
+	default String getSystemProperty(String string) throws Exception {
 		Object r = getSystemProperties().get(string);
 		if (r instanceof String) {
 			return (String) r;

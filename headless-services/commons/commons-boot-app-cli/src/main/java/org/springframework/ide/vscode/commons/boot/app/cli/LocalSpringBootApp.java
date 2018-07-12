@@ -64,9 +64,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
 		return cache.getAllRunningJavaApps();
 	}
-	/**
-	 * @return Map that contains the boot apps, mapping the process ID -> boot app accessor object
-	 */
+
 	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
 		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
 	}

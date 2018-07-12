@@ -94,7 +94,7 @@ public class DefaultRunningAppProvider implements ProjectAwareRunningAppProvider
 
 	public static boolean doesProjectNameMatch(SpringBootApp app, IJavaProject project) {
 		try {
-			String projectName = app.getSystemProperties("spring.boot.project.name");
+			String projectName = app.getSystemProperty("spring.boot.project.name");
 			return projectName != null && projectName.equals(project.getElementName());
 		}
 		catch (Exception e) {
