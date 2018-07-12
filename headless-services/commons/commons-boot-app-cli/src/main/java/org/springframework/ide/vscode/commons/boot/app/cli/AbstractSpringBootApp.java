@@ -24,10 +24,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
-import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
@@ -43,11 +41,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
 import org.springframework.ide.vscode.commons.util.FuctionWithException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -171,7 +166,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			String domain = getDomainForActuator();
 			String json = getBeansFromActuator(domain);
 			LiveBeansModel beans = LiveBeansModel.parse(json);
-			logger.info("Got {} beans for {}", beans.getBeanNames().size(), this);
+			logger.debug("Got {} beans for {}", beans.getBeanNames().size(), this);
 			return beans;
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
@@ -397,11 +392,13 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		JMXConnector jmxConnector = null;
 		try {
 			jmxConnector = getJmxConnector();
-			return getPort(jmxConnector);
-		}
-		finally {
+			if (jmxConnector!=null) {
+				return getPort(jmxConnector);
+			}
+		} finally {
 			if (jmxConnector != null) jmxConnector.close();
 		}
+		return null;
 	}
 
 	protected String getPort(JMXConnector jmxConnector) throws Exception {

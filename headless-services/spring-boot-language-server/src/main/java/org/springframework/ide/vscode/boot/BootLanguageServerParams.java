@@ -102,7 +102,7 @@ public class BootLanguageServerParams {
 					jdtProjectCache,
 					indexProvider,
 					(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-					new DefaultRunningAppProvider(RunningAppProvider.DEFAULT),
+					new DefaultRunningAppProvider(RunningAppProvider.createDefault(server)),
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};

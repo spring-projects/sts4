@@ -46,9 +46,9 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	@Override
 	public boolean isSpringBootApp() {
-		//For now, let's assume that, if its not a boot app, then we won't create
-		//a RemoteSpringBootApp instance for it.
-		return true;
+		//For now, let's assume that, if its not a boot app, then we won't create a RemoteSpringBootApp instance for it.
+		//The check that is here really only determines whether there's a process reachable at the remote jmx url.
+		return getProcessID()!=null;
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 		try {
 			return withPlatformMxBean(RuntimeMXBean.class, runtime -> runtime.getName());
 		} catch (Exception e) {
-			return "Unknown-PID";
+			return null;
 		}
 	}
 

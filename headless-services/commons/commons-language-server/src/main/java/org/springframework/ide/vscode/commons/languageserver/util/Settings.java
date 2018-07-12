@@ -10,9 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -28,6 +32,26 @@ public class Settings {
 
 	public Settings(JsonElement settings) {
 		this.settings = settings;
+	}
+
+	public Set<String> getStringSet(String... names) {
+		ImmutableSet.Builder<String> strings = ImmutableSet.builder();
+		try {
+			JsonElement val = getRawProperty(names);
+			if (val != null) {
+				JsonArray array = val.getAsJsonArray();
+				for (JsonElement el : array) {
+					try {
+						strings.add(el.getAsString());
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return strings.build();
 	}
 
 	public Integer getInt(String... names) {

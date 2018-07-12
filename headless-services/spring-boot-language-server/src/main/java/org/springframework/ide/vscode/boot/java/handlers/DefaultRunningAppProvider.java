@@ -36,7 +36,6 @@ public class DefaultRunningAppProvider implements ProjectAwareRunningAppProvider
 	private boolean strictProjectMatchingEnabled = false;
 
 	public void setStrictProjectMatching(boolean strictProjectMatchingEnabled) {
-		System.out.println("USE STRICT MODE: " + strictProjectMatchingEnabled);
 		this.strictProjectMatchingEnabled = strictProjectMatchingEnabled;
 	}
 

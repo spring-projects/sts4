@@ -78,6 +78,12 @@
           "default": false,
           "description": "Use restrictive mechanism to match live running boot apps automatically with projects in your workspace"
         },
+        "boot-java.remote-apps" : {
+          "type": "array",
+          "items": {
+            "type" : "string"
+          }
+        },
         "spring-boot.ls.java.home": {
           "type": [
             "string",

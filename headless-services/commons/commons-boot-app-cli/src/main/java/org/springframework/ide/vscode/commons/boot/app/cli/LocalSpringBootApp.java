@@ -10,30 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.base.Supplier;
@@ -70,7 +56,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 				logger.error("Error starting local management agent", e);
 			}
 		}
-		logger.info("Java PID = "+getProcessID()+" jmx address = "+address);
 		return address;
 	});
 
@@ -89,7 +74,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
 		this.vmd = vmd;
 		this.vm = VirtualMachine.attach(vmd);
-		logger.info("SpringBootApp created: "+this);
 	}
 
 	@Override
