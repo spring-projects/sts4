@@ -78,15 +78,14 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public abstract boolean isSpringBootApp();
 
-	@Override
-	public JMXConnector getJmxConnector() throws MalformedURLException, IOException {
+	protected JMXConnector getJmxConnector() throws MalformedURLException, IOException {
 		JMXServiceURL serviceUrl = getJmxUrl();
 		JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
 		return jmxConnector;
 	}
 
 	@Override
-	public final List<String> getActiveProfiles() {
+	public List<String> getActiveProfiles() {
 		try {
 			String _env = getEnvironment();
 			if (_env != null) {
@@ -161,7 +160,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	}
 
 	@Override
-	public final LiveBeansModel getBeans() {
+	public LiveBeansModel getBeans() {
 		try {
 			String domain = getDomainForActuator();
 			String json = getBeansFromActuator(domain);
@@ -200,7 +199,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	 * @return JMX MBean domain containing actuator information, or null if not resolved.
 	 * @throws Exception when resolving domain from JMX
 	 */
-	protected final String getDomainForActuator() throws Exception {
+	protected String getDomainForActuator() throws Exception {
 		if (this.jmxMbeanActuatorDomain == null) {
 			JMXConnector jmxConnector = null;
 			try {
@@ -252,7 +251,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		}
 	}
 
-	protected final Object getActuatorDataFromAttribute(ObjectName objectName, String attribute) throws Exception {
+	protected Object getActuatorDataFromAttribute(ObjectName objectName, String attribute) throws Exception {
 		JMXConnector jmxConnector = null;
 		try {
 			if (objectName != null) {
@@ -273,7 +272,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		}
 	}
 
-	protected final Object getActuatorDataFromOperation(ObjectName objectName, String operation) throws Exception {
+	protected Object getActuatorDataFromOperation(ObjectName objectName, String operation) throws Exception {
 		JMXConnector jmxConnector = null;
 		try {
 			if (objectName != null) {

@@ -10,14 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-
-import javax.management.remote.JMXConnector;
 
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
@@ -38,7 +34,6 @@ public interface SpringBootApp {
 	List<String> getActiveProfiles();
 	Optional<List<LiveConditional>> getLiveConditionals() throws Exception;
 	Properties getSystemProperties() throws Exception;
-	JMXConnector getJmxConnector() throws MalformedURLException, IOException;
 
 	default String getSystemProperty(String string) throws Exception {
 		Object r = getSystemProperties().get(string);

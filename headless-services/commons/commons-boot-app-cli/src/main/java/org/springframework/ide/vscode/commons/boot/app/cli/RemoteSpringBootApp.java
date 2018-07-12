@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
 import java.lang.management.RuntimeMXBean;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.time.Duration;
 import java.util.Map.Entry;
@@ -20,11 +19,13 @@ import java.util.Properties;
 
 import javax.management.remote.JMXServiceURL;
 
+import org.springframework.ide.vscode.commons.util.MemoizingProxy;
+
 public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	private String jmxUrl;
 
-	private RemoteSpringBootApp(String jmxUrl) {
+	protected RemoteSpringBootApp(String jmxUrl) {
 		this.jmxUrl = jmxUrl;
 	}
 
@@ -75,14 +76,13 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 				}
 			}
 		} catch (IOException e) {
-			logger.equals(e);
+			logger.error("", e);
 		}
 		return "Unknown";
 	}
 
 	public static SpringBootApp create(String jmxUrl) {
-		RemoteSpringBootApp delegate = new RemoteSpringBootApp(jmxUrl);
-		return (SpringBootApp) Proxy.newProxyInstance(RemoteSpringBootApp.class.getClassLoader(), new Class[] {SpringBootApp.class}, new NoArgumentsCacheHandler(delegate, Duration.ofMillis(4900)));
+		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), jmxUrl);
 	}
 
 }

@@ -49,6 +49,13 @@
 			<artifactId>reactor-core</artifactId>
 			<version>${reactor-version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>${cglib-version}</version>
+		</dependency>
+		
 		<!-- HTM -> Markdown converter -->
 		<dependency>
 			<groupId>com.kotcrab.remark</groupId>
