@@ -11,19 +11,14 @@
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import javax.management.remote.JMXServiceURL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
@@ -42,7 +37,24 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private Boolean isSpringBootApp;
 
-	private final Supplier<String> jmxConnect = Suppliers.memoize(() -> {
+	private static LocalSpringBootAppCache cache = new LocalSpringBootAppCache();
+
+	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
+		return cache.getAllRunningJavaApps();
+	}
+
+	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
+		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
+	}
+
+	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
+		this.vm = VirtualMachine.attach(vmd);
+		this.vmd = vmd;
+	}
+
+
+	@Override
+	protected String getJmxUrl() {
 		String address = null;
 		try {
 			address = vm.getAgentProperties().getProperty(LOCAL_CONNECTOR_ADDRESS);
@@ -57,22 +69,10 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 			}
 		}
 		return address;
-	});
-
-	private static LocalSpringBootAppCache cache = new LocalSpringBootAppCache();
-
-	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
-		return cache.getAllRunningJavaApps();
 	}
 
-	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
-	}
-
-	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
-		this.vmd = vmd;
-		this.vm = VirtualMachine.attach(vmd);
-	}
+//	Supplier<String> jmxConnectUrl = Suppliers.memoize(() -> {
+//	});
 
 	@Override
 	public String getProcessID() {
@@ -122,11 +122,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		return props.containsKey(key);
 	}
 
-	@Override
-	protected JMXServiceURL getJmxUrl() throws MalformedURLException {
-		return new JMXServiceURL(jmxConnect.get());
-	}
-
 	protected boolean contains(String[] cpElements, String element) {
 		for (String cpElement : cpElements) {
 			if (cpElement.contains(element)) {
@@ -162,6 +157,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		System.out.println("}");
 	}
 
+	@Override
 	public void dispose() {
 		if (vm!=null) {
 			logger.info("SpringBootApp disposed: "+this);
@@ -174,5 +170,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		if (vmd!=null) {
 			vmd = null;
 		}
+		super.dispose();
 	}
 }

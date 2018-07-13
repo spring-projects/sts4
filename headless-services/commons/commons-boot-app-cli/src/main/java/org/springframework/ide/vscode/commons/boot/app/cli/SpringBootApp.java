@@ -18,7 +18,9 @@ import java.util.Properties;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 
-public interface SpringBootApp {
+import reactor.core.Disposable;
+
+public interface SpringBootApp extends Disposable {
 
 	String[] getClasspath() throws Exception;
 	String getJavaCommand() throws Exception;

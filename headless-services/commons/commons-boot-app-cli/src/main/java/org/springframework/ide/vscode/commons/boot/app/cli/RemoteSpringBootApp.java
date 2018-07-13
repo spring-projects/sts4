@@ -12,12 +12,9 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
 import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
 import java.time.Duration;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import javax.management.remote.JMXServiceURL;
 
 import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 
@@ -30,8 +27,8 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	@Override
-	protected JMXServiceURL getJmxUrl() throws MalformedURLException {
-		return new JMXServiceURL(jmxUrl);
+	protected String getJmxUrl() {
+		return jmxUrl;
 	}
 
 	@Override

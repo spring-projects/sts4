@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -47,12 +48,14 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 		Set<String> urls = settings.getStringSet("boot-java", "remote-apps");
 
 		{ //Remove obsolete apps...
-			Iterator<String> keys = remoteAppByUrl.keySet().iterator();
-			while (keys.hasNext()) {
-				String key = keys.next();
+			Iterator<Entry<String, SpringBootApp>> entries = remoteAppByUrl.entrySet().iterator();
+			while (entries.hasNext()) {
+				Entry<String, SpringBootApp> entry = entries.next();
+				String key = entry.getKey();
 				if (!urls.contains(key)) {
 					logger.debug("Removing RemoteSpringBootApp: "+key);
-					keys.remove();
+					entries.remove();
+					entry.getValue().dispose();
 				}
 			}
 		}

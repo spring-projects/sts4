@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.PlatformManagedObject;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -40,9 +39,14 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansMod
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
+import org.springframework.ide.vscode.commons.util.MemoizingDisposableSupplier;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuctionWithException;
 import org.springframework.ide.vscode.commons.util.FunctionWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -60,14 +64,14 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	private String jmxMbeanActuatorDomain;
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
-	// was generating during serialisatino, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
+	// was generating during serialisation, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
 	// Namely: Object Mapper does not escape Html, whereas Gson does by default (for example
 	// '=' in Gson appears as '\u003d')
 	protected final Gson gson = new GsonBuilder()
 							.disableHtmlEscaping()
 							.create();
 
-	protected abstract JMXServiceURL getJmxUrl() throws MalformedURLException;
+	protected abstract String getJmxUrl();
 
 	@Override
 	public abstract Properties getSystemProperties() throws Exception;
@@ -79,11 +83,42 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public abstract boolean isSpringBootApp();
 
-	protected <T> T withJmxConnector(FunctionWithException<JMXConnector, T> doit) throws Exception {
-		JMXServiceURL serviceUrl = getJmxUrl();
-		try (JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null)) {
-			return doit.apply(jmxConnector);
+	private final MemoizingDisposableSupplier<JMXConnector> jmxConnector = new MemoizingDisposableSupplier<JMXConnector>(
+		//creating jmx connector:
+		() -> {
+			String url = getJmxUrl();
+			logger.info("Creating JMX connector: "+url);
+			try {
+				return JMXConnectorFactory.connect(new JMXServiceURL(url), null);
+			} catch (Exception e) {
+				logger.info("Creating JMX connector failed: {}", ExceptionUtil.getMessage(e));
+				throw e;
+			}
+		},
+		//disposing jmx connector:
+		(connector) -> {
+			try {
+				logger.info("Disposing JMX connector: "+getJmxUrl());
+				connector.close();
+			} catch (IOException e) {
+				//ignore
+			}
 		}
+	);
+
+	protected <T> T withJmxConnector(FunctionWithException<JMXConnector, T> doit) throws Exception {
+		try {
+			return doit.apply(jmxConnector.get());
+		} catch (Exception e) {
+			logger.info("Evicting JMX connector {} because of error: {}", getJmxUrl(), ExceptionUtil.getMessage(e));
+			jmxConnector.evict();
+			throw e;
+		}
+	}
+
+	@Override
+	public void dispose() {
+		jmxConnector.dispose();
 	}
 
 	@Override
@@ -247,27 +282,28 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	protected Object getActuatorDataFromAttribute(ObjectName objectName, String attribute) throws Exception {
 		if (objectName != null) {
-			try {
-				return withJmxConnector(jmxConnector -> {
+			return withJmxConnector(jmxConnector -> {
+				try {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 					return connection.getAttribute(objectName, "Data");
-				});
-			} catch (InstanceNotFoundException e) {
-			}
+				} catch (InstanceNotFoundException e) {
+					return null;
+				}
+			});
 		}
 		return null;
 	}
 
 	protected Object getActuatorDataFromOperation(ObjectName objectName, String operation) throws Exception {
 		if (objectName != null) {
-			try {
-				return withJmxConnector(jmxConnector -> {
+			return withJmxConnector(jmxConnector -> {
+				try {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 					return connection.invoke(objectName, operation, null, null);
-				});
-			}
-			catch (InstanceNotFoundException e) {
-			}
+				} catch (InstanceNotFoundException e) {
+					return null;
+				}
+			});
 		}
 		return null;
 	}
@@ -312,11 +348,6 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public String getJavaCommand() throws Exception {
 		Properties props = getSystemProperties();
-		System.err.println(">>>>> sysprops");
-		for (Entry<Object, Object> e : props.entrySet()) {
-			System.err.println(e.getKey() +"="+e.getValue());
-		}
-		System.err.println("<<<< sysprops");
 		return (String) props.get("sun.java.command");
 	}
 
@@ -324,8 +355,12 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	public String getHost() throws Exception {
 		//TODO: different implementation for cf apps with locally tunnelled
 		// jmx connection?
-		JMXServiceURL serviceUrl = getJmxUrl();
-		return serviceUrl.getHost();
+		try {
+			JMXServiceURL serviceUrl = new JMXServiceURL(getJmxUrl());
+			return serviceUrl.getHost();
+		} catch (Exception e) {
+			return "Unknown host";
+		}
 	}
 
 	@Override
