@@ -125,15 +125,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		Map<String, Object> bootHint = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
-		Map<String, Object> bootStrictProjectMatching = new HashMap<>();
 
 		bootHint.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_BOOT_HINTS));
 		bootChangeDetection.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_CHANGE_DETECTION));
-		bootStrictProjectMatching.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_STRICT_PROJECT_MATCH));
 
 		bootJavaObj.put("boot-hints", bootHint);
 		bootJavaObj.put("change-detection", bootChangeDetection);
-		bootJavaObj.put("strict-project-matching", bootStrictProjectMatching);
 
 		settings.put("boot-java", bootJavaObj);
 

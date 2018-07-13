@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
@@ -65,7 +63,7 @@ public class BootLanguageServerParams {
 	public final TypeUtilProvider typeUtilProvider;
 
 	//Boot Java
-	public final ProjectAwareRunningAppProvider runningAppProvider;
+	public final RunningAppProvider runningAppProvider;
 	public final Duration watchDogInterval;
 
 	public BootLanguageServerParams(
@@ -73,7 +71,7 @@ public class BootLanguageServerParams {
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
 			TypeUtilProvider typeUtilProvider,
-			ProjectAwareRunningAppProvider runningAppProvider,
+			RunningAppProvider runningAppProvider,
 			Duration watchDogInterval
 	) {
 		super();
@@ -102,7 +100,7 @@ public class BootLanguageServerParams {
 					jdtProjectCache,
 					indexProvider,
 					(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-					new DefaultRunningAppProvider(RunningAppProvider.createDefault(server)),
+					RunningAppProvider.createDefault(server),
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
@@ -164,7 +162,7 @@ public class BootLanguageServerParams {
 					projectObserver,
 					indexProvider,
 					typeUtilProvider,
-					ProjectAwareRunningAppProvider.NULL,
+					RunningAppProvider.NULL,
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};
@@ -192,7 +190,7 @@ public class BootLanguageServerParams {
 					projectObserver,
 					indexProvider,
 					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
-					ProjectAwareRunningAppProvider.NULL,
+					RunningAppProvider.NULL,
 					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 			);
 		};

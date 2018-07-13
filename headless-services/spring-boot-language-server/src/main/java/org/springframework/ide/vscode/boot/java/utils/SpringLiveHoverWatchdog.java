@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -23,7 +24,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppMatcher;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -46,7 +47,7 @@ public class SpringLiveHoverWatchdog {
 	private final Set<String> watchedDocs;
 	private final SimpleLanguageServer server;
 	private final BootJavaHoverProvider hoverProvider;
-	private ProjectAwareRunningAppProvider runningAppProvider;
+	private final RunningAppProvider runningAppProvider;
 
 	private boolean highlightsEnabled = true;
 
@@ -71,7 +72,7 @@ public class SpringLiveHoverWatchdog {
 	public SpringLiveHoverWatchdog(
 			SimpleLanguageServer server,
 			BootJavaHoverProvider hoverProvider,
-			ProjectAwareRunningAppProvider runningAppProvider,
+			RunningAppProvider runningAppProvider,
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectChanges,
 			Duration pollingInterval
@@ -147,7 +148,7 @@ public class SpringLiveHoverWatchdog {
 			try {
 				if (runningBootApps == null) {
 					IJavaProject project = identifyProject(docURI);
-					runningBootApps = runningAppProvider.getAllRunningSpringApps(project).toArray(new SpringBootApp[0]);
+					runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
 				}
 
 				boolean hasCurrentRunningBootApps = runningBootApps != null && runningBootApps.length > 0;
@@ -170,11 +171,12 @@ public class SpringLiveHoverWatchdog {
 	protected void update() {
 		if (this.watchedDocs.size() > 0) {
 			try {
+				Collection<SpringBootApp> runningBootApps = runningAppProvider.getAllRunningSpringApps();
+
 				for (String docURI : watchedDocs) {
 					IJavaProject project = identifyProject(docURI);
-					SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps(project).toArray(new SpringBootApp[0]);
-
-					update(docURI, runningBootApps);
+					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(runningBootApps, project).toArray(new SpringBootApp[0]);
+					update(docURI, matchingApps);
 				}
 			} catch (Exception e) {
 				logger.error("", e);

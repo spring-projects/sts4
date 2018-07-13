@@ -17,9 +17,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.Editor.I
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
@@ -28,7 +26,6 @@ import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
@@ -37,7 +34,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -3871,7 +3867,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 						ProjectObserver.NULL,
 						md.getIndexProvider(),
 						typeUtilProvider,
-						ProjectAwareRunningAppProvider.NULL,
+						RunningAppProvider.NULL,
 						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 				)
 		);

@@ -39,9 +39,6 @@ public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage
 		
 		BooleanFieldEditor liveChangeDetectionPrefEditor = new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", getFieldEditorParent());
 		addField(liveChangeDetectionPrefEditor);
-		
-		BooleanFieldEditor strictProjectMatchingPrefEditor = new BooleanFieldEditor(Constants.PREF_STRICT_PROJECT_MATCH, "Use restrictive mechanism to match live running boot apps automatically with projects in your workspace", getFieldEditorParent());
-		addField(strictProjectMatchingPrefEditor);
 	}
 
 }

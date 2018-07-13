@@ -32,8 +32,7 @@ import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppMatcher;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
@@ -57,7 +56,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final long POLLING_INTERVAL_MILLISECONDS;
 
 	private final SimpleLanguageServer server;
-	private final ProjectAwareRunningAppProvider runningAppProvider;
+	private final RunningAppProvider runningAppProvider;
 	private final SourceLinks sourceLinks;
 
 	private final ChangeDetectionHistory changeHistory;
@@ -71,7 +70,7 @@ public class SpringLiveChangeDetectionWatchdog {
 			BootJavaLanguageServerComponents bootJavaLanguageServerComponents,
 			SimpleLanguageServer server,
 			ProjectObserver projectObserver,
-			ProjectAwareRunningAppProvider runningAppProvider,
+			RunningAppProvider runningAppProvider,
 			JavaProjectFinder projectFinder,
 			Duration pollingInterval
 	) {
@@ -133,7 +132,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	public void update() {
 		if (changeDetectionEnabled) {
 			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps(null).toArray(new SpringBootApp[0]);
+				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 				Change[] changes = changeHistory.checkForChanges(runningBootApps);
 				if (changes != null && changes.length > 0) {
 					for (Change change : changes) {
@@ -214,7 +213,7 @@ public class SpringLiveChangeDetectionWatchdog {
 			Collections.addAll(runningClasspath, app.getClasspath());
 
 			for (IJavaProject project : this.observedProjects) {
-				if (DefaultRunningAppProvider.doesClasspathMatch(runningClasspath, project)) {
+				if (RunningAppMatcher.doesClasspathMatch(runningClasspath, project)) {
 					result.add(project);
 					break;
 				}
