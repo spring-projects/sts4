@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -21,10 +20,8 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.Log;
 
 /**
@@ -32,9 +29,9 @@ import org.springframework.ide.vscode.commons.util.Log;
  */
 public class LiveAppURLSymbolProvider {
 
-	private final ProjectAwareRunningAppProvider runningAppProvider;
+	private final RunningAppProvider runningAppProvider;
 
-	public LiveAppURLSymbolProvider(ProjectAwareRunningAppProvider runningAppProvider) {
+	public LiveAppURLSymbolProvider(RunningAppProvider runningAppProvider) {
 		this.runningAppProvider = runningAppProvider;
 	}
 
@@ -44,7 +41,7 @@ public class LiveAppURLSymbolProvider {
 		List<SymbolInformation> result = new ArrayList<>();
 
 		try {
-			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps(null).toArray(new SpringBootApp[0]);
+			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 			for (SpringBootApp app : runningApps) {
 				try {
 					String host = app.getHost();

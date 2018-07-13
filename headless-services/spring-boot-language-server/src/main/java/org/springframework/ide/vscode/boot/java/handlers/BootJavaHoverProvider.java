@@ -58,9 +58,10 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private JavaProjectFinder projectFinder;
 	private BootJavaLanguageServerComponents server;
 	private AnnotationHierarchyAwareLookup<HoverProvider> hoverProviders;
-	private ProjectAwareRunningAppProvider runningAppProvider;
+	private RunningAppProvider runningAppProvider;
 
-	public BootJavaHoverProvider(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder, AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, ProjectAwareRunningAppProvider runningAppProvider) {
+	public BootJavaHoverProvider(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder,
+			AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;
@@ -294,7 +295,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
 		try {
-			return runningAppProvider.getAllRunningSpringApps(project).toArray(new SpringBootApp[0]);
+			return RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
 		} catch (Exception e) {
 			Log.log(e);
 			return new SpringBootApp[0];

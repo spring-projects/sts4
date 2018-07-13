@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java;
 
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
-import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Boot-Java LS settings
@@ -30,11 +29,6 @@ public class BootJavaConfig {
 
 	public boolean isChangeDetectionEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "change-detection", "on");
-		return enabled != null && enabled.booleanValue();
-	}
-
-	public boolean isStrictProjectMatchingEnabled() {
-		Boolean enabled = settings.getBoolean("boot-java", "strict-project-matching", "on");
 		return enabled != null && enabled.booleanValue();
 	}
 

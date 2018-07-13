@@ -36,10 +36,8 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandl
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
-import org.springframework.ide.vscode.boot.java.handlers.DefaultRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
@@ -198,10 +196,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			else {
 				liveChangeDetectionWatchdog.disableHighlights();
 			}
-
-			if (serverParams.runningAppProvider instanceof DefaultRunningAppProvider) {
-				((DefaultRunningAppProvider) serverParams.runningAppProvider).setStrictProjectMatching(config.isStrictProjectMatchingEnabled());
-			}
 		});
 
 		server.onInitialize(this::initialize);
@@ -293,7 +287,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
-			ProjectAwareRunningAppProvider runningAppProvider) {
+			RunningAppProvider runningAppProvider) {
 		AnnotationHierarchyAwareLookup<HoverProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());

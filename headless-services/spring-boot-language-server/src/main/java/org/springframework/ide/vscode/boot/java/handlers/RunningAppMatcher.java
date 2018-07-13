@@ -25,40 +25,37 @@ import org.springframework.ide.vscode.commons.util.CollectorUtil;
 /**
  * @author Martin Lippert
  */
-public class DefaultRunningAppProvider implements ProjectAwareRunningAppProvider {
+public class RunningAppMatcher  {
 
-	private RunningAppProvider allApps;
-
-	public DefaultRunningAppProvider(RunningAppProvider allApps) {
-		this.allApps = allApps;
-	}
-
-	private boolean strictProjectMatchingEnabled = false;
-
-	public void setStrictProjectMatching(boolean strictProjectMatchingEnabled) {
-		this.strictProjectMatchingEnabled = strictProjectMatchingEnabled;
-	}
-
-	@Override
-	public Collection<SpringBootApp> getAllRunningSpringApps(IJavaProject project) throws Exception {
-		Collection<SpringBootApp> apps = allApps.getAllRunningSpringApps();
-
-		if (project != null && strictProjectMatchingEnabled) {
-			return apps.stream().filter((app) -> {
-				return doesProjectMatch(app, project);
+	public static Collection<SpringBootApp> getAllMatchingApps(Collection<SpringBootApp> apps, IJavaProject project) throws Exception {
+		if (project != null) {
+			Collection<SpringBootApp> matchedProjects = apps.stream().filter((app) -> {
+				return RunningAppMatcher.doesProjectMatch(app, project);
 			}).collect(CollectorUtil.toImmutableList());
+
+			if (matchedProjects.size() > 0) {
+				return matchedProjects;
+			}
 		}
-		else {
-			return apps;
-		}
+		return apps;
 	}
 
-	private boolean doesProjectMatch(SpringBootApp app, IJavaProject project) {
+	private static boolean doesProjectMatch(SpringBootApp app, IJavaProject project) {
 		if (doesProjectNameMatch(app, project)) return true;
 		if (doesProjectThinJarWrapperMatch(app, project)) return true;
 		if (doesClasspathMatch(app, project)) return true;
 
 		return false;
+	}
+
+	public static boolean doesProjectNameMatch(SpringBootApp app, IJavaProject project) {
+		try {
+			String projectName = app.getSystemProperty("spring.boot.project.name");
+			return projectName != null && projectName.equals(project.getElementName());
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 
 	public static boolean doesClasspathMatch(SpringBootApp app, IJavaProject project) {
@@ -89,17 +86,8 @@ public class DefaultRunningAppProvider implements ProjectAwareRunningAppProvider
 	}
 
 	public static boolean doesProjectThinJarWrapperMatch(SpringBootApp app, IJavaProject project) {
+		// not yet implemented
 		return false;
-	}
-
-	public static boolean doesProjectNameMatch(SpringBootApp app, IJavaProject project) {
-		try {
-			String projectName = app.getSystemProperty("spring.boot.project.name");
-			return projectName != null && projectName.equals(project.getElementName());
-		}
-		catch (Exception e) {
-			return false;
-		}
 	}
 
 }

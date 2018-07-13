@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType.PROP_DUPLICATE_KEY;
+import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
 import java.nio.charset.Charset;
@@ -28,7 +29,6 @@ import org.springframework.ide.vscode.boot.BootLanguageServer;
 import org.springframework.ide.vscode.boot.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
-import org.springframework.ide.vscode.boot.java.handlers.ProjectAwareRunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
@@ -41,12 +41,9 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-
-import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.*;
 
 /**
  * Boot App Properties Editor tests
@@ -1631,7 +1628,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 						ProjectObserver.NULL,
 						md.getIndexProvider(),
 						typeUtilProvider,
-						ProjectAwareRunningAppProvider.NULL,
+						RunningAppProvider.NULL,
 						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 				)
 		);
