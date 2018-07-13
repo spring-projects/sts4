@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
 import org.springframework.ide.vscode.commons.util.FuctionWithException;
+import org.springframework.ide.vscode.commons.util.FunctionWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -78,10 +79,11 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public abstract boolean isSpringBootApp();
 
-	protected JMXConnector getJmxConnector() throws MalformedURLException, IOException {
+	protected <T> T withJmxConnector(FunctionWithException<JMXConnector, T> doit) throws Exception {
 		JMXServiceURL serviceUrl = getJmxUrl();
-		JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
-		return jmxConnector;
+		try (JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null)) {
+			return doit.apply(jmxConnector);
+		}
 	}
 
 	@Override
@@ -201,19 +203,18 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	 */
 	protected String getDomainForActuator() throws Exception {
 		if (this.jmxMbeanActuatorDomain == null) {
-			JMXConnector jmxConnector = null;
-			try {
-				jmxConnector = getJmxConnector();
+			this.jmxMbeanActuatorDomain = withJmxConnector(jmxConnector -> {
+				String jmxMbeanActuatorDomain = null;
 				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 				// To be more efficient in finding the domain containing actuator information,
 				// and avoid many JMX connections
 				// first check the default springframework boot domain:
 				String beansJson = getBeansFromActuator(SPRINGFRAMEWORK_BOOT_DOMAIN);
 				if (StringUtil.hasText(beansJson)) {
-					this.jmxMbeanActuatorDomain = SPRINGFRAMEWORK_BOOT_DOMAIN;
+					jmxMbeanActuatorDomain = SPRINGFRAMEWORK_BOOT_DOMAIN;
 				}
 
-				if (this.jmxMbeanActuatorDomain == null) {
+				if (jmxMbeanActuatorDomain == null) {
 					String[] domains = connection.getDomains();
 					if (domains != null) {
 						for (String domain : domains) {
@@ -223,74 +224,52 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 							if (!SPRINGFRAMEWORK_BOOT_DOMAIN.equals(domain)) {
 								beansJson = getBeansFromActuator(domain);
 								if (StringUtil.hasText(beansJson)) {
-									this.jmxMbeanActuatorDomain = domain;
+									jmxMbeanActuatorDomain = domain;
 									break;
 								}
 							}
 						}
 					}
 				}
-			} finally {
-				if (jmxConnector != null) {
-					jmxConnector.close();
-				}
-			}
+				return jmxMbeanActuatorDomain;
+			});
 		}
 		return this.jmxMbeanActuatorDomain;
 	}
 
 	protected <T extends PlatformManagedObject,R> R withPlatformMxBean(Class<T> mbeanType, FuctionWithException<T,R> doit) throws Exception {
-		JMXConnector jmxConnector = null;
-		try {
-			jmxConnector = getJmxConnector();
+		return withJmxConnector(jmxConnector -> {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 			T proxy = ManagementFactory.getPlatformMXBean(connection, mbeanType);
 			return doit.apply(proxy);
-		} finally {
-			if (jmxConnector != null) jmxConnector.close();
-		}
+		});
 	}
 
 	protected Object getActuatorDataFromAttribute(ObjectName objectName, String attribute) throws Exception {
-		JMXConnector jmxConnector = null;
-		try {
-			if (objectName != null) {
-				jmxConnector = getJmxConnector();
-				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-
-				try {
-					Object result = connection.getAttribute(objectName, "Data");
-					return result;
-				}
-				catch (InstanceNotFoundException e) {
-				}
+		if (objectName != null) {
+			try {
+				return withJmxConnector(jmxConnector -> {
+					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+					return connection.getAttribute(objectName, "Data");
+				});
+			} catch (InstanceNotFoundException e) {
 			}
-			return null;
 		}
-		finally {
-			if (jmxConnector != null) jmxConnector.close();
-		}
+		return null;
 	}
 
 	protected Object getActuatorDataFromOperation(ObjectName objectName, String operation) throws Exception {
-		JMXConnector jmxConnector = null;
-		try {
-			if (objectName != null) {
-				jmxConnector = getJmxConnector();
-				MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-
-				try {
-					Object result = connection.invoke(objectName, operation, null, null);
-					return result;
-				}
-				catch (InstanceNotFoundException e) {
-				}
+		if (objectName != null) {
+			try {
+				return withJmxConnector(jmxConnector -> {
+					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+					return connection.invoke(objectName, operation, null, null);
+				});
 			}
-			return null;
+			catch (InstanceNotFoundException e) {
+			}
 		}
-		finally {
-			if (jmxConnector != null) jmxConnector.close();
-		}
+		return null;
 	}
 
 	@Override
@@ -388,33 +367,22 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public String getPort() throws Exception {
-		JMXConnector jmxConnector = null;
-		try {
-			jmxConnector = getJmxConnector();
-			if (jmxConnector!=null) {
-				return getPort(jmxConnector);
+		return withJmxConnector(jmxConnector -> {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+
+			String port = getPortViaAdmin(connection);
+			if (port != null) {
+				return port;
 			}
-		} finally {
-			if (jmxConnector != null) jmxConnector.close();
-		}
-		return null;
-	}
 
-	protected String getPort(JMXConnector jmxConnector) throws Exception {
-		MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			port = getPortViaActuator(connection);
+			if (port != null) {
+				return port;
+			}
 
-		String port = getPortViaAdmin(connection);
-		if (port != null) {
+			port = getPortViaTomcatBean(connection);
 			return port;
-		}
-
-		port = getPortViaActuator(connection);
-		if (port != null) {
-			return port;
-		}
-
-		port = getPortViaTomcatBean(connection);
-		return port;
+		});
 	}
 
 	protected String getPortViaAdmin(MBeanServerConnection connection) throws Exception {
