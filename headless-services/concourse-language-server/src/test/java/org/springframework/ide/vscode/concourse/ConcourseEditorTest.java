@@ -1208,9 +1208,15 @@ public class ConcourseEditorTest {
 		assertContextualCompletions(context,
 				"<*>"
 				, // ===>
+				"clean_tags: <*>"
+				,
 				"depth: <*>"
 				,
 				"disable_git_lfs: <*>"
+				,
+				"submodule_recursive: <*>"
+				,
+				"submodule_remote: <*>"
 				,
 				"submodules:\n"+
 				"        <*>"
@@ -1243,12 +1249,19 @@ public class ConcourseEditorTest {
 				"  - get: my-git\n" +
 				"    params:\n" +
 				"      depth: -1\n" +
-				"      disable_git_lfs: not-bool\n" +
-				"      submodules: none"
+				"      submodules: none\n" +
+				"      disable_git_lfs: not-bool-a\n" +
+				"      submodule_recursive: not-bool-b\n" +
+				"      submodule_remote: not-bool-c\n" +
+				"      clean_tags: not-bool-d\n"
 		);
+
 		editor.assertHoverContains("depth", "using the `--depth` option");
 		editor.assertHoverContains("submodules", "If `none`, submodules will not be fetched");
+		editor.assertHoverContains("submodule_recursive", "If `false`, a flat submodules checkout is performed");
+		editor.assertHoverContains("submodule_remote", "If `true`, the submodules are checked out for");
 		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
+		editor.assertHoverContains("clean_tags", "If `true` all incoming tags will be deleted");
 	}
 
 	@Test public void gitResourceGetParamsReconcile() throws Exception {
@@ -1262,11 +1275,17 @@ public class ConcourseEditorTest {
 				"  - get: my-git\n" +
 				"    params:\n" +
 				"      depth: -1\n" +
-				"      disable_git_lfs: not-bool\n"
+				"      disable_git_lfs: not-bool-a\n" +
+				"      submodule_recursive: not-bool-b\n" +
+				"      submodule_remote: not-bool-c\n" +
+				"      clean_tags: not-bool-d\n"
 		);
 		editor.assertProblems(
 				"-1|must be positive",
-				"not-bool|'boolean'"
+				"not-bool-a|'boolean'",
+				"not-bool-b|'boolean'",
+				"not-bool-c|'boolean'",
+				"not-bool-d|'boolean'"
 		);
 	}
 
@@ -1414,8 +1433,8 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  - put: my-git\n" +
 				"    get_params:\n" +
-				"      depth: 1\n" +
 				"      submodules: none\n" +
+				"      depth: 1\n" +
 				"      disable_git_lfs: true\n"
 		);
 

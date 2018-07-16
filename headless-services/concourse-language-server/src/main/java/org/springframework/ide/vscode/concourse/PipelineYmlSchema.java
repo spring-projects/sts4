@@ -454,7 +454,10 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType get = f.ybean("GitGetParams");
 			addProp(get, "depth", t_pos_integer);
 			addProp(get, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
+			addProp(get, "submodule_recursive", t_boolean);
+			addProp(get, "submodule_remote", t_boolean);
 			addProp(get, "disable_git_lfs", t_boolean);
+			addProp(get, "clean_tags", t_boolean);
 			addProp(get, "fetch", t_strings).isDeprecated(true); //Warning: t_strings is just a guess. This property is undocumented. The example I've seen seem to use list of git branch/tag names.
 
 			AbstractType put = f.ybean("GitPutParams");

@@ -1,0 +1,1 @@
+*Optional*. If `false`, a flat submodules checkout is performed. If not specified, or if `true` is explicitly specified, a recursive checkout is performed.
