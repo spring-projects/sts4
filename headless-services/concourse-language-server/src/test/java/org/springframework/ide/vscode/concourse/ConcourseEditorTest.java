@@ -372,6 +372,8 @@ public class ConcourseEditorTest {
 				"      some_param: some_value\n" +
 				"    trigger: true\n" +
 				"    attempts: 10\n" +
+				"    on_abort:\n" +
+				"    - bogus: bad\n" +
 				"    on_failure:\n" +
 				"    - bogus: bad\n" +
 				"    on_success:\n" +
@@ -384,6 +386,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("params", "A map of arbitrary configuration");
 		editor.assertHoverContains("trigger", "Set to `true` to auto-trigger");
 		editor.assertHoverContains("attempts", "Any step can set the number of times it should be attempted");
+		editor.assertHoverContains("on_abort", "step to execute only if the parent step aborts");
 		editor.assertHoverContains("on_failure", "Any step can have `on_failure` tacked onto it");
 		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
 		editor.assertHoverContains("ensure", "a second step to execute regardless of the result of the parent step");
@@ -3443,6 +3446,8 @@ public class ConcourseEditorTest {
 				"      put: code\n" +
 				"    ensure:\n" +
 				"      put: code\n" +
+				"    on_abort:\n" +
+				"      put: code\n" +
 				"resources:\n" +
 				"- name: code\n" +
 				"  type: git\n" +
@@ -3461,6 +3466,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("interruptible", "worker will not wait on the builds");
 		editor.assertHoverContains("on_success", "Step to execute when the job succeeds");
 		editor.assertHoverContains("on_failure", "Step to execute when the job fails");
+		editor.assertHoverContains("on_abort", "Step to execute when the job aborts");
 		editor.assertHoverContains("ensure", "Step to execute regardless");
 	}
 
@@ -3528,6 +3534,7 @@ public class ConcourseEditorTest {
 				"ensure",
 				"interruptible",
 				"max_in_flight",
+				"on_abort",
 				"on_failure",
 				"on_success",
 				"serial",
@@ -3542,6 +3549,7 @@ public class ConcourseEditorTest {
 				"→ file",
 				"→ image",
 				"→ input_mapping",
+				"→ on_abort",
 				"→ on_failure",
 				"→ on_success",
 				"→ output_mapping",

@@ -374,10 +374,11 @@ public class PipelineYmlSchema implements YamlSchema {
 		for (AbstractType subStep : stepTypes) {
 			addProp(step, subStep, "on_success", step);
 			addProp(step, subStep, "on_failure", step);
+			addProp(step, subStep, "on_abort", step);
 			addProp(step, subStep, "ensure", step);
-			addProp(step, subStep, "attempts", t_strictly_pos_integer);
 			addProp(step, subStep, "tags", t_strings);
 			addProp(step, subStep, "timeout", t_duration);
+			addProp(step, subStep, "attempts", t_strictly_pos_integer);
 		}
 		models.setStepType(step);
 
@@ -392,8 +393,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "disable_manual_trigger", t_boolean);
 		addProp(job, "interruptible",  t_boolean);
 		addProp(job, "ensure",  step);
-		addProp(job, "on_failure",  step);
 		addProp(job, "on_success",  step);
+		addProp(job, "on_failure",  step);
+		addProp(job, "on_abort", step);
 
 		AbstractType resourceType = f.ybean("ResourceType");
 		addProp(resourceType, "name", resourceTypeNameDef).isPrimary(true);
