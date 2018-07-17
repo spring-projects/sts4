@@ -1,8 +1,28 @@
 .boot-hint .region {
-  border-color: #32BA56;
-  border-style: dotted;
-  border-width: 1px;
+  background-color: rgba(109,179,63,0.25);
+  border-color: rgba(109,179,63,0.25);
+  border-radius: 4px;
+  border-spacing: 4px;
 }
+
+.boot-hint-icon {
+  //background-image: url("atom://spring-boot/styles/boot-icon.png");
+  //width: 10px;
+  //height: 10px;
+  display: inline;
+}
+
+//.boot-hint .region::before {
+//  content: url("atom://spring-boot/styles/boot-icon.png");
+//  display: block;
+//}
+
+//before: {
+//  contentIconPath: path.resolve(__dirname, "../icons/boot-12.png"),
+//  margin: '0px 2px 0px 0px',
+//  height: '18pt'
+//},
+
 
 atom-text-editor.editor {
   .gutter-boot-hint:before {

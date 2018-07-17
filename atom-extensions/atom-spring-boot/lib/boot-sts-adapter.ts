@@ -8,8 +8,9 @@ const BOOT_HINT_GUTTER_NAME = 'boot-hint-gutter';
 const DECORATION_OPTIONS: DecorationOptions = {
     type: 'highlight',
     class: 'boot-hint',
-    gutterName: BOOT_HINT_GUTTER_NAME
+    // gutterName: BOOT_HINT_GUTTER_NAME
 };
+
 
 export class BootStsAdapter extends StsAdapter {
 
@@ -23,6 +24,10 @@ export class BootStsAdapter extends StsAdapter {
 
     private markHintsForEditor(editor: TextEditor, ranges: Range[]) {
         editor.getDecorations(DECORATION_OPTIONS).map(decoration => decoration.getMarker()).forEach(m => m.destroy());
+        editor.getDecorations({
+            type: 'block',
+            class: 'boot-hint-icon'
+        }).map(decoration => decoration.getMarker()).forEach(m => m.destroy());
         if (Array.isArray(ranges)) {
             ranges.forEach(range => this.createHintMarker(editor, range));
         }
@@ -37,11 +42,29 @@ export class BootStsAdapter extends StsAdapter {
     }
 
     private createHintMarker(editor: TextEditor, range: Range) {
+
         // Create marker model
         const marker = editor.markBufferRange(Convert.lsRangeToAtomRange(range));
 
         // Marker around the text in the editor
         editor.decorateMarker(marker, DECORATION_OPTIONS);
+
+        const element = document.createElement('img');
+        // element.textContent = '🐲';
+        element.src = 'atom://spring-boot/styles/boot-icon.png';
+
+        const AUX_DECORATION_OPTIONS: DecorationOptions = {
+            type: 'block',
+            position: 'before',
+            item: element,
+            class: 'boot-hint-icon'
+        };
+        const auxMarker = editor.markBufferRange(Convert.lsRangeToAtomRange({
+            start: range.start,
+            end: range.start
+        }));
+
+        editor.decorateMarker(auxMarker, AUX_DECORATION_OPTIONS);
 
         // Marker in the diagnostic gutter
         let gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
