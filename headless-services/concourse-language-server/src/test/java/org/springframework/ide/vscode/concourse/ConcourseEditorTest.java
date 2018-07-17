@@ -1325,6 +1325,10 @@ public class ConcourseEditorTest {
 				,
 				"force: <*>"
 				,
+				"merge: <*>"
+				,
+				"notes: <*>"
+				,
 				"only_tag: <*>"
 				,
 				"rebase: <*>"
@@ -1350,6 +1354,12 @@ public class ConcourseEditorTest {
 				, // ===>
 				"force: false<*>",
 				"force: true<*>"
+		);
+		assertContextualCompletions(context,
+				"merge: <*>"
+				, // ===>
+				"merge: false<*>",
+				"merge: true<*>"
 		);
 	}
 
@@ -1386,12 +1396,17 @@ public class ConcourseEditorTest {
 				"      repository: some-other-repo\n" +
 				"      rebase: do-rebase\n" +
 				"      only_tag: do-tag\n" +
-				"      force: force-it\n"
+				"      force: force-it\n" +
+				"      merge: merge-it\n" +
+				"      notes: whatever"
 		);
 		editor.assertProblems(
+				"rebase|Only one of [rebase, merge] should be defined",
 				"do-rebase|'boolean'",
 				"do-tag|'boolean'",
-				"force-it|'boolean'"
+				"force-it|'boolean'",
+				"merge|Only one of [rebase, merge] should be defined",
+				"merge-it|'boolean'"
 		);
 	}
 
@@ -1411,7 +1426,9 @@ public class ConcourseEditorTest {
 				"      only_tag: do-tag\n" +
 				"      tag_prefix: RELEASE\n" +
 				"      force: force-it\n" +
-				"      annotate: release-annotion\n"
+				"      annotate: release-annotion\n" +
+				"      merge: merge-it\n" +
+				"      notes: /path/to/notes"
 		);
 
 		editor.assertHoverContains("repository", "The path of the repository");
@@ -1421,6 +1438,8 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("tag_prefix", "prepended with this string");
 		editor.assertHoverContains("force", "pushed regardless of the upstream state");
 		editor.assertHoverContains("annotate", "path to a file containing the annotation message");
+		editor.assertHoverContains("merge", "continuously attempt to merge remote");
+		editor.assertHoverContains("notes", "path to a file containing the notes");
 	}
 
 	@Test public void gitResourcePut_get_params_Hovers() throws Exception {

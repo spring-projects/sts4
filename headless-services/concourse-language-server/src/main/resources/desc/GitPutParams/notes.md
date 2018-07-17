@@ -1,0 +1,1 @@
+*Optional*. If this is set then notes will be added to HEAD to the `refs/notes/commits` ref. The value should be a path to a file containing the notes.
