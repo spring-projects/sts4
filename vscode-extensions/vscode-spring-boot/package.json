@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -73,10 +73,10 @@
           "default": false,
           "description": "Enable/Disable detecting changes of running Spring Boot applications"
         },
-        "boot-java.remote-apps" : {
+        "boot-java.remote-apps": {
           "type": "array",
           "items": {
-            "type" : "string"
+            "type": "string"
           },
           "description": "Array of jmx urls pointing to remote spring boot applications to poll for live hover information. A typical url looks something like this: `service:jmx:rmi://localhost:9111/jndi/rmi://localhost:9111/jmxrmi`"
         },
