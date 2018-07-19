@@ -32,8 +32,8 @@
     }
   },
   "dependencies": {
-    "atom-languageclient": "0.9.2",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.5",
+    "atom-languageclient": "0.9.5",
+    "@pivotal-tools/atom-languageclient-commons": "0.0.7",
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5"
   },

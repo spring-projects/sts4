@@ -171,7 +171,7 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         let vmArgs = args.concat([
             // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
             '-Dsts.lsp.client=atom',
-            '-Dlsp.completions.indentation.enable=true',
+            // '-Dlsp.completions.indentation.enable=true', // Looks like Atom has magic indents same like VSCode - comment it out
             '-Dlsp.yaml.completions.errors.disable=true',
         ]);
 
