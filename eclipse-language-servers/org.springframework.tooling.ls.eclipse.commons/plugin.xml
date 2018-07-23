@@ -13,7 +13,6 @@
             contributesToHeader="false"
             highlightPreferenceKey="STS4BootMarkerHighlighting"
             highlightPreferenceValue="true"
-            icon="icons/boot-icon.png"
             label="Boot Dynamic Info"
             overviewRulerPreferenceKey="STS4BootMarkerIndicationInOverviewRuler"
             overviewRulerPreferenceValue="true"
