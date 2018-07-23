@@ -1,3 +1,10 @@
+## 2018-07-23 (M13)
+
+* _(Spring Boot)_ early prototype for detecting changed bean definitions in live-running (and restarted) boot applications
+* _(Spring Boot)_ @Inject annotation now supported for live hovers
+* _(Spring Boot)_ added option to match live running apps and workspace projects manually
+* _(Spring Boot)_ improved JMX connector reuse (internal optimization)
+
 ## 2018-06-08 (M12)
 
 * _(Spring Boot)_ live hovers now updated in all open editors, not just the active one
