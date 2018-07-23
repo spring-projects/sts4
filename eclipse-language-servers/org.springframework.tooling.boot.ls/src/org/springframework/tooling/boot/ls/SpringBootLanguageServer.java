@@ -16,8 +16,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -99,5 +97,4 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
-
 }

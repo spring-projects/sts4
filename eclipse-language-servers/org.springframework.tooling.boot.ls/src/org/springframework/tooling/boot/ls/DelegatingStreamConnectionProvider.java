@@ -28,6 +28,9 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * if the system property "boot-java-ls-port" exists, delegate to the socket-based
@@ -46,12 +49,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;
 	
-	private final IPropertyChangeListener configListener = new IPropertyChangeListener() {
-		@Override
-		public void propertyChange(PropertyChangeEvent event) {
-			sendConfiguration();
-		}
-	};
+	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
+	private final ValueListener<ImmutableSet<String>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	public DelegatingStreamConnectionProvider() {
 		String port = System.getProperty("boot-java-ls-port");
@@ -96,6 +95,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			fResourceListener = null;
 		}
 		BootLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
+		BootLanguageServerPlugin.getRemoteBootApps().removeListener(remoteAppsListener);
 	}
 
 	@Override
@@ -116,6 +116,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 						FileSystems.getDefault().getPathMatcher("glob:**/*.gradle"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.java")
 				)));
+				
+				//Add remote boot apps listener
+				BootLanguageServerPlugin.getRemoteBootApps().addListener(remoteAppsListener);
 			}
 		}
 	}
@@ -131,6 +134,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 		bootJavaObj.put("boot-hints", bootHint);
 		bootJavaObj.put("change-detection", bootChangeDetection);
+		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues());
 
 		settings.put("boot-java", bootJavaObj);
 

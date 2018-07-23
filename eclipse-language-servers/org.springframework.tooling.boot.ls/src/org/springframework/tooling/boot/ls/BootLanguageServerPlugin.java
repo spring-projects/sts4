@@ -19,6 +19,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveSetVariable;
 
 /**
  * Boot-Java LS extension plugin
@@ -93,6 +94,12 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 				}
 			});
 		}
+	}
+	
+	private static LiveSetVariable<String> remoteBootApps = new LiveSetVariable<>();
+	
+	public static LiveSetVariable<String> getRemoteBootApps() {
+		return remoteBootApps;
 	}
 
 }
