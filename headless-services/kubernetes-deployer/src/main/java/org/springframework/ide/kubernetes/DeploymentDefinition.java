@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes;
 
+import org.springframework.util.Assert;
+
 import io.fabric8.kubernetes.api.model.ServicePort;
 
 public class DeploymentDefinition {
@@ -23,7 +25,8 @@ public class DeploymentDefinition {
 	private String podAnnotations;
 	private ServicePort servicePort;
 	private boolean nodePort;
-	
+	private String path;
+
 	// Default 1 replica
 	private int replicaCount = 1;
 	private String imagePullPolicy;
@@ -31,7 +34,15 @@ public class DeploymentDefinition {
 	private String cpu;
 	private String memory;
 	private boolean hostNetwork = false;
-	
+	private DeploymentCommand command;
+
+	public DeploymentDefinition(String appName, DeploymentCommand command) {
+
+		Assert.notNull(appName, "Application name is required");
+		this.appName = appName;
+		setCommand(command);
+	}
+
 	public DeploymentDefinition() {
 		this.envVars = new String[0];
 	}
@@ -48,6 +59,10 @@ public class DeploymentDefinition {
 		this.envVars = envVars;
 	}
 
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
 	public void setDockerImage(DockerImage image) {
 		this.image = image;
 	}
@@ -72,10 +87,6 @@ public class DeploymentDefinition {
 		this.imagePullPolicy = imagePullPolicy;
 	}
 
-	public void setAppName(String appName) {
-		this.appName = appName;
-	}
-
 	public void setCpu(String cpu) {
 		this.cpu = cpu;
 	}
@@ -86,6 +97,10 @@ public class DeploymentDefinition {
 
 	public void setHostNetwork(boolean hostNetwork) {
 		this.hostNetwork = hostNetwork;
+	}
+
+	protected void setCommand(DeploymentCommand command)  {
+		this.command = command;
 	}
 
 	public DockerImage getDockerImage() {
@@ -102,6 +117,10 @@ public class DeploymentDefinition {
 
 	public boolean isHostNetwork() {
 		return isHostNetwork;
+	}
+	
+	public String getPath() {
+		return path;
 	}
 
 	public String getServiceAnnotations() {
@@ -142,6 +161,14 @@ public class DeploymentDefinition {
 
 	public boolean getHostNetwork() {
 		return hostNetwork;
+	}
+
+	public DeploymentCommand getDeploymentCommand() {
+		return command;
+	}
+
+	public enum DeploymentCommand {
+		deploy, undeploy
 	}
 
 }

@@ -13,14 +13,17 @@ package org.springframework.ide.kubernetes.deployer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.kubernetes.DeploymentDefinition;
+import org.springframework.ide.kubernetes.DeploymentDefinition.DeploymentCommand;
+import org.springframework.ide.kubernetes.DockerImage;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ServicePort;
 
 public class DeployerArgsParser {
 
-	private static final String USAGE_MESSAGE = "Invalid arguments.  Specify the following: 'name:[appname] image:[dockerimage] replicas:[0-9] use-node-port:[true/false]";
 	private Logger logger = LoggerFactory.getLogger(DeployerArgsParser.class);
+	final private static int DEFAULT_CONTAINER_PORT = 8080;
 
 	public String getDockerImage(String... args) {
 		for (String arg : args) {
@@ -29,6 +32,29 @@ public class DeployerArgsParser {
 				return vals.length == 2 ? vals[1] : null;
 			}
 		}
+		return null;
+	}
+
+	public String getPath(String... args) {
+		for (String arg : args) {
+			if (arg.startsWith("path:")) {
+				String[] vals = arg.split("path:");
+				return vals.length == 2 ? vals[1] : null;
+			}
+		}
+		return null;
+	}
+
+	public DeploymentCommand getCommand(String... args) {
+		DeploymentCommand[] values = DeploymentCommand.values();
+		for (DeploymentCommand deploymentCommand : values) {
+			for (String arg : args) {
+				if (arg.equals(deploymentCommand.toString())) {
+					return deploymentCommand;
+				}
+			}
+		}
+
 		return null;
 	}
 
@@ -68,7 +94,13 @@ public class DeployerArgsParser {
 		return false;
 	}
 
-	public ServicePort getSpringBootServicePort(boolean useNodePort) {
+	public DeploymentDefinition toDefinition(String... args) {
+		Integer containerPort = DEFAULT_CONTAINER_PORT;
+		String imagePullPolicy = "Always";
+		DeployerArgsParser argsParser = new DeployerArgsParser();
+
+		boolean useNodePort = argsParser.useNodePort(args);
+
 		ServicePort servicePort = new ServicePort();
 		if (useNodePort) {
 			int targetPort = 8080;
@@ -77,16 +109,22 @@ public class DeployerArgsParser {
 			// Configure the spring boot "service" to use "port" and "targetPort" for use in
 			// node port setting
 			servicePort.setPort(port);
-			logger.info("Setting service port: " + port);
 			servicePort.setTargetPort(new IntOrString(targetPort));
-			logger.info("Setting service target port: " + targetPort);
 		}
 
-		return servicePort;
-	}
+		String appName = argsParser.getAppName(args);
+		String image = argsParser.getDockerImage(args);
+		DeploymentCommand command = argsParser.getCommand(args);
+		int replicas = argsParser.getReplicas(args);
 
-	public String getUsageMessage() {
-		return USAGE_MESSAGE;
+		DeploymentDefinition definition = new DeploymentDefinition(appName, command);
+		definition.setContainerPort(containerPort);
+		definition.setServicePort(servicePort);
+		definition.setDockerImage(new DockerImage(image));
+		definition.setNodePort(useNodePort);
+		definition.setReplicaCount(replicas);
+		definition.setImagePullPolicy(imagePullPolicy);
+		return definition;
 	}
 
 }

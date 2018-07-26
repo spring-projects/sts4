@@ -11,60 +11,81 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.deployer;
 
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.ide.kubernetes.AppDeployer;
+import org.springframework.ide.kubernetes.DeploymentDefinition;
+import org.springframework.ide.kubernetes.DeploymentDefinition.DeploymentCommand;
 import org.springframework.util.StringUtils;
-
-import io.fabric8.kubernetes.api.model.ServicePort;
 
 public class DeployerCommandLineRunner implements CommandLineRunner {
 
 	private Logger logger = LoggerFactory.getLogger(DeployerCommandLineRunner.class);
-	
-	final private static int DEFAULT_CONTAINER_PORT = 8080;
 
-	@Autowired
-	private Deployer deployer;
-	
 	@Autowired
 	private DeployerArgsParser argsParser;
 
+	@Autowired
+	private AppDeployer deployer;
+
 	@Override
 	public void run(String... args) throws Exception {
-		boolean useNodePort = argsParser.useNodePort(args);
-		String appName = argsParser.getAppName(args);
-		String image = argsParser.getDockerImage(args);
-		
-		if (!validate(appName, image)) {
-			logger.error(argsParser.getUsageMessage());
+
+		DeploymentDefinition definition = argsParser.toDefinition(args);
+
+		if (!validate(definition)) {
 			return;
 		}
 
-		logger.info("Deploying app " + appName + " to PKS");
-		logger.info("Application image: " + image);
-		if (useNodePort) {
-			logger.info("Using 'NodePort' for PKS deployment");
-		}
-		ServicePort servicePort = argsParser.getSpringBootServicePort(useNodePort);
-		int replicas = argsParser.getReplicas(args);
-		
-		int containerPort = DEFAULT_CONTAINER_PORT;
-		deployer.deploy(appName, image, servicePort, containerPort, replicas, useNodePort);
+		logInfo(definition);
+
+		run(definition);
 	}
 
-	private boolean validate(String appName, String image) {
+	private void logInfo(DeploymentDefinition definition) {
+		logger.info(definition.getDeploymentCommand() + " app " + definition.getAppName());
+		logger.info("Application image: " + definition.getDockerImage().getUri());
+		if (definition.createNodePort()) {
+			logger.info("Using 'NodePort' for deployment");
+			if (definition.getServicePort().getPort() != null) {
+				logger.info("Setting service port: " + definition.getServicePort().getPort());
+			}
+
+			if (definition.getServicePort().getTargetPort() != null) {
+				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort());
+			}
+		}
+	}
+
+	private boolean validate(DeploymentDefinition definition) {
 		boolean valid = true;
-		if (!StringUtils.hasText(appName)) {
+		if (!StringUtils.hasText(definition.getAppName())) {
 			logger.error("Missing application name");
 			valid = false;
 		}
-		if (!StringUtils.hasText(image)) {
-			logger.error("Missing docker image");
+
+		if (definition.getDeploymentCommand() == null) {
+			logger.error("Missing deployment command. Valid values: " + Arrays.toString(DeploymentCommand.values()));
 			valid = false;
 		}
 		return valid;
-		
+
+	}
+
+	public void run(DeploymentDefinition definition) {
+
+		switch (definition.getDeploymentCommand()) {
+		case deploy:
+			deployer.deploy(definition);
+			break;
+		case undeploy:
+			deployer.undeploy(definition);
+			break;
+		}
+
 	}
 }

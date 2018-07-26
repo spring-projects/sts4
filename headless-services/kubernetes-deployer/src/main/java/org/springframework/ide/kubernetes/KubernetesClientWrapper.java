@@ -16,7 +16,7 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
 
-public class ClientFactory {
+public class KubernetesClientWrapper {
 
 	private Config fabric8 = Config.autoConfigure(null);
 
