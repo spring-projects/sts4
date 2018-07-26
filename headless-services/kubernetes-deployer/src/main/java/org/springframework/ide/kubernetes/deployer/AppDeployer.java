@@ -13,8 +13,8 @@ package org.springframework.ide.kubernetes.deployer;
 
 public interface AppDeployer {
 
-	void undeploy(DeploymentDefinition definition);
+	void undeploy(DeploymentDefinition definition) throws Exception;
 
-	String deploy(DeploymentDefinition request);
+	String deploy(DeploymentDefinition request) throws Exception;
 
 }

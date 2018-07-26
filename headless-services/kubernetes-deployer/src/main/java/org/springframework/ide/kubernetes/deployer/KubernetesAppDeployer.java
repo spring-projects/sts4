@@ -12,7 +12,6 @@
 package org.springframework.ide.kubernetes.deployer;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -25,7 +24,6 @@ import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
-import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.ServiceSpecBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
@@ -63,28 +61,21 @@ public class KubernetesAppDeployer implements AppDeployer {
 	}
 
 	@Override
-	public String deploy(DeploymentDefinition request) {
+	public String deploy(DeploymentDefinition definition) throws Exception {
+		logger.info("Deploying from application image: " + definition.getDockerImage().getUri());
 
-		String appId = createDeploymentId(request);
+		String appId = createDeploymentId(definition);
 		logger.debug(String.format("Deploying app: %s", appId));
 
-		try {
+		int containerPort = configureExternalPort(definition);
 
-			int containerPort = configureExternalPort(request);
+		createService(appId, definition);
+		logger.info(String.format("Created Service: %s.", appId));
 
-			logger.info(String.format("Creating Service: %s . Please wait...", appId));
-			createService(appId, request);
-			logger.info(String.format("Created Service: %s.", appId));
+		createDeployment(appId, definition, containerPort);
+		logger.info(String.format("Created Deployment: %s.", appId));
 
-			logger.info(String.format("Creating Deployment: %s. Please wait...", appId));
-			createDeployment(appId, request, containerPort);
-			logger.info(String.format("Created Deployment: %s.", appId));
-
-			return appId;
-		} catch (RuntimeException e) {
-			logger.error(e.getMessage(), e);
-		}
-		return null;
+		return appId;
 	}
 
 	protected Map<String, String> getAppSelector(String appId) {
@@ -95,35 +86,18 @@ public class KubernetesAppDeployer implements AppDeployer {
 	}
 
 	@Override
-	public void undeploy(DeploymentDefinition definition) {
+	public void undeploy(DeploymentDefinition definition) throws Exception {
 		String appName = definition.getAppName();
-		logger.debug(String.format("Undeploying app: %s", appName));
-
-		List<Service> apps = client().services().list().getItems();
-		if (apps != null) {
-			for (Service app : apps) {
-				String appIdToDelete = app.getMetadata().getName();
-				logger.debug(String.format("Deleting Resources for: %s", appIdToDelete));
-
-				try {
-
-					Boolean svcDeleted = client().services().withName(appIdToDelete).delete();
-					logger.debug(String.format("Deleted Service for: %s %b", appIdToDelete, svcDeleted));
-					Boolean rcDeleted = client().replicationControllers().withName(appIdToDelete).delete();
-					if (rcDeleted) {
-						logger.debug(
-								String.format("Deleted Replication Controller for: %s %b", appIdToDelete, rcDeleted));
-					}
-					Boolean deplDeleted = client().extensions().deployments().withName(appIdToDelete).delete();
-					if (deplDeleted) {
-						logger.debug(String.format("Deleted Deployment for: %s %b", appIdToDelete, deplDeleted));
-					}
-
-				} catch (RuntimeException e) {
-					logger.error(e.getMessage(), e);
-					throw e;
-				}
-			}
+		logger.debug(String.format("Undeploying: %s", appName));
+		Boolean deleted = client().services().withName(appName).delete();
+		logger.info(String.format("Deleted Service for: %s %b", appName, deleted));
+		deleted = client().replicationControllers().withName(appName).delete();
+		if (deleted) {
+			logger.info(String.format("Deleted Replication Controller for: %s", appName));
+		}
+		deleted = client().extensions().deployments().withName(appName).delete();
+		if (deleted) {
+			logger.info(String.format("Deleted Deployment for: %s", appName));
 		}
 	}
 
@@ -148,6 +122,8 @@ public class KubernetesAppDeployer implements AppDeployer {
 		Map<String, String> idMap = new HashMap<>();
 		idMap.put(APP_SELECTOR, appId);
 
+		logger.info(String.format("Creating Deployment: %s. Please wait...", appId));
+
 		Deployment d = new DeploymentBuilder().withNewMetadata().withName(appId).withLabels(idMap).endMetadata()
 				.withNewSpec().withReplicas(replicas).withNewTemplate().withNewMetadata().withLabels(idMap)
 				.withAnnotations(annotations).endMetadata().withSpec(createPodSpec(appId, request, externalPort, false))
@@ -156,36 +132,47 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return client().extensions().deployments().create(d);
 	}
 
-	protected void createService(String appId, DeploymentDefinition request) {
+	protected void createService(String appId, DeploymentDefinition definition) {
 		ServiceSpecBuilder spec = new ServiceSpecBuilder();
 
-		ServicePort servicePort = request.getServicePort();
+		ServicePort servicePort = definition.getServicePort();
 
-		if (request.createNodePort()) {
+		if (definition.createNodePort()) {
+			logger.info("Using 'NodePort' for service");
 			spec.withType("NodePort");
+
+			if (definition.getServicePort().getPort() != null) {
+				logger.info("Setting service port: " + definition.getServicePort().getPort());
+			}
+
+			if (definition.getServicePort().getTargetPort() != null) {
+				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort());
+			}
 		}
 
-		Map<String, String> annotations = getServiceAnnotations(request);
+		Map<String, String> annotations = getServiceAnnotations(definition);
 		Map<String, String> idMap = getServiceLabels(appId);
 
 		spec.withSelector(idMap).addNewPortLike(servicePort).endPort();
+
+		logger.info(String.format("Creating Service: %s . Please wait...", appId));
 
 		client().services().inNamespace(client().getNamespace()).createNew().withNewMetadata().withName(appId)
 				.withLabels(idMap).withAnnotations(annotations).endMetadata().withSpec(spec.build()).done();
 	}
 
-	protected PodSpec createPodSpec(String appId, DeploymentDefinition request, Integer port, boolean neverRestart) {
+	protected PodSpec createPodSpec(String appId, DeploymentDefinition definition, Integer port, boolean neverRestart) {
 		PodSpecBuilder podSpec = new PodSpecBuilder();
 
-		boolean hostNetwork = request.getHostNetwork();
+		boolean hostNetwork = definition.getHostNetwork();
 
-		Container container = containerFactory.create(request);
+		Container container = containerFactory.create(definition);
 
 		ResourceRequirements req = new ResourceRequirements();
-		req.setLimits(deduceResourceLimits(request));
-		req.setRequests(deduceResourceRequests(request));
+		req.setLimits(deduceResourceLimits(definition));
+		req.setRequests(deduceResourceRequests(definition));
 		container.setResources(req);
-		String pullPolicy = request.getImagePullPolicy();
+		String pullPolicy = definition.getImagePullPolicy();
 		container.setImagePullPolicy(pullPolicy);
 
 		if (hostNetwork) {
@@ -200,9 +187,9 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return podSpec.build();
 	}
 
-	protected Map<String, Quantity> deduceResourceLimits(DeploymentDefinition request) {
-		String memory = request.getMemory();
-		String cpu = request.getCpu();
+	protected Map<String, Quantity> deduceResourceLimits(DeploymentDefinition definition) {
+		String memory = definition.getMemory();
+		String cpu = definition.getCpu();
 
 		Map<String, Quantity> limits = new HashMap<String, Quantity>();
 
@@ -216,10 +203,10 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return limits;
 	}
 
-	protected Map<String, Quantity> deduceResourceRequests(DeploymentDefinition request) {
-		String memOverride = request.getMemory();
+	protected Map<String, Quantity> deduceResourceRequests(DeploymentDefinition definition) {
+		String memOverride = definition.getMemory();
 
-		String cpuOverride = request.getCpu();
+		String cpuOverride = definition.getCpu();
 
 		logger.debug("Using requests - cpu: " + cpuOverride + " mem: " + memOverride);
 
@@ -239,16 +226,15 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return labels;
 	}
 
-	private Map<String, String> getPodAnnotations(DeploymentDefinition request) {
-		String annotationsProperty = request.getPodAnnotations();
+	private Map<String, String> getPodAnnotations(DeploymentDefinition definition) {
+		String annotationsProperty = definition.getPodAnnotations();
 
 		return PropertyParserUtils.getAnnotations(annotationsProperty);
 	}
 
-	private Map<String, String> getServiceAnnotations(DeploymentDefinition request) {
-		String annotationsProperty = request.getServiceAnnotations();
+	private Map<String, String> getServiceAnnotations(DeploymentDefinition definition) {
+		String annotationsProperty = definition.getServiceAnnotations();
 
 		return PropertyParserUtils.getAnnotations(annotationsProperty);
 	}
-
 }

@@ -33,7 +33,7 @@ public class DeployRunner {
 
 		validate(definition);
 
-		logInfo(definition);
+		logger.info(definition.getDeploymentCommand() + " app " + definition.getAppName());
 
 		switch (definition.getDeploymentCommand()) {
 		case deploy:
@@ -42,21 +42,6 @@ public class DeployRunner {
 		case undeploy:
 			deployer.undeploy(definition);
 			break;
-		}
-	}
-
-	private void logInfo(DeploymentDefinition definition) {
-		logger.info(definition.getDeploymentCommand() + " app " + definition.getAppName());
-		logger.info("Application image: " + definition.getDockerImage().getUri());
-		if (definition.createNodePort()) {
-			logger.info("Using 'NodePort' for deployment");
-			if (definition.getServicePort().getPort() != null) {
-				logger.info("Setting service port: " + definition.getServicePort().getPort());
-			}
-
-			if (definition.getServicePort().getTargetPort() != null) {
-				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort());
-			}
 		}
 	}
 
