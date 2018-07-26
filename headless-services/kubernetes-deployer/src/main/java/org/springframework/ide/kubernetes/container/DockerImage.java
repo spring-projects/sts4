@@ -9,25 +9,23 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.kubernetes;
+package org.springframework.ide.kubernetes.container;
 
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import java.net.URI;
 
 
-public class KubernetesClientWrapper {
+public class DockerImage {
 
-	private Config fabric8 = Config.autoConfigure(null);
+	public static String SCHEME = "docker";
 
-	public Config getFabric8() {
-		return this.fabric8;
+	private URI uri;
+
+	public DockerImage(String image) {
+		this.uri = URI.create(SCHEME + ":" + image);
 	}
 
-	public KubernetesClient getKubernetesClient(String nameSpace) {
-		Config config = getFabric8();
-		config.setNamespace(nameSpace);
-		return new DefaultKubernetesClient(config);
+	public URI getUri() {
+		return uri;
 	}
 
 }

@@ -9,11 +9,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.kubernetes.deployer;
+package org.springframework.ide.kubernetes;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.kubernetes.deployer.DeployRunner;
+import org.springframework.ide.kubernetes.deployer.DeployerArgsParser;
 
 @SpringBootApplication
 public class DeployerApplication {
@@ -21,9 +23,9 @@ public class DeployerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DeployerApplication.class, args);
 	}
-	
+
 	@Bean
-	public DeployerCommandLineRunner getCommandLineRunner() {
-		return new DeployerCommandLineRunner();
+	public DeployerCommandLineRunner getCommandLineRunner(DeployerArgsParser argsParser, DeployRunner runner) {
+		return new DeployerCommandLineRunner(argsParser, runner);
 	}
 }

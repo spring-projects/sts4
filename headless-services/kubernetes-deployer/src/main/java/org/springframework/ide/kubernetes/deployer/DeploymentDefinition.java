@@ -9,13 +9,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.kubernetes;
+package org.springframework.ide.kubernetes.deployer;
 
+import org.springframework.ide.kubernetes.container.DockerImage;
 import org.springframework.util.Assert;
 
 import io.fabric8.kubernetes.api.model.ServicePort;
 
 public class DeploymentDefinition {
+
+	private final String appName;
+	private final DeploymentCommand command;
 
 	private String serviceAnnotations;
 	private boolean isHostNetwork;
@@ -30,20 +34,17 @@ public class DeploymentDefinition {
 	// Default 1 replica
 	private int replicaCount = 1;
 	private String imagePullPolicy;
-	private String appName;
 	private String cpu;
 	private String memory;
 	private boolean hostNetwork = false;
-	private DeploymentCommand command;
 
 	public DeploymentDefinition(String appName, DeploymentCommand command) {
 
 		Assert.notNull(appName, "Application name is required");
-		this.appName = appName;
-		setCommand(command);
-	}
+		Assert.notNull(appName, "Command is required");
 
-	public DeploymentDefinition() {
+		this.appName = appName;
+		this.command = command;
 		this.envVars = new String[0];
 	}
 
@@ -62,7 +63,7 @@ public class DeploymentDefinition {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 	public void setDockerImage(DockerImage image) {
 		this.image = image;
 	}
@@ -99,10 +100,6 @@ public class DeploymentDefinition {
 		this.hostNetwork = hostNetwork;
 	}
 
-	protected void setCommand(DeploymentCommand command)  {
-		this.command = command;
-	}
-
 	public DockerImage getDockerImage() {
 		return image;
 	}
@@ -118,7 +115,7 @@ public class DeploymentDefinition {
 	public boolean isHostNetwork() {
 		return isHostNetwork;
 	}
-	
+
 	public String getPath() {
 		return path;
 	}

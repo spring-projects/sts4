@@ -32,7 +32,7 @@
  * limitations under the License.
  */
 
-package org.springframework.ide.kubernetes;
+package org.springframework.ide.kubernetes.deployer;
 
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;

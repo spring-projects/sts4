@@ -13,9 +13,8 @@ package org.springframework.ide.kubernetes.deployer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.kubernetes.DeploymentDefinition;
-import org.springframework.ide.kubernetes.DeploymentDefinition.DeploymentCommand;
-import org.springframework.ide.kubernetes.DockerImage;
+import org.springframework.ide.kubernetes.container.DockerImage;
+import org.springframework.ide.kubernetes.deployer.DeploymentDefinition.DeploymentCommand;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ServicePort;

@@ -16,34 +16,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.ide.kubernetes.AppDeployer;
-import org.springframework.ide.kubernetes.DeploymentDefinition;
-import org.springframework.ide.kubernetes.DeploymentDefinition.DeploymentCommand;
+import org.springframework.ide.kubernetes.deployer.DeploymentDefinition.DeploymentCommand;
 import org.springframework.util.StringUtils;
 
-public class DeployerCommandLineRunner implements CommandLineRunner {
+public class DeployRunner {
 
-	private Logger logger = LoggerFactory.getLogger(DeployerCommandLineRunner.class);
-
-	@Autowired
-	private DeployerArgsParser argsParser;
+	private Logger logger = LoggerFactory.getLogger(DeployRunner.class);
+	private final AppDeployer deployer;
 
 	@Autowired
-	private AppDeployer deployer;
+	public DeployRunner(AppDeployer deployer) {
+		this.deployer = deployer;
+	}
 
-	@Override
-	public void run(String... args) throws Exception {
+	public void run(DeploymentDefinition definition) throws Exception {
 
-		DeploymentDefinition definition = argsParser.toDefinition(args);
-
-		if (!validate(definition)) {
-			return;
-		}
+		validate(definition);
 
 		logInfo(definition);
 
-		run(definition);
+		switch (definition.getDeploymentCommand()) {
+		case deploy:
+			deployer.deploy(definition);
+			break;
+		case undeploy:
+			deployer.undeploy(definition);
+			break;
+		}
 	}
 
 	private void logInfo(DeploymentDefinition definition) {
@@ -61,31 +60,17 @@ public class DeployerCommandLineRunner implements CommandLineRunner {
 		}
 	}
 
-	private boolean validate(DeploymentDefinition definition) {
-		boolean valid = true;
+	private void validate(DeploymentDefinition definition) throws Exception {
+		if (definition == null) {
+			throw new IllegalArgumentException("No deployment definition provided");
+		}
 		if (!StringUtils.hasText(definition.getAppName())) {
-			logger.error("Missing application name");
-			valid = false;
+			throw new IllegalArgumentException("Missing application name");
 		}
 
 		if (definition.getDeploymentCommand() == null) {
-			logger.error("Missing deployment command. Valid values: " + Arrays.toString(DeploymentCommand.values()));
-			valid = false;
+			throw new IllegalArgumentException(
+					"Missing deployment command. Valid values: " + Arrays.toString(DeploymentCommand.values()));
 		}
-		return valid;
-
-	}
-
-	public void run(DeploymentDefinition definition) {
-
-		switch (definition.getDeploymentCommand()) {
-		case deploy:
-			deployer.deploy(definition);
-			break;
-		case undeploy:
-			deployer.undeploy(definition);
-			break;
-		}
-
 	}
 }

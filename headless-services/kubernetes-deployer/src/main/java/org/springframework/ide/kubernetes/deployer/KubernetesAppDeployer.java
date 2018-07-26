@@ -9,7 +9,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.kubernetes;
+package org.springframework.ide.kubernetes.deployer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.kubernetes.container.ContainerFactory;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.PodSpec;
@@ -41,13 +42,14 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 	protected KubernetesClient client;
 
-	@Autowired
-	protected ContainerFactory containerFactory;
-	
-	@Autowired
-	protected KubernetesClientWrapper clientFactory;
+	private final ContainerFactory containerFactory;
 
-	public KubernetesAppDeployer() {
+	private final KubernetesClientFactory clientFactory;
+
+	@Autowired
+	public KubernetesAppDeployer(ContainerFactory containerFactory, KubernetesClientFactory clientFactory) {
+		this.containerFactory = containerFactory;
+		this.clientFactory = clientFactory;
 	}
 
 	private KubernetesClient client() {

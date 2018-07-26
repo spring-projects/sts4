@@ -9,23 +9,12 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.kubernetes;
+package org.springframework.ide.kubernetes.deployer;
 
-import java.net.URI;
+public interface AppDeployer {
 
+	void undeploy(DeploymentDefinition definition);
 
-public class DockerImage {
-
-	public static String SCHEME = "docker";
-
-	private URI uri;
-
-	public DockerImage(String image) {
-		this.uri = URI.create(SCHEME + ":" + image);
-	}
-
-	public URI getUri() {
-		return uri;
-	}
+	String deploy(DeploymentDefinition request);
 
 }
