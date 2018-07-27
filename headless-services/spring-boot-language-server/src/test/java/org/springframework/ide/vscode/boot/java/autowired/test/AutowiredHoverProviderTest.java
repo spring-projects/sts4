@@ -33,6 +33,34 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCus
  */
 public class AutowiredHoverProviderTest {
 
+	private static final String FOO_IMPL_CONTENTS = "package com.example;\n" +
+	"\n" +
+	"import org.springframework.beans.factory.annotation.Autowired;\n" +
+	"import org.springframework.scheduling.TaskScheduler;\n" +
+	"import org.springframework.stereotype.Component;\n" +
+	"\n" +
+	"@Component(\"defaultFoo\")\n" +
+	"public class FooImplementation implements Foo {\n" +
+	"	\n" +
+	"	private TaskScheduler scheduler;\n" +
+	"	\n" +
+	"	@Autowired Foo self;\n" +
+	"		\n" +
+	"	@Override\n" +
+	"	public void doSomeFoo() {\n" +
+	"		scheduler.scheduleWithFixedDelay(() -> {\n" +
+	"			System.out.println(\"Doo Done done!\");\n" +
+	"		}, 1000);\n" +
+	"		System.out.println(\"Foo do do do do!\");\n" +
+	"	}\n" +
+	"\n" +
+	"	@Autowired\n" +
+	"	public void setScheduler(TaskScheduler scheduler) {\n" +
+	"		this.scheduler = scheduler;\n" +
+	"	}\n" +
+	"\n" +
+	"}";
+
 	private static final ProjectCustomizer FOO_INTERFACE = (CustomizableProjectContent p) -> {
 		p.createType("com.examle.Foo",
 				"package com.example;\n" +
@@ -55,6 +83,8 @@ public class AutowiredHoverProviderTest {
 				"public class DependencyB {\n" +
 				"}\n"
 		);
+
+		p.createType("com.example.FooImplementation", FOO_IMPL_CONTENTS);
 	};
 
 	private BootJavaLanguageServerHarness harness;
@@ -73,7 +103,7 @@ public class AutowiredHoverProviderTest {
 
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
 		assertTrue(jp.findType("com.example.Foo").exists());
-		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
+		harness.useProject(jp);
 		harness.intialize(null);
 	}
 
@@ -116,15 +146,12 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Inject");
 		editor.assertTrimmedHover("@Inject",
-				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
-				"\n" +
-				"- Bean: dependencyA  \n" +
+				"**Autowired &rarr; `dependencyA`**\n" +
+				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
-				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`"
+				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -174,18 +201,16 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired",
-				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
-				"\n" +
-				"- Bean: dependencyA  \n" +
+				"**Autowired &rarr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
-				"- Bean: dependencyB  \n" +
+				"- Bean: `dependencyB`  \n" +
 				"  Type: `com.example.DependencyB`  \n" +
-				"  Resource: `com/example/DependencyB.class`\n"
+				"  Resource: `com/example/DependencyB.class`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+
 		);
 	}
 
@@ -302,13 +327,17 @@ public class AutowiredHoverProviderTest {
 				.add(LiveBean.builder()
 						.id("defaultFoo")
 						.type("com.example.FooImplementation")
-						.dependencies("defaultFoo")
-						.dependencies("otherBean")
+						.dependencies("superBean", "scheduler")
 						.build()
 				)
 				.add(LiveBean.builder()
-						.id("otherBean")
-						.type("com.example.DependencyA")
+						.id("superBean")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("scheduler")
+						.type("org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler")
 						.build()
 				)
 				.build();
@@ -320,43 +349,16 @@ public class AutowiredHoverProviderTest {
 			.build();
 
 
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package com.example;\n" +
-				"\n" +
-				"import org.springframework.beans.factory.annotation.Autowired;\n" +
-				"import org.springframework.scheduling.TaskScheduler;\n" +
-				"import org.springframework.stereotype.Component;\n" +
-				"\n" +
-				"@Component(\"defaultFoo\")\n" +
-				"public class FooImplementation implements Foo {\n" +
-				"	\n" +
-				"	private TaskScheduler scheduler;\n" +
-				"	\n" +
-				"	@Autowired Foo self;\n" +
-				"		\n" +
-				"	@Override\n" +
-				"	public void doSomeFoo() {\n" +
-				"		scheduler.scheduleWithFixedDelay(() -> {\n" +
-				"			System.out.println(\"Doo Done done!\");\n" +
-				"		}, 1000);\n" +
-				"		System.out.println(\"Foo do do do do!\");\n" +
-				"	}\n" +
-				"\n" +
-				"	@Autowired\n" +
-				"	public void setScheduler(TaskScheduler scheduler) {\n" +
-				"		this.scheduler = scheduler;\n" +
-				"	}\n" +
-				"\n" +
-				"}"
-		);
+		Editor editor = harness.newEditor(LanguageId.JAVA, FOO_IMPL_CONTENTS);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
-		for (int i = 1; i <= 2; i++) {
-			editor.assertHoverContains("@Autowired", i,
-					"Bean [id: defaultFoo, type: `com.example.FooImplementation`] got autowired with:\n" +
-					"\n" +
-					"- Bean: otherBean  \n" +
-					"  Type: `com.example.DependencyA`");
-		}
+		editor.assertHoverContains("@Autowired", 1,
+				"**Autowired &rarr; `superBean`**\n" +
+				"- Bean: `superBean`  \n" +
+				"  Type: `com.example.FooImplementation`");
+		editor.assertHoverContains("@Autowired", 2,
+				"**Autowired &rarr; `scheduler`**\n" +
+				"- Bean: `scheduler`  \n" +
+				"  Type: `org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler`");
 	}
 
 	@Test public void bug_152621242_autowired_constructor_on_a_controller() throws Exception {
@@ -404,9 +406,8 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Controller", "@Autowired");
 		editor.assertHoverContains("@Autowired",
-				"Bean [id: myController, type: `com.example.MyController`] got autowired with:\n" +
-				"\n" +
-				"- Bean: restTemplate  \n" +
+				"**Autowired &rarr; `restTemplate`**\n" +
+				"- Bean: `restTemplate`  \n" +
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
 		editor.assertHoverContains("@Controller",

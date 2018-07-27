@@ -81,7 +81,9 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	@Override
 	public String getProcessName() {
-		return vmd.displayName();
+		String rawName = vmd.displayName();
+		int firstSpace = rawName.indexOf(' ');
+		return firstSpace < 0 ? rawName : rawName.substring(0, firstSpace);
 	}
 
 	@Override

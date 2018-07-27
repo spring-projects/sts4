@@ -20,9 +20,12 @@ import static org.springframework.ide.vscode.languageserver.testharness.Classpat
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -163,5 +166,25 @@ public class JavaIndexTest {
 		assertTrue(file.isPresent());
 		assertTrue(file.get().exists());
 		assertEquals(getOutputFolder(project).toString(), file.get().toString());
+	}
+
+	@Test
+	public void testFindAllSuperTypes() throws Exception {
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		IType type = project.findType("java.util.ArrayList");
+		assertNotNull(type);
+		Set<String> actual = project.allSuperTypesOf(type).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> expected = new HashSet<>(Arrays.asList(
+				"java.util.List",
+				"java.util.RandomAccess",
+				"java.lang.Cloneable",
+				"java.io.Serializable",
+				"java.util.AbstractList",
+				"java.util.Collection",
+				"java.lang.Object",
+				"java.util.AbstractCollection",
+				"java.lang.Iterable"
+		));
+		assertEquals(expected, actual);
 	}
 }

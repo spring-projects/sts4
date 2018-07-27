@@ -54,7 +54,7 @@ public interface IType extends IMember {
 	IField getField(String name);
 
 	/**
-	 * Returns the fields declared by this type in the order in which they appear 
+	 * Returns the fields declared by this type in the order in which they appear
 	 * in the source or class file. For binary types, this includes synthetic fields.
 	 *
 	 * @return the fields declared by this type
@@ -71,7 +71,7 @@ public interface IType extends IMember {
 	 * The type signatures may be either unresolved (for source types)
 	 * or resolved (for binary types), and either basic (for basic types)
 	 * or rich (for parameterized types). See {@link Signature} for details.
-	 * Note that the parameter type signatures for binary methods are expected 
+	 * Note that the parameter type signatures for binary methods are expected
 	 * to be dot-based.
 	 * </p>
 	 *
@@ -86,12 +86,16 @@ public interface IType extends IMember {
 	 * For binary types, this may include the special <code>&lt;clinit&gt;</code> method
 	 * and synthetic methods.
 	 * <p>
-	 * The results are listed in the order in which they appear in the source or class file. 
+	 * The results are listed in the order in which they appear in the source or class file.
 	 * </p>
 	 *
 	 * @return the methods and constructors declared by this type
 	 */
 	Stream<IMethod> getMethods();
+
+	String getSuperclassName();
+
+	String[] getSuperInterfaceNames();
 
 //	/**
 //	 * Resolves the given type name within the context of this type (depending on the type hierarchy

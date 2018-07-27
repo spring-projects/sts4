@@ -140,7 +140,7 @@ public class BeansByTypeHoverProviderTest {
 				"\n" +
 				"Bean [id: scannedRandomClass, type: `com.example.ScannedRandomClass`] injected into:\n" +
 				"\n" +
-				"- Bean: randomOtherBean  \n" +
+				"- Bean: `randomOtherBean`  \n" +
 				"  Type: `randomOtherBeanType`"
 		);
 	}
@@ -196,11 +196,11 @@ public class BeansByTypeHoverProviderTest {
 				"\n" +
 				"Bean [id: scannedFunctionClass, type: `com.example.ScannedFunctionClass`] injected into:\n" +
 				"\n" +
-				"- Bean: org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration  \n" +
+				"- Bean: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`  \n" +
 				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`"
 		);
 	}
-	
+
 	@Test
 	public void generalBeanLiveHoverAvoidOverlapWithAnnotation() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()

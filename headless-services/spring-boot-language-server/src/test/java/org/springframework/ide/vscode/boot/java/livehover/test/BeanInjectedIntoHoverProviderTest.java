@@ -215,7 +215,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n"
 		);
 	}
@@ -275,7 +275,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n"
 		);
 	}
@@ -329,7 +329,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
 				"  Resource: `" + Paths.get("hello/MyController.class") + "`"
 		);
@@ -383,7 +383,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
 				"  Resource: `hello/MyController.class`"
 		);
@@ -441,9 +441,9 @@ public class BeanInjectedIntoHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n" +
-				"- Bean: otherBean  \n" +
+				"- Bean: `otherBean`  \n" +
 				"  Type: `hello.OtherBean`\n"
 		);
 	}

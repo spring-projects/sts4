@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -161,6 +161,17 @@ class TypeImpl implements IType {
 	@Override
 	public String signature() {
 		return info.toString();
+	}
+
+	@Override
+	public String getSuperclassName() {
+		DotName name = info.superName();
+		return name == null ? null : name.toString();
+	}
+
+	@Override
+	public String[] getSuperInterfaceNames() {
+		return info.interfaceNames().stream().map(DotName::toString).toArray(String[]::new);
 	}
 
 }

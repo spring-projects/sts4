@@ -156,14 +156,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			 List<Renderable> renderableUrls = Arrays.stream(mappingMethod.getT1().getSplitPath()).flatMap(path -> {
 				String url = UrlUtil.createUrl(host, port, path);
-				StringBuilder builder = new StringBuilder();
-				builder.append("[");
-				builder.append(url);
-				builder.append("]");
-				builder.append("(");
-				builder.append(url);
-				builder.append(")");
-				return Stream.of(Renderables.text(builder.toString()), Renderables.lineBreak());
+				return Stream.of(Renderables.link(url, url), Renderables.lineBreak());
 			})
 			.collect(Collectors.toList());
 

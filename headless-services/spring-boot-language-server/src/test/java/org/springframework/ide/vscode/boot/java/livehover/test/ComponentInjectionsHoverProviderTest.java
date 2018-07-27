@@ -165,7 +165,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`"
 		);
 	}
@@ -220,9 +220,9 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
-				"- Bean: otherBean  \n" +
+				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`"
 		);
 	}
@@ -279,18 +279,18 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
-				"- Bean: otherBean  \n" +
+				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`\n" +
 				"\n" +
 				"Process [PID=1002, name=`app-instance-2`]:\n" +
 				"\n" +
 				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
-				"- Bean: otherBean  \n" +
+				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`\n"
 		);
 	}
@@ -350,7 +350,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n" +
 				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: myController  \n" +
+				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`"
 		);
 	}
@@ -410,7 +410,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n" +
 				"Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
 				"\n" +
-				"- Bean: otherBean  \n" +
+				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`\n"
 		);
 	}
@@ -526,10 +526,10 @@ public class ComponentInjectionsHoverProviderTest {
 				"\n\n" +
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
 				"\n" +
-				"- Bean: dependencyA  \n" +
+				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
-				"- Bean: dependencyB  \n" +
+				"- Bean: `dependencyB`  \n" +
 				"  Type: `com.example.DependencyB`  \n" +
 				"  Resource: `com/example/DependencyB.class`"
 		);

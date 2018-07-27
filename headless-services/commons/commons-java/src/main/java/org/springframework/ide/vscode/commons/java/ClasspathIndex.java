@@ -27,6 +27,7 @@ public interface ClasspathIndex extends Disposable {
 	Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter);
 	Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm);
 	Flux<IType> allSubtypesOf(IType type);
+	Flux<IType> allSuperTypesOf(IType type);
 	Optional<File> findClasspathResourceContainer(String fqName);
 
 	//Maybe the stuff below is another interface? Something that provides operations

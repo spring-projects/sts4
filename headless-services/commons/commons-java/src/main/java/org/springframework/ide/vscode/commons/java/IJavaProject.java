@@ -41,6 +41,10 @@ public interface IJavaProject {
 		return getIndex().allSubtypesOf(targetType);
 	}
 
+	default Flux<IType> allSuperTypesOf(IType targetType) {
+		return getIndex().allSuperTypesOf(targetType);
+	}
+
 	default Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
 		return getIndex().fuzzySearchTypes(searchTerm, typeFilter);
 	}

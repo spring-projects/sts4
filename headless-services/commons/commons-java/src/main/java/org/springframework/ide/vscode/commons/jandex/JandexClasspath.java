@@ -16,8 +16,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -172,6 +176,42 @@ public final class JandexClasspath implements ClasspathIndex {
 			}
 		})
 		.collect(CollectorUtil.toImmutableList());
+	}
+
+	private static void updateQueue(Queue<String> queue, Set<String> exclusion, IType type) {
+		for (String t : type.getSuperInterfaceNames()) {
+			if (!exclusion.contains(t)) {
+				queue.add(t);
+				exclusion.add(t);
+			}
+		}
+		String superClass = type.getSuperclassName();
+		if (superClass != null && !exclusion.contains(superClass)) {
+			queue.add(superClass);
+			exclusion.add(superClass);
+		}
+	}
+
+	@Override
+	public Flux<IType> allSuperTypesOf(IType type) {
+		Queue<String> queue = new LinkedList<>();
+		HashSet<String> visited = new HashSet<>();
+		updateQueue(queue, visited, type);
+		return Flux.generate(() -> queue, (state, sink) -> {
+			IType nextType = null;
+			while (nextType == null && state.peek() != null) {
+				String typeName = state.poll();
+				nextType = findType(typeName);
+				if (nextType != null) {
+					sink.next(nextType);
+					updateQueue(state, visited, nextType);
+				}
+			}
+			if (state.peek() == null) {
+				sink.complete();
+			}
+			return state;
+		});
 	}
 
 }
