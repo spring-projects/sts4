@@ -311,8 +311,4 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return nodeUris;
 	}
 
-	private List<String> resolveExternalIpsFromNodePort(DeploymentDefinition definition) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
