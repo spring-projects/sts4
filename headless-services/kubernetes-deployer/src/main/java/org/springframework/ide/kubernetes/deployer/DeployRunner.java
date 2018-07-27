@@ -12,6 +12,7 @@
 package org.springframework.ide.kubernetes.deployer;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +38,18 @@ public class DeployRunner {
 
 		switch (definition.getDeploymentCommand()) {
 		case deploy:
-			deployer.deploy(definition);
+			List<String> uris = deployer.deploy(definition);
+			logUris(uris);
 			break;
 		case undeploy:
 			deployer.undeploy(definition);
 			break;
+		}
+	}
+
+	private void logUris(List<String> uris) {
+		if (uris != null && !uris.isEmpty()) {
+			logger.info("Application URI: " + "http://" + uris.get(0) + '\n');
 		}
 	}
 

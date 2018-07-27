@@ -11,8 +11,11 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.deployer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,11 +23,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.kubernetes.container.ContainerFactory;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeAddress;
+import io.fabric8.kubernetes.api.model.NodeStatus;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServicePort;
+import io.fabric8.kubernetes.api.model.ServiceSpec;
 import io.fabric8.kubernetes.api.model.ServiceSpecBuilder;
 import io.fabric8.kubernetes.api.model.extensions.Deployment;
 import io.fabric8.kubernetes.api.model.extensions.DeploymentBuilder;
@@ -61,10 +69,10 @@ public class KubernetesAppDeployer implements AppDeployer {
 	}
 
 	@Override
-	public String deploy(DeploymentDefinition definition) throws Exception {
+	public List<String> deploy(DeploymentDefinition definition) throws Exception {
 		logger.info("Deploying from application image: " + definition.getDockerImage().getUri());
 
-		String appId = createDeploymentId(definition);
+		String appId = getDeploymentId(definition);
 		logger.debug(String.format("Deploying app: %s", appId));
 
 		int containerPort = configureExternalPort(definition);
@@ -75,7 +83,8 @@ public class KubernetesAppDeployer implements AppDeployer {
 		createDeployment(appId, definition, containerPort);
 		logger.info(String.format("Created Deployment: %s.", appId));
 
-		return appId;
+		return getServiceUris(appId, definition.createNodePort());
+
 	}
 
 	protected Map<String, String> getAppSelector(String appId) {
@@ -87,17 +96,18 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 	@Override
 	public void undeploy(DeploymentDefinition definition) throws Exception {
-		String appName = definition.getAppName();
-		logger.debug(String.format("Undeploying: %s", appName));
-		Boolean deleted = client().services().withName(appName).delete();
-		logger.info(String.format("Deleted Service for: %s %b", appName, deleted));
-		deleted = client().replicationControllers().withName(appName).delete();
+		String appId = getDeploymentId(definition);
+
+		logger.debug(String.format("Undeploying: %s", appId));
+		Boolean deleted = client().services().withName(appId).delete();
+		logger.info(String.format("Deleted Service for: %s %b", appId, deleted));
+		deleted = client().replicationControllers().withName(appId).delete();
 		if (deleted) {
-			logger.info(String.format("Deleted Replication Controller for: %s", appName));
+			logger.info(String.format("Deleted Replication Controller for: %s", appId));
 		}
-		deleted = client().extensions().deployments().withName(appName).delete();
+		deleted = client().extensions().deployments().withName(appId).delete();
 		if (deleted) {
-			logger.info(String.format("Deleted Deployment for: %s", appName));
+			logger.info(String.format("Deleted Deployment for: %s", appId));
 		}
 	}
 
@@ -105,7 +115,7 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return request.getContainerPort();
 	}
 
-	protected String createDeploymentId(DeploymentDefinition request) {
+	protected String getDeploymentId(DeploymentDefinition request) {
 		String deploymentId = String.format("%s", request.getAppName());
 
 		// Kubernetes does not allow . in the name and does not allow uppercase in the
@@ -146,7 +156,7 @@ public class KubernetesAppDeployer implements AppDeployer {
 			}
 
 			if (definition.getServicePort().getTargetPort() != null) {
-				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort());
+				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort().getIntVal());
 			}
 		}
 
@@ -236,5 +246,73 @@ public class KubernetesAppDeployer implements AppDeployer {
 		String annotationsProperty = definition.getServiceAnnotations();
 
 		return PropertyParserUtils.getAnnotations(annotationsProperty);
+	}
+
+	private List<String> getServiceUris(String appId, boolean useNodePort) {
+		List<String> serviceUris = new ArrayList<>();
+		if (useNodePort) {
+			List<String> nodeUris = getNodeExternalIps();
+			List<Integer> nodePorts = getNodePorts(appId);
+
+			for (String nodeUri : nodeUris) {
+				for (Integer port : nodePorts) {
+					serviceUris.add(nodeUri + ':' + port);
+				}
+			}
+		}
+
+		return serviceUris;
+	}
+
+	private List<Integer> getNodePorts(String appId) {
+		List<Integer> nodePorts = new ArrayList<>();
+
+		try {
+			Service s = client().services().withName(appId).waitUntilReady(20, TimeUnit.SECONDS);
+
+			ServiceSpec sp = s.getSpec();
+			List<ServicePort> ports = sp.getPorts();
+			if (ports != null) {
+				for (ServicePort servicePort : ports) {
+					Integer nodePort = servicePort.getNodePort();
+					if (nodePort != null) {
+						nodePorts.add(nodePort);
+					}
+				}
+			}
+
+		} catch (InterruptedException e) {
+			logger.error("Failure while waiting for service to be ready", e);
+		}
+		return nodePorts;
+	}
+
+	private List<String> getNodeExternalIps() {
+		List<Node> items = client().nodes().list().getItems();
+		List<String> nodeUris = new ArrayList<>();
+		if (items != null) {
+			for (Node node : items) {
+				NodeStatus status = node.getStatus();
+				List<NodeAddress> addresses = status.getAddresses();
+				if (addresses != null) {
+					for (NodeAddress address : addresses) {
+						if ("ExternalIP".equals(address.getType())) {
+							String uri = address.getAddress();
+							if (!nodeUris.contains(uri)) {
+								nodeUris.add(uri);
+							}
+
+						}
+					}
+				}
+
+			}
+		}
+		return nodeUris;
+	}
+
+	private List<String> resolveExternalIpsFromNodePort(DeploymentDefinition definition) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -11,10 +11,12 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.deployer;
 
+import java.util.List;
+
 public interface AppDeployer {
 
 	void undeploy(DeploymentDefinition definition) throws Exception;
 
-	String deploy(DeploymentDefinition request) throws Exception;
+	List<String> deploy(DeploymentDefinition request) throws Exception;
 
 }
