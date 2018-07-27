@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
@@ -140,6 +141,19 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 							return super.visit(node);
 						}
+
+						@Override
+						public boolean visit(MethodDeclaration node) {
+							try {
+								extractLiveHintsForMethod(node, document, runningBootApps, result);
+							} catch (Exception e) {
+								Log.log(e);
+							}
+
+							return super.visit(node);
+						}
+
+
 					});
 				}
 			} catch (Exception e) {
@@ -149,13 +163,33 @@ public class BootJavaHoverProvider implements HoverHandler {
 		});
 	}
 
+	protected void extractLiveHintsForMethod(MethodDeclaration methodDeclaration, TextDocument doc,
+			SpringBootApp[] runningApps, Collection<Range> result) {
+		Collection<HoverProvider> providers = this.hoverProviders.getAll();
+		if (!providers.isEmpty()) {
+			for (HoverProvider provider : providers) {
+				getProject(doc).ifPresent(project -> {
+					if (hasActuatorDependency(project)) {
+						Collection<Range> hints = provider.getLiveHoverHints(project, methodDeclaration, doc, runningApps);
+						if (hints!=null) {
+							result.addAll(hints);
+						}
+					} else {
+						//Do nothing... we don't want a highlight for the 'no actuator warning'
+						//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
+					}
+				});
+			}
+		}
+	}
+
 	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
 		if (!providers.isEmpty()) {
 			for (HoverProvider provider : providers) {
 				getProject(doc).ifPresent(project -> {
 					if (hasActuatorDependency(project)) {
-						Collection<Range> hints = provider.getLiveHoverHints(typeDeclaration, doc, runningApps);
+						Collection<Range> hints = provider.getLiveHoverHints(project, typeDeclaration, doc, runningApps);
 						if (hints!=null) {
 							result.addAll(hints);
 						}
@@ -175,7 +209,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					getProject(doc).ifPresent(project -> {
 						if (hasActuatorDependency(project)) {
-							Collection<Range> hints = provider.getLiveHoverHints(annotation, doc, runningApps);
+							Collection<Range> hints = provider.getLiveHoverHints(project, annotation, doc, runningApps);
 							if (hints!=null) {
 								result.addAll(hints);
 							}
@@ -215,10 +249,29 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 
 		// then do additional AST node coverage
-		if (node instanceof SimpleName && node.getParent() instanceof TypeDeclaration) {
-			return provideHoverForTypeDeclaration(node, (TypeDeclaration) node.getParent(), offset, doc, project);
+		if (node instanceof SimpleName) {
+			ASTNode parent = node.getParent();
+			if (parent instanceof TypeDeclaration) {
+				return provideHoverForTypeDeclaration(node, (TypeDeclaration) parent, offset, doc, project);
+			} else if (parent instanceof MethodDeclaration) {
+				return provideHoverForMethodDeclaration((MethodDeclaration) parent, offset, doc, project);
+			}
 		}
+		return null;
+	}
 
+	private Hover provideHoverForMethodDeclaration(MethodDeclaration methodDeclaration, int offset, TextDocument doc,
+			IJavaProject project) {
+		SpringBootApp[] runningApps = getRunningSpringApps(project);
+		if (runningApps.length > 0) {
+			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				Hover hover = provider.provideHover(methodDeclaration, offset, doc, project, runningApps);
+				if (hover!=null) {
+					//TODO: compose multiple hovers somehow instead of just returning the first one?
+					return hover;
+				}
+			}
+		}
 		return null;
 	}
 

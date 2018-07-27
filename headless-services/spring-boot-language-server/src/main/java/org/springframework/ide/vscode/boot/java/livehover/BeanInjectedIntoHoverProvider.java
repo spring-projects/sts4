@@ -10,24 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
-import java.util.Collection;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Optionals;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProvider {
 
@@ -74,18 +64,6 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 				() -> ASTUtils.getAttribute(annotation, "name").flatMap(ASTUtils::getFirstString),
 				() -> Optional.ofNullable(beanMethod.getName().getIdentifier())
 		);
-	}
-
-	@Override
-	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
-		return null;
 	}
 
 }

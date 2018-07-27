@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -64,11 +63,6 @@ public class ValueHoverProvider implements HoverProvider {
 			e.printStackTrace();
 		}
 
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		return null;
 	}
 
@@ -203,12 +197,6 @@ public class ValueHoverProvider implements HoverProvider {
 	@Override
 	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
 		return null;
 	}
 

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -128,8 +127,7 @@ public class ASTUtils {
 		return Optional.empty();
 	}
 
-	public static TypeDeclaration findDeclaringType(Annotation annotation) {
-		ASTNode node = annotation;
+	public static TypeDeclaration findDeclaringType(ASTNode node) {
 		while (node != null && !(node instanceof TypeDeclaration)) {
 			node = node.getParent();
 		}
@@ -137,19 +135,20 @@ public class ASTUtils {
 		return node != null ? (TypeDeclaration) node : null;
 	}
 
-	public static MethodDeclaration[] findConstructors(TypeDeclaration typeDecl) {
-		List<MethodDeclaration> constructors = new ArrayList<>();
-
+	public static boolean hasExactlyOneConstructor(TypeDeclaration typeDecl) {
+		boolean oneFound = false;
 		MethodDeclaration[] methods = typeDecl.getMethods();
 		for (MethodDeclaration methodDeclaration : methods) {
 			if (methodDeclaration.isConstructor()) {
-				constructors.add(methodDeclaration);
+				if (oneFound) {
+					return false;
+				} else {
+					oneFound = true;
+				}
 			}
 		}
-
-		return constructors.toArray(new MethodDeclaration[constructors.size()]);
+		return oneFound;
 	}
-
 
 	public static MethodDeclaration getAnnotatedMethod(Annotation annotation) {
 		ASTNode parent = annotation.getParent();

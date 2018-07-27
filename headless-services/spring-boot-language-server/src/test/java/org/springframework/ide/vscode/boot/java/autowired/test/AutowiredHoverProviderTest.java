@@ -415,4 +415,165 @@ public class AutowiredHoverProviderTest {
 		);
 	}
 
+	@Test
+	public void implicitAutowiringSingleConstructor() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "SomeComponent");
+
+		editor.assertTrimmedHover("SomeComponent", 2,
+				"**Autowired &rarr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
+
+	@Test
+	public void noImplicitAutowiringForConstructorFromNonBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someOtherComponent")
+						.type("com.example.SomeOtherComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights();
+
+		for (int i = 1; i < 2; i++) {
+			editor.assertNoHover("SomeComponent", i);
+		}
+	}
+
+	@Test
+	public void noImplicitAutowiringForMultipleConstructors() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component");
+		for (int i = 1; i < 3; i++) {
+			editor.assertNoHover("SomeComponent", i);
+		}
+	}
+
 }

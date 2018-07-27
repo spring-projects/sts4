@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -81,7 +80,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 			Builder<Range> ranges = ImmutableList.builder();
 			nameRange(doc, annotation).ifPresent(ranges::add);
@@ -128,18 +127,6 @@ public class ActiveProfilesProvider implements HoverProvider {
 			Log.log(e);
 			return Optional.empty();
 		}
-	}
-
-	@Override
-	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
-		return null;
 	}
 
 }

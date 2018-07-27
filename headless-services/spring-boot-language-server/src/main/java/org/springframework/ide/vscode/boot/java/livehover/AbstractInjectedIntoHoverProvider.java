@@ -29,7 +29,6 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -44,7 +43,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		// Highlight if any running app contains an instance of this component
 		try {
 			if (runningApps.length > 0) {
@@ -89,7 +88,6 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 						for (LiveBean bean : relevantBeans) {
 							addInjectedInto(definedBean, hover, beans, bean, project);
-							addAutomaticallyWiredContructor(hover, annotation, beans, bean, project);
 						}
 					}
 				}
@@ -102,12 +100,6 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	protected abstract LiveBean getDefinedBean(Annotation annotation);
-
-	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
-		//This doesn't really belong here, but it accomodates Martin's additional logic to handle implicitly
-		//@Autowired constructor.
-		//This does nothing by default as its really only relevant to @Component annotation report.
-	}
 
 	protected void addInjectedInto(LiveBean definedBean, StringBuilder hover, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
 		hover.append("\n\n");

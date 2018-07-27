@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
@@ -44,49 +42,6 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	public ComponentInjectionsHoverProvider(BootJavaLanguageServerComponents server) {
 		super(server);
-	}
-
-	@Override
-	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
-		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
-		if (typeDecl != null) {
-			MethodDeclaration[] constructors = ASTUtils.findConstructors(typeDecl);
-
-			if (constructors != null && constructors.length == 1 && !hasAutowiredAnnotation(constructors[0])) {
-				String[] dependencies = bean.getDependencies();
-
-				if (dependencies != null && dependencies.length > 0) {
-					hover.append("\n\n");
-					hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
-
-					boolean firstDependency = true;
-					for (String injectedBean : dependencies) {
-						if (!firstDependency) {
-							hover.append("\n");
-						}
-						List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
-						for (LiveBean dependencyBean : dependencyBeans) {
-							hover.append("- " + LiveHoverUtils.showBeanWithResource(server, dependencyBean, "  ", project));
-						}
-						firstDependency = false;
-					}
-				}
-			}
-		}
-	}
-
-	private boolean hasAutowiredAnnotation(MethodDeclaration constructor) {
-		List<?> modifiers = constructor.modifiers();
-		for (Object modifier : modifiers) {
-			if (modifier instanceof MarkerAnnotation) {
-				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null) {
-					String fqName = typeBinding.getQualifiedName();
-					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName);
-				}
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -132,7 +87,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
+	public Collection<Range> getLiveHoverHints(IJavaProject project, TypeDeclaration typeDeclaration, TextDocument doc,
 			SpringBootApp[] runningApps) {
 		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {

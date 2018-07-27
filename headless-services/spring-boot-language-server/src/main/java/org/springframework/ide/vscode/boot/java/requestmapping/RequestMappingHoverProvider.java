@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -55,7 +54,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
 				List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
@@ -171,18 +170,6 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			}
 
 		}
-	}
-
-	@Override
-	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
-		return null;
 	}
 
 }

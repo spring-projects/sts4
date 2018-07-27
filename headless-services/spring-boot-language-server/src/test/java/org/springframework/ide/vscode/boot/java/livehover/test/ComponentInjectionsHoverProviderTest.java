@@ -516,22 +516,14 @@ public class ComponentInjectionsHoverProviderTest {
 				"	}\n" +
 				"}\n"
 		);
-		editor.assertHighlights("@Component");
+		editor.assertHighlights("@Component", "AutowiredClass");
 		editor.assertTrimmedHover("@Component",
 				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
 				"\n" +
 				"Process [PID=111, name=`the-app`]:\n" +
 				"\n" +
 				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n" +
-				"\n\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
-				"\n" +
-				"- Bean: `dependencyA`  \n" +
-				"  Type: `com.example.DependencyA`  \n" +
-				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
-				"- Bean: `dependencyB`  \n" +
-				"  Type: `com.example.DependencyB`  \n" +
-				"  Resource: `com/example/DependencyB.class`"
+				"\n\n"
 		);
 	}
 
