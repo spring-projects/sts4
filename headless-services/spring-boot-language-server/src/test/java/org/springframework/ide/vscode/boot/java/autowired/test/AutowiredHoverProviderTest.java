@@ -146,7 +146,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Inject");
 		editor.assertTrimmedHover("@Inject",
-				"**Autowired &rarr; `dependencyA`**\n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -201,7 +201,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired",
-				"**Autowired &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -352,11 +352,11 @@ public class AutowiredHoverProviderTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, FOO_IMPL_CONTENTS);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
 		editor.assertHoverContains("@Autowired", 1,
-				"**Autowired &rarr; `superBean`**\n" +
+				"**Autowired `defaultFoo` &rarr; `superBean`**\n" +
 				"- Bean: `superBean`  \n" +
 				"  Type: `com.example.FooImplementation`");
 		editor.assertHoverContains("@Autowired", 2,
-				"**Autowired &rarr; `scheduler`**\n" +
+				"**Autowired `defaultFoo` &rarr; `scheduler`**\n" +
 				"- Bean: `scheduler`  \n" +
 				"  Type: `org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler`");
 	}
@@ -406,12 +406,13 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Controller", "@Autowired");
 		editor.assertHoverContains("@Autowired",
-				"**Autowired &rarr; `restTemplate`**\n" +
+				"**Autowired `myController` &rarr; `restTemplate`**\n" +
 				"- Bean: `restTemplate`  \n" +
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
 		editor.assertHoverContains("@Controller",
-				"**Injection report for Bean [id: myController, type: `com.example.MyController`]**"
+				"**Injected `myController` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -463,7 +464,7 @@ public class AutowiredHoverProviderTest {
 		editor.assertHighlights("@Component", "SomeComponent");
 
 		editor.assertTrimmedHover("SomeComponent", 2,
-				"**Autowired &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `someComponent` &rarr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +
