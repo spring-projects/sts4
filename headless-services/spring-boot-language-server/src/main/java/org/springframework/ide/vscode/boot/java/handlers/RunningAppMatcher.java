@@ -33,19 +33,28 @@ public class RunningAppMatcher  {
 				return RunningAppMatcher.doesProjectMatch(app, project);
 			}).collect(CollectorUtil.toImmutableList());
 
-			if (matchedProjects.size() > 0) {
-				return matchedProjects;
-			}
+			return matchedProjects;
 		}
 		return apps;
 	}
 
 	private static boolean doesProjectMatch(SpringBootApp app, IJavaProject project) {
-		if (doesProjectNameMatch(app, project)) return true;
-		if (doesProjectThinJarWrapperMatch(app, project)) return true;
-		if (doesClasspathMatch(app, project)) return true;
+		if (hasProjectName(app, project)) {
+			return doesProjectNameMatch(app, project);
+		}
+		else {
+			return doesProjectThinJarWrapperMatch(app, project) || doesClasspathMatch(app, project);
+		}
+	}
 
-		return false;
+	public static boolean hasProjectName(SpringBootApp app, IJavaProject project) {
+		try {
+			String projectName = app.getSystemProperty("spring.boot.project.name");
+			return projectName != null && projectName.trim().length() > 0;
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
 
 	public static boolean doesProjectNameMatch(SpringBootApp app, IJavaProject project) {
