@@ -74,9 +74,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			String typeName = beanType.getName();
 
 			ITypeBinding declaringClass = beanType.getDeclaringClass();
-			while (declaringClass != null) {
-				typeName = declaringClass.getName() + "." + typeName;
-				declaringClass = declaringClass.getDeclaringClass();
+			if (declaringClass != null) {
+				return getBeanType(beanType).toString();
 			}
 
 			if (StringUtil.hasText(typeName)) {

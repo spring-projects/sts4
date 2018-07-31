@@ -595,7 +595,7 @@ public class ComponentInjectionsHoverProviderTest {
 	public void componentFromInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
-						.id("demoApplication.InnerClass")
+						.id("com.example.DemoApplication$InnerClass")
 						.type("com.example.DemoApplication$InnerClass")
 						.build()
 				)
@@ -628,7 +628,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"**Injected `demoApplication.InnerClass` &rarr; _not injected anywhere_**  \n" +
+				"**Injected `com.example.DemoApplication$InnerClass` &rarr; _not injected anywhere_**  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}
@@ -637,7 +637,7 @@ public class ComponentInjectionsHoverProviderTest {
 	public void componentFromInnerInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
-						.id("demoApplication.InnerClass.InnerInnerClass")
+						.id("com.example.DemoApplication$InnerClass$InnerInnerClass")
 						.type("com.example.DemoApplication$InnerClass$InnerInnerClass")
 						.build()
 				)
@@ -673,7 +673,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"**Injected `demoApplication.InnerClass.InnerInnerClass` &rarr; _not injected anywhere_**  \n" +
+				"**Injected `com.example.DemoApplication$InnerClass$InnerInnerClass` &rarr; _not injected anywhere_**  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}

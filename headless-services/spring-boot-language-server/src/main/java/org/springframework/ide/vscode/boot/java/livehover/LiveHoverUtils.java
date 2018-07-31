@@ -142,7 +142,12 @@ public class LiveHoverUtils {
 			List<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId());
 			String type = definedBean.getType();
 			if (type != null) {
-				relevantBeans = relevantBeans.stream().filter(bean -> type.equals(bean.getType(true))).collect(Collectors.toList());
+				// TODO: check if we should check for bean type rather than id that we build ourselves based on type
+//				if (relevantBeans.isEmpty()) {
+//					relevantBeans = beansModel.getBeansOfType(type);
+//				} else {
+					relevantBeans = relevantBeans.stream().filter(bean -> type.equals(bean.getType(true))).collect(Collectors.toList());
+//				}
 			}
 			return relevantBeans;
 		}
