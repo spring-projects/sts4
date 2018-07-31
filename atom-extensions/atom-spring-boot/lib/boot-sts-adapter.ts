@@ -1,6 +1,6 @@
 import {StsAdapter, HighlightParams} from '@pivotal-tools/atom-languageclient-commons';
 import {Convert} from 'atom-languageclient';
-import { Range } from 'vscode-languageserver-protocol';
+import { Range, CodeLens } from 'vscode-languageserver-protocol';
 import {TextEditor, DecorationOptions } from 'atom';
 
 const BOOT_HINT_GUTTER_NAME = 'boot-hint-gutter';
@@ -18,11 +18,12 @@ export class BootStsAdapter extends StsAdapter {
     }
 
     onHighlight(params: HighlightParams) {
-        this.findEditors(params.doc.uri).forEach(editor => this.markHintsForEditor(editor, params.ranges));
+        this.findEditors(params.doc.uri).forEach(editor => this.markHintsForEditor(editor, params.codeLenses));
     }
 
-    private markHintsForEditor(editor: TextEditor, ranges: Range[]) {
+    private markHintsForEditor(editor: TextEditor, codeLenses: CodeLens[]) {
         editor.getDecorations(DECORATION_OPTIONS).map(decoration => decoration.getMarker()).forEach(m => m.destroy());
+        const ranges = codeLenses.map(cl => cl.range);
         if (Array.isArray(ranges)) {
             ranges.forEach(range => this.createHintMarker(editor, range));
         }

@@ -296,78 +296,92 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			RunningAppProvider runningAppProvider) {
 		AnnotationHierarchyAwareLookup<HoverProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueHoverProvider());
+		ValueHoverProvider valueHoverProvider = new ValueHoverProvider();
+		RequestMappingHoverProvider requestMappingHoverProvider = new RequestMappingHoverProvider();
+		AutowiredHoverProvider autowiredHoverProvider = new AutowiredHoverProvider(this);
+		ComponentInjectionsHoverProvider componentInjectionsHoverProvider = new ComponentInjectionsHoverProvider(this);
+		BeanInjectedIntoHoverProvider beanInjectedIntoHoverProvider = new BeanInjectedIntoHoverProvider(this);
+		ConditionalsLiveHoverProvider conditionalsLiveHoverProvider = new ConditionalsLiveHoverProvider();
 
-		providers.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingHoverProvider());
-		providers.put(Annotations.SPRING_GET_MAPPING, new RequestMappingHoverProvider());
-		providers.put(Annotations.SPRING_POST_MAPPING, new RequestMappingHoverProvider());
-		providers.put(Annotations.SPRING_PUT_MAPPING, new RequestMappingHoverProvider());
-		providers.put(Annotations.SPRING_DELETE_MAPPING, new RequestMappingHoverProvider());
-		providers.put(Annotations.SPRING_PATCH_MAPPING, new RequestMappingHoverProvider());
+		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, valueHoverProvider);
+
+		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingHoverProvider);
+		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingHoverProvider);
+		providers.put(Annotations.SPRING_POST_MAPPING, requestMappingHoverProvider);
+		providers.put(Annotations.SPRING_PUT_MAPPING, requestMappingHoverProvider);
+		providers.put(Annotations.SPRING_DELETE_MAPPING, requestMappingHoverProvider);
+		providers.put(Annotations.SPRING_PATCH_MAPPING, requestMappingHoverProvider);
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
-		providers.put(Annotations.AUTOWIRED, new AutowiredHoverProvider(this));
-		providers.put(Annotations.INJECT, new AutowiredHoverProvider(this));
-		providers.put(Annotations.COMPONENT, new ComponentInjectionsHoverProvider(this));
-		providers.put(Annotations.BEAN, new BeanInjectedIntoHoverProvider(this));
+		providers.put(Annotations.AUTOWIRED, autowiredHoverProvider);
+		providers.put(Annotations.INJECT, autowiredHoverProvider);
+		providers.put(Annotations.COMPONENT, componentInjectionsHoverProvider);
+		providers.put(Annotations.BEAN, beanInjectedIntoHoverProvider);
 
-		providers.put(Annotations.CONDITIONAL, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_BEAN, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_CLASS, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_JAVA, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_JNDI, new ConditionalsLiveHoverProvider());
-		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, new ConditionalsLiveHoverProvider());
+		providers.put(Annotations.CONDITIONAL, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_BEAN, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_CLASS, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_JAVA, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_JNDI, conditionalsLiveHoverProvider);
+		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, conditionalsLiveHoverProvider);
 
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
 	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
-		providers.put(Annotations.SPRING_REQUEST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(Annotations.SPRING_GET_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(Annotations.SPRING_POST_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(Annotations.SPRING_PUT_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(Annotations.SPRING_DELETE_MAPPING, new RequestMappingSymbolProvider());
-		providers.put(Annotations.SPRING_PATCH_MAPPING, new RequestMappingSymbolProvider());
+		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
+		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
+		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider();
+		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
+		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
+		WebfluxRouterSymbolProvider webfluxRouterSymbolProvider = new WebfluxRouterSymbolProvider();
 
-		providers.put(Annotations.BEAN, new BeansSymbolProvider());
-		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
+		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingSymbolProvider);
+		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingSymbolProvider);
+		providers.put(Annotations.SPRING_POST_MAPPING, requestMappingSymbolProvider);
+		providers.put(Annotations.SPRING_PUT_MAPPING, requestMappingSymbolProvider);
+		providers.put(Annotations.SPRING_DELETE_MAPPING, requestMappingSymbolProvider);
+		providers.put(Annotations.SPRING_PATCH_MAPPING, requestMappingSymbolProvider);
 
-		providers.put(Annotations.PROFILE, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.BEAN, beansSymbolProvider);
+		providers.put(Annotations.COMPONENT, componentSymbolProvider);
 
-		providers.put(Annotations.CONDITIONAL, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_BEAN, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_CLASS, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_JAVA, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_JNDI, new RestrictedDefaultSymbolProvider());
-		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.PROFILE, restrictedDefaultSymbolProvider);
 
-		providers.put(Annotations.REPOSITORY, new DataRepositorySymbolProvider());
-		providers.put("", new WebfluxRouterSymbolProvider());
+		providers.put(Annotations.CONDITIONAL, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_BEAN, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_CLASS, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_JAVA, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_JNDI, restrictedDefaultSymbolProvider);
+		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, restrictedDefaultSymbolProvider);
+
+		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
+		providers.put("", webfluxRouterSymbolProvider);
 
 		return new SpringIndexer(server, params, providers);
 	}

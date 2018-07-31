@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -57,18 +58,18 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			if (runningApps.length > 0) {
 				List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 				if (!val.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-					return ImmutableList.of(hoverRange);
+					return ImmutableList.of(new CodeLens(hoverRange));
 				}
 			}
 		}
 		catch (BadLocationException e) {
-			log.error("", e);;
+			log.error("", e);
 		}
 
 		return null;
@@ -83,17 +84,19 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			if (!val.isEmpty()) {
 				addHoverContent(val, hoverContent);
+				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				Hover hover = new Hover();
+
+				hover.setContents(hoverContent);
+				hover.setRange(hoverRange);
+
+				return hover;
+			} else {
+				return null;
 			}
 
-			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-			Hover hover = new Hover();
-
-			hover.setContents(hoverContent);
-			hover.setRange(hoverRange);
-
-			return hover;
 		} catch (Exception e) {
-			log.error("", e);;
+			log.error("", e);
 		}
 
 		return null;
@@ -114,7 +117,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				}
 			}
 		} catch (Exception e) {
-			log.error("", e);;
+			log.error("", e);
 		}
 		return results;
 	}

@@ -14,6 +14,7 @@ package org.springframework.ide.vscode.languageserver.testharness;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
 
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.text.BadLocationException;
 
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
@@ -55,8 +57,6 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
-
-import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.*;
 
 public class Editor {
 
@@ -210,7 +210,7 @@ public class Editor {
 
 	public List<Range> assertHighlights(String... expectedHighlights) throws Exception {
 		HighlightParams highlights = harness.getHighlights(doc);
-		List<Range> ranges = highlights != null ? new ArrayList<>(highlights.getRanges()) : ImmutableList.of();
+		List<Range> ranges = highlights != null ? highlights.getCodeLenses().stream().map(CodeLens::getRange).collect(Collectors.toList()) : ImmutableList.of();
 		Collections.sort(ranges, RANGE_COMPARATOR);
 		List<String> actualHighlights = ranges.stream()
 			.map(this::getText)

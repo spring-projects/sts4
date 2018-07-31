@@ -1,8 +1,7 @@
-import {VersionedTextDocumentIdentifier, Position, Range} from 'vscode-languageclient'
+import {VersionedTextDocumentIdentifier, MarkupContent, Position, Range, CodeLens} from 'vscode-languageclient'
 import * as VSCode from 'vscode';
-import * as path from "path";
 
-function toDecoration(rng : Range) : VSCode.Range {
+export function toVSRange(rng : Range) : VSCode.Range {
     return new VSCode.Range(toPosition(rng.start), toPosition(rng.end));
 }
 
@@ -11,15 +10,15 @@ function toPosition(p : Position) : VSCode.Position {
 }
  
 export interface HighlightParams {
-    doc: VersionedTextDocumentIdentifier
-    ranges: Range[]
+    doc: VersionedTextDocumentIdentifier;
+    codeLenses: CodeLens[];
 }
 
 export class HighlightService {
 
     DECORATION : VSCode.TextEditorDecorationType;
 
-    highlights : Map<String, Range[]>;
+    highlights : Map<String, HighlightParams>;
 
     dispose() {
         this.DECORATION.dispose();
@@ -41,7 +40,7 @@ export class HighlightService {
     }
 
     handle(params : HighlightParams) : void {
-        this.highlights.set(params.doc.uri, params.ranges);
+        this.highlights.set(params.doc.uri, params);
         this.refresh(params.doc);
     }
 
@@ -52,8 +51,9 @@ export class HighlightService {
             const activeVersion = editor.document.version;
             if (docId.uri === activeUri && docId.version === activeVersion) {
                 //We only update highlights in the active editor for now
-                let highlights : Range[] = this.highlights.get(docId.uri) || [];
-                let decorations = highlights.map(hl => toDecoration(hl));
+                const highlightParams: HighlightParams = this.highlights.get(docId.uri);
+                const highlights: CodeLens[] = highlightParams.codeLenses || [];
+                let decorations = highlights.map(hl => toVSRange(hl.range));
                 editor.setDecorations(this.DECORATION, decorations);
             }
         }

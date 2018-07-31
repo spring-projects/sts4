@@ -25,8 +25,8 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -90,9 +90,9 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return SimpleTextDocumentService.NO_HOVER;
 	}
 
-	public Range[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
+	public CodeLens[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
-			Collection<Range> result = new HashSet<>();
+			Collection<CodeLens> result = new HashSet<>();
 			try {
 				if (cu != null) {
 					cu.accept(new ASTVisitor() {
@@ -158,18 +158,18 @@ public class BootJavaHoverProvider implements HoverHandler {
 			} catch (Exception e) {
 				logger.error("error extracting live hint information for docURI '" + document.getUri(), e);
 			}
-			return result.toArray(new Range[result.size()]);
+			return result.toArray(new CodeLens[result.size()]);
 		});
 	}
 
 	protected void extractLiveHintsForMethod(MethodDeclaration methodDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps, Collection<Range> result) {
+			SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
 		if (!providers.isEmpty()) {
 			for (HoverProvider provider : providers) {
 				getProject(doc).ifPresent(project -> {
 					if (hasActuatorDependency(project)) {
-						Collection<Range> hints = provider.getLiveHoverHints(project, methodDeclaration, doc, runningApps);
+						Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, methodDeclaration, doc, runningApps);
 						if (hints!=null) {
 							result.addAll(hints);
 						}
@@ -182,13 +182,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 	}
 
-	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
+	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
 		if (!providers.isEmpty()) {
 			for (HoverProvider provider : providers) {
 				getProject(doc).ifPresent(project -> {
 					if (hasActuatorDependency(project)) {
-						Collection<Range> hints = provider.getLiveHoverHints(project, typeDeclaration, doc, runningApps);
+						Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, typeDeclaration, doc, runningApps);
 						if (hints!=null) {
 							result.addAll(hints);
 						}
@@ -201,14 +201,14 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 	}
 
-	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, Collection<Range> result) {
+	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
 			if (runningApps.length > 0) {
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					getProject(doc).ifPresent(project -> {
 						if (hasActuatorDependency(project)) {
-							Collection<Range> hints = provider.getLiveHoverHints(project, annotation, doc, runningApps);
+							Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, annotation, doc, runningApps);
 							if (hints!=null) {
 								result.addAll(hints);
 							}

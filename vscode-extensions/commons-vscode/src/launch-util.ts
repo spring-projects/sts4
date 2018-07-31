@@ -6,17 +6,17 @@ import * as FS from 'fs';
 import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Range } from 'vscode-languageclient';
-import { TextDocument, OutputChannel, Disposable, window } from 'vscode';
+import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Position } from 'vscode-languageclient';
+import {TextDocument, OutputChannel, Disposable, window, Event, EventEmitter} from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
-import {WorkspaceEdit, Position} from 'vscode-languageserver-types';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
 import { registerClasspathService } from './classpath';
 import { registerJavadocService } from './javadoc';
+import {HighlightCodeLensProvider} from "./code-lens-service";
 
 let p2c = P2C.createConverter();
 
@@ -34,6 +34,7 @@ export interface ActivatorOptions {
     workspaceOptions: VSCode.WorkspaceConfiguration;
     checkjvm?: (context: VSCode.ExtensionContext, jvm: JVM) => any;
     preferJdk?: boolean;
+    highlightCodeLensSettingKey?: string;
 }
 
 type JavaOptions = {
@@ -203,11 +204,42 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
 
     let disposable = client.start();
 
+    const codeLensListanableSetting = options.highlightCodeLensSettingKey ? new ListenablePreferenceSetting<boolean>(options.highlightCodeLensSettingKey) : undefined;
+
     let progressService = new ProgressService();
     let highlightService = new HighlightService();
+    const codelensService = new HighlightCodeLensProvider();
+    let codeLensProviderSubscription: Disposable;
+
+    VSCode.commands.registerCommand('org.springframework.showHoverAtPosition', (position: Position) => {
+        const editor = VSCode.window.activeTextEditor;
+        const vsPosition = new VSCode.Position(position.line, position.character);
+        editor.selection = new VSCode.Selection(vsPosition, vsPosition);
+        VSCode.commands.executeCommand('editor.action.showHover');
+    });
+
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
     context.subscriptions.push(highlightService);
+
+    function toggleHighlightCodeLens() {
+        if (!codeLensProviderSubscription && codeLensListanableSetting.value) {
+            codeLensProviderSubscription = VSCode.languages.registerCodeLensProvider(options.clientOptions.documentSelector, codelensService);
+            context.subscriptions.push(codeLensProviderSubscription);
+        } else if (codeLensProviderSubscription) {
+            codeLensProviderSubscription.dispose();
+            const idx = context.subscriptions.indexOf(codeLensProviderSubscription);
+            if (idx >= 0) {
+                context.subscriptions.splice(idx, 1);
+            }
+            codeLensProviderSubscription = null;
+        }
+    }
+
+    if (codeLensListanableSetting) {
+        toggleHighlightCodeLens();
+        codeLensListanableSetting.onDidChangeValue(() => toggleHighlightCodeLens())
+    }
 
     return  client.onReady().then(() => {
         client.onNotification(progressNotification, (params: ProgressParams) => {
@@ -215,6 +247,9 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         });
         client.onNotification(highlightNotification, (params: HighlightParams) => {
             highlightService.handle(params);
+            if (codeLensListanableSetting && codeLensListanableSetting.value) {
+                codelensService.handle(params);
+            }
         });
         client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
             let editors = VSCode.window.visibleTextEditors;
@@ -277,4 +312,32 @@ class ProgressService {
         }
         this.status = null;
     }
+}
+
+export interface ListenableSetting<T> {
+    value: T;
+    onDidChangeValue: VSCode.Event<void>
+}
+
+export class ListenablePreferenceSetting<T> implements ListenableSetting<T> {
+
+    private _onDidChangeValue = new EventEmitter<void>();
+
+    constructor(private section: string) {
+        VSCode.workspace.onDidChangeConfiguration(e => {
+           console.log('Settings changed! value = ' + this.value);
+           if (e.affectsConfiguration(this.section)) {
+               this._onDidChangeValue.fire();
+           }
+        });
+    }
+
+    get value(): T {
+        return VSCode.workspace.getConfiguration().get(this.section);
+    }
+
+    get onDidChangeValue(): Event<void> {
+        return this._onDidChangeValue.event;
+    }
+
 }

@@ -19,7 +19,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Stream;
 
-import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.slf4j.Logger;
@@ -156,8 +156,8 @@ public class SpringLiveHoverWatchdog {
 				if (hasCurrentRunningBootApps) {
 					TextDocument doc = this.server.getTextDocumentService().get(docURI);
 					if (doc != null) {
-						Range[] ranges = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
-						publishLiveHints(docURI, ranges);
+						CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
+						publishLiveHints(docURI, infos);
 					}
 				}
 				else  {
@@ -195,15 +195,15 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
-	private void publishLiveHints(String docURI, Range[] ranges) {
+	private void publishLiveHints(String docURI, CodeLens[] codeLenses) {
 		int version = server.getTextDocumentService().get(docURI).getVersion();
 		VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(version);
 		id.setUri(docURI);
-		server.getClient().highlight(new HighlightParams(id, Arrays.asList(ranges)));
+		server.getClient().highlight(new HighlightParams(id, Arrays.asList(codeLenses)));
 	}
 
 	private void cleanupLiveHints(String docURI) {
-		publishLiveHints(docURI, new Range[0]);
+		publishLiveHints(docURI, new CodeLens[0]);
 	}
 
 	private void cleanupResources() {

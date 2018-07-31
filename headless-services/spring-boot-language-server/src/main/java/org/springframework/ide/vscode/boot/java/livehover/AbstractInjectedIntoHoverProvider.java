@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -50,7 +53,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		// Highlight if any running app contains an instance of this component
 		try {
 			if (runningApps.length > 0) {
@@ -59,7 +62,8 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 						if (nameRange.isPresent()) {
-							return ImmutableList.of(nameRange.get());
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get());
+							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
 				}
@@ -71,16 +75,61 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
+			IJavaProject project, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 
 			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
-				return assembleHover(project, runningApps, definedBean);
+				Hover hover = assembleHover(project, runningApps, definedBean);
+				if (hover != null) {
+					Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
+					if (nameRange.isPresent()) {
+						hover.setRange(nameRange.get());
+					}
+				}
+				return hover;
 			}
 		}
 		return null;
+	}
+
+	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, Range range) {
+		List<CodeLens> codeLensList = new ArrayList<>();
+		for (SpringBootApp app : runningApps) {
+
+			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
+
+			if (!relevantBeans.isEmpty()) {
+				List<LiveBean> injectedBeans = getRelevantInjectedIntoBeans(project, app, definedBean, relevantBeans);
+				if (!injectedBeans.isEmpty()) {
+					CodeLens codeLens = new CodeLens();
+					codeLens.setRange(range);
+					StringBuilder sb = new StringBuilder("\u21D2 ");
+					if (LiveHoverUtils.doBeansFitInline(relevantBeans, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR)) {
+						sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
+					} else {
+						sb.append(relevantBeans.size());
+						sb.append(" bean");
+						if (relevantBeans.size() > 1) {
+							sb.append("s");
+						}
+					}
+					codeLens.setData(sb.toString());
+					Command cmd = new Command();
+					cmd.setTitle(sb.toString());
+					cmd.setCommand("org.springframework.showHoverAtPosition");
+					cmd.setArguments(ImmutableList.of(range.getStart()));
+					codeLens.setCommand(cmd);
+
+					codeLensList.add(codeLens);
+
+					// Break out of the loop. Just look for the first app with injected into beans
+					break;
+				}
+			}
+		}
+		return codeLensList;
 	}
 
 	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean) {

@@ -1,6 +1,6 @@
 import {Convert} from 'atom-languageclient';
 import {AtomEnvironment, TextEditor} from 'atom';
-import {Position, Range, TextDocumentIdentifier} from 'vscode-languageserver-protocol';
+import {Position, CodeLens, TextDocumentIdentifier} from 'vscode-languageserver-protocol';
 
 export class StsAdapter {
 
@@ -34,5 +34,5 @@ export interface ProgressParams {
 
 export interface HighlightParams {
     readonly doc: TextDocumentIdentifier;
-    readonly ranges: Range[];
+    readonly codeLenses: CodeLens[];
 }

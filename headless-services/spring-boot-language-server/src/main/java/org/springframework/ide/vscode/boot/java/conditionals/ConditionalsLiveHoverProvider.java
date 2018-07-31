@@ -21,16 +21,18 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -42,6 +44,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class ConditionalsLiveHoverProvider implements HoverProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(ConditionalsLiveHoverProvider.class);
+
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
@@ -49,15 +53,15 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, runningApps);
 			if (val.isPresent()) {
 				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				return ImmutableList.of(hoverRange);
+				return ImmutableList.of(new CodeLens(hoverRange));
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 
 		return null;
@@ -103,7 +107,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 			return hover;
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 
 		return null;

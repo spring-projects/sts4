@@ -22,8 +22,11 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -65,7 +68,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration node.
@@ -80,13 +83,32 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private Collection<Range> getLiveHoverHints(IJavaProject project, ASTNode declarationNode, Range range,
+	private Collection<CodeLens> getLiveHoverHints(IJavaProject project, ASTNode declarationNode, Range range,
 			SpringBootApp[] runningApps, LiveBean definedBean) {
 		if (declarationNode != null && definedBean != null) {
 			for (SpringBootApp app : runningApps) {
 				List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
 				if (!relevantBeans.isEmpty()) {
-					return ImmutableList.of(range);
+					CodeLens codeLens = new CodeLens();
+					codeLens.setRange(range);
+					StringBuilder sb = new StringBuilder("\u21D0 ");
+					if (LiveHoverUtils.doBeansFitInline(relevantBeans, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR)) {
+						sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
+					} else {
+						sb.append(relevantBeans.size());
+						sb.append(" bean");
+						if (relevantBeans.size() > 1) {
+							sb.append("s");
+						}
+					}
+					codeLens.setData(sb.toString());
+					Command cmd = new Command();
+					cmd.setTitle(sb.toString());
+					cmd.setCommand("org.springframework.showHoverAtPosition");
+					cmd.setArguments(ImmutableList.of(range.getStart()));
+					codeLens.setCommand(cmd);
+
+					return ImmutableList.of(codeLens);
 				}
 			}
 		}
@@ -100,7 +122,15 @@ public class AutowiredHoverProvider implements HoverProvider {
 			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration node.
 			ASTNode declarationNode = annotation.getParent();
-			return provideHover(definedBean, declarationNode, offset, doc, project, runningApps);
+			Hover hover = provideHover(definedBean, declarationNode, offset, doc, project, runningApps);
+			if (hover != null) {
+				try {
+					hover.setRange(doc.toRange(annotation.getStartPosition(), annotation.getLength()));
+				} catch (BadLocationException e) {
+					log.error("", e);
+				}
+			}
+			return hover;
 		}
 		return null;
 	}
@@ -266,11 +296,20 @@ public class AutowiredHoverProvider implements HoverProvider {
 	@Override
 	public Hover provideHover(MethodDeclaration methodDeclaration, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
-		return provideHover(definedBean, methodDeclaration, offset, doc, project, runningApps);
+		Hover hover = provideHover(definedBean, methodDeclaration, offset, doc, project, runningApps);
+		if (hover != null) {
+			SimpleName name = methodDeclaration.getName();
+			try {
+				hover.setRange(doc.toRange(name.getStartPosition(), name.getLength()));
+			} catch (BadLocationException e) {
+				log.error("", e);
+			}
+		}
+		return hover;
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc,
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc,
 			SpringBootApp[] runningApps) {
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
 		try {

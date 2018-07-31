@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "portfinder": "^0.4.0"
+    "portfinder": "^0.4.0",
+    "deep-equal": "^1.0.1"
   },
   "devDependencies": {
     "typescript": "2.6.1",

@@ -12,21 +12,21 @@ package org.springframework.ide.vscode.commons.languageserver;
 
 import java.util.List;
 
-import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 
 public class HighlightParams {
 
 	private VersionedTextDocumentIdentifier doc;
-	private List<Range> ranges;
+    private List<CodeLens> codeLenses;
 
 	public HighlightParams() {
 	}
 
-	public HighlightParams(VersionedTextDocumentIdentifier doc, List<Range> ranges) {
+	public HighlightParams(VersionedTextDocumentIdentifier doc, List<CodeLens> codeLenses) {
 		super();
 		this.doc = doc;
-		this.ranges = ranges;
+		this.codeLenses = codeLenses;
 	}
 	public VersionedTextDocumentIdentifier getDoc() {
 		return doc;
@@ -34,11 +34,13 @@ public class HighlightParams {
 	public void setDoc(VersionedTextDocumentIdentifier doc) {
 		this.doc = doc;
 	}
-	public List<Range> getRanges() {
-		return ranges;
+
+	public List<CodeLens> getCodeLenses() {
+		return codeLenses;
 	}
-	public void setRanges(List<Range> ranges) {
-		this.ranges = ranges;
+
+	public void setCodeLenses(List<CodeLens> codeLenses) {
+		this.codeLenses = codeLenses;
 	}
 
 }

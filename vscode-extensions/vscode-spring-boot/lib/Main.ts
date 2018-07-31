@@ -1,23 +1,19 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import * as Path from 'path';
-import * as FS from 'fs';
-import * as Net from 'net';
-import * as ChildProcess from 'child_process';
-import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
-import { workspace, TextDocument } from 'vscode';
+import {workspace} from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 
 import {generate_pipeline, UserQuestioner} from '@pivotal-tools/pipeline-builder';
+import {LanguageClient} from "vscode-languageclient";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
 
 /** Called when extension is activated */
-export function activate(context: VSCode.ExtensionContext) {
+export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
 
     // registerPipelineGenerator(context);
 
@@ -53,7 +49,8 @@ export function activate(context: VSCode.ExtensionContext) {
             initializationOptions: {
                 workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null
             }
-        }
+        },
+        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
 
     return commons.activate(options, context);

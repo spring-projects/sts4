@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { NotificationType } from 'vscode-jsonrpc';
-import { TextDocumentIdentifier, Range } from 'vscode-base-languageclient/lib/base';
+import { TextDocumentIdentifier, Range, CodeLens } from 'vscode-base-languageclient/lib/base';
 import { SetDecorationParams, EditorDecorationStyle, TextEditor, DeltaDecorationParams, EditorManager } from '@theia/editor/lib/browser';
 import { ILanguageClient } from '@theia/languages/lib/common';
 import { DiffUris } from '@theia/core/lib/browser/diff-uris';
@@ -11,17 +11,11 @@ const HIGHLIGHTS_NOTIFICATION_TYPE = new NotificationType<HighlightParams,void>(
 const BOOT_LIVE_HINTS = 'Boot-Live-Hints';
 
 const INLINE_BOOT_HINT_DECORATION_STYLE = new EditorDecorationStyle('inline-boot-hint-decoration', style => {
-    style.borderStyle = 'dotted';
-    style.borderColor = '#32BA56';
-    style.borderWidth = '1px';
-});
-
-const LINE_BOOT_HINT_DECORATION_STYLE = new EditorDecorationStyle('line-boot-hint-decoration', style => {
-    style.backgroundImage = 'url(../../images/boot-icon.png)';
-    style.display = 'block';
-    style.width = '10px';
-    style.height = '1em';
-    style.margin = '0 2px 0 0';
+    style.backgroundColor = 'rgba(109,179,63,0.25)',
+    style.borderColor = 'rgba(109,179,63,0.25)',
+    style.borderSpacing = '4px',
+    style.borderRadius = '4px',
+    style.borderWidth = '4px'
 });
 
 @injectable()
@@ -43,13 +37,11 @@ export class HighlightService {
             const decorationParams: SetDecorationParams = {
                 uri: params.doc.uri,
                 kind: BOOT_LIVE_HINTS,
-                newDecorations: params.ranges.map(r => {
+                newDecorations: params.codeLenses.map(cl => {
                     return {
-                        range: Range.create(r.start.line, r.start.character, r.end.line, r.end.character),
+                        range: Range.create(cl.range.start.line, cl.range.start.character, cl.range.end.line, cl.range.end.character),
                         options: {
                             inlineClassName: INLINE_BOOT_HINT_DECORATION_STYLE.className,
-                            glyphMarginClassName: LINE_BOOT_HINT_DECORATION_STYLE.className,
-                            hoverMessage: 'Ho-ho, Boot Hint!',
                             isWholeLine: false
                         }
                     }
@@ -80,6 +72,6 @@ export class HighlightService {
 
 export interface HighlightParams {
     doc: TextDocumentIdentifier
-    ranges: Range[]
+    codeLenses: CodeLens[]
 }
 

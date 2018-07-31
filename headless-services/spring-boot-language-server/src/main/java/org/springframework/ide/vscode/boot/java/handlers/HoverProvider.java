@@ -17,8 +17,8 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -38,14 +38,16 @@ public interface HoverProvider {
 		return null;
 	}
 
-	default Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
-		return null;
-	}
-	default Collection<Range> getLiveHoverHints(IJavaProject project,TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
-		return null;
-	}
-	default Collection<Range> getLiveHoverHints(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
+	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		return null;
 	}
 
-}
+	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project,TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
+
+	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
+
+ }

@@ -69,6 +69,12 @@ public class LiveHoverUtils {
 		return buf.toString();
 	}
 
+	public static String getShortDisplayType(LiveBean bean) {
+		String type = bean.getType(true);
+		int idx = type.lastIndexOf('.');
+		return idx < 0 || idx == type.length() - 1 ? type : type.substring(idx + 1);
+	}
+
 	public static String showBeanInline(BootJavaLanguageServerComponents server, IJavaProject project, LiveBean bean) {
 		String id = bean.getId();
 		String type = bean.getType(true);

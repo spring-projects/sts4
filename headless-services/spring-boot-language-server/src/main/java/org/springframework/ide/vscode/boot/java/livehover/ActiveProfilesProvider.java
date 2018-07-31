@@ -22,14 +22,16 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +42,8 @@ import com.google.common.collect.ImmutableSet;
  * @author Kris De Volder
  */
 public class ActiveProfilesProvider implements HoverProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(ActiveProfilesProvider.class);
 
 	@Override
 	public Hover provideHover(
@@ -71,19 +75,26 @@ public class ActiveProfilesProvider implements HoverProvider {
 				}
 			}
 			if (hasInterestingApp) {
-				return new Hover(
+				Hover hover = new Hover(
 						ImmutableList.of(Either.forLeft(markdown.toString()))
 				);
+				if (hover != null) {
+					Optional<Range> optional = nameRange(doc, annotation);
+					if (optional.isPresent()) {
+						hover.setRange(optional.get());
+					}
+				}
+				return hover;
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
-			Builder<Range> ranges = ImmutableList.builder();
-			nameRange(doc, annotation).ifPresent(ranges::add);
+			Builder<CodeLens> codeLenses = ImmutableList.builder();
+			nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
 
 			Set<String> allActiveProfiles = getAllActiveProfiles(runningApps);
 			annotation.accept(new ASTVisitor() {
@@ -91,12 +102,12 @@ public class ActiveProfilesProvider implements HoverProvider {
 				public boolean visit(StringLiteral node) {
 					String value = ASTUtils.getLiteralValue(node);
 					if (value!=null && allActiveProfiles.contains(value)) {
-						rangeOf(doc, node).ifPresent(ranges::add);
+						rangeOf(doc, node).map(CodeLens::new).ifPresent(codeLenses::add);
 					}
 					return true;
 				}
 			});
-			return ranges.build();
+			return codeLenses.build();
 		}
 		return ImmutableList.of();
 	}
@@ -124,7 +135,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 			}
 			return Optional.of(doc.toRange(start, end-start));
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return Optional.empty();
 		}
 	}

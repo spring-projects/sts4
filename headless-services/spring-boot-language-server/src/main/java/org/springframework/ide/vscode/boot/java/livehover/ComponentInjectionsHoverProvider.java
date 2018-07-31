@@ -19,7 +19,9 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -98,7 +101,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(IJavaProject project, TypeDeclaration typeDeclaration, TextDocument doc,
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, TypeDeclaration typeDeclaration, TextDocument doc,
 			SpringBootApp[] runningApps) {
 		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {
@@ -107,7 +110,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
 						if (nameRange.isPresent()) {
-							return ImmutableList.of(nameRange.get());
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get());
+							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
 				}
@@ -126,7 +130,16 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
-				return assembleHover(project, runningApps, definedBean);
+				Hover hover = assembleHover(project, runningApps, definedBean);
+				if (hover != null) {
+					SimpleName name = typeDeclaration.getName();
+					try {
+						hover.setRange(doc.toRange(name.getStartPosition(), name.getLength()));
+					} catch (BadLocationException e) {
+						LOG.error("", e);
+					}
+				}
+				return hover;
 			}
 		}
 		return null;
