@@ -42,9 +42,7 @@ public class RunningAppMatcher  {
 		if (hasProjectName(app, project)) {
 			return doesProjectNameMatch(app, project);
 		}
-		else {
-			return doesProjectThinJarWrapperMatch(app, project) || doesClasspathMatch(app, project);
-		}
+		return true;
 	}
 
 	public static boolean hasProjectName(SpringBootApp app, IJavaProject project) {
