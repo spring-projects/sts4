@@ -61,7 +61,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			if (beanType != null) {
 				String id = getBeanId(annotation, beanType);
 				if (StringUtil.hasText(id)) {
-					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
+					return LiveBean.builder().id(id).type(getBeanType(beanType).toString()).build();
 				}
 			}
 		}
@@ -84,6 +84,18 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			}
 			return null;
 		});
+	}
+
+	private static StringBuilder getBeanType(ITypeBinding beanType) {
+		ITypeBinding declaringClass = beanType.getDeclaringClass();
+		if (declaringClass == null) {
+			return new StringBuilder(beanType.getQualifiedName());
+		} else {
+			StringBuilder sb = getBeanType(declaringClass);
+			sb.append('$');
+			sb.append(beanType.getName());
+			return sb;
+		}
 	}
 
 	@Override

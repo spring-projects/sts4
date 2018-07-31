@@ -209,12 +209,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 		if (type != null) {
 			String fqName = type.getQualifiedName();
 			if (fqName != null) {
-				relevant = matchBeans(project, beans, fqName);
+				relevant = matchBeans(project, beans, fqName, true);
 				if (relevant.isEmpty()) {
 					IType indexType = project.findType(fqName);
 					if (indexType != null) {
 						relevant = project.allSubtypesOf(indexType)
-							.map(subType -> matchBeans(project, beans, subType.getFullyQualifiedName()))
+							.map(subType -> matchBeans(project, beans, subType.getFullyQualifiedName(), false))
 							.filter(relevantBeans -> !relevantBeans.isEmpty())
 							.blockFirst();
 						if (relevant == null) {
@@ -227,9 +227,13 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return relevant;
 	}
 
-	private List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, String fqName) {
+	private List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allDots) {
 		if (fqName != null) {
-			return beans.stream().filter(b -> fqName.equals(b.getType(true))).collect(Collectors.toList());
+			if (allDots) {
+				return beans.stream().filter(b -> fqName.equals(b.getType(true).replace('$', '.'))).collect(Collectors.toList());
+			} else {
+				return beans.stream().filter(b -> fqName.equals(b.getType(true))).collect(Collectors.toList());
+			}
 		} else {
 			return Collections.emptyList();
 		}

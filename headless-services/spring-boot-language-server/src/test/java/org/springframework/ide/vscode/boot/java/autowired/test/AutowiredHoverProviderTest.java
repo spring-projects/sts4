@@ -14,6 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -82,6 +84,34 @@ public class AutowiredHoverProviderTest {
 				"\n" +
 				"public class DependencyB {\n" +
 				"}\n"
+		);
+
+		p.createType("com.example.RuntimeBeanFactory",
+			Stream.of(
+				"package com.example;",
+				"public interface RuntimeBeanFactory {",
+				"void createRuntimeBean(String info);",
+				"}"
+			).collect(Collectors.joining("\n"))
+		);
+
+		p.createType("com.example.SomeComponent",
+				Stream.of("package com.example;",
+					"",
+					"import org.springframework.context.annotation.Bean;",
+					"",
+//					"@Component",
+					"public class SomeComponent {",
+					"",
+					"@Bean",
+					"public RuntimeBeanFactory getBeanFactory() {",
+					"\treturn new RuntimeBeanFactory() {",
+					"\t\tpublic void createRuntimeBean(String info){}",
+					"\t};",
+					"}",
+					"",
+					"}"
+				).collect(Collectors.joining("\n"))
 		);
 
 		p.createType("com.example.FooImplementation", FOO_IMPL_CONTENTS);
@@ -577,4 +607,49 @@ public class AutowiredHoverProviderTest {
 		}
 	}
 
+	@Test
+	public void anonymousInnerClassBeanWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("anotherComponent")
+						.type("com.example.AnotherComponent")
+						.dependencies("anonymousBeanFactory")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("anonymousBeanFactory")
+						.type("com.example.SomeComponent$1")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AnotherComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   RuntimeBeanFactory beanFactory;\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Autowired", 1,
+				"**Autowired `anotherComponent` &rarr; `anonymousBeanFactory`**\n" +
+				"- Bean: `anonymousBeanFactory`  \n" +
+				"  Type: `com.example.SomeComponent$1`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
 }
