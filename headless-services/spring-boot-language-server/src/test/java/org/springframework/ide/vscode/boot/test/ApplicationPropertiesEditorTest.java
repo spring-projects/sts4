@@ -42,6 +42,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
@@ -52,6 +53,10 @@ import com.google.common.io.Files;
  * @author Alex Boyko
  */
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
+
+	private static final ProjectCustomizer WITH_EMPTY_APPLICATION_YML = projectContents -> {
+		projectContents.createFile("src/main/resources/application.yml", "");
+	};
 
 	@Test
 	public void testReconcileCatchesParseError() throws Exception {
@@ -1243,7 +1248,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testClasspathResourceCompletion() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 
-		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
+		useProject(projects.mavenProject("empty-boot-1.3.0-app", WITH_EMPTY_APPLICATION_YML));
 
 		data("my.nice.resource", "org.springframework.core.io.Resource", null, "A very nice resource.");
 		data("my.nice.list", "java.util.List<org.springframework.core.io.Resource>", null, "A nice list of resources.");

@@ -45,7 +45,7 @@ public abstract class AbstractPropsEditorTest {
 	public static final String BOOLEAN = Boolean.class.getName();
 	public static final String STRING = String.class.getName();
 
-	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
+	protected ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	protected PropertyIndexHarness md;
 	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new JavaProjectFinder() {
