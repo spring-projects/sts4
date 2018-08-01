@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.Unregistration;
 import org.eclipse.lsp4j.UnregistrationParams;
 import org.springframework.ide.vscode.commons.languageserver.json.DidChangeWatchedFilesRegistrationOptions;
 import org.springframework.ide.vscode.commons.languageserver.json.FileSystemWatcher;
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 /**
@@ -62,18 +63,22 @@ public class SimpleServerFileObserver extends BasicFileObserver {
 	}
 
 	private void subscribe(String subscriptionId, List<String> globPattern, int kind) {
-		if (server.canRegisterFileWatchersDynamically()) {
-			List<FileSystemWatcher> watchers = globPattern.stream().map(pattern -> new FileSystemWatcher(pattern, kind)).collect(Collectors.toList());
-			Registration registration = new Registration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES, new DidChangeWatchedFilesRegistrationOptions(watchers));
-			server.getClient().registerCapability(new RegistrationParams(Arrays.asList(registration)));
-		}
+		server.onInitialized(() -> {
+			if (server.canRegisterFileWatchersDynamically()) {
+				List<FileSystemWatcher> watchers = globPattern.stream().map(pattern -> new FileSystemWatcher(pattern, kind)).collect(Collectors.toList());
+				Registration registration = new Registration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES, new DidChangeWatchedFilesRegistrationOptions(watchers));
+				server.getClient().registerCapability(new RegistrationParams(Arrays.asList(registration)));
+			}
+		});
 	}
 
 	@Override
 	public boolean unsubscribe(String subscriptionId) {
-		if (server.canRegisterFileWatchersDynamically()) {
-			server.getClient().unregisterCapability(new UnregistrationParams(Arrays.asList(new Unregistration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES))));
-		}
+		server.onInitialized(() -> {
+			if (server.canRegisterFileWatchersDynamically()) {
+				server.getClient().unregisterCapability(new UnregistrationParams(Arrays.asList(new Unregistration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES))));
+			}
+		});
 		return super.unsubscribe(subscriptionId);
 	}
 

@@ -14,7 +14,9 @@ import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseTo
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -22,7 +24,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -39,9 +40,11 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class ValueCompletionProcessor implements CompletionProvider {
 
 	private final SpringPropertyIndexProvider indexProvider;
+	private SpringPropertyIndexProvider adHocIndexProvider;
 
-	public ValueCompletionProcessor(SpringPropertyIndexProvider indexProvider) {
+	public ValueCompletionProcessor(SpringPropertyIndexProvider indexProvider, SpringPropertyIndexProvider adHocIndexProvider) {
 		this.indexProvider = indexProvider;
+		this.adHocIndexProvider = adHocIndexProvider;
 	}
 
 	@Override
@@ -51,41 +54,39 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		List<ICompletionProposal> result = new ArrayList<>();
 
 		try {
-			FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
-
 			// case: @Value(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
-				List<Match<PropertyInfo>> matches = findMatches("", index);
+				List<Match<PropertyInfo>> matches = findMatches("", doc);
 
 				for (Match<PropertyInfo> match : matches) {
 
 					DocumentEdits edits = new DocumentEdits(doc);
 					edits.replace(offset, offset, "\"${" + match.data.getId() + "}\"");
 
-					ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match.data.getId(), match.data.getName(), null);
+					ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 					result.add(proposal);
 				}
 			}
 			// case: @Value(prefix<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
-				computeProposalsForSimpleName(node, result, offset, doc, index);
+				computeProposalsForSimpleName(node, result, offset, doc);
 			}
 			// case: @Value(value=<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				computeProposalsForSimpleName(node, result, offset, doc, index);
+				computeProposalsForSimpleName(node, result, offset, doc);
 			}
 			// case: @Value("prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, result, offset, doc, index);
+					computeProposalsForStringLiteral(node, result, offset, doc);
 				}
 			}
 			// case: @Value(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, result, offset, doc, index);
+					computeProposalsForStringLiteral(node, result, offset, doc);
 				}
 			}
 		}
@@ -97,7 +98,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private void computeProposalsForSimpleName(ASTNode node, List<ICompletionProposal> completions, int offset,
-			IDocument doc, FuzzyMap<PropertyInfo> index) {
+			IDocument doc) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
@@ -106,20 +107,20 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";
 
-		List<Match<PropertyInfo>> matches = findMatches(prefix, index);
+		List<Match<PropertyInfo>> matches = findMatches(prefix, doc);
 
 		for (Match<PropertyInfo> match : matches) {
 
 			DocumentEdits edits = new DocumentEdits(doc);
 			edits.replace(startOffset, endOffset, proposalPrefix + "${" + match.data.getId() + "}" + proposalPostfix);
 
-			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match.data.getId(), match.data.getName(), null);
+			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 			completions.add(proposal);
 		}
 	}
 
 	private void computeProposalsForStringLiteral(ASTNode node, List<ICompletionProposal> completions, int offset,
-			IDocument doc, FuzzyMap<PropertyInfo> index) throws BadLocationException {
+			IDocument doc) throws BadLocationException {
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, offset - (node.getStartPosition() + 1)), offset - (node.getStartPosition() + 1));
 
 		int startOffset = offset - prefix.length();
@@ -141,14 +142,14 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		String fullNodeContent = doc.get(node.getStartPosition(), node.getLength());
 		String postCompletion = isClosingBracketMissing(fullNodeContent + preCompletion) ? "}" : "";
 
-		List<Match<PropertyInfo>> matches = findMatches(prefix, index);
+		List<Match<PropertyInfo>> matches = findMatches(prefix, doc);
 
 		for (Match<PropertyInfo> match : matches) {
 
 			DocumentEdits edits = new DocumentEdits(doc);
 			edits.replace(startOffset, endOffset, preCompletion + match.data.getId() + postCompletion);
 
-			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match.data.getId(), match.data.getName(), null);
+			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 			completions.add(proposal);
 		}
 	}
@@ -184,8 +185,23 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		return result;
 	}
 
-	private List<Match<PropertyInfo>> findMatches(String prefix, FuzzyMap<PropertyInfo> index) {
-		List<Match<PropertyInfo>> matches = index.find(camelCaseToHyphens(prefix));
+	private List<Match<PropertyInfo>> findMatches(String prefix, IDocument doc) {
+		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
+		List<Match<PropertyInfo>> matches =index.find(camelCaseToHyphens(prefix));
+
+		//First the 'real' properties.
+		Set<String> suggestedKeys = new HashSet<>();
+		for (Match<PropertyInfo> m : matches) {
+			suggestedKeys.add(m.data.getId());
+		}
+
+		//Then also add 'ad-hoc' properties (see https://www.pivotaltracker.com/story/show/153107266).
+		index = adHocIndexProvider.getIndex(doc);
+		for (Match<PropertyInfo> m : index.find(prefix)) {
+			if (suggestedKeys.add(m.data.getId())) {
+				matches.add(m);
+			}
+		}
 		return matches;
 	}
 

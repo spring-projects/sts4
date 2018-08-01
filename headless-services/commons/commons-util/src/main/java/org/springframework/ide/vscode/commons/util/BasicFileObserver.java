@@ -97,18 +97,4 @@ public class BasicFileObserver implements FileObserver {
 			.forEach(pair -> pair.right.accept(uri));
 	}
 
-	@Override
-	public Disposable onAnyChange(List<String> globPattern, Consumer<String> handler) {
-		String[] ids = {
-				onFileChanged(globPattern, handler),
-				onFileCreated(globPattern, handler),
-				onFileDeleted(globPattern, handler)
-		};
-		return () -> {
-			for (String id : ids) {
-				unsubscribe(id);
-			}
-		};
-	}
-
 }

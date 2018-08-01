@@ -88,7 +88,7 @@ public class ProjectsHarness {
 		MAVEN
 		// GRADLE?
 	}
-	
+
 	public static final IJavaProject dummyProject() throws URISyntaxException {
 		return new LegacyJavaProject(new BasicFileObserver(), new URI("file:///someplace/nonexistent"), null,
 				new DelegatingCachedClasspath(() -> null, null), (uri, cpe) -> JavaDocProviders.createFor(cpe));
@@ -143,5 +143,5 @@ public class ProjectsHarness {
 	public MavenJavaProject mavenProject(String name) throws Exception {
 		return (MavenJavaProject) project(ProjectType.MAVEN, name);
 	}
-	
+
 }

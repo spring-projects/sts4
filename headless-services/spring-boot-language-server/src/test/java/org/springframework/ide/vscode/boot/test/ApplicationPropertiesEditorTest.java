@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
@@ -1627,6 +1628,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 						javaProjectFinder,
 						ProjectObserver.NULL,
 						md.getIndexProvider(),
+						(doc) -> SpringPropertyIndex.EMPTY_INDEX,
 						typeUtilProvider,
 						RunningAppProvider.NULL,
 						SpringLiveHoverWatchdog.DEFAULT_INTERVAL

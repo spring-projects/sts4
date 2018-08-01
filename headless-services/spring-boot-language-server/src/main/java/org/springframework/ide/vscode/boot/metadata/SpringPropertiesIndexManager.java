@@ -11,16 +11,19 @@
 package org.springframework.ide.vscode.boot.metadata;
 
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Support for Reconciling, Content Assist and Hover Text in spring properties
@@ -38,28 +41,11 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 
 	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders, ProjectObserver projectObserver) {
 		this.valueProviders = valueProviders;
-		this.indexes = CacheBuilder.newBuilder().build();
+		this.indexes = CacheBuilder.newBuilder()
+				.build();
 		if (projectObserver != null) {
-			projectObserver.addListener(new ProjectObserver.Listener() {
-
-				@Override
-				public void created(IJavaProject project) {
-					indexes.invalidate(project);
-				}
-
-				@Override
-				public void changed(IJavaProject project) {
-					indexes.invalidate(project);
-				}
-
-				@Override
-				public void deleted(IJavaProject project) {
-					indexes.invalidate(project);
-				}
-
-			});
+			projectObserver.addListener(ProjectObserver.onAny(project -> indexes.invalidate(project)));
 		}
-
 	}
 
 	public synchronized SpringPropertyIndex get(IJavaProject project, ProgressService progressService) {
@@ -70,7 +56,7 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 			return null;
 		}
 	}
-	
+
 	private SpringPropertyIndex initIndex(IJavaProject project, ProgressService progressService) {
 		Log.info("Indexing Spring Boot Properties for "+project.getElementName());
 
@@ -78,16 +64,16 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		if (progressService != null) {
 			progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
 		}
-		
+
 		SpringPropertyIndex index = new SpringPropertyIndex(valueProviders, project.getClasspath());
-		
+
 		if (progressService != null) {
 			progressService.progressEvent(progressId, null);
 		}
-		
+
 		Log.info("Indexing Spring Boot Properties for "+project.getElementName()+" DONE");
 		Log.info("Indexed "+index.size()+" properties.");
-		
+
 		return index;
 	}
 
@@ -99,7 +85,7 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 			}
 		}
 	}
-	
+
 	private static synchronized String getProgressId() {
 		return DefaultSpringPropertyIndexProvider.class.getName()+ (progressIdCt++);
 	}

@@ -54,6 +54,7 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 		private JavaProjectFinder projectFinder = null;
 		private ProjectObserver projectObserver = null;
 		private SpringPropertyIndexProvider indexProvider = null;
+		private SpringPropertyIndexProvider adHocIndexProvider = null;
 		private RunningAppProvider runningAppProvider = null;
 		private PropertyIndexHarness indexHarness = null;
 		private Duration watchDogInterval = null;
@@ -68,6 +69,7 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 			indexHarness = new PropertyIndexHarness();
 			projectFinder = indexHarness.getProjectFinder();
 			indexProvider = indexHarness.getIndexProvider();
+			adHocIndexProvider = indexHarness.adHocIndexProvider;
 			projectObserver = ProjectObserver.NULL;
 			runningAppProvider = RunningAppProvider.NULL;
 			return this;
@@ -105,6 +107,7 @@ public class BootJavaLanguageServerHarness extends LanguageServerHarness<Composa
 						builder.projectFinder==null?defaults.projectFinder:builder.projectFinder,
 						builder.projectObserver==null?defaults.projectObserver:builder.projectObserver,
 						builder.indexProvider==null?defaults.indexProvider:builder.indexProvider,
+						builder.adHocIndexProvider==null?defaults.adHocIndexProvider:builder.adHocIndexProvider,
 						builder.typeUtilProvider==null?defaults.typeUtilProvider:builder.typeUtilProvider,
 						builder.runningAppProvider==null?defaults.runningAppProvider:builder.runningAppProvider,
 						builder.watchDogInterval==null?defaults.watchDogInterval:builder.watchDogInterval

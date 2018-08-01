@@ -95,6 +95,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
+	private final SpringPropertyIndexProvider adHocPropertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
@@ -117,6 +118,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		cuCache = new CompilationUnitCache(projectFinder, server.getTextDocumentService(), projectObserver);
 
 		propertyIndexProvider = serverParams.indexProvider;
+		adHocPropertyIndexProvider = serverParams.adHocIndexProvider;
 
 		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
 		SimpleTextDocumentService documents = server.getTextDocumentService();
@@ -205,7 +207,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	@Override
 	public ICompletionEngine getCompletionEngine() {
-		return createCompletionEngine(projectFinder, propertyIndexProvider);
+		return createCompletionEngine(projectFinder, propertyIndexProvider, adHocPropertyIndexProvider);
 	}
 
 	@Override
@@ -244,13 +246,16 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		this.cuCache.dispose();
 	}
 
-	protected ICompletionEngine createCompletionEngine(JavaProjectFinder javaProjectFinder,
-			SpringPropertyIndexProvider indexProvider) {
+	protected ICompletionEngine createCompletionEngine(
+			JavaProjectFinder javaProjectFinder,
+			SpringPropertyIndexProvider indexProvider,
+			SpringPropertyIndexProvider adHocIndexProvider
+	) {
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
 				new ScopeCompletionProcessor());
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
-				new ValueCompletionProcessor(indexProvider));
+				new ValueCompletionProcessor(indexProvider, adHocIndexProvider));
 
 		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
 		snippetManager.add(

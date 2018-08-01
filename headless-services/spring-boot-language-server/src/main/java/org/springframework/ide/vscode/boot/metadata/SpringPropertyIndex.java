@@ -22,7 +22,9 @@ import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
-	
+
+	public static final FuzzyMap<PropertyInfo> EMPTY_INDEX = new SpringPropertyIndex(null, null);
+
 	private ValueProviderRegistry valueProviders;
 
 	public SpringPropertyIndex(ValueProviderRegistry valueProviders, IClasspath projectPath) {
@@ -126,7 +128,7 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 	protected String getKey(PropertyInfo entry) {
 		return entry.getId();
 	}
-	
+
 	/**
 	 * Find the longest known property that is a prefix of the given name. Here prefix does not mean
 	 * 'string prefix' but a prefix in the sense of treating '.' as a kind of separators. So

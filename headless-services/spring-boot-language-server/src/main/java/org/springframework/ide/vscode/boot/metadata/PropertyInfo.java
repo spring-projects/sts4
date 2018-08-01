@@ -117,6 +117,9 @@ public class PropertyInfo {
 			}
 		}
 	}
+	public PropertyInfo(String p) {
+		this(p, null, null, null, null, null, null, null, null, null, null);
+	}
 	private void handleAs(Object targetObject) {
 //		debug("handle-as "+this.getId()+" -> "+targetObject);
 		if (targetObject instanceof String) {
@@ -165,7 +168,7 @@ public class PropertyInfo {
 	private HintProvider valueHints(TypeUtil typeUtil) {
 		return HintProviders.basic(typeUtil.getJavaProject(), valueHints, valueProvider);
 	}
-	
+
 	public List<PropertySource> getSources() {
 		if (sources!=null) {
 			return sources;

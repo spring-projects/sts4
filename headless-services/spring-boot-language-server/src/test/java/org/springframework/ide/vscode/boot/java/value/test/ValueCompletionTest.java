@@ -62,7 +62,7 @@ public class ValueCompletionTest {
 
 	@Test
 	public void testPrefixIdentification() {
-		ValueCompletionProcessor processor = new ValueCompletionProcessor(null);
+		ValueCompletionProcessor processor = new ValueCompletionProcessor(null, null);
 
 		assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
 		assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
@@ -261,6 +261,52 @@ public class ValueCompletionTest {
 		assertAnnotationCompletions(
 				"@Value(\"#{345${spring.prop1<*>}}\")");
 	}
+
+	@Test
+	public void adHoc() throws Exception {
+		prepareDefaultIndexData();
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package org.test;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Value;\n" +
+				"\n" +
+				"public class TestValueCompletion {\n" +
+				"	\n" +
+				"	@Value(\"<*>\")\n" +
+				"	private String value1;\n" +
+				"}"
+		);
+
+		//There are no 'ad-hoc' properties yet. So should only suggest the default ones.
+		editor.assertContextualCompletions(
+				"<*>"
+				, //==>
+				"${data.prop2}<*>",
+				"${else.prop3}<*>",
+				"${spring.prop1}<*>"
+		);
+
+		indexHarness.adHoc("spring.ad-hoc.thingy");
+		indexHarness.adHoc("spring.ad-hoc.other-thingy");
+		indexHarness.adHoc("spring.prop1"); //should not suggest this twice!
+		editor.assertContextualCompletions(
+				"<*>"
+				, //==>
+				"${data.prop2}<*>",
+				"${else.prop3}<*>",
+				"${spring.ad-hoc.other-thingy}<*>",
+				"${spring.ad-hoc.thingy}<*>",
+				"${spring.prop1}<*>"
+		);
+
+		editor.assertContextualCompletions(
+				"adhoc<*>"
+				, //==>
+				"${spring.ad-hoc.other-thingy}<*>",
+				"${spring.ad-hoc.thingy}<*>"
+		);
+	}
+
 
 	private void prepareDefaultIndexData() {
 		indexHarness.data("spring.prop1", "java.lang.String", null, null);

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,6 +32,17 @@ public interface FileObserver {
 	
 	boolean unsubscribe(String subscriptionId);
 
-	Disposable onAnyChange(List<String> globPattern, Consumer<String> handler);
+	default Disposable onAnyChange(List<String> globPattern, Consumer<String> handler) {
+		String[] ids = {
+				onFileChanged(globPattern, handler),
+				onFileCreated(globPattern, handler),
+				onFileDeleted(globPattern, handler)
+		};
+		return () -> {
+			for (String id : ids) {
+				unsubscribe(id);
+			}
+		};
+	}
 	
 }
