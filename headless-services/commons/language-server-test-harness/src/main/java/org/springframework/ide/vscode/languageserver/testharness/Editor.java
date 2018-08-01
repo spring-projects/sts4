@@ -600,16 +600,24 @@ public class Editor {
 	}
 
 	public void assertTrimmedHover(String hoverOver, String expectedHover) throws Exception {
-		int hoverPosition = getHoverPosition(hoverOver,1);
+		assertTrimmedHover(hoverOver, 1, expectedHover);
+	}
+
+	public void assertTrimmedHover(String hoverOver, int occurence, String expectedHover) throws Exception {
+		int hoverPosition = getHoverPosition(hoverOver,occurence);
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertEquals(expectedHover.trim(), hoverString(hover).trim());
 	}
 
-	public void assertNoHover(String hoverOver) throws Exception {
-		int hoverPosition = getRawText().indexOf(hoverOver) + hoverOver.length() / 2;
+	public void assertNoHover(String hoverOver, int occurence) throws Exception {
+		int hoverPosition = getHoverPosition(hoverOver,occurence);
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		List<Either<String, MarkedString>> contents = hover.getContents().getLeft();
 		assertTrue(contents.toString(), contents.isEmpty());
+	}
+
+	public void assertNoHover(String hoverOver) throws Exception {
+		assertNoHover(hoverOver, 1);
 	}
 
 	/**

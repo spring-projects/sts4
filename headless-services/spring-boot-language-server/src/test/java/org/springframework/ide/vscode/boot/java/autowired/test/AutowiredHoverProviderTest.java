@@ -14,6 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -84,6 +86,34 @@ public class AutowiredHoverProviderTest {
 				"}\n"
 		);
 
+		p.createType("com.example.RuntimeBeanFactory",
+			Stream.of(
+				"package com.example;",
+				"public interface RuntimeBeanFactory {",
+				"void createRuntimeBean(String info);",
+				"}"
+			).collect(Collectors.joining("\n"))
+		);
+
+		p.createType("com.example.SomeComponent",
+				Stream.of("package com.example;",
+					"",
+					"import org.springframework.context.annotation.Bean;",
+					"",
+//					"@Component",
+					"public class SomeComponent {",
+					"",
+					"@Bean",
+					"public RuntimeBeanFactory getBeanFactory() {",
+					"\treturn new RuntimeBeanFactory() {",
+					"\t\tpublic void createRuntimeBean(String info){}",
+					"\t};",
+					"}",
+					"",
+					"}"
+				).collect(Collectors.joining("\n"))
+		);
+
 		p.createType("com.example.FooImplementation", FOO_IMPL_CONTENTS);
 	};
 
@@ -146,7 +176,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Inject");
 		editor.assertTrimmedHover("@Inject",
-				"**Autowired &rarr; `dependencyA`**\n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -201,7 +231,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired",
-				"**Autowired &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -352,11 +382,11 @@ public class AutowiredHoverProviderTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, FOO_IMPL_CONTENTS);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
 		editor.assertHoverContains("@Autowired", 1,
-				"**Autowired &rarr; `superBean`**\n" +
+				"**Autowired `defaultFoo` &rarr; `superBean`**\n" +
 				"- Bean: `superBean`  \n" +
 				"  Type: `com.example.FooImplementation`");
 		editor.assertHoverContains("@Autowired", 2,
-				"**Autowired &rarr; `scheduler`**\n" +
+				"**Autowired `defaultFoo` &rarr; `scheduler`**\n" +
 				"- Bean: `scheduler`  \n" +
 				"  Type: `org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler`");
 	}
@@ -406,13 +436,220 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Controller", "@Autowired");
 		editor.assertHoverContains("@Autowired",
-				"**Autowired &rarr; `restTemplate`**\n" +
+				"**Autowired `myController` &rarr; `restTemplate`**\n" +
 				"- Bean: `restTemplate`  \n" +
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
 		editor.assertHoverContains("@Controller",
-				"**Injection report for Bean [id: myController, type: `com.example.MyController`]**"
+				"**Injected `myController` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
+	@Test
+	public void implicitAutowiringSingleConstructor() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "SomeComponent");
+
+		editor.assertTrimmedHover("SomeComponent", 2,
+				"**Autowired `someComponent` &rarr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
+
+	@Test
+	public void noImplicitAutowiringForConstructorFromNonBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someOtherComponent")
+						.type("com.example.SomeOtherComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights();
+
+		for (int i = 1; i < 2; i++) {
+			editor.assertNoHover("SomeComponent", i);
+		}
+	}
+
+	@Test
+	public void noImplicitAutowiringForMultipleConstructors() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private DepedencyA depA;\n" +
+				"   private DepedencyB depB;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"	public SomeComponent(DependencyA depA, DependencyB depB) {\n" +
+				"		this.depA = depA;\n" +
+				"		this.depB = depB;\n" +
+				"	}\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component");
+		for (int i = 1; i < 3; i++) {
+			editor.assertNoHover("SomeComponent", i);
+		}
+	}
+
+	@Test
+	public void anonymousInnerClassBeanWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("anotherComponent")
+						.type("com.example.AnotherComponent")
+						.dependencies("anonymousBeanFactory")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("anonymousBeanFactory")
+						.type("com.example.SomeComponent$1")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class AnotherComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   RuntimeBeanFactory beanFactory;\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Autowired", 1,
+				"**Autowired `anotherComponent` &rarr; `anonymousBeanFactory`**\n" +
+				"- Bean: `anonymousBeanFactory`  \n" +
+				"  Type: `com.example.SomeComponent$1`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
 }

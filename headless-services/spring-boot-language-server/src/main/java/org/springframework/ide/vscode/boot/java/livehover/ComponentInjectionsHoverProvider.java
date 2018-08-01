@@ -14,27 +14,23 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -42,51 +38,10 @@ import com.google.common.collect.ImmutableList;
 
 public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverProvider {
 
+	private static Logger LOG = LoggerFactory.getLogger(ComponentInjectionsHoverProvider.class);
+
 	public ComponentInjectionsHoverProvider(BootJavaLanguageServerComponents server) {
 		super(server);
-	}
-
-	@Override
-	protected void addAutomaticallyWiredContructor(StringBuilder hover, Annotation annotation, LiveBeansModel beans, LiveBean bean, IJavaProject project) {
-		TypeDeclaration typeDecl = ASTUtils.findDeclaringType(annotation);
-		if (typeDecl != null) {
-			MethodDeclaration[] constructors = ASTUtils.findConstructors(typeDecl);
-
-			if (constructors != null && constructors.length == 1 && !hasAutowiredAnnotation(constructors[0])) {
-				String[] dependencies = bean.getDependencies();
-
-				if (dependencies != null && dependencies.length > 0) {
-					hover.append("\n\n");
-					hover.append(LiveHoverUtils.showBean(bean) + " got autowired with:\n\n");
-
-					boolean firstDependency = true;
-					for (String injectedBean : dependencies) {
-						if (!firstDependency) {
-							hover.append("\n");
-						}
-						List<LiveBean> dependencyBeans = beans.getBeansOfName(injectedBean);
-						for (LiveBean dependencyBean : dependencyBeans) {
-							hover.append("- " + LiveHoverUtils.showBeanWithResource(server, dependencyBean, "  ", project));
-						}
-						firstDependency = false;
-					}
-				}
-			}
-		}
-	}
-
-	private boolean hasAutowiredAnnotation(MethodDeclaration constructor) {
-		List<?> modifiers = constructor.modifiers();
-		for (Object modifier : modifiers) {
-			if (modifier instanceof MarkerAnnotation) {
-				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null) {
-					String fqName = typeBinding.getQualifiedName();
-					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName);
-				}
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -106,7 +61,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			if (beanType != null) {
 				String id = getBeanId(annotation, beanType);
 				if (StringUtil.hasText(id)) {
-					return LiveBean.builder().id(id).type(beanType.getQualifiedName()).build();
+					return LiveBean.builder().id(id).type(getBeanType(beanType).toString()).build();
 				}
 			}
 		}
@@ -119,9 +74,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			String typeName = beanType.getName();
 
 			ITypeBinding declaringClass = beanType.getDeclaringClass();
-			while (declaringClass != null) {
-				typeName = declaringClass.getName() + "." + typeName;
-				declaringClass = declaringClass.getDeclaringClass();
+			if (declaringClass != null) {
+				return getBeanType(beanType).toString();
 			}
 
 			if (StringUtil.hasText(typeName)) {
@@ -131,8 +85,20 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		});
 	}
 
+	private static StringBuilder getBeanType(ITypeBinding beanType) {
+		ITypeBinding declaringClass = beanType.getDeclaringClass();
+		if (declaringClass == null) {
+			return new StringBuilder(beanType.getQualifiedName());
+		} else {
+			StringBuilder sb = getBeanType(declaringClass);
+			sb.append('$');
+			sb.append(beanType.getName());
+			return sb;
+		}
+	}
+
 	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
+	public Collection<Range> getLiveHoverHints(IJavaProject project, TypeDeclaration typeDeclaration, TextDocument doc,
 			SpringBootApp[] runningApps) {
 		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {
@@ -146,7 +112,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					}
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				LOG.error("", e);
 			}
 		}
 		return ImmutableList.of();
@@ -160,30 +126,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
-				StringBuilder hover = new StringBuilder();
-				hover.append("**Injection report for " + LiveHoverUtils.showBean(definedBean) + "**\n\n");
-
-				boolean hasInterestingApp = false;
-				for (SpringBootApp app : runningApps) {
-					LiveBeansModel beans = app.getBeans();
-					List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean).collect(Collectors.toList());
-
-					if (!relevantBeans.isEmpty()) {
-						if (!hasInterestingApp) {
-							hasInterestingApp = true;
-						} else {
-							hover.append("\n\n");
-						}
-						hover.append(LiveHoverUtils.niceAppName(app) + ":");
-
-						for (LiveBean bean : relevantBeans) {
-							addInjectedInto(definedBean, hover, beans, bean, project);
-						}
-					}
-				}
-				if (hasInterestingApp) {
-					return new Hover(ImmutableList.of(Either.forLeft(hover.toString())));
-				}
+				return assembleHover(project, runningApps, definedBean);
 			}
 		}
 		return null;

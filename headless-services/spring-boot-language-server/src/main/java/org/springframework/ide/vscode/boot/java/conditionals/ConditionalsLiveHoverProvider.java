@@ -28,7 +28,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
-import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -50,7 +49,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		try {
 			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, runningApps);
 			if (val.isPresent()) {
@@ -154,18 +153,6 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 			return typeInfo.contains(annotationDeclaringClassName);
 		}
 		return false;
-	}
-
-	@Override
-	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return null;
-	}
-
-	@Override
-	public Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
-		return null;
 	}
 
 }

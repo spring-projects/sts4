@@ -26,6 +26,8 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 
 	public static final String PLUGIN_ID = "org.springframework.tooling.ls.eclipse.commons";
 
+	public static final String BOOT_KEY = "boot-key";
+
 	private static LanguageServerCommonsActivator instance;
 
 	public LanguageServerCommonsActivator() {
@@ -35,6 +37,7 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		instance = this;
 		super.start(context);
+		getImageRegistry().put(BOOT_KEY, getImageDescriptor("icons/boot.png"));
 	}
 
 	public final static ImageDescriptor getImageDescriptor(String path) {

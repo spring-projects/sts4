@@ -95,11 +95,8 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: myFoo]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: myFoo, type: `hello.FooImplementation`] exists but is **Not injected anywhere**\n"
+				"**Injected `myFoo` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -154,11 +151,8 @@ public class BeanInjectedIntoHoverProviderTest {
 			);
 			editor.assertHighlights("@Bean");
 			editor.assertTrimmedHover("@Bean",
-					"**Injection report for Bean [id: beanId]**\n" +
-					"\n" +
-					"Process [PID=111, name=`the-app`]:\n" +
-					"\n" +
-					"Bean [id: beanId, type: `hello.FooImplementation`] exists but is **Not injected anywhere**\n"
+					"**Injected `beanId` &rarr; _not injected anywhere_**  \n" +
+					"Process [PID=111, name=`the-app`]"
 			);
 		}
 	}
@@ -209,14 +203,11 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: fooImplementation]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
-				"  Type: `hello.MyController`\n"
+				"  Type: `hello.MyController`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -269,14 +260,11 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: fooImplementation]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
-				"  Type: `hello.MyController`\n"
+				"  Type: `hello.MyController`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -323,15 +311,12 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: fooImplementation]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
-				"  Resource: `" + Paths.get("hello/MyController.class") + "`"
+				"  Resource: `" + Paths.get("hello/MyController.class") + "`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -377,15 +362,12 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: fooImplementation]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
-				"  Resource: `hello/MyController.class`"
+				"  Resource: `hello/MyController.class`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -435,16 +417,13 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**Injection report for Bean [id: fooImplementation]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `hello.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController` `otherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
-				"  Type: `hello.OtherBean`\n"
+				"  Type: `hello.OtherBean`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 

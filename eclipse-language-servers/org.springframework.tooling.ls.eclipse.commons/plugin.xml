@@ -2,28 +2,27 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension point="org.eclipse.ui.editors.annotationTypes">
-      <type name="org.springframework.tooling.bootinfo"></type>
+      <type
+            name="org.springframework.tooling.bootinfo"></type>
    </extension>
    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-        annotationType="org.springframework.tooling.bootinfo"
-        colorPreferenceKey="STS4BootMarkerIndicationColor"
-        colorPreferenceValue="23,104,17"
-        contributesToHeader="false"
-        highlightPreferenceKey="STS4BootMarkerHighlighting"
-        highlightPreferenceValue="false"
-        icon="icons/boot-icon.png"
-        label="Boot Dynamic Info"
-        overviewRulerPreferenceKey="STS4BootMarkerIndicationInOverviewRuler"
-        overviewRulerPreferenceValue="true"
-        presentationLayer="4"
-        showInNextPrevDropdownToolbarAction="false"
-        textPreferenceKey="STS4BootMarkerIndication"
-        textPreferenceValue="true"
-        textStylePreferenceKey="STS4BootMarkerTextStyle"
-        textStylePreferenceValue="DASHED_BOX"
-        verticalRulerPreferenceKey="STS4BootMarkerIndicationInVerticalRuler"
-        verticalRulerPreferenceValue="true">
+            annotationType="org.springframework.tooling.bootinfo"
+            colorPreferenceKey="STS4BootMarkerIndicationColor"
+            colorPreferenceValue="219,236,207"
+            contributesToHeader="false"
+            highlightPreferenceKey="STS4BootMarkerHighlighting"
+            highlightPreferenceValue="true"
+            label="Boot Dynamic Info"
+            overviewRulerPreferenceKey="STS4BootMarkerIndicationInOverviewRuler"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            showInNextPrevDropdownToolbarAction="false"
+            textPreferenceKey="STS4BootMarkerIndication"
+            textPreferenceValue="true"
+            textStylePreferenceKey="STS4BootMarkerTextStyle"
+            verticalRulerPreferenceKey="STS4BootMarkerIndicationInVerticalRuler"
+            verticalRulerPreferenceValue="true">
       </specification>
    </extension>
    <extension

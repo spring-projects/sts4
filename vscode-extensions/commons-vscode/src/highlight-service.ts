@@ -27,10 +27,15 @@ export class HighlightService {
 
     constructor() {
         this.DECORATION = VSCode.window.createTextEditorDecorationType({
-            //        textDecoration: "underline",
-            gutterIconPath: path.resolve(__dirname, "../icons/boot-icon.png"),
-            gutterIconSize: "contain",
-            outline: "#32BA56 dotted thin"
+            before: {
+                contentIconPath: path.resolve(__dirname, "../icons/boot-12h.png"),
+                margin: '2px 2px 0px 0px'
+            },
+            backgroundColor: 'rgba(109,179,63,0.25)',
+            borderColor: 'rgba(109,179,63,0.25)',
+            borderSpacing: '4px',
+            borderRadius: '4px',
+            borderWidth: '4px'
         });
         this.highlights = new Map();
     }
@@ -48,6 +53,7 @@ export class HighlightService {
                 //We only update highlights in the active editor for now
                 let highlights : Range[] = this.highlights.get(uri) || [];
                 let decorations = highlights.map(hl => toDecoration(hl));
+                editor.setDecorations(this.DECORATION, decorations);
                 editor.setDecorations(this.DECORATION, decorations);
             }
         }

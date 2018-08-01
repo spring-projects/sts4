@@ -15,6 +15,7 @@ import java.util.Collection;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
@@ -27,10 +28,24 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface HoverProvider {
 
-	Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps);
-	Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps);
+	default Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		return null;
+	}
+	default Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		return null;
+	}
+	default Hover provideHover(MethodDeclaration methodDeclaration, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		return null;
+	}
 
-	Collection<Range> getLiveHoverHints(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps);
-	Collection<Range> getLiveHoverHints(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps);
+	default Collection<Range> getLiveHoverHints(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
+	default Collection<Range> getLiveHoverHints(IJavaProject project,TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
+	default Collection<Range> getLiveHoverHints(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc, SpringBootApp[] runningApps) {
+		return null;
+	}
 
 }

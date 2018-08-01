@@ -134,14 +134,11 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedRandomClass");
 		editor.assertTrimmedHover("ScannedRandomClass",
-				"**Injection report for Bean [id: scannedRandomClass, type: `com.example.ScannedRandomClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: scannedRandomClass, type: `com.example.ScannedRandomClass`] injected into:\n" +
-				"\n" +
+				"**Injected `scannedRandomClass` &rarr; `randomOtherBean`**\n" +
 				"- Bean: `randomOtherBean`  \n" +
-				"  Type: `randomOtherBeanType`"
+				"  Type: `randomOtherBeanType`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -190,14 +187,12 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedFunctionClass");
 		editor.assertTrimmedHover("ScannedFunctionClass",
-				"**Injection report for Bean [id: scannedFunctionClass, type: `com.example.ScannedFunctionClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: scannedFunctionClass, type: `com.example.ScannedFunctionClass`] injected into:\n" +
-				"\n" +
+				"**Injected `scannedFunctionClass` &rarr; 1 bean**\n" +
 				"- Bean: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`  \n" +
-				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`"
+				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
+
 		);
 	}
 
@@ -233,11 +228,8 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] exists but is **Not injected anywhere**\n"
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 

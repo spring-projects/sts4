@@ -11,8 +11,10 @@
 package org.springframework.ide.vscode.boot.java.livehover;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
@@ -131,20 +133,25 @@ public class LiveHoverUtils {
 	}
 
 	public static boolean hasRelevantBeans(SpringBootApp app, LiveBean definedBean) {
-		return findRelevantBeans(app, definedBean).findAny().isPresent();
+		return findRelevantBeans(app, definedBean).stream().findAny().isPresent();
 	}
 
-	public static Stream<LiveBean> findRelevantBeans(SpringBootApp app, LiveBean definedBean) {
+	public static List<LiveBean> findRelevantBeans(SpringBootApp app, LiveBean definedBean) {
 		LiveBeansModel beansModel = app.getBeans();
 		if (beansModel != null) {
-			Stream<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId()).stream();
+			List<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId());
 			String type = definedBean.getType();
 			if (type != null) {
-				relevantBeans = relevantBeans.filter(bean -> type.equals(bean.getType(true)));
+				// TODO: check if we should check for bean type rather than id that we build ourselves based on type
+//				if (relevantBeans.isEmpty()) {
+//					relevantBeans = beansModel.getBeansOfType(type);
+//				} else {
+					relevantBeans = relevantBeans.stream().filter(bean -> type.equals(bean.getType(true))).collect(Collectors.toList());
+//				}
 			}
 			return relevantBeans;
 		}
-		return Stream.empty();
+		return Collections.emptyList();
 	}
 
 	public static String niceAppName(SpringBootApp app) {

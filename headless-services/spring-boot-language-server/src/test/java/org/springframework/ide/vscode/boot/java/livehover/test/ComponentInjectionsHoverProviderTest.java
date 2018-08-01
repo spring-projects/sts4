@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import java.time.Duration;
 
 import org.junit.Before;
@@ -107,11 +106,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] exists but is **Not injected anywhere**\n"
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -159,14 +155,11 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
-				"  Type: `com.example.MyController`"
+				"  Type: `com.example.MyController`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
 
@@ -214,16 +207,13 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController` `otherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
-				"  Type: `com.example.OtherBean`"
+				"  Type: `com.example.OtherBean`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -273,25 +263,21 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=1001, name=`app-instance-1`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController` `otherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`\n" +
-				"\n" +
-				"Process [PID=1002, name=`app-instance-2`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"  \n" +
+				"Process [PID=1001, name=`app-instance-1`]" +
+				"  \n  \n" +
+				"**Injected `fooImplementation` &rarr; `myController` `otherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
-				"  Type: `com.example.OtherBean`\n"
+				"  Type: `com.example.OtherBean`\n" +
+				"  \n" +
+ 				"Process [PID=1002, name=`app-instance-2`]"
 		);
 	}
 
@@ -344,14 +330,11 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertHoverExactText("@Component",
-				"**Injection report for Bean [id: fooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: fooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `fooImplementation` &rarr; `myController`**\n" +
 				"- Bean: `myController`  \n" +
-				"  Type: `com.example.MyController`"
+				"  Type: `com.example.MyController`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -404,14 +387,11 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: alternateFooImplementation, type: `com.example.FooImplementation`] injected into:\n" +
-				"\n" +
+				"**Injected `alternateFooImplementation` &rarr; `otherBean`**\n" +
 				"- Bean: `otherBean`  \n" +
-				"  Type: `com.example.OtherBean`\n"
+				"  Type: `com.example.OtherBean`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -451,7 +431,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"	}\n" +
 				"}\n"
 		);
-		editor.assertHighlights(/*MONE*/);
+		editor.assertHighlights(/*NONE*/);
 		editor.assertNoHover("@Component");
 	}
 
@@ -516,22 +496,10 @@ public class ComponentInjectionsHoverProviderTest {
 				"	}\n" +
 				"}\n"
 		);
-		editor.assertHighlights("@Component");
+		editor.assertHighlights("@Component", "AutowiredClass");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n" +
-				"\n\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] got autowired with:\n" +
-				"\n" +
-				"- Bean: `dependencyA`  \n" +
-				"  Type: `com.example.DependencyA`  \n" +
-				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
-				"- Bean: `dependencyB`  \n" +
-				"  Type: `com.example.DependencyB`  \n" +
-				"  Resource: `com/example/DependencyB.class`"
+				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
 
@@ -578,11 +546,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Component",
-				"**Injection report for Bean [id: autowiredClass, type: `com.example.AutowiredClass`]**\n" +
-				"\n" +
-				"Process [PID=111, name=`the-app`]:\n" +
-				"\n" +
-				"Bean [id: autowiredClass, type: `com.example.AutowiredClass`] exists but is **Not injected anywhere**\n"
+				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
 
@@ -621,7 +586,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"**Injection report for Bean [id: demoApplication, type: `com.example.DemoApplication`]**"
+				"**Injected `demoApplication` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -629,7 +595,7 @@ public class ComponentInjectionsHoverProviderTest {
 	public void componentFromInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
-						.id("demoApplication.InnerClass")
+						.id("com.example.DemoApplication$InnerClass")
 						.type("com.example.DemoApplication$InnerClass")
 						.build()
 				)
@@ -662,7 +628,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"**Injection report for Bean [id: demoApplication.InnerClass, type: `com.example.DemoApplication.InnerClass`]**"
+				"**Injected `com.example.DemoApplication$InnerClass` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
@@ -670,7 +637,7 @@ public class ComponentInjectionsHoverProviderTest {
 	public void componentFromInnerInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
-						.id("demoApplication.InnerClass.InnerInnerClass")
+						.id("com.example.DemoApplication$InnerClass$InnerInnerClass")
 						.type("com.example.DemoApplication$InnerClass$InnerInnerClass")
 						.build()
 				)
@@ -706,7 +673,8 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"**Injection report for Bean [id: demoApplication.InnerClass.InnerInnerClass, type: `com.example.DemoApplication.InnerClass.InnerInnerClass`]**"
+				"**Injected `com.example.DemoApplication$InnerClass$InnerInnerClass` &rarr; _not injected anywhere_**  \n" +
+				"Process [PID=111, name=`the-app`]"
 		);
 	}
 }
