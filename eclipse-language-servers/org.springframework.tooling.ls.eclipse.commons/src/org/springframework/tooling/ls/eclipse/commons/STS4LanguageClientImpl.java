@@ -188,7 +188,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		for (Range rng : highlights) {
 			try {
 				int start = LSPEclipseUtils.toOffset(rng.getStart(), doc);
-				Position colorPos = new Position(start, 0);
+				int end = LSPEclipseUtils.toOffset(rng.getEnd(), doc);
+				Position colorPos = new Position(start, end - start);
 				BootInlineAnnotation colorAnnotation = support.findExistingAnnotation(colorPos);
 				if (colorAnnotation == null) {
 					colorAnnotation = new BootInlineAnnotation(colorPos, sourceViewer);

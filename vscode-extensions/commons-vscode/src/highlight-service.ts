@@ -27,12 +27,8 @@ export class HighlightService {
 
     constructor() {
         this.DECORATION = VSCode.window.createTextEditorDecorationType({
-            //        textDecoration: "underline",
-            // gutterIconPath: path.resolve(__dirname, "../icons/boot-icon.png"),
-            // gutterIconSize: "contain",
-            // outline: "#32BA56 dotted thin",
             before: {
-                contentIconPath: path.resolve(__dirname, "../icons/boot-12.png"),
+                contentIconPath: path.resolve(__dirname, "../icons/boot-12h.png"),
                 margin: '2px 2px 0px 0px'
             },
             backgroundColor: 'rgba(109,179,63,0.25)',

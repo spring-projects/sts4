@@ -39,7 +39,7 @@ public class BootInlineAnnotation extends LineContentAnnotation {
 		FontMetrics fontMetrics = gc.getFontMetrics();
 		int height = fontMetrics.getHeight();
 
-		Image bootImage = LanguageServerCommonsActivator.getInstance().getImageRegistry().get(LanguageServerCommonsActivator.BOOT_ICON_2X_KEY);
+		Image bootImage = LanguageServerCommonsActivator.getInstance().getImageRegistry().get(LanguageServerCommonsActivator.BOOT_KEY);
 		Rectangle bootImgBounds = bootImage.getBounds();
 		int width = (int) Math.round(bootImgBounds.width / (double) bootImgBounds.height * height);
 
