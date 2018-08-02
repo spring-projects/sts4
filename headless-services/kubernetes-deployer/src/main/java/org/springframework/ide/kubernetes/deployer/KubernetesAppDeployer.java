@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.deployer;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.kubernetes.container.ContainerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Node;
@@ -83,7 +86,21 @@ public class KubernetesAppDeployer implements AppDeployer {
 		createDeployment(appId, definition, containerPort);
 		logger.info(String.format("Created Deployment: %s.", appId));
 
-		return getServiceUris(appId, definition.createNodePort());
+		if (definition.createNodePort()) {
+			List<String> uris = getNodePortUris(appId);
+			if (!uris.isEmpty()) {
+				return uris;
+			} else {
+				List<Integer> nodePorts = getNodePorts(appId);
+				StringWriter writer = new StringWriter();
+				writer.append("Service available at the following node ports: ");
+				for (Integer port : nodePorts) {
+					writer.append("" + port);
+				}
+				logger.info(writer.toString());
+			}
+		}
+		return ImmutableList.of();
 
 	}
 
@@ -147,6 +164,9 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 		ServicePort servicePort = definition.getServicePort();
 
+		Map<String, String> annotations = getServiceAnnotations(definition);
+		Map<String, String> idMap = getServiceLabels(appId);
+
 		if (definition.createNodePort()) {
 			logger.info("Using 'NodePort' for service");
 			spec.withType("NodePort");
@@ -159,9 +179,6 @@ public class KubernetesAppDeployer implements AppDeployer {
 				logger.info("Setting service target port: " + definition.getServicePort().getTargetPort().getIntVal());
 			}
 		}
-
-		Map<String, String> annotations = getServiceAnnotations(definition);
-		Map<String, String> idMap = getServiceLabels(appId);
 
 		spec.withSelector(idMap).addNewPortLike(servicePort).endPort();
 
@@ -248,16 +265,14 @@ public class KubernetesAppDeployer implements AppDeployer {
 		return PropertyParserUtils.getAnnotations(annotationsProperty);
 	}
 
-	private List<String> getServiceUris(String appId, boolean useNodePort) {
+	private List<String> getNodePortUris(String appId) {
 		List<String> serviceUris = new ArrayList<>();
-		if (useNodePort) {
-			List<String> nodeUris = getNodeExternalIps();
-			List<Integer> nodePorts = getNodePorts(appId);
+		List<String> nodeUris = getNodeExternalIps();
+		List<Integer> nodePorts = getNodePorts(appId);
 
-			for (String nodeUri : nodeUris) {
-				for (Integer port : nodePorts) {
-					serviceUris.add(nodeUri + ':' + port);
-				}
+		for (String nodeUri : nodeUris) {
+			for (Integer port : nodePorts) {
+				serviceUris.add(nodeUri + ':' + port);
 			}
 		}
 
