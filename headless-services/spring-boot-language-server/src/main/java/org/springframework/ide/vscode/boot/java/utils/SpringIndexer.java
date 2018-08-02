@@ -143,7 +143,7 @@ public class SpringIndexer {
 		this.addonInformationByProject = new ConcurrentHashMap<>();
 
 		this.updateQueue = Executors.newSingleThreadExecutor();
-		
+
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
 		});
@@ -210,7 +210,7 @@ public class SpringIndexer {
 					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						String[] classpathEntries = getClasspathEntries(maybeProject.get());
-						
+
 						UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, classpathEntries);
 						return CompletableFuture.runAsync(updateItem, this.updateQueue);
 					}
@@ -238,7 +238,7 @@ public class SpringIndexer {
 				return Futures.error(e);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -289,7 +289,7 @@ public class SpringIndexer {
 		List<SymbolAddOnInformation> info = this.addonInformationByDoc.get(docURI);
 		return info == null ? ImmutableList.of() : info;
 	}
-	
+
 	/**
 	 * inserts a noop operation into the worker/update quene, which allows invokers to use the
 	 * returned future to wait for the queue items in the queue to be completed which got inserted before
@@ -317,7 +317,7 @@ public class SpringIndexer {
 			scanFiles(project, parser, files, classpathEntries);
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error parsing all Java source files from project: " + project.getElementName(), e);
 		}
 	}
 
@@ -541,7 +541,7 @@ public class SpringIndexer {
 
 
 	private class InitializeProject implements Runnable {
-		
+
 		private final IJavaProject project;
 
 		public InitializeProject(IJavaProject project) {
@@ -563,17 +563,17 @@ public class SpringIndexer {
 					.collect(Collectors.toList());
 
 				SpringIndexer.this.scanProject(project, (String[]) files.toArray(new String[files.size()]));
-	
+
 				log.debug("{} completed", this);
 			} catch (Throwable e) {
 				log.error("{} threw exception", this, e);
 			}
 		}
-		
+
 	}
 
 	private class DeleteProject implements Runnable {
-		
+
 		private final IJavaProject project;
 
 		public DeleteProject(IJavaProject project) {
@@ -591,7 +591,7 @@ public class SpringIndexer {
 				log.error("{} threw exception", this, e);
 			}
 		}
-		
+
 	}
 
 	private class UpdateItem implements Runnable {
@@ -638,19 +638,19 @@ public class SpringIndexer {
 			}
 		}
 	}
-	
+
 	private void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
 		symbols.add(enhancedSymbol.getSymbol());
 		symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
 		symbolsByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolInformation>()).add(enhancedSymbol.getSymbol());
-		
+
 		if (enhancedSymbol.getAdditionalInformation() != null) {
 			addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 			addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 			addonInformationByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolAddOnInformation>()).addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
 		}
 	}
-	
+
 	private void removeSymbolsByDoc(IJavaProject project, String docURI) {
 		List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
 		if (oldSymbols != null) {
@@ -661,7 +661,7 @@ public class SpringIndexer {
 				projectSymbols.removeAll(oldSymbols);
 			}
 		}
-		
+
 		List<SymbolAddOnInformation> oldAddInInformation = addonInformationByDoc.remove(docURI);
 		if (oldAddInInformation != null) {
 			addonInformation.removeAll(oldAddInInformation);
@@ -671,7 +671,7 @@ public class SpringIndexer {
 				projectAddOns.removeAll(oldAddInInformation);
 			}
 		}
-		
+
 	}
 
 	private void removeSymbolsByProject(IJavaProject project) {
@@ -685,13 +685,13 @@ public class SpringIndexer {
 				String docURI = docIter.next();
 				List<SymbolInformation> docSymbols = symbolsByDoc.get(docURI);
 				docSymbols.removeAll(oldSymbols);
-				
+
 				if (docSymbols.isEmpty()) {
 					docIter.remove();
 				}
 			}
 		}
-		
+
 		List<SymbolAddOnInformation> oldAddInInformation = addonInformationByProject.remove(project.getElementName());
 		if (oldAddInInformation != null) {
 			addonInformation.removeAll(oldAddInInformation);
@@ -702,13 +702,13 @@ public class SpringIndexer {
 				String docURI = docIter.next();
 				List<SymbolAddOnInformation> docAddons = addonInformationByDoc.get(docURI);
 				docAddons.removeAll(oldAddInInformation);
-				
+
 				if (docAddons.isEmpty()) {
 					docIter.remove();
 				}
 			}
 		}
-		
+
 	}
 
 }
