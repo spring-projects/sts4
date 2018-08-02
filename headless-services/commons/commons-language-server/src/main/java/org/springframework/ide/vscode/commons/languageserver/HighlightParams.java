@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.commons.languageserver;
 import java.util.List;
 
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 
 public class HighlightParams {
@@ -29,7 +28,7 @@ public class HighlightParams {
 		this.doc = doc;
 		this.ranges = ranges;
 	}
-	public TextDocumentIdentifier getDoc() {
+	public VersionedTextDocumentIdentifier getDoc() {
 		return doc;
 	}
 	public void setDoc(VersionedTextDocumentIdentifier doc) {
