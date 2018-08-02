@@ -12,7 +12,6 @@ package org.springframework.tooling.ls.eclipse.commons;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +41,7 @@ import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -138,7 +138,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	 * Latest highlight request params. It is sufficient to only remember the last request per uri, because
 	 * each new request is expected to replace the previous highlights.
 	 */
-	private Map<String,  List<Range>> currentHighlights = new HashMap<>();
+	private Map<String, HighlightParams> currentHighlights = new HashMap<>();
 
 	/**
 	 * Current markers... indexed per document uri, needed sp we to be removed upon next update.
@@ -149,23 +149,32 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	private synchronized void updateAnnotations(String target, ISourceViewer sourceViewer, IAnnotationModelExtension annotationModel) {
 		if (target!=null) {
+			HighlightParams highlightParams = currentHighlights.get(target);
 			IDocument doc = sourceViewer.getDocument();
-			Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(doc, (x) -> true);
-			for (LSPDocumentInfo docInfo : infos) {
-				URI uri = docInfo.getFileUri();
-				if (uri!=null && uri.toString().equals(target)) {
-					Annotation[] toRemove = currentAnnotations.get(target);
-					if (toRemove==null) {
-						toRemove = new Annotation[0];
-					}
-					List<Range> highlights = currentHighlights.get(target);
-					Map<Annotation, Position> newAnnotations = createAnnotations(doc, highlights);
-					annotationModel.replaceAnnotations(toRemove, newAnnotations);
-					currentAnnotations.put(target, newAnnotations.keySet().toArray(new Annotation[newAnnotations.size()]));
-					updateInlinedAnnotations(sourceViewer, highlights);
+			if (isProperDocumentIdFor(doc, highlightParams.getDoc())) {
+				Annotation[] toRemove = currentAnnotations.get(target);
+				if (toRemove==null) {
+					toRemove = new Annotation[0];
+				}
+				List<Range> highlights = highlightParams == null ? null : highlightParams.getRanges();
+				Map<Annotation, Position> newAnnotations = createAnnotations(doc, highlights);
+				annotationModel.replaceAnnotations(toRemove, newAnnotations);
+				currentAnnotations.put(target, newAnnotations.keySet().toArray(new Annotation[newAnnotations.size()]));
+				updateInlinedAnnotations(sourceViewer, highlights);
+			}
+		}
+	}
+
+	private static boolean isProperDocumentIdFor(IDocument doc, VersionedTextDocumentIdentifier id) {
+		for (LSPDocumentInfo info : LanguageServiceAccessor.getLSPDocumentInfosFor(doc, (x) -> true)) {
+			if (info.getVersion() == id.getVersion()) {
+				URI uri = info.getFileUri();
+				if (uri != null && uri.toString().equals(id.getUri())) {
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 
 	private void updateInlinedAnnotations(final ISourceViewer sourceViewer, List<Range> highlights) {
@@ -247,7 +256,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public synchronized void highlight(HighlightParams highlights) {
 		String target = highlights.getDoc().getUri();
 		if (target!=null) {
-			currentHighlights.put(target, highlights.getRanges());
+			currentHighlights.put(target, highlights);
 			new UpdateHighlights(target);
 		}
 	}

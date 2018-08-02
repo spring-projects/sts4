@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
@@ -195,7 +196,10 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	private void publishLiveHints(String docURI, Range[] ranges) {
-		server.getClient().highlight(new HighlightParams(new TextDocumentIdentifier(docURI), Arrays.asList(ranges)));
+		int version = server.getTextDocumentService().get(docURI).getVersion();
+		VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(version);
+		id.setUri(docURI);
+		server.getClient().highlight(new HighlightParams(id, Arrays.asList(ranges)));
 	}
 
 	private void cleanupLiveHints(String docURI) {

@@ -13,30 +13,30 @@ package org.springframework.tooling.ls.eclipse.commons;
 import java.util.List;
 
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 
 public class HighlightParams {
-	
+
 	//TODO: Identical copy of this exists in org.springframework.ide.vscode.commons.languageserver.HighlightParams
 	// But because that is only built in plain maven jar (not osgi) we can't use it. We should find a solution
 	// for this somehow (i.e. build a version of some of our 'plain maven' jars as osgi bundles and publish on
 	// a update site.
 
-	private TextDocumentIdentifier doc;
+	private VersionedTextDocumentIdentifier doc;
 	private List<Range> ranges;
 
 	public HighlightParams() {
 	}
 
-	public HighlightParams(TextDocumentIdentifier doc, List<Range> ranges) {
+	public HighlightParams(VersionedTextDocumentIdentifier doc, List<Range> ranges) {
 		super();
 		this.doc = doc;
 		this.ranges = ranges;
 	}
-	public TextDocumentIdentifier getDoc() {
+	public VersionedTextDocumentIdentifier getDoc() {
 		return doc;
 	}
-	public void setDoc(TextDocumentIdentifier doc) {
+	public void setDoc(VersionedTextDocumentIdentifier doc) {
 		this.doc = doc;
 	}
 	public List<Range> getRanges() {

@@ -14,16 +14,17 @@ import java.util.List;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 
 public class HighlightParams {
 
-	private TextDocumentIdentifier doc;
+	private VersionedTextDocumentIdentifier doc;
 	private List<Range> ranges;
 
 	public HighlightParams() {
 	}
 
-	public HighlightParams(TextDocumentIdentifier doc, List<Range> ranges) {
+	public HighlightParams(VersionedTextDocumentIdentifier doc, List<Range> ranges) {
 		super();
 		this.doc = doc;
 		this.ranges = ranges;
@@ -31,7 +32,7 @@ public class HighlightParams {
 	public TextDocumentIdentifier getDoc() {
 		return doc;
 	}
-	public void setDoc(TextDocumentIdentifier doc) {
+	public void setDoc(VersionedTextDocumentIdentifier doc) {
 		this.doc = doc;
 	}
 	public List<Range> getRanges() {
