@@ -1,4 +1,4 @@
-import {TextDocumentIdentifier, Position, Range} from 'vscode-languageclient'
+import {VersionedTextDocumentIdentifier, Position, Range} from 'vscode-languageclient'
 import * as VSCode from 'vscode';
 import * as path from "path";
 
@@ -11,7 +11,7 @@ function toPosition(p : Position) : VSCode.Position {
 }
  
 export interface HighlightParams {
-    doc: TextDocumentIdentifier
+    doc: VersionedTextDocumentIdentifier
     ranges: Range[]
 }
 
@@ -42,16 +42,17 @@ export class HighlightService {
 
     handle(params : HighlightParams) : void {
         this.highlights.set(params.doc.uri, params.ranges);
-        this.refresh(params.doc.uri);
+        this.refresh(params.doc);
     }
 
-    refresh(uri : String) {
+    refresh(docId: VersionedTextDocumentIdentifier) {
         let editors = VSCode.window.visibleTextEditors;
         for (let editor of editors) {
-            let activeUri = editor.document.uri.toString();
-            if (uri===activeUri) {
+            const activeUri = editor.document.uri.toString();
+            const activeVersion = editor.document.version;
+            if (docId.uri === activeUri && docId.version === activeVersion) {
                 //We only update highlights in the active editor for now
-                let highlights : Range[] = this.highlights.get(uri) || [];
+                let highlights : Range[] = this.highlights.get(docId.uri) || [];
                 let decorations = highlights.map(hl => toDecoration(hl));
                 editor.setDecorations(this.DECORATION, decorations);
                 editor.setDecorations(this.DECORATION, decorations);
