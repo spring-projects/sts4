@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
@@ -52,9 +51,9 @@ public class BeansSymbolProvider implements SymbolProvider {
 	@Override
 	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
 		if (isMethodAbstract(node)) return null;
-		
+
 		ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
-		
+
 		boolean isFunction = isFunctionBean(node);
 		String beanType = getBeanType(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
@@ -155,8 +154,8 @@ public class BeansSymbolProvider implements SymbolProvider {
 		ASTNode parent = node.getParent();
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) parent;
-
 			String returnType = null;
+
 			if (method.getReturnType2().isParameterizedType()) {
 				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
 				Type type = paramType.getType();
@@ -172,7 +171,7 @@ public class BeansSymbolProvider implements SymbolProvider {
 		}
 		return false;
 	}
-	
+
 	private boolean isMethodAbstract(Annotation node) {
 		if (node != null && node.getParent() != null && node.getParent() instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) node.getParent();

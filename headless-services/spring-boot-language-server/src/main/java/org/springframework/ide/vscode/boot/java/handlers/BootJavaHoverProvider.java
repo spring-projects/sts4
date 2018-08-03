@@ -42,7 +42,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -104,7 +103,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 								extractLiveHintsForType(node, document, runningBootApps, result);
 							}
 							catch (Exception e) {
-								e.printStackTrace();
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
 							return super.visit(node);
 						}
@@ -114,7 +113,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 							try {
 								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
-								Log.log(e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
 
 							return super.visit(node);
@@ -125,7 +124,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 							try {
 								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
-								Log.log(e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
 
 							return super.visit(node);
@@ -136,7 +135,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 							try {
 								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
 							} catch (Exception e) {
-								Log.log(e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
 
 							return super.visit(node);
@@ -147,7 +146,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 							try {
 								extractLiveHintsForMethod(node, document, runningBootApps, result);
 							} catch (Exception e) {
-								Log.log(e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
 
 							return super.visit(node);
@@ -157,7 +156,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 					});
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				logger.error("error extracting live hint information for docURI '" + document.getUri(), e);
 			}
 			return result.toArray(new Range[result.size()]);
 		});
@@ -337,7 +336,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				});
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("error identifying actuator dependency on project '" + project.getElementName() + "'", e);
 		}
 		return false;
 	}
@@ -350,7 +349,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		try {
 			return RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("error getting all matching projects for project'" + project.getElementName() + "'", e);
 			return new SpringBootApp[0];
 		}
 	}

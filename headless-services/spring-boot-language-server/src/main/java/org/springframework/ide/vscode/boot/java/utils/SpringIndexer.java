@@ -382,7 +382,7 @@ public class SpringIndexer {
 					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					log.error("error extracting symbol information in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 				}
 				return super.visit(node);
 			}
@@ -393,7 +393,7 @@ public class SpringIndexer {
 					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					log.error("error extracting symbol information in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 				}
 				return super.visit(node);
 			}
@@ -404,7 +404,7 @@ public class SpringIndexer {
 					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					log.error("error extracting symbol information in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 				}
 
 				return super.visit(node);
@@ -416,7 +416,7 @@ public class SpringIndexer {
 					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					log.error("error extracting symbol information in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 				}
 
 				return super.visit(node);
@@ -428,7 +428,7 @@ public class SpringIndexer {
 					extractSymbolInformation(project, node, docURI, docRef, content);
 				}
 				catch (Exception e) {
-					e.printStackTrace();
+					log.error("error extracting symbol information in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 				}
 
 				return super.visit(node);
@@ -483,7 +483,7 @@ public class SpringIndexer {
 					}
 				}
 			} else {
-				SymbolInformation symbol = provideDefaultSymbol(node, docURI, docRef, content);
+				SymbolInformation symbol = provideDefaultSymbol(project, node, docURI, docRef, content);
 				if (symbol != null) {
 					addSymbol(project, docURI, new EnhancedSymbolInformation(symbol, null));
 				}
@@ -510,7 +510,7 @@ public class SpringIndexer {
 		return doc;
 	}
 
-	private SymbolInformation provideDefaultSymbol(Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) {
+	private SymbolInformation provideDefaultSymbol(IJavaProject project, Annotation node, String docURI, AtomicReference<TextDocument> docRef, String content) {
 		try {
 			ITypeBinding type = node.resolveTypeBinding();
 			if (type != null) {
@@ -524,7 +524,7 @@ public class SpringIndexer {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error creating default symbol in project '" + project.getElementName() + "' - for docURI '" + docURI + "' - on node: " + node.toString(), e);
 		}
 
 		return null;
