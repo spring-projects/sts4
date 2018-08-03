@@ -302,8 +302,8 @@ public class ValueCompletionTest {
 		editor.assertContextualCompletions(
 				"adhoc<*>"
 				, //==>
-				"${spring.ad-hoc.other-thingy}<*>",
-				"${spring.ad-hoc.thingy}<*>"
+				"${spring.ad-hoc.thingy}<*>",
+				"${spring.ad-hoc.other-thingy}<*>"
 		);
 	}
 
