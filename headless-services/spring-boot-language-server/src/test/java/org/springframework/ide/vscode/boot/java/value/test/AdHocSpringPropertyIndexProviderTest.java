@@ -19,18 +19,10 @@ import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 
 public class AdHocSpringPropertyIndexProviderTest {
 
 	private MockProjects projects = new MockProjects();
-
-	private static final ProjectCustomizer WITH_PROPERTIES = (projectContent) -> {
-		projectContent.createFile("src/main/resources/application.properties",
-				"some-adhoc-foo=somefoo\n" +
-				"some-adhoc-bar=somebar\n"
-		);
-	};
 
 	@Test
 	public void parseProperties() throws Exception {
