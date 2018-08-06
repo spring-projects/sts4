@@ -164,7 +164,7 @@
       <editor
             class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
-            icon="icons/spring_obj.gif"
+            icon="icons/spring_yml.png"
             id="SpringBootYMLPropertyEditor"
             name="Generic Editor - Spring YAML Properties"
             symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
