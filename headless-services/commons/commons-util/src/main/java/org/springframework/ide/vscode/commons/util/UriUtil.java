@@ -28,7 +28,7 @@ public class UriUtil {
 	public static String normalize(String uriVal) {
 		try {
 			if (uriVal != null && uriVal.startsWith("file:")) {
-				File file = new File(URI.create(uriVal));
+				File file = new File(URI.create(uriVal)).getCanonicalFile();
 				uriVal = file.toURI().toString();
 				//Careful!!! If the project uri points to a existing project... then it will be
 				//a directory and then the uri we computed will get a slash at the end.
@@ -39,6 +39,7 @@ public class UriUtil {
 				while (uriVal.endsWith("/")) {
 					uriVal = uriVal.substring(0, uriVal.length()-1);
 				}
+				//Careful on windows, drive letters
 				return uriVal;
 			}
 		} catch (Exception e) {

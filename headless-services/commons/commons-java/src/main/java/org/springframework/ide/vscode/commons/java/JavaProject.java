@@ -74,4 +74,9 @@ public class JavaProject implements IJavaProject, Disposable {
 	public boolean exists() {
 		return new File(uri).exists();
 	}
+
+	@Override
+	public String toString() {
+		return "JavaProject("+uri+")";
+	}
 }
