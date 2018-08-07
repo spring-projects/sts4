@@ -18,7 +18,9 @@ import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -30,6 +32,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -50,7 +53,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private LanguageServer languageServer;
 	
 	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
-	private final ValueListener<ImmutableSet<String>> remoteAppsListener = (e, v) -> sendConfiguration();
+	private final ValueListener<ImmutableSet<Pair<String,String>>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	public DelegatingStreamConnectionProvider() {
 		String port = System.getProperty("boot-java-ls-port");
@@ -123,6 +126,28 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		}
 	}
 	
+	public class RemoteBootAppData {
+		private String jmxurl;
+		private String host;
+		public RemoteBootAppData(String jmxurl, String host) {
+			super();
+			this.jmxurl = jmxurl;
+			this.host = host;
+		}
+		public String getJmxurl() {
+			return jmxurl;
+		}
+		public void setJmxurl(String jmxurl) {
+			this.jmxurl = jmxurl;
+		}
+		public String getHost() {
+			return host;
+		}
+		public void setHost(String host) {
+			this.host = host;
+		}
+	}
+	
 	private void sendConfiguration() {
 		Map<String, Object> settings = new HashMap<>();
 		Map<String, Object> bootJavaObj = new HashMap<>();
@@ -134,7 +159,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 		bootJavaObj.put("boot-hints", bootHint);
 		bootJavaObj.put("change-detection", bootChangeDetection);
-		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues());
+		ImmutableSet<Pair<String, String>> remoteApps = BootLanguageServerPlugin.getRemoteBootApps().getValues();
+		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues()
+				.stream()
+				.map(pair -> new RemoteBootAppData(pair.getLeft(), pair.getRight()))
+				.collect(Collectors.toList())
+		);
 
 		settings.put("boot-java", bootJavaObj);
 

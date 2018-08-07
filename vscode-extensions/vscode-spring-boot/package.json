@@ -76,7 +76,15 @@
         "boot-java.remote-apps": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "jmxurl": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              }
+            }
           },
           "description": "Array of jmx urls pointing to remote spring boot applications to poll for live hover information. A typical url looks something like this: `service:jmx:rmi://localhost:9111/jndi/rmi://localhost:9111/jmxrmi`"
         },

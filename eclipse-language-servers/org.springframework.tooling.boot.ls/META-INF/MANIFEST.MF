@@ -24,7 +24,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.ui.ide,
  org.eclipse.jdt.core,
  org.eclipse.ui.editors;bundle-version="3.11.100",
- org.springsource.ide.eclipse.commons.livexp
+ org.springsource.ide.eclipse.commons.livexp,
+ org.apache.commons.lang3
 Import-Package: com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
  org.osgi.framework

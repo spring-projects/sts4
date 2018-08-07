@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
@@ -96,9 +97,9 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 		}
 	}
 	
-	private static LiveSetVariable<String> remoteBootApps = new LiveSetVariable<>();
+	private static LiveSetVariable<Pair<String,String>> remoteBootApps = new LiveSetVariable<>();
 	
-	public static LiveSetVariable<String> getRemoteBootApps() {
+	public static LiveSetVariable<Pair<String,String>> getRemoteBootApps() {
 		return remoteBootApps;
 	}
 

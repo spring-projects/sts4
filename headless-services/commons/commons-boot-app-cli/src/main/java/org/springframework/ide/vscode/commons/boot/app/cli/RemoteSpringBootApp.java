@@ -21,14 +21,34 @@ import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	private String jmxUrl;
+	private String host = null;
+	private String port = "80";
 
-	protected RemoteSpringBootApp(String jmxUrl) {
+	protected RemoteSpringBootApp(String jmxUrl, String host) {
 		this.jmxUrl = jmxUrl;
+		this.host = host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	@Override
 	protected String getJmxUrl() {
 		return jmxUrl;
+	}
+
+	@Override
+	public String getPort() throws Exception {
+		return port!=null ? port : super.getPort();
+	}
+
+	@Override
+	public String getHost() throws Exception {
+		if (host!=null) {
+			return host;
+		}
+		return super.getHost();
 	}
 
 	@Override
@@ -78,8 +98,8 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 		return "Unknown";
 	}
 
-	public static SpringBootApp create(String jmxUrl) {
-		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), jmxUrl);
+	public static SpringBootApp create(String jmxUrl, String host) {
+		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), jmxUrl, host);
 	}
 
 }

@@ -28,7 +28,11 @@ public class UrlUtil {
 				if (!path.startsWith("/")) {
 					path = "/" +path;
 				}
-				return "http://"+host+":"+port+path;
+				if (port.equals("80")) {
+					return "http://"+host+path;
+				} else {
+					return "http://"+host+":"+port+path;
+				}
 			}
 		}
 		return null;

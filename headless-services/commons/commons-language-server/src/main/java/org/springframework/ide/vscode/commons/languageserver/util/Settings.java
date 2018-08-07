@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,8 +31,25 @@ public class Settings {
 
 	private JsonElement settings;
 
+	private Gson gson;
+
 	public Settings(JsonElement settings) {
 		this.settings = settings;
+	}
+
+	public <T> T getAs(Class<T> type, String... names) {
+		JsonElement json = getRawProperty(names);
+		if (json!=null) {
+			return gson().fromJson(json, type);
+		}
+		return null;
+	}
+
+	private Gson gson() {
+		if (gson==null) {
+			gson = new Gson();
+		}
+		return gson;
 	}
 
 	public Set<String> getStringSet(String... names) {
