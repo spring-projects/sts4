@@ -37,7 +37,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  * @author Martin Lippert
  */
 public class SpringIndexerTest {
-	
+
 	private BootJavaLanguageServerHarness harness;
 	private File directory;
 	private SpringIndexer indexer;
@@ -47,13 +47,13 @@ public class SpringIndexerTest {
 	@Before
 	public void setup() throws Exception {
 		harness = BootJavaLanguageServerHarness.builder().build();
-		
+
 		harness.intialize(null);
 		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
-		
+
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
-		
+
 		// trigger project creation
 		project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
 
@@ -65,7 +65,7 @@ public class SpringIndexerTest {
 	public void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(6, allSymbols.size());
+		assertEquals(7, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -78,6 +78,9 @@ public class SpringIndexerTest {
 
 		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 	}
 
 	@Test
@@ -105,7 +108,7 @@ public class SpringIndexerTest {
 	public void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(6, allSymbols.size());
+		assertEquals(7, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -118,6 +121,10 @@ public class SpringIndexerTest {
 
 		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 	}
 
 	@Test
@@ -139,7 +146,7 @@ public class SpringIndexerTest {
 
 		// check for updated index in all symbols
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
-		assertEquals(6, allSymbols.size());
+		assertEquals(7, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -152,6 +159,9 @@ public class SpringIndexerTest {
 
 		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 	}
 
 	@Test
@@ -163,7 +173,7 @@ public class SpringIndexerTest {
 		assertNull(symbols);
 
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
-		assertEquals(6, allSymbols.size());
+		assertEquals(7, allSymbols.size());
 
 		try {
 			// create document and update index
@@ -197,7 +207,7 @@ public class SpringIndexerTest {
 
 			// check for updated index in all symbols
 			allSymbols = indexer.getAllSymbols("");
-			assertEquals(8, allSymbols.size());
+			assertEquals(9, allSymbols.size());
 
 			String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 			assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -210,6 +220,9 @@ public class SpringIndexerTest {
 
 			docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 			assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+			docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+			assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 
 			assertTrue(containsSymbol(allSymbols, "@/created-mapping1", createdDocURI, 6, 1, 6, 36));
 			assertTrue(containsSymbol(allSymbols, "@/created-mapping2", createdDocURI, 11, 1, 11, 36));
@@ -233,7 +246,7 @@ public class SpringIndexerTest {
 
 		// check for updated index in all symbols
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
-		assertEquals(4, allSymbols.size());
+		assertEquals(5, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -242,6 +255,9 @@ public class SpringIndexerTest {
 
 		docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 	}
 
 	@Test
@@ -289,7 +305,7 @@ public class SpringIndexerTest {
 			SymbolInformation symbol = iterator.next();
 
 			if (
-					symbol.getName().equals(name) && 
+					symbol.getName().equals(name) &&
 					symbol.getLocation().getUri().equals(uri)
 			) {
 				return true;
@@ -315,11 +331,11 @@ public class SpringIndexerTest {
 
 		return false;
 	}
-	
+
 	@Test
 	public void testDeleteProject() throws Exception {
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
-		assertEquals(6, allSymbols.size());
+		assertEquals(7, allSymbols.size());
 
 		CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
 		deleteProject.get(5, TimeUnit.SECONDS);

@@ -44,7 +44,7 @@ public class SpringIndexerBeansTest {
 
 		harness = BootJavaLanguageServerHarness.builder().build();
 		harness.intialize(null);
-		
+
 		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 
@@ -87,6 +87,29 @@ public class SpringIndexerBeansTest {
 				// @Bean(name= {"namedBean1", "namedBean2"})
 				SpringIndexerHarness.symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
 				SpringIndexerHarness.symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
+		);
+	}
+
+	@Test
+	public void testScanConfigurationClassWithConditionals() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/ConfigurationWithConditionals.java").toUri().toString();
+		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+				SpringIndexerHarness.symbol("@Configuration", "@+ 'configurationWithConditionals' (@Configuration <: @Component) ConfigurationWithConditionals"),
+				SpringIndexerHarness.symbol("@Bean", "@+ 'conditionalBean' (@Bean @ConditionalOnJava(JavaVersion.EIGHT)) BeanClass"),
+				SpringIndexerHarness.symbol("@Bean", "@+ 'conditionalBeanDifferentSequence' (@Bean @ConditionalOnJava(JavaVersion.EIGHT)) BeanClass"),
+				SpringIndexerHarness.symbol("@Bean", "@+ 'conditionalBeanWithJavaAndCloud' (@Bean @ConditionalOnJava(JavaVersion.EIGHT) @Profile(\"cloud\")) BeanClass")
+		);
+	}
+
+	@Test
+	public void testScanConfigurationClassWithConditionalsDefaultSymbol() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/ConfigurationWithConditionalsDefaultSymbols.java").toUri().toString();
+		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+				SpringIndexerHarness.symbol("@Configuration", "@+ 'configurationWithConditionalsDefaultSymbols' (@Configuration <: @Component) ConfigurationWithConditionalsDefaultSymbols"),
+				SpringIndexerHarness.symbol("@ConditionalOnJava(JavaVersion.EIGHT)", "@ConditionalOnJava(JavaVersion.EIGHT)"),
+				SpringIndexerHarness.symbol("@Profile(\"cloud\")", "@Profile(\"cloud\")"),
+				SpringIndexerHarness.symbol("@ConditionalOnJava(JavaVersion.EIGHT)", "@ConditionalOnJava(JavaVersion.EIGHT)"),
+				SpringIndexerHarness.symbol("@Profile(\"cloud\")", "@Profile(\"cloud\")")
 		);
 	}
 

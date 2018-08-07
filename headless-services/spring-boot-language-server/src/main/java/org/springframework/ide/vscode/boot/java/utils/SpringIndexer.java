@@ -48,9 +48,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -517,9 +515,7 @@ public class SpringIndexer {
 				String qualifiedName = type.getQualifiedName();
 				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
 					TextDocument doc = getTempTextDocument(docURI, docRef, content);
-					SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-							new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-					return symbol;
+					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				}
 			}
 		}

@@ -55,6 +55,7 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
@@ -343,6 +344,27 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		providers.put(Annotations.BEAN, new BeansSymbolProvider());
 		providers.put(Annotations.COMPONENT, new ComponentSymbolProvider());
+
+		providers.put(Annotations.PROFILE, new RestrictedDefaultSymbolProvider());
+
+		providers.put(Annotations.CONDITIONAL, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_BEAN, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_CLASS, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_JAVA, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_JNDI, new RestrictedDefaultSymbolProvider());
+		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, new RestrictedDefaultSymbolProvider());
 
 		providers.put(Annotations.REPOSITORY, new DataRepositorySymbolProvider());
 		providers.put("", new WebfluxRouterSymbolProvider());

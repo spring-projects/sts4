@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
@@ -25,6 +26,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -56,11 +58,12 @@ public class BeansSymbolProvider implements SymbolProvider {
 
 		boolean isFunction = isFunctionBean(node);
 		String beanType = getBeanType(node);
+		String markerString = getAnnotations(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
 				symbols.add(new EnhancedSymbolInformation(
 						new SymbolInformation(
-								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean"),
+								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean" + markerString),
 								SymbolKind.Interface,
 								new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))),
 						null
@@ -170,6 +173,31 @@ public class BeansSymbolProvider implements SymbolProvider {
 					|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
 		}
 		return false;
+	}
+
+	private String getAnnotations(Annotation node) {
+		StringBuilder result = new StringBuilder();
+
+		ASTNode parent = node.getParent();
+		if (parent instanceof MethodDeclaration) {
+			MethodDeclaration method = (MethodDeclaration) parent;
+
+			List<?> modifiers = method.modifiers();
+			for (Object modifier : modifiers) {
+				if (modifier instanceof Annotation) {
+					Annotation annotation = (Annotation) modifier;
+					IAnnotationBinding annotationBinding = annotation.resolveAnnotationBinding();
+					String type = annotationBinding.getAnnotationType().getBinaryName();
+
+					if (type != null && !Annotations.BEAN.equals(type)) {
+						result.append(' ');
+						result.append(annotation.toString());
+					}
+				}
+			}
+		}
+
+		return result.toString();
 	}
 
 	private boolean isMethodAbstract(Annotation node) {
