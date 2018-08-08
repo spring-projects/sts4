@@ -1,3 +1,15 @@
+## 2018-08-09 (M14)
+
+* no major changes
+
+## 2018-07-23 (M13)
+
+* no major changes
+
+## 2018-06-08 (M12)
+
+* no major changes
+
 ## 2018-05-14 (M11)
 
 * _(all)_ JVM used to run the language servers can now be specified via custom settings ([#51](https://github.com/spring-projects/sts4/issues/51))
