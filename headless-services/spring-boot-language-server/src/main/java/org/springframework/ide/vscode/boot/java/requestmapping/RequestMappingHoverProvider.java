@@ -153,14 +153,22 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			String port = mappingMethod.getT2().getPort();
 			String host = mappingMethod.getT2().getHost();
 
-			 List<Renderable> renderableUrls = Arrays.stream(mappingMethod.getT1().getSplitPath()).flatMap(path -> {
+			String[] paths = mappingMethod.getT1().getSplitPath();
+			if (paths==null || paths.length==0) {
+				//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
+				//So this is not quite the same as the case where path=""... but...
+				//It is better for us to show one link where any path is allowed, versus showing no links where any link is allowed.
+				//So we'll pretend this is the same as path="" as that gives a working link.
+				paths = new String[] {""};
+			}
+			List<Renderable> renderableUrls = Arrays.stream(paths).flatMap(path -> {
 				String url = UrlUtil.createUrl(host, port, path);
 				return Stream.of(Renderables.link(url, url), Renderables.lineBreak());
 			})
 			.collect(Collectors.toList());
 
-			 // Remove the last line break
-			 renderableUrls.remove(renderableUrls.size() - 1);
+			//The renderableUrls can not be empty because, above, we made sure there's at least one path.
+			renderableUrls.remove(renderableUrls.size() - 1);
 
 			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
 			hoverContent.add(Either.forLeft(LiveHoverUtils.niceAppName(app)));
