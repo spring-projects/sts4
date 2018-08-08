@@ -1,3 +1,15 @@
+## 2018-08-09 (M14)
+
+* _(Spring Boot)_ added support for showing live hovers for Spring Boot apps running remotely (on Cloud Foundry)
+* _(Spring Boot)_ improved and simplified content for live hovers showing bean wiring information
+* _(Spring Boot)_ improved look of live hover highlights
+* (_Spring Boot)_ improved error handling when source code parsing goes wrong
+* (_Spring Boot)_ added specific bean wiring live hovers for `@Autowired` fields and constructors
+* (_Spring Boot)_ user-defined values in property files showing up as suggestions for `@Value` completions
+* (_Spring Boot)_ bean symbols now directly contain additional annotations (like `@Conditional...` or `@Profile`)
+* (_Spring Boot)_ added option to match running process directly to specific project in the workspace (for live hovers) via system property (set `-Dspring.boot.project.name=<project-name-in-workspace>` to show live hovers of that running process exclusively on the project with that name).
+* (_Spring Boot)_ fixed bug that prevented property editing support to work on Windows ([#59](https://github.com/spring-projects/sts4/issues/59))
+
 ## 2018-07-23 (M13)
 
 * _(Spring Boot)_ early prototype for detecting changed bean definitions in live-running (and restarted) boot applications
