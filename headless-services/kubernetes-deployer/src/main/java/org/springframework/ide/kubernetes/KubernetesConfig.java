@@ -14,6 +14,8 @@ package org.springframework.ide.kubernetes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.kubernetes.container.ContainerFactory;
+import org.springframework.ide.kubernetes.container.DockerClientFactory;
+import org.springframework.ide.kubernetes.container.DockerHandler;
 import org.springframework.ide.kubernetes.deployer.AppDeployer;
 import org.springframework.ide.kubernetes.deployer.DeployRunner;
 import org.springframework.ide.kubernetes.deployer.DeployerArgsParser;
@@ -37,6 +39,11 @@ public class KubernetesConfig {
 	public ContainerFactory getContainerFactory() {
 		return new ContainerFactory();
 	}
+	
+	@Bean
+	public DockerClientFactory getDockerClientFactory() {
+		return new DockerClientFactory();
+	}
 
 	@Bean
 	public AppDeployer getAppDeployer(ContainerFactory containerFactory, KubernetesClientFactory clientFactory) {
@@ -44,8 +51,13 @@ public class KubernetesConfig {
 	}
 	
 	@Bean
-	public DeployRunner getDeployerRunner(AppDeployer appDeployer) {
-		return new DeployRunner(appDeployer);
+	public DockerHandler getDockerHandler(DockerClientFactory clientFactory) {
+		return new DockerHandler(clientFactory);
+	}
+	
+	@Bean
+	public DeployRunner getDeployerRunner(AppDeployer appDeployer, DockerHandler dockerHandler) {
+		return new DeployRunner(appDeployer, dockerHandler);
 	}
 
 }

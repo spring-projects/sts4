@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.kubernetes.container.DockerImage;
 import org.springframework.ide.kubernetes.deployer.DeploymentDefinition.DeploymentCommand;
+import org.springframework.util.StringUtils;
 
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.ServicePort;
@@ -34,10 +35,10 @@ public class DeployerArgsParser {
 		return null;
 	}
 
-	public String getPath(String... args) {
+	public String getJarPath(String... args) {
 		for (String arg : args) {
-			if (arg.startsWith("path:")) {
-				String[] vals = arg.split("path:");
+			if (arg.startsWith("jarPath:")) {
+				String[] vals = arg.split("jarPath:");
 				return vals.length == 2 ? vals[1] : null;
 			}
 		}
@@ -113,13 +114,19 @@ public class DeployerArgsParser {
 
 		String appName = argsParser.getAppName(args);
 		String image = argsParser.getDockerImage(args);
+		String jarPath = argsParser.getJarPath(args);
 		DeploymentCommand command = argsParser.getCommand(args);
 		int replicas = argsParser.getReplicas(args);
 
 		DeploymentDefinition definition = new DeploymentDefinition(appName, command);
 		definition.setContainerPort(containerPort);
+		definition.setJarPath(jarPath);
 		definition.setServicePort(servicePort);
-		definition.setDockerImage(new DockerImage(image));
+		
+		if (StringUtils.hasText(image)) {
+			definition.setDockerImage(new DockerImage(image));
+		}
+		
 		definition.setNodePort(useNodePort);
 		definition.setReplicaCount(replicas);
 		definition.setImagePullPolicy(imagePullPolicy);

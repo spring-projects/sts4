@@ -17,6 +17,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.kubernetes.container.DockerHandler;
 import org.springframework.ide.kubernetes.deployer.DeploymentDefinition.DeploymentCommand;
 import org.springframework.util.StringUtils;
 
@@ -24,10 +25,12 @@ public class DeployRunner {
 
 	private Logger logger = LoggerFactory.getLogger(DeployRunner.class);
 	private final AppDeployer deployer;
+	private final DockerHandler dockerHandler;
 
 	@Autowired
-	public DeployRunner(AppDeployer deployer) {
+	public DeployRunner(AppDeployer deployer, DockerHandler dockerHandler) {
 		this.deployer = deployer;
+		this.dockerHandler = dockerHandler;
 	}
 
 	public void run(DeploymentDefinition definition) throws Exception {
@@ -38,12 +41,19 @@ public class DeployRunner {
 
 		switch (definition.getDeploymentCommand()) {
 		case deploy:
+			dockerPush(definition);
 			List<String> uris = deployer.deploy(definition);
 			logUris(uris);
 			break;
 		case undeploy:
 			deployer.undeploy(definition);
 			break;
+		}
+	}
+
+	private void dockerPush(DeploymentDefinition definition) throws Exception {
+		if (definition.getJarPath() != null) {
+			dockerHandler.push(definition.getJarPath(), definition.getDockerImage());
 		}
 	}
 

@@ -11,21 +11,44 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.container;
 
-import java.net.URI;
-
+import org.springframework.util.Assert;
 
 public class DockerImage {
 
-	public static String SCHEME = "docker";
-
-	private URI uri;
+	private String repository;
+	private String tag;
+	private String image;
 
 	public DockerImage(String image) {
-		this.uri = URI.create(SCHEME + ":" + image);
+		Assert.hasText(image, "An image repository is required");
+		this.image = image;
+		parse(this.image);
+
 	}
 
-	public URI getUri() {
-		return uri;
+	private void parse(String image) {
+		String[] split = image.split(":");
+		if (split.length > 0) {
+			this.repository = split[0];
+			this.tag = split.length > 1 ? split[1] : null;
+		}
+	}
+
+	public String getRepository() {
+		return repository;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+	public String getImage() {
+		return image;
+	}
+
+	@Override
+	public String toString() {
+		return this.image;
 	}
 
 }

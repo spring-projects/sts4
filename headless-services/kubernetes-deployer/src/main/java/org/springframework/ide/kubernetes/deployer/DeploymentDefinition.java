@@ -29,7 +29,7 @@ public class DeploymentDefinition {
 	private String podAnnotations;
 	private ServicePort servicePort;
 	private boolean nodePort;
-	private String path;
+	private String jarPath;
 
 	// Default 1 replica
 	private int replicaCount = 1;
@@ -60,8 +60,8 @@ public class DeploymentDefinition {
 		this.envVars = envVars;
 	}
 
-	public void setPath(String path) {
-		this.path = path;
+	public void setJarPath(String jarPath) {
+		this.jarPath = jarPath;
 	}
 
 	public void setDockerImage(DockerImage image) {
@@ -116,8 +116,8 @@ public class DeploymentDefinition {
 		return isHostNetwork;
 	}
 
-	public String getPath() {
-		return path;
+	public String getJarPath() {
+		return jarPath;
 	}
 
 	public String getServiceAnnotations() {

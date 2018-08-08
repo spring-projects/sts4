@@ -73,7 +73,8 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 	@Override
 	public List<String> deploy(DeploymentDefinition definition) throws Exception {
-		logger.info("Deploying from application image: " + definition.getDockerImage().getUri());
+		
+		logger.info("Deploying image: " + definition.getDockerImage().getImage());
 
 		String appId = getDeploymentId(definition);
 		logger.debug(String.format("Deploying app: %s", appId));
@@ -316,11 +317,9 @@ public class KubernetesAppDeployer implements AppDeployer {
 							if (!nodeUris.contains(uri)) {
 								nodeUris.add(uri);
 							}
-
 						}
 					}
 				}
-
 			}
 		}
 		return nodeUris;
