@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -39,19 +38,15 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansMod
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
-import org.springframework.ide.vscode.commons.util.MemoizingDisposableSupplier;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuctionWithException;
 import org.springframework.ide.vscode.commons.util.FunctionWithException;
+import org.springframework.ide.vscode.commons.util.MemoizingDisposableSupplier;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.jdi.connect.Connector;
 
 /**
  * A abstract base class which attempts to capture commonalities between

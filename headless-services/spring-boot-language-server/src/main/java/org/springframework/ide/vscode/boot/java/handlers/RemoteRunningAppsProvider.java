@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.RemoteRunningAppsProvider.RemoteBootAppData;
 import org.springframework.ide.vscode.commons.boot.app.cli.RemoteSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -102,31 +101,31 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 
 	synchronized void handleSettings(Settings settings) {
 		RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
-		if (appData==null || appData.length==0) {
-			logger.info("Clearing all RemoteSpringBootApps");
-			remoteAppInstances.clear();
-		} else {
-			Set<RemoteBootAppData> newAppData = new HashSet<>(Arrays.asList(appData));
-			{ //Remove obsolete apps...
-				Iterator<Entry<RemoteBootAppData, SpringBootApp>> entries = remoteAppInstances.entrySet().iterator();
-				while (entries.hasNext()) {
-					Entry<RemoteBootAppData, SpringBootApp> entry = entries.next();
-					RemoteBootAppData key = entry.getKey();
-					if (!newAppData.contains(key)) {
-						logger.info("Removing RemoteSpringBootApp: "+key);
-						entries.remove();
-						entry.getValue().dispose();
-					}
+		if (appData==null) {
+			//Avoid NPE
+			appData = new RemoteBootAppData[0];
+		}
+
+		Set<RemoteBootAppData> newAppData = new HashSet<>(Arrays.asList(appData));
+		{	//Remove obsolete apps
+			Iterator<Entry<RemoteBootAppData, SpringBootApp>> entries = remoteAppInstances.entrySet().iterator();
+			while (entries.hasNext()) {
+				Entry<RemoteBootAppData, SpringBootApp> entry = entries.next();
+				RemoteBootAppData key = entry.getKey();
+				if (!newAppData.contains(key)) {
+					logger.info("Removing RemoteSpringBootApp: "+key);
+					entries.remove();
+					entry.getValue().dispose();
 				}
 			}
+		}
 
-			{ //Add new apps
-				for (RemoteBootAppData key : newAppData) {
-					remoteAppInstances.computeIfAbsent(key, (_key) -> {
-						logger.info("Creating RemoteStringBootApp: "+_key);
-						return RemoteSpringBootApp.create(key.getJmxurl(), key.getHost());
-					});
-				}
+		{	//Add new apps
+			for (RemoteBootAppData key : newAppData) {
+				remoteAppInstances.computeIfAbsent(key, (_key) -> {
+					logger.info("Creating RemoteStringBootApp: "+_key);
+					return RemoteSpringBootApp.create(key.getJmxurl(), key.getHost());
+				});
 			}
 		}
 	}
