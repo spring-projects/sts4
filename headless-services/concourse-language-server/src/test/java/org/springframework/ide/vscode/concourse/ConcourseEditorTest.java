@@ -273,6 +273,21 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void resource_tags() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: abc\n" +
+				"  type: git\n" +
+				"  tags:\n"+
+				"  - sometag\n" +
+				"  - othertag\n"
+		);
+		editor.assertProblems("abc|Unused");
+
+		editor.assertHoverContains("tags", "determine which workers");
+	}
+
+	@Test
 	public void primaryStepCompletions() throws Exception {
 		assertContextualCompletions(
 				// Context:
@@ -3336,6 +3351,7 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//For the 'exact' context:
 				"check_every",
+				"tags",
 				"webhook_token",
 				//"name", exists
 				//"source", exists
