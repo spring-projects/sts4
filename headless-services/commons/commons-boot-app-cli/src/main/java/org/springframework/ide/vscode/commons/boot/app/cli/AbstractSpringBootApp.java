@@ -51,6 +51,7 @@ import javax.management.remote.JMXServiceURL;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.jdi.connect.Connector;
 
 /**
  * A abstract base class which attempts to capture commonalities between
@@ -89,7 +90,9 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			String url = getJmxUrl();
 			logger.info("Creating JMX connector: "+url);
 			try {
-				return JMXConnectorFactory.connect(new JMXServiceURL(url), null);
+				JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(url), null);
+				logger.info("Created JMX connector: {}", connector);
+				return connector;
 			} catch (Exception e) {
 				logger.info("Creating JMX connector failed: {}", ExceptionUtil.getMessage(e));
 				throw e;
@@ -98,7 +101,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		//disposing jmx connector:
 		(connector) -> {
 			try {
-				logger.info("Disposing JMX connector: "+getJmxUrl());
+				logger.info("Disposing JMX connector: "+connector);
 				connector.close();
 			} catch (IOException e) {
 				//ignore
