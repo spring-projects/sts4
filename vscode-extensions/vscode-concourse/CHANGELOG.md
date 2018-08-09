@@ -1,6 +1,6 @@
 ## 2018-08-09 (M14)
 
-* no major changes
+*  _(Concourse)_ added support for `tags` property in `resources` ([#66](https://github.com/spring-projects/sts4/issues/66))
 
 ## 2018-07-23 (M13)
 
