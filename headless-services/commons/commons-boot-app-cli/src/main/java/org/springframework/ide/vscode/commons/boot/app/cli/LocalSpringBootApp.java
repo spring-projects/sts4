@@ -48,8 +48,14 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
-		this.vm = VirtualMachine.attach(vmd);
-		this.vmd = vmd;
+		try {
+			this.vm = VirtualMachine.attach(vmd);
+			this.vmd = vmd;
+		} catch (IOException | AttachNotSupportedException e) {
+			// Dispose JMX connection before throwing exception
+			dispose();
+			throw e;
+		}
 	}
 
 
@@ -66,7 +72,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 				address = vm.startLocalManagementAgent();
 			} catch (IOException e) {
 				logger.error("Error starting local management agent", e);
-				dispose();
 			}
 		}
 		return address;
