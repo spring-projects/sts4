@@ -102,6 +102,11 @@ public class LiveBean {
 				if (chop >= 0) {
 					type = type.substring(0, chop);
 				}
+
+				chop = type.indexOf("$$Lambda$");
+				if (chop >= 0) {
+					type = type.substring(0, chop);
+				}
 			}
 		}
 
