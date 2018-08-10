@@ -36,8 +36,8 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		super(SPRING_BOOT_SERVER);
 		setCommands(getJRE().jarLaunchCommand(getLanguageServerJARLocation(), 
 				ImmutableList.of(
-					//"-Xdebug",
-					// "-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n"
+					"-Xdebug",
+					"-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n",
 					"-Dsts.lsp.client=eclipse",
 					"-Dlsp.lazy.completions.disable=true",
 					"-Dlsp.completions.indentation.enable=true",
