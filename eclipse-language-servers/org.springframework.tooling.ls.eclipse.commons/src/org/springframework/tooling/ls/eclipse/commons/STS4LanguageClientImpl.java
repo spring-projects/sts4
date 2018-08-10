@@ -13,11 +13,8 @@ package org.springframework.tooling.ls.eclipse.commons;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,16 +23,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextViewerExtension2;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.AnnotationPainter;
-import org.eclipse.jface.text.source.IAnnotationAccess;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.inlined.AbstractInlinedAnnotation;
-import org.eclipse.jface.text.source.inlined.InlinedAnnotationSupport;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
@@ -145,8 +137,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	 */
 	private Map<String, Annotation[]> currentAnnotations = new HashMap<>();
 
-	private Map<ISourceViewer, InlinedAnnotationSupport> viewerInlinedAnnotationSupport = new WeakHashMap<>();
-
 	private synchronized void updateAnnotations(String target, ISourceViewer sourceViewer, IAnnotationModelExtension annotationModel) {
 		if (target!=null) {
 			HighlightParams highlightParams = currentHighlights.get(target);
@@ -160,7 +150,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 				Map<Annotation, Position> newAnnotations = createAnnotations(doc, highlights);
 				annotationModel.replaceAnnotations(toRemove, newAnnotations);
 				currentAnnotations.put(target, newAnnotations.keySet().toArray(new Annotation[newAnnotations.size()]));
-				updateInlinedAnnotations(sourceViewer, highlights);
 			}
 		}
 	}
@@ -175,63 +164,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			}
 		}
 		return false;
-	}
-
-	private void updateInlinedAnnotations(final ISourceViewer sourceViewer, List<Range> highlights) {
-		InlinedAnnotationSupport support = viewerInlinedAnnotationSupport.get(sourceViewer);
-		if (support == null) {
-			final InlinedAnnotationSupport inlinedSupport = new InlinedAnnotationSupport();
-			inlinedSupport.install(sourceViewer, createAnnotationPainter(sourceViewer));
-			viewerInlinedAnnotationSupport.put(sourceViewer, inlinedSupport);
-			sourceViewer.getTextWidget().addDisposeListener((e) -> {
-				inlinedSupport.uninstall();
-				viewerInlinedAnnotationSupport.remove(sourceViewer);
-			});
-			support = inlinedSupport;
-		}
-		Set<AbstractInlinedAnnotation> annotations = new HashSet<>();
-		if (highlights==null) {
-			highlights = ImmutableList.of();
-		}
-		IDocument doc = sourceViewer.getDocument();
-		for (Range rng : highlights) {
-			try {
-				int start = LSPEclipseUtils.toOffset(rng.getStart(), doc);
-				int end = LSPEclipseUtils.toOffset(rng.getEnd(), doc);
-				Position colorPos = new Position(start, end - start);
-				BootInlineAnnotation colorAnnotation = support.findExistingAnnotation(colorPos);
-				if (colorAnnotation == null) {
-					colorAnnotation = new BootInlineAnnotation(colorPos, sourceViewer);
-				}
-				annotations.add(colorAnnotation);
-			} catch (BadLocationException e) {
-				//ignore invalid highlights
-			}
-		}
-		support.updateAnnotations(annotations);
-	}
-
-	private static AnnotationPainter createAnnotationPainter(ISourceViewer viewer) {
-		IAnnotationAccess annotationAccess = new IAnnotationAccess() {
-			@Override
-			public Object getType(Annotation annotation) {
-				return annotation.getType();
-			}
-
-			@Override
-			public boolean isMultiLine(Annotation annotation) {
-				return true;
-			}
-
-			@Override
-			public boolean isTemporary(Annotation annotation) {
-				return true;
-			}
-
-		};
-		AnnotationPainter painter = new AnnotationPainter(viewer, annotationAccess);
-		((ITextViewerExtension2) viewer).addPainter(painter);
-		return painter;
 	}
 
 	private Map<Annotation, Position> createAnnotations(IDocument doc, List<Range> highlights) {

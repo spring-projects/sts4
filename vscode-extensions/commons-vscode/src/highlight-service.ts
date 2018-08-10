@@ -27,10 +27,10 @@ export class HighlightService {
 
     constructor() {
         this.DECORATION = VSCode.window.createTextEditorDecorationType({
-            before: {
-                contentIconPath: path.resolve(__dirname, "../icons/boot-12h.png"),
-                margin: '2px 2px 0px 0px'
-            },
+            // before: {
+            //     contentIconPath: path.resolve(__dirname, "../icons/boot-12h.png"),
+            //     margin: '2px 2px 0px 0px'
+            // },
             backgroundColor: 'rgba(109,179,63,0.25)',
             borderColor: 'rgba(109,179,63,0.25)',
             borderSpacing: '4px',
@@ -54,7 +54,6 @@ export class HighlightService {
                 //We only update highlights in the active editor for now
                 let highlights : Range[] = this.highlights.get(docId.uri) || [];
                 let decorations = highlights.map(hl => toDecoration(hl));
-                editor.setDecorations(this.DECORATION, decorations);
                 editor.setDecorations(this.DECORATION, decorations);
             }
         }
