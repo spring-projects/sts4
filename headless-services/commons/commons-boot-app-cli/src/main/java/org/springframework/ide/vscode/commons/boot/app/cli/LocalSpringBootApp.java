@@ -66,6 +66,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 				address = vm.startLocalManagementAgent();
 			} catch (IOException e) {
 				logger.error("Error starting local management agent", e);
+				dispose();
 			}
 		}
 		return address;
