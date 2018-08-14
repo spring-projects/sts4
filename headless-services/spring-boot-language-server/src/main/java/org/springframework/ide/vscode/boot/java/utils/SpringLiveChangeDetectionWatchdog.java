@@ -230,36 +230,39 @@ public class SpringLiveChangeDetectionWatchdog {
 		String result = null;
 
 		String resource = liveBean.getResource();
-		Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
+		if (resource != null) {
 
-		Matcher matcher = BRACKETS.matcher(resource);
-		if (matcher.find()) {
-			String type = resource.substring(0, matcher.start()).trim();
-			String path = resource.substring(matcher.start()+1, matcher.end()-1);
+			Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
 
-			for (IJavaProject project : projects) {
-				if (SpringResource.FILE.equals(type)) {
-					String relativePath = SpringResource.projectRelativePath(project, path);
+			Matcher matcher = BRACKETS.matcher(resource);
+			if (matcher.find()) {
+				String type = resource.substring(0, matcher.start()).trim();
+				String path = resource.substring(matcher.start()+1, matcher.end()-1);
 
-					if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
-						result = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath).get();
-						break;
-					} else {
-						result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();
+				for (IJavaProject project : projects) {
+					if (SpringResource.FILE.equals(type)) {
+						String relativePath = SpringResource.projectRelativePath(project, path);
+
+						if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
+							result = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath).get();
+							break;
+						} else {
+							result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();
+							break;
+						}
+					}
+					else if (SpringResource.CLASS_PATH_RESOURCE.equals(type)) {
+						result = sourceLinks.sourceLinkUrlForClasspathResource(project, path).get();
 						break;
 					}
 				}
-				else if (SpringResource.CLASS_PATH_RESOURCE.equals(type)) {
-					result = sourceLinks.sourceLinkUrlForClasspathResource(project, path).get();
-					break;
-				}
 			}
-		}
 
-		if (result != null) {
-			int position = result.lastIndexOf('#');
-			if (position > 0) {
-				result = result.substring(0, position);
+			if (result != null) {
+				int position = result.lastIndexOf('#');
+				if (position > 0) {
+					result = result.substring(0, position);
+				}
 			}
 		}
 		return result;
