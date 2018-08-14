@@ -86,6 +86,7 @@
  		<reactor-version>3.1.5.RELEASE</reactor-version>
 		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
+		<commons-codec-version>1.11</commons-codec-version>
 	</properties>
 
 	<build>

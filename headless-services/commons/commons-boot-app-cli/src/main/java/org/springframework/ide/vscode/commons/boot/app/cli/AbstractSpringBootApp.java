@@ -31,6 +31,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -207,28 +208,29 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			String domain = getDomainForActuator();
 			Object json = getBeansFromActuator(domain);
 
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			String md5 = new String(md.digest(json.toString().getBytes("UTF-8")));
+			if (json != null) {
+				String md5 = DigestUtils.md5Hex(json.toString());
 
-			synchronized(this) {
-				if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
+				synchronized(this) {
+					if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
 
-					cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
-					cachedBeansModelMD5 = md5;
+						cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
+						cachedBeansModelMD5 = md5;
 
-					logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
+						logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
+					}
+					else {
+						logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
+					}
 				}
-				else {
-					logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
-				}
+
+				return cachedBeansModel;
 			}
-
-			return cachedBeansModel;
-
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
-			return LiveBeansModel.builder().build();
 		}
+
+		return LiveBeansModel.builder().build();
 	}
 
 	private Object getBeansFromActuator(String domain) throws Exception {
