@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.PlatformManagedObject;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -59,6 +60,9 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	private String jmxMbeanActuatorDomain;
 
+	private LiveBeansModel cachedBeansModel;
+	private String cachedBeansModelMD5;
+
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisation, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
 	// Namely: Object Mapper does not escape Html, whereas Gson does by default (for example
@@ -74,10 +78,13 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public abstract String getProcessID();
+
 	@Override
 	public abstract String getProcessName() throws Exception;
+
 	@Override
 	public abstract boolean isSpringBootApp();
+
 
 	private final MemoizingDisposableSupplier<JMXConnector> jmxConnector = new MemoizingDisposableSupplier<JMXConnector>(
 		//creating jmx connector:
@@ -198,30 +205,37 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	public LiveBeansModel getBeans() {
 		try {
 			String domain = getDomainForActuator();
-			String json = getBeansFromActuator(domain);
-			LiveBeansModel beans = LiveBeansModel.parse(json);
-			logger.debug("Got {} beans for {}", beans.getBeanNames().size(), this);
-			return beans;
+			Object json = getBeansFromActuator(domain);
+
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			String md5 = new String(md.digest(json.toString().getBytes("UTF-8")));
+
+			synchronized(this) {
+				if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
+
+					cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
+					cachedBeansModelMD5 = md5;
+
+					logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
+				}
+				else {
+					logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
+				}
+			}
+
+			return cachedBeansModel;
+
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
 			return LiveBeansModel.builder().build();
 		}
 	}
 
-	private String getBeansFromActuator(String domain) throws Exception {
-		Object result = getActuatorDataFromAttribute(getObjectName(domain, "type=Endpoint,name=beansEndpoint"), "Data");
-		if (result != null) {
-			String beans = gson.toJson(result);
-			return beans;
-		}
+	private Object getBeansFromActuator(String domain) throws Exception {
+		Object result = getActuatorDataFromOperation(getObjectName(domain, "type=Endpoint,name=Beans"), "beans");
+		if (result != null) return result;
 
-		result = getActuatorDataFromOperation(getObjectName(domain, "type=Endpoint,name=Beans"), "beans");
-		if (result != null) {
-			String beans = gson.toJson(result);
-			return beans;
-		}
-
-		return null;
+		return getActuatorDataFromAttribute(getObjectName(domain, "type=Endpoint,name=beansEndpoint"), "Data");
 	}
 
 	/**
@@ -242,8 +256,8 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 				// To be more efficient in finding the domain containing actuator information,
 				// and avoid many JMX connections
 				// first check the default springframework boot domain:
-				String beansJson = getBeansFromActuator(SPRINGFRAMEWORK_BOOT_DOMAIN);
-				if (StringUtil.hasText(beansJson)) {
+				Object beansJson = getBeansFromActuator(SPRINGFRAMEWORK_BOOT_DOMAIN);
+				if (beansJson != null) {
 					jmxMbeanActuatorDomain = SPRINGFRAMEWORK_BOOT_DOMAIN;
 				}
 
@@ -256,7 +270,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 							// domain contains actuator Beans (for example, "Admin" will be under default spring framework domain)
 							if (!SPRINGFRAMEWORK_BOOT_DOMAIN.equals(domain)) {
 								beansJson = getBeansFromActuator(domain);
-								if (StringUtil.hasText(beansJson)) {
+								if (beansJson != null) {
 									jmxMbeanActuatorDomain = domain;
 									break;
 								}
