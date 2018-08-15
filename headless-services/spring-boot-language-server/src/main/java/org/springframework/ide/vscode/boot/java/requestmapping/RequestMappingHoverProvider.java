@@ -26,13 +26,14 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -46,6 +47,8 @@ import reactor.util.function.Tuples;
  * @author Martin Lippert
  */
 public class RequestMappingHoverProvider implements HoverProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(RequestMappingHoverProvider.class);
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation,
@@ -65,7 +68,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			}
 		}
 		catch (BadLocationException e) {
-			Log.log(e);
+			log.error("", e);;
 		}
 
 		return null;
@@ -90,7 +93,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			return hover;
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);;
 		}
 
 		return null;
@@ -111,7 +114,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);;
 		}
 		return results;
 	}
@@ -169,11 +172,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			})
 			.collect(Collectors.toList());
 
-			//The renderableUrls can not be empty because, above, we made sure there's at least one path.
-			renderableUrls.remove(renderableUrls.size() - 1);
-
-			hoverContent.add(Either.forLeft(Renderables.concat(renderableUrls).toMarkdown()));
-			hoverContent.add(Either.forLeft(LiveHoverUtils.niceAppName(app)));
+			Renderable urlRenderables = Renderables.concat(renderableUrls);
+			hoverContent.add(Either.forLeft(Renderables.concat(
+					urlRenderables,
+					Renderables.lineBreak(),
+					Renderables.mdBlob(LiveHoverUtils.niceAppName(app))
+			).toMarkdown()));
 			if (i < mappingMethods.size() - 1) {
 				// Three dashes == line separator in Markdown
 				hoverContent.add(Either.forLeft("---"));

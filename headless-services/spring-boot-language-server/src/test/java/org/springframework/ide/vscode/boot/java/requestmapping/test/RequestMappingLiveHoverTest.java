@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.time.Duration;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -70,7 +69,7 @@ public class RequestMappingLiveHoverTest {
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)\n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/hello-world](http://cfapps.io:1111/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -103,7 +102,7 @@ public class RequestMappingLiveHoverTest {
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/](http://cfapps.io:1111/)\n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/](http://cfapps.io:1111/)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -157,11 +156,11 @@ public class RequestMappingLiveHoverTest {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
 
-		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:999/hello](http://cfapps.io:999/hello)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
-		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "[http://cfapps.io:999/goodbye](http://cfapps.io:999/goodbye)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "[http://cfapps.io:999/goodbye](http://cfapps.io:999/goodbye)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -233,7 +232,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@DeleteMapping(\"/greetings\")", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)\n" +
+		editor.assertHoverContains("@DeleteMapping(\"/greetings\")", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -369,7 +368,7 @@ public class RequestMappingLiveHoverTest {
         docUri);
 
 		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/greetings](http://cfapps.io:999/greetings)  \n" +
-				"[http://cfapps.io:999/hello](http://cfapps.io:999/hello)\n" +
+				"[http://cfapps.io:999/hello](http://cfapps.io:999/hello)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -420,7 +419,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -471,7 +470,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -523,7 +522,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -575,7 +574,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -625,7 +624,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -675,7 +674,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -725,7 +724,7 @@ public class RequestMappingLiveHoverTest {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)\n" +
+		editor.assertHoverContains("@RequestMapping(value=\"/find\", method=GET)", "[http://cfapps.io:999/find](http://cfapps.io:999/find)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
@@ -778,19 +777,19 @@ public class RequestMappingLiveHoverTest {
 		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:1000/hello](http://cfapps.io:1000/hello)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[http://cfapps.io:1000/hello](http://cfapps.io:1000/hello)  \n" +
 				"\n" +
 				"Process [PID=70000, name=`test-request-mapping-live-hover`]\n" +
 				"\n" +
 				"---\n" +
 				"\n" +
-				"[http://cfapps.io:1001/hello](http://cfapps.io:1001/hello)\n" +
+				"[http://cfapps.io:1001/hello](http://cfapps.io:1001/hello)  \n" +
               	"\n" +
               	"Process [PID=80000, name=`test-request-mapping-live-hover`]\n" +
 				"\n" +
 				"---\n" +
 				"\n" +
-				"[http://cfapps.io:1002/hello](http://cfapps.io:1002/hello)\n" +
+				"[http://cfapps.io:1002/hello](http://cfapps.io:1002/hello)  \n" +
               	"\n" +
               	"Process [PID=90000, name=`test-request-mapping-live-hover`]");
 
@@ -856,11 +855,11 @@ public class RequestMappingLiveHoverTest {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/inner-class\")", "@RequestMapping(\"/inner-inner-class\")");
 
-		editor.assertHoverContains("@RequestMapping(\"/inner-class\")", "[http://cfapps.io:1111/inner-class](http://cfapps.io:1111/inner-class)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/inner-class\")", "[http://cfapps.io:1111/inner-class](http://cfapps.io:1111/inner-class)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
-		editor.assertHoverContains("@RequestMapping(\"/inner-inner-class\")", "[http://cfapps.io:1111/inner-inner-class](http://cfapps.io:1111/inner-inner-class)\n" +
+		editor.assertHoverContains("@RequestMapping(\"/inner-inner-class\")", "[http://cfapps.io:1111/inner-inner-class](http://cfapps.io:1111/inner-inner-class)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 	}
