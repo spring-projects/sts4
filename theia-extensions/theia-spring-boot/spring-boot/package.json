@@ -1,9 +1,9 @@
 {
-  "name": "@theia/spring-boot",
+  "name": "@pivotal-tools/theia-spring-boot",
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.0.0",
+  "version": "0.0.1",
   "files": [
     "lib",
     "src",
@@ -11,14 +11,14 @@
     "images"
   ],
   "dependencies": {
-    "@theia/core": "latest",
-    "@theia/languages": "latest",
-    "@theia/preferences": "latest",
-    "@theia/editor": "latest",
-    "@theia/monaco": "latest",
-    "@theia/java": "latest",
+    "@pivotal-tools/jvm-launch-utils": "0.0.11",
     "@pivotal-tools/theia-languageclient": "0.0.2",
-    "@pivotal-tools/jvm-launch-utils": "0.0.11"
+    "@theia/core": "latest",
+    "@theia/editor": "latest",
+    "@theia/java": "latest",
+    "@theia/languages": "latest",
+    "@theia/monaco": "latest",
+    "@theia/preferences": "latest"
   },
   "devDependencies": {
     "rimraf": "latest",
@@ -35,5 +35,8 @@
       "frontend": "lib/browser/spring-boot-frontend-module",
       "backend": "lib/node/spring-boot-backend-module"
     }
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
