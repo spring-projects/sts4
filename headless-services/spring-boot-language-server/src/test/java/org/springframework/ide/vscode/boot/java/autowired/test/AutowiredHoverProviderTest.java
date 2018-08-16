@@ -441,8 +441,7 @@ public class AutowiredHoverProviderTest {
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
 		editor.assertHoverContains("@Controller",
-				"**Injected `myController` &rarr; _not injected anywhere_**  \n" +
-				"Process [PID=111, name=`the-app`]"
+				"**Injected `myController` &rarr; _not injected anywhere_**  \n"
 		);
 	}
 

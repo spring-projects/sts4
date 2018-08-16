@@ -10,12 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -26,6 +30,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansMod
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+
+import com.google.common.collect.ImmutableList;
 
 public class LiveHoverUtils {
 
@@ -160,6 +166,14 @@ public class LiveHoverUtils {
 		return Collections.emptyList();
 	}
 
+	public static List<LiveBean> findAllDependencyBeans(SpringBootApp app, List<LiveBean> relevantBeans) {
+		LiveBeansModel beans = app.getBeans();
+		return relevantBeans.stream()
+				.flatMap(b -> Arrays.stream(b.getDependencies())).distinct()
+				.flatMap(d -> beans.getBeansOfName(d).stream()).collect(Collectors.toList());
+
+	}
+
 	public static String niceAppName(SpringBootApp app) {
 		try {
 			return niceAppName(app.getProcessID(), app.getProcessName());
@@ -173,5 +187,31 @@ public class LiveHoverUtils {
 		return "Process [PID="+processId+", name=`"+processName+"`]";
 	}
 
+	public static List<CodeLens> createCodeLensesForBeans(Range range, Collection<LiveBean> relevantBeans, String prefix, int maxInlineBeansStringLength, String beansSeparator) {
+		if (!relevantBeans.isEmpty()) {
+			CodeLens codeLens = new CodeLens();
+			codeLens.setRange(range);
+			StringBuilder sb = new StringBuilder(prefix);
+			if (LiveHoverUtils.doBeansFitInline(relevantBeans, maxInlineBeansStringLength, beansSeparator)) {
+				sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(beansSeparator)));
+			} else {
+				sb.append(relevantBeans.size());
+				sb.append(" bean");
+				if (relevantBeans.size() > 1) {
+					sb.append("s");
+				}
+			}
+			codeLens.setData(sb.toString());
+			Command cmd = new Command();
+			cmd.setTitle(sb.toString());
+			cmd.setCommand("org.springframework.showHoverAtPosition");
+			cmd.setArguments(ImmutableList.of(range.getStart()));
+			codeLens.setCommand(cmd);
 
+			return ImmutableList.of(codeLens);
+		} else {
+			return null;
+		}
+
+	}
 }

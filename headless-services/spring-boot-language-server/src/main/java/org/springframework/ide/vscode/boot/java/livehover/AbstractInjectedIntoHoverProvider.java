@@ -22,13 +22,13 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.CodeLens;
-import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -40,6 +40,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
+
+	private static final String BEANS_PREFIX = "\u21D2 ";
 
 	private static Logger LOG = LoggerFactory.getLogger(AbstractInjectedIntoHoverProvider.class);
 
@@ -62,7 +64,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get());
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), ASTUtils.getAnnotatedType(annotation) != null);
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
@@ -81,7 +83,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean);
+				Hover hover = assembleHover(project, runningApps, definedBean, ASTUtils.getAnnotatedType(annotation) != null);
 				if (hover != null) {
 					Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 					if (nameRange.isPresent()) {
@@ -94,45 +96,36 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return null;
 	}
 
-	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, Range range) {
+	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, Range range, boolean includeWiredBeans) {
 		List<CodeLens> codeLensList = new ArrayList<>();
-		for (SpringBootApp app : runningApps) {
+			for (SpringBootApp app : runningApps) {
 
-			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
+				List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
 
-			if (!relevantBeans.isEmpty()) {
-				List<LiveBean> injectedBeans = getRelevantInjectedIntoBeans(project, app, definedBean, relevantBeans);
-				if (!injectedBeans.isEmpty()) {
-					CodeLens codeLens = new CodeLens();
-					codeLens.setRange(range);
-					StringBuilder sb = new StringBuilder("\u21D2 ");
-					if (LiveHoverUtils.doBeansFitInline(relevantBeans, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR)) {
-						sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
-					} else {
-						sb.append(relevantBeans.size());
-						sb.append(" bean");
-						if (relevantBeans.size() > 1) {
-							sb.append("s");
+				if (!relevantBeans.isEmpty()) {
+					List<LiveBean> injectedBeans = getRelevantInjectedIntoBeans(project, app, definedBean, relevantBeans);
+					ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
+					if (!injectedBeans.isEmpty()) {
+						// Break out of the loop. Just look for the first app with injected into beans
+						List<CodeLens> injectedCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, injectedBeans, BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+						builder.addAll(injectedCodeLenses == null ? ImmutableList.of(new CodeLens(range)) : injectedCodeLenses);
+					}
+					if (includeWiredBeans) {
+						List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
+						List<CodeLens> wiredCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, allDependencyBeans,
+								AutowiredHoverProvider.BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH,
+								INLINE_BEANS_STRING_SEPARATOR);
+						if (wiredCodeLenses != null) {
+							builder.addAll(wiredCodeLenses);
 						}
 					}
-					codeLens.setData(sb.toString());
-					Command cmd = new Command();
-					cmd.setTitle(sb.toString());
-					cmd.setCommand("org.springframework.showHoverAtPosition");
-					cmd.setArguments(ImmutableList.of(range.getStart()));
-					codeLens.setCommand(cmd);
-
-					codeLensList.add(codeLens);
-
-					// Break out of the loop. Just look for the first app with injected into beans
-					break;
+					return builder.build();
 				}
-			}
 		}
 		return codeLensList;
 	}
 
-	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean) {
+	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, boolean includeWiredBeans) {
 		StringBuilder hover = new StringBuilder();
 
 		boolean hasContent = false;
@@ -176,6 +169,14 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 							.collect(Collectors.joining("\n")));
 					hover.append("\n  \n");
 				}
+
+				if (includeWiredBeans) {
+					List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
+					if (!allDependencyBeans.isEmpty()) {
+						AutowiredHoverProvider.createHoverContentForBeans(server, definedBean, project, hover, allDependencyBeans);
+					}
+				}
+
 				hover.append(LiveHoverUtils.niceAppName(app));
 			}
 

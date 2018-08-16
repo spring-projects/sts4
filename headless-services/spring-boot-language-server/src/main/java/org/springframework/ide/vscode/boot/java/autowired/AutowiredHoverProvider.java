@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.autowired;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +25,6 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
-import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -41,7 +39,6 @@ import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -55,6 +52,8 @@ import com.google.common.collect.ImmutableList;
  * @author Alex Boyko
  */
 public class AutowiredHoverProvider implements HoverProvider {
+
+	public static final String BEANS_PREFIX = "\u21D0 ";
 
 	final static Logger log = LoggerFactory.getLogger(AutowiredHoverProvider.class);
 
@@ -88,28 +87,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		if (declarationNode != null && definedBean != null) {
 			for (SpringBootApp app : runningApps) {
 				List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
-				if (!relevantBeans.isEmpty()) {
-					CodeLens codeLens = new CodeLens();
-					codeLens.setRange(range);
-					StringBuilder sb = new StringBuilder("\u21D0 ");
-					if (LiveHoverUtils.doBeansFitInline(relevantBeans, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR)) {
-						sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
-					} else {
-						sb.append(relevantBeans.size());
-						sb.append(" bean");
-						if (relevantBeans.size() > 1) {
-							sb.append("s");
-						}
-					}
-					codeLens.setData(sb.toString());
-					Command cmd = new Command();
-					cmd.setTitle(sb.toString());
-					cmd.setCommand("org.springframework.showHoverAtPosition");
-					cmd.setArguments(ImmutableList.of(range.getStart()));
-					codeLens.setCommand(cmd);
-
-					return ImmutableList.of(codeLens);
-				}
+				return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
 			}
 		}
 		return null;
@@ -153,32 +131,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 					} else {
 						hover.append("  \n  \n");
 					}
-					hover.append("**Autowired `");
-					hover.append(definedBean.getId());
-					hover.append("` &rarr; ");
-					if (LiveHoverUtils.doBeansFitInline(autowiredBeans, MAX_INLINE_BEANS_STRING_LENGTH - definedBean.getId().length(),
-							INLINE_BEANS_STRING_SEPARATOR)) {
-						hover.append(autowiredBeans.stream().map(b -> LiveHoverUtils.showBeanInline(server, project, b))
-								.collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
-						hover.append("**\n");
-					} else {
-						hover.append(autowiredBeans.size());
-						hover.append(" bean");
-						if (autowiredBeans.size() > 1) {
-							hover.append('s');
-						}
-						hover.append("**\n");
-					}
-//								if (autowiredBeans.size() == 1) {
-//									hover.append(LiveHoverUtils.showBeanIdAndTypeInline(server, project, autowiredBeans.get(0)));
-//								} else {
-//									hover.append(autowiredBeans.size());
-//									hover.append(" beans**\n");
-//								}
-					hover.append(autowiredBeans.stream()
-							.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
-							.collect(Collectors.joining("\n")));
-					hover.append("\n  \n");
+					createHoverContentForBeans(server, definedBean, project, hover, autowiredBeans);
 					hover.append(LiveHoverUtils.niceAppName(app));
 				}
 
@@ -190,14 +143,35 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, LiveBean definedBean) {
-		LiveBeansModel beans = app.getBeans();
+	public static void createHoverContentForBeans(BootJavaLanguageServerComponents server, LiveBean definedBean, IJavaProject project, StringBuilder hover,
+			List<LiveBean> autowiredBeans) {
+		hover.append("**Autowired `");
+		hover.append(definedBean.getId());
+		hover.append("` &rarr; ");
+		if (LiveHoverUtils.doBeansFitInline(autowiredBeans, MAX_INLINE_BEANS_STRING_LENGTH - definedBean.getId().length(),
+				INLINE_BEANS_STRING_SEPARATOR)) {
+			hover.append(autowiredBeans.stream().map(b -> LiveHoverUtils.showBeanInline(server, project, b))
+					.collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
+			hover.append("**\n");
+		} else {
+			hover.append(autowiredBeans.size());
+			hover.append(" bean");
+			if (autowiredBeans.size() > 1) {
+				hover.append('s');
+			}
+			hover.append("**\n");
+		}
+		hover.append(autowiredBeans.stream()
+				.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
+				.collect(Collectors.joining("\n")));
+		hover.append("\n  \n");
+	}
+
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, LiveBean definedBean) {
 		List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
 
 		if (!relevantBeans.isEmpty()) {
-			List<LiveBean> allDependencyBeans = relevantBeans.stream()
-					.flatMap(b -> Arrays.stream(b.getDependencies())).distinct()
-					.flatMap(d -> beans.getBeansOfName(d).stream()).collect(Collectors.toList());
+			List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
 
 			if (!allDependencyBeans.isEmpty()) {
 
@@ -216,7 +190,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<LiveBean> findAutowiredBeans(IJavaProject project, ASTNode declarationNode, Collection<LiveBean> beans) {
+	private static List<LiveBean> findAutowiredBeans(IJavaProject project, ASTNode declarationNode, Collection<LiveBean> beans) {
 		if (declarationNode instanceof MethodDeclaration) {
 			MethodDeclaration methodDeclaration = (MethodDeclaration)declarationNode;
 			return ((List<Object>)methodDeclaration.parameters()).stream()
@@ -234,7 +208,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return Collections.emptyList();
 	}
 
-	private List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
+	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
 		List<LiveBean> relevant = Collections.emptyList();
 		if (type != null) {
 			String fqName = type.getQualifiedName();
@@ -257,7 +231,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return relevant;
 	}
 
-	private List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allDots) {
+	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allDots) {
 		if (fqName != null) {
 			if (allDots) {
 				return beans.stream().filter(b -> fqName.equals(b.getType(true).replace('$', '.'))).collect(Collectors.toList());

@@ -499,6 +499,14 @@ public class ComponentInjectionsHoverProviderTest {
 		editor.assertHighlights("@Component", "AutowiredClass");
 		editor.assertTrimmedHover("@Component",
 				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`  \n" +
+				"  Resource: `com/example/DependencyA.class`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`  \n" +
+				"  Resource: `com/example/DependencyB.class`\n" +
+				"  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -547,6 +555,12 @@ public class ComponentInjectionsHoverProviderTest {
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Component",
 				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}

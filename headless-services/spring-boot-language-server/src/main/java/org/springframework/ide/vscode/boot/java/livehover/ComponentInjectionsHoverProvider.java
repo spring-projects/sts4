@@ -110,7 +110,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get());
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), true);
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
@@ -130,7 +130,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean);
+				Hover hover = assembleHover(project, runningApps, definedBean, true);
 				if (hover != null) {
 					SimpleName name = typeDeclaration.getName();
 					try {
@@ -150,7 +150,9 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		for (Object modifier : modifiers) {
 			if (modifier instanceof Annotation) {
 				ITypeBinding typeBinding = ((Annotation) modifier).resolveTypeBinding();
-				return isComponentAnnotation(typeBinding);
+				if (isComponentAnnotation(typeBinding)) {
+					return true;
+				}
 			}
 		}
 		return false;
