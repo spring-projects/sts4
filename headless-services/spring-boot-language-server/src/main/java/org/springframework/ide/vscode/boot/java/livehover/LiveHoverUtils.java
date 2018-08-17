@@ -35,6 +35,8 @@ import com.google.common.collect.ImmutableList;
 
 public class LiveHoverUtils {
 
+	public static final LiveBean CANT_MATCH_PROPER_BEAN = LiveBean.builder().id("UNKNOWN").build();
+
 	public static String showBean(LiveBean bean) {
 		StringBuilder buf = new StringBuilder("Bean [id: " + bean.getId());
 		String type = bean.getType(true);
@@ -48,55 +50,68 @@ public class LiveHoverUtils {
 	public static String showBeanWithResource(BootJavaLanguageServerComponents server, LiveBean bean, String indentStr, IJavaProject project) {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 
-		String type = bean.getType(true);
+		if (bean == CANT_MATCH_PROPER_BEAN) {
+			return "(Cannot find precise information for the bean)";
+		} else {
+			String type = bean.getType(true);
 
-		StringBuilder buf = new StringBuilder("Bean: ");
-		buf.append('`');
-		buf.append(bean.getId());
-		buf.append('`');
-		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
-		if (type != null) {
-			// Try creating a URL link to open source for the type
-			buf.append(newline);
-			buf.append("Type: ");
-			Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
-			if (url.isPresent()) {
-				buf.append(Renderables.link(type, url.get()).toMarkdown());
-			} else {
-				buf.append("`" + type + "`");
+			StringBuilder buf = new StringBuilder("Bean: ");
+			buf.append('`');
+			buf.append(bean.getId());
+			buf.append('`');
+			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
+			if (type != null) {
+				// Try creating a URL link to open source for the type
+				buf.append(newline);
+				buf.append("Type: ");
+				Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
+				if (url.isPresent()) {
+					buf.append(Renderables.link(type, url.get()).toMarkdown());
+				} else {
+					buf.append("`" + type + "`");
+				}
 			}
+			String resource = bean.getResource();
+			if (StringUtil.hasText(resource)) {
+				buf.append(newline);
+				buf.append("Resource: ");
+				buf.append(showResource(sourceLinks, resource, project));
+			}
+			return buf.toString();
 		}
-		String resource = bean.getResource();
-		if (StringUtil.hasText(resource)) {
-			buf.append(newline);
-			buf.append("Resource: ");
-			buf.append(showResource(sourceLinks, resource, project));
-		}
-		return buf.toString();
 	}
 
 	public static String getShortDisplayType(LiveBean bean) {
-		String type = bean.getType(true);
-		int idx = type.lastIndexOf('.');
-		return idx < 0 || idx == type.length() - 1 ? type : type.substring(idx + 1);
+		if (bean == CANT_MATCH_PROPER_BEAN) {
+			return CANT_MATCH_PROPER_BEAN.getId();
+		} else {
+			String type = bean.getType(true);
+			int idx = type.lastIndexOf('.');
+			String typeStr = idx < 0 || idx == type.length() - 1 ? type : type.substring(idx + 1);
+			return typeStr;
+		}
 	}
 
 	public static String showBeanInline(BootJavaLanguageServerComponents server, IJavaProject project, LiveBean bean) {
-		String id = bean.getId();
-		String type = bean.getType(true);
-		StringBuilder sb = new StringBuilder();
-		sb.append('`');
-		sb.append(id);
-		sb.append('`');
-		String displayId = sb.toString();
-		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
-		if (type != null) {
-			Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
-			if (url.isPresent()) {
-				return Renderables.link(displayId, url.get()).toMarkdown();
+		if (bean == CANT_MATCH_PROPER_BEAN) {
+			return CANT_MATCH_PROPER_BEAN.getId();
+		} else {
+			String id = bean.getId();
+			String type = bean.getType(true);
+			StringBuilder sb = new StringBuilder();
+			sb.append('`');
+			sb.append(id);
+			sb.append('`');
+			String displayId = sb.toString();
+			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
+			if (type != null) {
+				Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
+				if (url.isPresent()) {
+					return Renderables.link(displayId, url.get()).toMarkdown();
+				}
 			}
+			return displayId;
 		}
-		return displayId;
 	}
 
 	public static boolean doBeansFitInline(Collection<LiveBean> beans, int maxLength, String delimiter) {
@@ -214,4 +229,5 @@ public class LiveHoverUtils {
 		}
 
 	}
+
 }

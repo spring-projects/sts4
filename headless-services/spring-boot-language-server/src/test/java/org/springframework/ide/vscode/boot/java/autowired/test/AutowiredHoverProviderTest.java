@@ -72,17 +72,24 @@ public class AutowiredHoverProviderTest {
 				"}\n"
 		);
 
+		p.createType("com.examle.IDependency",
+				"package com.example;\n" +
+				"\n" +
+				"public interface IDependency {\n" +
+				"}\n"
+		);
+
 		p.createType("com.examle.DependencyA",
 				"package com.example;\n" +
 				"\n" +
-				"public class DependencyA {\n" +
+				"public class DependencyA implements IDependency {\n" +
 				"}\n"
 		);
 
 		p.createType("com.examle.DependencyB",
 				"package com.example;\n" +
 				"\n" +
-				"public class DependencyB {\n" +
+				"public class DependencyB implements IDependency {\n" +
 				"}\n"
 		);
 
@@ -604,6 +611,60 @@ public class AutowiredHoverProviderTest {
 		for (int i = 1; i < 3; i++) {
 			editor.assertNoHover("SomeComponent", i);
 		}
+	}
+
+	@Test
+	public void unableToMatchWiredBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   private IDependency dep;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Autowired", 1,
+				"**Autowired `someComponent` &larr; UNKNOWN**\n" +
+				"- (Cannot find precise information for the bean)\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
 	}
 
 	@Test
