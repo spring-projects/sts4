@@ -499,7 +499,7 @@ public class ComponentInjectionsHoverProviderTest {
 		editor.assertHighlights("@Component", "AutowiredClass");
 		editor.assertTrimmedHover("@Component",
 				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
-				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `autowiredClass` &larr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `com/example/DependencyA.class`\n" +
@@ -555,7 +555,7 @@ public class ComponentInjectionsHoverProviderTest {
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Component",
 				"**Injected `autowiredClass` &rarr; _not injected anywhere_**  \n" +
-				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `autowiredClass` &larr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +

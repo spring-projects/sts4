@@ -176,7 +176,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Inject");
 		editor.assertTrimmedHover("@Inject",
-				"**Autowired `autowiredClass` &rarr; `dependencyA`**\n" +
+				"**Autowired `autowiredClass` &larr; `dependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -231,7 +231,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired",
-				"**Autowired `autowiredClass` &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `autowiredClass` &larr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -382,11 +382,11 @@ public class AutowiredHoverProviderTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, FOO_IMPL_CONTENTS);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
 		editor.assertHoverContains("@Autowired", 1,
-				"**Autowired `defaultFoo` &rarr; `superBean`**\n" +
+				"**Autowired `defaultFoo` &larr; `superBean`**\n" +
 				"- Bean: `superBean`  \n" +
 				"  Type: `com.example.FooImplementation`");
 		editor.assertHoverContains("@Autowired", 2,
-				"**Autowired `defaultFoo` &rarr; `scheduler`**\n" +
+				"**Autowired `defaultFoo` &larr; `scheduler`**\n" +
 				"- Bean: `scheduler`  \n" +
 				"  Type: `org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler`");
 	}
@@ -436,7 +436,7 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Controller", "@Autowired");
 		editor.assertHoverContains("@Autowired",
-				"**Autowired `myController` &rarr; `restTemplate`**\n" +
+				"**Autowired `myController` &larr; `restTemplate`**\n" +
 				"- Bean: `restTemplate`  \n" +
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
@@ -493,7 +493,7 @@ public class AutowiredHoverProviderTest {
 		editor.assertHighlights("@Component", "SomeComponent");
 
 		editor.assertTrimmedHover("SomeComponent", 2,
-				"**Autowired `someComponent` &rarr; `dependencyA` `dependencyB`**\n" +
+				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +
@@ -644,7 +644,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `anotherComponent` &rarr; `anonymousBeanFactory`**\n" +
+				"**Autowired `anotherComponent` &larr; `anonymousBeanFactory`**\n" +
 				"- Bean: `anonymousBeanFactory`  \n" +
 				"  Type: `com.example.SomeComponent$1`\n" +
 				"  \n" +

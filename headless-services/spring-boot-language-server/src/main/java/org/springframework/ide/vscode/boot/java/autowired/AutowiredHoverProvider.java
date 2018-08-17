@@ -147,7 +147,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 			List<LiveBean> autowiredBeans) {
 		hover.append("**Autowired `");
 		hover.append(definedBean.getId());
-		hover.append("` &rarr; ");
+		hover.append("` &larr; ");
 		if (LiveHoverUtils.doBeansFitInline(autowiredBeans, MAX_INLINE_BEANS_STRING_LENGTH - definedBean.getId().length(),
 				INLINE_BEANS_STRING_SEPARATOR)) {
 			hover.append(autowiredBeans.stream().map(b -> LiveHoverUtils.showBeanInline(server, project, b))

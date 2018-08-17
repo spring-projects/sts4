@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -92,7 +92,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	public CodeLens[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
-			Collection<CodeLens> result = new HashSet<>();
+			Collection<CodeLens> result = new LinkedHashSet<>();
 			try {
 				if (cu != null) {
 					cu.accept(new ASTVisitor() {
