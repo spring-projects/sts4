@@ -62,9 +62,10 @@ public class Classpath {
 			return outputFolder;
 		}
 
-		public void setOutputFolder(String outputFolder) {
+		public CPE setOutputFolder(String outputFolder) {
 			Assert.isLegal(outputFolder==null || new File(outputFolder).isAbsolute());
 			this.outputFolder = outputFolder;
+			return this;
 		}
 
 		public CPE() {}

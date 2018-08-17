@@ -213,13 +213,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 				synchronized(this) {
 					if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
-
 						cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
 						cachedBeansModelMD5 = md5;
-
 						logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
-					}
-					else {
+					} else {
 						logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
 					}
 				}

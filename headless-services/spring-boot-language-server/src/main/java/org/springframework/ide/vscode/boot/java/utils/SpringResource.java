@@ -31,6 +31,7 @@ public class SpringResource {
 
 	public static final String FILE = "file";
 	public static final String CLASS_PATH_RESOURCE = "class path resource";
+	private static final String CF_CLASSPATH_PREFIX = "/home/vcap/app/";
 
 	private SourceLinks sourceLinks;
 	private String type;
@@ -38,7 +39,7 @@ public class SpringResource {
 	private IJavaProject project;
 
 	private static final Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
-	
+
 	private static final String ID_PATTERN = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
     private static final String REGEX_FQCN = ID_PATTERN + "(\\." + ID_PATTERN + ")*";
 
@@ -49,6 +50,10 @@ public class SpringResource {
 		if (matcher.find()) {
 			type = toParse.substring(0, matcher.start()).trim();
 			path = toParse.substring(matcher.start()+1, matcher.end()-1);
+			if (type.equals("file") && path.startsWith(CF_CLASSPATH_PREFIX)) {
+				type = CLASS_PATH_RESOURCE;
+				path = path.substring(CF_CLASSPATH_PREFIX.length());
+			}
 		} else if (Pattern.matches(REGEX_FQCN, toParse)) {
 			// Resource is fully qualified Java type name
 			type = CLASS_PATH_RESOURCE;

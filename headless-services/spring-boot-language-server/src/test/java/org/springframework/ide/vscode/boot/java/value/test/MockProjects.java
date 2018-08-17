@@ -72,6 +72,7 @@ public class MockProjects {
 		final private File root;
 		final private String name;
 		final private List<File> sourceFolders = new ArrayList<File>();
+		private File defaultOutputFolder;
 
 		final private IClasspath classpath = new IClasspath() {
 
@@ -84,7 +85,7 @@ public class MockProjects {
 			public Collection<CPE> getClasspathEntries() throws Exception {
 				List<CPE> cp = new ArrayList<>();
 				for (File sf : sourceFolders) {
-					cp.add(new CPE(Classpath.ENTRY_KIND_SOURCE, sf.getAbsolutePath()));
+					cp.add(new CPE(Classpath.ENTRY_KIND_SOURCE, sf.getAbsolutePath()).setOutputFolder(defaultOutputFolder.getAbsolutePath()));
 				}
 				return cp;
 			}
@@ -97,6 +98,7 @@ public class MockProjects {
 				this.root = Files.createTempDir();
 				createSourceFolder("src/main/java");
 				createSourceFolder("src/main/resources");
+				createOutputFolder("target/classes");
 				projectsByName.put(name, this);
 			}
 			synchronized (observer.listeners) {
@@ -108,6 +110,13 @@ public class MockProjects {
 
 		public boolean contains(File file) {
 			return file.toPath().startsWith(root.toPath());
+		}
+
+		private void createOutputFolder(String projectRelativePath) {
+			Assert.assertNull("Output folder already created", this.defaultOutputFolder);
+			File outFolder = new File(root, projectRelativePath);
+			outFolder.mkdirs();
+			this.defaultOutputFolder = outFolder;
 		}
 
 		public void createSourceFolder(String projectRelativePath) {
