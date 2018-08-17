@@ -29,21 +29,22 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         },
         workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
-            documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],
-            // documentSelector: [
-            //     {
-            //         language: PROPERTIES_LANGUAGE_ID,
-            //         scheme: 'untitled'
-            //     },
-            //     {
-            //         language: YAML_LANGUAGE_ID,
-            //         scheme: 'untitled'
-            //     },
-            //     {
-            //         language: JAVA_LANGUAGE_ID,
-            //         scheme: 'untitled'
-            //     }
-            // ],
+            // See PT-158992999 as to why a scheme is added to the document selector
+            // documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],
+            documentSelector: [
+                {
+                    language: PROPERTIES_LANGUAGE_ID,
+                    scheme: 'file'
+                },
+                {
+                    language: YAML_LANGUAGE_ID,
+                    scheme: 'file'
+                },
+                {
+                    language: JAVA_LANGUAGE_ID,
+                    scheme: 'file'
+                }
+            ],
             synchronize: {
                 configurationSection: 'boot-java'
             },
