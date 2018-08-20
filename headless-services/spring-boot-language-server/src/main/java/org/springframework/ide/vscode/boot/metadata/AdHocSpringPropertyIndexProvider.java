@@ -108,7 +108,8 @@ public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProv
 		if (props!=null) {
 			for (Object p : props.keySet()) {
 				if (p instanceof String) {
-					index.add(new PropertyInfo((String)p));
+					String filename = file.getName();
+					index.add(new PropertyInfo((String)p).setDescription("Ad-hoc property defined in '"+filename+"'"));
 				}
 			}
 		}

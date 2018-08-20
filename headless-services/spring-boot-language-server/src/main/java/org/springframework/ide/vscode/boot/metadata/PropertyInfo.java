@@ -68,7 +68,7 @@ public class PropertyInfo {
 	private String type;
 	final private String name;
 	final private Object defaultValue;
-	final private String description;
+	private String description;
 	private List<PropertySource> sources;
 	private Deprecation deprecation;
 	private ImmutableList<ValueHint> valueHints;
@@ -192,6 +192,11 @@ public class PropertyInfo {
 			return this;
 		}
 		return new PropertyInfo(alias, type, name, defaultValue, description, deprecation, valueHints, keyHints, valueProvider, keyProvider, sources);
+	}
+
+	public PropertyInfo setDescription(String description) {
+		this.description = description;
+		return this;
 	}
 
 	public void setDeprecation(Deprecation d) {
