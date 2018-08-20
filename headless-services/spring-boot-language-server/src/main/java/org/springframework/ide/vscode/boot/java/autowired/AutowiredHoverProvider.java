@@ -208,28 +208,61 @@ public class AutowiredHoverProvider implements HoverProvider {
 					.collect(Collectors.toList());
 		} else if (declarationNode instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;
-			Optional<String> beanId = ASTUtils.beanId(fieldDeclaration.modifiers());
-			if (beanId.isPresent()) {
-				return beans.stream().filter(b -> beanId.get().equals(b.getId())).findFirst().map(b -> ImmutableList.of(b)).orElseGet(() -> ImmutableList.of());
-			} else {
-				LiveBean matchedBean = matchBeanByType(project, beans, fieldDeclaration.getType().resolveBinding());
-				if (matchedBean != null) {
-					return ImmutableList.of(matchedBean);
+			ITypeBinding fieldType = fieldDeclaration.getType().resolveBinding();
+			if (fieldType != null) {
+				Optional<String> beanId = ASTUtils.beanId(fieldDeclaration.modifiers());
+				if (beanId.isPresent()) {
+					return beans.stream()
+							.filter(b -> beanId.get().equals(b.getId()))
+							.findFirst()
+							.filter(b -> verfyBeanType(project, b, fieldType))
+							.map(b -> ImmutableList.of(b))
+							.orElseGet(() -> ImmutableList.of());
+				} else {
+					LiveBean matchedBean = matchBeanByType(project, beans, fieldType);
+					if (matchedBean != null) {
+						return ImmutableList.of(matchedBean);
+					}
 				}
 			}
 		} else if (declarationNode instanceof SingleVariableDeclaration) {
 			SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration)declarationNode;
-			Optional<String> beanId = ASTUtils.beanId(singleVariableDeclaration.modifiers());
-			if (beanId.isPresent()) {
-				return beans.stream().filter(b -> beanId.get().equals(b.getId())).findFirst().map(b -> ImmutableList.of(b)).orElseGet(() -> ImmutableList.of());
-			} else {
-				LiveBean matchedBean = matchBeanByType(project, beans, singleVariableDeclaration.getType().resolveBinding());
-				if (matchedBean != null) {
-					return ImmutableList.of(matchedBean);
+			ITypeBinding varType = singleVariableDeclaration.getType().resolveBinding();
+			if (varType != null) {
+				Optional<String> beanId = ASTUtils.beanId(singleVariableDeclaration.modifiers());
+				if (beanId.isPresent()) {
+					return beans.stream()
+							.filter(b -> beanId.get().equals(b.getId()))
+							.findFirst()
+							.filter(b -> verfyBeanType(project, b, varType))
+							.map(b -> ImmutableList.of(b))
+							.orElseGet(() -> ImmutableList.of());
+				} else {
+					LiveBean matchedBean = matchBeanByType(project, beans, varType);
+					if (matchedBean != null) {
+						return ImmutableList.of(matchedBean);
+					}
 				}
 			}
 		}
 		return Collections.emptyList();
+	}
+
+	private static boolean verfyBeanType(IJavaProject jp, LiveBean bean, ITypeBinding typeBinding) {
+		String liveBeanTypeFQName = bean.getType();
+		if (liveBeanTypeFQName != null) {
+			String bindingQualifiedName = typeBinding.getQualifiedName();
+			if (liveBeanTypeFQName.replace('$', '.').equals(bindingQualifiedName)) {
+				return true;
+			} else {
+				IType type = jp.findType(liveBeanTypeFQName);
+				String fqTypeName = bindingQualifiedName;
+				if (type != null) {
+					return jp.allSuperTypesOf(type).map(IType::getFullyQualifiedName).filter(fqn -> fqTypeName.equals(fqn.replace('$', '.'))).blockFirst() != null;
+				}
+			}
+		}
+		return false;
 	}
 
 	private static LiveBean matchBeanByType(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
