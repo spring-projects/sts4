@@ -732,7 +732,7 @@ public class AutowiredHoverProviderTest {
 				.add(LiveBean.builder()
 						.id("someComponent")
 						.type("com.example.SomeComponent")
-						.dependencies("dependencyA", "dependencyB")
+						.dependencies("dependencyA")
 						.build()
 				)
 				.add(LiveBean.builder()
@@ -784,7 +784,7 @@ public class AutowiredHoverProviderTest {
 				.add(LiveBean.builder()
 						.id("someComponent")
 						.type("com.example.SomeComponent")
-						.dependencies("dependencyA", "dependencyB")
+						.dependencies("dependencyA")
 						.build()
 				)
 				.add(LiveBean.builder()
@@ -823,6 +823,53 @@ public class AutowiredHoverProviderTest {
 		editor.assertHighlights("@Component");
 		editor.assertNoHover("@Autowired");
 	}
+
+	@Test
+	public void qualifierWrongTypeWiredBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependency")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependency")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.beans.factory.annotation.Qualifier;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   @Qualifier(\"dependency\")\n" +
+				"   private DependencyB a;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component");
+		editor.assertNoHover("@Autowired");
+	}
+
 
 	@Test
 	public void anonymousInnerClassBeanWiring() throws Exception {
