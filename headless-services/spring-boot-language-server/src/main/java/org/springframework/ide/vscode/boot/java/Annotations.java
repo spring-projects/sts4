@@ -26,6 +26,8 @@ public class Annotations {
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 	public static final String INJECT = "javax.inject.Inject";
 
+	public static final String QUALIFIER = "org.springframework.beans.factory.annotation.Qualifier";
+
 	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
 	public static final String SPRING_GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";
 	public static final String SPRING_POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping";

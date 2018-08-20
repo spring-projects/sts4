@@ -668,6 +668,163 @@ public class AutowiredHoverProviderTest {
 	}
 
 	@Test
+	public void qualifierParameterWiredBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Qualifier;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   private IDependency a;\n" +
+				"   private IDependency b;\n" +
+				"\n" +
+				"	public SomeComponent(@Qualifier(\"dependencyA\") IDependency a, @Qualifier(\"dependencyB\") IDependency b) {\n" +
+				"       this.a = a;\n" +
+				"       this.b = b;\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "SomeComponent");
+		editor.assertTrimmedHover("SomeComponent", 2,
+				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
+
+	@Test
+	public void qualifierFieldWiredBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.beans.factory.annotation.Qualifier;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   @Qualifier(\"dependencyA\")\n" +
+				"   private IDependency a;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Autowired", 1,
+				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
+
+	@Test
+	public void qualifierNotFoundWiredBean() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.beans.factory.annotation.Qualifier;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   @Qualifier(\"X\")\n" +
+				"   private IDependency a;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component");
+		editor.assertNoHover("@Autowired");
+	}
+
+	@Test
 	public void anonymousInnerClassBeanWiring() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()

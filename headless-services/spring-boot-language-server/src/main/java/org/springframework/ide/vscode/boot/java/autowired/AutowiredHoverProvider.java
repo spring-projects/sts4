@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.autowired;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -198,20 +199,34 @@ public class AutowiredHoverProvider implements HoverProvider {
 			return ((List<Object>)methodDeclaration.parameters()).stream()
 					.filter(p -> p instanceof SingleVariableDeclaration)
 					.map(p -> (SingleVariableDeclaration)p)
-					.map(singleVariableDeclaration -> matchBeanByType(project, beans, singleVariableDeclaration.getType().resolveBinding()))
+					.map(singleVariableDeclaration -> {
+						// Supposed to be a list of one bean for the variable declaration
+						List<LiveBean> matches = findAutowiredBeans(project, singleVariableDeclaration, beans);
+						return matches.isEmpty() ? null : matches.get(0);
+					})
 					.filter(matchedBean -> matchedBean != null)
 					.collect(Collectors.toList());
 		} else if (declarationNode instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;
-			LiveBean matchedBean = matchBeanByType(project, beans, fieldDeclaration.getType().resolveBinding());
-			if (matchedBean != null) {
-				return ImmutableList.of(matchedBean);
+			Optional<String> beanId = ASTUtils.beanId(fieldDeclaration.modifiers());
+			if (beanId.isPresent()) {
+				return beans.stream().filter(b -> beanId.get().equals(b.getId())).findFirst().map(b -> ImmutableList.of(b)).orElseGet(() -> ImmutableList.of());
+			} else {
+				LiveBean matchedBean = matchBeanByType(project, beans, fieldDeclaration.getType().resolveBinding());
+				if (matchedBean != null) {
+					return ImmutableList.of(matchedBean);
+				}
 			}
 		} else if (declarationNode instanceof SingleVariableDeclaration) {
 			SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration)declarationNode;
-			LiveBean matchedBean = matchBeanByType(project, beans, singleVariableDeclaration.getType().resolveBinding());
-			if (matchedBean != null) {
-				return ImmutableList.of(matchedBean);
+			Optional<String> beanId = ASTUtils.beanId(singleVariableDeclaration.modifiers());
+			if (beanId.isPresent()) {
+				return beans.stream().filter(b -> beanId.get().equals(b.getId())).findFirst().map(b -> ImmutableList.of(b)).orElseGet(() -> ImmutableList.of());
+			} else {
+				LiveBean matchedBean = matchBeanByType(project, beans, singleVariableDeclaration.getType().resolveBinding());
+				if (matchedBean != null) {
+					return ImmutableList.of(matchedBean);
+				}
 			}
 		}
 		return Collections.emptyList();

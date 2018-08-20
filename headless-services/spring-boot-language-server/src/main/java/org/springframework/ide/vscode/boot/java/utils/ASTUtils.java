@@ -30,14 +30,18 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
 public class ASTUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(ASTUtils.class);
 
 	public static DocumentRegion nameRegion(TextDocument doc, Annotation annotation) {
 		int start = annotation.getTypeName().getStartPosition();
@@ -52,7 +56,7 @@ public class ASTUtils {
 		try {
 			return Optional.of(nameRegion(doc, annotation).asRange());
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return Optional.empty();
 		}
 	}
@@ -96,7 +100,7 @@ public class ASTUtils {
 					}
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 		return Optional.empty();
@@ -239,6 +243,23 @@ public class ASTUtils {
 		return null;
 	}
 
-
+	public static Optional<String> beanId(List<Object> modifiers) {
+		return modifiers.stream()
+				.filter(m -> m instanceof SingleMemberAnnotation)
+				.map(m -> (SingleMemberAnnotation) m)
+				.filter(m -> {
+					ITypeBinding typeBinding = m.resolveTypeBinding();
+					if (typeBinding != null) {
+						return Annotations.QUALIFIER.equals(typeBinding.getQualifiedName());
+					}
+					return false;
+				})
+				.findFirst()
+				.map(a -> a.getValue())
+				.filter(e -> e != null)
+				.map(e -> e.resolveConstantExpressionValue())
+				.filter(o -> o instanceof String)
+				.map(o -> (String) o);
+	}
 
 }
