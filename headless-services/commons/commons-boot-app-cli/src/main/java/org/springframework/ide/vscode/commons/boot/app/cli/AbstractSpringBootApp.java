@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.PlatformManagedObject;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
@@ -46,6 +46,8 @@ import org.springframework.ide.vscode.commons.util.FunctionWithException;
 import org.springframework.ide.vscode.commons.util.MemoizingDisposableSupplier;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -63,6 +65,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	private LiveBeansModel cachedBeansModel;
 	private String cachedBeansModelMD5;
+
+	private Cache<String, LiveBeansModel> beansModelCache = CacheBuilder.newBuilder()
+			.expireAfterWrite(3, TimeUnit.SECONDS)
+			.build();
 
 	// NOTE: Gson-based serialisation replaces the old Jackson ObjectMapper. Not sure if this makes a difference in the long run, but to retain the same output that Jackson Object Mapper
 	// was generating during serialisation, some configuration in Gson is required, as the default behaviour of Gson is different than Object Mapper.
@@ -205,29 +211,33 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public LiveBeansModel getBeans() {
 		try {
-			String domain = getDomainForActuator();
-			Object json = getBeansFromActuator(domain);
+			return beansModelCache.get("liveBeans", () -> {
+				String domain = getDomainForActuator();
+				Object json = getBeansFromActuator(domain);
 
-			if (json != null) {
-				String md5 = DigestUtils.md5Hex(json.toString());
+				if (json != null) {
+					String md5 = DigestUtils.md5Hex(json.toString());
 
-				synchronized(this) {
-					if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
-						cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
-						cachedBeansModelMD5 = md5;
-						logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
-					} else {
-						logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
+					synchronized(AbstractSpringBootApp.this) {
+						if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
+							cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
+							cachedBeansModelMD5 = md5;
+							logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
+						} else {
+							logger.debug("Got {} beans for {} - from cache", cachedBeansModel.getBeanNames().size(), this);
+						}
 					}
-				}
 
-				return cachedBeansModel;
-			}
+					return cachedBeansModel;
+				}
+				else {
+					throw new Exception("not getting any beans from app");
+				}
+			});
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
+			return LiveBeansModel.builder().build();
 		}
-
-		return LiveBeansModel.builder().build();
 	}
 
 	private Object getBeansFromActuator(String domain) throws Exception {
