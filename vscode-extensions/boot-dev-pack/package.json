@@ -1,6 +1,6 @@
 {
   "name": "vscode-boot-dev-pack",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "Pivotal",
   "displayName": "Spring Boot Extension Pack",
   "description": "A collection of extensions for developing Spring Boot applications",
@@ -26,14 +26,14 @@
     "yaml"
   ],
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Linters",
     "Extension Packs"
   ],
   "engines": {
-    "vscode": "^1.19.0"
+    "vscode": "^1.26.0"
   },
-  "extensionDependencies": [
+  "extensionPack": [
     "Pivotal.vscode-spring-boot",
     "Pivotal.vscode-concourse",
     "Pivotal.vscode-manifest-yaml",
