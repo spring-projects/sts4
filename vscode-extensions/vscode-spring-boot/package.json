@@ -144,5 +144,8 @@
     "typescript": "2.7.2",
     "@types/node": "^9.4.6",
     "vscode": "^1.1.10"
-  }
+  },
+  "extensionDependencies": [
+    "redhat.java"
+  ]
 }
