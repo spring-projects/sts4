@@ -1171,6 +1171,63 @@ public class AutowiredHoverProviderTest {
 	}
 
 	@Test
+	public void arrayWiredBeans() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("someComponent")
+						.type("com.example.SomeComponent")
+						.dependencies("dependencyA", "dependencyB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyA")
+						.type("com.example.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("dependencyB")
+						.type("com.example.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class SomeComponent {\n" +
+				"\n" +
+				"   @Autowired\n" +
+				"   private IDependency[] a;\n" +
+				"\n" +
+				"	public SomeComponent() {\n" +
+				"	}\n" +
+				"\n" +
+				"}\n"
+		);
+
+		editor.assertHighlights("@Component", "@Autowired");
+		editor.assertTrimmedHover("@Autowired", 1,
+				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+	}
+
+	@Test
 	public void multiDimensionalArrayWiredBean() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()

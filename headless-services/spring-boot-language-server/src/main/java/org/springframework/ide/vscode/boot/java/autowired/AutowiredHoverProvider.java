@@ -210,25 +210,19 @@ public class AutowiredHoverProvider implements HoverProvider {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;
 			ITypeBinding fieldType = fieldDeclaration.getType().resolveBinding();
 			if (fieldType != null) {
-				LiveBean matchedBean = matchBean(project, beans, fieldType, fieldDeclaration.modifiers());
-				if (matchedBean != null) {
-					return ImmutableList.of(matchedBean);
-				}
+				return matchBeans(project, beans, fieldType, fieldDeclaration.modifiers());
 			}
 		} else if (declarationNode instanceof SingleVariableDeclaration) {
 			SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration)declarationNode;
 			ITypeBinding varType = singleVariableDeclaration.getType().resolveBinding();
 			if (varType != null) {
-				LiveBean matchedBean = matchBean(project, beans, varType, singleVariableDeclaration.modifiers());
-				if (matchedBean != null) {
-					return ImmutableList.of(matchedBean);
-				}
+				return matchBeans(project, beans, varType, singleVariableDeclaration.modifiers());
 			}
 		}
 		return Collections.emptyList();
 	}
 
-	private static LiveBean matchBean(IJavaProject project, Collection<LiveBean> beans, ITypeBinding typeBinding, List<Object> modifiers) {
+	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, ITypeBinding typeBinding, List<Object> modifiers) {
 		Optional<String> beanId = ASTUtils.beanId(modifiers);
 		Collection<LiveBean> searchScope = beanId.isPresent() ?
 				beans.stream()
@@ -237,7 +231,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 					.map(bean -> (Collection<LiveBean>) ImmutableList.of(bean))
 					.orElse(ImmutableList.of())
 				: beans;
-		return matchBeanByTypeOrCollection(project, searchScope, typeBinding);
+		return matchBeansByTypeOrCollection(project, searchScope, typeBinding);
 	}
 
 	private static boolean isInstanceOfCollection(ITypeBinding typeBinding) {
@@ -257,31 +251,30 @@ public class AutowiredHoverProvider implements HoverProvider {
 		}
 	}
 
-	private static LiveBean matchBeanByTypeOrCollection(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
+	private static List<LiveBean> matchBeansByTypeOrCollection(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
 		if (isInstanceOfCollection(type)) {
 			// Raw collections shouldn't match any beans
-			return type.getTypeArguments().length == 1 ? matchBeanByType(project, beans, type.getTypeArguments()[0].getQualifiedName()) : null;
+			return type.getTypeArguments().length == 1 ? matchBeansByType(project, beans, type.getTypeArguments()[0].getQualifiedName(), false) : ImmutableList.of();
 		} else if (type.isArray() && type.getDimensions() == 1) {
-			return matchBeanByType(project, beans, type.getElementType().getQualifiedName());
+			return matchBeansByType(project, beans, type.getElementType().getQualifiedName(), false);
 		} else {
-			return matchBeanByType(project, beans, type.getQualifiedName());
+			return matchBeansByType(project, beans, type.getQualifiedName(), true);
 		}
 	}
 
-	private static LiveBean matchBeanByType(IJavaProject project, Collection<LiveBean> beans, String fqName) {
+	private static List<LiveBean> matchBeansByType(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allowOneMatchOnly) {
 		if (fqName != null) {
-			List<LiveBean> matches = matchBeansByFQName(project, beans, fqName, true);
-			if (!matches.isEmpty()) {
-				return matches.size() == 1 ? matches.get(0) : LiveHoverUtils.CANT_MATCH_PROPER_BEAN;
+			if (allowOneMatchOnly) {
+					List<LiveBean> matches = beans.stream().filter(b -> AutowiredHoverProvider.isCompatibleBeanType(project, b, fqName))
+							.limit(2).collect(Collectors.toList());
+					if (!matches.isEmpty()) {
+						return matches.size() == 1 ? matches : ImmutableList.of(LiveHoverUtils.CANT_MATCH_PROPER_BEAN);
+					}
 			} else {
-				matches = beans.stream().filter(b -> AutowiredHoverProvider.isCompatibleBeanType(project, b, fqName))
-						.limit(2).collect(Collectors.toList());
-				if (!matches.isEmpty()) {
-					return matches.size() == 1 ? matches.get(0) : LiveHoverUtils.CANT_MATCH_PROPER_BEAN;
-				}
+				return beans.stream().filter(b -> AutowiredHoverProvider.isCompatibleBeanType(project, b, fqName)).collect(Collectors.toList());
 			}
 		}
-		return null;
+		return ImmutableList.of();
 	}
 
 	private static boolean isCompatibleBeanType(IJavaProject jp, LiveBean bean, String bindingQualifiedName) {
@@ -299,19 +292,6 @@ public class AutowiredHoverProvider implements HoverProvider {
 			}
 		}
 		return false;
-	}
-
-
-	private static List<LiveBean> matchBeansByFQName(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allDots) {
-		if (fqName != null) {
-			if (allDots) {
-				return beans.stream().filter(b -> fqName.equals(b.getType(true).replace('$', '.'))).collect(Collectors.toList());
-			} else {
-				return beans.stream().filter(b -> fqName.equals(b.getType(true))).collect(Collectors.toList());
-			}
-		} else {
-			return Collections.emptyList();
-		}
 	}
 
 	private LiveBean getDefinedBeanForTypeDeclaration(TypeDeclaration declaringType) {
