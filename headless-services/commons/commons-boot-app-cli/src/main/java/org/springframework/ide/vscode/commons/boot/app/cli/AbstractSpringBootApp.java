@@ -122,7 +122,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		try {
 			return doit.apply(jmxConnector.get());
 		} catch (Exception e) {
-			logger.info("Evicting JMX connector {} because of error: {}", getJmxUrl(), ExceptionUtil.getMessage(e));
+			logger.info("Evicting JMX connector {} because of error: {}", jmxConnector, ExceptionUtil.getMessage(e));
 			jmxConnector.evict();
 			throw e;
 		}
