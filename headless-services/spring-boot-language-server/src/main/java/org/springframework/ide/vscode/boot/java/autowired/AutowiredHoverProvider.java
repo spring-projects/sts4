@@ -172,7 +172,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, LiveBean definedBean) {
 		List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
+		return getRelevantAutowiredBeans(project, declarationNode, app, relevantBeans);
+	}
 
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, List<LiveBean> relevantBeans) {
 		if (!relevantBeans.isEmpty()) {
 			List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
 
@@ -199,12 +202,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 			return ((List<Object>)methodDeclaration.parameters()).stream()
 					.filter(p -> p instanceof SingleVariableDeclaration)
 					.map(p -> (SingleVariableDeclaration)p)
-					.map(singleVariableDeclaration -> {
-						// Supposed to be a list of one bean for the variable declaration
-						List<LiveBean> matches = findAutowiredBeans(project, singleVariableDeclaration, beans);
-						return matches.isEmpty() ? null : matches.get(0);
-					})
-					.filter(matchedBean -> matchedBean != null)
+					.flatMap(singleVariableDeclaration -> findAutowiredBeans(project, singleVariableDeclaration, beans).stream())
 					.collect(Collectors.toList());
 		} else if (declarationNode instanceof FieldDeclaration) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;

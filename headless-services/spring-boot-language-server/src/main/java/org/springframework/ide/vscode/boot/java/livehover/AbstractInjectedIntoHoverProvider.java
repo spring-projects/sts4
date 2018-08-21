@@ -64,7 +64,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), ASTUtils.getAnnotatedType(annotation) != null);
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), annotation);
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
@@ -83,7 +83,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean, ASTUtils.getAnnotatedType(annotation) != null);
+				Hover hover = assembleHover(project, runningApps, definedBean, annotation);
 				if (hover != null) {
 					Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 					if (nameRange.isPresent()) {
@@ -96,7 +96,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return null;
 	}
 
-	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, Range range, boolean includeWiredBeans) {
+	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, Range range, ASTNode astNode) {
 		List<CodeLens> codeLensList = new ArrayList<>();
 			for (SpringBootApp app : runningApps) {
 
@@ -108,24 +108,26 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					if (!injectedBeans.isEmpty()) {
 						// Break out of the loop. Just look for the first app with injected into beans
 						List<CodeLens> injectedCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, injectedBeans, BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
-						builder.addAll(injectedCodeLenses == null ? ImmutableList.of(new CodeLens(range)) : injectedCodeLenses);
+						builder.addAll(injectedCodeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : injectedCodeLenses);
 					}
-					if (includeWiredBeans) {
-						List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
-						List<CodeLens> wiredCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, allDependencyBeans,
-								AutowiredHoverProvider.BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH,
-								INLINE_BEANS_STRING_SEPARATOR);
-						if (wiredCodeLenses != null) {
-							builder.addAll(wiredCodeLenses);
-						}
-					}
+
+					// Wired beans code lenses
+					List<LiveBean> wiredBeans = findWiredBeans(project, app, relevantBeans, astNode);
+					builder.addAll(LiveHoverUtils.createCodeLensesForBeans(range, wiredBeans,
+							AutowiredHoverProvider.BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH,
+							INLINE_BEANS_STRING_SEPARATOR));
+
 					return builder.build();
 				}
 		}
 		return codeLensList;
 	}
 
-	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, boolean includeWiredBeans) {
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans, ASTNode astNode) {
+		return Collections.emptyList();
+	}
+
+	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, ASTNode astNode) {
 		StringBuilder hover = new StringBuilder();
 
 		boolean hasContent = false;
@@ -170,11 +172,9 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					hover.append("\n  \n");
 				}
 
-				if (includeWiredBeans) {
-					List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
-					if (!allDependencyBeans.isEmpty()) {
-						AutowiredHoverProvider.createHoverContentForBeans(server, definedBean, project, hover, allDependencyBeans);
-					}
+				List<LiveBean> wiredBeans = findWiredBeans(project, app, relevantBeans, astNode);
+				if (!wiredBeans.isEmpty()) {
+					AutowiredHoverProvider.createHoverContentForBeans(server, definedBean, project, hover, wiredBeans);
 				}
 
 				hover.append(LiveHoverUtils.niceAppName(app));

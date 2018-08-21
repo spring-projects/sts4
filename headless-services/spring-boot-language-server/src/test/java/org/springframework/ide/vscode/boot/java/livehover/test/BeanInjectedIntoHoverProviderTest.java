@@ -39,6 +39,28 @@ public class BeanInjectedIntoHoverProviderTest {
 				"	void doSomeFoo();\n" +
 				"}\n"
 		);
+
+		p.createType("hello.IDependency",
+				"package hello;\n" +
+				"\n" +
+				"public interface IDependency {\n" +
+				"}\n"
+		);
+
+		p.createType("hello.DependencyA",
+				"package hello;\n" +
+				"\n" +
+				"public class DependencyA implements IDependency {\n" +
+				"}\n"
+		);
+
+		p.createType("hello.DependencyB",
+				"package hello;\n" +
+				"\n" +
+				"public class DependencyB implements IDependency {\n" +
+				"}\n"
+		);
+
 	};
 
 	private BootJavaLanguageServerHarness harness;
@@ -483,5 +505,215 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights(/*NONE*/);
 		editor.assertNoHover("@Bean");
+	}
+
+	@Test
+	public void beanWithOneWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.dependencies("depA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depA")
+						.type("hello.DependencyA")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo(DependencyA a) {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `fooImplementation` &larr; `depA`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
+	public void beanWithMultipleWirings() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.dependencies("depA", "depB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depA")
+						.type("hello.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depB")
+						.type("hello.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo(DependencyA a, DependencyB b) {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `fooImplementation` &larr; `depA` `depB`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
+	public void beanWithCollectionWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.dependencies("depA", "depB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depA")
+						.type("hello.DependencyA")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depB")
+						.type("hello.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo(IDependency[] deps) {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `fooImplementation` &larr; `depA` `depB`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
+	public void beanWithQualifierWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.dependencies("depA", "depB")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("depB")
+						.type("hello.DependencyB")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo(@Qualifier(\"depB\") IDependency[] deps) {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		editor.assertHighlights("@Bean");
+		editor.assertTrimmedHover("@Bean",
+				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"**Autowired `fooImplementation` &larr; `depB`**\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
 	}
 }

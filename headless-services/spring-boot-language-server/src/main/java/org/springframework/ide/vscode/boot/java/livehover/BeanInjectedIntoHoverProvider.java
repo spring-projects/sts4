@@ -10,13 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Optionals;
 
 public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProvider {
@@ -64,6 +70,17 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 				() -> ASTUtils.getAttribute(annotation, "name").flatMap(ASTUtils::getFirstString),
 				() -> Optional.ofNullable(beanMethod.getName().getIdentifier())
 		);
+	}
+
+	@Override
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans, ASTNode astNode) {
+		if (astNode instanceof Annotation) {
+			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((Annotation) astNode);
+			if (beanMethod != null) {
+				return AutowiredHoverProvider.getRelevantAutowiredBeans(project, beanMethod, app, relevantBeans);
+			}
+		}
+		return Collections.emptyList();
 	}
 
 }

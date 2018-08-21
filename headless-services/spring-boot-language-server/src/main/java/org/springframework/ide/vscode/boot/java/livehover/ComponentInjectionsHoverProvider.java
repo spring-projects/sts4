@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -110,7 +111,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), true);
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), typeDeclaration);
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
@@ -130,7 +131,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean, true);
+				Hover hover = assembleHover(project, runningApps, definedBean, typeDeclaration);
 				if (hover != null) {
 					SimpleName name = typeDeclaration.getName();
 					try {
@@ -143,6 +144,20 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			}
 		}
 		return null;
+	}
+
+
+
+	@Override
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans,
+			ASTNode astNode) {
+		TypeDeclaration typeDeclaration = null;
+		if (astNode instanceof TypeDeclaration) {
+			typeDeclaration = (TypeDeclaration) astNode;
+		} else if (astNode instanceof Annotation) {
+			typeDeclaration = ASTUtils.getAnnotatedType((Annotation) astNode);
+		}
+		return typeDeclaration == null ? Collections.emptyList() : LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
 	}
 
 	private boolean isComponentAnnotatedType(TypeDeclaration typeDeclaration) {
