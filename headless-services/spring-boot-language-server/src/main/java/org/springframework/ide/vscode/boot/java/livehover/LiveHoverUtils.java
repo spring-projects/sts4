@@ -225,7 +225,7 @@ public class LiveHoverUtils {
 
 			return ImmutableList.of(codeLens);
 		} else {
-			return null;
+			return ImmutableList.of();
 		}
 
 	}
