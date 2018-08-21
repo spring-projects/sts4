@@ -51,6 +51,41 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	@Test public void bug_158348104() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/158348104
+		data("spring.activemq.close-timeout", "java.time.Duration", null, null);
+
+		Editor editor;
+
+		editor = newEditor("");
+		editor.assertContextualCompletions("springactcloti",
+				"spring:\n" +
+				"  activemq:\n" +
+				"    close-timeout: <*>"
+		);
+
+		editor = newEditor(
+				"spring:\n" +
+				"  activemq:\n" +
+				"    close-timeout: garbage"
+		);
+		editor.assertProblems("garbage|not a valid duration");
+
+		editor = newEditor(
+				"spring:\n" +
+				"  activemq:\n" +
+				"    close-timeout: 15s"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = newEditor(
+				"spring:\n" +
+				"  activemq:\n" +
+				"    close-timeout: PT10S" //ISO duration format
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
 	@Test public void bug_153144391() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/153144391
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));

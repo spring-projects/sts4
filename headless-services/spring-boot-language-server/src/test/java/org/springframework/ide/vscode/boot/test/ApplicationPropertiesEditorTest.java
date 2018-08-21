@@ -78,6 +78,33 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems("problem|extraneous input", "another|mismatched input");
 	}
 
+
+	@Test public void bug_158348104() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/158348104
+		data("spring.activemq.close-timeout", "java.time.Duration", null, null);
+
+		Editor editor;
+
+		editor = newEditor("");
+		editor.assertContextualCompletions("springactcloti",
+				"spring.activemq.close-timeout=<*>"
+		);
+
+		editor = newEditor(
+				"spring.activemq.close-timeout=garbage"
+		);
+		editor.assertProblems("garbage|not a valid duration");
+
+		editor = newEditor(
+				"spring.activemq.close-timeout: 15s"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = newEditor(
+				"spring.activemq.close-timeout: PT10S" //ISO duration format
+		);
+		editor.assertProblems(/*NONE*/);
+	}
 	@Test public void testServerPortCompletion() throws Exception {
 		data("server.port", INTEGER, 8080, "Port where server listens for http.");
 		assertCompletion("ser<*>", "server.port=<*>");

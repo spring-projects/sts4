@@ -1,17 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>spring-boot-language-server</artifactId>
 	<packaging>jar</packaging>
-	
+
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
 		<version>0.6.0-SNAPSHOT</version>
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
-	
+
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
 	</properties>
@@ -22,11 +23,11 @@
 			<url>file://${project.basedir}/repo</url>
 		</repository>
 	</repositories>
-	
+
 
 	<dependencies>
 		<dependency>
-    		<!-- Local modified JSON lib packaged to support order in maps -->
+			<!-- Local modified JSON lib packaged to support order in maps -->
 			<groupId>org.springframework.ide.eclipse</groupId>
 			<artifactId>org.json</artifactId>
 			<version>1.0</version>
@@ -61,11 +62,13 @@
 			<artifactId>commons-boot-app-cli</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
-<!--		<dependency>
-			<groupId>org.eclipse.tycho</groupId>
-			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.13.102.v20180320-1701_BETA_JAVA10</version>
-		</dependency> -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+			<version>${boot-version}</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.eclipse.tycho</groupId> <artifactId>org.eclipse.jdt.core</artifactId> 
+			<version>3.13.102.v20180320-1701_BETA_JAVA10</version> </dependency> -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
@@ -132,6 +135,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-      </plugins>
+		</plugins>
 	</build>
 </project>

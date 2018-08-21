@@ -17,6 +17,7 @@ import static org.springframework.ide.vscode.commons.util.ArrayUtils.lastElement
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
+import org.springframework.boot.convert.DurationStyle;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -58,6 +60,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 
 import com.google.common.collect.ImmutableList;
@@ -95,6 +98,7 @@ public class TypeUtil {
 	private static final Object OBJECT_TYPE_NAME = Object.class.getName();
 	private static final String STRING_TYPE_NAME = String.class.getName();
 	private static final String INET_ADDRESS_TYPE_NAME = InetAddress.class.getName();
+	private static final String DURATION_TYPE_NAME = Duration.class.getName();
 	private static final String CLASS_TYPE_NAME = Class.class.getName();
 
 	public enum BeanPropertyNameMode {
@@ -171,6 +175,7 @@ public class TypeUtil {
 			"java.lang.Character",
 			"java.lang.Byte",
 			INET_ADDRESS_TYPE_NAME,
+			DURATION_TYPE_NAME,
 			CLASS_TYPE_NAME,
 			"java.lang.String[]"
 	));
@@ -178,6 +183,7 @@ public class TypeUtil {
 	private static final Set<String> ATOMIC_TYPES = new HashSet<>(PRIMITIVE_TYPE_NAMES.keySet());
 	static {
 		ATOMIC_TYPES.add(INET_ADDRESS_TYPE_NAME);
+		ATOMIC_TYPES.add(DURATION_TYPE_NAME);
 		ATOMIC_TYPES.add(STRING_TYPE_NAME);
 		ATOMIC_TYPES.add(CLASS_TYPE_NAME);
 	}
@@ -237,6 +243,13 @@ public class TypeUtil {
 					return false;
 				}
 				throw new IllegalArgumentException("Value should be 'true' or 'false'");
+			}
+		});
+		VALUE_PARSERS.put(DURATION_TYPE_NAME, (s) -> {
+			try {
+				return DurationStyle.detectAndParse(s);
+			} catch (IllegalArgumentException e) {
+				throw new ValueParseException(e.getMessage());
 			}
 		});
 	}
