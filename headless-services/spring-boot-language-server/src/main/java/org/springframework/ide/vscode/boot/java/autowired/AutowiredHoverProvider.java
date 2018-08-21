@@ -48,8 +48,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Flux;
-
 /**
  * @author Martin Lippert
  * @author Alex Boyko
@@ -58,7 +56,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	public static final String BEANS_PREFIX = "\u21D0 ";
 
-	final static Logger log = LoggerFactory.getLogger(AutowiredHoverProvider.class);
+	private static final String JAVA_COLLECTION = "java.util.Collection";
+
+	private final static Logger log = LoggerFactory.getLogger(AutowiredHoverProvider.class);
 
 	private static final int MAX_INLINE_BEANS_STRING_LENGTH = 60;
 	private static final String INLINE_BEANS_STRING_SEPARATOR = " ";
@@ -210,98 +210,88 @@ public class AutowiredHoverProvider implements HoverProvider {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;
 			ITypeBinding fieldType = fieldDeclaration.getType().resolveBinding();
 			if (fieldType != null) {
-				Optional<String> beanId = ASTUtils.beanId(fieldDeclaration.modifiers());
-				if (beanId.isPresent()) {
-					return beans.stream()
-							.filter(b -> beanId.get().equals(b.getId()))
-							.findFirst()
-							.filter(b -> verfyBeanType(project, b, fieldType))
-							.map(b -> ImmutableList.of(b))
-							.orElseGet(() -> ImmutableList.of());
-				} else {
-					LiveBean matchedBean = matchBeanByType(project, beans, fieldType);
-					if (matchedBean != null) {
-						return ImmutableList.of(matchedBean);
-					}
-				}
+				return matchBeans(project, beans, fieldType, fieldDeclaration.modifiers());
 			}
 		} else if (declarationNode instanceof SingleVariableDeclaration) {
 			SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration)declarationNode;
 			ITypeBinding varType = singleVariableDeclaration.getType().resolveBinding();
 			if (varType != null) {
-				Optional<String> beanId = ASTUtils.beanId(singleVariableDeclaration.modifiers());
-				if (beanId.isPresent()) {
-					return beans.stream()
-							.filter(b -> beanId.get().equals(b.getId()))
-							.findFirst()
-							.filter(b -> verfyBeanType(project, b, varType))
-							.map(b -> ImmutableList.of(b))
-							.orElseGet(() -> ImmutableList.of());
-				} else {
-					LiveBean matchedBean = matchBeanByType(project, beans, varType);
-					if (matchedBean != null) {
-						return ImmutableList.of(matchedBean);
-					}
-				}
+				return matchBeans(project, beans, varType, singleVariableDeclaration.modifiers());
 			}
 		}
 		return Collections.emptyList();
 	}
 
-	private static boolean verfyBeanType(IJavaProject jp, LiveBean bean, ITypeBinding typeBinding) {
+	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, ITypeBinding typeBinding, List<Object> modifiers) {
+		Optional<String> beanId = ASTUtils.beanId(modifiers);
+		Collection<LiveBean> searchScope = beanId.isPresent() ?
+				beans.stream()
+					.filter(b -> beanId.get().equals(b.getId()))
+					.findFirst()
+					.map(bean -> (Collection<LiveBean>) ImmutableList.of(bean))
+					.orElse(ImmutableList.of())
+				: beans;
+		return matchBeansByTypeOrCollection(project, searchScope, typeBinding);
+	}
+
+	private static boolean isInstanceOfCollection(ITypeBinding typeBinding) {
+		if (typeBinding == null) {
+			return false;
+		} else {
+			if (JAVA_COLLECTION.equals(typeBinding.getTypeDeclaration().getQualifiedName())) {
+				return true;
+			} else {
+				for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
+					if (isInstanceOfCollection(superInterface)) {
+						return true;
+					}
+				}
+				return isInstanceOfCollection(typeBinding.getSuperclass());
+			}
+		}
+	}
+
+	private static List<LiveBean> matchBeansByTypeOrCollection(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
+		if (isInstanceOfCollection(type)) {
+			// Raw collections shouldn't match any beans
+			return type.getTypeArguments().length == 1 ? matchBeansByType(project, beans, type.getTypeArguments()[0].getQualifiedName(), false) : ImmutableList.of();
+		} else if (type.isArray() && type.getDimensions() == 1) {
+			return matchBeansByType(project, beans, type.getElementType().getQualifiedName(), false);
+		} else {
+			return matchBeansByType(project, beans, type.getQualifiedName(), true);
+		}
+	}
+
+	private static List<LiveBean> matchBeansByType(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allowOneMatchOnly) {
+		if (fqName != null) {
+			if (allowOneMatchOnly) {
+					List<LiveBean> matches = beans.stream().filter(b -> AutowiredHoverProvider.isCompatibleBeanType(project, b, fqName))
+							.limit(2).collect(Collectors.toList());
+					if (!matches.isEmpty()) {
+						return matches.size() == 1 ? matches : ImmutableList.of(LiveHoverUtils.CANT_MATCH_PROPER_BEAN);
+					}
+			} else {
+				return beans.stream().filter(b -> AutowiredHoverProvider.isCompatibleBeanType(project, b, fqName)).collect(Collectors.toList());
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	private static boolean isCompatibleBeanType(IJavaProject jp, LiveBean bean, String bindingQualifiedName) {
 		String liveBeanTypeFQName = bean.getType();
 		if (liveBeanTypeFQName != null) {
-			String bindingQualifiedName = typeBinding.getQualifiedName();
 			if (liveBeanTypeFQName.replace('$', '.').equals(bindingQualifiedName)) {
 				return true;
 			} else {
 				IType type = jp.findType(liveBeanTypeFQName);
 				String fqTypeName = bindingQualifiedName;
 				if (type != null) {
-					return jp.allSuperTypesOf(type).map(IType::getFullyQualifiedName).filter(fqn -> fqTypeName.equals(fqn.replace('$', '.'))).blockFirst() != null;
+					return jp.allSuperTypesOf(type).map(IType::getFullyQualifiedName)
+							.filter(fqn -> fqTypeName.equals(fqn.replace('$', '.'))).blockFirst() != null;
 				}
 			}
 		}
 		return false;
-	}
-
-	private static LiveBean matchBeanByType(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
-		if (type != null) {
-			String fqName = type.getQualifiedName();
-			if (fqName != null) {
-				List<LiveBean> matches = matchBeansByFQName(project, beans, fqName, true);
-				if (!matches.isEmpty()) {
-					return matches.size() == 1 ? matches.get(0) : LiveHoverUtils.CANT_MATCH_PROPER_BEAN;
-				} else {
-					IType indexType = project.findType(fqName);
-					if (indexType != null) {
-						matches = project.allSubtypesOf(indexType)
-							.map(subType -> matchBeansByFQName(project, beans, subType.getFullyQualifiedName(), false))
-							.filter(relevantBeans -> !relevantBeans.isEmpty())
-							.flatMap(bs -> Flux.fromIterable(bs))
-							.buffer(2)
-							.blockFirst();
-
-						if (!matches.isEmpty()) {
-							return matches.size() == 1 ? matches.get(0) : LiveHoverUtils.CANT_MATCH_PROPER_BEAN;
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	private static List<LiveBean> matchBeansByFQName(IJavaProject project, Collection<LiveBean> beans, String fqName, boolean allDots) {
-		if (fqName != null) {
-			if (allDots) {
-				return beans.stream().filter(b -> fqName.equals(b.getType(true).replace('$', '.'))).collect(Collectors.toList());
-			} else {
-				return beans.stream().filter(b -> fqName.equals(b.getType(true))).collect(Collectors.toList());
-			}
-		} else {
-			return Collections.emptyList();
-		}
 	}
 
 	private LiveBean getDefinedBeanForTypeDeclaration(TypeDeclaration declaringType) {
