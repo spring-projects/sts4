@@ -143,15 +143,21 @@ public class SpringLiveHoverWatchdog {
 		refreshEnablement();
 	}
 
-	public void update(String docURI, SpringBootApp[] runningBootApps) {
+	public void update(String docURI) {
+		try {
+			IJavaProject project = identifyProject(docURI);
+			SpringBootApp[] runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
+
+			update(docURI, runningBootApps);
+		}
+		catch (Exception e) {
+			logger.error("", e);
+		}
+	}
+
+	protected void update(String docURI, SpringBootApp[] runningBootApps) {
 		if (highlightsEnabled) {
-
 			try {
-				if (runningBootApps == null) {
-					IJavaProject project = identifyProject(docURI);
-					runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
-				}
-
 				boolean hasCurrentRunningBootApps = runningBootApps != null && runningBootApps.length > 0;
 				if (hasCurrentRunningBootApps) {
 					TextDocument doc = this.server.getTextDocumentService().get(docURI);

@@ -158,7 +158,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //				} else {
 					try {
 						liveHoverWatchdog.watchDocument(doc.getUri());
-						liveHoverWatchdog.update(doc.getUri(), null);
+						liveHoverWatchdog.update(doc.getUri());
 					} catch (Throwable t) {
 						log.error("", t);
 					}
