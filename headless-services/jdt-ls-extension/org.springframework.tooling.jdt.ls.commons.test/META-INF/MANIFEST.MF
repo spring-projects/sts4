@@ -12,6 +12,5 @@ Require-Bundle: org.springframework.tooling.jdt.ls.commons,
  org.apache.commons.lang3,
  org.junit,
  org.apache.commons.io,
- org.eclipse.swt,
  com.google.guava;bundle-version="21.0.0"
 

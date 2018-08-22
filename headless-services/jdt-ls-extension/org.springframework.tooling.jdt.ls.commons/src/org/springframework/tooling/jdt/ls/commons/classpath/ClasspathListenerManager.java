@@ -87,44 +87,11 @@ public class ClasspathListenerManager {
 	private MyListener myListener;
 	private final Logger logger;
 
-	/**
-	 * @param initialEvent If true, events are fired immediately on all existing java 
-	 * projects, treating the connection of the listener itself as a change event. 
-	 * This allows clients to become aware of all classpaths from the start and 
-	 * continually monitor them for changes from that point onward.
-	 */
-	public ClasspathListenerManager(Logger logger, ClasspathListener listener, boolean initialEvent, Supplier<Comparator<IProject>> projectSorterFactory) {
+	public ClasspathListenerManager(Logger logger, ClasspathListener listener) {
 		this.logger = logger;
 		logger.log("Setting up ClasspathListenerManager");
 		this.listener = listener;
 		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
-		if (initialEvent) {
-			logger.log("Sending initial event for all projects ...");
-			
-			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-			if (projectSorterFactory != null) {
-				Arrays.sort(projects, projectSorterFactory.get());
-			}
-
-			for (IProject p : projects) {
-				logger.log("project "+p.getName() +" ..." );
-				try {
-					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
-						IJavaProject jp = JavaCore.create(p);
-						listener.classpathChanged(jp);
-					} else {
-						logger.log("project "+p.getName() +" SKIPPED" );
-					}
-				} catch (CoreException e) {
-					logger.log(e);
-				}
-			}
-			logger.log("Sending initial event for all projects DONE");
-		}
-	}
-
-	public ClasspathListenerManager(Logger logger, ClasspathListener listener) {
-		this(logger, listener, false, null);
 	}
 
 	public void dispose() {

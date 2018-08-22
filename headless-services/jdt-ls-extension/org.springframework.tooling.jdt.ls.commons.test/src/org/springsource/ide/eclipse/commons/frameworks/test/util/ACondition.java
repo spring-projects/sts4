@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.widgets.Display;
 
 import junit.framework.AssertionFailedError;
 
@@ -223,29 +222,29 @@ public abstract class ACondition {
 	 * but such calls have no effect.
 	 */
 	public static void waitForDisplay() {
-		if (inUIThread()) {
-			try {
-				while (Display.getDefault().readAndDispatch()) {
-					// do nothing
-				}
-			} catch (Throwable e) {
-				// in e 44 this is throwing exceptions... a lot. Log them in case they contain
-				// some valuable hints... but move along. These errors happen because some component
-				// probably unrelated to our tests misbehaved. I suspect GTK3 may be causing
-				// NPEs and other errors in the Eclipse UI code, for example. These errors seem
-				// to propagate out of the 'readAndDispatch' call on e44.
-				e.printStackTrace();
-			}
-		}
+//		if (inUIThread()) {
+//			try {
+//				while (Display.getDefault().readAndDispatch()) {
+//					// do nothing
+//				}
+//			} catch (Throwable e) {
+//				// in e 44 this is throwing exceptions... a lot. Log them in case they contain
+//				// some valuable hints... but move along. These errors happen because some component
+//				// probably unrelated to our tests misbehaved. I suspect GTK3 may be causing
+//				// NPEs and other errors in the Eclipse UI code, for example. These errors seem
+//				// to propagate out of the 'readAndDispatch' call on e44.
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	public static boolean inUIThread() {
-		try {
-			return Display.getDefault().getThread() == Thread.currentThread();
-		} catch (Exception e) {
-			e.printStackTrace();
+//		try {
+//			return Display.getDefault().getThread() == Thread.currentThread();
+//		} catch (Exception e) {
+//			e.printStackTrace();
 			return false;
-		}
+//		}
 	}
 
 	public static StringBuffer getStackDumps() {

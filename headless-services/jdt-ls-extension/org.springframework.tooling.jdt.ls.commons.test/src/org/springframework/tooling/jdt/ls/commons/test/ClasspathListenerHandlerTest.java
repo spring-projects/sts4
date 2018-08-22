@@ -46,6 +46,7 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.tooling.jdt.ls.commons.Logger.TestLogger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
+import org.springframework.tooling.jdt.ls.commons.test.ClasspathListenerHandlerTest.MockClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
@@ -53,13 +54,15 @@ import org.springsource.ide.eclipse.commons.frameworks.test.util.Asserter;
 
 import com.google.common.collect.ImmutableList;
 
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 public class ClasspathListenerHandlerTest {
 
 	private TestLogger logger = new TestLogger();
+	private MockClientCommandExecutor commandExecutor = new MockClientCommandExecutor();
 	private MockClasspathCache classpaths = new MockClasspathCache();
-	private ReusableClasspathListenerHandler service = new ReusableClasspathListenerHandler(logger, classpaths);
+	private ReusableClasspathListenerHandler service = new ReusableClasspathListenerHandler(logger, commandExecutor);
 
 	@Test public void classpathIsSentForExistingProject() throws Exception {
 		String projectName = "classpath-test-simple-java-project";
@@ -75,7 +78,7 @@ public class ClasspathListenerHandlerTest {
 	}
 
 
-	@Ignore //TODO: fails randomly for unknown reason.
+	//@Ignore //TODO: fails randomly for unknown reason.
 	@Test public void classpathIsSentForNewProject_and_removedForDeletedProject() throws Exception {
 		service.addClasspathListener(classpaths.commandId);
 
@@ -95,7 +98,39 @@ public class ClasspathListenerHandlerTest {
 		});
 	}
 
-	@Ignore //TODO: fails randomly for unknown reason.
+	@Test public void classpathIsRemovedWhenProjectDeletedFromFileSystem_twoSubscribers() throws Exception {
+		MockClasspathCache secondListener = new MockClasspathCache();
+		try {
+			String projectName = "classpath-test-simple-java-project";
+			IProject project = createTestProject(projectName);
+			File loc = project.getLocation().toFile();
+
+			service.addClasspathListener(classpaths.commandId);
+			ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
+				Classpath cp = classpaths.getFor(loc).classpath;
+				assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
+				assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
+			});
+
+			FileUtils.deleteQuietly(loc);
+			safe(() -> project.refreshLocal(IResource.DEPTH_INFINITE, null));
+
+			ACondition.waitFor("Project to disapear", Duration.ofSeconds(5), () -> {
+				{
+					Info cp = classpaths.getFor(loc);
+					assertNull(cp);
+				}
+				{
+					Info cp = secondListener.getFor(loc);
+					assertNull(cp);
+				}
+			});
+		} finally {
+			secondListener.dispose();
+		}
+	}
+
+	//@Ignore //TODO: fails randomly for unknown reason.
 	@Test public void classpathIsRemovedWhenProjectDeletedFromFileSystem() throws Exception {
 		String projectName = "classpath-test-simple-java-project";
 		IProject project = createTestProject(projectName);
@@ -117,7 +152,7 @@ public class ClasspathListenerHandlerTest {
 		});
 	}
 
-	@Ignore //TODO: why is this failing in CI builds but passing locally?
+	//@Ignore //TODO: why is this failing in CI builds but passing locally?
 	@Test public void sourceJar() throws Exception {
 		String projectName = "maven-with-jar-dependency";
 		IProject project = createTestProject(projectName);
@@ -151,11 +186,38 @@ public class ClasspathListenerHandlerTest {
 		}
 	}
 
+	public class MockClientCommandExecutor implements ClientCommandExecutor {
+
+		private Map<String,ClientCommandExecutor> handlers = new HashMap<>();
+
+		@Override
+		public synchronized Object executeClientCommand(String id, Object... params) throws Exception {
+			ClientCommandExecutor handler = handlers.get(id);
+			if (handler!=null) {
+				return handler.executeClientCommand(id, params);
+			}
+			throw new IllegalStateException("No handler for "+id);
+		}
+
+		public void addHandler(String id, ClientCommandExecutor handler) {
+			Assert.assertFalse(handlers.containsKey(id));
+			handlers.put(id, handler);
+		}
+
+		public void removeHandler(String commandId) {
+			handlers.remove(commandId);
+		}
+	}
+
 	public class MockClasspathCache implements ClientCommandExecutor {
 
 		String commandId = RandomStringUtils.randomAlphabetic(8);
 
 		Map<File, Info> classpaths = new HashMap<>();
+
+		{
+			commandExecutor.addHandler(commandId, this);
+		}
 
 		@Override
 		public synchronized Object executeClientCommand(String id, Object... _params) throws Exception {
@@ -183,6 +245,7 @@ public class ClasspathListenerHandlerTest {
 
 		public void dispose() throws Exception {
 			service.removeClasspathListener(commandId);
+			commandExecutor.removeHandler(commandId);
 		}
 
 	}
