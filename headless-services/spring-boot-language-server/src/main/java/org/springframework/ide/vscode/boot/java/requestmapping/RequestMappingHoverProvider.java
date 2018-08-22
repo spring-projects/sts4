@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
@@ -34,9 +35,9 @@ import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -51,6 +52,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestMappingHoverProvider.class);
 
+	private static final int CODE_LENS_LIMIT = 3;
+
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
@@ -64,15 +67,36 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 				if (!val.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-					return ImmutableList.of(new CodeLens(hoverRange));
+				    List<String> urls = getUrls(val);
+					return assembleCodeLenses(hoverRange, urls);
 				}
 			}
 		}
-		catch (BadLocationException e) {
+		catch (Exception e) {
 			log.error("", e);
 		}
 
 		return null;
+	}
+
+	private Collection<CodeLens> assembleCodeLenses(Range range, List<String> urls) {
+
+		Collection<CodeLens> lenses = new ArrayList<>();
+
+		if (urls != null) {
+			int limit = urls.size() > CODE_LENS_LIMIT ? CODE_LENS_LIMIT : urls.size();
+
+			for (int i = 0; i < limit; i++) {
+				CodeLens codeLens = createCodeLensForRequestMapping(range, urls.get(i));
+				lenses.add(codeLens);
+			}
+
+			if (urls.size() > CODE_LENS_LIMIT) {
+				CodeLens codeLens = createCodeLensForRemaining(range, urls.size() - CODE_LENS_LIMIT);
+				lenses.add(codeLens);
+			}
+		}
+		return lenses;
 	}
 
 	private Hover provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
@@ -153,6 +177,30 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return false;
 	}
 
+	private List<String> getUrls(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods) throws Exception {
+		List<String> urls = new ArrayList<>();
+		for (int i = 0; i < mappingMethods.size(); i++) {
+			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
+
+			String port = mappingMethod.getT2().getPort();
+			String host = mappingMethod.getT2().getHost();
+
+			String[] paths = mappingMethod.getT1().getSplitPath();
+			if (paths==null || paths.length==0) {
+				//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
+				//So this is not quite the same as the case where path=""... but...
+				//It is better for us to show one link where any path is allowed, versus showing no links where any link is allowed.
+				//So we'll pretend this is the same as path="" as that gives a working link.
+				paths = new String[] {""};
+			}
+			for (String path : paths) {
+				String url = UrlUtil.createUrl(host, port, path);
+				urls.add(url);
+			}
+		}
+		return urls;
+	}
+
 	private void addHoverContent(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods, List<Either<String, MarkedString>> hoverContent) throws Exception {
 		for (int i = 0; i < mappingMethods.size(); i++) {
 			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
@@ -187,6 +235,42 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			}
 
 		}
+	}
+
+	private CodeLens createCodeLensForRequestMapping(Range range, String content) {
+		CodeLens codeLens = new CodeLens();
+		codeLens.setRange(range);
+		Command cmd = new Command();
+
+		if (StringUtil.hasText(content)) {
+			codeLens.setData(content);
+			cmd.setTitle(content);
+
+//			cmd.setCommand("editor.action.openLink");
+			// Show hover for now, as it contains a link. Ideally the command to set is a vscode
+			// one that jumps to URL directly
+			cmd.setCommand("org.springframework.showHoverAtPosition");
+			cmd.setArguments(ImmutableList.of(range.getStart()));
+		}
+
+		codeLens.setCommand(cmd);
+
+		return codeLens;
+	}
+
+	private CodeLens createCodeLensForRemaining(Range range, int remaining) {
+		CodeLens codeLens = new CodeLens();
+		codeLens.setRange(range);
+		Command cmd = new Command();
+
+		cmd.setTitle(remaining + " more...");
+
+		cmd.setCommand("org.springframework.showHoverAtPosition");
+		cmd.setArguments(ImmutableList.of(range.getStart()));
+
+		codeLens.setCommand(cmd);
+
+		return codeLens;
 	}
 
 }
