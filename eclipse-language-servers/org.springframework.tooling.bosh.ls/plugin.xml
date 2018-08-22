@@ -34,7 +34,7 @@
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
             contentTypeId="org.springframework.tooling.bosh.manifest"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+            editorId="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor">
       </editorContentTypeBinding>
    </extension>
 
@@ -42,7 +42,7 @@
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
             contentTypeId="org.springframework.tooling.bosh.cloudconfig"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+            editorId="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor">
       </editorContentTypeBinding>
    </extension>
 

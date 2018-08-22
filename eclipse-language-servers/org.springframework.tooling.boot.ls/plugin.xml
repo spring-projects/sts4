@@ -162,7 +162,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             icon="icons/spring_yml.png"
             id="SpringBootYMLPropertyEditor"

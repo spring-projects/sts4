@@ -34,7 +34,7 @@
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
             contentTypeId="org.springframework.tooling.concourse.pipeline"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+            editorId="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor">
       </editorContentTypeBinding>
    </extension>
 
@@ -42,7 +42,7 @@
          point="org.eclipse.ui.editors">
       <editorContentTypeBinding
             contentTypeId="org.springframework.tooling.concourse.task"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+            editorId="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor">
       </editorContentTypeBinding>
    </extension>
 

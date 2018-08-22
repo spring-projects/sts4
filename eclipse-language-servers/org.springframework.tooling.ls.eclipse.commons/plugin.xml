@@ -38,6 +38,9 @@
       <initializer
             class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPrefsInitializer">
       </initializer>
+      <initializer
+            class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditorPreferencesInitializer">
+      </initializer>
    </extension>
    <extension
          point="org.eclipse.ui.console.consolePageParticipants">
@@ -48,5 +51,16 @@
             <instanceof value="org.springframework.tooling.ls.eclipse.commons.console.LanguageServerIOConsole"/>
          </enablement>
       </consolePageParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            default="false"
+            icon="platform:/plugin/org.eclipse.ui.genericeditor/icons/full/obj16/generic_editor.png"
+            id="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
+            name="Generic YAML Editor">
+      </editor>
    </extension>
 </plugin>
