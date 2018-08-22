@@ -50,7 +50,7 @@
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.8"
+    "@pivotal-tools/atom-languageclient-commons": "0.0.9"
   },
   "devDependencies": {
     "typescript": "^2.7.2",

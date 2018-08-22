@@ -29,11 +29,26 @@
       "type": "boolean",
       "default": false,
       "description": "Enable/Disable detecting changes of running Spring Boot applications"
+    },
+    "remote-apps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "jmxurl": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Array of jmx urls pointing to remote spring boot applications to poll for live hover information. A typical url looks something like this: `service:jmx:rmi://localhost:9111/jndi/rmi://localhost:9111/jmxrmi`"
     }
   },
   "dependencies": {
-    "atom-languageclient": "0.9.5",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.8",
+    "atom-languageclient": "0.9.6",
+    "@pivotal-tools/atom-languageclient-commons": "0.0.9",
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5"
   },
