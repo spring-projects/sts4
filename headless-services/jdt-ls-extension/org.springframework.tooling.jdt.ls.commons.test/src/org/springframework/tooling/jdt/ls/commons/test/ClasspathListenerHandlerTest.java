@@ -152,7 +152,7 @@ public class ClasspathListenerHandlerTest {
 		});
 	}
 
-	//@Ignore //TODO: why is this failing in CI builds but passing locally?
+	@Ignore //TODO: why is this failing in CI builds but passing locally?
 	@Test public void sourceJar() throws Exception {
 		String projectName = "maven-with-jar-dependency";
 		IProject project = createTestProject(projectName);
