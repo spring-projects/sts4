@@ -56,7 +56,7 @@ public class MemoizingProxy {
 	 * Memoizes all zero-argument public methods for a given duration.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T create(Class<T> klass, Duration duration, Object... args) {
+	public static <T> T create(Class<T> klass, Duration duration, Class<?>[] argTypes, Object... args) {
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(klass);
 		enhancer.setCallback(new MethodInterceptor() {
@@ -82,11 +82,8 @@ public class MemoizingProxy {
 				}
 			}
 		});
-		Class<?>[] argumentTypes = new Class<?>[args.length];
-		for (int i = 0; i < argumentTypes.length; i++) {
-			argumentTypes[i] = args[i].getClass();
-		}
-		return (T) enhancer.create(argumentTypes, args);
+
+		return (T) enhancer.create(argTypes, args);
 	}
 	
 

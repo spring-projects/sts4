@@ -99,7 +99,7 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	public static SpringBootApp create(String jmxUrl, String host) {
-		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), jmxUrl, host);
+		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class}, jmxUrl, host);
 	}
 
 }
