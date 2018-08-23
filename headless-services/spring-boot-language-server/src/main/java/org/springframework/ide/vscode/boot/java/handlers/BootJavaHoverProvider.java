@@ -95,6 +95,12 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 
 	public CodeLens[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
+		if (runningBootApps.length == 0) return new CodeLens[0];
+
+		Optional<IJavaProject> project = getProject(document);
+		if (!project.isPresent()) return new CodeLens[0];
+		if (!hasActuatorDependency(project.get())) return new CodeLens[0];
+
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();
 			try {
@@ -104,7 +110,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(TypeDeclaration node) {
 							try {
-								extractLiveHintsForType(node, document, runningBootApps, result);
+								extractLiveHintsForType(node, document, project.get(), runningBootApps, result);
 							}
 							catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
@@ -115,7 +121,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(SingleMemberAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -126,7 +132,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(NormalAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -137,7 +143,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(MarkerAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -148,7 +154,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(MethodDeclaration node) {
 							try {
-								extractLiveHintsForMethod(node, document, runningBootApps, result);
+								extractLiveHintsForMethod(node, document, project.get(), runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -166,61 +172,36 @@ public class BootJavaHoverProvider implements HoverHandler {
 		});
 	}
 
-	protected void extractLiveHintsForMethod(MethodDeclaration methodDeclaration, TextDocument doc,
+	protected void extractLiveHintsForMethod(MethodDeclaration methodDeclaration, TextDocument doc, IJavaProject project,
 			SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
-		if (!providers.isEmpty()) {
-			for (HoverProvider provider : providers) {
-				getProject(doc).ifPresent(project -> {
-					if (hasActuatorDependency(project)) {
-						Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, methodDeclaration, doc, runningApps);
-						if (hints!=null) {
-							result.addAll(hints);
-						}
-					} else {
-						//Do nothing... we don't want a highlight for the 'no actuator warning'
-						//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
-					}
-				});
+		for (HoverProvider provider : providers) {
+			Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, methodDeclaration, doc, runningApps);
+			if (hints!=null) {
+				result.addAll(hints);
 			}
 		}
 	}
 
-	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, SpringBootApp[] runningApps, Collection<CodeLens> result) {
+	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, IJavaProject project,
+			SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
-		if (!providers.isEmpty()) {
-			for (HoverProvider provider : providers) {
-				getProject(doc).ifPresent(project -> {
-					if (hasActuatorDependency(project)) {
-						Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, typeDeclaration, doc, runningApps);
-						if (hints!=null) {
-							result.addAll(hints);
-						}
-					} else {
-						//Do nothing... we don't want a highlight for the 'no actuator warning'
-						//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
-					}
-				});
+		for (HoverProvider provider : providers) {
+			Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, typeDeclaration, doc, runningApps);
+			if (hints!=null) {
+				result.addAll(hints);
 			}
 		}
 	}
 
-	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps, Collection<CodeLens> result) {
+	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, IJavaProject project,
+			SpringBootApp[] runningApps, Collection<CodeLens> result) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
-			if (runningApps.length > 0) {
-				for (HoverProvider provider : this.hoverProviders.get(type)) {
-					getProject(doc).ifPresent(project -> {
-						if (hasActuatorDependency(project)) {
-							Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, annotation, doc, runningApps);
-							if (hints!=null) {
-								result.addAll(hints);
-							}
-						} else {
-							//Do nothing... we don't want a highlight for the 'no actuator warning'
-							//ASTUtils.nameRange(doc, annotation).ifPresent(result::add);
-						}
-					});
+			for (HoverProvider provider : this.hoverProviders.get(type)) {
+				Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, annotation, doc, runningApps);
+				if (hints!=null) {
+					result.addAll(hints);
 				}
 			}
 		}
@@ -228,7 +209,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private Hover provideHover(TextDocument document, int offset) throws Exception {
 		IJavaProject project = getProject(document).orElse(null);
-		if (project!=null) {
+		if (project != null) {
 			return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 				if (node != null) {
@@ -336,7 +317,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private boolean hasActuatorDependency(IJavaProject project) {
 		try {
 			IClasspath classpath = project.getClasspath();
-			if (classpath!=null) {
+			if (classpath != null) {
 				return IClasspathUtil.getBinaryRoots(classpath, (cpe) -> !cpe.isSystem()).stream().anyMatch(cpe -> {
 					String name = cpe.getName();
 					return name.startsWith("spring-boot-actuator-");
