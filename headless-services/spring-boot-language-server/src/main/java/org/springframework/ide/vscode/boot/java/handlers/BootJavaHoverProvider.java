@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
@@ -59,15 +58,18 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private JavaProjectFinder projectFinder;
 	private BootJavaLanguageServerComponents server;
 	private AnnotationHierarchyAwareLookup<HoverProvider> hoverProviders;
+	private RunningAppProvider runningAppProvider;
 
 	private Collection<SpringBootApp> runningSpringBootApps;
+
 
 	public BootJavaHoverProvider(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder,
 			AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;
-		this.runningSpringBootApps = Collections.emptyList();
+		this.runningAppProvider = runningAppProvider;
+		this.runningSpringBootApps = null;
 	}
 
 	@Override
@@ -353,6 +355,10 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
 		try {
 			Collection<SpringBootApp> allApps = this.runningSpringBootApps;
+			if (allApps == null) {
+				allApps = runningAppProvider.getAllRunningSpringApps();
+			}
+
 			Collection<SpringBootApp> allMatchingApps = RunningAppMatcher.getAllMatchingApps(allApps, project);
 
 			return allMatchingApps.toArray(new SpringBootApp[0]);
