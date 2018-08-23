@@ -40,12 +40,12 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	@Override
 	public String getPort() throws Exception {
-		return port!=null ? port : super.getPort();
+		return port != null ? port : super.getPort();
 	}
 
 	@Override
 	public String getHost() throws Exception {
-		if (host!=null) {
+		if (host != null) {
 			return host;
 		}
 		return super.getHost();
@@ -66,7 +66,7 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	public boolean isSpringBootApp() {
 		//For now, let's assume that, if its not a boot app, then we won't create a RemoteSpringBootApp instance for it.
 		//The check that is here really only determines whether there's a process reachable at the remote jmx url.
-		return getProcessID()!=null;
+		return getProcessID() != null;
 	}
 
 	@Override
@@ -82,9 +82,9 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	public String getProcessName() throws Exception {
 		try {
 			String command = getJavaCommand();
-			if (command!=null) {
+			if (command != null) {
 				int space = command.indexOf(' ');
-				if (space>=0) {
+				if (space >= 0) {
 					command = command.substring(0, space);
 				}
 				command = command.trim();

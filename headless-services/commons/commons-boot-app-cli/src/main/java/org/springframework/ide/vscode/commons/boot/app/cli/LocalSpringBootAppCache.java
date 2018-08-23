@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,17 +15,22 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import org.springframework.ide.vscode.commons.util.MemoizingProxy;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
 
 public class LocalSpringBootAppCache {
 
 	private static final Duration EXPIRE_AFTER = Duration.ofMillis(500); //Limits rate at which we refresh list of apps
 	private long nextRefreshAfter = Long.MIN_VALUE;
 
-	private ImmutableMap<VirtualMachineDescriptor, LocalSpringBootApp> apps = ImmutableMap.of();
+	private ImmutableMap<VirtualMachineDescriptor, SpringBootApp> apps = ImmutableMap.of();
 
 	public synchronized Collection<SpringBootApp> getAllRunningJavaApps() {
 		if (System.currentTimeMillis()>=nextRefreshAfter) {
@@ -36,14 +41,17 @@ public class LocalSpringBootAppCache {
 
 	private void refresh() {
 		List<VirtualMachineDescriptor> currentVms = VirtualMachine.list();
-		ImmutableMap.Builder<VirtualMachineDescriptor, LocalSpringBootApp> newAppsBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<VirtualMachineDescriptor, SpringBootApp> newAppsBuilder = ImmutableMap.builder();
 		for (VirtualMachineDescriptor vm : currentVms) {
-			LocalSpringBootApp existingApp = apps.get(vm);
+			SpringBootApp existingApp = apps.get(vm);
 			if (existingApp!=null) {
 				newAppsBuilder.put(vm, existingApp);
 			} else {
 				try {
-					newAppsBuilder.put(vm, new LocalSpringBootApp(vm));
+					LocalSpringBootApp localApp = new LocalSpringBootApp(vm);
+			        MethodInterceptor handler = new MemoizingProxy.MemoizingProxyHandler(localApp, Duration.ofMillis(4500));
+			        SpringBootApp proxiedLocalApp = (SpringBootApp) Enhancer.create(SpringBootApp.class, handler);
+					newAppsBuilder.put(vm, proxiedLocalApp);
 				} catch (Exception e) {
 					//Ignore problems attaching to a VM. We will try again on next polling loop, if vm still exists.
 					//The most likely cause is that the VM already died since we obtained a reference to it.
@@ -51,7 +59,7 @@ public class LocalSpringBootAppCache {
 			}
 		}
 		HashSet<VirtualMachineDescriptor> oldVms = new HashSet<>(apps.keySet());
-		ImmutableMap<VirtualMachineDescriptor, LocalSpringBootApp> newApps = newAppsBuilder.build();
+		ImmutableMap<VirtualMachineDescriptor, SpringBootApp> newApps = newAppsBuilder.build();
 		oldVms.removeAll(newApps.keySet());
 		for (VirtualMachineDescriptor oldVm : oldVms) {
 			apps.get(oldVm).dispose();

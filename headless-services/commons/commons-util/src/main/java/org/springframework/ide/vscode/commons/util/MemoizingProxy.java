@@ -89,4 +89,43 @@ public class MemoizingProxy {
 		return (T) enhancer.create(argumentTypes, args);
 	}
 	
+
+	public static class MemoizingProxyHandler implements MethodInterceptor {
+		
+		private final Object original;
+		private final Cache<String, Result> cache;
+		
+		public MemoizingProxyHandler(Object original, Duration cacheExpiresAfter) {
+			this.original = original;
+			this.cache = CacheBuilder.newBuilder()
+					.expireAfterWrite(cacheExpiresAfter.toMillis(), TimeUnit.MILLISECONDS)
+					.build();
+		}
+
+		@Override
+		public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+			if (Modifier.isPublic(method.getModifiers()) && (args == null || args.length < 2)) {
+				synchronized (cache) {
+					String mname = method.getName();
+					
+					if (args != null && args.length == 1) {
+						mname += "-" + args[0].toString();
+					}
+					
+					Result r = cache.get(mname, () -> new Result(() -> { 
+						try {
+							return method.invoke(original, args);
+						} catch (Throwable e) {
+							throw ExceptionUtil.exception(e);
+						}	
+					}));
+					return r.get();
+				}
+			} else {
+				return method.invoke(original, args);
+			}
+		}
+		
+	}
+	
 }

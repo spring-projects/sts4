@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.CodeLens;
@@ -33,7 +34,11 @@ import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
 
 /**
  * @author Martin Lippert
@@ -155,6 +160,26 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
+	protected void update() {
+		if (this.watchedDocs.size() > 0) {
+			try {
+				Collection<SpringBootApp> runningBootApps = runningAppProvider.getAllRunningSpringApps();
+				Collection<SpringBootApp> cachedApps = createAppCaches(runningBootApps);
+
+				for (String docURI : watchedDocs) {
+					IJavaProject project = identifyProject(docURI);
+					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(cachedApps, project).toArray(new SpringBootApp[0]);
+					update(docURI, matchingApps);
+				}
+
+				this.hoverProvider.setRunningSpringApps(cachedApps);
+
+			} catch (Exception e) {
+				logger.error("", e);
+			}
+		}
+	}
+
 	protected void update(String docURI, SpringBootApp[] runningBootApps) {
 		if (highlightsEnabled) {
 			try {
@@ -175,20 +200,20 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
-	protected void update() {
-		if (this.watchedDocs.size() > 0) {
-			try {
-				Collection<SpringBootApp> runningBootApps = runningAppProvider.getAllRunningSpringApps();
+	private Collection<SpringBootApp> createAppCaches(Collection<SpringBootApp> runningBootApps) {
+		return runningBootApps.stream().map(app -> {
+		    MethodInterceptor handler = new MemoizingProxy.MemoizingProxyHandler(app, Duration.ofMillis(20000));
+		    SpringBootApp proxied = (SpringBootApp) Enhancer.create(SpringBootApp.class, handler);
 
-				for (String docURI : watchedDocs) {
-					IJavaProject project = identifyProject(docURI);
-					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(runningBootApps, project).toArray(new SpringBootApp[0]);
-					update(docURI, matchingApps);
-				}
-			} catch (Exception e) {
-				logger.error("", e);
-			}
-		}
+		    try {
+		    	proxied.getProcessName();
+		    	proxied.getProcessID();
+		    }
+		    catch (Exception e) {
+		    }
+
+		    return proxied;
+		}).filter(app -> app != null).collect(Collectors.toList());
 	}
 
 	private IJavaProject identifyProject(String docURI) {

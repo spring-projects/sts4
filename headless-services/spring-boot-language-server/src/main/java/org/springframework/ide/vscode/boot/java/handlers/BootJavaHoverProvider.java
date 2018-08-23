@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
@@ -58,14 +59,15 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private JavaProjectFinder projectFinder;
 	private BootJavaLanguageServerComponents server;
 	private AnnotationHierarchyAwareLookup<HoverProvider> hoverProviders;
-	private RunningAppProvider runningAppProvider;
+
+	private Collection<SpringBootApp> runningSpringBootApps;
 
 	public BootJavaHoverProvider(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder,
 			AnnotationHierarchyAwareLookup<HoverProvider> specificProviders, RunningAppProvider runningAppProvider) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.hoverProviders = specificProviders;
-		this.runningAppProvider = runningAppProvider;
+		this.runningSpringBootApps = Collections.emptyList();
 	}
 
 	@Override
@@ -262,10 +264,11 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private Hover provideHoverForMethodDeclaration(MethodDeclaration methodDeclaration, int offset, TextDocument doc,
 			IJavaProject project) {
 		SpringBootApp[] runningApps = getRunningSpringApps(project);
+
 		if (runningApps.length > 0) {
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
 				Hover hover = provider.provideHover(methodDeclaration, offset, doc, project, runningApps);
-				if (hover!=null) {
+				if (hover != null) {
 					//TODO: compose multiple hovers somehow instead of just returning the first one?
 					return hover;
 				}
@@ -278,8 +281,10 @@ public class BootJavaHoverProvider implements HoverHandler {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
 			logger.debug("Hover requested for "+type.getName());
+
 			SpringBootApp[] runningApps = getRunningSpringApps(project);
 			if (runningApps.length > 0) {
+
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, runningApps);
 					if (hover!=null) {
@@ -347,11 +352,18 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private SpringBootApp[] getRunningSpringApps(IJavaProject project) {
 		try {
-			return RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
+			Collection<SpringBootApp> allApps = this.runningSpringBootApps;
+			Collection<SpringBootApp> allMatchingApps = RunningAppMatcher.getAllMatchingApps(allApps, project);
+
+			return allMatchingApps.toArray(new SpringBootApp[0]);
 		} catch (Exception e) {
 			logger.error("error getting all matching projects for project'" + project.getElementName() + "'", e);
 			return new SpringBootApp[0];
 		}
+	}
+
+	public void setRunningSpringApps(Collection<SpringBootApp> allRunningSpringBootApps) {
+		this.runningSpringBootApps = allRunningSpringBootApps;
 	}
 
 }
