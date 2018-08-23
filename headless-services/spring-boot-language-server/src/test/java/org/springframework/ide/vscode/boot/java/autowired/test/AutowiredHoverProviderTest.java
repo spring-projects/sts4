@@ -183,11 +183,12 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Inject");
 		editor.assertTrimmedHover("@Inject",
-				"**Autowired `autowiredClass` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
 				"  \n" +
+				"Bean id: `autowiredClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}
@@ -238,7 +239,7 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired",
-				"**Autowired `autowiredClass` &larr; `dependencyA` `dependencyB`**\n" +
+				"**&larr; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `" + Paths.get("com/example/DependencyA.class") + "`\n" +
@@ -246,6 +247,7 @@ public class AutowiredHoverProviderTest {
 				"  Type: `com.example.DependencyB`  \n" +
 				"  Resource: `com/example/DependencyB.class`\n" +
 				"  \n" +
+				"Bean id: `autowiredClass`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 
 		);
@@ -389,11 +391,11 @@ public class AutowiredHoverProviderTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, FOO_IMPL_CONTENTS);
 		editor.assertHighlights("@Component", "@Autowired", "@Autowired");
 		editor.assertHoverContains("@Autowired", 1,
-				"**Autowired `defaultFoo` &larr; `superBean`**\n" +
+				"**&larr; `FooImplementation`**\n" +
 				"- Bean: `superBean`  \n" +
 				"  Type: `com.example.FooImplementation`");
 		editor.assertHoverContains("@Autowired", 2,
-				"**Autowired `defaultFoo` &larr; `scheduler`**\n" +
+				"**&larr; `ThreadPoolTaskScheduler`**\n" +
 				"- Bean: `scheduler`  \n" +
 				"  Type: `org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler`");
 	}
@@ -443,12 +445,17 @@ public class AutowiredHoverProviderTest {
 		);
 		editor.assertHighlights("@Controller", "@Autowired");
 		editor.assertHoverContains("@Autowired",
-				"**Autowired `myController` &larr; `restTemplate`**\n" +
+				"**&larr; `RestTemplate`**\n" +
 				"- Bean: `restTemplate`  \n" +
 				"  Type: `org.springframework.web.client.RestTemplate`"
 		);
-		editor.assertHoverContains("@Controller",
-				"**Injected `myController` &rarr; _not injected anywhere_**  \n"
+		editor.assertTrimmedHover("@Controller",
+				"**&larr; `RestTemplate`**\n" +
+				"- Bean: `restTemplate`  \n" +
+				"  Type: `org.springframework.web.client.RestTemplate`\n" +
+				"  \n" +
+				"Bean id: `myController`  \n" +
+				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
 
@@ -500,12 +507,13 @@ public class AutowiredHoverProviderTest {
 		editor.assertHighlights("@Component", "SomeComponent");
 
 		editor.assertTrimmedHover("SomeComponent", 2,
-				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
+				"**&larr; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +
 				"  Type: `com.example.DependencyB`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -660,9 +668,10 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; UNKNOWN**\n" +
+				"**&larr; UNKNOWN**\n" +
 				"- (Cannot find precise information for the bean)\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -716,12 +725,13 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "SomeComponent");
 		editor.assertTrimmedHover("SomeComponent", 2,
-				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
+				"**&larr; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +
 				"  Type: `com.example.DependencyB`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -770,10 +780,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -913,10 +924,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -966,10 +978,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -1112,10 +1125,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -1162,10 +1176,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA`**\n" +
+				"**&larr; `DependencyA`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -1217,12 +1232,13 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `someComponent` &larr; `dependencyA` `dependencyB`**\n" +
+				"**&larr; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +
 				"  Type: `com.example.DependencyB`\n" +
 				"  \n" +
+				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}
@@ -1309,10 +1325,11 @@ public class AutowiredHoverProviderTest {
 
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Autowired", 1,
-				"**Autowired `anotherComponent` &larr; `anonymousBeanFactory`**\n" +
+				"**&larr; `SomeComponent$1`**\n" +
 				"- Bean: `anonymousBeanFactory`  \n" +
 				"  Type: `com.example.SomeComponent$1`\n" +
 				"  \n" +
+				"Bean id: `anotherComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
 	}

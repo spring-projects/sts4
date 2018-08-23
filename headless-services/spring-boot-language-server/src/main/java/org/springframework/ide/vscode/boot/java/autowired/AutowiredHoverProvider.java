@@ -35,6 +35,8 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -134,7 +136,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 					} else {
 						hover.append("  \n  \n");
 					}
-					createHoverContentForBeans(server, definedBean, project, hover, autowiredBeans);
+					createHoverContentForBeans(server, project, hover, autowiredBeans);
+					hover.append("Bean id: `");
+					hover.append(definedBean.getId());
+					hover.append("`  \n");
 					hover.append(LiveHoverUtils.niceAppName(app));
 				}
 
@@ -146,24 +151,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public static void createHoverContentForBeans(BootJavaLanguageServerComponents server, LiveBean definedBean, IJavaProject project, StringBuilder hover,
+	public static void createHoverContentForBeans(BootJavaLanguageServerComponents server, IJavaProject project, StringBuilder hover,
 			List<LiveBean> autowiredBeans) {
-		hover.append("**Autowired `");
-		hover.append(definedBean.getId());
-		hover.append("` &larr; ");
-		if (LiveHoverUtils.doBeansFitInline(autowiredBeans, MAX_INLINE_BEANS_STRING_LENGTH - definedBean.getId().length(),
-				INLINE_BEANS_STRING_SEPARATOR)) {
-			hover.append(autowiredBeans.stream().map(b -> LiveHoverUtils.showBeanInline(server, project, b))
-					.collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
-			hover.append("**\n");
-		} else {
-			hover.append(autowiredBeans.size());
-			hover.append(" bean");
-			if (autowiredBeans.size() > 1) {
-				hover.append('s');
-			}
-			hover.append("**\n");
-		}
+		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
+		hover.append("**");
+		hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, autowiredBeans, "&larr; ", MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
+		hover.append("**\n");
 		hover.append(autowiredBeans.stream()
 				.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
 				.collect(Collectors.joining("\n")));

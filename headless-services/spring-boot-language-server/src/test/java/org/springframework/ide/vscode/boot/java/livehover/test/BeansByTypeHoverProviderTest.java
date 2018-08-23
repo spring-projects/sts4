@@ -134,10 +134,11 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedRandomClass");
 		editor.assertTrimmedHover("ScannedRandomClass",
-				"**Injected `scannedRandomClass` &rarr; `randomOtherBean`**\n" +
+				"**&rarr; `randomOtherBeanType`**\n" +
 				"- Bean: `randomOtherBean`  \n" +
 				"  Type: `randomOtherBeanType`\n" +
 				"  \n" +
+				"Bean id: `scannedRandomClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}
@@ -187,10 +188,11 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedFunctionClass");
 		editor.assertTrimmedHover("ScannedFunctionClass",
-				"**Injected `scannedFunctionClass` &rarr; 1 bean**\n" +
+				"**&rarr; 1 bean**\n" +
 				"- Bean: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`  \n" +
 				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`\n" +
 				"  \n" +
+				"Bean id: `scannedFunctionClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 
 		);
@@ -228,7 +230,7 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**Injected `fooImplementation` &rarr; _not injected anywhere_**  \n" +
+				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}

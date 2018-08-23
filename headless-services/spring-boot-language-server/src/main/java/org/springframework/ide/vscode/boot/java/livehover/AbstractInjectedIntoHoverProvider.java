@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
@@ -145,38 +147,24 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					hover.append("  \n  \n");
 				}
 
-				if (injectedBeans.isEmpty()) {
-					hover.append("**Injected `");
-					hover.append(definedBean.getId());
-					hover.append("` &rarr; _not injected anywhere_**  \n");
-				} else {
-					hover.append("**Injected `");
-					hover.append(definedBean.getId());
-					hover.append("` &rarr; ");
-					if (LiveHoverUtils.doBeansFitInline(injectedBeans, MAX_INLINE_BEANS_STRING_LENGTH - definedBean.getId().length(),
-							INLINE_BEANS_STRING_SEPARATOR)) {
-						hover.append(injectedBeans.stream().map(b -> LiveHoverUtils.showBeanInline(server, project, b))
-								.collect(Collectors.joining(INLINE_BEANS_STRING_SEPARATOR)));
-						hover.append("**\n");
-					} else {
-						hover.append(injectedBeans.size());
-						hover.append(" bean");
-						if (injectedBeans.size() > 1) {
-							hover.append('s');
-						}
-						hover.append("**\n");
-					}
+				if (!injectedBeans.isEmpty()) {
+					SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
+					hover.append("**");
+					hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, injectedBeans, "&rarr; ", MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
+					hover.append("**\n");
 					hover.append(injectedBeans.stream()
 							.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
 							.collect(Collectors.joining("\n")));
 					hover.append("\n  \n");
 				}
-
 				List<LiveBean> wiredBeans = findWiredBeans(project, app, relevantBeans, astNode);
 				if (!wiredBeans.isEmpty()) {
-					AutowiredHoverProvider.createHoverContentForBeans(server, definedBean, project, hover, wiredBeans);
+					AutowiredHoverProvider.createHoverContentForBeans(server, project, hover, wiredBeans);
 				}
 
+				hover.append("Bean id: `");
+				hover.append(definedBean.getId());
+				hover.append("`  \n");
 				hover.append(LiveHoverUtils.niceAppName(app));
 			}
 

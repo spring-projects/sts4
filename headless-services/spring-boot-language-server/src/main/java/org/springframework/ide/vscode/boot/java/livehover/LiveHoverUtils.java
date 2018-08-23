@@ -92,19 +92,17 @@ public class LiveHoverUtils {
 		}
 	}
 
-	public static String showBeanInline(BootJavaLanguageServerComponents server, IJavaProject project, LiveBean bean) {
+	public static String showBeanTypeMarkdown(SourceLinks sourceLinks, IJavaProject project, LiveBean bean) {
 		if (bean == CANT_MATCH_PROPER_BEAN) {
 			return CANT_MATCH_PROPER_BEAN.getId();
 		} else {
-			String id = bean.getId();
 			String type = bean.getType(true);
 			StringBuilder sb = new StringBuilder();
 			sb.append('`');
-			sb.append(id);
+			sb.append(getShortDisplayType(bean));
 			sb.append('`');
 			String displayId = sb.toString();
-			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
-			if (type != null) {
+			if (type != null && sourceLinks != null) {
 				Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
 				if (url.isPresent()) {
 					return Renderables.link(displayId, url.get()).toMarkdown();
@@ -206,16 +204,7 @@ public class LiveHoverUtils {
 		if (!relevantBeans.isEmpty()) {
 			CodeLens codeLens = new CodeLens();
 			codeLens.setRange(range);
-			StringBuilder sb = new StringBuilder(prefix);
-			if (LiveHoverUtils.doBeansFitInline(relevantBeans, maxInlineBeansStringLength, beansSeparator)) {
-				sb.append(relevantBeans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(beansSeparator)));
-			} else {
-				sb.append(relevantBeans.size());
-				sb.append(" bean");
-				if (relevantBeans.size() > 1) {
-					sb.append("s");
-				}
-			}
+			StringBuilder sb = createBeansTitlePlainText(relevantBeans, prefix, maxInlineBeansStringLength, beansSeparator);
 			codeLens.setData(sb.toString());
 			Command cmd = new Command();
 			cmd.setTitle(sb.toString());
@@ -230,4 +219,31 @@ public class LiveHoverUtils {
 
 	}
 
+	public static StringBuilder createBeansTitlePlainText(Collection<LiveBean> beans, String prefix, int maxInlineBeansStringLength, String beansSeparator) {
+		StringBuilder sb = new StringBuilder(prefix);
+		if (LiveHoverUtils.doBeansFitInline(beans, maxInlineBeansStringLength, beansSeparator)) {
+			sb.append(beans.stream().map(LiveHoverUtils::getShortDisplayType).collect(Collectors.joining(beansSeparator)));
+		} else {
+			sb.append(beans.size());
+			sb.append(" bean");
+			if (beans.size() > 1) {
+				sb.append("s");
+			}
+		}
+		return sb;
+	}
+
+	public static StringBuilder createBeansTitleMarkdown(SourceLinks sourceLinks, IJavaProject project, Collection<LiveBean> beans, String prefix, int maxInlineBeansStringLength, String beansSeparator) {
+		StringBuilder sb = new StringBuilder(prefix);
+		if (LiveHoverUtils.doBeansFitInline(beans, maxInlineBeansStringLength, beansSeparator)) {
+			sb.append(beans.stream().map(b -> showBeanTypeMarkdown(sourceLinks, project, b)).collect(Collectors.joining(beansSeparator)));
+		} else {
+			sb.append(beans.size());
+			sb.append(" bean");
+			if (beans.size() > 1) {
+				sb.append("s");
+			}
+		}
+		return sb;
+	}
 }
