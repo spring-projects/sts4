@@ -84,15 +84,13 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		Collection<CodeLens> lenses = new ArrayList<>();
 
 		if (urls != null) {
-			if (urls.size() <= CODE_LENS_LIMIT) {
-				// Show a code lens for each URL if within the limit
-				for (String url : urls) {
-					CodeLens codeLens = createCodeLensForRequestMapping(range, url);
-					lenses.add(codeLens);
-				}
-			} else {
-				// If number of URLs exceed the limit, just show one code lens that shows all URLs in a hover
-				CodeLens codeLens = createCodeLensForHover(range, urls.size());
+			int limit = urls.size() <= CODE_LENS_LIMIT ? urls.size() : CODE_LENS_LIMIT;
+			for (int i = 0; i < limit; i++) {
+				CodeLens codeLens = createCodeLensForRequestMapping(range, urls.get(i));
+				lenses.add(codeLens);
+			}
+			if (urls.size() > CODE_LENS_LIMIT) {
+				CodeLens codeLens = createCodeLensForRemaining(range, urls.size() - CODE_LENS_LIMIT);
 				lenses.add(codeLens);
 			}
 		}
@@ -255,15 +253,16 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return codeLens;
 	}
 
-	private CodeLens createCodeLensForHover(Range range, int total) {
+	private CodeLens createCodeLensForRemaining(Range range, int remaining) {
 		CodeLens codeLens = new CodeLens();
 		codeLens.setRange(range);
 		Command cmd = new Command();
 
-		cmd.setTitle(total + " mappings from running apps...");
+		cmd.setTitle(remaining + " more...");
 
-		cmd.setCommand("org.springframework.showHoverAtPosition");
-		cmd.setArguments(ImmutableList.of(range.getStart()));
+		// Don't set an actual command ID as to make this code lens "unclickable"..
+		// It is just meant to be a label, to tell users to hover over the request mapping
+		// to see the full list
 
 		codeLens.setCommand(cmd);
 
