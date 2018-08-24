@@ -56,7 +56,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class AutowiredHoverProvider implements HoverProvider {
 
-	public static final String BEANS_PREFIX = "\u21D0 ";
+	public static final String BEANS_PREFIX_PLAIN_TEXT = "\u2190 ";
+	public static final String BEANS_PREFIX_MARDOWN = "&#8592; ";
 
 	private static final String JAVA_COLLECTION = "java.util.Collection";
 
@@ -92,7 +93,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		if (declarationNode != null && definedBean != null) {
 			for (SpringBootApp app : runningApps) {
 				List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
-				return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+				return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
 			}
 		}
 		return null;
@@ -155,7 +156,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 			List<LiveBean> autowiredBeans) {
 		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 		hover.append("**");
-		hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, autowiredBeans, "&larr; ", MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
+		hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, autowiredBeans, BEANS_PREFIX_MARDOWN, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
 		hover.append("**\n");
 		hover.append(autowiredBeans.stream()
 				.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))

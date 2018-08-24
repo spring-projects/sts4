@@ -43,7 +43,8 @@ import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider {
 
-	private static final String BEANS_PREFIX = "\u21D2 ";
+	public static final String BEANS_PREFIX_PLAIN_TEXT = "\u2192 ";
+	public static final String BEANS_PREFIX_MARKDOWN = "&#8594; ";
 
 	private static Logger LOG = LoggerFactory.getLogger(AbstractInjectedIntoHoverProvider.class);
 
@@ -109,14 +110,14 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 					if (!injectedBeans.isEmpty()) {
 						// Break out of the loop. Just look for the first app with injected into beans
-						List<CodeLens> injectedCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, injectedBeans, BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+						List<CodeLens> injectedCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, injectedBeans, BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
 						builder.addAll(injectedCodeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : injectedCodeLenses);
 					}
 
 					// Wired beans code lenses
 					List<LiveBean> wiredBeans = findWiredBeans(project, app, relevantBeans, astNode);
 					builder.addAll(LiveHoverUtils.createCodeLensesForBeans(range, wiredBeans,
-							AutowiredHoverProvider.BEANS_PREFIX, MAX_INLINE_BEANS_STRING_LENGTH,
+							AutowiredHoverProvider.BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH,
 							INLINE_BEANS_STRING_SEPARATOR));
 
 					return builder.build();
@@ -150,7 +151,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				if (!injectedBeans.isEmpty()) {
 					SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 					hover.append("**");
-					hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, injectedBeans, "&rarr; ", MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
+					hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, injectedBeans, BEANS_PREFIX_MARKDOWN, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
 					hover.append("**\n");
 					hover.append(injectedBeans.stream()
 							.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))

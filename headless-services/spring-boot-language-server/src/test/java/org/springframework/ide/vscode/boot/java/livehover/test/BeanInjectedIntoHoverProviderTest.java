@@ -225,7 +225,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n" +
 				"  \n" +
@@ -283,7 +283,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n" +
 				"  \n" +
@@ -335,7 +335,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
 				"  Resource: `" + Paths.get("hello/MyController.class") + "`\n" +
@@ -387,7 +387,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`  \n" +
 				"  Resource: `hello/MyController.class`\n" +
@@ -443,7 +443,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&rarr; `MyController` `OtherBean`**\n" +
+				"**&#8594; `MyController` `OtherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `hello.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
@@ -552,7 +552,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&larr; `DependencyA`**\n" +
+				"**&#8592; `DependencyA`**\n" +
 				"- Bean: `depA`  \n" +
 				"  Type: `hello.DependencyA`\n" +
 				"  \n" +
@@ -606,7 +606,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&larr; `DependencyA` `DependencyB`**\n" +
+				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `depA`  \n" +
 				"  Type: `hello.DependencyA`\n" +
 				"- Bean: `depB`  \n" +
@@ -662,7 +662,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&larr; `DependencyA` `DependencyB`**\n" +
+				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `depA`  \n" +
 				"  Type: `hello.DependencyA`\n" +
 				"- Bean: `depB`  \n" +
@@ -713,7 +713,7 @@ public class BeanInjectedIntoHoverProviderTest {
 		);
 		editor.assertHighlights("@Bean");
 		editor.assertTrimmedHover("@Bean",
-				"**&larr; `DependencyB`**\n" +
+				"**&#8592; `DependencyB`**\n" +
 				"- Bean: `depB`  \n" +
 				"  Type: `hello.DependencyB`\n" +
 				"  \n" +

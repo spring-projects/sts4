@@ -155,7 +155,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"  \n" +
@@ -208,7 +208,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**&rarr; `MyController` `OtherBean`**\n" +
+				"**&#8594; `MyController` `OtherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
@@ -265,7 +265,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**&rarr; `MyController` `OtherBean`**\n" +
+				"**&#8594; `MyController` `OtherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
@@ -274,7 +274,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=1001, name=`app-instance-1`]" +
 				"  \n  \n" +
-				"**&rarr; `MyController` `OtherBean`**\n" +
+				"**&#8594; `MyController` `OtherBean`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"- Bean: `otherBean`  \n" +
@@ -334,7 +334,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertHoverExactText("@Component",
-				"**&rarr; `MyController`**\n" +
+				"**&#8594; `MyController`**\n" +
 				"- Bean: `myController`  \n" +
 				"  Type: `com.example.MyController`\n" +
 				"  \n" +
@@ -392,7 +392,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component");
 		editor.assertTrimmedHover("@Component",
-				"**&rarr; `OtherBean`**\n" +
+				"**&#8594; `OtherBean`**\n" +
 				"- Bean: `otherBean`  \n" +
 				"  Type: `com.example.OtherBean`\n" +
 				"  \n" +
@@ -504,7 +504,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component", "AutowiredClass");
 		editor.assertTrimmedHover("@Component",
-				"**&larr; `DependencyA` `DependencyB`**\n" +
+				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`  \n" +
 				"  Resource: `com/example/DependencyA.class`\n" +
@@ -560,7 +560,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@Component", "@Autowired");
 		editor.assertTrimmedHover("@Component",
-				"**&larr; `DependencyA` `DependencyB`**\n" +
+				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
 				"  Type: `com.example.DependencyA`\n" +
 				"- Bean: `dependencyB`  \n" +

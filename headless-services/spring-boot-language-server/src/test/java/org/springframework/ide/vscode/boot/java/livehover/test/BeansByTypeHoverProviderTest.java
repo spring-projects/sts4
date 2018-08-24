@@ -134,7 +134,7 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedRandomClass");
 		editor.assertTrimmedHover("ScannedRandomClass",
-				"**&rarr; `randomOtherBeanType`**\n" +
+				"**&#8594; `randomOtherBeanType`**\n" +
 				"- Bean: `randomOtherBean`  \n" +
 				"  Type: `randomOtherBeanType`\n" +
 				"  \n" +
@@ -188,7 +188,7 @@ public class BeansByTypeHoverProviderTest {
 		);
 		editor.assertHighlights("ScannedFunctionClass");
 		editor.assertTrimmedHover("ScannedFunctionClass",
-				"**&rarr; 1 bean**\n" +
+				"**&#8594; 1 bean**\n" +
 				"- Bean: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`  \n" +
 				"  Type: `org.springframework.cloud.function.context.config.ContextFunctionCatalogAutoConfiguration`\n" +
 				"  \n" +
