@@ -84,15 +84,15 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		Collection<CodeLens> lenses = new ArrayList<>();
 
 		if (urls != null) {
-			int limit = urls.size() > CODE_LENS_LIMIT ? CODE_LENS_LIMIT : urls.size();
-
-			for (int i = 0; i < limit; i++) {
-				CodeLens codeLens = createCodeLensForRequestMapping(range, urls.get(i));
-				lenses.add(codeLens);
-			}
-
-			if (urls.size() > CODE_LENS_LIMIT) {
-				CodeLens codeLens = createCodeLensForRemaining(range, urls.size() - CODE_LENS_LIMIT);
+			if (urls.size() <= CODE_LENS_LIMIT) {
+				// Show a code lens for each URL if within the limit
+				for (String url : urls) {
+					CodeLens codeLens = createCodeLensForRequestMapping(range, url);
+					lenses.add(codeLens);
+				}
+			} else {
+				// If number of URLs exceed the limit, just show one code lens that shows all URLs in a hover
+				CodeLens codeLens = createCodeLensForHover(range, urls.size());
 				lenses.add(codeLens);
 			}
 		}
@@ -246,11 +246,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			codeLens.setData(content);
 			cmd.setTitle(content);
 
-//			cmd.setCommand("editor.action.openLink");
-			// Show hover for now, as it contains a link. Ideally the command to set is a vscode
-			// one that jumps to URL directly
-			cmd.setCommand("org.springframework.showHoverAtPosition");
-			cmd.setArguments(ImmutableList.of(range.getStart()));
+			cmd.setCommand("springboot.open.url");
+			cmd.setArguments(ImmutableList.of(content));
 		}
 
 		codeLens.setCommand(cmd);
@@ -258,12 +255,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return codeLens;
 	}
 
-	private CodeLens createCodeLensForRemaining(Range range, int remaining) {
+	private CodeLens createCodeLensForHover(Range range, int total) {
 		CodeLens codeLens = new CodeLens();
 		codeLens.setRange(range);
 		Command cmd = new Command();
 
-		cmd.setTitle(remaining + " more...");
+		cmd.setTitle(total + " mappings from running apps...");
 
 		cmd.setCommand("org.springframework.showHoverAtPosition");
 		cmd.setArguments(ImmutableList.of(range.getStart()));
