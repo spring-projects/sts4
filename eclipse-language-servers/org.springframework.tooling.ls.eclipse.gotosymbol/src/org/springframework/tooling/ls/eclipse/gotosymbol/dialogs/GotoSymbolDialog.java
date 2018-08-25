@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -106,7 +107,7 @@ public class GotoSymbolDialog extends PopupDialog {
 			boolean showKindInformation = false;
 			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation , showKindInformation) {
 				@Override
-				protected int getMaxSeverity(IResource resource, SymbolInformation symbolInformation)
+				protected int getMaxSeverity(IResource resource, Range range)
 						throws CoreException, BadLocationException {
 					int maxSeverity = -1;
 					for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {

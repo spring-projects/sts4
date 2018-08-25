@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
-import java.util.Collection;
+import java.util.List;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 /**
  * An SymbolsProvider can fetch symbols from a service (typically, a language server
@@ -21,7 +23,8 @@ import org.eclipse.lsp4j.SymbolInformation;
  */
 public interface SymbolsProvider {
 	String getName();
-	Collection<SymbolInformation> fetchFor(String query) throws Exception;
+	
+	List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception;
 	/**
 	 * True if the symbol information is provided from a file provider (a file is the provider of the symbols). False otherwise
 	 * @param symbol

@@ -21,8 +21,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -52,7 +54,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	}
 
 	@Override
-	public Collection<SymbolInformation> fetchFor(String query) throws Exception {
+	public List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception {
 		//TODO: if we want decent support for multiple language servers...
 		// consider changing SymbolsProvider api and turning the stuff in here into something producing a 
 		// Flux<Collection<SymbolInformation>>
@@ -64,12 +66,13 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 		
-		Flux<SymbolInformation> symbols = Flux.fromIterable(this.languageServers)
-		.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
+		Flux<Either<SymbolInformation, DocumentSymbol>> symbols = Flux.fromIterable(this.languageServers)
+				.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
 					.timeout(TIMEOUT)
 					.doOnError(e -> log(e))
 					.onErrorReturn(ImmutableList.of())
 					.flatMapMany(Flux::fromIterable)
+					.map(symbol -> Either.forLeft(symbol))
 		);
 		//Consider letting the Flux go out from here instead of blocking and collecting elements.
 		return symbols.take(MAX_RESULTS).collect(Collectors.toList()).block();

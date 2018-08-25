@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,9 +17,11 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.google.common.collect.ImmutableList;
@@ -40,12 +42,12 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	}
 	
 	@Override
-	public Collection<SymbolInformation> fetchFor(String query) throws Exception {
+	public List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception {
 		DocumentSymbolParams params = new DocumentSymbolParams(
 				new TextDocumentIdentifier(info.getFileUri().toString()));
-		CompletableFuture<List<? extends SymbolInformation>> symbolsFuture = info.getLanguageClient()
+		CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolsFuture = info.getLanguageClient()
 				.getTextDocumentService().documentSymbol(params);
-		List<? extends SymbolInformation> symbols = symbolsFuture.get();
+		List<Either<SymbolInformation, DocumentSymbol>> symbols = symbolsFuture.get();
 		return symbols == null ? ImmutableList.of() : ImmutableList.copyOf(symbols);
 	}
 
