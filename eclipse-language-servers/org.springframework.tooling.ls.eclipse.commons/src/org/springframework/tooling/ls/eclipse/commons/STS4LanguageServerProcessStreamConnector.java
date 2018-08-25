@@ -21,12 +21,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.springframework.tooling.ls.eclipse.commons.console.ConsoleUtil.Console;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 import org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsoles;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
-
-import org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 
 public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 

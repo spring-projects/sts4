@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.console.ConsoleUtil.Console;
-import org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 
 import com.google.common.base.Supplier;
 

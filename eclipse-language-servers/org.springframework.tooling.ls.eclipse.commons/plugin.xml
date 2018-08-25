@@ -28,7 +28,7 @@
    <extension
      point="org.eclipse.ui.preferencePages">
     <page
-        class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPreferencesPage"
+        class="org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolesPreferencesPage"
         id="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPreferencesPage"
         name="Language Servers STS">
      </page>
@@ -36,10 +36,10 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolesPrefsInitializer">
+            class="org.springframework.tooling.ls.eclipse.commons.preferences.PrefsInitializer">
       </initializer>
       <initializer
-            class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditorPreferencesInitializer">
+            class="org.springframework.tooling.ls.eclipse.commons.preferences.YamlGenericEditorPreferencesInitializer">
       </initializer>
    </extension>
    <extension
@@ -62,5 +62,21 @@
             id="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
             name="Generic YAML Editor">
       </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+      <codeMiningProvider
+            class="org.springframework.tooling.ls.eclipse.commons.HighlightsCodeLensProvider"
+            id="org.eclipse.lsp4e.codelens"
+            label="CodeLens">
+         <enabledWhen>
+            <with
+                  variable="editorInput">
+               <test
+                     property="org.eclipse.lsp4e.hasLanguageServer">
+               </test>
+            </with>
+         </enabledWhen>
+      </codeMiningProvider>
    </extension>
 </plugin>

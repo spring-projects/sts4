@@ -8,11 +8,12 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.commons;
+package org.springframework.tooling.ls.eclipse.commons.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 
 /**
  * Initializers of preferences for Generic editor for YAML ls extensions

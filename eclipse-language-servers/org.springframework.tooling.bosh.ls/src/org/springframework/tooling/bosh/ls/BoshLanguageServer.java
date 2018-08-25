@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.bosh.ls;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.BOSH_SERVER;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.BOSH_SERVER;
 
 import java.io.File;
 import java.io.InputStream;

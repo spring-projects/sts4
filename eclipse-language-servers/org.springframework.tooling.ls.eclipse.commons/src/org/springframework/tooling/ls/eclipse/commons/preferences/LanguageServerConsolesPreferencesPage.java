@@ -8,10 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.commons.console.preferences;
+package org.springframework.tooling.ls.eclipse.commons.preferences;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ALL_SERVERS;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ALL_SERVERS;
 
+import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -19,10 +20,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
-import org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 
+@SuppressWarnings("restriction")
 public class LanguageServerConsolesPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-	
+
 	static IPreferenceStore getPrefsStoreFromPlugin() {
 		return LanguageServerCommonsActivator.getInstance().getPreferenceStore();
 	}
@@ -40,5 +42,12 @@ public class LanguageServerConsolesPreferencesPage extends FieldEditorPreference
 		for (ServerInfo s : ALL_SERVERS) {
 			addField(new BooleanFieldEditor(s.preferenceKey, s.label, parent));
 		}
+
+		SWTFactory.createHorizontalSpacer(parent, 2);
+
+		SWTFactory.createLabel(parent, "Settings for Spring Languare Server extensions:", 2);
+
+		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens", parent));
+
 	}
 }

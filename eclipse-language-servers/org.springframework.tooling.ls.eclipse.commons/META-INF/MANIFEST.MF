@@ -25,7 +25,7 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.tooling.ls.eclipse.commons,
- org.springframework.tooling.ls.eclipse.commons.console.preferences
+ org.springframework.tooling.ls.eclipse.commons.preferences
 Bundle-Activator: org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator
 Bundle-ClassPath: .,
  lib/remark-1.0.0.jar,

@@ -18,9 +18,13 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl.UpdateHighlights;
+import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceConstants;
 
 public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 
@@ -30,6 +34,17 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 
 	private static LanguageServerCommonsActivator instance;
 
+	private static final IPropertyChangeListener PROPERTY_LISTENER = new IPropertyChangeListener() {
+
+		@Override
+		public void propertyChange(PropertyChangeEvent event) {
+			if (PreferenceConstants.HIGHLIGHT_CODELENS_PREFS.equals(event.getProperty())) {
+				new UpdateHighlights(null);
+			}
+		}
+
+	};
+
 	public LanguageServerCommonsActivator() {
 	}
 
@@ -38,6 +53,7 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 		instance = this;
 		super.start(context);
 		getImageRegistry().put(BOOT_KEY, getImageDescriptor("icons/boot.png"));
+		getPreferenceStore().addPropertyChangeListener(PROPERTY_LISTENER);
 	}
 
 	public final static ImageDescriptor getImageDescriptor(String path) {
@@ -51,6 +67,12 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 			}
 		}
 		return desc;
+	}
+
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		getPreferenceStore().removePropertyChangeListener(PROPERTY_LISTENER);
+		super.stop(context);
 	}
 
 	public static LanguageServerCommonsActivator getInstance() {

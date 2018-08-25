@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.concourse.ls;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.CONCOURSE_SERVER;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.CONCOURSE_SERVER;
 
 import java.io.File;
 import java.io.InputStream;

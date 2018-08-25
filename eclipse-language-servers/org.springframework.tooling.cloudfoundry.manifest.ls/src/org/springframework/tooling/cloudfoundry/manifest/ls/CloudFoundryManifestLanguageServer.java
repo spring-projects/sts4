@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.cloudfoundry.manifest.ls;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.CLOUDFOUNDRY_SERVER;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.CLOUDFOUNDRY_SERVER;
 
 import java.io.File;
 import java.io.InputStream;

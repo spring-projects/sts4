@@ -8,20 +8,21 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.commons.console.preferences;
+package org.springframework.tooling.ls.eclipse.commons.preferences;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.*;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.*;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 
-public class LanguageServerConsolesPrefsInitializer extends AbstractPreferenceInitializer {
+public class PrefsInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = LanguageServerConsolesPreferencesPage.getPrefsStoreFromPlugin();
 		for (ServerInfo s : ALL_SERVERS) {
 			store.setDefault(s.preferenceKey, ENABLE_BY_DEFAULT);
 		}
+		store.setDefault(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, true);
 	}
 }

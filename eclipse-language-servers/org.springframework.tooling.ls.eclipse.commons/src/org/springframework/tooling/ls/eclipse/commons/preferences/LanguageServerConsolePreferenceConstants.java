@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.commons.console.preferences;
+package org.springframework.tooling.ls.eclipse.commons.preferences;
 
 public class LanguageServerConsolePreferenceConstants {
 	

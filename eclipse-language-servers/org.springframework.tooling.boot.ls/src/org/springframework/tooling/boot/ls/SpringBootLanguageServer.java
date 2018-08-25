@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls;
 
-import static org.springframework.tooling.ls.eclipse.commons.console.preferences.LanguageServerConsolePreferenceConstants.SPRING_BOOT_SERVER;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.SPRING_BOOT_SERVER;
 
 import java.io.File;
 import java.io.InputStream;
