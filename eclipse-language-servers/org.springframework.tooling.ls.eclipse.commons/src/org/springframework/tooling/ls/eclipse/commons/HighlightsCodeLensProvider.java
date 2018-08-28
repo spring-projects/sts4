@@ -10,9 +10,13 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,13 +28,43 @@ import org.eclipse.jface.text.codemining.AbstractCodeMiningProvider;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
 import org.eclipse.jface.text.codemining.LineHeaderCodeMining;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Command;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceConstants;
+
+import com.google.gson.JsonPrimitive;
 
 @SuppressWarnings("restriction")
 public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
+
+	private static final Map<String, Function<Command, Consumer<MouseEvent>>> ACTION_MAP = new HashMap<>();
+	static {
+		ACTION_MAP.put("sts.open.url", (cmd) -> {
+			return (me) -> {
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				if (!cmd.getArguments().isEmpty() && cmd.getArguments().get(0) instanceof JsonPrimitive) {
+					String url = ((JsonPrimitive)cmd.getArguments().get(0)).getAsString();
+					LSPEclipseUtils.open(url, page, null);
+				}
+			};
+		});
+	}
+
+	private static Consumer<MouseEvent> action(Command cmd) {
+		if (cmd != null) {
+			Function<Command, Consumer<MouseEvent>> func = ACTION_MAP.get(cmd.getCommand());
+			if (func != null) {
+				return func.apply(cmd);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
@@ -46,7 +80,7 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 					return CompletableFuture.completedFuture(highlights.getCodeLenses().stream()
 							.filter(codeLens -> codeLens.getCommand() != null).map(codeLens -> {
 								try {
-									return new HighlightCodeMining(codeLens, document, this);
+									return new HighlightCodeMining(codeLens, document, this, action(codeLens.getCommand()));
 								} catch (BadLocationException e) {
 									LanguageServerCommonsActivator.logError(e, "Failed to create Eclipse client CodeLens");
 									return null;
@@ -60,9 +94,9 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 
 	private static class HighlightCodeMining extends LineHeaderCodeMining {
 
-		public HighlightCodeMining(CodeLens codeLens, IDocument document, ICodeMiningProvider provider)
+		public HighlightCodeMining(CodeLens codeLens, IDocument document, ICodeMiningProvider provider, Consumer<MouseEvent> action)
 				throws BadLocationException {
-			super(codeLens.getRange().getStart().getLine(), document, provider);
+			super(codeLens.getRange().getStart().getLine(), document, provider, action);
 			setLabel(codeLens.getCommand().getTitle());
 		}
 
