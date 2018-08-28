@@ -244,7 +244,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			codeLens.setData(content);
 			cmd.setTitle(content);
 
-			cmd.setCommand("springboot.open.url");
+			cmd.setCommand("sts.open.url");
 			cmd.setArguments(ImmutableList.of(content));
 		}
 

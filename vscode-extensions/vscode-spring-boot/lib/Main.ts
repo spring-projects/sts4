@@ -16,7 +16,6 @@ const JAVA_LANGUAGE_ID = "java";
 export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
 
     // registerPipelineGenerator(context);
-    registerOpenUrl(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
@@ -84,10 +83,3 @@ function registerPipelineGenerator(context: VSCode.ExtensionContext) {
         }
     }));
 }
-
-function registerOpenUrl(context: VSCode.ExtensionContext) {
-    context.subscriptions.push(VSCode.commands.registerCommand('springboot.open.url', (url) => {
-        VSCode.commands.executeCommand('vscode.open', VSCode.Uri.parse(url))
-    }));
-}
-

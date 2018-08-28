@@ -208,7 +208,7 @@ public class LiveHoverUtils {
 			codeLens.setData(sb.toString());
 			Command cmd = new Command();
 			cmd.setTitle(sb.toString());
-			cmd.setCommand("org.springframework.showHoverAtPosition");
+			cmd.setCommand("sts.showHoverAtPosition");
 			cmd.setArguments(ImmutableList.of(range.getStart()));
 			codeLens.setCommand(cmd);
 

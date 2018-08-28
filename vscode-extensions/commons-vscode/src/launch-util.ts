@@ -6,6 +6,7 @@ import * as FS from 'fs';
 import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
+import * as CommonsCommands from './commands';
 import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Position } from 'vscode-languageclient';
 import {TextDocument, OutputChannel, Disposable, window, Event, EventEmitter} from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
@@ -211,12 +212,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     const codelensService = new HighlightCodeLensProvider();
     let codeLensProviderSubscription: Disposable;
 
-    VSCode.commands.registerCommand('org.springframework.showHoverAtPosition', (position: Position) => {
-        const editor = VSCode.window.activeTextEditor;
-        const vsPosition = new VSCode.Position(position.line, position.character);
-        editor.selection = new VSCode.Selection(vsPosition, vsPosition);
-        VSCode.commands.executeCommand('editor.action.showHover');
-    });
+    CommonsCommands.registerCommands(context);
 
     context.subscriptions.push(disposable);
     context.subscriptions.push(progressService);
