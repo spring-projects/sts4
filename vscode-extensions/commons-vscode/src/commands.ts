@@ -6,7 +6,7 @@ import { Position } from 'vscode-languageclient';
 
 
 export function registerCommands(context: VSCode.ExtensionContext) {
-    VSCode.commands.getCommands(true).then(commands => { 
+    VSCode.commands.getCommands(false).then(commands => { 
         if (!commandExists(commands, "sts.open.url")) {
             registerOpenUrl(context, "sts.open.url");
         }
@@ -15,7 +15,6 @@ export function registerCommands(context: VSCode.ExtensionContext) {
             registerShowHoverAtPosition(context, "sts.showHoverAtPosition");
         }
     });
-
 }
 
 function registerOpenUrl(context: VSCode.ExtensionContext, commandId: string) {
