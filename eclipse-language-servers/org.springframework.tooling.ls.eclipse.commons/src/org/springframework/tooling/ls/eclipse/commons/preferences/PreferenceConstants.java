@@ -14,4 +14,6 @@ public class PreferenceConstants {
 
 	public static final String HIGHLIGHT_CODELENS_PREFS = "highlight.codelens";
 
+	public static final String HIGHLIGHT_RANGE_COLOR_PREFS = "STS4BootMarkerIndicationColor";
+
 }

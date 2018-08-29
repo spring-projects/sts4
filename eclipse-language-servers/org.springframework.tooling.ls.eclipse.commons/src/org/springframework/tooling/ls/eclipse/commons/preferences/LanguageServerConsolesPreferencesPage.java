@@ -47,7 +47,7 @@ public class LanguageServerConsolesPreferencesPage extends FieldEditorPreference
 
 		SWTFactory.createLabel(parent, "Settings for Spring Languare Server extensions:", 2);
 
-		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens", parent));
+		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens (Experimental)", parent));
 
 	}
 }

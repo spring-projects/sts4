@@ -21,22 +21,27 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
 @SuppressWarnings("restriction")
 public class Utils {
 
 	public static Stream<ITextViewer> getActiveTextViewers() {
-		return Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
-			.filter(Objects::nonNull)
-			.flatMap(ww -> Arrays.stream(ww.getPages()))
-			.filter(Objects::nonNull)
-			.flatMap(page -> Arrays.stream(page.getEditorReferences()))
-			.filter(Objects::nonNull)
-			.map(ref -> ref.getEditor(false))
-			.filter(Objects::nonNull)
+		return getActiveEditors()
 			.map(editorPart -> editorPart.getAdapter(ITextViewer.class))
 			.filter(Objects::nonNull);
+	}
+
+	public static Stream<IEditorPart> getActiveEditors() {
+		return Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
+				.filter(Objects::nonNull)
+				.flatMap(ww -> Arrays.stream(ww.getPages()))
+				.filter(Objects::nonNull)
+				.flatMap(page -> Arrays.stream(page.getEditorReferences()))
+				.filter(Objects::nonNull)
+				.map(ref -> ref.getEditor(false))
+				.filter(Objects::nonNull);
 	}
 
 	public static Stream<ISourceViewer> getActiveSourceViewers() {

@@ -13,16 +13,16 @@
             contributesToHeader="false"
             highlightPreferenceKey="STS4BootMarkerHighlighting"
             highlightPreferenceValue="true"
+            icon="icons/boot-icon.png"
             label="Boot Dynamic Info"
             overviewRulerPreferenceKey="STS4BootMarkerIndicationInOverviewRuler"
-            overviewRulerPreferenceValue="true"
+            overviewRulerPreferenceValue="false"
             presentationLayer="4"
             showInNextPrevDropdownToolbarAction="false"
             textPreferenceKey="STS4BootMarkerIndication"
-            textPreferenceValue="true"
-            textStylePreferenceKey="STS4BootMarkerTextStyle"
+            textPreferenceValue="false"
             verticalRulerPreferenceKey="STS4BootMarkerIndicationInVerticalRuler"
-            verticalRulerPreferenceValue="true">
+            verticalRulerPreferenceValue="false">
       </specification>
    </extension>
    <extension

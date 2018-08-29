@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons.preferences;
 
-import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.*;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ALL_SERVERS;
+import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ENABLE_BY_DEFAULT;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -23,6 +24,6 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		for (ServerInfo s : ALL_SERVERS) {
 			store.setDefault(s.preferenceKey, ENABLE_BY_DEFAULT);
 		}
-		store.setDefault(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, true);
+		store.setDefault(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, false);
 	}
 }

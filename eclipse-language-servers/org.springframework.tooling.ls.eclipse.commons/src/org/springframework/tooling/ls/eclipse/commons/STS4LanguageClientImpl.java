@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,11 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.AnnotationPainter;
+import org.eclipse.jface.text.source.AnnotationPainter.IDrawingStrategy;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -32,8 +36,17 @@ import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
@@ -53,10 +66,48 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			() -> new ProjectSorter()
 	);
 
-	public STS4LanguageClientImpl() {
-	}
-
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
+
+	private static final String ALT_ANNOTATION_DRAWING_STRATEGY_ID = "boot.hint.strategy";
+	private static final String ALT_ANNOTATION_TYPE_ID = "org.springframework.tooling.bootinfoCodeLens";
+
+	/**
+	 * Latest highlight request params. It is sufficient to only remember the last request per uri, because
+	 * each new request is expected to replace the previous highlights.
+	 */
+	static final Map<String, HighlightParams> currentHighlights = new ConcurrentHashMap<>();
+
+	/**
+	 * Current markers... indexed per document uri, needed sp we to be removed upon next update.
+	 */
+	private static Map<String, Annotation[]> currentAnnotations = new ConcurrentHashMap<>();
+
+	private static final IDrawingStrategy BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY = new IDrawingStrategy() {
+
+		@Override
+		public void draw(Annotation annotation, GC gc, StyledText textWidget, int offset, int length, Color color) {
+
+			if (gc == null) {
+				textWidget.redrawRange(offset, length, true);
+			} else {
+				int oldAlpha = gc.getAlpha();
+				Font oldFont = gc.getFont();
+
+				Point left= textWidget.getLocationAtOffset(offset);
+				Point right = textWidget.getLocationAtOffset(offset + length);
+				gc.setFont(textWidget.getFont());
+				int fontHeight = gc.getFontMetrics().getHeight();
+				Rectangle r = new Rectangle(left.x, left.y + textWidget.getLineHeight(offset) - fontHeight, right.x - left.x, fontHeight);
+				gc.setAlpha(0x40);
+				gc.setBackground(color);
+				gc.fillRectangle(r);
+
+				gc.setAlpha(oldAlpha);
+				gc.setFont(oldFont);
+			}
+		}
+
+	};
 
 	static class UpdateHighlights extends UIJob {
 
@@ -71,51 +122,77 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 		@Override
 		public IStatus runInUIThread(IProgressMonitor monitor) {
-			Utils.getActiveSourceViewers().forEach(this::updateSourceViewer);
+			Utils.getActiveEditors().forEach(this::updateSourceViewer);
 			return Status.OK_STATUS;
 		}
 
-		protected void updateSourceViewer(ISourceViewer sourceViewer) {
-			IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
-			if (annotationModel != null) {
-				IDocument doc = sourceViewer.getDocument();
-				if (doc != null && sourceViewer != null) {
-					if (target != null) {
-						HighlightParams highlightParams = currentHighlights.get(target);
-						if (Utils.isProperDocumentIdFor(doc, highlightParams.getDoc())) {
-							if (annotationModel instanceof IAnnotationModelExtension) {
-								updateAnnotations(target, sourceViewer, (IAnnotationModelExtension) annotationModel);
+		protected void updateSourceViewer(IEditorPart editor) {
+			ITextViewer viewer = editor.getAdapter(ITextViewer.class);
+			if (viewer instanceof ISourceViewer) {
+				ISourceViewer sourceViewer = (ISourceViewer) viewer;
+				IAnnotationModel annotationModel = sourceViewer.getAnnotationModel();
+				if (annotationModel != null) {
+					IDocument doc = sourceViewer.getDocument();
+					if (doc != null && sourceViewer != null) {
+						if (target != null) {
+							HighlightParams highlightParams = currentHighlights.get(target);
+							if (Utils.isProperDocumentIdFor(doc, highlightParams.getDoc())) {
+								updateHighlightAnnotations(editor, sourceViewer, annotationModel, target);
 							}
-							if (sourceViewer instanceof ISourceViewerExtension5) {
-								((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
-							}
-						}
-					} else {
-						URI uri = Utils.findDocUri(doc);
-						if (uri != null) {
-							if (annotationModel instanceof IAnnotationModelExtension) {
-								updateAnnotations(uri.toString(), sourceViewer, (IAnnotationModelExtension) annotationModel);
-							}
-							if (sourceViewer instanceof ISourceViewerExtension5) {
-								((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
+						} else {
+							URI uri = Utils.findDocUri(doc);
+							if (uri != null) {
+								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toString());
 							}
 						}
 					}
 				}
 			}
 		}
+
 	};
 
-	/**
-	 * Latest highlight request params. It is sufficient to only remember the last request per uri, because
-	 * each new request is expected to replace the previous highlights.
-	 */
-	static final Map<String, HighlightParams> currentHighlights = new ConcurrentHashMap<>();
+	private static void updateHighlightAnnotations(IEditorPart editor, ISourceViewer sourceViewer,
+			IAnnotationModel annotationModel, String docUri) {
+		if (annotationModel instanceof IAnnotationModelExtension) {
+			if (isCodeLensHighlightOn()) {
+				addBootRangeHighlightSupport(editor, sourceViewer);
+			}
+			updateAnnotations(docUri, sourceViewer, (IAnnotationModelExtension) annotationModel);
+		}
+		if (sourceViewer instanceof ISourceViewerExtension5) {
+			((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
+		}
+	}
 
-	/**
-	 * Current markers... indexed per document uri, needed sp we to be removed upon next update.
-	 */
-	private static Map<String, Annotation[]> currentAnnotations = new ConcurrentHashMap<>();
+	@SuppressWarnings("unchecked")
+	private static void addBootRangeHighlightSupport(IEditorPart editor, ISourceViewer sourceViewer) {
+		try {
+			Field f = AbstractDecoratedTextEditor.class.getDeclaredField("fSourceViewerDecorationSupport");
+			f.setAccessible(true);
+			SourceViewerDecorationSupport support = (SourceViewerDecorationSupport) f.get(editor);
+			f = SourceViewerDecorationSupport.class.getDeclaredField("fAnnotationPainter");
+			f.setAccessible(true);
+			AnnotationPainter painter = (AnnotationPainter) f.get(support);
+
+			f = AnnotationPainter.class.getDeclaredField("fAnnotationType2Color");
+			f.setAccessible(true);
+			if (((Map<Object, Color>)f.get(painter)).get(ALT_ANNOTATION_TYPE_ID) != LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor()) {
+				painter.setAnnotationTypeColor(ALT_ANNOTATION_TYPE_ID, LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor());
+				painter.addDrawingStrategy(ALT_ANNOTATION_DRAWING_STRATEGY_ID, BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY);
+				painter.addAnnotationType(ALT_ANNOTATION_TYPE_ID, ALT_ANNOTATION_DRAWING_STRATEGY_ID);
+			}
+
+		} catch (Exception e) {
+			LanguageServerCommonsActivator.logError(e,
+					"Failed to contribute alternative range highlight annotation. Switch off highlight CodeLense under STS Language Server preferences!");
+		}
+	}
+
+	private static boolean isCodeLensHighlightOn() {
+		IPreferenceStore store = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
+		return store.getBoolean(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS);
+	}
 
 	static synchronized void updateAnnotations(String target, ISourceViewer sourceViewer,
 			IAnnotationModelExtension annotationModel) {
@@ -124,24 +201,24 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			toRemove = new Annotation[0];
 		}
 		HighlightParams highlightParams = currentHighlights.get(target);
-		IPreferenceStore store = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
-		List<CodeLens> highlights = store.getBoolean(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS) || highlightParams == null ? null : highlightParams.getCodeLenses();
-		Map<Annotation, Position> newAnnotations = createAnnotations(sourceViewer.getDocument(), highlights);
+		List<CodeLens> highlights = highlightParams == null ? null : highlightParams.getCodeLenses();
+		String annotationType = isCodeLensHighlightOn() ? ALT_ANNOTATION_TYPE_ID : ANNOTION_TYPE_ID;
+		Map<Annotation, Position> newAnnotations = createAnnotations(sourceViewer.getDocument(), highlights, annotationType);
 		annotationModel.replaceAnnotations(toRemove, newAnnotations);
 		currentAnnotations.put(target, newAnnotations.keySet().toArray(new Annotation[newAnnotations.size()]));
 	}
 
-	private static Map<Annotation, Position> createAnnotations(IDocument doc, List<CodeLens> highlights) {
+	private static Map<Annotation, Position> createAnnotations(IDocument doc, List<CodeLens> highlights, String annotationType) {
 		ImmutableMap.Builder<Annotation, Position> annotations = ImmutableMap.builder();
 		if (highlights==null) {
 			highlights = ImmutableList.of();
 		}
-		highlights.stream().map(CodeLens::getRange).forEach(rng -> {
+		highlights.stream().map(CodeLens::getRange).distinct().forEach(rng -> {
 			try {
 				int start = LSPEclipseUtils.toOffset(rng.getStart(), doc);
 				int end = LSPEclipseUtils.toOffset(rng.getEnd(), doc);
 				Position e_rng = new Position(start, Math.max(0, end-start));
-				annotations.put(new Annotation(ANNOTION_TYPE_ID, false, null), e_rng);
+				annotations.put(new Annotation(annotationType, false, null), e_rng);
 			} catch (BadLocationException e) {
 				//ignore invalid highlights
 			}
