@@ -211,14 +211,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public LiveBeansModel getBeans() {
 		try {
-			// PT 160096886 - Moved actuator-based operations out of the cache because
-			// previous implementation was throwing exception inside the cache loader if actuator JSON was not available.
-			// This resulted in errors when stopping applications (i.e. when actuator was not available anymore)
-
-			String domain = getDomainForActuator();
-			Object json = getBeansFromActuator(domain);
-			if (json != null) {
-				return beansModelCache.get("liveBeans", () -> {
+			return beansModelCache.get("liveBeans", () -> {
+				String domain = getDomainForActuator();
+				Object json = getBeansFromActuator(domain);
+				if (json != null) {
 					String md5 = DigestUtils.md5Hex(json.toString());
 
 					synchronized(AbstractSpringBootApp.this) {
@@ -232,11 +228,12 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 					}
 
 					return cachedBeansModel;
-				});
-			} else {
-				// Actuator info not available (e.g. application stopped), return empty model. Don't return null. Causes Issues
-				return LiveBeansModel.builder().build();
-			}
+
+				} else {
+					throw new Exception("not getting any beans from app");
+				}
+
+			});
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
 			return LiveBeansModel.builder().build();
