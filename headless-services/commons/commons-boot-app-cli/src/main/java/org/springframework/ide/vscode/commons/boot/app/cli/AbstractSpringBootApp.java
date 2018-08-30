@@ -230,6 +230,8 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 					return cachedBeansModel;
 
 				} else {
+					// PT 160096886 - Don't throw exception, as actuator info will not be available when app stopping, and
+					// this is not an error condition. Return empty model instead.
 					return LiveBeansModel.builder().build();
 				}
 
