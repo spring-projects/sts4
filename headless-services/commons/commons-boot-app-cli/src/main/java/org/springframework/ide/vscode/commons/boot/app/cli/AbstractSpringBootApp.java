@@ -230,7 +230,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 					return cachedBeansModel;
 
 				} else {
-					throw new Exception("not getting any beans from app");
+					return LiveBeansModel.builder().build();
 				}
 
 			});
