@@ -41,6 +41,7 @@ import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -241,6 +242,14 @@ public class GotoSymbolDialog extends PopupDialog {
 			Object selected = ss.getFirstElement();
 			if (selected instanceof Match) {
 				selected = ((Match<?>)selected).value;
+				if (selected instanceof Either) {
+					Either<?, ?> either = (Either<?, ?>)selected;
+					if (either.isLeft()) {
+						selected = either.getLeft();
+					} else {
+						selected = either.getRight();
+					}
+				}
 				if (selected instanceof SymbolInformation) {
 					return (SymbolInformation)selected;
 				}
