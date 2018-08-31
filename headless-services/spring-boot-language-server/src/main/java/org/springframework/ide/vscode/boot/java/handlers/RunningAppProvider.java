@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -19,6 +21,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import com.google.common.collect.ImmutableList;
 
 public interface RunningAppProvider {
+
+	static final Logger log = LoggerFactory.getLogger(RunningAppProvider.class);
 
 	static RunningAppProvider composite(RunningAppProvider... children) {
 		if (children.length==1) {
@@ -36,13 +40,19 @@ public interface RunningAppProvider {
 		};
 	}
 
-	public static final RunningAppProvider LOCAL_APPS = LocalSpringBootApp::getAllRunningSpringApps;
+	// Don't put LocalSpringBootApp::getAllRunningSpringApps, thus class loading doesn't fail if LS launched with JRE instead of JDK
+	public static final RunningAppProvider LOCAL_APPS = () -> LocalSpringBootApp.getAllRunningSpringApps();
 
 	public static final RunningAppProvider NULL = () -> ImmutableList.of();
 
 	Collection<SpringBootApp> getAllRunningSpringApps() throws Exception;
 
 	static RunningAppProvider createDefault(SimpleLanguageServer server) {
-		return composite(LOCAL_APPS, new RemoteRunningAppsProvider(server));
+		try {
+			return composite(LOCAL_APPS, new RemoteRunningAppsProvider(server));
+		} catch (Throwable t) {
+			log.error("", t);
+		}
+		return NULL;
 	}
 }
