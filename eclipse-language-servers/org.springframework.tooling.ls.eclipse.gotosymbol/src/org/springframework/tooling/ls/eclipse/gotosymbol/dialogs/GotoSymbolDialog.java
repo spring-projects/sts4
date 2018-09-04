@@ -135,9 +135,9 @@ public class GotoSymbolDialog extends PopupDialog {
 		@Override
 		public String getToolTipText(Object element) {
 			if (element instanceof Match) {
-				element = ((Match<?>)element).value;
-				if (element instanceof SymbolInformation) {
-					return ((SymbolInformation) element).getName();
+				SymbolInformation si = getSymbolInformation((Match<?>)element);
+				if (si!=null) {
+					return si.getName();
 				}
 			}
 			return null;
@@ -162,18 +162,17 @@ public class GotoSymbolDialog extends PopupDialog {
 		}
 
 		private StyledString getStyledText(Match<?> element) {
-			if (element.value instanceof SymbolInformation) {
-				String name = ((SymbolInformation)element.value).getName();
+			SymbolInformation symbolInformation = getSymbolInformation(element);
+			if (symbolInformation != null) {
+				String name = symbolInformation.getName();
 				StyledString s = new StyledString(name);
 				Collection<IRegion> highlights = FuzzyMatcher.highlights(element.query, name.toLowerCase());
 				for (IRegion hl : highlights) {
 					s.setStyle(hl.getOffset(), hl.getLength(), stylers.bold());
 				}
-				if (element.value instanceof SymbolInformation) {
-					String locationText = getSymbolLocationText((SymbolInformation) element.value);
-					if (locationText != null) {
-						s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
-					}
+				String locationText = getSymbolLocationText(symbolInformation);
+				if (locationText != null) {
+					s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
 				}
 				return s;
 			} else {
@@ -224,6 +223,22 @@ public class GotoSymbolDialog extends PopupDialog {
 		create();
 	}
 
+	private SymbolInformation getSymbolInformation(Match<?> element) {
+		if (element.value instanceof SymbolInformation) {
+			return (SymbolInformation) element.value;
+		}
+		if (element.value instanceof Either) {
+			Either<?,?> either = (Either<?, ?>)element.value;
+			if (either.isLeft()) {
+				Object left = either.getLeft();
+				if (left instanceof SymbolInformation) {
+					return (SymbolInformation) left;
+				}
+			}
+		}
+		return null;
+	}
+
 	@Override
 	protected IDialogSettings getDialogSettings() {
 		if (dlgSettings==null) {
@@ -241,17 +256,9 @@ public class GotoSymbolDialog extends PopupDialog {
 			IStructuredSelection ss = (IStructuredSelection) sel;
 			Object selected = ss.getFirstElement();
 			if (selected instanceof Match) {
-				selected = ((Match<?>)selected).value;
-				if (selected instanceof Either) {
-					Either<?, ?> either = (Either<?, ?>)selected;
-					if (either.isLeft()) {
-						selected = either.getLeft();
-					} else {
-						selected = either.getRight();
-					}
-				}
-				if (selected instanceof SymbolInformation) {
-					return (SymbolInformation)selected;
+				SymbolInformation si = getSymbolInformation((Match<?>) selected);
+				if (si!=null) {
+					return si;
 				}
 			}
 		}
@@ -342,9 +349,9 @@ public class GotoSymbolDialog extends PopupDialog {
 			TreeItem item = items[0];
 			Object data = item.getData();
 			if (data instanceof Match) {
-				data = ((Match<?>)data).value;
-				if (data instanceof SymbolInformation) {
-					return (SymbolInformation) data;
+				SymbolInformation si = getSymbolInformation((Match<?>) data);
+				if (si!=null) {
+					return si;
 				}
 			}
 		}
