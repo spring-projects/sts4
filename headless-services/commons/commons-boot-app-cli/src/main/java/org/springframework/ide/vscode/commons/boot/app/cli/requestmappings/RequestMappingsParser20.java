@@ -26,15 +26,21 @@ public class RequestMappingsParser20 {
 			//Contains 3 different keys now ('dispatcherServlets', 'servletFilters' and 'servlets'.
 			// Each with their own kind of data inside. Looks like 'dispatcherServlets' contains stuff similar to what we
 			// know from Boot 1.x but in slighly different form. We only parse that stuff for now.
-			JSONObject dispatcherServlets = obj
+			JSONObject mappings = obj
 					.getJSONObject(contextId)
-					.getJSONObject("mappings")
-					.getJSONObject("dispatcherServlets");
-			for (String servletId : dispatcherServlets.keySet()) {
-				JSONArray servlets = dispatcherServlets.getJSONArray(servletId);
-				for (Object _servlet : servlets) {
-					JSONObject servlet = (JSONObject)_servlet;
-					result.add(new Boot20DispatcherServletMapping(servlet));
+					.getJSONObject("mappings");
+			JSONArray rmArray = null;
+			if (mappings.has("dispatcherServlets")) {
+				// Regular Web starter endpoints RMs JMX beans format
+				rmArray = mappings.getJSONObject("dispatcherServlets").getJSONArray("dispatcherServlet");
+			} else if (mappings.has("dispatcherHandlers")) {
+				// WebFlux endpoints RMs JMX bean format
+				rmArray = mappings.getJSONObject("dispatcherHandlers").getJSONArray("webHandler");
+			}
+			if (rmArray != null) {
+				for (Object e : rmArray) {
+					JSONObject rm = (JSONObject)e;
+					result.add(new Boot20DispatcherServletMapping(rm));
 				}
 			}
 		}
