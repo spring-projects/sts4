@@ -426,6 +426,11 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/egit/github/updates</url>
 		</repository>
+		<repository>
+			<id>m2e-apt</id>
+			<layout>p2</layout>
+			<url>http://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>

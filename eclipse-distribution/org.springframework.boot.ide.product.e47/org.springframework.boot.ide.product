@@ -58,6 +58,7 @@ openFile</programArgs>
       <feature id="org.eclipse.jgit" installMode="root"/>
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.logback.feature" installMode="root"/>
+      <feature id="org.jboss.tools.maven.apt.feature" installMode="root"/>
 
       <feature id="org.eclipse.wst.web_ui.feature" installMode="root"/>
       <feature id="org.eclipse.wst.xml_ui.feature" installMode="root"/>
@@ -75,6 +76,7 @@ openFile</programArgs>
       <feature id="com.ianbrandt.tools.m2e.mdp.feature" installMode="root"/>
 
       <feature id="net.mihai-nita.ansicon" installMode="root"/>
+
 
       <feature id="org.springsource.ide.eclipse.commons.quicksearch.feature" installMode="root"/>
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
