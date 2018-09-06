@@ -86,9 +86,9 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.springsource.ide.eclipse.commons.preferencePage"
+            category="org.springframework.tooling.ls.eclipse.commons.console.preferences"
             class="org.springframework.tooling.boot.ls.BootLanguageServerPreferencesPage"
-            id="org.springframework.tooling.boot.java.ls.page1"
+            id="org.springframework.tooling.boot.java.ls.preferences"
             name="Boot Language Server Extension">
       </page>
    </extension>
