@@ -319,7 +319,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20180710163057/repository</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository</url>
 				</repository>
 				<repository>
 					<id>latest-m2e</id>

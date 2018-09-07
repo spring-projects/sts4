@@ -20,7 +20,7 @@ import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServer
 public class PrefsInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
-		IPreferenceStore store = LanguageServerConsolesPreferencesPage.getPrefsStoreFromPlugin();
+		IPreferenceStore store = LanguageServerPreferencesPage.getPrefsStoreFromPlugin();
 		for (ServerInfo s : ALL_SERVERS) {
 			store.setDefault(s.preferenceKey, ENABLE_BY_DEFAULT);
 		}

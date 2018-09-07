@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -34,28 +35,31 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class AnnotationHierarchies {
 
-	private AnnotationHierarchies() {
-	}
-
 	protected static boolean ignoreAnnotation(String fqname) {
 		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
 		//safe to ignore any type defined by the JRE since it can't possibly be inheriting from a spring annotation.
 	};
 
 	public static Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
-		IAnnotationBinding[] annotations = typeBinding.getAnnotations();
-		if (annotations!=null && annotations.length!=0) {
-			ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
-			for (IAnnotationBinding ab : annotations) {
-				ITypeBinding sa = ab.getAnnotationType();
-				if (sa!=null) {
-					if (!ignoreAnnotation(sa.getQualifiedName())) {
-						superAnnotations.add(sa);
+		try {
+			IAnnotationBinding[] annotations = typeBinding.getAnnotations();
+			if (annotations != null && annotations.length != 0) {
+				ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
+				for (IAnnotationBinding ab : annotations) {
+					ITypeBinding sa = ab.getAnnotationType();
+					if (sa != null) {
+						if (!ignoreAnnotation(sa.getQualifiedName())) {
+							superAnnotations.add(sa);
+						}
 					}
 				}
+				return superAnnotations.build();
 			}
-			return superAnnotations.build();
 		}
+		catch (AbortCompilation e) {
+			// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
+		}
+
 		return ImmutableList.of();
 	}
 

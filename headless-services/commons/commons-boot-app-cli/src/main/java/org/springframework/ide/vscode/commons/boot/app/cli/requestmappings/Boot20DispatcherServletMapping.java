@@ -62,12 +62,19 @@ Example entry:
 
 	private JSONObject getHandlerMethod() {
 		JSONObject details = getDetails();
-		return details == null ? null : details.getJSONObject("handlerMethod");
+		if (details != null) {
+			if (details.has("handlerMethod")) {
+				return details.getJSONObject("handlerMethod");
+			} else if (details.has("handlerFunction")) {
+				//TODO: handler function for the Router bean
+			}
+		}
+		return null;
 	}
 
 	private JSONObject getRequestMappingConditions() {
 		JSONObject details = getDetails();
-		return details == null ? null : details.getJSONObject("requestMappingConditions");
+		return details == null ? null : details.optJSONObject("requestMappingConditions");
 	}
 
 	@Override
