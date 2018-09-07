@@ -33,8 +33,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class AnnotationHierarchyAwareLookup<T> {
 
-	private static final boolean DEBUG = false;
-
 	private static class Binding<T> {
 		T value;
 		boolean isOverriding;
