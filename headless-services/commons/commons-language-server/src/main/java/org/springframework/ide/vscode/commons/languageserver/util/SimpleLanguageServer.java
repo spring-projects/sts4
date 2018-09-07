@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
@@ -501,14 +502,20 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	 * in a burst. Rather than execute the same request repeatedly we can avoid queuing
 	 * up more requests if the previous request has not yet been started.
 	 */
-	private Set<TextDocumentIdentifier> queuedReconcileRequests = Collections.synchronizedSet(new HashSet<>());
+	private Set<VersionedTextDocumentIdentifier> queuedReconcileRequests = Collections.synchronizedSet(new HashSet<>());
 
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
 	 */
 	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
-		if (!queuedReconcileRequests.add(docId)) {
+		SimpleTextDocumentService documents = getTextDocumentService();
+		int requestedVersion = documents.getDocument(docId.getUri()).getVersion();
+		VersionedTextDocumentIdentifier request = new VersionedTextDocumentIdentifier(requestedVersion);
+		request.setUri(docId.getUri());
+		log.debug("Reconcile requested {} - {}", request.getUri(), request.getVersion());
+		if (!queuedReconcileRequests.add(request)) {
+			log.debug("Reconcile skipped {} - {}", request.getUri(), request.getVersion());
 			return;
 		}
 
@@ -516,16 +523,16 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 //		Log.debug("Reconciling BUSY");
 
 
-		SimpleTextDocumentService documents = getTextDocumentService();
 
-		int requestedVersion = documents.getDocument(docId.getUri()).getVersion();
 
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono.fromRunnable(() -> {
-			queuedReconcileRequests.remove(docId);
+			queuedReconcileRequests.remove(request);
+			log.debug("Reconcile starting {} - {}", request.getUri(), request.getVersion());
 			TextDocument doc = documents.getDocument(docId.getUri()).copy();
 			if (requestedVersion!=doc.getVersion()) {
+				log.debug("Reconcile aborted {} - {}", request.getUri(), request.getVersion());
 				//Do not bother reconciling if document contents is already stale.
 				return;
 			}
@@ -541,6 +548,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 				public void endCollecting() {
 					documents.setQuickfixes(docId, quickfixes);
 					documents.publishDiagnostics(docId, diagnostics);
+					log.debug("Reconcile done sent {} diagnostics", diagnostics.size());
 				}
 
 				@Override
