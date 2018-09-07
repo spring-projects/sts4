@@ -18,9 +18,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -494,12 +496,25 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	}
 
 	/**
+	 * Keeps track of reconcile requests that have been requested but not yet started.
+	 * This is used to more efficiently deal with situation where many requests are fired
+	 * in a burst. Rather than execute the same request repeatedly we can avoid queuing
+	 * up more requests if the previous request has not yet been started.
+	 */
+	private Set<TextDocumentIdentifier> queuedReconcileRequests = Collections.synchronizedSet(new HashSet<>());
+
+	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
 	 */
 	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
+		if (!queuedReconcileRequests.add(docId)) {
+			return;
+		}
+
 		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
 //		Log.debug("Reconciling BUSY");
+
 
 		SimpleTextDocumentService documents = getTextDocumentService();
 
@@ -508,6 +523,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono.fromRunnable(() -> {
+			queuedReconcileRequests.remove(docId);
 			TextDocument doc = documents.getDocument(docId.getUri()).copy();
 			if (requestedVersion!=doc.getVersion()) {
 				//Do not bother reconciling if document contents is already stale.

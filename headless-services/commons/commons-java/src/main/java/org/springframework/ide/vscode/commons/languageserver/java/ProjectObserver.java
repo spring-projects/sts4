@@ -16,7 +16,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
  * Projects Observer. Able to add/remove project listeners which are notified on project changes
- * 
+ *
  * @author Alex Boyko
  *
  */
@@ -26,7 +26,7 @@ public interface ProjectObserver {
 		void created(IJavaProject project);
 		void changed(IJavaProject project);
 		void deleted(IJavaProject project);
-	}	
+	}
 	void addListener(Listener listener);
 	void removeListener(Listener listener);
 
@@ -50,7 +50,7 @@ public interface ProjectObserver {
 			public void created(IJavaProject project) {
 				doit.accept(project);
 			}
-			
+
 
 			@Override
 			public void changed(IJavaProject project) {
@@ -61,7 +61,7 @@ public interface ProjectObserver {
 			public void deleted(IJavaProject project) {
 				doit.accept(project);
 			}
-			
+
 		};
 	}
 
