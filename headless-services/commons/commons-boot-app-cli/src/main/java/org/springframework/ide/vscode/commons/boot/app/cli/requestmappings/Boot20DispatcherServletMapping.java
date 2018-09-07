@@ -74,7 +74,7 @@ Example entry:
 
 	private JSONObject getRequestMappingConditions() {
 		JSONObject details = getDetails();
-		return details == null ? null : details.getJSONObject("requestMappingConditions");
+		return details == null ? null : details.optJSONObject("requestMappingConditions");
 	}
 
 	@Override
