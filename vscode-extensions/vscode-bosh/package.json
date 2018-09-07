@@ -3,7 +3,7 @@
   "displayName": "Bosh Editor",
   "description": "Provides validation and content assist for various Bosh configuration files",
   "icon": "icon.png",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",

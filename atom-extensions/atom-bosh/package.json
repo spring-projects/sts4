@@ -1,6 +1,6 @@
 {
   "name": "bosh-yaml",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Provides validation and content assist for various Bosh configuration files",
   "repository": "https://github.com/spring-projects/atom-bosh",
   "icon": "icon.png",
