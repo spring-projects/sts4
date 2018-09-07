@@ -89,7 +89,7 @@
             category="org.springframework.tooling.ls.eclipse.commons.console.preferences"
             class="org.springframework.tooling.boot.ls.BootLanguageServerPreferencesPage"
             id="org.springframework.tooling.boot.java.ls.preferences"
-            name="Boot Language Server Extension">
+            name="Spring Boot Language Server">
       </page>
    </extension>
    

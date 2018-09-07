@@ -31,7 +31,7 @@
           category="org.eclipse.lsp4e.preferences"
           class="org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerPreferencesPage"
           id="org.springframework.tooling.ls.eclipse.commons.console.preferences"
-          name="STS Language Servers">
+          name="Spring Language Servers">
       </page>
    </extension>
    <extension
