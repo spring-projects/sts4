@@ -11,8 +11,8 @@
 package org.springframework.tooling.ls.eclipse.commons.preferences;
 
 public class LanguageServerConsolePreferenceConstants {
-	
-	public static final boolean ENABLE_BY_DEFAULT = true;
+
+	public static final boolean ENABLE_BY_DEFAULT = false;
 
 	public static final String PREF_BOOT_JAVA_CONSOLE_ENABLED = "boot-java.console.enabled";
 	public static final String PREF_CONCOURSE_CONSOLE_ENABLED = "concourse.console.enabled";
@@ -23,7 +23,7 @@ public class LanguageServerConsolePreferenceConstants {
 	public static final ServerInfo CLOUDFOUNDRY_SERVER = new ServerInfo(PREF_CLOUDFOUNDRY_CONSOLE_ENABLED, "Cloudfoundry");
 	public static final ServerInfo CONCOURSE_SERVER = new ServerInfo(PREF_CONCOURSE_CONSOLE_ENABLED, "Concourse");
 	public static final ServerInfo BOSH_SERVER = new ServerInfo(PREF_BOSH_CONSOLE_ENABLED, "Bosh");
-	
+
 	public static final ServerInfo[] ALL_SERVERS = {
 			SPRING_BOOT_SERVER,
 			CLOUDFOUNDRY_SERVER,
