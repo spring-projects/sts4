@@ -93,7 +93,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 		if (declarationNode != null && definedBean != null) {
 			for (SpringBootApp app : runningApps) {
 				List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
-				return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+				if (!relevantBeans.isEmpty()) {
+					return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+				}
 			}
 		}
 		return null;
