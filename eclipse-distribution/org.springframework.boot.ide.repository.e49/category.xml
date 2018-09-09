@@ -132,6 +132,24 @@
 		<category name="Uncategorized"/>
 	</bundle>
 -->
+	<bundle id="javax.activation" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	<bundle id="javax.activation.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.bind" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	<bundle id="javax.xml.bind.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.stream" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<bundle id="org.dadacoalition.yedit">
 		<category name="Uncategorized"/>
 	</bundle>
