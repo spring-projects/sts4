@@ -16,6 +16,6 @@ package org.springframework.tooling.cloudfoundry.manifest.ls;
 public class Constants {
 
 	public static final String PLUGIN_ID = "org.springframework.tooling.cloudfoundry.manifest.ls";
-	public static final String LANGUAGE_SERVER_VERSION = "0.6.0-SNAPSHOT.jar";
+	public static final String LANGUAGE_SERVER_VERSION = "0.7.0-SNAPSHOT.jar";
 
 }
