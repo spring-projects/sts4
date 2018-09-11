@@ -27,14 +27,14 @@ export class BootStsAdapter extends StsAdapter {
         if (Array.isArray(ranges)) {
             ranges.forEach(range => this.createHintMarker(editor, range));
         }
-        const gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
-        if (gutter) {
-            if (!ranges || !ranges.length) {
-                gutter.hide();
-            } else if (!gutter.isVisible()) {
-                gutter.show();
-            }
-        }
+        // const gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
+        // if (gutter) {
+        //     if (!ranges || !ranges.length) {
+        //         gutter.hide();
+        //     } else if (!gutter.isVisible()) {
+        //         gutter.show();
+        //     }
+        // }
     }
 
     private createHintMarker(editor: TextEditor, range: Range) {
@@ -45,16 +45,16 @@ export class BootStsAdapter extends StsAdapter {
         editor.decorateMarker(marker, DECORATION_OPTIONS);
 
         // Marker in the diagnostic gutter
-        let gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
-        if (!gutter) {
-            gutter = editor.addGutter({
-                name: BOOT_HINT_GUTTER_NAME,
-                visible: false,
-            });
-        }
-        const iconElement = document.createElement('span');
-        iconElement.setAttribute('class', 'gutter-boot-hint');
-        gutter.decorateMarker(marker, {item: iconElement});
+        // let gutter = editor.gutterWithName(BOOT_HINT_GUTTER_NAME);
+        // if (!gutter) {
+        //     gutter = editor.addGutter({
+        //         name: BOOT_HINT_GUTTER_NAME,
+        //         visible: false,
+        //     });
+        // }
+        // const iconElement = document.createElement('span');
+        // iconElement.setAttribute('class', 'gutter-boot-hint');
+        // gutter.decorateMarker(marker, {item: iconElement});
     }
 
 }
