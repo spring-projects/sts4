@@ -146,6 +146,9 @@
             <contentTypeBinding
                contentTypeId="org.springframework.boot.ide.properties.application.properties"
             /> 
+            <contentTypeBinding
+               contentTypeId="org.eclipse.jdt.core.javaProperties"
+            />
       </editor>
    </extension>
    
@@ -170,6 +173,9 @@
             symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
             <contentTypeBinding
                contentTypeId="org.springframework.boot.ide.properties.application.yml"
+            />
+            <contentTypeBinding
+               contentTypeId="org.dadacoalition.yedit.yamlsource"
             /> 
       </editor>
    </extension>
