@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
@@ -29,11 +28,9 @@ import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -197,7 +194,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(mainEdit.get());
-			item.setInsertTextFormat(InsertTextFormat.Snippet);
+			item.setInsertTextFormat(completion.getInsertTextFormat());
 		} else {
 			item.setInsertText("");
 		}
