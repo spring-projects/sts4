@@ -931,6 +931,23 @@ jobs:
   - put: version
     params:
       file: version/version
+- name: bump-version-major
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: version
+      params:
+        bump: major
+  - task: bump-versions
+    file: sts4/concourse/tasks/bump-versions.yml
+  - put: sts4
+    params:
+      repository: out
+      rebase: true
+  - put: version
+    params:
+      file: version/version
 # - name: build-atom-snapshot-website
 #   serial: true
 #   plan:
@@ -1168,6 +1185,7 @@ groups:
   jobs:
   - bump-version-patch
   - bump-version-minor
+  - bump-version-major
 - name: atom-snapshots
   jobs:
   # - build-atom-snapshot-website
