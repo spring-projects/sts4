@@ -16,6 +16,6 @@ package org.springframework.tooling.concourse.ls;
 public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.concourse.ls";
-	public static final String LANGUAGE_SERVER_VERSION = "0.7.0-SNAPSHOT";
+	public static final String LANGUAGE_SERVER_VERSION = "1.0.0-SNAPSHOT";
 
 }
