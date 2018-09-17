@@ -8,7 +8,6 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
-import * as commands from './subscribeCommands';
 import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo} from 'vscode-languageclient';
 import {TextDocument, OutputChannel} from 'vscode';
 
@@ -38,7 +37,6 @@ export function activate(context: VSCode.ExtensionContext) {
             documentSelector: ["manifest-yaml"]
         }
     };
-    commands.subscribeCommands(context);
     commons.activate(options, context);
 }
 

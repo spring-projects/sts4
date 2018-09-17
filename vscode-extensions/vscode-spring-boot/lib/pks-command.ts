@@ -1,35 +1,44 @@
 'use strict';
 
+import {hasResults, runCommand} from './commands-util';
+import {runInTerminal} from './os-util';
 import * as vscode from 'vscode';
-import * as pks from './pks';
-import { runInTerminal } from './osutils';
+
+export type StdResultHandler = (code: number, stdout: string, stderr: string) => void;
+
+
 
 // NOTE: Be sure to add this under "contributes" in package.json to enable the command:
 //
 // "commands": [
 //     {
-//       "command": "subscribeCommands.pksGetCredentials",
+//       "command": "pks.getCredentials",
 //       "title": "PKS: Get Credentials"
 //     }
 //   ],
 //
 // AND ALSO, add activation event so that manifest extension activates when the PKS command is invoked:
 // "activationEvents": [
-//     "onCommand:subscribeCommands.pksGetCredentials",
+//     "onCommand:pks.getCredentials",
 //     "onLanguage:manifest-yaml"
 //   ],
-export function subscribeCommands(context: vscode.ExtensionContext) {
+export function subscribePksCommand(context: vscode.ExtensionContext) {
     context.subscriptions.push(
-        vscode.commands.registerCommand('subscribeCommands.pksGetCredentials', getCredentials)
+        vscode.commands.registerCommand('pks.getCredentials', getCredentials)
     );
 }
 
-function hasResults(code: number, stdout: string, stderr: string): boolean {
-    return code === 0 && stdout != null;
+function run(command: string, handler: StdResultHandler) {
+    let cmd = pksCli() + ' ' + command;
+    runCommand(cmd, handler);
+}
+
+function pksCli(): string {
+    return 'pks';
 }
 
 const getCredentials =  () => {
-    pks.runPks('clusters', async (code, stdout, stderr) => {
+    run('clusters', async (code, stdout, stderr) => {
         if (hasResults(code, stdout, stderr)) {
             let results = stdout.split('\n');
             results = results.filter((l) => l.length > 0 && !l.startsWith("Name") && !l.startsWith('\n'));
@@ -38,7 +47,7 @@ const getCredentials =  () => {
                  if (cluster) {
                     let clusterLineVals = cluster.match(/\S+/g) || [];
                     let clusterName = clusterLineVals.shift() ;            
-                    pks.runPks('get-credentials ' + clusterName, async (cd, out, err) => {
+                    run('get-credentials ' + clusterName, async (cd, out, err) => {
                             if (hasResults(cd, out, err)) {
                                 runInTerminal('pks', 'kubectl cluster-info');
                             }

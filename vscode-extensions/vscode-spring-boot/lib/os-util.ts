@@ -10,15 +10,17 @@ import * as vscode from 'vscode';
 //   },
 import * as shelljs from 'shelljs';
 
-export interface Std {
+export interface StandardResult {
     readonly stdout: string;
     readonly stderr: string;
     readonly code: number;
 }
 
-export async function run(cmd: string): Promise<Std> {
+export type StdResultHandler = (std: StandardResult) => void;
+
+export async function run(cmd: string): Promise<StandardResult> {
     try {
-        return await new Promise<Std>((resolve, reject) => {
+        return await new Promise<StandardResult>((resolve, reject) => {
             shelljs.exec(cmd, null, (code, stdout, stderr) => resolve({code: code, stdout : stdout, stderr : stderr}));
         });
     } catch (ex) {
@@ -26,7 +28,7 @@ export async function run(cmd: string): Promise<Std> {
     }
 }
 
-async function isInstalled(name: string): Promise<Std> {
+async function isInstalled(name: string): Promise<StandardResult> {
     let command = `which ${name}`;
     return await run(command);
 }
@@ -40,3 +42,18 @@ export function runInTerminal(terminalName: string, command: string): void {
     terminal.show();
 }
 
+
+export function runCommand(cmd: string, handler: StdResultHandler) {
+    run(cmd).then(standardResult => {
+        if (standardResult.code != 0 && standardResult.stderr) {
+            vscode.window.showErrorMessage(standardResult.stderr);
+        }
+        else {
+            handler(standardResult);
+        }
+    });
+}
+
+export function hasResults(code: number, stdout: string, stderr: string): boolean {
+    return code === 0 && stdout != null;
+}
