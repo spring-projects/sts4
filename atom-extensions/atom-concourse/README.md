@@ -47,13 +47,17 @@ Resource Type declaration? The Atom Outline View (View -> Toggle Outline View) h
 
 ![Outline View][outline_view]
 
-## Dev environment setup:
-**Prerequisite**: Node 6.x.x or higher is installed, Atom 1.17 or higher is installed
-1. Clone the repository
-2. Run `npm install && npm run build`
-3. Execute `apm link .` from the folder above
-5. Perform `Reload Window` in Atom (Cmd-Shift-P opens commands palette, search for `reload`, select, press `Return`)
-6. Open any `pipeline.yml` or `task.yml` file in Atom observe reconciling, content assist and other IDE features
+# Releases:
+
+Released versions of this package can be installed directly from the Atom package installer.
+
+There are also development snapshots available with the latest fixes and improvements from release git repository: https://github.com/spring-projects/atom-concourse 
+1. Clone the release repository for Atom package if not already cloned and navigate to `atom-concourse` folder
+2. Run `git clean -fxd` - necessary to delete out of date LS JAR file and dependency packages
+3. Run `git pull` - get the latest changes
+3. Run `npm install` - Install latest dependecnies and download proper LS JAR
+4. Run `apm link .` - Link the package to Atom
+5. Either start Atom or Reload Window in Atom 
 
 [linting]:
 https://raw.githubusercontent.com/spring-projects/sts4/af715bad53bd6cf30a10a2dc6d34bfcc17968382/atom-extensions/atom-concourse/readme-imgs/linting.png

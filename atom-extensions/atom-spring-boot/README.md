@@ -107,12 +107,13 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 
 Released versions of this package can be installed directly from the Atom package installer.
 
-There are also development snapshots available with the latest fixes and improvements as a `.tgz` file 
-that can be donwloaded from 
-[here](http://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it:
-1. Unpack into a folder `<package>` (this folder should have `package.json` file)
-2. Execute `apm link .` from that folder
-3. Execute `Window Reload` (Package -> Command Palette -> Toggle then search for it) command in the opened Atom instance or open an Atom instance
+There are also development snapshots available with the latest fixes and improvements from release git repository: https://github.com/spring-projects/atom-spring-boot 
+1. Clone the release repository for Atom package if not already cloned and navigate to `atom-spring-boot` folder
+2. Run `git clean -fxd` - necessary to delete out of date LS JAR file and dependency packages
+3. Run `git pull` - get the latest changes
+3. Run `npm install` - Install latest dependecnies and download proper LS JAR
+4. Run `apm link .` - Link the package to Atom
+5. Either start Atom or Reload Window in Atom 
 
 [screenshot-live-hovers]: https://raw.githubusercontent.com/spring-projects/sts4/4167094ab94a05657fe4b495770bf93ce3a1585f/atom-extensions/atom-spring-boot/readme-imgs/screenshot-live-hovers.png
 [screenshot-code-completion]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/screenshot-code-completion.png
