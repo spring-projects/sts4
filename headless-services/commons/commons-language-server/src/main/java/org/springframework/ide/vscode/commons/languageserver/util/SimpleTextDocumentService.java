@@ -56,6 +56,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;

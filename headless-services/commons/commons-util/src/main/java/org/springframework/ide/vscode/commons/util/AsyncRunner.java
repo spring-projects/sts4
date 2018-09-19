@@ -8,13 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.util;
+package org.springframework.ide.vscode.commons.util;
 
+import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
-import org.springframework.ide.vscode.commons.util.RunnableWithException;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -22,14 +22,24 @@ import reactor.core.scheduler.Schedulers;
 
 public class AsyncRunner {
 
-	private static Scheduler executor = Schedulers.newSingle("STS4 Thread");
+	private Scheduler executor;
 
 	// Used in test harness to wait for all pending request to finish.
 	// We only need to remember the last request as requests are executed in order, so if
 	// the last request is done, all requests are done
 	private CompletableFuture<?> lastRequest;
 
-	public AsyncRunner() {
+	public AsyncRunner(Scheduler scheduler) {
+		 this.executor = scheduler;
+	}
+
+	public synchronized <T> CompletableFuture<T> invoke(Duration timeout, Callable<T> callable) {
+		CompletableFuture<T> x = Mono.fromCallable(callable)
+				.timeout(timeout)
+				.subscribeOn(executor)
+				.toFuture();
+		lastRequest = x;
+		return x;
 	}
 
 	public synchronized <T> CompletableFuture<T> invoke(Callable<T> callable) {

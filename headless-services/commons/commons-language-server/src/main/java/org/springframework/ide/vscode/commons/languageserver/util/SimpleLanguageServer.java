@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import static org.springframework.ide.vscode.commons.languageserver.util.AsyncRunner.thenLog;
+import static org.springframework.ide.vscode.commons.util.AsyncRunner.thenLog;
 
 import java.net.URI;
 import java.nio.file.Paths;
@@ -74,6 +74,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -143,7 +144,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private Map<String, ExecuteCommandHandler> commands = new HashMap<>();
 
-	private AsyncRunner async = new AsyncRunner();
+	private AsyncRunner async = new AsyncRunner(Schedulers.newSingle("SimpleLanguaserver main thread"));
 	private ClasspathListenerManager classpathListenerManager;
 
 	@Override

@@ -11,17 +11,24 @@
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+
+import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Martin Lippert
@@ -30,10 +37,17 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalSpringBootApp.class);
 
+	private static AsyncRunner async = new AsyncRunner(Schedulers.elastic());
+	private static <T> T withTimeout(Callable<T> doit) throws Exception {
+		return async.invoke(TIMEOUT, doit).get();
+	}
+
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
+
+	private static final Duration TIMEOUT = Duration.ofMillis(1000);
 
 	private Boolean isSpringBootApp;
 
@@ -111,7 +125,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		return isSpringBootApp;
 	}
 
-	private boolean isSpringBootAppSysprops() throws IOException {
+	private boolean isSpringBootAppSysprops() throws Exception {
 		Properties sysprops = getSystemProperties();
 		return "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
 	}
@@ -121,11 +135,11 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	@Override
-	public Properties getSystemProperties() throws IOException {
-		return this.vm.getSystemProperties();
+	public Properties getSystemProperties() throws Exception {
+		return withTimeout(() -> vm.getSystemProperties());
 	}
 
-	public boolean containsSystemProperty(Object key) throws IOException {
+	public boolean containsSystemProperty(Object key) throws Exception {
 		Properties props = getSystemProperties();
 		return props.containsKey(key);
 	}
