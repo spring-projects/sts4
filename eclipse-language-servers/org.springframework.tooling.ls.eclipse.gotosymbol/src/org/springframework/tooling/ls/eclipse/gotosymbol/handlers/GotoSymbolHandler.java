@@ -64,7 +64,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 				final Shell shell = HandlerUtil.getActiveShell(event);
 				final ITextEditor textEditor = (ITextEditor) part;
 				
-				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InFileSymbolsProvider.createFor(textEditor), InWorkspaceSymbolsProvider.createFor(event))
+				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InWorkspaceSymbolsProvider.createFor(event), InFileSymbolsProvider.createFor(textEditor))
 				.setOkHandler(symbolInformation -> {
 					if (symbolInformation!=null) {
 						Location location = symbolInformation.getLocation();
