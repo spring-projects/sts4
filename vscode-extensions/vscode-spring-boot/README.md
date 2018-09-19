@@ -125,5 +125,5 @@ open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: I
 [yaml-hovers]: https://github.com/spring-projects/sts4/raw/1d731ed1ad5c8defcca4e4abb3cf5f2d89daba43/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hover.png
 [java-code-completion]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-code-completion.png
 [java-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-apps-quick-access.png
-[java-live-hovers]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-hovers.png
+[java-live-hovers]: https://github.com/spring-projects/sts4/raw/e32a22cfd4c12b19ffbb55ca6619bf9f6eb213ea/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-hovers.png
 [java-navigation]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-navigation.png
