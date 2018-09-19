@@ -46,10 +46,11 @@ Easy navigation to the provided request mappings of running apps.
 * `//` shows all request mappings of all running Spring Boot apps and opens a browser for the selected endpoint
 
 ## Live application information hovers
-Show information from running Spring Boot apps on your machine in the source code. This allows you to run the Spring Boot app locally on your machine and visualizes information from those running apps in your source code.
+STS4 automatically detects JVM processes for running boot applications on your local machine.
 
-### Visualization
-Once the tooling detects a running Spring Boot app on your local machine, it automatically shows hints in the source code where data from the running app can be inspected. Then hovering over that area (with the mouse pointer), the data from the running app shows up.
+When a running app is detected, STS 4 automatically shows hints by highlighting sections of source code with a light green background. Hovering over the highlights with the mouse pointer, data from the running app is displayed in a popup.
+
+For some types of information, STS 4 may also show a 'quick summary' as a codelens. Codelenses are only supported in Eclipse and Vscode at the moment, not in atom. For Eclipse this has to be enabled via *Preferences >> Language Servers >> Spring Language Servers >> Spring Boot Language Server*.
 
 If there are multiple instances of the app running on your machine, the live data from all those instances will show up in the hover information.
 
