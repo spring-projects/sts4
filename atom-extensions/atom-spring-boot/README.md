@@ -114,9 +114,9 @@ that can be donwloaded from
 2. Execute `apm link .` from that folder
 3. Execute `Window Reload` (Package -> Command Palette -> Toggle then search for it) command in the opened Atom instance or open an Atom instance
 
-[screenshot-live-hovers]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/screenshot-live-hovers.png
+[screenshot-live-hovers]: https://raw.githubusercontent.com/spring-projects/sts4/4167094ab94a05657fe4b495770bf93ce3a1585f/atom-extensions/atom-spring-boot/readme-imgs/screenshot-live-hovers.png
 [screenshot-code-completion]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/screenshot-code-completion.png
-[screenshot-navigation]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/screenshot-navigation-in-file.png
+[screenshot-navigation]: https://raw.githubusercontent.com/spring-projects/sts4/4167094ab94a05657fe4b495770bf93ce3a1585f/atom-extensions/atom-spring-boot/readme-imgs/screenshot-navigation-in-file.png
 
 [yaml-completion]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/yaml-completion.png
 [properties-completion]: https://raw.githubusercontent.com/spring-projects/sts4/874c74f3bae0dd08250aeceb46ae5cc2ca720096/atom-extensions/atom-spring-boot/readme-imgs/properties-completion.png
