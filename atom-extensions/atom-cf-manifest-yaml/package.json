@@ -4,7 +4,7 @@
   "description": "Cloud Foundry Deployment Manifest YAML support for Atom",
   "repository": "https://github.com/spring-projects/atom-cf-manifest-yaml",
   "icon": "icon.png",
-  "license": "MIT",
+  "license": "EPL-1.0",
   "engines": {
     "atom": ">=1.24.0"
   },

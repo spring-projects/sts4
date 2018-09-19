@@ -4,7 +4,7 @@
   "description": "Provides validation and content assist for various Bosh configuration files",
   "repository": "https://github.com/spring-projects/atom-bosh",
   "icon": "icon.png",
-  "license": "MIT",
+  "license": "EPL-1.0",
   "engines": {
     "atom": ">=1.24.0"
   },
