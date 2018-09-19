@@ -21,6 +21,7 @@ repo/**
 scripts/**
 readme-imgs/**
 developer-notes.md
+build.sh
 
 # Compiler output
 out/test/**
@@ -28,3 +29,6 @@ out/test/**
 # Extensions
 .gitignore
 **/*.map
+
+# Temporary, include after legal approval
+open-source-licenses.txt

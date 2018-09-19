@@ -19,6 +19,7 @@ lib/**
 !lib/javaconfig.schema.json
 repo/**
 scripts/**
+build.sh
 
 # Compiler output
 out/test/**
@@ -27,3 +28,6 @@ target/**
 # Extensions
 .gitignore
 **/*.map
+
+# Temporary, include after legal approval
+open-source-licenses.txt
