@@ -312,12 +312,16 @@ public class KubernetesAppDeployer implements AppDeployer {
 				List<NodeAddress> addresses = status.getAddresses();
 				if (addresses != null) {
 					for (NodeAddress address : addresses) {
-						if ("ExternalIP".equals(address.getType())) {
-							String uri = address.getAddress();
-							if (!nodeUris.contains(uri)) {
-								nodeUris.add(uri);
-							}
+						String uri = address.getAddress();
+						if (!nodeUris.contains(uri)) {
+							nodeUris.add(uri);
 						}
+//						if ("ExternalIP".equals(address.getType())) {
+//							String uri = address.getAddress();
+//							if (!nodeUris.contains(uri)) {
+//								nodeUris.add(uri);
+//							}
+//						}
 					}
 				}
 			}

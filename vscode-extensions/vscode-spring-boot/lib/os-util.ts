@@ -10,17 +10,16 @@ import * as vscode from 'vscode';
 //   },
 import * as shelljs from 'shelljs';
 
-export interface StandardResult {
+export interface StdResult {
     readonly stdout: string;
     readonly stderr: string;
     readonly code: number;
 }
 
-export type StdResultHandler = (std: StandardResult) => void;
 
-export async function run(cmd: string): Promise<StandardResult> {
+export async function run(cmd: string): Promise<StdResult> {
     try {
-        return await new Promise<StandardResult>((resolve, reject) => {
+        return await new Promise<StdResult>((resolve, reject) => {
             shelljs.exec(cmd, null, (code, stdout, stderr) => resolve({code: code, stdout : stdout, stderr : stderr}));
         });
     } catch (ex) {
@@ -28,32 +27,21 @@ export async function run(cmd: string): Promise<StandardResult> {
     }
 }
 
-async function isInstalled(name: string): Promise<StandardResult> {
+async function isInstalled(name: string): Promise<StdResult> {
     let command = `which ${name}`;
     return await run(command);
 }
 
-export function runInTerminal(terminalName: string, command: string): void {
-    const options = {
-        name: terminalName
-    };
-    const terminal = vscode.window.createTerminal(options);
-    terminal.sendText(command);
-    terminal.show();
-}
 
+// export function runCommand(cmd: string) {
+//      run(cmd).then(standardResult => {
+//         if (standardResult.code != 0 && standardResult.stderr) {
+//             vscode.window.showErrorMessage(standardResult.stderr);
+//         }
 
-export function runCommand(cmd: string, handler: StdResultHandler) {
-    run(cmd).then(standardResult => {
-        if (standardResult.code != 0 && standardResult.stderr) {
-            vscode.window.showErrorMessage(standardResult.stderr);
-        }
-        else {
-            handler(standardResult);
-        }
-    });
-}
+//     });
+// }
 
-export function hasResults(code: number, stdout: string, stderr: string): boolean {
-    return code === 0 && stdout != null;
+export function hasResults(stdResult: StdResult): boolean {
+    return stdResult && stdResult.code === 0 && stdResult.stdout != null;
 }
