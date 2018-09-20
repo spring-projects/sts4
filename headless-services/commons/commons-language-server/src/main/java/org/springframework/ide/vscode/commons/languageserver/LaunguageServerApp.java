@@ -153,7 +153,7 @@ public abstract class LaunguageServerApp {
 	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
 	 */
 	public void startAsServer() throws IOException, InterruptedException {
-		Log.info("Starting LS as standlone server");
+		Log.info("Starting LS as standlone server port = "+SERVER_STANDALONE_PORT);
 
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = consumer;
