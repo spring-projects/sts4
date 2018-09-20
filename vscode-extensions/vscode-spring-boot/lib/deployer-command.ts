@@ -2,6 +2,8 @@
 
 import {hasResults, run, StdResult} from './os-util';
 import * as vscode from 'vscode';
+import * as Path from 'path';
+import * as FS from 'fs';
 
 // NOTE: Be sure to add this under "contributes" in package.json to enable the command:
 //
@@ -14,12 +16,12 @@ import * as vscode from 'vscode';
 //
 
 const DEPLOYER_TERMINAL : string = 'Spring Boot Deployer';
-const DEPLOYER_APP_JAR: string = '/jars/kubernetes-deployer.jar';
+const DEPLOYER_APP_JAR_NAME: string = 'kubernetes-deployer';
 
 
 export function subscribeDeployerCommand(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('springboot.kubernetes-deployer', () => {
-        deployToPks();
+        deployToPks(context);
     }));
 }
 
@@ -71,7 +73,7 @@ interface DeploymentConfiguration {
     replicas: number
 }
 
-function deployToPks() {
+function deployToPks(context: vscode.ExtensionContext) {
     let projectRoot = vscode.workspace.rootPath;
     if (!projectRoot) {
        throw new Error("No Spring Boot project available to deploy.")
@@ -113,10 +115,17 @@ function deployToPks() {
         const terminal = vscode.window.createTerminal(options);
         terminal.sendText('echo ' + config);
         terminal.show();
+
+        // Show cluster info
         terminal.sendText('kubectl cluster-info');
+
+        // Build the spring boot app to be deployed
         terminal.sendText('mvn clean package -DskipTests');
         terminal.sendText('cp /target/*.jar bootapp.jar');
-        terminal.sendText('java -jar ' + DEPLOYER_APP_JAR + ' ' + getJarLauncherArgs(config));
+
+        let deployerJar = findDeployerJar(Path.resolve(context.extensionPath, 'jars'));
+
+        terminal.sendText('java -jar ' + deployerJar + ' ' + getJarLauncherArgs(config));
 
     });
 }
@@ -130,5 +139,19 @@ function getJarLauncherArgs(deploymentConfiguration: DeploymentConfiguration): s
     + deploymentConfiguration.replicas 
     + ' deploy '
     + 'jarPath: bootapp.jar';
+}                           
+
+function findDeployerJar(jarsDir) : string {
+    let deployerJar = FS.readdirSync(jarsDir).filter(jar => 
+        jar.indexOf(DEPLOYER_APP_JAR_NAME)>=0 &&
+        jar.endsWith(".jar")
+    );
+    if (deployerJar.length==0) {
+        throw new Error("Server jar not found in "+jarsDir);
+    }
+    if (deployerJar.length>1) {
+        throw new Error("Multiple server jars found in "+jarsDir);
+    }
+    return Path.resolve(jarsDir, deployerJar[0]);
 }
 
