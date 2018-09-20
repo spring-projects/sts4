@@ -21,8 +21,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.springframework.tooling.ls.eclipse.commons.console.ConsoleUtil.Console;
-import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 import org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsoles;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
@@ -46,6 +47,23 @@ public class STS4LanguageServerProcessStreamConnector extends ProcessStreamConne
 			Console console = consoles.get();
 			if (console!=null) {
 				forwardTo(getLanguageServerLog(), console.out);
+			} else {
+
+				Job job = new Job("Consume LS error stream") {
+
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						try {
+							IOUtil.consume(getLanguageServerLog());
+						} catch (IOException e) {
+							// ignore
+						}
+						return Status.OK_STATUS;
+					}
+
+				};
+				job.setSystem(true);
+				job.schedule();
 			}
 		}
 	}

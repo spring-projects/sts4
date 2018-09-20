@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.jdt.ui,
  org.apache.commons.lang3,
  org.eclipse.ui.genericeditor,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.springsource.ide.eclipse.commons.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.tooling.ls.eclipse.commons,
