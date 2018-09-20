@@ -5,6 +5,18 @@
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
+    <description>
+       %description
+    </description>
+
+    <copyright>
+       %copyright
+    </copyright>
+
+    <license url="%licenseUrl">
+       %license
+    </license>
+
 	<requires>
 		<import plugin="org.eclipse.ui.genericeditor"/>
 		<import plugin="org.eclipse.lsp4e"/>

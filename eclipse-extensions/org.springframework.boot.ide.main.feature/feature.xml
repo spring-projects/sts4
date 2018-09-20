@@ -5,6 +5,18 @@
 	version="4.0.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
+    <description>
+       %description
+    </description>
+
+    <copyright>
+       %copyright
+    </copyright>
+
+    <license url="%licenseUrl">
+       %license
+    </license>
+
     <plugin
           id="org.springframework.ide.eclipse.boot"
           download-size="0"
