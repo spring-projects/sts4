@@ -239,10 +239,15 @@
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
 					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>http://dist.springframework.org/release/IDE/3.9.6.RELEASE</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
