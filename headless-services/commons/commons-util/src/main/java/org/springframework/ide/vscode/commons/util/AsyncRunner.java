@@ -35,8 +35,8 @@ public class AsyncRunner {
 
 	public synchronized <T> CompletableFuture<T> invoke(Duration timeout, Callable<T> callable) {
 		CompletableFuture<T> x = Mono.fromCallable(callable)
-				.timeout(timeout)
 				.subscribeOn(executor)
+				.timeout(timeout)
 				.toFuture();
 		lastRequest = x;
 		return x;

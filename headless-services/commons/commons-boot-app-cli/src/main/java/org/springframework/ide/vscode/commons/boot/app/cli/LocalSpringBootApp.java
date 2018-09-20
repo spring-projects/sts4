@@ -136,7 +136,12 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	@Override
 	public Properties getSystemProperties() throws Exception {
-		return withTimeout(() -> vm.getSystemProperties());
+		try {
+			return withTimeout(() -> vm.getSystemProperties());
+		} catch (Exception e) {
+			logger.error("Fetching systemprops from local app failed: {}", ExceptionUtil.getMessage(e));
+			throw e;
+		}
 	}
 
 	public boolean containsSystemProperty(Object key) throws Exception {

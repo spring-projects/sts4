@@ -99,6 +99,9 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			String url = getJmxUrl();
 			logger.info("Creating JMX connector: "+url);
 			try {
+				if (url==null) {
+					throw new IOException("Couldn't obtain JMX url");
+				}
 				JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(url), null);
 				logger.info("Created JMX connector: {}", connector);
 				return connector;
