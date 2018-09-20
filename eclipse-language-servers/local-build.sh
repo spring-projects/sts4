@@ -2,7 +2,7 @@
 set -e
 workdir=`pwd`
 cd ../headless-services
-mvn clean install -Dmaven.test.skip=true
+./mvnw clean install -Dmaven.test.skip=true
 
 cd $workdir
-mvn -Pe48 clean install
+./mvnw -Pe48 clean install -Dmaven.test.skip=true
