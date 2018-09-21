@@ -77,22 +77,19 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	protected String getJmxUrl() {
 		String address = null;
 		try {
-			address = vm.getAgentProperties().getProperty(LOCAL_CONNECTOR_ADDRESS);
+			address = withTimeout(() -> vm.getAgentProperties().getProperty(LOCAL_CONNECTOR_ADDRESS));
 		} catch (Exception e) {
 			//ignore
 		}
 		if (address==null) {
 			try {
-				address = vm.startLocalManagementAgent();
-			} catch (IOException e) {
+				address = withTimeout(() -> vm.startLocalManagementAgent());
+			} catch (Exception e) {
 				logger.error("Error starting local management agent", e);
 			}
 		}
 		return address;
 	}
-
-//	Supplier<String> jmxConnectUrl = Suppliers.memoize(() -> {
-//	});
 
 	@Override
 	public String getProcessID() {
@@ -189,7 +186,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		if (vm!=null) {
 			logger.info("SpringBootApp disposed: "+this);
 			try {
-				vm.detach();
+				withTimeout(() -> { vm.detach(); return null; });
 			} catch (Exception e) {
 			}
 			vm = null;
