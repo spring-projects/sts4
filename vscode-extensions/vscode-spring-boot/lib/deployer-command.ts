@@ -17,16 +17,25 @@ import * as FS from 'fs';
 
 const DEPLOYER_TERMINAL : string = 'Spring Boot Deployer';
 const DEPLOYER_APP_JAR_NAME: string = 'kubernetes-deployer';
+const APP_JAR = 'bootapp.jar';
+const terminal = vscode.window.createTerminal({
+    name: DEPLOYER_TERMINAL
+});
 
 
-export function subscribeDeployerCommand(context: vscode.ExtensionContext) {
+export function subscribeDeployerCommands(context: vscode.ExtensionContext) {
+    terminal.show();
     context.subscriptions.push(vscode.commands.registerCommand('springboot.kubernetes-deployer', () => {
-        deployToPks(context);
+        deployToKubernetes(context);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('springboot.pks.getcredentials', () => {
+        connectPks();
     }));
 }
 
 let Docker =  require('dockerode');
 var docker = new Docker();
+
 
 async function getDockerImages() : Promise<string[]> {
     let images = await docker.listImages();
@@ -54,26 +63,32 @@ function pksCli(): string {
 
 export function connectPks() : Promise<any>  {
     return runPks('clusters').then(
-        standardResult => {
-            let results = standardResult.stdout.split('\n');
+        stdResult => {
+            let results = stdResult.stdout.split('\n');
             results = results.filter((l) => l.length > 0 && !l.startsWith("Name") && !l.startsWith('\n'));
-            return vscode.window.showQuickPick(results, { placeHolder: `Please select a cluster:` });
+            return vscode.window.showQuickPick(results, { placeHolder: `Please select a PKS cluster:` });
     }).then(cluster => {
             let clusterLineVals = cluster.match(/\S+/g) || [];
             let clusterName = clusterLineVals.shift() ;  
             return clusterName;          
     }).then(clusterName => {
         run('get-credentials ' + clusterName);
+    }).then(stdResult => {
+        // Show cluster info
+        terminal.show();
+        terminal.sendText('kubectl cluster-info');
     });
 };
 
 interface DeploymentConfiguration {
     appName: string,
     image: string,
-    replicas: number
+    replicas: number,
+    useNodePort: boolean,
+    jarPath: string
 }
 
-function deployToPks(context: vscode.ExtensionContext) {
+function deployToKubernetes(context: vscode.ExtensionContext) {
     let projectRoot = vscode.workspace.rootPath;
     if (!projectRoot) {
        throw new Error("No Spring Boot project available to deploy.")
@@ -81,13 +96,13 @@ function deployToPks(context: vscode.ExtensionContext) {
     let deploymentConfiguration : DeploymentConfiguration = {
         appName: null,
         image: null,
-        replicas: 1
+        replicas: 1,
+        useNodePort: true,
+        jarPath: null
     }
 
-    connectPks().then(stdResult => {
-        return vscode.window.showInputBox({
-            prompt: 'Enter application deployment name: '
-        });
+    vscode.window.showInputBox({
+        prompt: 'Enter application deployment name: '
     }).then(value => {
         deploymentConfiguration.appName = value;
         return getDockerImages();
@@ -103,31 +118,43 @@ function deployToPks(context: vscode.ExtensionContext) {
     }).then(image => {
         deploymentConfiguration.image = image.label;
         return vscode.window.showInputBox( {
-            prompt: 'Number of replicas: '
+            prompt: 'Use NodePort: ',
+            value: 'true'
+        });
+    }).then(useNodePort => {
+        if (useNodePort === `true`) {
+            deploymentConfiguration.useNodePort = true;
+        } else {
+            deploymentConfiguration.useNodePort = false;
+        }
+        return vscode.window.showInputBox( {
+            prompt: 'Number of replicas: ',
+            value: '1'
         });
     }).then(replicas => {
         deploymentConfiguration.replicas = +replicas;
         return deploymentConfiguration;
     }).then(config => {
-        const options = {
-            name: DEPLOYER_TERMINAL
-        };
-        const terminal = vscode.window.createTerminal(options);
-        terminal.sendText('echo ' + config);
-        terminal.show();
-
-        // Show cluster info
-        terminal.sendText('kubectl cluster-info');
-
-        // Build the spring boot app to be deployed
-        terminal.sendText('mvn clean package -DskipTests');
-        terminal.sendText('cp /target/*.jar bootapp.jar');
-
-        let deployerJar = findDeployerJar(Path.resolve(context.extensionPath, 'jars'));
-
-        terminal.sendText('java -jar ' + deployerJar + ' ' + getJarLauncherArgs(config));
-
+        deployInTerminal(context, config, projectRoot);
     });
+}
+
+function deployInTerminal(context: vscode.ExtensionContext, config: DeploymentConfiguration, projectRoot: string) {
+    terminal.show();
+    terminal.sendText('echo ' + config);
+
+    // Build the spring boot app to be deployed
+    terminal.sendText('mvn clean package -DskipTests');
+
+    // Rename the built app jar to something that can be passed to the deployer
+    const source = projectRoot + '/target/*.jar';
+    const target = projectRoot + '/target/' + APP_JAR;
+    terminal.sendText('cp ' + source + ' ' + target);
+    config.jarPath = target;
+    
+    let deployerJar = findDeployerJar(Path.resolve(context.extensionPath, 'jars'));
+  
+    terminal.sendText('java -jar ' + deployerJar + ' ' + getJarLauncherArgs(config));
 }
 
 function getJarLauncherArgs(deploymentConfiguration: DeploymentConfiguration): string {
@@ -135,10 +162,13 @@ function getJarLauncherArgs(deploymentConfiguration: DeploymentConfiguration): s
     + deploymentConfiguration.appName 
     + ' image:' 
     + deploymentConfiguration.image 
-    + ' use-node-port:true replicas: ' 
+    + ' use-node-port:'
+    + deploymentConfiguration.useNodePort
+    + ' replicas:' 
     + deploymentConfiguration.replicas 
     + ' deploy '
-    + 'jarPath: bootapp.jar';
+    + 'jarPath:'
+    + deploymentConfiguration.jarPath;
 }                           
 
 function findDeployerJar(jarsDir) : string {

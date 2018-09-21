@@ -11,8 +11,13 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.container;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -96,8 +101,9 @@ public class DockerHandler {
 			// the boot jars as it relies on the jars being in the same directory where
 			// docker file will be read during image building
 			ClassLoader classLoader = getClass().getClassLoader();
-			File originalDockerFile = new File(classLoader.getResource(DEPLOYER_DOCKER_FILE).getFile());
-			FileUtils.copyFile(originalDockerFile, tempDockerFile);
+			// Must read as stream as docker file may be inside the deployer jar
+			InputStream resourceStream = classLoader.getResourceAsStream(DEPLOYER_DOCKER_FILE);
+			FileUtils.copyInputStreamToFile(resourceStream, tempDockerFile);
 			return tempDockerFile;
 		}
 	}
@@ -108,6 +114,8 @@ public class DockerHandler {
 	}
 
 	public synchronized void push(String jarPath, DockerImage dockerImage) throws Exception {
+
+		logger.info(String.format("Building Docker image from app jar: %s", jarPath));
 
 		File jar = new File(jarPath);
 		File tempDir = getTempDir();

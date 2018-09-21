@@ -11,7 +11,7 @@ import { workspace, TextDocument } from 'vscode';
 import * as commons from '@pivotal-tools/commons-vscode';
 
 import {generate_pipeline, UserQuestioner} from '@pivotal-tools/pipeline-builder';
-import {  subscribeDeployerCommand } from './deployer-command';
+import {  subscribeDeployerCommands } from './deployer-command';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -23,8 +23,8 @@ export function activate(context: VSCode.ExtensionContext) {
     registerCommands(context);
 
     let options : commons.ActivatorOptions = {
-        DEBUG: true,
-        CONNECT_TO_LS: true,
+        DEBUG: false,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
@@ -50,9 +50,7 @@ export function activate(context: VSCode.ExtensionContext) {
 function registerCommands(context: VSCode.ExtensionContext) {
     // registerPipelineGenerator(context);
 
-    // subscribePksCommand(context);
-
-    subscribeDeployerCommand(context);
+    subscribeDeployerCommands(context);
 }
 
 // NOTE: Be sure to add this under "contributes" in package.json to enable the command:
