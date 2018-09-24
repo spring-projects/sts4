@@ -25,11 +25,14 @@ const terminal = vscode.window.createTerminal({
 
 export function subscribeDeployerCommands(context: vscode.ExtensionContext) {
     terminal.show();
-    context.subscriptions.push(vscode.commands.registerCommand('springboot.kubernetes-deployer', () => {
+    context.subscriptions.push(vscode.commands.registerCommand('springboot.kubernetes-deploy', () => {
         deployToKubernetes(context);
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('springboot.pks.getcredentials', () => {
+    context.subscriptions.push(vscode.commands.registerCommand('springboot.pks-getcredentials', () => {
         connectPks();
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('springboot.kubernetes-update', () => {
+        updateApp();
     }));
 }
 
@@ -143,6 +146,53 @@ function deployToKubernetes(context: vscode.ExtensionContext) {
     });
 }
 
+function updateApp(context: vscode.ExtensionContext) {
+    let projectRoot = vscode.workspace.rootPath;
+    if (!projectRoot) {
+       throw new Error("No Spring Boot project available to deploy.")
+    } 
+    let deploymentConfiguration : DeploymentConfiguration = {
+        appName: null,
+        image: null,
+        replicas: 1,
+        useNodePort: true,
+        jarPath: null
+    }
+
+    getDockerImages().then(images => {
+        let imageQuickPicks = images.map(img => { 
+            let item : vscode.QuickPickItem = { 
+                label: img, 
+                description: img
+            };
+            return item;
+        });
+        return vscode.window.showQuickPick(imageQuickPicks, {placeHolder: 'Select an image:' });
+    }).then(image => {
+        deploymentConfiguration.image = image.label;
+        return deploymentConfiguration;
+    }).then(config => {
+        deployInTerminal(context, config, projectRoot);
+    });
+}
+
+function updateInTerminal(context: vscode.ExtensionContext, config: DeploymentConfiguration, projectRoot: string) {
+    terminal.show();
+
+    // Build the spring boot app to be deployed
+    terminal.sendText('mvn clean package -DskipTests');
+
+    // Rename the built app jar to something that can be passed to the deployer
+    const source = projectRoot + '/target/*.jar';
+    const target = projectRoot + '/target/' + APP_JAR;
+    terminal.sendText('cp ' + source + ' ' + target);
+    config.jarPath = target;
+    
+    let deployerJar = findDeployerJar(Path.resolve(context.extensionPath, 'jars'));
+  
+    terminal.sendText('java -jar ' + deployerJar + ' ' + getDeployArgs(config));
+}
+
 function deployInTerminal(context: vscode.ExtensionContext, config: DeploymentConfiguration, projectRoot: string) {
     terminal.show();
     terminal.sendText('echo ' + config);
@@ -158,10 +208,10 @@ function deployInTerminal(context: vscode.ExtensionContext, config: DeploymentCo
     
     let deployerJar = findDeployerJar(Path.resolve(context.extensionPath, 'jars'));
   
-    terminal.sendText('java -jar ' + deployerJar + ' ' + getJarLauncherArgs(config));
+    terminal.sendText('java -jar ' + deployerJar + ' ' + getDeployArgs(config));
 }
 
-function getJarLauncherArgs(deploymentConfiguration: DeploymentConfiguration): string {
+function getDeployArgs(deploymentConfiguration: DeploymentConfiguration): string {
     return 'name:' 
     + deploymentConfiguration.appName 
     + ' image:' 
@@ -173,7 +223,15 @@ function getJarLauncherArgs(deploymentConfiguration: DeploymentConfiguration): s
     + ' deploy '
     + 'jarPath:'
     + deploymentConfiguration.jarPath;
-}                           
+}   
+
+function getUpdateArgs(deploymentConfiguration: DeploymentConfiguration): string {
+    return  'image:' 
+    + deploymentConfiguration.image 
+    + ' update '
+    + 'jarPath:'
+    + deploymentConfiguration.jarPath;
+}  
 
 function findDeployerJar(jarsDir) : string {
     let deployerJar = FS.readdirSync(jarsDir).filter(jar => 

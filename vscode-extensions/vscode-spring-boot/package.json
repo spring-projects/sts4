@@ -33,12 +33,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "springboot.kubernetes-deployer",
+        "command": "springboot.kubernetes-deploy",
         "title": "Spring Boot: Kubernetes - Deploy Application"
       },
       {
-        "command": "springboot.pks.getcredentials",
+        "command": "springboot.pks-getcredentials",
         "title": "PKS: Get Credentials"
+      },
+      {
+        "command": "springboot.kubernetes-update",
+        "title": "Spring Boot: Kubernetes - Update Application"
       }
     ],
     "javaExtensions": [

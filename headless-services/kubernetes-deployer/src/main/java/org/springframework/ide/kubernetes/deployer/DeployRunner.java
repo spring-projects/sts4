@@ -38,8 +38,6 @@ public class DeployRunner {
 
 		validate(definition);
 
-		logger.info(definition.getDeploymentCommand() + " app " + definition.getAppName());
-
 		switch (definition.getDeploymentCommand()) {
 		case update:
 			dockerPush(definition);
@@ -82,9 +80,6 @@ public class DeployRunner {
 	private void validate(DeploymentDefinition definition) throws Exception {
 		if (definition == null) {
 			throw new IllegalArgumentException("No deployment definition provided");
-		}
-		if (!StringUtils.hasText(definition.getAppName())) {
-			throw new IllegalArgumentException("Missing application name");
 		}
 
 		if (definition.getDeploymentCommand() == null) {
