@@ -40,6 +40,9 @@ public class DeployRunner {
 		logger.info(definition.getDeploymentCommand() + " app " + definition.getAppName());
 
 		switch (definition.getDeploymentCommand()) {
+		case update:
+			dockerPush(definition);
+			break;
 		case deploy:
 			dockerPush(definition);
 			List<String> uris = deployer.deploy(definition);
@@ -53,7 +56,7 @@ public class DeployRunner {
 
 	private void dockerPush(DeploymentDefinition definition) throws Exception {
 		if (definition.getJarPath() != null) {
-			dockerHandler.push(definition.getJarPath(), definition.getDockerImage());
+			dockerHandler.createImageAndPush(definition.getJarPath(), definition.getDockerImage());
 		}
 	}
 

@@ -11,13 +11,9 @@
  *******************************************************************************/
 package org.springframework.ide.kubernetes.container;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -91,12 +87,12 @@ public class DockerHandler {
 		return tempDir;
 	}
 
-	private File getDockerFile(File parent) throws IOException {
-		File[] files = parent.listFiles((file) -> file.getName().equals(DEPLOYER_DOCKER_FILE));
+	private File getDockerFile(File appJarParent) throws IOException {
+		File[] files = appJarParent.listFiles((file) -> file.getName().equals(DEPLOYER_DOCKER_FILE));
 		if (files != null && files.length >= 1) {
 			return files[0];
 		} else {
-			File tempDockerFile = new File(parent, DEPLOYER_DOCKER_FILE);
+			File tempDockerFile = new File(appJarParent, DEPLOYER_DOCKER_FILE);
 			// The original docker file needs to be copied to the location that contains
 			// the boot jars as it relies on the jars being in the same directory where
 			// docker file will be read during image building
@@ -113,7 +109,7 @@ public class DockerHandler {
 		FileUtils.copyFile(originalJar, destFile);
 	}
 
-	public synchronized void push(String jarPath, DockerImage dockerImage) throws Exception {
+	public synchronized void createImageAndPush(String jarPath, DockerImage dockerImage) throws Exception {
 
 		logger.info(String.format("Building Docker image from app jar: %s", jarPath));
 
@@ -133,18 +129,21 @@ public class DockerHandler {
 		logger.info(String.format("Built Docker image: %s", imageId));
 		client.tagImageCmd(imageId, name, tag).exec();
 		logger.info(String.format("Tagged Docker image: %s", tag));
+	
+		pushImage(client, name, tag);
+	}
+
+	private void pushImage(DockerClient client, String name, String tag) throws Exception {
 		logger.info(String.format("Pushing image: %s...", name));
-
 		client.pushImageCmd(name).withTag(tag)
-				.exec(new ResultCallbackTemplate<PushImageResultCallback, PushResponseItem>() {
+		.exec(new ResultCallbackTemplate<PushImageResultCallback, PushResponseItem>() {
 
-					@Override
-					public void onNext(PushResponseItem item) {
-						logResponse(item);
-					}
+			@Override
+			public void onNext(PushResponseItem item) {
+				logResponse(item);
+			}
 
-				}).awaitCompletion();
-
+		}).awaitCompletion();
 	}
 
 	private DockerClient getDockerClient() throws Exception {

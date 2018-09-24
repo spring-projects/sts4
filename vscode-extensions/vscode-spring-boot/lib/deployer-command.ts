@@ -66,7 +66,11 @@ export function connectPks() : Promise<any>  {
         stdResult => {
             let results = stdResult.stdout.split('\n');
             results = results.filter((l) => l.length > 0 && !l.startsWith("Name") && !l.startsWith('\n'));
-            return vscode.window.showQuickPick(results, { placeHolder: `Please select a PKS cluster:` });
+            if (results.length > 0) {
+                return vscode.window.showQuickPick(results, { placeHolder: `Please select a PKS cluster:` });
+            } else {
+                throw new Error('No PKS clusters to select. Use `pks` cli to connect, and verify at least one cluster exists');
+            }
     }).then(cluster => {
             let clusterLineVals = cluster.match(/\S+/g) || [];
             let clusterName = clusterLineVals.shift() ;  
