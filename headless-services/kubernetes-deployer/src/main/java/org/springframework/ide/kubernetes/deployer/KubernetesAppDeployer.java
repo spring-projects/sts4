@@ -34,6 +34,7 @@ import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.ServiceSpec;
 import io.fabric8.kubernetes.api.model.ServiceSpecBuilder;
@@ -73,7 +74,7 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 	@Override
 	public List<String> deploy(DeploymentDefinition definition) throws Exception {
-		
+
 		logger.info("Deploying image: " + definition.getDockerImage().getImage());
 
 		String appId = getDeploymentId(definition);
@@ -105,11 +106,18 @@ public class KubernetesAppDeployer implements AppDeployer {
 
 	}
 
-	protected Map<String, String> getAppSelector(String appId) {
-		Map<String, String> selector = new HashMap<>();
-		selector.put(APP_SELECTOR, appId);
-		return selector;
+	@Override
+	public List<String> getExistingServices() throws Exception {
+		List<String> serviceNames = new ArrayList<>();
+		ServiceList serviceList = client().services().list();
 
+		if (serviceList != null && serviceList.getItems() != null) {
+			for (Service service : serviceList.getItems()) {
+				serviceNames.add(service.getMetadata().getName());
+			}
+		}
+
+		return serviceNames;
 	}
 
 	@Override

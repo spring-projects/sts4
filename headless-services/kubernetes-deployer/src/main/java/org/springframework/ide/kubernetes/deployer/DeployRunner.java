@@ -26,6 +26,7 @@ public class DeployRunner {
 	private Logger logger = LoggerFactory.getLogger(DeployRunner.class);
 	private final AppDeployer deployer;
 	private final DockerHandler dockerHandler;
+	private final String RESULT_LOG_PREFIX = "STS KUBERNETES";
 
 	@Autowired
 	public DeployRunner(AppDeployer deployer, DockerHandler dockerHandler) {
@@ -51,6 +52,10 @@ public class DeployRunner {
 		case undeploy:
 			deployer.undeploy(definition);
 			break;
+		case services:
+			List<String> services = deployer.getExistingServices();
+			logServices(services);
+			break;
 		}
 	}
 
@@ -62,7 +67,15 @@ public class DeployRunner {
 
 	private void logUris(List<String> uris) {
 		if (uris != null && !uris.isEmpty()) {
-			logger.info("Application URI: " + "http://" + uris.get(0) + '\n');
+			logger.info(RESULT_LOG_PREFIX + "- URI: " + "http://" + uris.get(0) + '\n');
+		}
+	}
+	
+	private void logServices(List<String> services) {
+		if (services != null && !services.isEmpty()) {
+			for (String service : services) {
+				logger.info(RESULT_LOG_PREFIX + "- Service: " + "http://" + service + '\n');
+			}
 		}
 	}
 

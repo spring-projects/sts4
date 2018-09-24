@@ -18,5 +18,7 @@ public interface AppDeployer {
 	void undeploy(DeploymentDefinition definition) throws Exception;
 
 	List<String> deploy(DeploymentDefinition request) throws Exception;
+	
+	List<String> getExistingServices() throws Exception;
 
 }

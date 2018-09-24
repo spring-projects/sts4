@@ -165,7 +165,7 @@ public class DeploymentDefinition {
 	}
 
 	public enum DeploymentCommand {
-		deploy, undeploy, update
+		deploy, undeploy, update, services
 	}
 
 }
