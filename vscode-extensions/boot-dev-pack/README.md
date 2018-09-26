@@ -3,7 +3,7 @@
 Collection of extensions for developing and deploying Spring Boot Application
 
 ## Spring Boot
-The [Spring Boot Support](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot) extension provides:
+The [Spring Boot Tools](https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot) extension provides:
 
  - IDE Java tooling for developing and troubleshooting Spring Boot applications.
  - Support for editing Spring Boot Application configuration properties files (`.properties` and `.yml`)
