@@ -26,30 +26,32 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class WebfluxPathFinder extends ASTVisitor {
-	
+
 	private List<WebfluxRouteElement> path;
 	private ASTNode root;
 	private TextDocument doc;
-	
+
 	public WebfluxPathFinder(ASTNode root, TextDocument doc) {
 		this.root = root;
 		this.doc = doc;
 		this.path = new ArrayList<>();
 	}
-	
+
 	public List<WebfluxRouteElement> getPath() {
 		return path;
 	}
-	
+
 	@Override
 	public boolean visit(MethodInvocation node) {
 		boolean visitChildren = true;
 
 		if (node != this.root) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
-			
+
 			try {
-				if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+				if (methodBinding != null && methodBinding.getDeclaringClass() != null
+						&& WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+
 					String name = methodBinding.getName();
 					if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
 						StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(node);
@@ -63,11 +65,11 @@ public class WebfluxPathFinder extends ASTVisitor {
 			catch (BadLocationException e) {
 				// ignore
 			}
-			
+
 			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-				visitChildren = false;				
+				visitChildren = false;
 			}
-			
+
 		}
 		return visitChildren;
 	}
