@@ -67,12 +67,10 @@
 			<artifactId>spring-boot</artifactId>
 			<version>${boot-version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.eclipse.tycho</groupId> <artifactId>org.eclipse.jdt.core</artifactId> 
-			<version>3.13.102.v20180320-1701_BETA_JAVA10</version> </dependency> -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.14.0</version>
+			<version>3.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
