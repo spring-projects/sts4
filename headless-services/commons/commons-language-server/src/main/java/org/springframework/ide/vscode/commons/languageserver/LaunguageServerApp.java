@@ -34,8 +34,11 @@ import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.Log;
 
 
@@ -53,37 +56,48 @@ import org.springframework.ide.vscode.commons.util.Log;
  * @author Kris De Volder
  * @author Martin Lippert
  */
-public abstract class LaunguageServerApp {
+public class LaunguageServerApp {
 
 	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
 	public static final String STANDALONE_STARTUP = "standalone-startup";
 	private static final int SERVER_STANDALONE_PORT = 5007;
 
-	public static void start(String name, Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
-		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
-		LaunguageServerApp app = new LaunguageServerApp() {
-			@Override
-			protected SimpleLanguageServer createServer() {
-				return languageServerFactory.get();
-			}
-		};
+	final static Logger log = LoggerFactory.getLogger(LaunguageServerApp.class);
 
+	private final String name;
+	private final Provider<SimpleLanguageServer> languageServerFactory;
+
+	public LaunguageServerApp(String name, Provider<SimpleLanguageServer> languageServerFactory) {
+		super();
+		this.name = name;
+		this.languageServerFactory = languageServerFactory;
+	}
+
+	public void start() throws Exception {
+		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
+		LaunguageServerApp app = this;
 		if (System.getProperty(STANDALONE_STARTUP, "false").equals("true")) {
 			app.startAsServer();
-		}
-		else {
-			app.start();
+		} else {
+			app.startAsClient();
 		}
 	}
 
-	public static void startAsServer(Provider<SimpleLanguageServer> languageServerFactory) throws IOException, InterruptedException {
-		LaunguageServerApp app = new LaunguageServerApp() {
-			@Override
-			protected SimpleLanguageServer createServer() {
-				return languageServerFactory.get();
-			}
-		};
-		app.startAsServer();
+	public void startAsync() {
+		//TODO: feel a bit wasteful to have thread dedicated to just waiting for the server to stop.
+		//  Not sure how we can really avoid this though. Lsp4j is providing
+		//  lots of api that returns Futures which the only way to deal with them is blocking threads calling
+		//  their get method.
+		new Thread(
+			() -> {
+				try {
+					start();
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			},
+			"LanguageServerApp lifecycle"
+		).start();
 	}
 
 	protected static class Connection {
@@ -122,14 +136,14 @@ public abstract class LaunguageServerApp {
 		}
 	}
 
-	public void start() throws IOException {
+	public void startAsClient() throws IOException {
 		Log.info("Starting LS");
 		Connection connection = null;
 		try {
 			LoggingFormat.startLogging();
 			connection = connectToNode();
 
-			run(connection);
+			runAsync(connection).get();
 		} catch (Throwable t) {
 			Log.log(t);
 			System.exit(1);
@@ -152,8 +166,8 @@ public abstract class LaunguageServerApp {
 	 * Source of inspiration:
 	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
 	 */
-	public void startAsServer() throws IOException, InterruptedException {
-		Log.info("Starting LS as standlone server port = "+SERVER_STANDALONE_PORT);
+	public void startAsServer() throws Exception {
+		log.info("Starting LS as standlone server port = {}", SERVER_STANDALONE_PORT);
 
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = consumer;
@@ -165,33 +179,30 @@ public abstract class LaunguageServerApp {
 				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), createServerThreads(), wrapper);
 
 		languageServer.connect(launcher.getRemoteProxy());
-		Future<?> future = launcher.startListening();
-		while (!future.isDone()) {
-			Thread.sleep(10_000l);
-		}
+		launcher.startListening().get();
 	}
 
 	/**
 	 * Creates the thread pool / executor passed to lsp4j server intialization. From the looks of things,
 	 * @return
 	 */
-    protected ExecutorService createServerThreads() {
+	protected ExecutorService createServerThreads() {
 		return Executors.newCachedThreadPool();
 	}
 
-	private <T> Launcher<T> createSocketLauncher(Object localService, Class<T> remoteInterface, SocketAddress socketAddress, ExecutorService executorService, Function<MessageConsumer, MessageConsumer> wrapper) throws IOException {
-        AsynchronousServerSocketChannel serverSocket = AsynchronousServerSocketChannel.open().bind(socketAddress);
-        AsynchronousSocketChannel socketChannel;
-        try {
-            socketChannel = serverSocket.accept().get();
-            return Launcher.createIoLauncher(localService, remoteInterface, Channels.newInputStream(socketChannel), Channels.newOutputStream(socketChannel), executorService, wrapper);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+	private <T> Launcher<T> createSocketLauncher(
+			Object localService, Class<T> remoteInterface,
+			SocketAddress socketAddress, ExecutorService executorService,
+			Function<MessageConsumer, MessageConsumer> wrapper
+	) throws Exception {
+		AsynchronousServerSocketChannel serverSocket = AsynchronousServerSocketChannel.open().bind(socketAddress);
+		AsynchronousSocketChannel socketChannel = serverSocket.accept().get();
+		log.info("Client connected via socket");
+		return Launcher.createIoLauncher(localService, remoteInterface, Channels.newInputStream(socketChannel),
+				Channels.newOutputStream(socketChannel), executorService, wrapper);
+	}
 
-    private static Connection connectToNode() throws IOException {
+	private static Connection connectToNode() throws IOException {
 		String port = System.getProperty("server.port");
 
 		if (port != null) {
@@ -217,10 +228,8 @@ public abstract class LaunguageServerApp {
 	 * Listen for requests from the parent node process.
 	 * Send replies asynchronously.
 	 * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
-	 * @throws ExecutionException
-	 * @throws InterruptedException
 	 */
-	protected void run(Connection connection) throws InterruptedException, ExecutionException {
+	protected Future<Void> runAsync(Connection connection) throws Exception {
 		LanguageServer server = createServer();
 		ExecutorService executor = createServerThreads();
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
@@ -229,7 +238,7 @@ public abstract class LaunguageServerApp {
 					consumer.consume(msg);
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
-					Log.warn("Unsupported message was ignored!", e);
+					log.warn("Unsupported message was ignored!", e);
 				}
 			};
 		};
@@ -246,9 +255,10 @@ public abstract class LaunguageServerApp {
 			((LanguageClientAware) server).connect(client);
 		}
 
-		launcher.startListening().get();
+		return launcher.startListening();
 	}
 
-	protected abstract SimpleLanguageServer createServer();
-
+	final SimpleLanguageServer createServer() {
+		return languageServerFactory.get();
+	}
 }

@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,13 +30,16 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
 import reactor.core.publisher.Flux;
 
 public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseLanguageServer> {
 
 	@FunctionalInterface
 	private interface Handler {
-		Flux<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
+		List<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
 	}
 
 	private final ASTTypeCache astTypes;
@@ -64,19 +69,24 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 		Handler handler = (Node refNode, TextDocument doc, YamlFileAST ast) -> {
 			String name = NodeUtil.asScalar(refNode);
 			if (name!=null) {
-				return Flux.fromStream(definitionsPath.traverseAmbiguously(ast))
-						.filter((node) -> name.equals(NodeUtil.asScalar(node)))
-						.map((node) -> toLocation(doc, node))
-						.filter(Optional::isPresent)
-						.map(Optional::get);
+				Builder<Location> definitions = ImmutableList.builder();
+				definitionsPath.traverseAmbiguously(ast).forEach(node -> {
+					if (name.equals(NodeUtil.asScalar(node))) {
+						Optional<Location> loc = toLocation(doc, node);
+						if (loc.isPresent()) {
+							definitions.add(loc.get());
+						}
+					}
+				});
+				return definitions.build();
 			}
-			return Flux.empty();
+			return ImmutableList.of();
 		};
 		handlers.put(refType, handler);
 	}
 
 	@Override
-	protected Flux<Location> findDefinitions(TextDocumentPositionParams params) {
+	public List<Location> handle(TextDocumentPositionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc!=null) {
@@ -97,7 +107,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Flux.empty();
+		return ImmutableList.of();
 	}
 
 	Optional<Location> toLocation(TextDocument doc, Node node) {

@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 
 public class AsyncRunner {
 

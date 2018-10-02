@@ -128,11 +128,11 @@ public class DefaultGithubInfoProvider implements GithubInfoProvider {
 				return reposByOwner.get(ownerName, loader(() -> {
 					GHPerson owner = getOwner(ownerName);
 					if (owner!=null) {
-						return Flux.fromIterable(owner.listRepositories())
-								.filter(repo -> repo.getOwnerName().equals(ownerName))
-								.map(GHRepository::getName)
-								.collect(CollectorUtil.toImmutableSet())
-								.block();
+						ImmutableList.Builder<String> builder = ImmutableList.builder();
+						for (GHRepository repo : owner.listRepositories()) {
+							builder.add(repo.getName());
+						}
+						return builder.build();
 					}
 					return null;
 				}))

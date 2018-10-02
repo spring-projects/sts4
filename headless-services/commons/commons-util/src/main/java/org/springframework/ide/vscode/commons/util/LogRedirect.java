@@ -17,12 +17,24 @@ import java.io.PrintStream;
 
 public class LogRedirect {
 
+	public static void bootRedirectToFile(String name) throws IOException {
+		String logfilePath = System.getProperty("sts.log.file");
+		if (StringUtil.hasText(logfilePath)) {
+			File logfile = new File(logfilePath);
+			System.err.println("Redirecting log output to: "+logfile);
+			PrintStream logFile = new PrintStream(new FileOutputStream(logfile, false));
+			System.setErr(logFile);
+			System.setOut(logFile); //Spring boot actually logs on sysout instead of syserr.
+		}
+	}
+
 	public static void redirectToFile(String name) throws IOException {
 		String logfilePath = System.getProperty("sts.log.file");
 		if (StringUtil.hasText(logfilePath)) {
 			File logfile = new File(logfilePath);
 			System.err.println("Redirecting log output to: "+logfile);
-			System.setErr(new PrintStream(new FileOutputStream(logfile, false)));
+			PrintStream logFile = new PrintStream(new FileOutputStream(logfile, false));
+			System.setErr(logFile);
 		}
 	}
 	

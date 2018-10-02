@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.bosh;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +30,9 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
 import reactor.core.publisher.Flux;
 
 public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServer> {
@@ -44,7 +48,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 
 	@FunctionalInterface
 	private interface Handler {
-		Flux<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
+		List<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
 	}
 
 	public BoshDefintionFinder(BoshLanguageServer server, BoshSchemas schema, YamlAstCache asts, ASTTypeCache astTypes) {
@@ -64,7 +68,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 	}
 
 	@Override
-	protected Flux<Location> findDefinitions(TextDocumentPositionParams params) {
+	public List<Location> handle(TextDocumentPositionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc!=null) {
@@ -85,7 +89,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Flux.empty();
+		return ImmutableList.of();
 	}
 
 	/**
@@ -101,14 +105,19 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 				String name = NodeUtil.asScalar(refNode);
 				if (name!=null) {
 					Collection<Node> candidates = astTypes.getNodes(uri, def);
-					return Flux.fromIterable(candidates)
-							.filter((node) -> name.equals(NodeUtil.asScalar(node)))
-							.map((node) -> toLocation(doc, node))
-							.filter(Optional::isPresent)
-							.map(Optional::get);
+					Builder<Location> definitions = ImmutableList.builder();
+					for (Node node : candidates) {
+						if (name.equals(NodeUtil.asScalar(node))) {
+							Optional<Location> loc = toLocation(doc, node);
+							if (loc.isPresent()) {
+								definitions.add(loc.get());
+							}
+						}
+					}
+					return definitions.build();
 				}
 			}
-			return Flux.empty();
+			return ImmutableList.of();
 		};
 		handlers.put(ref, handler);
 	}

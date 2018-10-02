@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.definition;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -20,7 +20,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import reactor.core.publisher.Flux;
+import com.google.common.collect.ImmutableList;
 
 /**
  * {@link SimpleDefinitionFinder} provides a 'dummy' implementation of
@@ -35,21 +35,7 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 	}
 
 	@Override
-	public List<Location> handle(TextDocumentPositionParams position) {
-		return findDefinitions(position)
-				.collect(Collectors.toList()).block();
-	}
-
-	/**
-	 * This is meant to be overridden by subclass. This method provides a simple implementation
-	 * of 'goto definition' (which is not one you probably want to use in practice, but it
-	 * might be usful just to test whether things are wired up correctly to make the
-	 * 'goto definition' action in vscode work.
-	 * <p>
-	 * The implementation provided here simply looks for the first occurrence of the word
-	 * currently pointed at in the current document using String.indexOf.
-	 */
-	protected Flux<Location> findDefinitions(TextDocumentPositionParams params) {
+	public List<Location> handle(TextDocumentPositionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc != null) {
@@ -68,20 +54,17 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 				String text = doc.get();
 				int def = text.indexOf(word);
 				if (def>=0) {
-					return Flux.just(
-						new Location(params.getTextDocument().getUri(),
-							doc.toRange(def, word.length())
-						)
-					)
-					.doOnNext((Location loc) -> {
-						Log.log("definition: "+loc);
-					});
+					Location loc = new Location(params.getTextDocument().getUri(),
+						doc.toRange(def, word.length())
+					);
+					Log.log("definition: "+loc);
+					return ImmutableList.of(loc);
 				}
 			}
 		} catch (Exception e) {
 			Log.log(e);
 		}
-		return Flux.empty();
+		return Collections.emptyList();
 	}
 
 }

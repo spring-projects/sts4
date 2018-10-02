@@ -25,10 +25,16 @@
 	</distributionManagement>
 
 	<dependencies>
+		<!-- spring boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
 		<!-- Language Servers -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-language-server</artifactId>
+			<artifactId>language-server-starter</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
 		<!-- Yaml -->

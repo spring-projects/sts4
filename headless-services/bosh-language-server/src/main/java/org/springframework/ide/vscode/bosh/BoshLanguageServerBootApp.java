@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,24 +10,35 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import java.io.IOException;
-
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
-import org.springframework.ide.vscode.commons.languageserver.LaunguageServerApp;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 
-public class Main {
-	public static void main(String[] args) throws IOException, InterruptedException {
-		String serverName = "bosh-language-server";
-		LogRedirect.redirectToFile(serverName);
-		BoshCliConfig cliConfig = new BoshCliConfig();
-		LaunguageServerApp.start(serverName, () -> new BoshLanguageServer(
+@SpringBootApplication
+public class BoshLanguageServerBootApp {
+
+	private static final String SERVER_NAME = "bosh-language-server";
+
+	public static void main(String[] args) throws Exception {
+		LogRedirect.bootRedirectToFile(SERVER_NAME); //TODO: use boot (or logback realy) to configure logging instead.
+		SpringApplication.run(BoshLanguageServerBootApp.class, args);
+	}
+
+	@Bean public String serverName() {
+		return SERVER_NAME;
+	}
+
+	@Bean BoshLanguageServer languageServer(BoshCliConfig cliConfig) {
+		return new BoshLanguageServer(
 				cliConfig,
 				new BoshCommandCloudConfigProvider(cliConfig),
 				new BoshCommandStemcellsProvider(cliConfig),
 				new BoshCommandReleasesProvider(cliConfig)
-		));
+		);
 	}
+
 }

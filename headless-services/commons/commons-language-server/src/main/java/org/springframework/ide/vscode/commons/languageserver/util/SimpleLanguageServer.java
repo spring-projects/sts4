@@ -144,7 +144,11 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	private Map<String, ExecuteCommandHandler> commands = new HashMap<>();
 
-	private AsyncRunner async = new AsyncRunner(Schedulers.newSingle("SimpleLanguaserver main thread"));
+	private AsyncRunner async = new AsyncRunner(Schedulers.newSingle(runable -> {
+		Thread t = new Thread(runable, "SimpleLanguaserver main thread");
+		t.setDaemon(true);
+		return t;
+	}));
 	private ClasspathListenerManager classpathListenerManager;
 
 	@Override
@@ -214,7 +218,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		Log.debug("Initializing: "+params);
+		log.info("Initializing: "+params);
 
 		// multi-root workspace handling
 		List<WorkspaceFolder> workspaceFolders = getWorkspaceFolders(params);

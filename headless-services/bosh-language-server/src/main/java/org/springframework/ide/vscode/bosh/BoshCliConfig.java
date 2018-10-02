@@ -14,6 +14,7 @@ import java.time.Duration;
 
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.stereotype.Component;
 
 /**
  * Provides access to configuration options that allow user to
@@ -22,6 +23,7 @@ import org.springframework.ide.vscode.commons.util.Log;
  *
  * @author Kris De Volder
  */
+@Component
 public class BoshCliConfig {
 
 	/**

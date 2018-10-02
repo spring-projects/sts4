@@ -126,7 +126,8 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dspring.lsp.client-port='+port,
                                 '-Dserver.port=' + port,
                                 '-Dsts.lsp.client=vscode',
-                                '-Dsts.log.file=' + logfile
+                                '-Dsts.log.file=' + logfile, //old style log redirect
+                                '-Dlogging.file=' + logfile // spring boot log redirect
                             ];
                             if (options.checkjvm) {
                                 options.checkjvm(context, jvm);
