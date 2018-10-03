@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.commons.languageserver;
 
 import java.io.IOException;
@@ -36,7 +35,6 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
 
@@ -138,9 +136,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 		Log.info("Starting LS");
 		Connection connection = null;
 		try {
-			LoggingFormat.startLogging();
 			connection = connectToNode();
-
 			runAsync(connection).get();
 		} catch (Throwable t) {
 			Log.log(t);
