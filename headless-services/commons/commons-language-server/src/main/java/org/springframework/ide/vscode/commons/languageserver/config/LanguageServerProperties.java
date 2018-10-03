@@ -9,7 +9,7 @@ public class LanguageServerProperties {
 	 * Enables 'standalone' launch mode. In standalone mode the language server
 	 * creates a server socket and waits for a client to connect on that socket.
 	 */
-	private boolean standalone = true;
+	private boolean standalone = false;
 
 	/**
 	 * The port on which a standalone language server listens. This setting
