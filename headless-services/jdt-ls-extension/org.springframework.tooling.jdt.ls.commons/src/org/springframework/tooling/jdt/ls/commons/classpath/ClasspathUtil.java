@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
@@ -96,20 +98,26 @@ public class ClasspathUtil {
 					break;
 				}
 				case Classpath.ENTRY_KIND_SOURCE: {
-					IPath sourcePath = entry.getPath();
-					//log("source entry =" + sourcePath);
-					IPath absoluteSourcePath = resolveWorkspacePath(sourcePath);
-					//log("absoluteSourcePath =" + absoluteSourcePath);
-					if (absoluteSourcePath!=null) {
-						IPath of = entry.getOutputLocation();
-						//log("outputFolder =" + of);
-						IPath absoluteOutFolder;
-						if (of!=null) {
-							absoluteOutFolder = resolveWorkspacePath(of);
-						} else {
-							absoluteOutFolder = resolveWorkspacePath(javaProject.getOutputLocation());
+					if (entry.getEntryKind()==IClasspathEntry.CPE_PROJECT) {
+						IPath projectPath = entry.getPath();
+						logger.log("project entry "+projectPath);
+						resolveProjectOutputFolder(projectPath, cpEntries, logger);
+					} else {
+						IPath sourcePath = entry.getPath();
+						//log("source entry =" + sourcePath);
+						IPath absoluteSourcePath = resolveWorkspacePath(sourcePath);
+						//log("absoluteSourcePath =" + absoluteSourcePath);
+						if (absoluteSourcePath!=null) {
+							IPath of = entry.getOutputLocation();
+							//log("outputFolder =" + of);
+							IPath absoluteOutFolder;
+							if (of!=null) {
+								absoluteOutFolder = resolveWorkspacePath(of);
+							} else {
+								absoluteOutFolder = resolveWorkspacePath(javaProject.getOutputLocation());
+							}
+							cpEntries.add(CPE.source(absoluteSourcePath.toFile(), absoluteOutFolder.toFile()));
 						}
-						cpEntries.add(CPE.source(absoluteSourcePath.toFile(), absoluteOutFolder.toFile()));
 					}
 					break;
 				}
@@ -123,6 +131,24 @@ public class ClasspathUtil {
 		return classpath;
 	}
 	
+	private static void resolveProjectOutputFolder(IPath projectPath, List<CPE> cpEntries, Logger logger) {
+		try {
+			if (projectPath.segmentCount()==1) {
+				IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(projectPath.segment(0));
+				if (p.isAccessible()) {
+					IJavaProject jp = JavaCore.create(p);
+					IPath outputFolder = jp.getOutputLocation();
+					if (outputFolder!=null) {
+						outputFolder = resolveWorkspacePath(outputFolder);
+						cpEntries.add(CPE.binary(outputFolder.toFile().getAbsolutePath()));
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.log(e);
+		}
+	}
+
 	private static IPath resolveWorkspacePath(IPath path) {
 		if (path.segmentCount()>0) {
 			String projectName = path.segment(0);
