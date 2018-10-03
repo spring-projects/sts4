@@ -21,7 +21,6 @@ import java.net.SocketAddress;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.Channels;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,55 +35,25 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.ide.vscode.commons.languageserver.util.LoggingFormat;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.Log;
 
-
 /**
- * Abstract class meant to minimize the amount of code needed to
- * write to create suitable 'main' method to launch a language server.
- * <p>
- * The easiest way to use this is to create your own static main method.
- * Then call this class's start method with a Provider<SimpleLanguageServer> as
- * a argument.
- * <p>
- * Alternatively, you can also subclass it and implement the abstract
- * `createServer` method.
+ * A CommandLineRunner that launches a language server. This meant to be used as a Spring bean
+ * in a SpringBoot app.
  *
  * @author Kris De Volder
  * @author Martin Lippert
  */
-public class LaunguageServerApp {
+public class LanguageServerRunner implements CommandLineRunner {
 
-	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
-	public static final String STANDALONE_STARTUP = "standalone-startup";
-	private static final int SERVER_STANDALONE_PORT = 5007;
+	final static Logger log = LoggerFactory.getLogger(LanguageServerRunner.class);
 
-	final static Logger log = LoggerFactory.getLogger(LaunguageServerApp.class);
-
-	private final String name;
-	private final Provider<SimpleLanguageServer> languageServerFactory;
-
-	public LaunguageServerApp(String name, Provider<SimpleLanguageServer> languageServerFactory) {
-		super();
-		this.name = name;
-		this.languageServerFactory = languageServerFactory;
-	}
-
-	public void start() throws Exception {
-		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
-		LaunguageServerApp app = this;
-		if (System.getProperty(STANDALONE_STARTUP, "false").equals("true")) {
-			app.startAsServer();
-		} else {
-			app.startAsClient();
-		}
-	}
-
-	public void startAsync() {
-		//TODO: feel a bit wasteful to have thread dedicated to just waiting for the server to stop.
+	@Override
+	public void run(String... args) throws Exception {
+		//TODO: feels a bit wasteful to have thread dedicated to just waiting for the server to stop.
 		//  Not sure how we can really avoid this though. Lsp4j is providing
 		//  lots of api that returns Futures which the only way to deal with them is blocking threads calling
 		//  their get method.
@@ -98,6 +67,35 @@ public class LaunguageServerApp {
 			},
 			"LanguageServerApp lifecycle"
 		).start();
+	}
+
+	/**
+	 * System property that is set when the app launches. This makes it easy for the JVM process to recognized
+	 * as a languageserver by using (for example) JMX to read the system properties.
+	 */
+	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
+
+	public static final String STANDALONE_STARTUP = "standalone-startup"; //TODO: turn into spring boot property
+	private static final int SERVER_STANDALONE_PORT = 5007;	//TODO: turn into spring boot property
+
+
+	private final String name;
+	private final Provider<SimpleLanguageServer> languageServerFactory;
+
+	public LanguageServerRunner(String name, Provider<SimpleLanguageServer> languageServerFactory) {
+		super();
+		this.name = name;
+		this.languageServerFactory = languageServerFactory;
+	}
+
+	public void start() throws Exception {
+		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
+		LanguageServerRunner app = this;
+		if (System.getProperty(STANDALONE_STARTUP, "false").equals("true")) {
+			app.startAsServer();
+		} else {
+			app.startAsClient();
+		}
 	}
 
 	protected static class Connection {
@@ -224,11 +222,6 @@ public class LaunguageServerApp {
 		}
 	}
 
-	/**
-	 * Listen for requests from the parent node process.
-	 * Send replies asynchronously.
-	 * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
-	 */
 	protected Future<Void> runAsync(Connection connection) throws Exception {
 		LanguageServer server = createServer();
 		ExecutorService executor = createServerThreads();
@@ -261,4 +254,5 @@ public class LaunguageServerApp {
 	final SimpleLanguageServer createServer() {
 		return languageServerFactory.get();
 	}
+
 }
