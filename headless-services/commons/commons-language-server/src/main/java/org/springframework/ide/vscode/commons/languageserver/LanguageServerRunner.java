@@ -35,8 +35,10 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.util.Assert;
 
 /**
  * A CommandLineRunner that launches a language server. This meant to be used as a Spring bean
@@ -63,7 +65,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 					log.error("", e);
 				}
 			},
-			"LanguageServerApp lifecycle"
+			"LanguageServerApp-lifecycle"
 		).start();
 	}
 
@@ -71,25 +73,23 @@ public class LanguageServerRunner implements CommandLineRunner {
 	 * System property that is set when the app launches. This makes it easy for the JVM process to recognized
 	 * as a languageserver by using (for example) JMX to read the system properties.
 	 */
-	public static final String STS4_LANGUAGESERVER_NAME = "sts4.languageserver.name";
+	public static final String SYSPROP_LANGUAGESERVER_NAME = "sts4.languageserver.name";
 
-	public static final String STANDALONE_STARTUP = "standalone-startup"; //TODO: turn into spring boot property
-	private static final int SERVER_STANDALONE_PORT = 5007;	//TODO: turn into spring boot property
-
-
+	private LanguageServerProperties properties;
 	private final String name;
 	private final Provider<SimpleLanguageServer> languageServerFactory;
 
-	public LanguageServerRunner(String name, Provider<SimpleLanguageServer> languageServerFactory) {
+	public LanguageServerRunner(String name, LanguageServerProperties properties, Provider<SimpleLanguageServer> languageServerFactory) {
 		super();
 		this.name = name;
+		this.properties = properties;
 		this.languageServerFactory = languageServerFactory;
 	}
 
 	public void start() throws Exception {
-		System.setProperty(STS4_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
+		System.setProperty(SYSPROP_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
 		LanguageServerRunner app = this;
-		if (System.getProperty(STANDALONE_STARTUP, "false").equals("true")) {
+		if (properties.isStandalone()) {
 			app.startAsServer();
 		} else {
 			app.startAsClient();
@@ -161,7 +161,8 @@ public class LanguageServerRunner implements CommandLineRunner {
 	 * https://github.com/itemis/xtext-languageserver-example/blob/master/org.xtext.example.mydsl.ide/src/org/xtext/example/mydsl/ide/RunServer.java
 	 */
 	public void startAsServer() throws Exception {
-		log.info("Starting LS as standlone server port = {}", SERVER_STANDALONE_PORT);
+		int serverPort = properties.getStandalonePort();
+		log.info("Starting LS as standlone server port = {}", serverPort);
 
 		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
 			MessageConsumer result = consumer;
@@ -170,7 +171,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 
 		SimpleLanguageServer languageServer = createServer();
 		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
-				new InetSocketAddress("localhost", SERVER_STANDALONE_PORT), createServerThreads(), wrapper);
+				new InetSocketAddress("localhost", serverPort), createServerThreads(), wrapper);
 
 		languageServer.connect(launcher.getRemoteProxy());
 		launcher.startListening().get();
