@@ -17,6 +17,14 @@ public class LanguageServerProperties {
 	 */
 	private int standalonePort = 5007;
 
+	/**
+	 * Extension id is a unique identifier associated with a type of language server.
+	 * It is used to derive furether unique ids that should be 'scoped' to a particular
+	 * language server. For example ids for vscode comands used to define code actions
+	 * are derived by appending command names with this id.
+	 */
+	private String extensionId;
+
 	public boolean isStandalone() {
 		return standalone;
 	}
@@ -32,4 +40,13 @@ public class LanguageServerProperties {
 	public void setStandalonePort(int standalonePort) {
 		this.standalonePort = standalonePort;
 	}
+
+	public String getExtensionId() {
+		return extensionId;
+	}
+
+	public void setExtensionId(String extensionId) {
+		this.extensionId = extensionId;
+	}
+
 }

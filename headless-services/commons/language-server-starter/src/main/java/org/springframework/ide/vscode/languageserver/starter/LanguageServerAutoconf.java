@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.starter;
 
-import javax.inject.Provider;
-
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +29,11 @@ public class LanguageServerAutoconf {
 			SimpleLanguageServer languageServerFactory
 	) {
 		return new LanguageServerRunner(serverName, properties, languageServerFactory);
+	}
+	
+	@ConditionalOnMissingBean
+	@Bean public SimpleLanguageServer languageServer(LanguageServerProperties props) {
+		return new SimpleLanguageServer(props.getExtensionId());
 	}
 	
 }

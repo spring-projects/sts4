@@ -183,6 +183,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	}
 
 	public SimpleLanguageServer(String extensionId) {
+		Assert.isNotNull(extensionId);
 		this.EXTENSION_ID = extensionId;
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
 	}
