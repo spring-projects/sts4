@@ -27,7 +27,7 @@ public class LanguageServerAutoconf {
 	@Bean public LanguageServerRunner serverApp(
 			@Qualifier("serverName") String serverName,
 			LanguageServerProperties properties, 
-			Provider<SimpleLanguageServer> languageServerFactory
+			SimpleLanguageServer languageServerFactory
 	) {
 		return new LanguageServerRunner(serverName, properties, languageServerFactory);
 	}

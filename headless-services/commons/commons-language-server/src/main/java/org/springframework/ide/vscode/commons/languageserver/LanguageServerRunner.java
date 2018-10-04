@@ -25,8 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
-import javax.inject.Provider;
-
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -38,7 +36,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Log;
-import org.springframework.util.Assert;
 
 /**
  * A CommandLineRunner that launches a language server. This meant to be used as a Spring bean
@@ -77,13 +74,13 @@ public class LanguageServerRunner implements CommandLineRunner {
 
 	private LanguageServerProperties properties;
 	private final String name;
-	private final Provider<SimpleLanguageServer> languageServerFactory;
+	private final SimpleLanguageServer languageServer;
 
-	public LanguageServerRunner(String name, LanguageServerProperties properties, Provider<SimpleLanguageServer> languageServerFactory) {
+	public LanguageServerRunner(String name, LanguageServerProperties properties, SimpleLanguageServer languageServer) {
 		super();
 		this.name = name;
 		this.properties = properties;
-		this.languageServerFactory = languageServerFactory;
+		this.languageServer = languageServer;
 	}
 
 	public void start() throws Exception {
@@ -96,7 +93,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 		}
 	}
 
-	protected static class Connection {
+	private static class Connection {
 		final InputStream in;
 		final OutputStream out;
 		final Socket socket;
@@ -132,7 +129,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 		}
 	}
 
-	public void startAsClient() throws IOException {
+	private void startAsClient() throws IOException {
 		Log.info("Starting LS");
 		Connection connection = null;
 		try {
@@ -169,7 +166,6 @@ public class LanguageServerRunner implements CommandLineRunner {
 			return result;
 		};
 
-		SimpleLanguageServer languageServer = createServer();
 		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
 				new InetSocketAddress("localhost", serverPort), createServerThreads(), wrapper);
 
@@ -219,8 +215,8 @@ public class LanguageServerRunner implements CommandLineRunner {
 		}
 	}
 
-	protected Future<Void> runAsync(Connection connection) throws Exception {
-		LanguageServer server = createServer();
+	private Future<Void> runAsync(Connection connection) throws Exception {
+		LanguageServer server = this.languageServer;
 		ExecutorService executor = createServerThreads();
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
@@ -246,10 +242,6 @@ public class LanguageServerRunner implements CommandLineRunner {
 		}
 
 		return launcher.startListening();
-	}
-
-	final SimpleLanguageServer createServer() {
-		return languageServerFactory.get();
 	}
 
 }
