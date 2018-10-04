@@ -132,14 +132,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/theia-extensions/snapshots/theia-concourse-v(.*).tgz
-- name: s3-spring-boot-theia-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-spring-boot-v(.*).tgz
+# - name: s3-spring-boot-theia-snapshot
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/theia-extensions/snapshots/theia-spring-boot-v(.*).tgz
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
@@ -434,25 +434,25 @@ jobs:
     params: 
       file: out/theia-concourse-*.tgz
       acl: public-read
-- name: build-spring-boot-theia-snapshot
-  plan:
-  - aggregate:
-    - get: sts4
-      trigger: true
-    - get: maven-cache
-  - task: build-spring-boot-theia-snapshot
-    file: sts4/concourse/tasks/build-theia-package.yml
-    params:
-      extension_id: theia-spring-boot
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - put: s3-spring-boot-theia-snapshot
-    params: 
-      file: out/theia-spring-boot-*.tgz
-      acl: public-read
+# - name: build-spring-boot-theia-snapshot
+#   plan:
+#   - aggregate:
+#     - get: sts4
+#       trigger: true
+#     - get: maven-cache
+#   - task: build-spring-boot-theia-snapshot
+#     file: sts4/concourse/tasks/build-theia-package.yml
+#     params:
+#       extension_id: theia-spring-boot
+#     on_failure:
+#       put: slack-notification
+#       params:
+#         text: |
+#            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+#   - put: s3-spring-boot-theia-snapshot
+#     params: 
+#       file: out/theia-spring-boot-*.tgz
+#       acl: public-read
 - name: promote-fatjars-to-rc
   serial: true
   plan:
@@ -1213,7 +1213,7 @@ groups:
   - build-bosh-theia-snapshot
   - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
-  - build-spring-boot-theia-snapshot
+#  - build-spring-boot-theia-snapshot
 - name: setup
   jobs:
   - build-mvn-cache
