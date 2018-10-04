@@ -14,7 +14,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 
 @SpringBootApplication
 public class ManifestYamlLanguageServerBootApp {
@@ -29,9 +28,4 @@ public class ManifestYamlLanguageServerBootApp {
 	@Bean public String serverName() {
 		return SERVER_NAME;
 	}
-
-	@Bean ManifestYamlLanguageServer languageServer() {
-		return new ManifestYamlLanguageServer();
-	}
-
 }

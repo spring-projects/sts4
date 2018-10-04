@@ -99,6 +99,7 @@ import org.springframework.ide.vscode.commons.languageserver.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
@@ -146,6 +147,15 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(15000000000L); //Why so long?
+
+	public static LanguageServerHarness<SimpleLanguageServer> create(String extensionId, LanguageServerInitializer initializer) throws Exception {
+		Callable<SimpleLanguageServer> factory = () -> {
+			SimpleLanguageServer s = new SimpleLanguageServer(extensionId);
+			initializer.initialize(s);
+			return s;
+		};
+		return new LanguageServerHarness<>(factory);
+	}
 
 	public LanguageServerHarness(Callable<S> factory) throws Exception {
 		this(factory, LanguageId.PLAINTEXT);

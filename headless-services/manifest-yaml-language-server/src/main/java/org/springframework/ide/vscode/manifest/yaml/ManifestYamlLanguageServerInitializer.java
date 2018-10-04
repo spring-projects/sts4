@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -26,6 +27,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.Clien
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -48,33 +50,33 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbol
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class ManifestYamlLanguageServer extends SimpleLanguageServer {
+@Component
+public class ManifestYamlLanguageServerInitializer implements LanguageServerInitializer {
 
 	private Yaml yaml = new Yaml();
 	private CfJson cfJson = new CfJson();
 	private ManifestYmlSchema schema;
 	private CFTargetCache cfTargetCache;
 
-	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
-	final private ClientParamsProvider defaultClientParamsProvider;
+	private CloudFoundryClientFactory cfClientFactory;
+	ClientParamsProvider defaultClientParamsProvider;
+	private SimpleLanguageServer server;
 
-	public ManifestYamlLanguageServer() {
-		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
-	}
-
-	public ManifestYamlLanguageServer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider defaultClientParamsProvider) {
-		super("vscode-manifest-yaml");
-		this.defaultClientParamsProvider = defaultClientParamsProvider;
-
+	@Override
+	public void initialize(SimpleLanguageServer server) throws Exception {
+		Assert.isNull(this.server, "This initializer should only be called once");
+		this.server = server;
 		this.cfTargetCache = new CFTargetCache(ImmutableList.of(this.defaultClientParamsProvider), cfClientFactory, new ClientTimeouts());
 
-		SimpleTextDocumentService documents = getTextDocumentService();
-		SimpleWorkspaceService workspace = getWorkspaceService();
+		SimpleTextDocumentService documents = server.getTextDocumentService();
+		SimpleWorkspaceService workspace = server.getWorkspaceService();
 
 		YamlASTProvider parser = new YamlParser(yaml);
 
@@ -83,10 +85,10 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
-		VscodeCompletionEngineAdapter completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
+		VscodeCompletionEngineAdapter completionEngine = server.createCompletionEngineAdapter(server, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
-		HoverHandler hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
+		HoverHandler hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
+		YamlQuickfixes quickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(), structureProvider);
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
@@ -128,6 +130,19 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 				applyCfLoginParameterSettings(info);
 			}
 		});
+
+	}
+
+	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
+
+	@Autowired
+	public ManifestYamlLanguageServerInitializer() {
+		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
+	}
+
+	public ManifestYamlLanguageServerInitializer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider defaultClientParamsProvider) {
+		this.cfClientFactory = cfClientFactory;
+		this.defaultClientParamsProvider = defaultClientParamsProvider;
 	}
 
 	private void applyCfLoginParameterSettings(CfTargetsInfo info) {
@@ -143,13 +158,13 @@ public class ManifestYamlLanguageServer extends SimpleLanguageServer {
 			//
 			// this FALLBACK_YML_ID got introduced to workaround a limitation in LSP4E, which sets the file extension as language ID to the document
 			//
-			validateWith(doc.getId(), engine);
+			server.validateWith(doc.getId(), engine);
 		} else {
-			validateWith(doc.getId(), IReconcileEngine.NULL);
+			server.validateWith(doc.getId(), IReconcileEngine.NULL);
 		}
 	}
 
-	protected ManifestYmlHintProviders getHintProviders() {
+	private ManifestYmlHintProviders getHintProviders() {
 		Callable<Collection<YValueHint>> buildPacksProvider = new ManifestYamlCFBuildpacksProvider(getCfTargetCache());
 		Callable<Collection<YValueHint>> servicesProvider = new ManifestYamlCFServicesProvider(getCfTargetCache());
 		Callable<Collection<YValueHint>> domainsProvider = new ManifestYamlCFDomainsProvider(getCfTargetCache());

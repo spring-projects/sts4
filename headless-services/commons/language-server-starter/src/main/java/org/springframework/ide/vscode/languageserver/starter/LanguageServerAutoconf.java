@@ -16,6 +16,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -32,8 +33,10 @@ public class LanguageServerAutoconf {
 	}
 	
 	@ConditionalOnMissingBean
-	@Bean public SimpleLanguageServer languageServer(LanguageServerProperties props) {
-		return new SimpleLanguageServer(props.getExtensionId());
+	@Bean public SimpleLanguageServer languageServer(LanguageServerProperties props, LanguageServerInitializer initializer) throws Exception {
+		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
+		initializer.initialize(server);
+		return server;
 	}
 	
 }

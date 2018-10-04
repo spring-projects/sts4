@@ -29,20 +29,22 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 import com.google.gson.JsonParser;
 
-public class ManifestYamlLanguageServerTest {
+public class ManifestYamlLanguageServerInitializerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
-		return Paths.get(ManifestYamlLanguageServerTest.class.getResource(name).toURI()).toFile();
+		return Paths.get(ManifestYamlLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness<SimpleLanguageServer> harness = LanguageServerHarness.create("vscode-manifest-yaml", new ManifestYamlLanguageServerInitializer());
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -50,7 +52,7 @@ public class ManifestYamlLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new);
+		LanguageServerHarness<SimpleLanguageServer> harness = LanguageServerHarness.create("vscode-manifest-yaml", new ManifestYamlLanguageServerInitializer());
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 
@@ -93,17 +95,19 @@ public class ManifestYamlLanguageServerTest {
 
 	@Test public void changeCfClientParams() throws Exception {
 		MockCloudfoundry cloudfoundry = new MockCloudfoundry();
-		ManifestYamlLanguageServer manifestYamlLanguageServer = new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider);
+		ManifestYamlLanguageServerInitializer serverInitializer = new ManifestYamlLanguageServerInitializer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider);
+		SimpleLanguageServer server = new SimpleLanguageServer("vscode-manifest-yaml");
+		serverInitializer.initialize(server);
 
-		LanguageServerHarness harness = new LanguageServerHarness(
-				() -> manifestYamlLanguageServer,
+		LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
+				() -> server,
 				LanguageId.CF_MANIFEST
 		);
 		harness.intialize(null);
 
 		// This is an initial target, for example from cf CLI
-		assertEquals(1, getAllParams(manifestYamlLanguageServer.getParamsProvider()).size());
-		assertEquals(Arrays.asList("test.io"), manifestYamlLanguageServer.getCfTargets());
+		assertEquals(1, getAllParams(serverInitializer.getParamsProvider()).size());
+		assertEquals(Arrays.asList("test.io"), serverInitializer.getCfTargets());
 
 		// This tests a change in workspace (e.g. boot dash) that results in two more targets created.
 		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
@@ -111,11 +115,11 @@ public class ManifestYamlLanguageServerTest {
 		JsonParser parser = new JsonParser();
 		params.setSettings(parser.parse(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json"))));
 
-		manifestYamlLanguageServer.getWorkspaceService().didChangeConfiguration(params);
-		assertEquals(3, getAllParams(manifestYamlLanguageServer.getParamsProvider()).size());
+		server.getWorkspaceService().didChangeConfiguration(params);
+		assertEquals(3, getAllParams(serverInitializer.getParamsProvider()).size());
 
 		// End result should have the initial target as well as the two additional targets obtained on workspace change
-		assertEquals(Arrays.asList("test.io", "api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), manifestYamlLanguageServer.getCfTargets());
+		assertEquals(Arrays.asList("test.io", "api.system.demo-gcp.springapps.io", "api.run.pivotal.io"), serverInitializer.getCfTargets());
 	}
 
 	private List<CFClientParams> getAllParams(List<ClientParamsProvider> providers) throws Exception {

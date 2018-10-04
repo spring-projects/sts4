@@ -167,7 +167,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		return null;
 	}
 
-	protected synchronized QuickfixRegistry getQuickfixRegistry() {
+	public synchronized QuickfixRegistry getQuickfixRegistry() {
 		if (quickfixRegistry==null) {
 			quickfixRegistry = new QuickfixRegistry();
 		}

@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
@@ -43,12 +44,14 @@ import com.google.common.collect.ImmutableList;
 
 public class ManifestYamlEditorTest {
 
-	LanguageServerHarness harness;
+	LanguageServerHarness<SimpleLanguageServer> harness;
 	MockCloudfoundry cloudfoundry = new MockCloudfoundry();
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness(
-				()-> new ManifestYamlLanguageServer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider),
+		SimpleLanguageServer server = new SimpleLanguageServer("vscode-manifest-yaml");
+		new ManifestYamlLanguageServerInitializer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider).initialize(server);
+		harness = new LanguageServerHarness<>(
+				()-> server,
 				LanguageId.CF_MANIFEST
 		);
 		harness.intialize(null);
@@ -67,8 +70,8 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServer::new, LanguageId.CF_MANIFEST);
-		harness.intialize(null);
+//		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServerInitializer::new, LanguageId.CF_MANIFEST);
+//		harness.intialize(null);
 
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
