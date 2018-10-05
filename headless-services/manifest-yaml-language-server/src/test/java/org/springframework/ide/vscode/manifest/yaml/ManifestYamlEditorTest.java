@@ -28,24 +28,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Unicodes;
-import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.manifest.yaml.annotations.ManifestLanguageServerTest;
+import org.springframework.ide.vscode.manifest.yaml.bootiful.ManifestLanguageServerTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
@@ -58,43 +52,9 @@ public class ManifestYamlEditorTest {
 	MockCloudfoundry cloudfoundry;
 
 	@Autowired
-	SimpleLanguageServer server;
-
-	@Autowired
-	LanguageServerInitializer serverInit;
-
-	@Autowired
 	LanguageServerHarness<SimpleLanguageServer> harness;
 
-
-	@TestConfiguration
-	public static class MockCloudfoundryConfiguration {
-
-		@Bean public MockCloudfoundry cloudfoundry() {
-			return new MockCloudfoundry();
-		}
-
-		@Bean public CloudFoundryClientFactory cloudfoundryClientFactory(MockCloudfoundry cf) {
-			return cf.factory;
-		}
-
-		@Bean public ClientParamsProvider cloudfoundryParams(MockCloudfoundry cf) {
-			return cf.defaultParamsProvider;
-		}
-
-		@Bean public LanguageServerHarness<SimpleLanguageServer> harness(SimpleLanguageServer server) throws Exception {
-			LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
-					()-> server,
-					LanguageId.CF_MANIFEST
-			);
-			harness.intialize(null);
-			System.setProperty("lsp.yaml.completions.errors.disable", "false");
-			return harness;
-		}
-	}
-
 	@Test public void testReconcileCatchesParseError() throws Exception {
-
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
 				"- sequence"
@@ -105,9 +65,6 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test public void reconcileRunsOnDocumentOpenAndChange() throws Exception {
-//		LanguageServerHarness harness = new LanguageServerHarness(ManifestYamlLanguageServerInitializer::new, LanguageId.CF_MANIFEST);
-//		harness.intialize(null);
-
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
 				"- sequence"

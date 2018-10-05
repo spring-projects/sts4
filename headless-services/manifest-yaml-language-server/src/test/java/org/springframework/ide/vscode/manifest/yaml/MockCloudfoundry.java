@@ -50,7 +50,7 @@ public class MockCloudfoundry {
 	/**
 	 * Reset the mocks. Use this if the default's programmed into the mocks don't suite your test case.
 	 * <p>
-	 * Note: you may also choose to call {@link Mockito}.mock directly if you do not want to
+	 * Note: you may also choose to call {@link Mockito}.reset directly if you do not want to
 	 * reset all of the mocks.
 	 */
 	public void reset() throws Exception {

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.manifest.yaml.annotations;
+package org.springframework.ide.vscode.manifest.yaml.bootiful;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,7 +24,10 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 @Retention(RetentionPolicy.RUNTIME)
 @OverrideAutoConfiguration(enabled=false)
 @ImportAutoConfiguration(classes=LanguageServerAutoConf.class)
-@SpringBootTest(classes=ManifestYamlLanguageServerBootApp.class)
+@SpringBootTest(classes={
+		ManifestYamlLanguageServerBootApp.class,
+		ManifestYamlLanguageServerTestConfiguration.class
+})
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public @interface ManifestLanguageServerTest {
 }
