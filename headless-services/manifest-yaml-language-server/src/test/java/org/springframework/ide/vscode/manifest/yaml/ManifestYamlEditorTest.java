@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.manifest.yaml;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -24,38 +24,73 @@ import java.util.List;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFDomain;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInstance;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
+import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.manifest.yaml.annotations.ManifestLanguageServerTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+@RunWith(SpringRunner.class)
+@ManifestLanguageServerTest
 public class ManifestYamlEditorTest {
 
-	LanguageServerHarness<SimpleLanguageServer> harness;
-	MockCloudfoundry cloudfoundry = new MockCloudfoundry();
+	@Autowired
+	MockCloudfoundry cloudfoundry;
 
-	@Before public void setup() throws Exception {
-		SimpleLanguageServer server = new SimpleLanguageServer("vscode-manifest-yaml");
-		new ManifestYamlLanguageServerInitializer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider).initialize(server);
-		harness = new LanguageServerHarness<>(
-				()-> server,
-				LanguageId.CF_MANIFEST
-		);
-		harness.intialize(null);
-		System.setProperty("lsp.yaml.completions.errors.disable", "false");
+	@Autowired
+	SimpleLanguageServer server;
+
+	@Autowired
+	LanguageServerInitializer serverInit;
+
+	@Autowired
+	LanguageServerHarness<SimpleLanguageServer> harness;
+
+
+	@TestConfiguration
+	public static class MockCloudfoundryConfiguration {
+
+		@Bean public MockCloudfoundry cloudfoundry() {
+			return new MockCloudfoundry();
+		}
+
+		@Bean public CloudFoundryClientFactory cloudfoundryClientFactory(MockCloudfoundry cf) {
+			return cf.factory;
+		}
+
+		@Bean public ClientParamsProvider cloudfoundryParams(MockCloudfoundry cf) {
+			return cf.defaultParamsProvider;
+		}
+
+		@Bean public LanguageServerHarness<SimpleLanguageServer> harness(SimpleLanguageServer server) throws Exception {
+			LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
+					()-> server,
+					LanguageId.CF_MANIFEST
+			);
+			harness.intialize(null);
+			System.setProperty("lsp.yaml.completions.errors.disable", "false");
+			return harness;
+		}
 	}
 
 	@Test public void testReconcileCatchesParseError() throws Exception {

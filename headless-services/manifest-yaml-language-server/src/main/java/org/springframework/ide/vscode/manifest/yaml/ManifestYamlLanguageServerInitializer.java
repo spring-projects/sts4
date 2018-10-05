@@ -130,16 +130,19 @@ public class ManifestYamlLanguageServerInitializer implements LanguageServerInit
 				applyCfLoginParameterSettings(info);
 			}
 		});
-
 	}
 
 	private final ImmutableSet<LanguageId> FALLBACK_YML_IDS = ImmutableSet.of(LanguageId.of("yml"), LanguageId.of("yaml"));
 
-	@Autowired
+	/**
+	 * Deprecated: should use the @Autowired constructor instead to inject CF client.
+	 */
+	@Deprecated
 	public ManifestYamlLanguageServerInitializer() {
 		this(DefaultCloudFoundryClientFactoryV2.INSTANCE, CfCliParamsProvider.getInstance());
 	}
 
+	@Autowired
 	public ManifestYamlLanguageServerInitializer(CloudFoundryClientFactory cfClientFactory, ClientParamsProvider defaultClientParamsProvider) {
 		this.cfClientFactory = cfClientFactory;
 		this.defaultClientParamsProvider = defaultClientParamsProvider;
@@ -219,5 +222,4 @@ public class ManifestYamlLanguageServerInitializer implements LanguageServerInit
 		}
 		return Collections.emptyList();
 	}
-
 }

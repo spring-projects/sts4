@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoconf
+org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf,\
+org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf

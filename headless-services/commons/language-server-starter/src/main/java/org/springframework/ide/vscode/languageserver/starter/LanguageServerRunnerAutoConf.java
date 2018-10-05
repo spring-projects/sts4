@@ -11,19 +11,15 @@
 package org.springframework.ide.vscode.languageserver.starter;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 @Configuration
-@EnableConfigurationProperties(LanguageServerProperties.class)
-public class LanguageServerAutoconf {
-	
+public class LanguageServerRunnerAutoConf {
+
 	@Bean public LanguageServerRunner serverApp(
 			@Qualifier("serverName") String serverName,
 			LanguageServerProperties properties, 
@@ -31,12 +27,5 @@ public class LanguageServerAutoconf {
 	) {
 		return new LanguageServerRunner(serverName, properties, languageServerFactory);
 	}
-	
-	@ConditionalOnMissingBean
-	@Bean public SimpleLanguageServer languageServer(LanguageServerProperties props, LanguageServerInitializer initializer) throws Exception {
-		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
-		initializer.initialize(server);
-		return server;
-	}
-	
+
 }
