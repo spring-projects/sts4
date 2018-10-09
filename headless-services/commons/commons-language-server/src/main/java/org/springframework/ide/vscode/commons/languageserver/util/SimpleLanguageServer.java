@@ -221,7 +221,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		log.info("Initializing: "+params);
+		log.debug("Initializing: "+params);
 
 		// multi-root workspace handling
 		List<WorkspaceFolder> workspaceFolders = getWorkspaceFolders(params);

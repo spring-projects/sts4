@@ -20,22 +20,28 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.ide.vscode.concourse.ConcourseLanguageServerInitializer;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.concourse.bootiful.ConcourseLanguageServerTest;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import static org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions.*;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@ConcourseLanguageServerTest
 public class ConcourseLanguageServerInitializerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
 		return Paths.get(ConcourseLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
+	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
+	@MockBean GithubInfoProvider github;
+
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new ConcourseLanguageServerInitializer(Mockito.mock(GithubInfoProvider.class)));
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -43,8 +49,6 @@ public class ConcourseLanguageServerInitializerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new ConcourseLanguageServerInitializer(Mockito.mock(GithubInfoProvider.class)));
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 
