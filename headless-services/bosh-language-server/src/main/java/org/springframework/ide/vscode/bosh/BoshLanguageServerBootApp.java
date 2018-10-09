@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.bosh;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
@@ -32,13 +33,19 @@ public class BoshLanguageServerBootApp {
 		return SERVER_NAME;
 	}
 
-	@Bean BoshLanguageServer languageServer(BoshCliConfig cliConfig) {
-		return new BoshLanguageServer(
-				cliConfig,
-				new BoshCommandCloudConfigProvider(cliConfig),
-				new BoshCommandStemcellsProvider(cliConfig),
-				new BoshCommandReleasesProvider(cliConfig)
-		);
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean BoshCommandCloudConfigProvider cloudConfg(BoshCliConfig cliConfig) {
+		return new BoshCommandCloudConfigProvider(cliConfig);
+	}
+
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean BoshCommandStemcellsProvider stemcels(BoshCliConfig cliConfig) {
+		return new BoshCommandStemcellsProvider(cliConfig);
+	}
+
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean BoshCommandReleasesProvider releases(BoshCliConfig cliConfig) {
+		return new BoshCommandReleasesProvider(cliConfig);
 	}
 
 }

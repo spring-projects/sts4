@@ -20,24 +20,36 @@ import java.nio.file.Paths;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.ide.vscode.bosh.bootiful.BoshLanguageServerTest;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
+import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
+import org.springframework.ide.vscode.bosh.models.ReleasesModel;
+import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@SuppressWarnings("unchecked")
-public class BoshLanguageServerTest {
+@RunWith(SpringRunner.class)
+@BoshLanguageServerTest
+public class BoshLanguageServerInitializerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
-		return Paths.get(BoshLanguageServerTest.class.getResource(name).toURI()).toFile();
+		return Paths.get(BoshLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
-	private BoshCliConfig cliConfig = new BoshCliConfig();
+	@MockBean DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
+	@MockBean DynamicModelProvider<StemcellsModel> stemcellsProvider;
+	@MockBean DynamicModelProvider<ReleasesModel> releasesProvider;
+
+	@Autowired
+	LanguageServerHarness<SimpleLanguageServer> harness;
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), mock(DynamicModelProvider.class), mock(DynamicModelProvider.class))
-		);
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -45,9 +57,6 @@ public class BoshLanguageServerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness harness = new LanguageServerHarness(() ->
-			new BoshLanguageServer(cliConfig, new MockCloudConfigProvider(cliConfig), mock(DynamicModelProvider.class), mock(DynamicModelProvider.class))
-		);
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 

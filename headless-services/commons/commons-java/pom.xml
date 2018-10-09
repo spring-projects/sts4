@@ -12,8 +12,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
-	
-	
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>

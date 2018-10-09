@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -35,7 +36,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import reactor.core.publisher.Flux;
 
-public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServer> {
+public class BoshDefintionFinder extends SimpleDefinitionFinder<SimpleLanguageServer> {
 
 	//TODO: lots of common code between BoshDefintionFinder and ConcourseDefinitionFinder.
 	// should be possible to pull up into a common super class.
@@ -51,7 +52,7 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder<BoshLanguageServ
 		List<Location> handle(Node refNode, TextDocument doc, YamlFileAST ast);
 	}
 
-	public BoshDefintionFinder(BoshLanguageServer server, BoshSchemas schema, YamlAstCache asts, ASTTypeCache astTypes) {
+	public BoshDefintionFinder(SimpleLanguageServer server, BoshSchemas schema, YamlAstCache asts, ASTTypeCache astTypes) {
 		super(server);
 		this.schema = schema;
 		this.asts = asts;

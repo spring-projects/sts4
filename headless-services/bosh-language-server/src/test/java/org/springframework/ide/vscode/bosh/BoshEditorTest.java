@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.bosh;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.DEDENTED_COMPLETION;
@@ -29,6 +29,10 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.ide.vscode.bosh.bootiful.BoshLanguageServerTest;
 import org.springframework.ide.vscode.bosh.mocks.MockCloudConfigProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
@@ -37,35 +41,32 @@ import org.springframework.ide.vscode.bosh.models.ReleaseData;
 import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 
+@RunWith(SpringRunner.class)
+@BoshLanguageServerTest
 public class BoshEditorTest {
 
-	LanguageServerHarness<BoshLanguageServer> harness;
+	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
 
-	private BoshCliConfig cliConfig = new BoshCliConfig();
-	private MockCloudConfigProvider cloudConfigProvider = new MockCloudConfigProvider(cliConfig);
-	private DynamicModelProvider<StemcellsModel> stemcellsProvider = mock(DynamicModelProvider.class);
-	private DynamicModelProvider<ReleasesModel> releasesProvider = mock(DynamicModelProvider.class);
+	@Autowired BoshLanguageServerInitializer serverInitializer;
+	@Autowired BoshCliConfig cliConfig;
+	@Autowired MockCloudConfigProvider cloudConfigProvider;
+
+	@MockBean DynamicModelProvider<StemcellsModel> stemcellsProvider;
+	@MockBean DynamicModelProvider<ReleasesModel> releasesProvider;
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness<BoshLanguageServer>(() -> {
-				return new BoshLanguageServer(cliConfig, cloudConfigProvider,
-						(dc) -> stemcellsProvider.getModel(dc),
-						(dc) -> releasesProvider.getModel(dc)
-				)
-				.setMaxCompletions(100);
-			},
-			LanguageId.BOSH_DEPLOYMENT
-		);
 		harness.intialize(null);
 		System.setProperty("lsp.yaml.completions.errors.disable", "false");
 	}
@@ -277,7 +278,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void releasesBlockCompletions() throws Exception {
-		harness.getServerWrapper().enableSnippets(false);
+		serverInitializer.enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"releases:\n" +
 				"- <*>"
@@ -360,7 +361,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void instanceGroupsCompletions() throws Exception {
-		harness.getServerWrapper().enableSnippets(false);
+		serverInitializer.enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"instance_groups:\n" +
 				"- <*>"
@@ -544,7 +545,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void updateBlockCompletions() throws Exception {
-		harness.getServerWrapper().enableSnippets(false);
+		serverInitializer.enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"update:\n" +
 				"  <*>"
@@ -584,7 +585,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void variablesBlockCompletions() throws Exception {
-		harness.getServerWrapper().enableSnippets(false);
+		serverInitializer.enableSnippets(false);
 		Editor editor = harness.newEditor(
 				"variables:\n" +
 				"- <*>"
@@ -991,7 +992,6 @@ public class BoshEditorTest {
 
 	@Test public void contentAssistStemcellNameNoDirector() throws Exception {
 		Editor editor;
-		stemcellsProvider = mock(DynamicModelProvider.class);
 		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
 		editor = harness.newEditor(
 				"stemcells:\n" +
@@ -1008,7 +1008,6 @@ public class BoshEditorTest {
 	@SuppressWarnings("unchecked")
 	@Test public void contentAssistStemcellVersionNoDirector() throws Exception {
 		Editor editor;
-		stemcellsProvider = mock(DynamicModelProvider.class);
 		when(stemcellsProvider.getModel(any())).thenThrow(new IOException("Couldn't connect to bosh"));
 		editor = harness.newEditor(
 				"stemcells:\n" +
@@ -1023,7 +1022,7 @@ public class BoshEditorTest {
 
 	@Test public void contentAssistStemcellVersionFromDirector() throws Exception {
 		Editor editor;
-		stemcellsProvider = provideStemcellsFrom(
+		provideStemcellsFrom(
 				new StemcellData("ubuntu-agent", "123.4", "ubuntu"),
 				new StemcellData("ubuntu-agent", "222.2", "ubuntu"),
 				new StemcellData("centos-agent", "222.2", "centos"),
@@ -1121,7 +1120,7 @@ public class BoshEditorTest {
 
 	@Test public void reconcileStemcellVersionFromDirector() throws Exception {
 		Editor editor;
-		stemcellsProvider = provideStemcellsFrom(
+		provideStemcellsFrom(
 				new StemcellData("ubuntu-agent", "123.4", "ubuntu"),
 				new StemcellData("ubuntu-agent", "222.2", "ubuntu"),
 				new StemcellData("centos-agent", "222.2", "centos"),
@@ -1150,8 +1149,8 @@ public class BoshEditorTest {
 		);
 	}
 
-	private DynamicModelProvider<StemcellsModel> provideStemcellsFrom(StemcellData... stemcellData) {
-		return new BoshCommandStemcellsProvider(cliConfig) {
+	private void provideStemcellsFrom(StemcellData... stemcellData) throws Exception {
+		BoshCommandStemcellsProvider stemcells = new BoshCommandStemcellsProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
 				String rows = gson.toJson(stemcellData);
@@ -1164,10 +1163,13 @@ public class BoshEditorTest {
 						"}";
 			}
 		};
+		when(stemcellsProvider.getModel(any())).then(inv -> {
+			return stemcells.getModel(null);
+		});
 	}
 
 	@Test public void contentAssistReleaseNameDef() throws Exception {
-		releasesProvider = provideReleasesFrom(
+		provideReleasesFrom(
 				new ReleaseData("foo", "123.4"),
 				new ReleaseData("foo", "222.2"),
 				new ReleaseData("bar", "222.2"),
@@ -1185,7 +1187,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void reconcileReleaseNameDef() throws Exception {
-		releasesProvider = provideReleasesFrom(
+		provideReleasesFrom(
 				new ReleaseData("foo", "123.4"),
 				new ReleaseData("foo", "222.2"),
 				new ReleaseData("bar", "222.2"),
@@ -1205,7 +1207,7 @@ public class BoshEditorTest {
 	}
 
 	@Test public void contentAssistReleaseVersion() throws Exception {
-		releasesProvider = provideReleasesFrom(
+		provideReleasesFrom(
 				new ReleaseData("foo", "123.4"),
 				new ReleaseData("foo", "222.2"),
 				new ReleaseData("bar", "222.2"),
@@ -1264,7 +1266,7 @@ public class BoshEditorTest {
 
 	@Test public void reconcileReleaseVersion() throws Exception {
 		Editor editor;
-		releasesProvider = provideReleasesFrom(
+		provideReleasesFrom(
 				new ReleaseData("foo", "123.4"),
 				new ReleaseData("foo", "222.2"),
 				new ReleaseData("bar", "222.2"),
@@ -1319,8 +1321,8 @@ public class BoshEditorTest {
 	}
 
 
-	private DynamicModelProvider<ReleasesModel> provideReleasesFrom(ReleaseData... stemcellData) {
-		return new BoshCommandReleasesProvider(cliConfig) {
+	private void provideReleasesFrom(ReleaseData... stemcellData) throws Exception {
+		BoshCommandReleasesProvider releases = new BoshCommandReleasesProvider(cliConfig) {
 			@Override
 			protected String executeCommand(ExternalCommand command) throws Exception {
 				String rows = gson.toJson(stemcellData);
@@ -1333,6 +1335,9 @@ public class BoshEditorTest {
 						"}";
 			}
 		};
+		when(releasesProvider.getModel(any())).then(in -> {
+			return releases.getModel(null);
+		});
 	}
 
 	@Test public void contentAssistVMtype() throws Exception {

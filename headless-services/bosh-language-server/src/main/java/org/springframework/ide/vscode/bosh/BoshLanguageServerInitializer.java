@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
 import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -36,21 +37,38 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbol
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
-public class BoshLanguageServer extends SimpleLanguageServer {
+@Component
+public class BoshLanguageServerInitializer implements LanguageServerInitializer {
 
-	private final VscodeCompletionEngineAdapter completionEngine;
+	private BoshCliConfig cliConfig;
+	private DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
+	private DynamicModelProvider<StemcellsModel> stemcellsProvider;
+	private DynamicModelProvider<ReleasesModel> releasesProvider;
+
+	private SimpleLanguageServer server;
 	private BoshSchemas schema;
+	private VscodeCompletionEngineAdapter completionEngine;
 
-	public BoshLanguageServer(BoshCliConfig cliConfig,
+	public BoshLanguageServerInitializer(BoshCliConfig cliConfig,
 			DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
 			DynamicModelProvider<StemcellsModel> stemcellsProvider,
 			DynamicModelProvider<ReleasesModel> releasesProvider
 	) {
-		super("vscode-bosh");
-		BoshModels models = new BoshModels(cloudConfigProvider, stemcellsProvider, releasesProvider);
-		SimpleTextDocumentService documents = getTextDocumentService();
+		this.cliConfig = cliConfig;
+		this.cloudConfigProvider= cloudConfigProvider;
+		this.stemcellsProvider = stemcellsProvider;
+		this.releasesProvider = releasesProvider;
+	}
 
+	@Override
+	public void initialize(SimpleLanguageServer server) throws Exception {
+		Assert.isNull(this.server, "This initializer should only be used once");
+		this.server = server;
+		BoshModels models = new BoshModels(cloudConfigProvider, stemcellsProvider, releasesProvider);
+		SimpleTextDocumentService documents = server.getTextDocumentService();
 		schema = new BoshSchemas(models);
 		YamlAstCache asts = models.asts;
 		ASTTypeCache astTypeCache = models.astTypes;
@@ -59,10 +77,10 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		enableSnippets(true);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
-		completionEngine = createCompletionEngineAdapter(this, yamlCompletionEngine);
+		completionEngine = server.createCompletionEngineAdapter(server, yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
-		VscodeHoverEngineAdapter hoverEngine = new VscodeHoverEngineAdapter(this, infoProvider);
-		YamlQuickfixes quickfixes = new YamlQuickfixes(getQuickfixRegistry(), getTextDocumentService(), structureProvider);
+		VscodeHoverEngineAdapter hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
+		YamlQuickfixes quickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(), structureProvider);
 		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(asts.getAstProvider(false), schema, quickfixes);
 		engine.setTypeCollector(astTypeCache);
 		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
@@ -73,27 +91,27 @@ public class BoshLanguageServer extends SimpleLanguageServer {
 		documents.onCompletion(completionEngine::getCompletions);
 		documents.onCompletionResolve(completionEngine::resolveCompletion);
 		documents.onHover(hoverEngine);
-		documents.onDefinition(new BoshDefintionFinder(this, schema, asts, astTypeCache));
+		documents.onDefinition(new BoshDefintionFinder(server, schema, asts, astTypeCache));
 
-		SimpleWorkspaceService workspace = getWorkspaceService();
+		SimpleWorkspaceService workspace = server.getWorkspaceService();
 		workspace.onDidChangeConfiguraton((Settings settings) -> {
 			cliConfig.handleConfigurationChange(settings);
 		});
 	}
 
 	private void validateOnDocumentChange(IReconcileEngine engine, TextDocument doc) {
-		validateWith(doc.getId(), engine);
+		server.validateWith(doc.getId(), engine);
 	}
 
 	public void enableSnippets(boolean enable) {
 		if (enable) {
-			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), this::createSnippetBuilder));
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), server::createSnippetBuilder));
 		} else {
 			schema.f.setSnippetProvider(null);
 		}
 	}
 
-	public BoshLanguageServer setMaxCompletions(int maxCompletions) {
+	public BoshLanguageServerInitializer setMaxCompletions(int maxCompletions) {
 		completionEngine.setMaxCompletions(maxCompletions);
 		return this;
 	}
