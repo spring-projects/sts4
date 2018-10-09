@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import java.util.Optional;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -33,9 +33,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-import reactor.core.publisher.Flux;
-
-public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseLanguageServer> {
+public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLanguageServer> {
 
 	@FunctionalInterface
 	private interface Handler {
@@ -46,7 +44,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<ConcourseL
 	private Map<YType, Handler> handlers = new HashMap<>();
 	private final YamlAstCache asts;
 
-	public ConcourseDefinitionFinder(ConcourseLanguageServer server, ConcourseModel models, PipelineYmlSchema schema) {
+	public ConcourseDefinitionFinder(SimpleLanguageServer server, ConcourseModel models, PipelineYmlSchema schema) {
 		super(server);
 		this.astTypes = models.getAstTypeCache();
 		this.asts = models.getAstCache();

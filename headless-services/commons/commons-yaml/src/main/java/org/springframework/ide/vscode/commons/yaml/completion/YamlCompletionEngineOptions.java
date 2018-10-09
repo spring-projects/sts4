@@ -17,13 +17,8 @@ public interface YamlCompletionEngineOptions {
 	 * some spaces in front of the cursor first.
 	 */
 	default boolean includeDeindentedProposals() {
-		//Disabled by default for now because of bug introduced in VSCode 1.12:
-		//https://github.com/Microsoft/vscode/issues/26096
 		return true;
 	}
 
 	YamlCompletionEngineOptions DEFAULT = new YamlCompletionEngineOptions() {};
-	YamlCompletionEngineOptions TEST_DEFAULT = new YamlCompletionEngineOptions() {
-		@Override public boolean includeDeindentedProposals() { return true; }
-	};
 }

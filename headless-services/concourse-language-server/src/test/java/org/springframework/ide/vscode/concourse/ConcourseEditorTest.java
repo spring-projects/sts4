@@ -30,39 +30,43 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.concourse.bootiful.ConcourseLanguageServerTest;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.ide.vscode.concourse.github.GithubRepoContentAssistant;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+@RunWith(SpringRunner.class)
+@ConcourseLanguageServerTest
 public class ConcourseEditorTest {
 
-	private static final YamlCompletionEngineOptions OPTIONS = YamlCompletionEngineOptions.TEST_DEFAULT;
-
 	private static final String CURSOR = "<*>";
-	LanguageServerHarness<ConcourseLanguageServer> harness;
 
-	private GithubInfoProvider github= Mockito.mock(GithubInfoProvider.class);
+	@Autowired
+	ConcourseLanguageServerInitializer serverInitializer;
+
+	@Autowired
+	LanguageServerHarness<SimpleLanguageServer> harness;
+
+	@MockBean
+	private GithubInfoProvider github;
 
 	@Before public void setup() throws Exception {
-		harness = new LanguageServerHarness<>(() -> {
-				ConcourseLanguageServer s = new ConcourseLanguageServer(OPTIONS, github);
-				s.setMaxCompletions(100);
-				return s;
-			},
-			LanguageId.CONCOURSE_PIPELINE
-		);
+		serverInitializer.setMaxCompletions(100);
 		harness.intialize(null);
 	}
 

@@ -15,6 +15,7 @@ import java.util.List;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -40,21 +41,31 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
-public class ConcourseLanguageServer extends SimpleLanguageServer {
+@Component
+public class ConcourseLanguageServerInitializer implements LanguageServerInitializer {
 
-	private final YamlCompletionEngineOptions COMPLETION_OPTIONS;
-	YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
-	SimpleTextDocumentService documents = getTextDocumentService();
-	ConcourseModel models = new ConcourseModel(this);
-	YamlASTProvider currentAsts = models.getAstCache().getAstProvider(false);
+	private final YamlCompletionEngineOptions COMPLETION_OPTIONS = YamlCompletionEngineOptions.DEFAULT;
+	private final GithubInfoProvider github;
+	private final YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
+
+	private SimpleLanguageServer server;
+	private ConcourseModel models;
+
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
-	private final YamlQuickfixes yamlQuickfixes;
+	private YamlQuickfixes yamlQuickfixes;
+	private YamlASTProvider currentAsts;
+
+	public ConcourseLanguageServerInitializer(GithubInfoProvider github) {
+		this.github = github;
+	}
 
 	private class SchemaSpecificPieces {
 
@@ -66,16 +77,16 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes) {
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, COMPLETION_OPTIONS);
-			this.completionEngine = createCompletionEngineAdapter(ConcourseLanguageServer.this, yamlCompletionEngine);
+			this.completionEngine = server.createCompletionEngineAdapter(server, yamlCompletionEngine);
 
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
-			this.hoverEngine = new VscodeHoverEngineAdapter(ConcourseLanguageServer.this, infoProvider);
+			this.hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
 
 			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema, yamlQuickfixes);
 			reconcileEngine.setTypeCollector(models.getAstTypeCache());
 
 			this.symbolHandler = CollectionUtil.hasElements(definitionTypes)
-					? new TypeBasedYamlSymbolHandler(documents, models.getAstTypeCache(), definitionTypes)
+					? new TypeBasedYamlSymbolHandler(server.getTextDocumentService(), models.getAstTypeCache(), definitionTypes)
 					: DocumentSymbolHandler.NO_SYMBOLS;
 		}
 
@@ -86,32 +97,36 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 
 	public void enableSnippets(PipelineYmlSchema schema, boolean enable) {
 		if (enable) {
-			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), this::createSnippetBuilder));
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), server::createSnippetBuilder));
 		} else {
 			schema.f.setSnippetProvider(null);
 		}
 	}
 
-	public ConcourseLanguageServer(YamlCompletionEngineOptions completionOptions, GithubInfoProvider github) {
-		super("vscode-concourse");
-		this.COMPLETION_OPTIONS = completionOptions;
+	@Override
+	public void initialize(SimpleLanguageServer server) throws Exception {
+		Assert.isNull(this.server, "This initializer should only be used once");
+		this.server = server;
+		this.models = new ConcourseModel(server);
+		this.currentAsts = models.getAstCache().getAstProvider(false);
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models, github);
 		enableSnippets(pipelineSchema, true);
-		this.yamlQuickfixes = new YamlQuickfixes(getQuickfixRegistry(), documents, structureProvider);
+		SimpleTextDocumentService documents = server.getTextDocumentService();
+		this.yamlQuickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), documents, structureProvider);
 
 		this.forPipelines = new SchemaSpecificPieces(pipelineSchema, pipelineSchema.getDefinitionTypes());
 		this.forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema(), null);
-		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(this, models, pipelineSchema);
+		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(server, models, pipelineSchema);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-				validateWith(doc.getId(), forPipelines.reconcileEngine);
+				server.validateWith(doc.getId(), forPipelines.reconcileEngine);
 			} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-				validateWith(doc.getId(), forTasks.reconcileEngine);
+				server.validateWith(doc.getId(), forTasks.reconcileEngine);
 			} else {
-				validateWith(doc.getId(), IReconcileEngine.NULL);
+				server.validateWith(doc.getId(), IReconcileEngine.NULL);
 			}
 		});
 
@@ -138,7 +153,7 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 			return Mono.just(new CompletionList(false, ImmutableList.of()));
 		});
 		documents.onCompletionResolve(item -> {
-			completionResolver.resolveNow(item);
+			server.completionResolver.resolveNow(item);
 			return item;
 		});
 		documents.onHover(params -> {
@@ -167,18 +182,18 @@ public class ConcourseLanguageServer extends SimpleLanguageServer {
 		});
 	}
 
-	@Override
-	protected DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
-		ProblemType type = problem.getType();
-		if (YamlSchemaProblems.PROPERTY_CONSTRAINT.contains(type)) {
-			return DiagnosticSeverity.Warning;
-		}
-		return super.getDiagnosticSeverity(problem);
-	}
-	public SimpleLanguageServer setMaxCompletions(int max) {
+//	@Override
+//	protected DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
+//		ProblemType type = problem.getType();
+//		if (YamlSchemaProblems.PROPERTY_CONSTRAINT.contains(type)) {
+//			return DiagnosticSeverity.Warning;
+//		}
+//		return server.getDiagnosticSeverity(problem);
+//	}
+
+	public void setMaxCompletions(int max) {
 		forPipelines.setMaxCompletions(max);
 		forTasks.setMaxCompletions(max);
-		return this;
 	}
 
 }

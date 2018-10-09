@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -53,6 +54,12 @@ public class ManifestYamlEditorTest {
 
 	@Autowired
 	LanguageServerHarness<SimpleLanguageServer> harness;
+
+	@Before
+	public void initHarness() throws Exception {
+		harness.intialize(null);
+		System.setProperty("lsp.yaml.completions.errors.disable", "false"); //Yuck! Do we really need this??
+	}
 
 	@Test public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = harness.newEditor(

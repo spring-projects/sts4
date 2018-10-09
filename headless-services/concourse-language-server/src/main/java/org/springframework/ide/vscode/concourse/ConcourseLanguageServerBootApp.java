@@ -14,8 +14,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.concourse.github.DefaultGithubInfoProvider;
+import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 
 @SpringBootApplication
 public class ConcourseLanguageServerBootApp {
@@ -31,7 +31,11 @@ public class ConcourseLanguageServerBootApp {
 		return SERVER_NAME;
 	}
 
-	@Bean ConcourseLanguageServer languageServer() {
-		return new ConcourseLanguageServer(YamlCompletionEngineOptions.DEFAULT, new DefaultGithubInfoProvider());
+	@Bean ConcourseLanguageServerInitializer languageServer(GithubInfoProvider github) {
+		return new ConcourseLanguageServerInitializer(github);
+	}
+
+	@Bean GithubInfoProvider github() {
+		return new DefaultGithubInfoProvider();
 	}
 }

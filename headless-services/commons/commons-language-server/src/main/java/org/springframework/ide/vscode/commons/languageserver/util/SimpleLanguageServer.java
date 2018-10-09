@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -69,6 +70,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.Q
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixResolveParams;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -108,7 +110,7 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
-	protected final LazyCompletionResolver completionResolver = createCompletionResolver();
+	public final LazyCompletionResolver completionResolver = createCompletionResolver();
 
 	private SimpleTextDocumentService tds;
 
@@ -510,6 +512,8 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 	 */
 	private Set<VersionedTextDocumentIdentifier> queuedReconcileRequests = Collections.synchronizedSet(new HashSet<>());
 
+	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
+
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
@@ -607,22 +611,8 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 		.subscribe();
 	}
 
-	protected DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
-		ProblemSeverity severity = problem.getType().getDefaultSeverity();
-		switch (severity) {
-		case ERROR:
-			return DiagnosticSeverity.Error;
-		case WARNING:
-			return DiagnosticSeverity.Warning;
-		case INFO:
-			return DiagnosticSeverity.Information;
-		case HINT:
-			return DiagnosticSeverity.Hint;
-		case IGNORE:
-			return null;
-		default:
-			throw new IllegalStateException("Bug! Missing switch case?");
-		}
+	public DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
+		return severityProvider.getDiagnosticSeverity(problem);
 	}
 
 	/**
@@ -693,5 +683,9 @@ public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientA
 			classpathListenerManager = new ClasspathListenerManager(this);
 		}
 		return classpathListenerManager.addClasspathListener(classpathListener);
+	}
+
+	public void setDiagnosticSeverityProvider(DiagnosticSeverityProvider severities) {
+		this.severityProvider = severities;
 	}
 }

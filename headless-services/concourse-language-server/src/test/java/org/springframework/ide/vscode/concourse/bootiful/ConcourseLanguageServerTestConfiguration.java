@@ -8,36 +8,21 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.manifest.yaml.bootiful;
+package org.springframework.ide.vscode.concourse.bootiful;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
-import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.manifest.yaml.MockCloudfoundry;
 
 @Configuration
-public class ManifestYamlLanguageServerTestConfiguration {
-
-	@Bean public MockCloudfoundry cloudfoundry() {
-		return new MockCloudfoundry();
-	}
-
-	@Bean public CloudFoundryClientFactory cloudfoundryClientFactory(MockCloudfoundry cf) {
-		return cf.factory;
-	}
-
-	@Bean public ClientParamsProvider cloudfoundryParams(MockCloudfoundry cf) {
-		return cf.defaultParamsProvider;
-	}
+public class ConcourseLanguageServerTestConfiguration {
 
 	@Bean public LanguageServerHarness<SimpleLanguageServer> harness(SimpleLanguageServer server) throws Exception {
 		LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
 				()-> server,
-				LanguageId.CF_MANIFEST
+				LanguageId.CONCOURSE_PIPELINE
 		);
 		return harness;
 	}

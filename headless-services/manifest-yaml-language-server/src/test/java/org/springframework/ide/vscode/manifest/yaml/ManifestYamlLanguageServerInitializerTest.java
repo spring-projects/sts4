@@ -27,24 +27,31 @@ import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
-import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
+import org.springframework.ide.vscode.manifest.yaml.bootiful.ManifestLanguageServerTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.JsonParser;
 
+@RunWith(SpringRunner.class)
+@ManifestLanguageServerTest
 public class ManifestYamlLanguageServerInitializerTest {
 
 	public static File getTestResource(String name) throws URISyntaxException {
 		return Paths.get(ManifestYamlLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
+	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
+	@Autowired ManifestYamlLanguageServerInitializer serverInitializer;
+	@Autowired SimpleLanguageServer server;
+
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {
-		LanguageServerHarness<SimpleLanguageServer> harness = LanguageServerHarness.create("vscode-manifest-yaml", new ManifestYamlLanguageServerInitializer());
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
@@ -52,7 +59,6 @@ public class ManifestYamlLanguageServerInitializerTest {
 	@Test
 	public void createAndInitializeServerWithoutWorkspace() throws Exception {
 		File workspaceRoot = null;
-		LanguageServerHarness<SimpleLanguageServer> harness = LanguageServerHarness.create("vscode-manifest-yaml", new ManifestYamlLanguageServerInitializer());
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 	}
 
@@ -93,16 +99,8 @@ public class ManifestYamlLanguageServerInitializerTest {
 		assertThat(initResult.getCapabilities().getTextDocumentSync().getLeft()).isEqualTo(TextDocumentSyncKind.Incremental);
 	}
 
-	@Test public void changeCfClientParams() throws Exception {
-		MockCloudfoundry cloudfoundry = new MockCloudfoundry();
-		ManifestYamlLanguageServerInitializer serverInitializer = new ManifestYamlLanguageServerInitializer(cloudfoundry.factory, cloudfoundry.defaultParamsProvider);
-		SimpleLanguageServer server = new SimpleLanguageServer("vscode-manifest-yaml");
-		serverInitializer.initialize(server);
 
-		LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
-				() -> server,
-				LanguageId.CF_MANIFEST
-		);
+	@Test public void changeCfClientParams() throws Exception {
 		harness.intialize(null);
 
 		// This is an initial target, for example from cf CLI
