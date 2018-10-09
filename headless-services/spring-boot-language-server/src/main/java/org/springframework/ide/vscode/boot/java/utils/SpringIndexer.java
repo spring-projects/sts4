@@ -180,8 +180,14 @@ public class SpringIndexer {
 	public CompletableFuture<Void> initializeProject(IJavaProject project) {
 		try {
 			if (BootProjectUtil.isBootProject(project)) {
-				InitializeProject initializeItem = new InitializeProject(project);
-				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+				if (project.getElementName() == null) {
+					// Projects indexed by name. No name  - no index for it
+					log.debug("Project with NULL name is being initialized");
+					return CompletableFuture.completedFuture(null);
+				} else {
+					InitializeProject initializeItem = new InitializeProject(project);
+					return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+				}
 			} else {
 				return deleteProject(project);
 			}
@@ -193,8 +199,14 @@ public class SpringIndexer {
 
 	public CompletableFuture<Void> deleteProject(IJavaProject project) {
 		try {
-			DeleteProject initializeItem = new DeleteProject(project);
-			return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+			if (project.getElementName() == null) {
+				// Projects indexed by name. No name  - no index for it
+				log.debug("Project with NULL name is being removed");
+				return CompletableFuture.completedFuture(null);
+			} else {
+				DeleteProject initializeItem = new DeleteProject(project);
+				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+			}
 		} catch (Throwable  e) {
 			log.error("", e);
 			return Futures.error(e);
@@ -671,6 +683,10 @@ public class SpringIndexer {
 	}
 
 	private void removeSymbolsByProject(IJavaProject project) {
+		// If project name is null it cannot be in the cache
+		if (project.getElementName() == null) {
+			return;
+		}
 		List<SymbolInformation> oldSymbols = symbolsByProject.remove(project.getElementName());
 		if (oldSymbols != null) {
 			symbols.removeAll(oldSymbols);
