@@ -12,6 +12,8 @@ The extension will automatically activate when you edit files with the following
 name patterns:
 
  - `*.java` => activates support for Java files
+ 
+If you find an issue please raise it here: https://github.com/spring-projects/sts4/issues
 
 ## Functionality
 

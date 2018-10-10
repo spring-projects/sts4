@@ -14,6 +14,8 @@ The Bosh editor automatically activates when the name of the file you are editin
 - In the bottom-right of the editor, click on YAML.
 - This opens the Grammar Selection dialogue. Search and select `Bosh-Deployment-Manifest` for deployment files, or `Bosh-Cloud-Config` for Cloud Config files.
 
+If you find an issue please raise it here: https://github.com/spring-projects/sts4/issues
+
 ## Functionality
 
 This extension provides validation, content assist and documentation hovers

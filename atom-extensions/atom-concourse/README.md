@@ -14,6 +14,8 @@ The Concourse editor automatically activates when the name of the file you are e
 - In the bottom-right of the editor, click on YAML.
 - This opens the Grammar Selection dialogue. Search and select `Concourse-Pipeline-YAML` for pipeline files, or `Concourse-Task-YAML` for task files.
 
+If you find an issue please raise it here: https://github.com/spring-projects/sts4/issues
+
 ## Functionality
 
 ### Validation
