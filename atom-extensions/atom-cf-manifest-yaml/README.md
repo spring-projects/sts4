@@ -10,6 +10,8 @@ It is recommended to use this extension package when `atom-ide-ui` atom extensio
 
 The CF manifest editor automatically activates when the name of the file you are editing is `manifest.yml` or editor grammar is set to `Manifest-YAML`
 
+If you find an issue please raise it here: https://github.com/spring-projects/sts4/issues
+
 ## Functionality
 
 ### Validation
