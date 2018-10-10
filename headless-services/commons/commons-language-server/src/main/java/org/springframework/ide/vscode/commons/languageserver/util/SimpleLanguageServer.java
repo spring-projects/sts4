@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -73,7 +72,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
@@ -94,12 +92,11 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 /**
- * Abstract base class to implement LanguageServer. Bits and pieces copied from
- * the 'JavaLanguageServer' example which seem generally useful / reusable end up in
- * here so we can try to keep the subclass itself more 'clutter free' and focus on
- * what its really doing and not the 'wiring and plumbing'.
+ * Scaffolding to implement a LanguageServer. Provides a complete 'language server' implementation.
+ * with apis to register various callbacks so that language server implementor
+ * can attach their own 'handlers' for whatever the functionality they want to implement.
  */
-public class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
+public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleLanguageServer.class);
 
