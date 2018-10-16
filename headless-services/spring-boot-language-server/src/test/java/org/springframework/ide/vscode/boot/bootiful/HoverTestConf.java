@@ -32,7 +32,7 @@ public class HoverTestConf {
 	}
 
 	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
-		BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault().create(server);
+		BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server);
 		return new BootLanguageServerParams(
 				indexHarness().getProjectFinder(),
 				testDefaults.projectObserver,

@@ -79,7 +79,7 @@ public class ValueCompletionTest {
 		}
 
 		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
-			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault().create(server);
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server);
 			return new BootLanguageServerParams(
 					projectFinder,
 					ProjectObserver.NULL,

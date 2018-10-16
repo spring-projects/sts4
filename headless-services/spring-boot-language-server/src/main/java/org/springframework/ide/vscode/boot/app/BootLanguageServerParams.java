@@ -174,32 +174,30 @@ public class BootLanguageServerParams {
 		};
 	}
 
-	public static LSFactory<BootLanguageServerParams> createTestDefault() {
-		return (SimpleLanguageServer server) -> {
-			// Initialize project finders, project caches and project observers
-			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
-			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
-			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
+	public static BootLanguageServerParams createTestDefault(SimpleLanguageServer server) {
+		// Initialize project finders, project caches and project observers
+		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
+		mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
+		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
 
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
-			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
-			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
+		gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
+		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
 
-			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
-			indexProvider.setProgressService(server.getProgressService());
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
+		indexProvider.setProgressService(server.getProgressService());
 
-			return new BootLanguageServerParams(
-					javaProjectFinder.filter(BootProjectUtil::isBootProject),
-					projectObserver,
-					indexProvider,
-					(doc) -> SpringPropertyIndex.EMPTY_INDEX,
-					(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
-					RunningAppProvider.NULL,
-					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
-			);
-		};
+		return new BootLanguageServerParams(
+				javaProjectFinder.filter(BootProjectUtil::isBootProject),
+				projectObserver,
+				indexProvider,
+				(doc) -> SpringPropertyIndex.EMPTY_INDEX,
+				(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
+				RunningAppProvider.NULL,
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+		);
 	}
 }

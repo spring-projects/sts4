@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 	}
 
 	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
-		return BootLanguageServerParams.createTestDefault().create(server);
+		return BootLanguageServerParams.createTestDefault(server);
 	}
 
 	@Bean SpringIndexer springIndexer(BootLanguageServerInitializer serverInit) {

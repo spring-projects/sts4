@@ -82,7 +82,7 @@ public class CompilationUnitCacheTest {
 		}
 
 		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, MockProjectObserver projectObserver) {
-			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault().create(server);
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server);
 			return new BootLanguageServerParams(
 					indexHarness().getProjectFinder(),
 					projectObserver,
