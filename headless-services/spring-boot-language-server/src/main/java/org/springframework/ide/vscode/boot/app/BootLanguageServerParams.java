@@ -89,29 +89,26 @@ public class BootLanguageServerParams {
 		this.watchDogInterval = watchDogInterval;
 	}
 
-	public static LSFactory<BootLanguageServerParams> createDefault() {
-		//TODO: Get rid of LSFactory
-		return (SimpleLanguageServer server) -> {
-			// Initialize project finders, project caches and project observers
-			JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
-					server,
-					new JdtLsProjectCache(server),
-					() -> createFallbackProjectCache(server)
-			);
-			DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
-			SpringPropertyIndexProvider adHocProvider = new AdHocSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, server.getWorkspaceService().getFileObserver());
-			indexProvider.setProgressService(server.getProgressService());
+	public static BootLanguageServerParams createDefault(SimpleLanguageServer server) {
+		// Initialize project finders, project caches and project observers
+		JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
+				server,
+				new JdtLsProjectCache(server),
+				() -> createFallbackProjectCache(server)
+		);
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
+		SpringPropertyIndexProvider adHocProvider = new AdHocSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, server.getWorkspaceService().getFileObserver());
+		indexProvider.setProgressService(server.getProgressService());
 
-			return new BootLanguageServerParams(
-					jdtProjectCache.filter(BootProjectUtil::isBootProject),
-					jdtProjectCache,
-					indexProvider,
-					adHocProvider,
-					(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-					RunningAppProvider.createDefault(server),
-					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
-			);
-		};
+		return new BootLanguageServerParams(
+				jdtProjectCache.filter(BootProjectUtil::isBootProject),
+				jdtProjectCache,
+				indexProvider,
+				adHocProvider,
+				(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
+				RunningAppProvider.createDefault(server),
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+		);
 	}
 
 	private static JavaProjectsService createFallbackProjectCache(SimpleLanguageServer server) {

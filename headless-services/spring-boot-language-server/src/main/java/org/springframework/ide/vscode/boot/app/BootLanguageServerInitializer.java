@@ -34,7 +34,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	private CompositeLanguageServerComponents components;
 
-	private ComposableLanguageServer composableLs;
+	private ComposableLanguageServer<CompositeLanguageServerComponents> composableLs;
 
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
@@ -49,38 +49,16 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		});
 	}
 
-	public static ComposableLanguageServer<CompositeLanguageServerComponents> create(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
-		return new ComposableLanguageServer<>(server, s -> {
-			BootLanguageServerParams params = _params.create(s);
-			CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
-			builder.add(new BootPropertiesLanguageServerComponents(s, (ignore) -> params));
-			builder.add(new BootJavaLanguageServerComponents(s, (ignore) -> params));
-			CompositeLanguageServerComponents components = builder.build(s);
-			params.projectObserver.addListener(reconcileOpenDocuments(s, components));
-			return components;
-		});
-	}
-
-	public static ComposableLanguageServer<BootPropertiesLanguageServerComponents> createProperties(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> params) {
-		return new ComposableLanguageServer<>(server, s -> new BootPropertiesLanguageServerComponents(s, params));
-	}
-
-	public static ComposableLanguageServer<BootJavaLanguageServerComponents> createJava(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> params) {
-		return new ComposableLanguageServer<>(server, s -> new BootJavaLanguageServerComponents(s, params));
-	}
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		//TODO: ComposableLanguageServer object instance serves no purpose anymore. The constructor really just contains
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
-		this.composableLs = new ComposableLanguageServer<>(server, s -> {
-			CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
-			builder.add(new BootPropertiesLanguageServerComponents(s, (ignore) -> params));
-			builder.add(new BootJavaLanguageServerComponents(s, (ignore) -> params));
-			components = builder.build(s);
-			params.projectObserver.addListener(reconcileOpenDocuments(s, components));
-			return components;
-		});
+		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
+		builder.add(new BootPropertiesLanguageServerComponents(server, (ignore) -> params));
+		builder.add(new BootJavaLanguageServerComponents(server, (ignore) -> params));
+		components = builder.build(server);
+		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
+		this.composableLs = new ComposableLanguageServer<>(server, components);
 	}
 
 	public CompositeLanguageServerComponents getComponents() {

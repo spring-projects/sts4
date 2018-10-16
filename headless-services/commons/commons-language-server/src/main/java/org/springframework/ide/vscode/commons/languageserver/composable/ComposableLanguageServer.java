@@ -26,16 +26,16 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  *
  * @author Kris De Volder
  */
-public class ComposableLanguageServer<C extends LanguageServerComponents> implements SimpleLanguageServerWrapper {
+public class ComposableLanguageServer<C extends LanguageServerComponents> {
 
 	private final SimpleLanguageServer server;
 	private C components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
 	private HoverHandler hoverHandler;
 
-	public ComposableLanguageServer(SimpleLanguageServer server, LSFactory<C> _components) {
+	public ComposableLanguageServer(SimpleLanguageServer server, C _components) {
 		this.server = server;
-		this.components = _components.create(server);
+		this.components = _components;
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
@@ -58,25 +58,9 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 		documents.onHover(hoverHandler);
 	}
 
-	public C getComponents() {
-		return components;
-	}
-
 	public void setMaxCompletionsNumber(int number) {
 		if (completionEngineAdapter!=null) {
 			completionEngineAdapter.setMaxCompletions(number);
 		}
 	}
-
-	public void setHoverType(HoverType type) {
-		if (hoverHandler instanceof VscodeCompletionEngineAdapter) {
-			((VscodeHoverEngineAdapter) hoverHandler).setHoverType(type);
-		}
-	}
-
-	@Override
-	public SimpleLanguageServer getServer() {
-		return this.server;
-	}
-
 }
