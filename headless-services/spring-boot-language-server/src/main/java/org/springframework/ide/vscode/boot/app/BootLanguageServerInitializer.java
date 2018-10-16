@@ -16,11 +16,13 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
+import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -29,12 +31,10 @@ import org.springframework.util.Assert;
 public class BootLanguageServerInitializer implements InitializingBean {
 
 	@Autowired SimpleLanguageServer server;
-
 	@Autowired BootLanguageServerParams params;
 
 	private CompositeLanguageServerComponents components;
-
-	private ComposableLanguageServer<CompositeLanguageServerComponents> composableLs;
+	private VscodeCompletionEngineAdapter completionEngineAdapter;
 
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
@@ -58,7 +58,26 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		builder.add(new BootJavaLanguageServerComponents(server, (ignore) -> params));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
-		this.composableLs = new ComposableLanguageServer<>(server, components);
+
+		SimpleTextDocumentService documents = server.getTextDocumentService();
+
+		components.getReconcileEngine().ifPresent(reconcileEngine -> {
+			documents.onDidChangeContent(params -> {
+				TextDocument doc = params.getDocument();
+				server.validateWith(doc.getId(), reconcileEngine);
+			});
+		});
+
+		ICompletionEngine completionEngine = components.getCompletionEngine();
+		if (completionEngine!=null) {
+			completionEngineAdapter = server.createCompletionEngineAdapter(server, completionEngine);
+			completionEngineAdapter.setMaxCompletions(100);
+			documents.onCompletion(completionEngineAdapter::getCompletions);
+			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);
+		}
+
+		HoverHandler hoverHandler = components.getHoverProvider();
+		documents.onHover(hoverHandler);
 	}
 
 	public CompositeLanguageServerComponents getComponents() {
@@ -66,8 +85,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		return components;
 	}
 
-	public void setMaxCompletions(int maxCompletions) {
-		composableLs.setMaxCompletionsNumber(maxCompletions);
+	public void setMaxCompletions(int number) {
+		if (completionEngineAdapter!=null) {
+			completionEngineAdapter.setMaxCompletions(number);
+		}
 	}
 
 }

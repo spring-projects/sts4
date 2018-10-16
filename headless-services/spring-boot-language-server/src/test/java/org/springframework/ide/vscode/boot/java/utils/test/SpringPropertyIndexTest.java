@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -18,22 +18,18 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -41,7 +37,6 @@ import org.springframework.test.context.junit4.SpringRunner;
  * Tests for Spring properties index in Boot Java server
  *
  * @author Alex Boyko
- *
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
