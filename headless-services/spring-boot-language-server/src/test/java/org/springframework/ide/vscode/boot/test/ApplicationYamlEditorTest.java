@@ -20,25 +20,25 @@ import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.BootLanguageServer;
-import org.springframework.ide.vscode.boot.BootLanguageServerParams;
+import org.junit.runner.RunWith;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * This class is a placeholder where we will attempt to copy and port
@@ -47,7 +47,19 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
  *
  * @author Kris De Volder
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(PropertyEditorTestConf.class)
 public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
+
+	@Configuration static class TestConf {
+		@Bean LanguageId defaultLanguageId() {
+			return LanguageId.BOOT_PROPERTIES_YAML;
+		}
+		@Bean String defaultFileExtension() {
+			return ".yml";
+		}
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3893,23 +3905,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			return prefix +"." + string;
 		}
 		return string;
-	}
-
-	@Override
-	protected SimpleLanguageServer newLanguageServer() {
-		ComposableLanguageServer<?> server = BootLanguageServer.create(
-				s -> new BootLanguageServerParams(
-						javaProjectFinder,
-						ProjectObserver.NULL,
-						md.getIndexProvider(),
-						(doc) -> SpringPropertyIndex.EMPTY_INDEX,
-						typeUtilProvider,
-						RunningAppProvider.NULL,
-						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
-				)
-		);
-		server.setMaxCompletionsNumber(-1);
-		return server.getServer();
 	}
 
 	@Override

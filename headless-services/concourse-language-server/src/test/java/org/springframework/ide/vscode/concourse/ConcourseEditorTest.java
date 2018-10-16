@@ -60,7 +60,7 @@ public class ConcourseEditorTest {
 	ConcourseLanguageServerInitializer serverInitializer;
 
 	@Autowired
-	LanguageServerHarness<SimpleLanguageServer> harness;
+	LanguageServerHarness harness;
 
 	@MockBean
 	private GithubInfoProvider github;

@@ -8,7 +8,7 @@
  * Contributors:
  * Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot;
+package org.springframework.ide.vscode.boot.app;
 
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -90,6 +90,7 @@ public class BootLanguageServerParams {
 	}
 
 	public static LSFactory<BootLanguageServerParams> createDefault() {
+		//TODO: Get rid of LSFactory
 		return (SimpleLanguageServer server) -> {
 			// Initialize project finders, project caches and project observers
 			JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(

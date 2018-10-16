@@ -34,9 +34,9 @@ public class ManifestYamlLanguageServerTestConfiguration {
 		return cf.defaultParamsProvider;
 	}
 
-	@Bean public LanguageServerHarness<SimpleLanguageServer> harness(SimpleLanguageServer server) throws Exception {
-		LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
-				()-> server,
+	@Bean public LanguageServerHarness harness(SimpleLanguageServer server) throws Exception {
+		LanguageServerHarness harness = new LanguageServerHarness(
+				server,
 				LanguageId.CF_MANIFEST
 		);
 		return harness;

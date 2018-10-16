@@ -10,31 +10,35 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.test;
 
-import java.time.Duration;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class ActiveProfilesHoverTest {
 
-	private BootJavaLanguageServerHarness harness;
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
+	@Autowired
+	private BootLanguageServerHarness harness;
+
+	@Autowired
 	private MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
-		mockAppProvider = new MockRunningAppProvider();
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults()
-				.runningAppProvider(mockAppProvider.provider)
-				.watchDogInterval(Duration.ofMillis(100))
-				.build();
 		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 		harness.intialize(null);
 	}

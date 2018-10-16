@@ -127,7 +127,7 @@ public class Editor {
 		}
 	};
 
-	private LanguageServerHarness<?> harness;
+	private LanguageServerHarness harness;
 	private TextDocumentInfo doc;
 
 	private int selectionEnd;

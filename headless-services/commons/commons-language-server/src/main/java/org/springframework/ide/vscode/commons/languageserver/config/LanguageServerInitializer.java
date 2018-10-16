@@ -17,8 +17,14 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
  * called meant to be called on a newly instantiated SimpleLanguageServer, right after it
  * was created (and prior to actually starting the language server).
  *
+ * Deprecated. Uses of this should just be converted on a 'InializingBean' which will make
+ * spring framework call them after server bean has been created and all its dependencies
+ * injected. This is simpler and gives more flexibility to deal with dependency cycles.
+ * For an example See BootLanguageServerIitializer.
+ *
  * @author Kris De Volder
  */
+@Deprecated
 public interface LanguageServerInitializer {
 	void initialize(SimpleLanguageServer server) throws Exception;
 }

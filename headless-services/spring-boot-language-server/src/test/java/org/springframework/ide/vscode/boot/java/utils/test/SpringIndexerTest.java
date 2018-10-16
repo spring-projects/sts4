@@ -27,35 +27,44 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Martin Lippert
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(SymbolProviderTestConf.class)
 public class SpringIndexerTest {
 
-	private BootJavaLanguageServerHarness harness;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringIndexer indexer;
+	@Autowired private JavaProjectFinder projectFinder;
+
 	private File directory;
-	private SpringIndexer indexer;
 	private String projectDir;
 	private IJavaProject project;
 
 	@Before
 	public void setup() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder().build();
-
 		harness.intialize(null);
-		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
 
 		// trigger project creation
-		project = harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);

@@ -46,7 +46,7 @@ public class BoshLanguageServerInitializerTest {
 	@MockBean DynamicModelProvider<ReleasesModel> releasesProvider;
 
 	@Autowired
-	LanguageServerHarness<SimpleLanguageServer> harness;
+	LanguageServerHarness harness;
 
 	@Test
 	public void createAndInitializeServerWithWorkspace() throws Exception {

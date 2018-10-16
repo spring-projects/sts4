@@ -8,10 +8,11 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot;
+package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
@@ -29,8 +30,8 @@ public class BootLanguagServerBootApp {
 		return SERVER_NAME;
 	}
 
-	@Bean SimpleLanguageServer languageServer() {
-		return BootLanguageServer.create(BootLanguageServerParams.createDefault()).getServer();
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
+		return BootLanguageServerParams.createDefault().create(server);
 	}
-
 }

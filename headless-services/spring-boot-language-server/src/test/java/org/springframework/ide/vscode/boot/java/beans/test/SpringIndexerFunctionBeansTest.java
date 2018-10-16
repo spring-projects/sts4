@@ -17,41 +17,41 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Martin Lippert
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(SymbolProviderTestConf.class)
 public class SpringIndexerFunctionBeansTest {
 
-	private AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
-	private BootJavaLanguageServerHarness harness;
-	private SpringIndexer indexer;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringIndexer indexer;
+	@Autowired private JavaProjectFinder projectFinder;
+
 	private File directory;
 
 	@Before
 	public void setup() throws Exception {
-		symbolProviders = new AnnotationHierarchyAwareLookup<>();
-		symbolProviders.put(Annotations.BEAN, new BeansSymbolProvider());
-		symbolProviders.put(Annotations.COMPONENT, new ComponentSymbolProvider());
-
-		harness = BootJavaLanguageServerHarness.builder().build();
 		harness.intialize(null);
-		
-		indexer = harness.getServerWrapper().getComponents().getSpringIndexer();
+
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-beans/").toURI());
 
 		String projectDir = directory.toURI().toString();
 
 		// trigger project creation
-		harness.getServerWrapper().getComponents().getProjectFinder().find(new TextDocumentIdentifier(projectDir)).get();
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);

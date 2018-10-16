@@ -1,0 +1,29 @@
+package org.springframework.ide.vscode.boot.java.utils.test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+
+public class MockProjectObserver implements ProjectObserver {
+
+	List<Listener> listeners = new ArrayList<>();
+
+	@Override
+	synchronized public void addListener(Listener l) {
+		listeners.add(l);
+	}
+
+	@Override
+	synchronized public void removeListener(Listener l) {
+		listeners.remove(l);
+	}
+
+	public synchronized void doWithListeners(Consumer<Listener> action) {
+		for (Listener l : listeners) {
+			action.accept(l);
+		}
+	}
+}

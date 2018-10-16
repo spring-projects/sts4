@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.languageserver.starter;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -28,13 +30,20 @@ public class LanguageServerAutoConf {
 	@ConditionalOnMissingBean
 	@Bean public SimpleLanguageServer languageServer(
 			LanguageServerProperties props, 
-			LanguageServerInitializer initializer,
 			Optional<DiagnosticSeverityProvider> severities
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
-		initializer.initialize(server);
 		return server;
 	}
+
+	@ConditionalOnBean({LanguageServerInitializer.class, SimpleLanguageServer.class})
+	@Bean
+	InitializingBean initializer(SimpleLanguageServer server, LanguageServerInitializer serverInit) {
+		return () -> {
+			serverInit.initialize(server);
+		};
+	}
+
 	
 }

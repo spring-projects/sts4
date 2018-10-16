@@ -25,9 +25,9 @@ public class BoshLanguageServerTestConfiguration {
 		return new MockCloudConfigProvider(cliConfig);
 	}
 
-	@Bean public LanguageServerHarness<SimpleLanguageServer> harness(SimpleLanguageServer server) throws Exception {
-		LanguageServerHarness<SimpleLanguageServer> harness = new LanguageServerHarness<>(
-				()-> server,
+	@Bean public LanguageServerHarness harness(SimpleLanguageServer server) throws Exception {
+		LanguageServerHarness harness = new LanguageServerHarness(
+				server,
 				LanguageId.BOSH_DEPLOYMENT
 		);
 		return harness;

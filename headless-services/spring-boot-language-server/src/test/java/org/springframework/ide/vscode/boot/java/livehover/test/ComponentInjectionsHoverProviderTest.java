@@ -12,21 +12,28 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.time.Duration;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class ComponentInjectionsHoverProviderTest {
 
 	private static final ProjectCustomizer EXTRA_TYPES = (CustomizableProjectContent p) -> {
@@ -54,20 +61,12 @@ public class ComponentInjectionsHoverProviderTest {
 
 	};
 
-	private BootJavaLanguageServerHarness harness;
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
-
-	private MockRunningAppProvider mockAppProvider;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
-		mockAppProvider = new MockRunningAppProvider();
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults()
-				.runningAppProvider(mockAppProvider.provider)
-				.watchDogInterval(Duration.ofMillis(100))
-				.build();
-
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", EXTRA_TYPES);
 		assertTrue(jp.findType("com.example.Foo").exists());
 		harness.useProject(jp);

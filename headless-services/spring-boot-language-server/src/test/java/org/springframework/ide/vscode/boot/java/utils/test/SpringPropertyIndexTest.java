@@ -20,6 +20,11 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
@@ -28,8 +33,9 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests for Spring properties index in Boot Java server
@@ -37,21 +43,20 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  * @author Alex Boyko
  *
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(SymbolProviderTestConf.class)
 public class SpringPropertyIndexTest {
 
-	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
+	@Autowired
+	private LanguageServerHarness harness;
 
+	@Autowired
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
-
-	@Before
-	public void setup() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder().build();
-	}
 
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper().getComponents().getSpringPropertyIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 

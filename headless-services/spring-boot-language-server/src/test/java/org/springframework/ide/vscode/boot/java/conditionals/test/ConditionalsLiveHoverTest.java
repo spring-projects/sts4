@@ -14,33 +14,37 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.time.Duration;
 
 import org.eclipse.lsp4j.Hover;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class ConditionalsLiveHoverTest {
 
-	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
+	@Autowired
+	private BootLanguageServerHarness harness;
+
+	@Autowired
 	private MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
-
-		mockAppProvider = new MockRunningAppProvider();
-		harness = BootJavaLanguageServerHarness.builder()
-				.runningAppProvider(mockAppProvider.provider)
-				.watchDogInterval(Duration.ofMillis(100))
-				.build();
+		harness.useProject(ProjectsHarness.INSTANCE.mavenProject("test-conditionals-live-hover"));
 	}
 
 	@Test

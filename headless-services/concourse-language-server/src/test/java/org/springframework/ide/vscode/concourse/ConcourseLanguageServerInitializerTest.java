@@ -23,11 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.concourse.bootiful.ConcourseLanguageServerTest;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 @RunWith(SpringRunner.class)
 @ConcourseLanguageServerTest
@@ -37,7 +37,7 @@ public class ConcourseLanguageServerInitializerTest {
 		return Paths.get(ConcourseLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
-	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
+	@Autowired LanguageServerHarness harness;
 	@MockBean GithubInfoProvider github;
 
 	@Test

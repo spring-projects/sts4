@@ -24,16 +24,14 @@ import java.util.Set;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness.ItemConfigurer;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
@@ -47,7 +45,15 @@ public abstract class AbstractPropsEditorTest {
 
 	protected ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
-	protected PropertyIndexHarness md;
+	@Autowired protected PropertyIndexHarness md;
+	@Autowired protected LanguageServerHarness harness;
+	@Autowired BootLanguageServerInitializer serverInit;
+
+	@Before public void setup() throws Exception {
+		serverInit.setMaxCompletions(-1);
+		harness.intialize(null);
+	}
+
 	protected final CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder(Arrays.asList(new JavaProjectFinder() {
 		@Override
 		public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
@@ -55,37 +61,12 @@ public abstract class AbstractPropsEditorTest {
 		}
 	}));
 
-	protected LanguageServerHarness harness;
-	private IJavaProject testProject;
-	private TypeUtil typeUtil;
 
-	protected TypeUtilProvider typeUtilProvider = (IDocument doc) -> {
-		if (typeUtil==null) {
-			typeUtil = new TypeUtil(testProject);
-		}
-		return typeUtil;
-	};
 
 	abstract public Editor newEditor(String contents) throws Exception;
 
 	private IJavaProject getTestProject() {
-		return testProject;
-	}
-
-	@Before
-	public void setup() throws Exception {
-		md = new PropertyIndexHarness();
-		harness = new LanguageServerHarness(this::newLanguageServer) {
-			@Override
-			protected LanguageId getDefaultLanguageId() {
-				return AbstractPropsEditorTest.this.getLanguageId();
-			}
-			@Override
-			protected String getFileExtension() {
-				return AbstractPropsEditorTest.this.getFileExtension();
-			}
-		};
-		harness.intialize(null);
+		return md.getTestProject();
 	}
 
 	protected abstract LanguageId getLanguageId();
@@ -96,8 +77,6 @@ public abstract class AbstractPropsEditorTest {
 	 * extension (e.g. different validation, completions etc. for .yml versus .properties
 	 */
 	protected abstract String getFileExtension();
-
-	protected abstract SimpleLanguageServer newLanguageServer();
 
 	public ItemConfigurer data(String id, String type, Object deflt, String description, String... sources) {
 		return md.data(id, type, deflt, description, sources);
@@ -113,8 +92,6 @@ public abstract class AbstractPropsEditorTest {
 
 	public void useProject(IJavaProject p) throws Exception {
 		md.useProject(p);
-		this.testProject = p;
-		this.typeUtil = null;
 	}
 
 	/**

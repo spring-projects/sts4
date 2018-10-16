@@ -19,25 +19,33 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.TestAsserts;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Martin Lippert
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class ScopeCompletionTest {
 
-	private BootJavaLanguageServerHarness harness;
+	@Autowired private BootLanguageServerHarness harness;
 	private Editor editor;
 
 	@Before
 	public void setup() throws Exception {
 		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		harness = BootJavaLanguageServerHarness.builder().mockDefaults().build();
 		harness.useProject(testProject);
 		harness.intialize(null);
 	}

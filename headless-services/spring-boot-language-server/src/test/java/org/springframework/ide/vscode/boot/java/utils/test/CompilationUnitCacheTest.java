@@ -22,17 +22,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.JavaProject;
-import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * CU Cache tests
@@ -40,21 +48,57 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  * @author Alex Boyko
  *
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
 public class CompilationUnitCacheTest {
 
-	private BootJavaLanguageServerHarness harness;
+	ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
-	@Before
-	public void setup() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder().build();
+	@Autowired
+	private BootLanguageServerHarness harness;
+
+	@Autowired
+	private BootLanguageServerInitializer serverInit;
+
+	@Autowired
+	private MockProjectObserver projectObserver;
+
+	@Configuration static class TestConf {
+
+		@Bean PropertyIndexHarness indexHarness() {
+			return new PropertyIndexHarness();
+		}
+
+		@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
+			return serverParams.projectFinder;
+		}
+
+		@Bean MockProjectObserver projectObserver() {
+			return new MockProjectObserver();
+		}
+
+		@Bean BootLanguageServerHarness harness(SimpleLanguageServer server, BootLanguageServerParams serverParams, PropertyIndexHarness indexHarness, JavaProjectFinder projectFinder) throws Exception {
+			return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
+		}
+
+		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, MockProjectObserver projectObserver) {
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault().create(server);
+			return new BootLanguageServerParams(
+					indexHarness().getProjectFinder(),
+					projectObserver,
+					indexHarness().getIndexProvider(),
+					indexHarness().getAdHocIndexProvider(),
+					testDefaults.typeUtilProvider,
+					RunningAppProvider.NULL,
+					null
+			);
+		}
+
 	}
 
 	@Test
 	public void cu_cached() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults().build();
 		harness.useProject(ProjectsHarness.dummyProject());
-
 		harness.intialize(null);
 
 		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
@@ -83,14 +127,12 @@ public class CompilationUnitCacheTest {
 	}
 
 	private CompilationUnit getCompilationUnit(TextDocument doc) {
-		harness.getServerWrapper().getServer().getAsync().waitForAll();
-		return harness.getServerWrapper().getComponents().getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
+		harness.getServer().getAsync().waitForAll();
+		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
 	}
 
 	@Test
 	public void cu_cache_invalidated_by_doc_change() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults().build();
 		harness.useProject(ProjectsHarness.dummyProject());
 		harness.intialize(null);
 
@@ -115,8 +157,6 @@ public class CompilationUnitCacheTest {
 
 	@Test
 	public void cu_cache_invalidated_by_doc_close() throws Exception {
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults().build();
 		harness.useProject(ProjectsHarness.dummyProject());
 		harness.intialize(null);
 
@@ -144,7 +184,8 @@ public class CompilationUnitCacheTest {
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
-
+		MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
+		harness.useProject(project);
 		harness.intialize(directory);
 
 		URI fileUri = new URI(docUri);
@@ -158,7 +199,7 @@ public class CompilationUnitCacheTest {
 		CompilationUnit cuAnother = getCompilationUnit(document);
 		assertTrue(cu == cuAnother);
 
-		harness.changeFile(directory.toPath().resolve(MavenCore.POM_XML).toUri().toString());
+		projectObserver.doWithListeners(l -> l.changed(project));
 		cuAnother = getCompilationUnit(document);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);
@@ -169,7 +210,8 @@ public class CompilationUnitCacheTest {
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
-
+		MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
+		harness.useProject(project);
 		harness.intialize(directory);
 
 		URI fileUri = new URI(docUri);
@@ -183,7 +225,7 @@ public class CompilationUnitCacheTest {
 		CompilationUnit cuAnother = getCompilationUnit(document);
 		assertTrue(cu == cuAnother);
 
-		harness.deleteFile(directory.toPath().resolve(MavenCore.POM_XML).toUri().toString());
+		projectObserver.doWithListeners(l -> l.deleted(project));
 		cuAnother = getCompilationUnit(document);
 		assertNotNull(cuAnother);
 		assertFalse(cu == cuAnother);

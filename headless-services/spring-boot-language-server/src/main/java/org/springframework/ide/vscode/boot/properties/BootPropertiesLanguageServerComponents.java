@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.properties;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.ide.vscode.boot.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;

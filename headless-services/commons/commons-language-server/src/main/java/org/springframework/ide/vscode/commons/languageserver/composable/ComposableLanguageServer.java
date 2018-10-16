@@ -33,8 +33,8 @@ public class ComposableLanguageServer<C extends LanguageServerComponents> implem
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
 	private HoverHandler hoverHandler;
 
-	public ComposableLanguageServer(String extensionId, LSFactory<C> _components) {
-		this.server = new SimpleLanguageServer(extensionId);
+	public ComposableLanguageServer(SimpleLanguageServer server, LSFactory<C> _components) {
+		this.server = server;
 		this.components = _components.create(server);
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();

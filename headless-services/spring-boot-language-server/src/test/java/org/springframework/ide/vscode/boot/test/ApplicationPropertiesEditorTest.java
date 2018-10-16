@@ -23,26 +23,28 @@ import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.BootLanguageServer;
-import org.springframework.ide.vscode.boot.BootLanguageServerParams;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
@@ -52,7 +54,19 @@ import com.google.common.io.Files;
  *
  * @author Alex Boyko
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(PropertyEditorTestConf.class)
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
+
+	@Configuration static class TestConf {
+		@Bean LanguageId defaultLanguageId() {
+			return LanguageId.BOOT_PROPERTIES;
+		}
+		@Bean String defaultFileExtension() {
+			return ".properties";
+		}
+	}
 
 	private static final ProjectCustomizer WITH_EMPTY_APPLICATION_YML = projectContents -> {
 		projectContents.createFile("src/main/resources/application.yml", "");
@@ -77,7 +91,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		editor.assertProblems("problem|extraneous input", "another|mismatched input");
 	}
-
 
 	@Test public void bug_158348104() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/158348104
@@ -1652,23 +1665,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	////////////// harness code below /////////////////////////
-
-	@Override
-	protected SimpleLanguageServer newLanguageServer() {
-		ComposableLanguageServer<?> server = BootLanguageServer.create(
-				s -> new BootLanguageServerParams(
-						javaProjectFinder,
-						ProjectObserver.NULL,
-						md.getIndexProvider(),
-						(doc) -> SpringPropertyIndex.EMPTY_INDEX,
-						typeUtilProvider,
-						RunningAppProvider.NULL,
-						SpringLiveHoverWatchdog.DEFAULT_INTERVAL
-				)
-		);
-		server.setMaxCompletionsNumber(-1);
-		return server.getServer();
-	}
 
 	/**
 	 * Like 'assertCompletionsBasic' but places the 'textBefore' in a context

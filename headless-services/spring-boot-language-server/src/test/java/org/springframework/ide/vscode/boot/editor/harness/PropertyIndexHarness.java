@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.editor.harness;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
@@ -24,6 +25,7 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -35,6 +37,12 @@ public class PropertyIndexHarness {
 	private Map<String, ConfigurationMetadataProperty> datas = new LinkedHashMap<>();
 	private ValueProviderRegistry valueProviders = ValueProviderRegistry.getDefault();
 	private SpringPropertyIndex index = null;
+	private FuzzyMap<PropertyInfo> adHocProperties = new FuzzyMap<PropertyInfo>() {
+		@Override
+		protected String getKey(PropertyInfo entry) {
+			return entry.getId();
+		}
+	};
 	private IJavaProject testProject = null;
 
 	protected final SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
@@ -52,7 +60,9 @@ public class PropertyIndexHarness {
 			}
 		}
 	};
-
+	
+	protected final SpringPropertyIndexProvider adHocIndexProvider = doc -> adHocProperties;
+	
 	public synchronized void useProject(IJavaProject p) throws Exception {
 		index = null;
 		this.testProject = p;
@@ -560,6 +570,22 @@ public class PropertyIndexHarness {
 
 	public SpringPropertyIndexProvider getIndexProvider() {
 		return indexProvider;
+	}
+
+	public SpringPropertyIndexProvider getAdHocIndexProvider() {
+		return adHocIndexProvider;
+	}
+
+	public JavaProjectFinder getProjectFinder() {
+		return (doc) -> Optional.ofNullable(testProject);
+	}
+
+	public void adHoc(String adHocPropertyId) {
+		adHocProperties.add(new PropertyInfo(adHocPropertyId, null, null, null, null, null, null, null, null, null, null));
+	}
+
+	public IJavaProject getTestProject() {
+		return testProject;
 	}
 
 }

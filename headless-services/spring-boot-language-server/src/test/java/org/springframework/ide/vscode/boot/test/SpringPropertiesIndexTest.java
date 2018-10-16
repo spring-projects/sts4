@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -18,20 +18,20 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.BootLanguageServer;
-import org.springframework.ide.vscode.boot.BootLanguageServerParams;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests for Boot properties index
@@ -39,23 +39,20 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
  * @author Alex Boyko
  *
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(SymbolProviderTestConf.class)
 public class SpringPropertiesIndexTest {
 
-	private LanguageServerHarness<ComposableLanguageServer<CompositeLanguageServerComponents>> harness;
+	@Autowired
+	private LanguageServerHarness harness;
 
+	@Autowired
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
-
-	@Before
-	public void setup() throws Exception {
-		harness = new LanguageServerHarness<>(() -> BootLanguageServer.create(BootLanguageServerParams.createTestDefault()));
-	}
 
 	@Test
 	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
 		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI()));
-		propertyIndexProvider = (DefaultSpringPropertyIndexProvider) harness.getServerWrapper()
-				.getComponents().get(BootPropertiesLanguageServerComponents.class)
-				.getPropertiesIndexProvider();
 
 		File directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI());
 

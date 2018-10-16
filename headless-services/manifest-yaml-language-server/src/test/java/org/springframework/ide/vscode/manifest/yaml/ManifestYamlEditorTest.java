@@ -53,7 +53,7 @@ public class ManifestYamlEditorTest {
 	MockCloudfoundry cloudfoundry;
 
 	@Autowired
-	LanguageServerHarness<SimpleLanguageServer> harness;
+	LanguageServerHarness harness;
 
 	@Before
 	public void initHarness() throws Exception {

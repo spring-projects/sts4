@@ -57,7 +57,7 @@ import com.google.common.collect.ImmutableSet;
 @BoshLanguageServerTest
 public class BoshEditorTest {
 
-	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
+	@Autowired LanguageServerHarness harness;
 
 	@Autowired BoshLanguageServerInitializer serverInitializer;
 	@Autowired BoshCliConfig cliConfig;

@@ -46,7 +46,7 @@ public class ManifestYamlLanguageServerInitializerTest {
 		return Paths.get(ManifestYamlLanguageServerInitializerTest.class.getResource(name).toURI()).toFile();
 	}
 
-	@Autowired LanguageServerHarness<SimpleLanguageServer> harness;
+	@Autowired LanguageServerHarness harness;
 	@Autowired ManifestYamlLanguageServerInitializer serverInitializer;
 	@Autowired SimpleLanguageServer server;
 

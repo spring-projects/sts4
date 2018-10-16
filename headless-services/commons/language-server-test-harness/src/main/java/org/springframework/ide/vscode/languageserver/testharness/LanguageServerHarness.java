@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
@@ -121,16 +120,15 @@ import com.google.gson.JsonArray;
 
 import reactor.core.publisher.Mono;
 
-public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
+public class LanguageServerHarness {
 
 	//Warning this 'harness' is incomplete. Growing it as needed.
 
 	private Random random = new Random();
 
-	private Callable<S> factory;
-	private LanguageId defaultLanguageId;
+	private final LanguageId defaultLanguageId;
 
-	private S server;
+	private final SimpleLanguageServer server;
 
 	private InitializeResult initResult;
 
@@ -141,25 +139,25 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	private Gson gson = new Gson();
 
 
-	public LanguageServerHarness(Callable<S> factory, LanguageId defaultLanguageId) {
-		this.factory = factory;
+	public LanguageServerHarness(SimpleLanguageServer server, LanguageId defaultLanguageId) {
 		this.defaultLanguageId = defaultLanguageId;
+		this.server = server;
 	}
 
 	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(15000000000L); //Why so long?
 
-	public static LanguageServerHarness<SimpleLanguageServer> create(String extensionId, LanguageServerInitializer initializer) throws Exception {
-		Callable<SimpleLanguageServer> factory = () -> {
-			SimpleLanguageServer s = new SimpleLanguageServer(extensionId);
-			initializer.initialize(s);
-			return s;
-		};
-		return new LanguageServerHarness<>(factory);
-	}
+//	public static LanguageServerHarness<SimpleLanguageServer> create(String extensionId, LanguageServerInitializer initializer) throws Exception {
+//		Callable<SimpleLanguageServer> factory = () -> {
+//			SimpleLanguageServer s = new SimpleLanguageServer(extensionId);
+//			initializer.initialize(s);
+//			return s;
+//		};
+//		return new LanguageServerHarness<>(factory);
+//	}
 
-	public LanguageServerHarness(Callable<S> factory) throws Exception {
-		this(factory, LanguageId.PLAINTEXT);
-	}
+//	public LanguageServerHarness(Callable<S> factory) throws Exception {
+//		this(factory, LanguageId.PLAINTEXT);
+//	}
 
 	public synchronized TextDocumentInfo getOrReadFile(File file, String languageId) throws Exception {
 		String uri = file.toURI().toString();
@@ -224,7 +222,6 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	}
 
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
-		server = factory.call();
 		int parentPid = random.nextInt(40000)+1000;
 		InitializeParams initParams = new InitializeParams();
 		if (workspaceRoot!=null) {
@@ -799,9 +796,4 @@ public class LanguageServerHarness<S extends SimpleLanguageServerWrapper> {
 	public SimpleLanguageServer getServer() {
 		return server==null ? null : server.getServer();
 	}
-
-	public S getServerWrapper() {
-		return server;
-	}
-
 }

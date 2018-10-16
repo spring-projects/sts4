@@ -21,38 +21,79 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.ide.vscode.project.harness.PropertyIndexHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Martin Lippert
  */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
 public class ValueCompletionTest {
 
-	private BootJavaLanguageServerHarness harness;
-	private IJavaProject testProject;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private IJavaProject testProject;
 
 	private Editor editor;
 
-	private PropertyIndexHarness indexHarness;
+	@Autowired private PropertyIndexHarness indexHarness;
+
+	@Configuration static class TestConf {
+
+		//Somewhat strange test setup, test provides a specific test project.
+		//The project finder finds this test project,
+		//But it is not used in the indexProvider/harness.
+		//this is a bit odd... but we preserved the strangeness how it was.
+
+		@Bean MavenJavaProject testProject() throws Exception {
+			return ProjectsHarness.INSTANCE.mavenProject("test-annotations");
+		}
+
+		@Bean PropertyIndexHarness indexHarness() {
+			return new PropertyIndexHarness();
+		}
+
+		@Bean JavaProjectFinder projectFinder(MavenJavaProject testProject) {
+			return (doc) -> Optional.of(testProject);
+		}
+
+		@Bean BootLanguageServerHarness harness(SimpleLanguageServer server, BootLanguageServerParams serverParams, PropertyIndexHarness indexHarness, JavaProjectFinder projectFinder) throws Exception {
+			return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
+		}
+
+		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault().create(server);
+			return new BootLanguageServerParams(
+					projectFinder,
+					ProjectObserver.NULL,
+					indexHarness().getIndexProvider(),
+					indexHarness().getAdHocIndexProvider(),
+					testDefaults.typeUtilProvider,
+					RunningAppProvider.NULL,
+					null
+			);
+		}
+	}
 
 	@Before
 	public void setup() throws Exception {
-		//Somewhat strange test setup, test provides a specific test project.
-		// The context finder finds this test project,
-		// But it is not used in the indexProvider.
-		//This is a bit odd... but we preserved the strangeness how it was.
-		testProject = ProjectsHarness.INSTANCE.mavenProject("test-annotations");
-		harness = BootJavaLanguageServerHarness.builder()
-				.mockDefaults()
-				.projectFinder(d -> Optional.ofNullable(getTestProject()))
-				.build();
-		indexHarness = harness.getPropertyIndexHarness();
 		harness.intialize(null);
 	}
 

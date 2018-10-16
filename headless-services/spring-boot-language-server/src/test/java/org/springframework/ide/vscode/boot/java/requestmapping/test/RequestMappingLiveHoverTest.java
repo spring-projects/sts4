@@ -13,35 +13,35 @@ package org.springframework.ide.vscode.boot.java.requestmapping.test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.time.Duration;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.commons.languageserver.composable.ComposableLanguageServer;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.BootJavaLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRequestMapping;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class RequestMappingLiveHoverTest {
 
-	private LanguageServerHarness<ComposableLanguageServer<BootJavaLanguageServerComponents>> harness;
-	private MockRunningAppProvider mockAppProvider;
+	@Autowired BootLanguageServerHarness harness;
+	@Autowired MockRunningAppProvider mockAppProvider;
 
 	@Before
 	public void setup() throws Exception {
-
-		mockAppProvider = new MockRunningAppProvider();
-		harness = BootJavaLanguageServerHarness.builder()
-				.runningAppProvider(mockAppProvider.provider)
-				.watchDogInterval(Duration.ofMillis(100))
-				.build();
+		harness.useProject(ProjectsHarness.INSTANCE.mavenProject("test-request-mapping-live-hover"));
 	}
 
 	@Test
