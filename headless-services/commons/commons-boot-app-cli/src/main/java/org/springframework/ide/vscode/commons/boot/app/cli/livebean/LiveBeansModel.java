@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -20,10 +19,7 @@ import org.json.JSONObject;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Martin Lippert
@@ -118,10 +114,14 @@ public class LiveBeansModel {
 	}
 
 	private static class Boot20Parser implements Parser {
+		private static final String[] NO_STRINGS = new String[] {};
+
 		@Override
 		public LiveBeansModel parse(String json) throws Exception {
 			Builder model = LiveBeansModel.builder();
 			JSONObject mainObject = new JSONObject(json);
+			System.out.println(mainObject.toString(3));
+
 			mainObject = mainObject.getJSONObject("contexts");
 			for (String contextId : mainObject.keySet()) {
 				JSONObject contextObject = mainObject.getJSONObject(contextId);
@@ -142,16 +142,26 @@ public class LiveBeansModel {
 			String scope = beansJSON.optString("scope");
 			String resource = beansJSON.optString("resource");
 
-			JSONArray aliasesJSON = beansJSON.getJSONArray("aliases");
-			String[] aliases = new String[aliasesJSON.length()];
-			for (int i = 0; i < aliasesJSON.length(); i++) {
-				aliases[i] = aliasesJSON.optString(i);
+			JSONArray aliasesJSON = beansJSON.optJSONArray("aliases");
+			String[] aliases;
+			if (aliasesJSON==null) {
+				aliases = NO_STRINGS;
+			} else {
+				aliases = new String[aliasesJSON.length()];
+				for (int i = 0; i < aliasesJSON.length(); i++) {
+					aliases[i] = aliasesJSON.optString(i);
+				}
 			}
 
-			JSONArray dependenciesJSON = beansJSON.getJSONArray("dependencies");
-			String[] dependencies = new String[dependenciesJSON.length()];
-			for (int i = 0; i < dependenciesJSON.length(); i++) {
-				dependencies[i] = dependenciesJSON.optString(i);
+			JSONArray dependenciesJSON = beansJSON.optJSONArray("dependencies");
+			String[] dependencies;
+			if (dependenciesJSON==null) {
+				dependencies = NO_STRINGS;
+			} else {
+				dependencies = new String[dependenciesJSON.length()];
+				for (int i = 0; i < dependenciesJSON.length(); i++) {
+					dependencies[i] = dependenciesJSON.optString(i);
+				}
 			}
 
 			return new LiveBean(id, aliases, scope, type, resource, dependencies);

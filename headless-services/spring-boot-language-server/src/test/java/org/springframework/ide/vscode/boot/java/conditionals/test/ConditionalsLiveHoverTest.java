@@ -25,7 +25,6 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
-import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -60,8 +59,8 @@ public class ConditionalsLiveHoverTest {
 		assertTrue("Expected no mock running boot apps, but found: " + mockAppProvider.mockedApps,
 				mockAppProvider.mockedApps.isEmpty());
 
-		Editor editorWithMethodLiveHover = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
-		editorWithMethodLiveHover.assertNoHover("@ConditionalOnMissingBean");
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertNoHover("@ConditionalOnMissingBean");
 	}
 
 	@Test
