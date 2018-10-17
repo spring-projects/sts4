@@ -148,32 +148,6 @@ public class BootLanguageServerParams {
 		};
 	}
 
-	public static LSFactory<BootLanguageServerParams> createTestDefault(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider) {
-		return (SimpleLanguageServer server) -> {
-			// Initialize project finders, project caches and project observers
-			CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
-			MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
-			mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
-			javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
-
-			GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
-			gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
-			javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
-
-			CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
-
-			return new BootLanguageServerParams(
-					javaProjectFinder.filter(BootProjectUtil::isBootProject),
-					projectObserver,
-					indexProvider,
-					(doc) -> SpringPropertyIndex.EMPTY_INDEX,
-					typeUtilProvider,
-					RunningAppProvider.NULL,
-					SpringLiveHoverWatchdog.DEFAULT_INTERVAL
-			);
-		};
-	}
-
 	public static BootLanguageServerParams createTestDefault(SimpleLanguageServer server) {
 		// Initialize project finders, project caches and project observers
 		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
