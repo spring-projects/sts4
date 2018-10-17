@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -86,6 +87,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 	public void start() throws Exception {
 		System.setProperty(SYSPROP_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
 		LanguageServerRunner app = this;
+		log.info("Server ready to start after {} ms", ManagementFactory.getRuntimeMXBean().getUptime());
 		if (properties.isStandalone()) {
 			app.startAsServer();
 		} else {

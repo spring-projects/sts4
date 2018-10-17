@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 
 import static org.springframework.ide.vscode.commons.util.AsyncRunner.thenLog;
 
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -218,7 +219,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
-		log.debug("Initializing: "+params);
+		log.info("Initializing");
 
 		// multi-root workspace handling
 		List<WorkspaceFolder> workspaceFolders = getWorkspaceFolders(params);
@@ -273,6 +274,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		RegistrationParams registrationParams = new RegistrationParams(Collections.singletonList(registration));
 		getClient().registerCapability(registrationParams);
 		this.initialized.complete(null); // triggers onInitialized handlers.
+		log.info("Initialization completed after {} ms", ManagementFactory.getRuntimeMXBean().getUptime());
 	  });
 	}
 
