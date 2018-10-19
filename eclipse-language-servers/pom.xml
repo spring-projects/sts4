@@ -92,6 +92,14 @@
 
 	</properties>
 
+    <repositories>
+        <repository>
+		    <id>third-party-p2-site</id>
+			<layout>p2</layout>
+			<url>http://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/3.9.4.201810191512</url>
+		</repository>
+	</repositories>
+
 	<profiles>
 
 		<profile>
