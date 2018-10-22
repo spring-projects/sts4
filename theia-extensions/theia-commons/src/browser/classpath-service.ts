@@ -1,10 +1,9 @@
 import { injectable, inject } from 'inversify';
-import { RequestType } from 'vscode-jsonrpc';
 import { CommandRegistry } from '@theia/core/lib/common';
-import { ILanguageClient } from '@theia/languages/lib/common';
+import { ILanguageClient } from '@theia/languages/lib/browser';
 
-export const ADD_LISTENER_REQUEST_TYPE = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void, void>("sts/addClasspathListener");
-export const REMOVE_LISTENER_REQUEST_TYPE = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void, void>("sts/removeClasspathListener");
+export const ADD_LISTENER_REQUEST_TYPE = 'sts/addClasspathListener';
+export const REMOVE_LISTENER_REQUEST_TYPE ='sts/removeClasspathListener';
 
 @injectable()
 export class ClasspathService {

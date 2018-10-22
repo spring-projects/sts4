@@ -1,9 +1,8 @@
 import { injectable, inject } from 'inversify';
-import { NotificationType } from 'vscode-jsonrpc';
 import { CommandRegistry } from '@theia/core/lib/common';
-import { ILanguageClient } from '@theia/languages/lib/common';
+import { ILanguageClient } from '@theia/languages/lib/browser';
 
-const PROGRESS_NOTIFICATION_TYPE = new NotificationType<ProgressParams,void>('sts/progress');
+const PROGRESS_NOTIFICATION_TYPE = 'sts/progress';
 
 @injectable()
 export class ProgressService {

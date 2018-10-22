@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { NotificationType } from 'vscode-jsonrpc';
-import { TextDocumentIdentifier, Range, CodeLens } from 'vscode-base-languageclient/lib/base';
+import { VersionedTextDocumentIdentifier, Range, CodeLens } from 'vscode-base-languageclient/lib/base';
 import { SetDecorationParams, EditorDecorationStyle, TextEditor, DeltaDecorationParams, EditorManager } from '@theia/editor/lib/browser';
 import { ILanguageClient } from '@theia/languages/lib/common';
 import { DiffUris } from '@theia/core/lib/browser/diff-uris';
@@ -71,7 +71,7 @@ export class HighlightService {
 }
 
 export interface HighlightParams {
-    doc: TextDocumentIdentifier
-    codeLenses: CodeLens[]
+    doc: VersionedTextDocumentIdentifier;
+    codeLenses: CodeLens[];
 }
 

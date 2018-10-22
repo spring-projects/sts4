@@ -1,12 +1,11 @@
 import { injectable, inject } from 'inversify';
-import { RequestType } from 'vscode-jsonrpc';
-import { Position } from 'vscode-base-languageclient/lib/base';
+import { Position } from 'vscode-languageserver-types';
 import { CommandRegistry } from '@theia/core/lib/common';
-import { ILanguageClient } from '@theia/languages/lib/common';
+import { ILanguageClient } from '@theia/languages/lib/browser';
 import {IdeHelper} from './ide-helper';
 import {EditorManager} from '@theia/editor/lib/browser';
 
-export const MOVE_CURSOR_REQUEST_TYPE = new RequestType<CursorMovementParams, {}, void, void>('sts/moveCursorr');
+export const MOVE_CURSOR_REQUEST_TYPE = 'sts/moveCursorr';
 
 @injectable()
 export class MoveCursorService {
