@@ -1,13 +1,11 @@
 import { injectable, inject, postConstruct } from 'inversify';
-import { NotificationType } from 'vscode-jsonrpc';
-import { DidChangeConfigurationParams } from 'vscode-base-languageclient/lib/base';
 import { BaseLanguageClientContribution, Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import { PreferenceProxy } from '@theia/core/lib/browser';
 import { ProgressService } from './progress-service';
 import { MoveCursorService } from './move-cursor-service';
 import { Utils } from '../common/utils';
 
-const CONFIG_CHANGED_NOTIFICATION_TYPE = new NotificationType<DidChangeConfigurationParams,void>('workspace/didChangeConfiguration');
+const CONFIG_CHANGED_NOTIFICATION_TYPE = 'workspace/didChangeConfiguration';
 
 @injectable()
 export abstract class StsLanguageClientContribution<P> extends BaseLanguageClientContribution {
@@ -30,14 +28,13 @@ export abstract class StsLanguageClientContribution<P> extends BaseLanguageClien
             this.sendConfig();
             this.preferences.onPreferenceChanged(() => this.sendConfig());
         }
-        this.attachMessageHandlers();
+        return this.attachMessageHandlers();
     }
 
-    protected attachMessageHandlers() {
-        this.languageClient.then(client => {
-            this.progressService.attach(client);
-            this.moveCursorService.attach(client);
-        });
+    protected async attachMessageHandlers() {
+        const client = await this.languageClient;
+        this.progressService.attach(client);
+        this.moveCursorService.attach(client);
     }
 
     private sendConfig() {

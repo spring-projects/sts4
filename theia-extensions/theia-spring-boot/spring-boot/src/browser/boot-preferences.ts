@@ -3,6 +3,9 @@ import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceCo
 
 // tslint:disable:max-line-length
 
+export const HIGHLIGHTS_PREF_NAME = 'boot-java.boot-hints.on';
+export const CODELENS_PREF_NAME = 'boot-java.highlight-codelens.on';
+
 export const BootConfigSchema: PreferenceSchema = {
     'type': 'object',
     'title': 'Spring Boot Java Configuration',
@@ -16,6 +19,11 @@ export const BootConfigSchema: PreferenceSchema = {
             type: 'boolean',
             description: 'Enable/Disable detecting changes of running Spring Boot applications.',
             default: false
+        },
+        'boot-java.highlight-codelens.on': {
+            type: 'boolean',
+            default: true,
+            description: 'Enable/Disable Spring running Boot application Code Lenses'
         }
     }
 };
@@ -23,6 +31,7 @@ export const BootConfigSchema: PreferenceSchema = {
 export interface BootConfiguration {
     'boot-java.boot-hints.on': boolean;
     'boot-java.change-detection.on': boolean;
+    'boot-java.highlight-codelens.on': boolean;
 }
 
 export const BootPreferences = Symbol('BootPreferences');

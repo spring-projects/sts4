@@ -1,14 +1,15 @@
 import { ContainerModule } from 'inversify';
 import { LanguageClientContribution } from '@theia/languages/lib/browser';
+import {LanguageGrammarDefinitionContribution} from '@theia/monaco/lib/browser/textmate';
 import { BoshClientContribution } from './language-client-contribution';
 import { bindBoshPreferences } from './bosh-preferences';
-
-// Contribute monaco-editor languages for deployment and cloud-config yaml
-import './deployment-yaml-monaco-contribution';
-import './cloudconfig-yaml-monaco-contribution';
+import {DeploymentYamlGrammarContribution} from './deployment-yaml-grammar-contribution';
+import {CloudConfigYamlGrammarContribution} from './cloudconfig-yaml-grammar-contribution';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here
     bindBoshPreferences(bind);
     bind(LanguageClientContribution).to(BoshClientContribution).inSingletonScope();
+    bind(LanguageGrammarDefinitionContribution).to(DeploymentYamlGrammarContribution).inSingletonScope();
+    bind(LanguageGrammarDefinitionContribution).to(CloudConfigYamlGrammarContribution).inSingletonScope();
 });

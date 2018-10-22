@@ -14,7 +14,7 @@ export class SpringBootLsContribution extends StsLanguageServerContribution {
     protected readonly lsJarGlob = 'spring-boot-language-server*.jar';
     protected readonly jvmArguments = [
         // '-Xdebug',
-        // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7999',
+        // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=7999',
         // '-Dlog.level=ALL',
         '-Dorg.slf4j.simpleLogger.logFile=boot-java.log'
     ];

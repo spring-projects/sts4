@@ -16,7 +16,7 @@
     "@theia/monaco": "latest",
     "@theia/typescript": "latest",
     "@theia/messages": "latest",
-    "@theia/bosh": "0.0.0"
+    "@pivotal-tools/theia-bosh": "^0.0.0"
   },
   "devDependencies": {
     "@theia/cli": "latest"

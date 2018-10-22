@@ -1,11 +1,10 @@
 {
     "compilerOptions": {
-        "strict": false,
         "declaration": true,
+        "skipLibCheck": true,
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "emitDecoratorMetadata": true,
-        "downlevelIteration": true,
         "module": "commonjs",
         "moduleResolution": "node",
         "target": "es5",
@@ -19,5 +18,8 @@
     },
     "include": [
         "src"
+    ],
+    "files": [
+        "./node_modules/@theia/monaco/src/typings/monaco/index.d.ts"
     ]
 }

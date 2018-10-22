@@ -16,7 +16,7 @@
     "@theia/monaco": "latest",
     "@theia/typescript": "latest",
     "@theia/messages": "latest",
-    "@theia/concourse": "0.0.0"
+    "@pivotal-tools/theia-concourse": "^0.0.0"
   },
   "devDependencies": {
     "@theia/cli": "latest"
