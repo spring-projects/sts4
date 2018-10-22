@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    stream:
+      rabbit:
+        bindings:
+          input:
+            consumer:
+              auto-bing-dlq: true
+          

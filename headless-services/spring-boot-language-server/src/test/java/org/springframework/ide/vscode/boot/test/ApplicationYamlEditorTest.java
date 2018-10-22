@@ -63,6 +63,23 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	@Test public void inheritedPojoProperties() throws Exception {
+		//See https://github.com/spring-projects/sts4/issues/116
+		useProject(createPredefinedMavenProject("cloud-rabbit-project"));
+
+		Editor editor = newEditor(
+				"spring:\n" +
+				"  cloud:\n" +
+				"    stream:\n" +
+				"      rabbit:\n" +
+				"        bindings:\n" +
+				"          input:\n" +
+				"            consumer:\n" +
+				"              auto-bind-dlq: true"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+
 	@Test public void bug_158348104() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/158348104
 		data("spring.activemq.close-timeout", "java.time.Duration", null, null);

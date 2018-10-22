@@ -573,7 +573,7 @@ public class TypeUtil {
 
 	private IType findType(String typeName) {
 		try {
-			if (javaProject!=null) {
+			if (javaProject!=null && typeName!=null) {
 				return javaProject.findType(typeName);
 			}
 		} catch (Exception e) {
@@ -587,6 +587,8 @@ public class TypeUtil {
 	}
 
 	private static final Map<String, ValueProviderStrategy> VALUE_HINTERS = new HashMap<>();
+	private static final Object JL_OBJECT = Object.class.getName();
+
 	static {
 		valueHints("java.nio.charset.Charset", new LazyProvider<String[]>() {
 			@Override
@@ -721,8 +723,8 @@ public class TypeUtil {
 	}
 
 	private Stream<IMethod> getGetterMethods(IType eclipseType) {
-		if (eclipseType != null && eclipseType.isClass()) {
-			return eclipseType.getMethods().filter(m -> {
+		if (eclipseType != null && eclipseType.isClass() && !JL_OBJECT.equals(eclipseType.getFullyQualifiedName())) {
+			Stream<IMethod> getters = eclipseType.getMethods().filter(m -> {
 				if (!isStatic(m) && isPublic(m)) {
 					String mname = m.getElementName();
 					if ((mname.startsWith("get") && mname.length() >= 4)
@@ -736,6 +738,9 @@ public class TypeUtil {
 				}
 				return false;
 			});
+			IType superType = findType(eclipseType.getSuperclassName());
+			Stream<IMethod> superGetters = getGetterMethods(superType);
+			return Stream.concat(getters, superGetters);
 		}
 		return Stream.empty();
 	}

@@ -42,7 +42,6 @@ public class ClasspathListenerManager {
 
 		@Override
 		public void elementChanged(ElementChangedEvent event) {
-			logger.log("changeEvent = "+event);
 			visit(event.getDelta());
 		}
 
