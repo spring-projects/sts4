@@ -120,7 +120,6 @@ public class LiveBeansModel {
 		public LiveBeansModel parse(String json) throws Exception {
 			Builder model = LiveBeansModel.builder();
 			JSONObject mainObject = new JSONObject(json);
-			System.out.println(mainObject.toString(3));
 
 			mainObject = mainObject.getJSONObject("contexts");
 			for (String contextId : mainObject.keySet()) {
