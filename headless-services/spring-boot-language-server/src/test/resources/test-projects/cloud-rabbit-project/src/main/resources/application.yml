@@ -5,5 +5,5 @@ spring:
         bindings:
           input:
             consumer:
-              auto-bing-dlq: true
+              auto-bind-dlq: true
           

@@ -40,7 +40,7 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import reactor.core.Disposable;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
-	
+
 	private SimpleLanguageServer server;
 	private Map<String, JavaProject> table = new HashMap<String, JavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
@@ -94,7 +94,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		}
 		deleted.dispose();
 	}
-	
+
 	private void notifyChanged(JavaProject newProject) {
 		logEvent("Changed", newProject);
 		synchronized (listeners) {
@@ -112,7 +112,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		} catch (Exception e) {
 		}
 	}
-	
+
 	private static int countSourceAttachments(Collection<CPE> classpathEntries) {
 		int count = 0;
 		for (CPE cpe : classpathEntries) {
@@ -134,18 +134,29 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		String uri = UriUtil.normalize(doc.getUri());
 		log.debug("find {} ", uri);
 		synchronized (table) {
+			String foundUri = null;
+			IJavaProject foundProject = null;
 			for (Entry<String, JavaProject> e : table.entrySet()) {
 				String projectUri = e.getKey();
 				log.debug("projectUri = '{}'", projectUri);
 				if (UriUtil.contains(projectUri, uri)) {
-					log.debug("found {} for {}", e.getValue(), uri);
-					return Optional.of(e.getValue());
+					if (foundUri==null) {
+						log.debug("found {} for {}", e.getValue(), uri);
+						foundUri = projectUri;
+						foundProject = e.getValue();
+					} else if (UriUtil.contains(foundUri, projectUri)) {
+						log.debug("found more nested {} for {}", e.getValue(), uri);
+						foundUri = projectUri;
+						foundProject = e.getValue();
+					} else {
+						log.debug("found {} for {} but keeping {}", e.getValue(), uri, foundProject);
+					}
 				}
 			}
+			return Optional.ofNullable(foundProject);
 		}
-		return Optional.empty();
 	}
-	
+
 	@Override
 	public IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry) {
 		return new JdtLsJavadocProvider(server.getClient(), projectUri);
