@@ -1,11 +1,9 @@
 {
     "compilerOptions": {
-        "strict": false,
         "declaration": true,
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "emitDecoratorMetadata": true,
-        "downlevelIteration": true,
         "module": "commonjs",
         "moduleResolution": "node",
         "target": "es5",

@@ -11,22 +11,29 @@
     "lib",
     "src"
   ],
+  "engines": {
+    "npm": "^5.0.0",
+    "vscode": "^1.25.0"
+  },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
     "@theia/core": "latest",
     "@theia/editor": "latest",
     "@theia/languages": "latest",
-    "@types/glob": "^5.0.30",
     "glob": "^7.1.2"
   },
   "devDependencies": {
+    "@types/glob": "^5.0.30",
+    "vscode": "latest",
+    "monaco-editor-core": "latest",
+    "fuzzy": "latest",
     "rimraf": "latest",
     "typescript": "latest"
   },
   "scripts": {
     "prepublish": "yarn run clean && yarn run build",
     "clean": "rimraf lib",
-    "build": "tsc",
+    "build": "node ./node_modules/vscode/bin/install && tsc",
     "watch": "tsc -w"
   },
   "theiaExtensions": [
