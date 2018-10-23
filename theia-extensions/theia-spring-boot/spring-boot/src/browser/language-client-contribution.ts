@@ -8,11 +8,14 @@ import {
 } from '../common';
 import { DocumentSelector } from '@theia/languages/lib/common';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
-import { HighlightService} from './highlight-service';
+import {HighlightParams, HighlightService} from './highlight-service';
 import { BootConfiguration, BootPreferences } from './boot-preferences';
-import { StsLanguageClientContribution } from "@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution";
+import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
 import { ClasspathService } from '@pivotal-tools/theia-languageclient/lib/browser/classpath-service';
+import { NotificationType } from 'vscode-jsonrpc';
+import { HighlightCodeLensService } from './codelens-service';
 
+const HIGHLIGHTS_NOTIFICATION_TYPE = new NotificationType<HighlightParams,void>('sts/highlight');
 
 @injectable()
 export class SpringBootClientContribution extends StsLanguageClientContribution<BootConfiguration> {
@@ -25,6 +28,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
         @inject(Languages) languages: Languages,
         @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
         @inject(HighlightService) protected readonly highlightService: HighlightService,
+        @inject(HighlightCodeLensService) protected readonly highlightCodeLensService,
         @inject(ClasspathService) protected readonly classpathService: ClasspathService,
         @inject(BootPreferences) protected readonly preferences: BootPreferences
     ) {
@@ -34,7 +38,10 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
     protected attachMessageHandlers() {
         super.attachMessageHandlers();
         this.languageClient.then(client => {
-            this.highlightService.attach(client);
+            client.onNotification(HIGHLIGHTS_NOTIFICATION_TYPE, (params) => {
+                this.highlightService.handle(params);
+                this.highlightCodeLensService.handleProtocols(params);
+            });
             // this.classpathService.attach(client);
         });
     }

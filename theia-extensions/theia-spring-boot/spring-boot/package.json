@@ -18,7 +18,8 @@
     "@theia/java": "latest",
     "@theia/languages": "latest",
     "@theia/monaco": "latest",
-    "@theia/preferences": "latest"
+    "@theia/preferences": "latest",
+    "deep-equal": "latest"
   },
   "devDependencies": {
     "rimraf": "latest",

@@ -1,12 +1,8 @@
 import { injectable, inject } from 'inversify';
-import { NotificationType } from 'vscode-jsonrpc';
 import { VersionedTextDocumentIdentifier, Range, CodeLens } from 'vscode-base-languageclient/lib/base';
 import { SetDecorationParams, EditorDecorationStyle, TextEditor, DeltaDecorationParams, EditorManager } from '@theia/editor/lib/browser';
-import { ILanguageClient } from '@theia/languages/lib/common';
 import { DiffUris } from '@theia/core/lib/browser/diff-uris';
 import URI from '@theia/core/lib/common/uri';
-
-const HIGHLIGHTS_NOTIFICATION_TYPE = new NotificationType<HighlightParams,void>("sts/highlight");
 
 const BOOT_LIVE_HINTS = 'Boot-Live-Hints';
 
@@ -27,11 +23,7 @@ export class HighlightService {
         @inject(EditorManager) protected readonly editorManager: EditorManager
     ) {}
 
-    attach(client: ILanguageClient) {
-        client.onNotification(HIGHLIGHTS_NOTIFICATION_TYPE, (params) => this.highlight(params));
-    }
-
-    async highlight(params: HighlightParams) {
+    async handle(params: HighlightParams) {
         const editor = await this.findEditorByUri(params.doc.uri);
         if (editor) {
             const decorationParams: SetDecorationParams = {
