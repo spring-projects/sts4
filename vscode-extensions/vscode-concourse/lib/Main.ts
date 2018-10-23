@@ -37,7 +37,16 @@ export function activate(context: VSCode.ExtensionContext) {
         jvmHeap: "48m",
         workspaceOptions: VSCode.workspace.getConfiguration("concourse.ls"),
         clientOptions: {
-            documentSelector: [ PIPELINE_LANGUAGE_ID, TASK_LANGUAGE_ID ]
+            documentSelector: [
+                {
+                    language: PIPELINE_LANGUAGE_ID,
+                    scheme: 'file'
+                },
+                {
+                    language: TASK_LANGUAGE_ID,
+                    scheme: 'file'
+                }
+            ]
         }
     };
     let clientPromise = commons.activate(options, context);
