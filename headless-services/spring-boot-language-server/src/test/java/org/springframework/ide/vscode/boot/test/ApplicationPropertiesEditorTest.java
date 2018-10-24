@@ -72,24 +72,20 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		projectContents.createFile("src/main/resources/application.yml", "");
 	};
 
+	@Test public void inheritedPojoProperties() throws Exception {
+		//See https://github.com/spring-projects/sts4/issues/116
+		useProject(createPredefinedMavenProject("cloud-rabbit-project"));
+
+		Editor editor = newEditor(
+				"spring.cloud.stream.rabbit.bindings.input.consumer.auto-bind-dlq: no-bool"
+		);
+		editor.assertProblems("no-bool|boolean");
+	}
+
 	@Test
 	public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
 		editor.assertProblems("key|extraneous input");
-	}
-
-	public void linterRunsOnDocumentOpenAndChange() throws Exception {
-		Editor editor = newEditor("key");
-
-		editor.assertProblems("key|mismatched input");
-
-		editor.setText(
-				"problem\n" +
-				"key=value\n" +
-				"another"
-		);
-
-		editor.assertProblems("problem|extraneous input", "another|mismatched input");
 	}
 
 	@Test public void bug_158348104() throws Exception {
@@ -274,8 +270,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test public void testEnableApt() throws Throwable {
 		MavenJavaProject p = createPredefinedMavenProject("boot-1.2.0-properties-live-metadta");
 
-		//Check some assumptions about the initial state of the test project (if these checks fail then
-		// the test may be 'vacuous' since the things we are testing for already exist beforehand.
 		Path metadataFile = getOutputFolder(p).resolve(PropertiesLoader.PROJECT_META_DATA_LOCATIONS[0]);
 		assertTrue(metadataFile.toFile().isFile());
 		assertContains("\"name\": \"foo.counter\"", Files.toString(metadataFile.toFile(), Charset.forName("UTF8")));
