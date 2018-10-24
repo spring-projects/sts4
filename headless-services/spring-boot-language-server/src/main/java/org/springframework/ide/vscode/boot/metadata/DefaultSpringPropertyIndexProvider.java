@@ -18,21 +18,22 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
-	
+
 	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager;
-	
+
 	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
-	
-	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver) {
+
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, FileObserver fileObserver) {
 		this.javaProjectFinder = javaProjectFinder;
-		this.indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault(), projectObserver);
+		this.indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault(), projectObserver, fileObserver);
 	}
-	
+
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
 		Optional<IJavaProject> jp = javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()));
