@@ -34,9 +34,15 @@ export function activate(context: VSCode.ExtensionContext) {
         jvmHeap: "48m",
         workspaceOptions: VSCode.workspace.getConfiguration("bosh.ls"),
         clientOptions: {
-            documentSelector: [ 
-                "bosh-deployment-manifest",
-                "bosh-cloud-config"
+            documentSelector: [
+                {
+                    language: 'bosh-deployment-manifest',
+                    scheme: 'file'
+                },
+                {
+                    language: 'bosh-cloud-config',
+                    scheme: 'file'
+                }
             ],
             synchronize: {
                 configurationSection: "bosh"
