@@ -9,6 +9,7 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
     private highlights : Map<string, HighlightParams> = new Map<string, HighlightParams>();
 
     private _onDidChangeCodeLenses = new monaco.Emitter<this>();
+
     public get onDidChange(): monaco.IEvent<this> {
         return this._onDidChangeCodeLenses.event;
     }
@@ -23,9 +24,9 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
     static toMonacoCodeLens(cl: Lsp.CodeLens): monaco.languages.ICodeLensSymbol {
         const codeLens: monaco.languages.ICodeLensSymbol = {
             range: {
-                startLineNumber: cl.range.start.line,
+                startLineNumber: cl.range.start.line + 1,
                 startColumn: cl.range.start.character,
-                endLineNumber: cl.range.end.line,
+                endLineNumber: cl.range.end.line + 1,
                 endColumn: cl.range.end.character
             },
             command: {
@@ -37,7 +38,7 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
         return codeLens;
     }
 
-    provideCodeLenses(document: monaco.editor.ITextModel, token: monaco.CancellationToken): monaco.languages.ICodeLensSymbol[] {
+    provideCodeLenses(document: monaco.editor.ITextModel, token: monaco.CancellationToken) {
         const activeUri = document.uri.toString();
         const activeVersion = document.getVersionId();
         const highlightParams = this.highlights.get(activeUri);
@@ -47,5 +48,9 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
         }
         return [];
     };
+
+    resolveCodeLens(model: monaco.editor.ITextModel, codeLens: monaco.languages.ICodeLensSymbol, token: monaco.CancellationToken) {
+        return codeLens;
+    }
 
 }
