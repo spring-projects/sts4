@@ -543,11 +543,14 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "bucket", t_ne_string).isPrimary(true);
 			addProp(source, "access_key_id", t_ne_string);
 			addProp(source, "secret_access_key", t_ne_string);
+			addProp(source, "session_token", t_ne_string);
 			addProp(source, "region_name", t_s3_region);
 			addProp(source, "private", t_boolean);
 			addProp(source, "cloudfront_url", t_ne_string);
 			addProp(source, "endpoint", t_ne_string);
 			addProp(source, "disable_ssl", t_boolean);
+			addProp(source, "skip_ssl_verification", t_boolean);
+			addProp(source, "skip_download", t_boolean);
 			addProp(source, "server_side_encryption", t_ne_string);
 			addProp(source, "sse_kms_key_id", t_ne_string);
 			addProp(source, "use_v2_signing", t_boolean);
@@ -556,7 +559,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			source.requireOneOf("regexp", "versioned_file");
 
 			AbstractType get = f.ybean("S3GetParams");
-			//Note: S3GetParams intentionally has no properties since no params are expected according to the docs.
+			addProp(get, "unpack", t_boolean);
+			addProp(get, "skip_download", t_boolean);
 
 			AbstractType put = f.ybean("S3PutParams");
 			addProp(put, "file", t_ne_string).isPrimary(true);

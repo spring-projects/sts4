@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -1863,11 +1862,14 @@ public class ConcourseEditorTest {
 				"    bucket: the-bucket\n" +
 				"    access_key_id: the-access-key\n" +
 				"    secret_access_key: the-secret-key\n" +
+				"    session_token: the-session-token\n" +
 				"    region_name: bogus-region\n" +
 				"    private: is-private\n" +
 				"    cloudfront_url: https://d5yxxxxx.cloudfront.net\n" +
 				"    endpoint: https://blah.custom.com/blah/blah\n" +
 				"    disable_ssl: no_ssl_checking\n" +
+				"    skip_ssl_verification: skipping-ssl\n" +
+				"    skip_download: skipping-downloading\n" +
 				"    server_side_encryption: some-encryption-algo\n" + //TODO: validation and CA? What values are acceptable?
 				"    sse_kms_key_id: the-master-key-id\n" +
 				"    use_v2_signing: should-use-v2\n" +
@@ -1879,6 +1881,8 @@ public class ConcourseEditorTest {
 				"bogus-region|unknown 'S3Region'",
 				"is-private|'boolean'",
 				"no_ssl_checking|'boolean'",
+				"skipping-ssl|'boolean'",
+				"skipping-downloading|'boolean'",
 				"should-use-v2|'boolean'",
 				"regexp|Only one of [regexp, versioned_file] should be defined",
 				"versioned_file|Only one of [regexp, versioned_file] should be defined"
@@ -1887,11 +1891,14 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("bucket", "The name of the bucket");
 		editor.assertHoverContains("access_key_id", "The AWS access key");
 		editor.assertHoverContains("secret_access_key", "The AWS secret key");
+		editor.assertHoverContains("session_token", "The AWS STS session token");
 		editor.assertHoverContains("region_name", "The region the bucket is in");
 		editor.assertHoverContains("private", "Indicates that the bucket is private");
 		editor.assertHoverContains("cloudfront_url", "The URL (scheme and domain) of your CloudFront distribution");
 		editor.assertHoverContains("endpoint", "Custom endpoint for using S3");
 		editor.assertHoverContains("disable_ssl", "Disable SSL for the endpoint");
+		editor.assertHoverContains("skip_ssl_verification", "Skip SSL verification for S3 endpoint");
+		editor.assertHoverContains("skip_download", "Skip downloading object from S3");
 		editor.assertHoverContains("server_side_encryption", "An encryption algorithm to use");
 		editor.assertHoverContains("sse_kms_key_id", "The ID of the AWS KMS master encryption key");
 		editor.assertHoverContains("use_v2_signing", "Use signature v2 signing");
@@ -1938,14 +1945,36 @@ public class ConcourseEditorTest {
 				"jobs:\n" +
 				"- name: a-job\n" +
 				"  plan:\n" +
-				"  - get: my-s3-bucket\n" +
+				"  - put: my-s3-bucket\n" +
 				"    params:\n" +
+				"      acl: public-read\n" +
+				"    get_params:\n" +
 				"      no-params-expected: bad"
 		);
-
 		editor.assertProblems(
+				"params|'file' is required",
 				"no-params-expected|Unknown property"
 		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-s3-bucket\n" +
+				"  type: s3\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: my-s3-bucket\n" +
+				"    params:\n" +
+				"      skip_download: no-bool1\n" +
+				"      unpack: no-bool2\n"
+		);
+		editor.assertProblems(
+				"no-bool1|boolean",
+				"no-bool2|boolean"
+		);
+
+		editor.assertHoverContains("skip_download", "Skip downloading object from S3");
+		editor.assertHoverContains("unpack", "unpack the file");
 	}
 
 	@Test public void s3ResourcePutParamsReconcileAndHovers() throws Exception {
