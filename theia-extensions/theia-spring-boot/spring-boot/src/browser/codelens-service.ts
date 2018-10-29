@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import * as deepEqual from 'deep-equal';
 import {HighlightParams} from './highlight-service';
-import * as Lsp from 'vscode-base-languageclient/lib/base';
+import * as Lsp from 'vscode-languageserver-types';
 
 @injectable()
 export class HighlightCodeLensService implements monaco.languages.CodeLensProvider {

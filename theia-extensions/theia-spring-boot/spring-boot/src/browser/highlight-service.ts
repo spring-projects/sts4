@@ -1,10 +1,10 @@
 import { injectable, inject } from 'inversify';
-import { VersionedTextDocumentIdentifier, Range, CodeLens } from 'vscode-base-languageclient/lib/base';
-import { SetDecorationParams, EditorDecorationStyle, TextEditor, DeltaDecorationParams, EditorManager } from '@theia/editor/lib/browser';
+import { VersionedTextDocumentIdentifier, Range, CodeLens } from 'vscode-languageserver-types';
+import { EditorDecorationStyle, TextEditor, DeltaDecorationParams, EditorManager } from '@theia/editor/lib/browser';
 import { DiffUris } from '@theia/core/lib/browser/diff-uris';
 import URI from '@theia/core/lib/common/uri';
 
-const BOOT_LIVE_HINTS = 'Boot-Live-Hints';
+// const BOOT_LIVE_HINTS = 'Boot-Live-Hints';
 
 const INLINE_BOOT_HINT_DECORATION_STYLE = new EditorDecorationStyle('inline-boot-hint-decoration', style => {
     style.backgroundColor = 'rgba(109,179,63,0.25)',
@@ -26,9 +26,11 @@ export class HighlightService {
     async handle(params: HighlightParams) {
         const editor = await this.findEditorByUri(params.doc.uri);
         if (editor) {
-            const decorationParams: SetDecorationParams = {
-                uri: params.doc.uri,
-                kind: BOOT_LIVE_HINTS,
+            const key = `${params.doc.uri}`;
+            const decorationParams: DeltaDecorationParams = {
+                // uri: params.doc.uri,
+                // kind: BOOT_LIVE_HINTS,
+                oldDecorations: this.appliedDecorations.get(key) || [],
                 newDecorations: params.codeLenses.map(cl => {
                     return {
                         range: Range.create(cl.range.start.line, cl.range.start.character, cl.range.end.line, cl.range.end.character),
@@ -39,9 +41,7 @@ export class HighlightService {
                     }
                 })
             };
-            const key = `${params.doc.uri}`;
-            const oldDecorations = this.appliedDecorations.get(key) || [];
-            const appliedDecorations = editor.deltaDecorations(<DeltaDecorationParams & SetDecorationParams>{oldDecorations, ...decorationParams});
+            const appliedDecorations = editor.deltaDecorations(decorationParams);
             this.appliedDecorations.set(key, appliedDecorations);
         }
     }
@@ -58,7 +58,6 @@ export class HighlightService {
         }
         return undefined;
     }
-
 
 }
 

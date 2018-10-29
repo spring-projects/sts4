@@ -1,4 +1,4 @@
-/// <reference types='monaco-editor-core/monaco'/>
+/// <reference types='@typefox/monaco-editor-core/monaco'/>
 import {
     BOOT_PROPERTIES_YAML_LANGUAGE_ID,
     BOOT_PROPERTIES_YAML_LANGUAGE_NAME
