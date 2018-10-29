@@ -8,13 +8,13 @@ import {findJdk, findJvm, JVM} from '@pivotal-tools/jvm-launch-utils';
 @injectable()
 export abstract class StsLanguageServerContribution extends BaseLanguageServerContribution {
 
-    protected readonly preferJdk = false;
+    protected readonly preferJdk: boolean = false;
 
-    protected readonly lsJarContainerFolder = path.resolve(__dirname, '../../jars');
+    protected readonly lsJarContainerFolder: string = path.resolve(__dirname, '../../jars');
 
-    protected readonly lsJarGlob = 'language-server*.jar';
+    protected readonly lsJarGlob: string = 'language-server*.jar';
 
-    protected readonly jvmArguments = [];
+    protected readonly jvmArguments: string[] = [];
 
     protected getJarPath() {
         const jarPaths = glob.sync(this.lsJarGlob, { cwd: this.lsJarContainerFolder });
