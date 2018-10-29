@@ -28,14 +28,13 @@ export abstract class StsLanguageClientContribution<P> extends BaseLanguageClien
             this.sendConfig();
             this.preferences.onPreferenceChanged(() => this.sendConfig());
         }
-        this.attachMessageHandlers();
+        return this.attachMessageHandlers();
     }
 
-    protected attachMessageHandlers() {
-        this.languageClient.then(client => {
-            this.progressService.attach(client);
-            this.moveCursorService.attach(client);
-        });
+    protected async attachMessageHandlers() {
+        const client = await this.languageClient;
+        this.progressService.attach(client);
+        this.moveCursorService.attach(client);
     }
 
     private sendConfig() {

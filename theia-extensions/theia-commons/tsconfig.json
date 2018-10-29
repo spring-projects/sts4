@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "declaration": true,
+        "skipLibCheck": true,
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "emitDecoratorMetadata": true,
@@ -17,5 +18,8 @@
     },
     "include": [
         "src"
+    ],
+    "files": [
+        "./node_modules/@theia/monaco/src/typings/monaco/index.d.ts"
     ]
 }
