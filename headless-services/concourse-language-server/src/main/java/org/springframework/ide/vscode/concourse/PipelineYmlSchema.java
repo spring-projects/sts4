@@ -556,7 +556,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			source.requireOneOf("regexp", "versioned_file");
 
 			AbstractType get = f.ybean("S3GetParams");
-			//Note: S3GetParams intentionally has no properties since no params are expected according to the docs.
+			addProp(get, "unpack", t_boolean);
+			addProp(get, "skip_download", t_boolean);
 
 			AbstractType put = f.ybean("S3PutParams");
 			addProp(put, "file", t_ne_string).isPrimary(true);
