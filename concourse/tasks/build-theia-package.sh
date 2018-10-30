@@ -44,5 +44,5 @@ cd "$ext_folder"
 tar_file=$extension_id-v$qualified_version.tgz
 yarn pack --filename $tar_file
 
-cp $tarfile $workdir/out
+cp $tar_file $workdir/out
 
