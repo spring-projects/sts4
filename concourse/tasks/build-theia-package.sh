@@ -43,5 +43,5 @@ cd "$sources"
 cd "$ext_folder"
 yarn pack
 
-cp pivotal-tools-${extension_id}-v${$qualified_version}.tgz $workdir/out/${extension_id}-v${$qualified_version}.tgz
+cp pivotal-tools-$extension_id-v$qualified_version.tgz $workdir/out/$extension_id-v$qualified_version.tgz
 
