@@ -21,7 +21,7 @@ fi
 mkdir $test_dir
 cd $test_dir
 
-echo "Generating 'pacjage.json' file..."
+echo "Generating 'package.json' file..."
 
 cat > package.json << EOF
 {
@@ -58,7 +58,6 @@ cat > package.json << EOF
 EOF
 
 echo "Installing NPM packages..."
-yarn
 yarn add $package_tarball
 
 echo "Launching Theia browser app..."

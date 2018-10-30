@@ -41,7 +41,8 @@ echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 cd "$sources"
 ./build.sh
 cd "$ext_folder"
-yarn pack
+tar_file=$extension_id-v$qualified_version.tgz
+yarn pack $tar_file
 
-cp pivotal-tools-$extension_id-v$qualified_version.tgz $workdir/out/$extension_id-v$qualified_version.tgz
+cp $tarfile $workdir/out
 
