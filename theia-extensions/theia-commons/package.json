@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/theia-languageclient",
-  "version": "0.0.5-alpha",
+  "version": "0.0.5-beta",
   "description": "Theia IDE language client for STS4 language servers",
   "repository": "https://github.com/spring-projects/sts4",
   "license": "MIT",
@@ -9,7 +9,8 @@
   ],
   "files": [
     "lib",
-    "src"
+    "src",
+    "data"
   ],
   "engines": {
     "npm": "^5.0.0",
@@ -17,10 +18,10 @@
   },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "@theia/core": "next",
-    "@theia/editor": "next",
-    "@theia/languages": "next",
-    "@theia/monaco": "next",
+    "@theia/core": "latest",
+    "@theia/editor": "latest",
+    "@theia/languages": "latest",
+    "@theia/monaco": "latest",
     "@types/glob": "^5.0.30",
     "glob": "^7.1.2"
   },
