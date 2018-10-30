@@ -3,7 +3,7 @@
 update_package_json() {
     cd $1
     tmp=$(mktemp)
-    jq_cmd=".dependencies[\"@theia/${2}\"] = \"${3}\""
+    jq_cmd=".dependencies[\"@pivotal-tools/theia-${2}\"] = \"${3}\""
     jq "${jq_cmd}" package.json > "$tmp" && mv "$tmp" package.json
     npm version $3
 }
@@ -43,5 +43,5 @@ cd "$sources"
 cd "$ext_folder"
 yarn pack
 
-cp *.tgz $workdir/out
+cp pivotal-tools-${extension_id}-v${$qualified_version}.tgz $workdir/out/${extension_id}-v${$qualified_version}.tgz
 
