@@ -3,7 +3,7 @@
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.0.0",
+  "version": "0.0.2",
   "files": [
     "lib",
     "src",
@@ -29,5 +29,8 @@
       "frontend": "lib/browser/concourse-frontend-module",
       "backend": "lib/node/concourse-backend-module"
     }
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
