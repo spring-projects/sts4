@@ -1,3 +1,29 @@
+## 2018-10-31 (4.0.1 RELEASE)
+
+* _(Spring Boot)_ fixed NPE from SpringIndexer ([#105](https://github.com/spring-projects/sts4/issues/105))
+* _(Spring Boot)_ filed: Spring Boot configuration property auto-completion does not offer properties on super classes ([#116](https://github.com/spring-projects/sts4/issues/116))
+* _(Spring Boot)_ fixed: Lots of NPE noise in language server ([#90](https://github.com/spring-projects/sts4/issues/90))
+* _(Spring Boot)_ fixed: Live Boot Hint Decorators not working when app ObjectMapper configured with NON_DEFAULT inclusion  ([#80](https://github.com/spring-projects/sts4/issues/80))
+* _(Spring Boot)_ fixed: property support now understand nested project structure
+
+## 2018-09-25 (4.0.0 RELEASE)
+
+* _(Spring Boot)_ `Cmd-6` in Eclipse shows `Go To Symbols in Workspace` first, second `Cmd-6` switches to `Go To Symbols in File`
+* _(Spring Boot)_ various bug fixes
+
+## 2018-08-30 (M15)
+
+* _(Spring Boot)_ improved the overall content of bean wiring live hovers
+* _(Spring Boot)_ live hover information for bean wirings now show up more precisely on autowired fields and constructors as well as at `@Bean` definitions, including more complete information about the wirings
+* _(Spring Boot)_ improved performance of live hovers for remote boot apps
+* _(Spring Boot)_ added experimental option to show code lenses for live hover information, including bean wiring and request mapping URLs (use the preferences to switch that on)
+* _(Spring Boot)_ added detailed information to the boot dashboard property view about JMX tunnels over SSH to boot apps running on CloudFoundry
+* _(Spring Boot)_ added action to enable/disable JMX tunneling through SSH for already deployed and running apps
+* _(Spring Boot)_ improved performance and reduced footprint of live hover update mechanism
+* _(Spring Boot)_ bugfix: fixed missing line break in live hover for request mappings
+* _(Spring Boot)_ bugfix: resource links in live hovers for remote boot apps now working
+* _(Spring Boot)_ bugfix: make the overall classpath detection mechanism more reliable in case of project deletions ([#69](https://github.com/spring-projects/sts4/issues/69))
+
 ## 2018-08-09 (M14)
 
 * _(Spring Boot)_ added support for showing live hovers for Spring Boot apps running remotely (on Cloud Foundry)

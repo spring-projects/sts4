@@ -1,3 +1,15 @@
+## 2018-10-31 (4.0.1 RELEASE)
+
+* no major changes
+
+## 2018-09-25 (4.0.0 RELEASE)
+
+* no major changes
+
+## 2018-08-30 (M15)
+
+* no major changes
+
 ## 2018-08-09 (M14)
 
 * no major changes

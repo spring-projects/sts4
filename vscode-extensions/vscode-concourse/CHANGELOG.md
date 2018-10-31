@@ -1,3 +1,15 @@
+## 2018-10-31 (4.0.1 RELEASE)
+
+* _(Concourse)_ added support for new attributes for S3 resource
+
+## 2018-09-25 (4.0.0 RELEASE)
+
+* no major changes
+
+## 2018-08-30 (M15)
+
+* no major changes
+
 ## 2018-08-09 (M14)
 
 *  _(Concourse)_ added support for `tags` property in `resources` ([#66](https://github.com/spring-projects/sts4/issues/66))
