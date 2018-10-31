@@ -25,10 +25,10 @@ import com.google.common.collect.ImmutableList.Builder;
 
 @SuppressWarnings("restriction")
 public class JRE {
-	
+
 	public final File javaHome;
 	public final File toolsJar;
-	
+
 	public JRE(File javaHome, File toolsJar) {
 		this.javaHome = javaHome;
 		this.toolsJar = toolsJar;
@@ -43,7 +43,7 @@ public class JRE {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "JRE("+javaHome+")";
@@ -54,12 +54,12 @@ public class JRE {
 	}
 
 	/**
-	 * Get a JRE, with a paired tools jar if it is needed based on current JRE version 
+	 * Get a JRE, with a paired tools jar if it is needed based on current JRE version
 	 * and whether the caller wants it.
-	 * 
+	 *
 	 * @return The JRE.
 	 * @throws MissingToolsJarException If tools jar is needed but could not be found.
-	 * @throws MissingJDKException 
+	 * @throws MissingJDKException
 	 */
 	public static JRE findJRE(boolean needJdk) throws MissingJDKException, MissingToolsJarException {
 		File mainHome = new File(System.getProperty("java.home"));
@@ -82,7 +82,7 @@ public class JRE {
 				}
 			}
 			throw new MissingToolsJarException(mainHome, lookedIn);
-		} else { // needJdk && !needsToolsJar 
+		} else { // needJdk && !needsToolsJar
 			//Find a jdk 'java 9 style'.
 			for (File jhome : jhomes) {
 				for (String jmPath : JMOD_PATHS) {
@@ -95,7 +95,7 @@ public class JRE {
 			throw new MissingJDKException(mainHome);
 		}
 	}
-	
+
 	/**
 	 * Different places to look for tools jar, relative to Java home (for java version < 9)
 	 */
@@ -106,7 +106,7 @@ public class JRE {
 
 	/**
 	 * Different places to look for jdk.mamagement.jmod file. We don't need this file
-	 * explicitly. It is just used as a means to try to recognize whether the given 
+	 * explicitly. It is just used as a means to try to recognize whether the given
 	 * java home is a JDK.
 	 */
 	private static final String JMOD_PATHS[] = {
@@ -114,18 +114,28 @@ public class JRE {
 	};
 
 	private static boolean javaVersionNeedsToolsJar() {
-		int javaVersion = Integer.parseInt(System.getProperty("java.version").split("\\.")[0]);
+		String versionString = System.getProperty("java.version");
+		int javaVersion = parseVersion(versionString);
 		return javaVersion<9;
+	}
+
+	public static int parseVersion(String versionString) {
+		int dash = versionString.indexOf('-');
+		if (dash>=0) {
+			versionString = versionString.substring(0, dash);
+		}
+		int javaVersion = Integer.parseInt(versionString.split("\\.")[0]);
+		return javaVersion;
 	}
 
 	private static void findPairedJdk(File mainHome, Consumer<File> requestor) {
 		//Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
 		//nested jre install inside of a jdk.
-		
+
 		//E.g.
 		//C:\ProgramFiles\Java\jdk1.8.0_161
 		//C:\ProgramFiles\Java\jre1.8.0_161
-		
+
 		String name = mainHome.getName();
 		String pairedName = name.replace("jre", "jdk");
 		if (!pairedName.equals(name)) {
@@ -138,9 +148,9 @@ public class JRE {
 
 	@SuppressWarnings("serial")
 	public static class MissingToolsJarException extends MissingJDKException {
-		
+
 		public final List<File> lookedIn;
-		
+
 		public MissingToolsJarException(File javaHome, List<File> lookedIn) {
 			super(javaHome);
 			this.lookedIn = lookedIn;
