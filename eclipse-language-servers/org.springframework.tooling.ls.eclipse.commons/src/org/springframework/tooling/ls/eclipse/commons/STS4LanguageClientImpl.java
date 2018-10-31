@@ -177,8 +177,9 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 			f = AnnotationPainter.class.getDeclaredField("fAnnotationType2Color");
 			f.setAccessible(true);
-			if (((Map<Object, Color>)f.get(painter)).get(ALT_ANNOTATION_TYPE_ID) != LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor()) {
-				painter.setAnnotationTypeColor(ALT_ANNOTATION_TYPE_ID, LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor());
+			Color highlightColor = LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor();
+			if (highlightColor!=null && ((Map<Object, Color>)f.get(painter)).get(ALT_ANNOTATION_TYPE_ID) != highlightColor) {
+				painter.setAnnotationTypeColor(ALT_ANNOTATION_TYPE_ID, highlightColor);
 				painter.addDrawingStrategy(ALT_ANNOTATION_DRAWING_STRATEGY_ID, BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY);
 				painter.addAnnotationType(ALT_ANNOTATION_TYPE_ID, ALT_ANNOTATION_DRAWING_STRATEGY_ID);
 			}

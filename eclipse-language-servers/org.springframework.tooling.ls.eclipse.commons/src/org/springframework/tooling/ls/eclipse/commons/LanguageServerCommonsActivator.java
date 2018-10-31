@@ -11,8 +11,10 @@
 package org.springframework.tooling.ls.eclipse.commons;
 
 import java.net.URL;
+import java.time.Duration;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -27,6 +29,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl.UpdateHighlights;
@@ -90,18 +93,29 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 		super.start(context);
 		getImageRegistry().put(BOOT_KEY, getImageDescriptor("icons/boot.png"));
 
-		colorRegistry = new ColorRegistry(PlatformUI.getWorkbench().getDisplay(), true);
-		RGB prefsColor = PreferenceConverter.getColor(EditorsPlugin.getDefault().getPreferenceStore(), PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS);
-		colorRegistry.put(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS, convertRGBtoNonTransparent(prefsColor));
+		UIJob uiJob = new UIJob("Setup color registry") {
+			{
+				setSystem(true);
+			}
 
-		getPreferenceStore().addPropertyChangeListener(PROPERTY_LISTENER);
-
-		EditorsPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(PROPERTY_LISTENER);
-
+			@Override
+			public IStatus runInUIThread(IProgressMonitor arg0) {
+				colorRegistry = new ColorRegistry(PlatformUI.getWorkbench().getDisplay(), true);
+				RGB prefsColor = PreferenceConverter.getColor(EditorsPlugin.getDefault().getPreferenceStore(), PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS);
+				colorRegistry.put(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS, convertRGBtoNonTransparent(prefsColor));
+				getPreferenceStore().addPropertyChangeListener(PROPERTY_LISTENER);
+				EditorsPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(PROPERTY_LISTENER);
+				return Status.OK_STATUS;
+			}
+		};
+		uiJob.schedule();
 	}
 
 	public Color getBootHighlightRangeColor() {
-		return colorRegistry.get(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS);
+		if (colorRegistry!=null) {
+			return colorRegistry.get(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS);
+		}
+		return null;
 	}
 
 	public final static ImageDescriptor getImageDescriptor(String path) {
