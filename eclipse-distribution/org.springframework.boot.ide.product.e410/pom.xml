@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot.ide</groupId>
 		<artifactId>org.springframework.boot.ide</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.0.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -48,6 +48,15 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<publishArtifacts>true</publishArtifacts>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<executionEnvironment>JavaSE-9</executionEnvironment>
 				</configuration>
 			</plugin>
 

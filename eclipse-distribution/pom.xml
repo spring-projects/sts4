@@ -61,7 +61,7 @@
 		<springide-p2-repo>http://dist.springframework.org/release/IDE/3.9.6.RELEASE</springide-p2-repo> -->
 		<sts4-language-servers-p2-repo>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 
-		<tycho-version>0.26.0</tycho-version>
+		<tycho-version>1.1.0</tycho-version>
 		<encoding>UTF-8</encoding>
 	</properties>
 
@@ -101,199 +101,6 @@
 
 				<sts4-language-servers-version>today</sts4-language-servers-version> <!-- this should be overridden in the build with the concrete ls version to include-->
 			</properties>
-		</profile>
-
-		<profile>
-			<id>e47</id>
-			<properties>
-				<dist.target>e4.7.3</dist.target>
-				<dist.target.major>e4.7</dist.target.major>
-				<dist.platform.name>Oxygen</dist.platform.name>
-				<dist.platform.name.long>Oxygen.3 (4.7.3)</dist.platform.name.long>
-				<dist.platform.id>oxygen</dist.platform.id>
-				<dist.platform.version>4.7</dist.platform.version>
-				<package.qualifierPrefix>e47</package.qualifierPrefix>
-			</properties>
-			<repositories>
-				<repository>
-					<id>oxygen</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/oxygen/</url>
-				</repository>
-<!--				<repository>
-					<id>staging</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/staging/oxygen/</url>
-				</repository> -->
-<!--				<repository>
-					<id>platform-m-build</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/eclipse/updates/4.7-M-builds</url>
-				</repository> -->
-				<repository>
-					<id>latest-m2e</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/technology/m2e/releases</url>
-				</repository>
-				<repository>
-					<id>latest-m2e-milestones</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/technology/m2e/milestones/1.8/</url>
-				</repository>
-				<repository>
-					<id>orbit</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180206163158/repository/</url>
-				</repository>
-				<repository>
-					<id>latest-buildship-release</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/buildship/updates/e47/releases/2.x</url>
-				</repository>
-				<repository>
-					<id>maven-extras-mirror</id>
-					<layout>p2</layout>
-					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
-				</repository>
-				<repository>
-					<id>maven-egit</id>
-					<layout>p2</layout>
-					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.14.0/N/0.14.0.201504071521/</url>
-				</repository>
-				<repository>
-					<id>maven-wro4j</id>
-					<layout>p2</layout>
-					<url>http://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
-				</repository>
-				<repository>
-					<id>maven-devtools</id>
-					<layout>p2</layout>
-					<url>http://dist.springsource.com/release/TOOLS/mavendevtools/</url>
-				</repository>
-				<repository>
-					<id>maven-dependency-support</id>
-					<layout>p2</layout>
-					<url>http://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
-				</repository>
-				<repository>
-					<id>ansi-console</id>
-					<layout>p2</layout>
-					<url>http://www.mihai-nita.net/eclipse</url>
-				</repository>
-				<repository>
-					<id>xtext-base</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
-				<repository>
-					<id>lsp4e-050-stream</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/lsp4e/0.5.x-snapshots/</url>
-				</repository>
-			</repositories>
-			<modules>
-				<module>org.springframework.boot.ide.product.e47</module>
-				<module>org.springframework.boot.ide.repository.e47</module>
-			</modules>
-		</profile>
-
-		<profile>
-			<id>e48</id>
-			<properties>
-				<dist.target>e4.8.0</dist.target>
-				<dist.target.major>e4.8</dist.target.major>
-				<dist.platform.name>Photon</dist.platform.name>
-				<dist.platform.name.long>Photon (4.8.0)</dist.platform.name.long>
-				<dist.platform.id>photon</dist.platform.id>
-				<dist.platform.version>4.8</dist.platform.version>
-				<package.qualifierPrefix>e48</package.qualifierPrefix>
-			</properties>
-			<repositories>
-				<repository>
-					<id>photon</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/photon/</url>
-				</repository>
-				<repository>
-					<id>staging</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/staging/photon/</url>
-				</repository>
-				<repository>
-					<id>orbit</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180606145124/repository</url>
-				</repository>
-<!--				<repository>
-					<id>orbit-i-builds</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/latest-I/</url>
-				</repository> -->
-				<repository>
-					<id>latest-m2e</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/technology/m2e/releases/1.8</url>
-				</repository>
-<!--				<repository>
-					<id>latest-m2e-milestones</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/technology/m2e/milestones/1.8/</url>
-				</repository> -->
-<!--				<repository>
-					<id>latest-buildship-release</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/buildship/updates/e47/releases/2.x</url>
-				</repository> -->
-				<repository>
-					<id>maven-extras-mirror</id>
-					<layout>p2</layout>
-					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
-				</repository>
-				<repository>
-					<id>maven-egit</id>
-					<layout>p2</layout>
-					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
-				</repository>
-				<repository>
-					<id>maven-wro4j</id>
-					<layout>p2</layout>
-					<url>http://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
-				</repository>
-				<repository>
-					<id>maven-devtools</id>
-					<layout>p2</layout>
-					<url>http://dist.springsource.com/release/TOOLS/mavendevtools/</url>
-				</repository>
-				<repository>
-					<id>maven-dependency-support</id>
-					<layout>p2</layout>
-					<url>http://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
-				</repository>
-				<repository>
-					<id>ansi-console</id>
-					<layout>p2</layout>
-					<url>http://www.mihai-nita.net/eclipse</url>
-				</repository>
-				<repository>
-					<id>xtext-base</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
-				<repository>
-					<id>lsp4e</id>
-					<layout>p2</layout>
-					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
-				</repository>
-<!--				<repository>
-					<id>lsp4j</id>
-					<layout>p2</layout>
-					<url>http://services.typefox.io/open-source/jenkins/job/lsp4j/job/master/lastSuccessfulBuild/artifact/build/p2-repository/</url>
-				</repository> -->
-			</repositories>
-			<modules>
-				<module>org.springframework.boot.ide.product.e48</module>
-				<module>org.springframework.boot.ide.repository.e48</module>
-			</modules>
 		</profile>
 
 		<profile>
@@ -377,6 +184,90 @@
 			<modules>
 				<module>org.springframework.boot.ide.product.e49</module>
 				<module>org.springframework.boot.ide.repository.e49</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>e410</id>
+			<properties>
+				<dist.target>e4.10.0</dist.target>
+				<dist.target.major>e4.10</dist.target.major>
+				<dist.platform.name>2018-12</dist.platform.name>
+				<dist.platform.name.long>2018-12 (4.10.0)</dist.platform.name.long>
+				<dist.platform.id>2018-12</dist.platform.id>
+				<dist.platform.version>4.10</dist.platform.version>
+				<package.qualifierPrefix>e410</package.qualifierPrefix>
+			</properties>
+			<repositories>
+				<repository>
+					<id>photon</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/releases/2018-12/</url>
+				</repository>
+				<repository>
+					<id>staging</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/staging/2018-12/</url>
+				</repository>
+				<repository>
+					<id>orbit</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20181031145145/repository</url>
+				</repository>
+				<repository>
+					<id>latest-m2e</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/technology/m2e/releases/1.8</url>
+				</repository>
+				<repository>
+					<id>maven-extras-mirror</id>
+					<layout>p2</layout>
+					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
+				</repository>
+				<repository>
+					<id>maven-egit</id>
+					<layout>p2</layout>
+					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
+				</repository>
+				<repository>
+					<id>maven-wro4j</id>
+					<layout>p2</layout>
+					<url>http://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+				</repository>
+				<repository>
+					<id>maven-devtools</id>
+					<layout>p2</layout>
+					<url>http://dist.springsource.com/release/TOOLS/mavendevtools/</url>
+				</repository>
+				<repository>
+					<id>maven-dependency-support</id>
+					<layout>p2</layout>
+					<url>http://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
+				</repository>
+				<repository>
+					<id>ansi-console</id>
+					<layout>p2</layout>
+					<url>http://www.mihai-nita.net/eclipse</url>
+				</repository>
+				<repository>
+					<id>xtext-base</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
+				</repository>
+				<repository>
+					<id>lsp4e</id>
+					<layout>p2</layout>
+					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
+				</repository>
+<!--				<repository>
+					<id>lsp4j</id>
+					<layout>p2</layout>
+					<url>http://services.typefox.io/open-source/jenkins/job/lsp4j/job/master/lastSuccessfulBuild/artifact/build/p2-repository/</url>
+				</repository> -->
+			</repositories>
+			<modules>
+				<module>org.springframework.boot.ide.product.e410</module>
+				<module>org.springframework.boot.ide.repository.e410</module>
 			</modules>
 		</profile>
 
