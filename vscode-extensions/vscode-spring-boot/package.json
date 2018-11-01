@@ -31,6 +31,20 @@
     "onLanguage:java"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "springboot.kubernetes-deploy",
+        "title": "Spring Boot: Kubernetes - Deploy Application"
+      },
+      {
+        "command": "springboot.pks-getcredentials",
+        "title": "PKS: Get Credentials"
+      },
+      {
+        "command": "springboot.kubernetes-update",
+        "title": "Spring Boot: Kubernetes - Update Application"
+      }
+    ],    
     "javaExtensions": [
       "./jars/jdt-ls-commons.jar",
       "./jars/jdt-ls-extension.jar"
@@ -137,6 +151,8 @@
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
     "@pivotal-tools/pipeline-builder": "^0.0.5",
+    "dockerode": "2.5.7",
+    "shelljs": "^0.7.7",
     "vscode-languageclient": "4.1.3"
   },
   "devDependencies": {

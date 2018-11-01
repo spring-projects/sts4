@@ -7,6 +7,7 @@ import * as commons from '@pivotal-tools/commons-vscode';
 
 import {generate_pipeline, UserQuestioner} from '@pivotal-tools/pipeline-builder';
 import {LanguageClient} from "vscode-languageclient";
+import {  subscribeDeployerCommands } from './deployer-command';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -14,8 +15,7 @@ const JAVA_LANGUAGE_ID = "java";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
-
-    // registerPipelineGenerator(context);
+    registerCommands(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
         CONNECT_TO_LS: false,
@@ -57,7 +57,11 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
     return commons.activate(options, context);
 }
 
-// NOTE: Be sure to add this under "contributes" in package.json to enable the command:
+function registerCommands(context: VSCode.ExtensionContext) {
+    // registerPipelineGenerator(context);
+
+    subscribeDeployerCommands(context);
+}// NOTE: Be sure to add this under "contributes" in package.json to enable the command:
 //
 // "commands": [
 //     {

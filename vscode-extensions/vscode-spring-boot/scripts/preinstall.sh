@@ -15,8 +15,19 @@ curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/Ja
 rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
 
+# Use maven to build kubernetes-deployer in headless-services
+cd ../../headless-services/kubernetes-deployer
+if command -v xvfb-run ; then
+    echo "Using xvfb to run in headless environment..."
+    xvfb-run ../mvnw clean package
+else
+    ../mvnw clean package
+fi
+cp target/*.jar ${workdir}/jars/kubernetes-deployer.jar
+echo ${workdir}/jars/kubernetes-deployer.jar
+
 # Use maven to build jdt ls extension
-cd ../../headless-services/jdt-ls-extension
+cd ../jdt-ls-extension
 if command -v xvfb-run ; then
     echo "Using xvfb to run in headless environment..."
     xvfb-run ../mvnw clean integration-test
@@ -27,7 +38,7 @@ cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt
 cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-ls-commons.jar
 
 # Use maven to build fat jar of the language server
-cd ../../headless-services/spring-boot-language-server
+cd ../spring-boot-language-server
 ./build.sh
 cp target/*.jar ${workdir}/jars
 
