@@ -39,8 +39,6 @@ public class ToggleComment extends AbstractHandler {
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Object ei = HandlerUtil.getVariable(event, "activeEditorId");
-		System.out.println(ei);
 		try {
 			ISelection sel = HandlerUtil.getCurrentSelection(event);
 			if (sel instanceof TextSelection) {
@@ -49,13 +47,11 @@ public class ToggleComment extends AbstractHandler {
 				int endLine = textSel.getEndLine();
 	
 				IEditorInput editorInput = HandlerUtil.getActiveEditorInput(event);
-				System.out.println(editorInput);
 				IEditorPart editor = HandlerUtil.getActiveEditor(event);
 				if (editor instanceof TextEditor) {
 					TextEditor textEditor = (TextEditor) editor;
 					IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
 					if (doc!=null) {
-						System.out.println(doc.get());
 						
 						boolean hasComments = hasComments(doc, startLine, endLine);
 						IDocumentUndoManager undo = DocumentUndoManagerRegistry.getDocumentUndoManager(doc);
@@ -84,9 +80,7 @@ public class ToggleComment extends AbstractHandler {
 			int lineStart = doc.getLineOffset(line);
 			edits.addChild(new InsertEdit(lineStart, "#"));
 		}
-		System.out.println("--- appling edits ---");
 		edits.apply(doc);
-		System.out.println(doc.get());
 	}
 
 	private void stripComments(IDocument doc, int startLine, int endLine) throws MalformedTreeException, BadLocationException {
@@ -101,9 +95,7 @@ public class ToggleComment extends AbstractHandler {
 				edits.addChild(new DeleteEdit(start, commentPrefix.length()));
 			}
 		}
-		System.out.println("--- appling edits ---");
 		edits.apply(doc);
-		System.out.println(doc.get());
 	}
 
 	private boolean hasComments(IDocument doc, int startLine, int endLine) throws BadLocationException {
