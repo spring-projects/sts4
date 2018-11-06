@@ -1,6 +1,6 @@
 {
   "name": "spring-boot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Spring Boot support for Atom",
   "repository": "https://github.com/spring-projects/atom-spring-boot",
   "icon": "icon.png",
