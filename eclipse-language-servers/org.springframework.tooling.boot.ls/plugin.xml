@@ -110,9 +110,27 @@
             class="org.springframework.tooling.boot.ls.commands.OpenResourceInEditor"
             commandId="org.springframework.tooling.boot.ls.OpenResourceInEditor">
       </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.ToggleComment"
+            commandId="org.springframework.tooling.boot.ls.ToggleComment">
+             <activeWhen>
+              <with variable="activeEditorId">
+                <or>
+                  <equals value="SpringBootPropertyEditor"/>
+                  <equals value="SpringBootYMLPropertyEditor"/>
+                </or>
+              </with>
+            </activeWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
+      <!-- !!! category for command is required or keybindings don't work !!! -->
+      <category
+            description="Spring Language Server Commands"
+            id="org.springframework.ide.eclipse.commands"
+            name="Spring Generic Text Editor">
+      </category>
       <command
             id="org.springframework.tooling.boot.ls.OpenJavaType"
             name="Open Java Type in Editor">
@@ -131,9 +149,52 @@
                optional="false">
          </commandParameter>
       </command>
+      <command
+            id="org.springframework.tooling.boot.ls.ToggleComment"
+            categoryId="org.springframework.ide.eclipse.commands"
+            name="Toggle Comment">
+      </command>
    </extension>
-   
-   
+
+	<extension
+	     point="org.eclipse.ui.bindings">
+      <!--  win32:  M1=CTRL,    M2=SHIFT, M3=ALT, M4=-
+            carbon: M1=COMMAND, M2=SHIFT, M3=ALT, M4=CTRL -->
+      <key
+            sequence="M1+M2+C"
+            contextId="org.eclipse.ui.textEditorScope"
+            commandId="org.springframework.tooling.boot.ls.ToggleComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+            sequence="M1+/"
+            contextId="org.eclipse.ui.textEditorScope"
+            commandId="org.springframework.tooling.boot.ls.ToggleComment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+	</extension>
+
+   <!-- Note: locationURI below adds this to 'edit' menu. Not a great place. Decided instead to just 
+        disable this. If we want to show this in a menu somewhere we should decide where and figure out how/if we
+        can make it apear there. -->
+<!--   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:edit?after=selectAll">
+        <command
+              commandId="org.springframework.tooling.boot.ls.ToggleComment"
+              label="Toggle Comment Spring"
+              style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activePartId">
+                  <equals
+                        value="SpringBootPropertyEditor">
+                  </equals>
+               </with>
+            </visibleWhen>
+        </command>
+      </menuContribution>
+   </extension> -->   
    <extension
          point="org.eclipse.ui.editors">
       <editor
@@ -149,16 +210,6 @@
       </editor>
    </extension>
    
-<!--
-   <extension
-         point="org.eclipse.ui.editors">
-      <editorContentTypeBinding
-            contentTypeId="org.springframework.boot.ide.properties.application.properties"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
-      </editorContentTypeBinding>
-   </extension>
--->
-
    <extension
          point="org.eclipse.ui.editors">
       <editor

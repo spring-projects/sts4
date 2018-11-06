@@ -24,11 +24,9 @@ import org.eclipse.ui.texteditor.ChainedPreferenceStore;
  * Has spaces rather than tab for indentation
  *
  * @author Alex Boyko
- *
  */
 @SuppressWarnings("restriction")
 public class YamlGenericEditor extends ExtensionBasedTextEditor {
-
 	@Override
 	protected boolean isTabsToSpacesConversionEnabled() {
 		return true;
