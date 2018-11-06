@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
@@ -56,4 +59,9 @@ import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 	@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
 		return serverParams.projectFinder;
 	}
+
+	@Bean SourceLinks sourceLinks(CompilationUnitCache cuCache) {
+		return SourceLinkFactory.NO_SOURCE_LINKS;
+	}
+
 }

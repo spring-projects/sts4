@@ -45,6 +45,8 @@ class BindingKeyUtils {
 		sb.append(getBindingKey(field.declaringClass()));
 		sb.append('.');
 		sb.append(field.name());
+		sb.append(')');
+		sb.append(getGeneralTypeBindingKey(field.type()));
 		return sb.toString();
 	}
 
@@ -104,6 +106,9 @@ class BindingKeyUtils {
 			sb.append(getGeneralTypeBindingKey(argument));
 		}
 		sb.append('>');
+		if (type.owner() == null) {
+			sb.append(';');
+		}
 		return sb.toString();
 	}
 

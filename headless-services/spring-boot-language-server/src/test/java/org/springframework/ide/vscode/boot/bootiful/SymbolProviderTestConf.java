@@ -6,6 +6,8 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -37,5 +39,9 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 
 	@Bean DefaultSpringPropertyIndexProvider indexProvider(BootLanguageServerParams serverParams) {
 		return (DefaultSpringPropertyIndexProvider) serverParams.indexProvider;
+	}
+
+	@Bean SourceLinks sourceLinks() {
+		return SourceLinkFactory.NO_SOURCE_LINKS;
 	}
 }

@@ -11,32 +11,24 @@
 package org.springframework.ide.vscode.boot.java.links;
 
 import java.io.File;
-import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
 /**
  * VSCode specific source links implementation
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class VSCodeSourceLinks extends AbstractSourceLinks {
-	
-	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 
-	public VSCodeSourceLinks(BootJavaLanguageServerComponents server) {
-		super(server);
+	public VSCodeSourceLinks(CompilationUnitCache cuCache) {
+		super(cuCache);
 	}
 
 	@Override
@@ -63,41 +55,8 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 	}
 
 	@Override
-	protected Optional<String> jarUrl(IJavaProject project, String fqName, File jarFile) {
-		try {
-			int lastDotIndex = fqName.lastIndexOf('.');
-			String packageName = fqName.substring(0, lastDotIndex);
-			String typeName = fqName.substring(lastDotIndex + 1);
-			String jarFileName = jarFile.getName();
-			StringBuilder sb = new StringBuilder();
-			sb.append("jdt://contents/");
-			sb.append(jarFileName);
-			sb.append("/");
-			sb.append(packageName);
-			sb.append("/");
-			sb.append(typeName);
-			sb.append(CLASS);
-			sb.append("?");
-
-			StringBuilder query = new StringBuilder();
-			query.append("=");
-			query.append(project.getElementName());
-			query.append("/");
-			String convertedPath = jarFile.toString().replace(File.separator, "\\/");
-			query.append(convertedPath);
-			query.append("<");
-			query.append(packageName);
-			query.append("(");
-			query.append(typeName);
-			query.append(CLASS);
-
-			sb.append(URLEncoder.encode(query.toString(), "UTF8"));
-			
-			return Optional.of(sb.toString());
-		} catch (Throwable t) {
-			LOG.get().warn("Failed creating source URI for jar " + jarFile + " type " + fqName + " in the context of project " + project.getElementName(), t);
-		}
-		return Optional.empty();
+	protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, File jarFile) {
+		return Optional.ofNullable(JdtJavaDocumentUriProvider.uri(project, fqName)).map(uri -> uri.toString());
 	}
 
 }

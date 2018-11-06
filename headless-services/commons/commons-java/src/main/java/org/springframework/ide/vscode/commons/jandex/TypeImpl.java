@@ -53,7 +53,7 @@ class TypeImpl implements IType {
 	@Override
 	public IType getDeclaringType() {
 		DotName enclosingClass = info.enclosingClass();
-		return enclosingClass == null ? null : index.findType(enclosingClass.toString());
+		return enclosingClass == null ? this : index.findType(enclosingClass.toString());
 	}
 
 	@Override

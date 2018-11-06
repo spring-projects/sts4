@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppMatcher;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -72,7 +71,8 @@ public class SpringLiveChangeDetectionWatchdog {
 			ProjectObserver projectObserver,
 			RunningAppProvider runningAppProvider,
 			JavaProjectFinder projectFinder,
-			Duration pollingInterval
+			Duration pollingInterval,
+			SourceLinks sourceLinks
 	) {
 		this.observedProjects = new HashSet<>();
 
@@ -82,7 +82,7 @@ public class SpringLiveChangeDetectionWatchdog {
 		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
 
 		this.changeHistory = new ChangeDetectionHistory();
-		this.sourceLinks = new VSCodeSourceLinks(bootJavaLanguageServerComponents);
+		this.sourceLinks = sourceLinks;
 
 		if (projectObserver != null) {
 			projectObserver.addListener(new Listener() {

@@ -32,10 +32,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
@@ -65,11 +63,11 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	private static final int MAX_INLINE_BEANS_STRING_LENGTH = 60;
 	private static final String INLINE_BEANS_STRING_SEPARATOR = " ";
+	private SourceLinks sourceLinks;
 
-	private BootJavaLanguageServerComponents server;
+	public AutowiredHoverProvider(SourceLinks sourceLinks) {
+		this.sourceLinks = sourceLinks;
 
-	public AutowiredHoverProvider(BootJavaLanguageServerComponents server) {
-		this.server = server;
 	}
 
 	@Override
@@ -139,7 +137,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 					} else {
 						hover.append("  \n  \n");
 					}
-					createHoverContentForBeans(server, project, hover, autowiredBeans);
+					createHoverContentForBeans(sourceLinks, project, hover, autowiredBeans);
 					hover.append("Bean id: `");
 					hover.append(definedBean.getId());
 					hover.append("`  \n");
@@ -154,14 +152,13 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public static void createHoverContentForBeans(BootJavaLanguageServerComponents server, IJavaProject project, StringBuilder hover,
+	public static void createHoverContentForBeans(SourceLinks sourceLinks, IJavaProject project, StringBuilder hover,
 			List<LiveBean> autowiredBeans) {
-		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 		hover.append("**");
 		hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, autowiredBeans, BEANS_PREFIX_MARDOWN, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
 		hover.append("**\n");
 		hover.append(autowiredBeans.stream()
-				.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
+				.map(b -> "- " + LiveHoverUtils.showBeanWithResource(sourceLinks, b, "  ", project))
 				.collect(Collectors.joining("\n")));
 		hover.append("\n  \n");
 	}

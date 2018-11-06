@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -47,4 +49,9 @@ public class HoverTestConf {
 	@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
 		return serverParams.projectFinder;
 	}
+
+	@Bean SourceLinks sourceLinks() {
+		return SourceLinkFactory.NO_SOURCE_LINKS;
+	}
+
 }

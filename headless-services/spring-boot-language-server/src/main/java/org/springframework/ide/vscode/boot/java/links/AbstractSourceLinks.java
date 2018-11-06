@@ -11,51 +11,41 @@
 package org.springframework.ide.vscode.boot.java.links;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Stack;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.util.text.Region;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
- * Base logic for {@link SourceLinks} independent of any client 
- * 
+ * Base logic for {@link SourceLinks} independent of any client
+ *
  * @author Alex Boyko
  *
  */
 public abstract class AbstractSourceLinks implements SourceLinks {
-	
-	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
-	
-	private BootJavaLanguageServerComponents server;
-	
-	protected AbstractSourceLinks(BootJavaLanguageServerComponents server) {
-		this.server = server;
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractSourceLinks.class);
+
+	private CompilationUnitCache cuCache;
+
+	protected AbstractSourceLinks(CompilationUnitCache cuCache) {
+		this.cuCache = cuCache;
 	}
 
 	@Override
@@ -65,7 +55,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 			File file = classpathResource.get();
 			if (file.isDirectory()) {
 				return javaSourceLinkUrl(project, fqName, file);
-			} else if (file.getName().endsWith(JAR)) {
+			} else {
 				return jarSourceLinkUrl(project, fqName, file);
 			}
 		}
@@ -81,123 +71,56 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		}
 		return Optional.empty();
 	}
-	
+
+
+
 	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, File containerFolder) {
 		IClasspath classpath = project.getClasspath();
-		return IClasspathUtil.getSourceFolders(classpath)
-			.map(sourceFolder -> {
-				try {
-					return sourceFolder.toURI().toURL();
-				} catch (MalformedURLException e) {
-					LOG.get().warn("Failed to convert source folder " + sourceFolder + "to URI." + fqName, e);
-					return null;
-				}
-			})
-			.map(url -> {
-				try {
-					return TypeUrlProviderFromContainerUrl.SOURCE_FOLDER_URL_SUPPLIER.url(url, fqName);
-				} catch (Exception e) {
-					LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
-					return null;
-				}
-			})
-			.map(url -> {
-				try {
-					return Paths.get(url.toURI());
-				} catch (URISyntaxException e) {
-					LOG.get().warn("Failed to convert URL " + url + " to path." + fqName, e);
-					return null;
-				}
-			})
-			.filter(sourcePath -> sourcePath != null && Files.exists(sourcePath))
-			.findFirst()
+		return SourceLinks.sourceFromSourceFolder(fqName, classpath)
 			.map(sourcePath -> javaSourceLinkUrl(project, sourcePath, fqName));
 	}
 
 	private String javaSourceLinkUrl(IJavaProject project, Path sourcePath, String fqName) {
 		Optional<String> linkOptional = sourceLinkForResourcePath(sourcePath);
 		if (linkOptional.isPresent()) {
-			Optional<String> positionLink = findCUForJavaSourceFile(sourcePath).map(cu -> positionLink(cu, fqName));
+			Optional<String> positionLink = findCU(project, sourcePath.toUri()).map(cu -> positionLink(cu, fqName));
 			return positionLink.isPresent() ? linkOptional.get() + positionLink.get() : linkOptional.get();
 		}
 		return null;
 	}
-	
+
 	abstract protected String positionLink(CompilationUnit cu, String fqName);
-	
-	private Optional<CompilationUnit> findCUForJavaSourceFile(Path resourcePath) {
-		Optional<CompilationUnit> cu = findCUfromCache(resourcePath.toUri().toString());
-		if (cu == null) {
-			try {
-				char[] bytes = new String(Files.readAllBytes(resourcePath), Charset.defaultCharset()).toCharArray();
-				String uri = resourcePath.toUri().toString();
-				String unitName = resourcePath.getFileName().toString();
-				cu = Optional.ofNullable(CompilationUnitCache.parse(bytes, uri, unitName, new String[0]));
-			} catch (Exception e) {
-				LOG.get().warn("Failed to create CompilationUnit from " + resourcePath, e);
-				cu = Optional.empty();
-			}
-		}
-		return cu;
+
+	private Optional<CompilationUnit> findCU(IJavaProject project, URI uri) {
+		return cuCache == null ? Optional.empty() : cuCache.withCompilationUnit(project, uri, compilationUnit -> Optional.ofNullable(compilationUnit));
 	}
-	
-	private Optional<CompilationUnit> findCUfromCache(String uri) {
-		Optional<CompilationUnit> cu = null;
-		if (server != null && server.getCompilationUnitCache() != null) {
-			TextDocument doc = server.getTextDocumentService().get(uri);
-			if (doc != null) {
-				cu = server.getCompilationUnitCache().withCompilationUnit(doc, compilationUnit -> compilationUnit == null ? null : Optional.of(compilationUnit));
-			}
-		}
-		return cu;
-	}
-	
-	abstract protected Optional<String> jarUrl(IJavaProject project, String fqName, File jarFile);
-	
+
+	abstract protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, File jarFile);
+
 	private Optional<String> jarSourceLinkUrl(IJavaProject project, String fqName, File jarFile) {
-		return jarUrl(project, fqName, jarFile).map(sourceUrl -> {
-			Optional<String> positionLink = findCUForFQNameFromJar(project, jarFile, sourceUrl, fqName).map(cu -> positionLink(cu, fqName));
+		return jarLinkUrl(project, fqName, jarFile).map(sourceUrl -> {
+			Optional<String> positionLink = findCUForFQNameFromJar(project, jarFile, fqName).map(cu -> positionLink(cu, fqName));
 			return positionLink.isPresent() ? sourceUrl + positionLink.get() : sourceUrl;
 		});
 	}
-	
-	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, File jarFile, String clientSourceUri, String fqName) {
-		Optional<CompilationUnit> cu = findCUfromCache(clientSourceUri);
-		if (cu == null) {
-			cu = project.sourceContainer(jarFile)
-					.map(url -> {
-						try {
-							return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName);
-						} catch (Exception e) {
-							LOG.get().warn("Failed to determine source URL from url=" + url + " fqName=" + fqName, e);
-							return null;
-						}
-					})
-					.map(sourceUrl -> {
-						InputStream openStream = null;
-						try {
-							openStream = sourceUrl.openStream();
-							char[] bytes = IOUtils.toCharArray(openStream);
-							String uri = sourceUrl.toURI().toString();
-							String unitName = fqName;
-							return CompilationUnitCache.parse(bytes, uri, unitName, new String[0]);
-						} catch (Exception e) {
-							LOG.get().warn("Failed to create CompilationUnit from " + sourceUrl, e);
-							return null;
-						} finally {
-							if (openStream != null) {
-								try {
-									openStream.close();
-								} catch (IOException e) {
-									LOG.get().error("Failed to close stream from " + sourceUrl, e);
-								}
-							}
-						}
-					});
-		}
-		return cu;
+
+	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, File jarFile, String fqName) {
+		return project.sourceContainer(jarFile).map(url -> {
+			try {
+				return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName);
+			} catch (Exception e) {
+				log.warn("Failed to determine source URL from url={} fqName={}", url, fqName, e);
+				return null;
+			}
+		}).map(sourceUrl -> {
+			try {
+				return sourceUrl.toURI();
+			} catch (URISyntaxException e) {
+				throw new IllegalStateException(e);
+			}
+		}).map(sourcePath -> findCU(project, sourcePath).orElse(null));
 	}
-	
+
 	protected Region findTypeRegion(CompilationUnit cu, String fqName) {
 		if (cu == null) {
 			return null;
@@ -209,7 +132,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		if (packageName.equals(cu.getPackage().getName().getFullyQualifiedName())) {
 			Stack<String> visitedType = new Stack<>();
 			cu.accept(new ASTVisitor() {
-				
+
 				private boolean visitDeclaration(AbstractTypeDeclaration node) {
 					visitedType.push(node.getName().getIdentifier());
 					if (values[1] < 0) {
@@ -232,6 +155,17 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 				}
 
 				@Override
+				public boolean visit(EnumDeclaration node) {
+					return visitDeclaration(node);
+				}
+
+				@Override
+				public void endVisit(EnumDeclaration node) {
+					visitedType.pop();
+					super.endVisit(node);
+				}
+
+				@Override
 				public void endVisit(AnnotationTypeDeclaration node) {
 					visitedType.pop();
 					super.endVisit(node);
@@ -247,5 +181,5 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		}
 		return values[1] < 0 ? null : new Region(values[0], values[1]);
 	}
-	
+
 }

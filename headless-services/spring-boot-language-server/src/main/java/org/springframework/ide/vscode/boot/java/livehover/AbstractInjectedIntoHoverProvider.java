@@ -27,10 +27,8 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -51,10 +49,10 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	private static final int MAX_INLINE_BEANS_STRING_LENGTH = 60;
 	private static final String INLINE_BEANS_STRING_SEPARATOR = " ";
 
-	protected BootJavaLanguageServerComponents server;
+	private SourceLinks sourceLinks;
 
-	public AbstractInjectedIntoHoverProvider(BootJavaLanguageServerComponents server) {
-		this.server = server;
+	public AbstractInjectedIntoHoverProvider(SourceLinks sourceLinks) {
+		this.sourceLinks = sourceLinks;
 	}
 
 	@Override
@@ -149,18 +147,17 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				}
 
 				if (!injectedBeans.isEmpty()) {
-					SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 					hover.append("**");
 					hover.append(LiveHoverUtils.createBeansTitleMarkdown(sourceLinks, project, injectedBeans, BEANS_PREFIX_MARKDOWN, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR));
 					hover.append("**\n");
 					hover.append(injectedBeans.stream()
-							.map(b -> "- " + LiveHoverUtils.showBeanWithResource(server, b, "  ", project))
+							.map(b -> "- " + LiveHoverUtils.showBeanWithResource(sourceLinks, b, "  ", project))
 							.collect(Collectors.joining("\n")));
 					hover.append("\n  \n");
 				}
 				List<LiveBean> wiredBeans = findWiredBeans(project, app, relevantBeans, astNode);
 				if (!wiredBeans.isEmpty()) {
-					AutowiredHoverProvider.createHoverContentForBeans(server, project, hover, wiredBeans);
+					AutowiredHoverProvider.createHoverContentForBeans(sourceLinks, project, hover, wiredBeans);
 				}
 
 				hover.append("Bean id: `");

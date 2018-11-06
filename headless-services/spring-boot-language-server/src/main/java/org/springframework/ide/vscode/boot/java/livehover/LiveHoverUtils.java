@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Range;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -47,7 +45,7 @@ public class LiveHoverUtils {
 		return buf.toString();
 	}
 
-	public static String showBeanWithResource(BootJavaLanguageServerComponents server, LiveBean bean, String indentStr, IJavaProject project) {
+	public static String showBeanWithResource(SourceLinks sourceLinks, LiveBean bean, String indentStr, IJavaProject project) {
 		String newline = "  \n"+indentStr; //Note: the double space before newline makes markdown see it as a real line break
 
 		if (bean == CANT_MATCH_PROPER_BEAN) {
@@ -59,7 +57,6 @@ public class LiveHoverUtils {
 			buf.append('`');
 			buf.append(bean.getId());
 			buf.append('`');
-			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
 			if (type != null) {
 				// Try creating a URL link to open source for the type
 				buf.append(newline);
@@ -125,33 +122,6 @@ public class LiveHoverUtils {
 		}
 		return true;
 	}
-
-	public static String showBeanIdAndTypeInline(BootJavaLanguageServerComponents server, IJavaProject project, LiveBean bean) {
-		String id = bean.getId();
-		String type = bean.getType(true);
-		SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(server);
-		String displayType = type;
-		if (type != null) {
-			int lastDotIdx = type.lastIndexOf('.');
-			if (lastDotIdx >= 0 && lastDotIdx < type.length() - 1) {
-				displayType = "`" + type.substring(lastDotIdx + 1) + "`";
-			}
-			Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
-			if (url.isPresent()) {
-				displayType = Renderables.link(displayType, url.get()).toMarkdown();
-			}
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append('`');
-		sb.append(id);
-		sb.append('`');
-		if (displayType != null) {
-			sb.append(' ');
-			sb.append(displayType);
-		}
-		return sb.toString();
-	}
-
 
 	public static String showResource(SourceLinks sourceLinks, String resource, IJavaProject project) {
 		return new SpringResource(sourceLinks, resource, project).toMarkdown();

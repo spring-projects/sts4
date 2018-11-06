@@ -16,14 +16,30 @@ import static org.springframework.ide.vscode.boot.properties.reconcile.Applicati
 import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
+import org.eclipse.jdt.core.dom.EnumDeclaration;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
-import org.junit.Before;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,22 +47,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
+import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 
 /**
@@ -58,6 +80,15 @@ import com.google.common.io.Files;
 @BootLanguageServerTest
 @Import(PropertyEditorTestConf.class)
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
+
+	@Autowired
+	CompilationUnitCache cuCache;
+
+	@Autowired
+	SimpleTextDocumentService docService;
+
+	@Autowired
+	JavaDocumentUriProvider javaDocumentUriProvider;
 
 	@Configuration static class TestConf {
 		@Bean LanguageId defaultLanguageId() {
@@ -275,7 +306,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertContains("\"name\": \"foo.counter\"", Files.toString(metadataFile.toFile(), Charset.forName("UTF8")));
 	}
 
-	@Ignore @Test public void testHyperlinkTargets() throws Exception {
+	@Test public void testHyperlinkTargets() throws Exception {
 		System.out.println(">>> testHyperlinkTargets");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
@@ -286,20 +317,260 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"flyway.init-sqls=a,b,c\n"
 		);
 
-		editor.assertLinkTargets("server",
-				"org.springframework.boot.autoconfigure.web.ServerProperties.setPort(Integer)"
+		assertLinkTargets(editor, "server", p,
+				method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer"));
+
+		assertLinkTargets(editor, "data", p,
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
 		);
-		editor.assertLinkTargets("data",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.hikariDataSource()",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.tomcatDataSource()",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.dbcpDataSource()"
-		);
-		editor.assertLinkTargets("flyway",
-				"org.springframework.boot.autoconfigure.flyway.FlywayProperties.setInitSqls(List<String>)");
+
+		assertLinkTargets(editor, "flyway", p, method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
 		System.out.println("<<< testHyperlinkTargets");
 	}
 
-	@Ignore @Test public void testHyperlinkTargetsLoggingLevel() throws Exception {
+	void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, JavaMethod... methods) throws Exception {
+		Set<Location> expectedLocations = Arrays.stream(methods).map(method -> {
+			try {
+				return getLocation(project, method);
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toSet());
+
+		editor.assertLinkTargets(hoverOver, expectedLocations);
+	}
+
+	void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, String typeFqName) throws Exception {
+
+		Location expectedLocation = getLocation(project, typeFqName);
+
+		System.out.println("Expected Location: " + expectedLocation);
+
+		editor.assertLinkTargets(hoverOver, ImmutableSet.of(expectedLocation));
+	}
+
+	void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, JavaField field) throws Exception {
+
+		Location expectedLocation = getLocation(project, field);
+
+		System.out.println("Expected Location: " + expectedLocation);
+
+		editor.assertLinkTargets(hoverOver, ImmutableSet.of(expectedLocation));
+	}
+
+	static private JavaMethod method(String fqClassName, String methodName, String... params) {
+		return new JavaMethod(fqClassName, methodName, params);
+	}
+
+	static private JavaField field(String fqClassName, String name) {
+		return new JavaField(fqClassName, name);
+	}
+
+	static class JavaMethod {
+		public final String fqName;
+		public final String methodName;
+		public final String[] params;
+		public JavaMethod(String fqClassName, String methodName, String... params) {
+			this.fqName = fqClassName;
+			this.methodName = methodName;
+			this.params = params;
+		}
+		@Override
+		public String toString() {
+			return "JavaMethod [fqName=" + fqName + ", methodName=" + methodName + ", params=" + Arrays.toString(params)
+					+ "]";
+		}
+	}
+
+	static class JavaField {
+		public final String fqName;
+		public final String fieldName;
+		public JavaField(String fqName, String fieldName) {
+			super();
+			this.fqName = fqName;
+			this.fieldName = fieldName;
+		}
+		@Override
+		public String toString() {
+			return "JavaField [fqName=" + fqName + ", fieldName=" + fieldName + "]";
+		}
+	}
+
+	private Location getLocation(IJavaProject project, String fqName) throws Exception {
+		Location loc = new Location();
+		Optional<URL> sourceUrl = SourceLinks.source(project, fqName);
+		if (sourceUrl.isPresent()) {
+
+			URI docUri = javaDocumentUriProvider.docUri(project, fqName);
+			loc.setUri(docUri.toString());
+
+			String typeName = fqName.substring(fqName.lastIndexOf('.') + 1);
+			URI sourceUri = sourceUrl.get().toURI();
+			Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
+				try {
+					TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+					doc.setText(cuCache.fetchContent(sourceUri));
+					AtomicReference<Range> range = new AtomicReference<>(null);
+					cu.accept(new ASTVisitor() {
+
+						private boolean proceessTypeNode(TextDocument doc, String typeName,
+								AtomicReference<Range> range, AbstractTypeDeclaration node) {
+							SimpleName nameNode = node.getName();
+							if (nameNode.getIdentifier().equals(typeName)) {
+								try {
+									range.set(doc.toRange(nameNode.getStartPosition(), nameNode.getLength()));
+									return false;
+								} catch (BadLocationException e) {
+									throw new IllegalStateException(e);
+								}
+							}
+							return true;
+						}
+
+						@Override
+						public boolean visit(TypeDeclaration node) {
+							return proceessTypeNode(doc, typeName, range, node);
+						}
+
+						@Override
+						public boolean visit(EnumDeclaration node) {
+							return proceessTypeNode(doc, typeName, range, node);
+						}
+
+					});
+					return range.get();
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+			if (r == null) {
+				throw new IllegalStateException("Couldn't find " + fqName);
+			}
+			loc.setRange(r);
+		}
+		return loc;
+	}
+
+	private Location getLocation(IJavaProject project, JavaMethod method) throws Exception {
+		Location loc = new Location();
+		Optional<URL> sourceUrl = SourceLinks.source(project, method.fqName);
+		if (sourceUrl.isPresent()) {
+
+			URI docUri = javaDocumentUriProvider.docUri(project, method.fqName);
+			loc.setUri(docUri.toString());
+
+			URI sourceUri = sourceUrl.get().toURI();
+			Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
+				try {
+					AtomicReference<Range> range = new AtomicReference<>(null);
+					TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+					doc.setText(cuCache.fetchContent(sourceUri));
+					cu.accept(new ASTVisitor() {
+
+						@Override
+						public boolean visit(MethodDeclaration node) {
+							SimpleName nameNode = node.getName();
+							if (nameNode.getIdentifier().equals(method.methodName)) {
+								if (node.parameters().size() != method.params.length) {
+									return false;
+								}
+								int i = 0;
+								for (Object _p : node.parameters()) {
+									if (_p instanceof SingleVariableDeclaration) {
+										SingleVariableDeclaration p = (SingleVariableDeclaration) _p;
+										String fqName = p.getType().resolveBinding().getErasure().getQualifiedName();
+										if (!fqName.equals(method.params[i++])) {
+											return false;
+										}
+									} else {
+										return false;
+									}
+								}
+								try {
+									range.set(doc.toRange(nameNode.getStartPosition(), nameNode.getLength()));
+								} catch (BadLocationException e) {
+									throw new IllegalStateException(e);
+								}
+							}
+							return false;
+						}
+
+					});
+					return range.get();
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+			if (r == null) {
+				throw new IllegalStateException("Couldn't find " + method);
+			}
+			loc.setRange(r);
+		}
+		return loc;
+	}
+
+	private Location getLocation(IJavaProject project, JavaField field) throws Exception {
+		Location loc = new Location();
+
+		Optional<URL> sourceUrl = SourceLinks.source(project, field.fqName);
+		if (sourceUrl.isPresent()) {
+
+			URI sourceUri = sourceUrl.get().toURI();
+
+			URI docUri = javaDocumentUriProvider.docUri(project, field.fqName);
+			loc.setUri(docUri.toString());
+
+			Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
+				try {
+					AtomicReference<Range> range = new AtomicReference<>(null);
+					TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+					doc.setText(cuCache.fetchContent(sourceUri));
+					cu.accept(new ASTVisitor() {
+
+						boolean foundType = false;
+
+						@Override
+						public boolean visit(EnumConstantDeclaration node) {
+							if (foundType) {
+								SimpleName nameNode = node.getName();
+								if (nameNode.getIdentifier().equals(field.fieldName)) {
+									try {
+										range.set(doc.toRange(nameNode.getStartPosition(), nameNode.getLength()));
+									} catch (BadLocationException e) {
+										throw new IllegalStateException(e);
+									}
+								}
+							}
+							return true;
+						}
+
+						@Override
+						public boolean visit(EnumDeclaration node) {
+							if (node.getName().getIdentifier()
+									.equals(field.fqName.substring(field.fqName.lastIndexOf('.') + 1))) {
+								foundType = true;
+								return true;
+							}
+							return false;
+						}
+
+					});
+					return range.get();
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+			if (r == null) {
+				throw new IllegalStateException("Couldn't find " + field);
+			}
+			loc.setRange(r);
+		}
+		return loc;
+	}
+
+	@Test public void testHyperlinkTargetsLoggingLevel() throws Exception {
 		System.out.println(">>> testHyperlinkTargetsLoggingLevel");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 
@@ -308,9 +579,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		Editor editor = newEditor(
 				"logging.level.com.acme=INFO\n"
 		);
-		editor.assertLinkTargets("level",
-				"org.springframework.boot.logging.LoggingApplicationListener"
-		);
+
+		assertLinkTargets(editor, "level", p, "org.springframework.boot.logging.LoggingApplicationListener");
 		System.out.println("<<< testHyperlinkTargetsLoggingLevel");
 	}
 
@@ -1422,16 +1692,17 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testClassReferenceInValueLink() throws Exception {
+	@Test public void testClassReferenceInValueLink() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));
+		MavenJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-with-mongo");
+		useProject(project);
 
 		editor = newEditor(
 				"#stuff\n" +
 				"spring.data.mongodb.field-naming-strategy=org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n" +
 				"#more stuff"
 		);
-		editor.assertLinkTargets("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		//Linking should also work for types that aren't valid based on the constraints
 		editor = newEditor(
@@ -1439,7 +1710,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
 				"#more stuff"
 		);
-		editor.assertLinkTargets("java.lang.String", "java.lang.String");
+		assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
 	}
 
 	@Test public void testCommaListReconcile() throws Exception {
@@ -1601,9 +1872,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverContains("red", "Hot and delicious");
 	}
 
-
-	@Ignore @Test public void testEnumInValueLink() throws Exception {
-		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+	@Test public void testEnumInValueLink() throws Exception {
+		MavenJavaProject project = createPredefinedMavenProject("enums-boot-1.3.2-app");
+		useProject(project);
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
 		Editor editor;
@@ -1611,12 +1882,25 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor = newEditor(
 				"my.background: RED"
 		);
-		editor.assertLinkTargets("RED", "demo.Color.RED");
+		assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
 
 		editor = newEditor(
 				"my.background=red"
 		);
-		editor.assertLinkTargets("red", "demo.Color.RED");
+		assertLinkTargets(editor, "red", project, field("demo.Color", "RED"));
+	}
+
+	@Test public void testEnumInPojoField() throws Exception {
+		MavenJavaProject project = createPredefinedMavenProject("enum-def-nav");
+		useProject(project);
+
+		Editor editor;
+
+		editor = newEditor(
+				"my.screen.background=green"
+		);
+		assertLinkTargets(editor, "background", project, method("com.example.demo.MyProperties$Screen", "getScreen"));
+		assertLinkTargets(editor, "green", project, field("com.example.demo.Color", "GREEN"));
 	}
 
 	@Test public void testNoHoverForUnrecognizedProperty() throws Exception {

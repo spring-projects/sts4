@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.metadata.util;
 
 import java.util.Optional;
 
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -27,15 +26,15 @@ import com.google.common.collect.ImmutableList.Builder;
 
 /**
  * Boot properties documentation info utils
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class PropertyDocUtils {
-	
+
 	/**
 	 * Generates documentation for boot property coming from java element
-	 * 
+	 *
 	 * @param sourceLinks
 	 * @param project
 	 * @param je
@@ -48,10 +47,10 @@ public class PropertyDocUtils {
 		renderableBuilder.add(Renderables.paragraph(javadoc == null ? Renderables.NO_DESCRIPTION: javadoc.getRenderable()));
 		return Renderables.concat(renderableBuilder.build());
 	}
-	
+
 	/**
 	 * Generates documentation for the value of some Java type. Includes signature, javadoc, link to container type.
-	 * 
+	 *
 	 * @param sourceLinks
 	 * @param project
 	 * @param je
@@ -66,7 +65,7 @@ public class PropertyDocUtils {
 			IType containingType = je instanceof IType ? (IType) je : ((IMember)je).getDeclaringType();
 			if (je != null) {
 				String type = containingType.getFullyQualifiedName();
-				Optional<String> url = SourceLinkFactory.createSourceLinks(null).sourceLinkUrlForFQName(project, type);
+				Optional<String> url = sourceLinks.sourceLinkUrlForFQName(project, type);
 				renderableBuilder.add(Renderables.lineBreak());
 				if (url.isPresent()) {
 					renderableBuilder.add(Renderables.link(type, url.get()));

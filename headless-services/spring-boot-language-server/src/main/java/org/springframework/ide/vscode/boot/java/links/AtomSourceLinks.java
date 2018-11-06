@@ -19,7 +19,7 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
@@ -28,7 +28,7 @@ import com.google.common.base.Suppliers;
 
 /**
  * Source links for Atom client
- * 
+ *
  * @author Alex Boyko
  *
  */
@@ -36,8 +36,8 @@ public class AtomSourceLinks extends AbstractSourceLinks {
 
 	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 
-	public AtomSourceLinks(BootJavaLanguageServerComponents server) {
-		super(server);
+	public AtomSourceLinks(CompilationUnitCache cuCache) {
+		super(cuCache);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class AtomSourceLinks extends AbstractSourceLinks {
 	}
 
 	@Override
-	protected Optional<String> jarUrl(IJavaProject project, String fqName, File jarFile) {
+	protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, File jarFile) {
 		// JAR URLs are not supported yet
 		return Optional.empty();
 	}

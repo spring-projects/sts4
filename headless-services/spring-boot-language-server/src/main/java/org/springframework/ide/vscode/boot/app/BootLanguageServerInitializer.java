@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
@@ -32,6 +34,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootLanguageServerParams params;
+	@Autowired SourceLinks sourceLinks;
+	@Autowired CompilationUnitCache cuCache;
 
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
@@ -55,7 +59,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, (ignore) -> params));
-		builder.add(new BootJavaLanguageServerComponents(server, (ignore) -> params));
+		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
 

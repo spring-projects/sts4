@@ -21,6 +21,7 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
+import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
@@ -86,6 +87,7 @@ public class MavenProjectClasspath implements IClasspath {
 			if (javaVersion == null) {
 				javaVersion = "8";
 			}
+			cpe.setSourceContainerUrl(BootProjectUtil.jreSources(path).toUri().toURL());
 			cpe.setJavadocContainerUrl(new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/"));
 			cpe.setSystem(true);
 			entries.add(cpe);

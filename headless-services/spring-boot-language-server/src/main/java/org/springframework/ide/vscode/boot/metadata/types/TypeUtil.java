@@ -37,6 +37,7 @@ import javax.inject.Provider;
 
 import org.springframework.boot.convert.DurationStyle;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ResourceHintProvider;
@@ -657,7 +658,7 @@ public class TypeUtil {
 
 			//TODO: handle type parameters.
 			if (typeFromIndex != null) {
-				SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+				SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
 				IJavaProject project = getJavaProject();
 				ArrayList<TypedProperty> properties = new ArrayList<>();
 				getGetterMethods(typeFromIndex).forEach(m -> {

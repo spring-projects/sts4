@@ -14,54 +14,61 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 
 /**
  * Factory for creating {@link SourceLinks}
- * 
+ *
  * @author Alex Boyko
  *
  */
 public final class SourceLinkFactory {
-	
-	private static final SourceLinks NO_SOURCE_LINKS = new SourceLinks() {
-		
+
+	public static final SourceLinks NO_SOURCE_LINKS = new SourceLinks() {
+
 		@Override
 		public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
 			return Optional.empty();
 		}
-		
+
 		@Override
 		public Optional<String> sourceLinkUrlForClasspathResource(IJavaProject project, String path) {
 			return Optional.empty();
 		}
-		
+
 		@Override
 		public Optional<String> sourceLinkForResourcePath(Path path) {
 			return Optional.empty();
 		}
-		
+
 	};
-	
+
 	/**
 	 * Creates {@link SourceLinks} for specific server based on client type
 	 * @param server the boot LS
 	 * @return appropriate source links object
 	 */
-	public static SourceLinks createSourceLinks(BootJavaLanguageServerComponents server) {
+	public static SourceLinks createSourceLinks(CompilationUnitCache cuCache) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
-		case THEIA:	
-			return new VSCodeSourceLinks(server);
+		case THEIA:
+			return new VSCodeSourceLinks(cuCache);
 		case ECLIPSE:
 			return new EclipseSourceLinks();
 		case ATOM:
-			return new AtomSourceLinks(server);
+			return new AtomSourceLinks(cuCache);
 		default:
 			return NO_SOURCE_LINKS;
 		}
 
 	}
 
+	@Deprecated
+	public static SourceLinks createSourceLinks(BootJavaLanguageServerComponents server) {
+		return server == null
+				? createSourceLinks((CompilationUnitCache)null)
+				: createSourceLinks(server.getCompilationUnitCache());
+	}
 }

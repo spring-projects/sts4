@@ -28,8 +28,8 @@ import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
@@ -44,8 +44,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	private static Logger LOG = LoggerFactory.getLogger(ComponentInjectionsHoverProvider.class);
 
-	public ComponentInjectionsHoverProvider(BootJavaLanguageServerComponents server) {
-		super(server);
+	public ComponentInjectionsHoverProvider(SourceLinks sourceLinks) {
+		super(sourceLinks);
 	}
 
 	@Override

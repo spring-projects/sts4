@@ -21,7 +21,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 
 @Configuration
 @EnableConfigurationProperties(LanguageServerProperties.class)
@@ -45,5 +47,14 @@ public class LanguageServerAutoConf {
 		};
 	}
 
-	
+	@Bean SimpleTextDocumentService documents(SimpleLanguageServer ls) {
+		return ls.getTextDocumentService();
+	}
+
+	@ConditionalOnBean(DefinitionHandler.class)
+	@Bean
+	InitializingBean registerDefintionHandler(SimpleTextDocumentService documents,
+			DefinitionHandler definitionHandler) {
+		return () -> documents.onDefinition(definitionHandler);
+	}
 }

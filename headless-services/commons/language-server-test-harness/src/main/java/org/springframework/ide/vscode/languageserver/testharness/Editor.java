@@ -55,6 +55,7 @@ import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Flux;
 
@@ -720,10 +721,28 @@ public class Editor {
 		return "Editor(\n"+getText()+"\n)";
 	}
 
+	public void assertLinkTargets(String hoverOver, Set<Location> expectedLocations) throws Exception {
+		int pos = getRawText().indexOf(hoverOver);
+		if (pos>=0) {
+			pos += hoverOver.length() / 2;
+		}
+		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
+
+		TextDocumentPositionParams params = new TextDocumentPositionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
+		List<? extends Location> definitions = harness.getDefinitions(params);
+
+		assertEquals(ImmutableSet.copyOf(expectedLocations), ImmutableSet.copyOf(definitions));
+	}
+
+	@Deprecated
 	public void assertLinkTargets(String hoverOver, String... expecteds) {
 		throw new UnsupportedOperationException("Not implemented yet!");
 //		Editor editor = this;
-//		int pos = editor.middleOf(hoverOver);
+//		int pos = getRawText().indexOf(hoverOver);
+//		if (pos>=0) {
+//			pos += hoverOver.length();
+//		}
+//		return harness.getHover(doc, doc.toPosition(pos));
 //		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
 //
 //		List<IJavaElement> targets = getLinkTargets(editor, pos);

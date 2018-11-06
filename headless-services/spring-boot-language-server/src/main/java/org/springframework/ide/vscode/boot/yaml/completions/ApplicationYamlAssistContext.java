@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
@@ -551,7 +552,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (jes != null) {
 				for (IJavaElement je : jes) {
 					if (je instanceof IMember) {
-						SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+						SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
 						IJavaProject project = typeUtil.getJavaProject();
 						return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 					}

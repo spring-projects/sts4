@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -120,10 +121,10 @@ public class StsValueHint {
 	public Renderable getDescription() {
 		return description;
 	}
-	
+
 	private static Renderable javaDocSnippet(IJavaProject project, IJavaElement je) {
 		return Renderables.lazy(() -> {
-			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks(null);
+			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
 			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 		});
 	}

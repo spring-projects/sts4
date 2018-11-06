@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
@@ -70,7 +71,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -108,15 +108,15 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
 
-	public BootJavaLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
+	public BootJavaLanguageServerComponents(SimpleLanguageServer server, BootLanguageServerParams serverParams, SourceLinks sourceLinks, CompilationUnitCache cuCache) {
 		this.server = server;
-		this.serverParams = _params.create(server);
+		this.serverParams = serverParams;
 
 		this.config = new BootJavaConfig();
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
-		cuCache = new CompilationUnitCache(projectFinder, server.getTextDocumentService(), projectObserver);
+		this.cuCache = cuCache;
 
 		propertyIndexProvider = serverParams.indexProvider;
 		adHocPropertyIndexProvider = serverParams.adHocIndexProvider;
@@ -146,7 +146,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //		documents.onCodeLens(codeLensHandler::createCodeLenses);
 //		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider);
+		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider, sourceLinks);
 		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, serverParams.runningAppProvider,
 				projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
@@ -174,7 +174,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 //			}
 		});
 
-		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(this, server, serverParams.projectObserver, serverParams.runningAppProvider, projectFinder, serverParams.watchDogInterval);
+		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
+				this,
+				server,
+				serverParams.projectObserver,
+				serverParams.runningAppProvider,
+				projectFinder,
+				serverParams.watchDogInterval,
+				sourceLinks);
 
 		codeLensHandler = createCodeLensEngine();
 		documents.onCodeLens(codeLensHandler);
@@ -293,14 +300,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
-			RunningAppProvider runningAppProvider) {
+			RunningAppProvider runningAppProvider, SourceLinks sourceLinks) {
 		AnnotationHierarchyAwareLookup<HoverProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
 		ValueHoverProvider valueHoverProvider = new ValueHoverProvider();
 		RequestMappingHoverProvider requestMappingHoverProvider = new RequestMappingHoverProvider();
-		AutowiredHoverProvider autowiredHoverProvider = new AutowiredHoverProvider(this);
-		ComponentInjectionsHoverProvider componentInjectionsHoverProvider = new ComponentInjectionsHoverProvider(this);
-		BeanInjectedIntoHoverProvider beanInjectedIntoHoverProvider = new BeanInjectedIntoHoverProvider(this);
+		AutowiredHoverProvider autowiredHoverProvider = new AutowiredHoverProvider(sourceLinks);
+		ComponentInjectionsHoverProvider componentInjectionsHoverProvider = new ComponentInjectionsHoverProvider(sourceLinks);
+		BeanInjectedIntoHoverProvider beanInjectedIntoHoverProvider = new BeanInjectedIntoHoverProvider(sourceLinks);
 		ConditionalsLiveHoverProvider conditionalsLiveHoverProvider = new ConditionalsLiveHoverProvider();
 
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, valueHoverProvider);
