@@ -35,25 +35,10 @@
 	<category-def name="Integrations / Spring IDE" label="Integrations / Spring IDE" />
 	<category-def name="Resources / Spring IDE" label="Resources / Spring IDE" />
 
-<!--	<feature
-		id="org.springframework.ide.eclipse.boot.feature" version="0.0.0">
-		<category name="Extensions / Spring IDE" />
-	</feature> -->
-
 	<feature
 		id="org.springframework.ide.eclipse.boot.dash.feature" version="0.0.0">
 		<category name="Extensions / Spring IDE" />
 	</feature>
-
-<!--	<feature
-		id="org.springframework.boot.ide.main.feature.source" version="0.0.0">
-		<category name="Resources / Spring IDE" />
-	</feature> -->
-
-<!--	<feature
-		id="org.springframework.ide.eclipse.boot.feature.source" version="0.0.0">
-		<category name="Resources / Spring IDE" />
-	</feature> -->
 
 	<feature
 		id="org.springframework.ide.eclipse.boot.dash.feature.source" version="0.0.0">
@@ -89,6 +74,10 @@
 	</feature>
 
 	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.jdt.ls.commons">
 		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
 	</bundle>
 
@@ -128,6 +117,24 @@
 		<category name="Uncategorized"/>
 	</bundle>
 -->
+	<bundle id="javax.activation" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	<bundle id="javax.activation.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.bind" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	<bundle id="javax.xml.bind.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.stream" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<bundle id="org.dadacoalition.yedit">
 		<category name="Uncategorized"/>
 	</bundle>
@@ -165,6 +172,37 @@
 	</bundle>
 
 	<bundle id="org.joni">
+		<category name="Uncategorized"/>
+	</bundle>
+
+    <bundle id="bcpkix" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="bcpkix.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="bcprov" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="bcprov.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.hierynomus.sshj" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.hierynomus.sshj.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.jcraft.jzlib" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.jcraft.jzlib.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="net.i2p.crypto.eddsa" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
 
