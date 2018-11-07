@@ -40,7 +40,7 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine {
 	public SpringPropertiesCompletionEngine(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder projectFinder) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.completionFactory = new PropertyCompletionFactory(projectFinder);
+		this.completionFactory = new PropertyCompletionFactory();
 	}
 
 	/**

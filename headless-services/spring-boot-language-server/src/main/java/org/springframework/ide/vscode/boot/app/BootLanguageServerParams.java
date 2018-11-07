@@ -40,7 +40,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
-import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;

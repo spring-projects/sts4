@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
@@ -27,6 +28,7 @@ import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
@@ -41,10 +43,13 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyN
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
+import org.springframework.ide.vscode.boot.properties.hover.PropertiesDefinitionCalculator;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
+import org.springframework.ide.vscode.commons.java.IMethod;
+import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
@@ -97,10 +102,13 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 
 	public final TypeUtil typeUtil;
 
-	public ApplicationYamlAssistContext(YamlDocument doc, int documentSelector, YamlPath contextPath, TypeUtil typeUtil, RelaxedNameConfig conf) {
+	public final JavaElementLocationProvider javaElementLocationProvider;
+
+	public ApplicationYamlAssistContext(YamlDocument doc, int documentSelector, YamlPath contextPath, TypeUtil typeUtil, RelaxedNameConfig conf, JavaElementLocationProvider javaElementLocationProvider) {
 		super(doc, documentSelector, contextPath);
 		this.typeUtil = typeUtil;
 		this.conf = conf;
+		this.javaElementLocationProvider = javaElementLocationProvider;
 	}
 
 	/**
@@ -130,8 +138,8 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	 */
 	protected abstract Type getType();
 
-	public static ApplicationYamlAssistContext subdocument(YamlDocument doc, int documentSelector, FuzzyMap<PropertyInfo> index, PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf) {
-		return new IndexContext(doc, documentSelector, YamlPath.EMPTY, IndexNavigator.with(index), completionFactory, typeUtil, conf);
+	public static ApplicationYamlAssistContext subdocument(YamlDocument doc, int documentSelector, FuzzyMap<PropertyInfo> index, PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, JavaElementLocationProvider javaElementLocationProvider) {
+		return new IndexContext(doc, documentSelector, YamlPath.EMPTY, IndexNavigator.with(index), completionFactory, typeUtil, conf, javaElementLocationProvider);
 	}
 
 	private static class TypeContext extends ApplicationYamlAssistContext {
@@ -142,8 +150,8 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		private HintProvider hints;
 
 		public TypeContext(ApplicationYamlAssistContext parent, YamlPath contextPath, Type type,
-				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, HintProvider hints) {
-			super(parent.getDocument(), parent.documentSelector, contextPath, typeUtil, conf);
+				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, HintProvider hints, JavaElementLocationProvider javaElementLocationProvider) {
+			super(parent.getDocument(), parent.documentSelector, contextPath, typeUtil, conf, javaElementLocationProvider);
 			this.parent = parent;
 			this.completionFactory = completionFactory;
 			this.type = type;
@@ -341,7 +349,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		private AbstractYamlAssistContext contextWith(YamlPathSegment s, Type nextType) {
 			if (nextType!=null) {
 				return new TypeContext(this, contextPath.append(s), nextType, completionFactory, typeUtil, conf,
-						new YamlPath(s).traverse(hints));
+						new YamlPath(s).traverse(hints), javaElementLocationProvider);
 			}
 			return null;
 		}
@@ -382,6 +390,42 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			return null;
 		}
 
+		@Override
+		public List<Location> getDefinitionsForPropertyKey() {
+			if (parent instanceof IndexContext) {
+				//this context is in fact an 'alias' of its parent, representing the
+				// point in the context hierarchy where a we transition from navigating
+				// the index to navigating type/bean properties
+				return parent.getDefinitionsForPropertyKey();
+			} else {
+				String propName = contextPath.getBeanPropertyName();
+				Type parentType = parent.getType();
+				IJavaProject javaProject = typeUtil.getJavaProject();
+				Type keyType = typeUtil.getMapKeyType(parentType);
+				if (keyType != null) {
+					String keyValue = contextPath.getLastSegment().toPropString();
+					return PropertiesDefinitionCalculator.getValueDefinitionLocations(javaElementLocationProvider, typeUtil, keyType, keyValue);
+				} else {
+					IType javaType = javaProject.findType(parentType.getErasure());
+					if (javaType != null) {
+						IMethod method = PropertiesDefinitionCalculator.getPropertyMethod(javaType, propName);
+						if (method != null) {
+							Location location = javaElementLocationProvider.findLocation(javaProject, method);
+							if (location != null) {
+								return ImmutableList.of(location);
+							}
+						}
+					}
+				}
+				return ImmutableList.of();
+			}
+		}
+
+		@Override
+		public List<Location> getDefinitionsForPropertyValue(DocumentRegion valueRegion) {
+			return PropertiesDefinitionCalculator.getValueDefinitionLocations(javaElementLocationProvider, typeUtil, type, valueRegion.toString().trim());
+		}
+
 	}
 
 	private static class IndexContext extends ApplicationYamlAssistContext {
@@ -390,8 +434,8 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		PropertyCompletionFactory completionFactory;
 
 		public IndexContext(YamlDocument doc, int documentSelector, YamlPath contextPath, IndexNavigator indexNav,
-				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf) {
-			super(doc, documentSelector, contextPath, typeUtil, conf);
+				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, JavaElementLocationProvider javaElementLocationProvider) {
+			super(doc, documentSelector, contextPath, typeUtil, conf, javaElementLocationProvider);
 			this.indexNav = indexNav;
 			this.completionFactory = completionFactory;
 		}
@@ -467,11 +511,11 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					}
 				}
 				if (subIndex.getExtensionCandidate()!=null) {
-					return new IndexContext(getDocument(), documentSelector, contextPath.append(s), subIndex, completionFactory, typeUtil, conf);
+					return new IndexContext(getDocument(), documentSelector, contextPath.append(s), subIndex, completionFactory, typeUtil, conf, javaElementLocationProvider);
 				} else if (subIndex.getExactMatch()!=null) {
-					IndexContext asIndexContext = new IndexContext(getDocument(), documentSelector, contextPath.append(s), subIndex, completionFactory, typeUtil, conf);
+					IndexContext asIndexContext = new IndexContext(getDocument(), documentSelector, contextPath.append(s), subIndex, completionFactory, typeUtil, conf, javaElementLocationProvider);
 					PropertyInfo prop = subIndex.getExactMatch();
-					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil, true));
+					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil, true), javaElementLocationProvider);
 				}
 			}
 			//Unsuported navigation => no context for assist
@@ -503,6 +547,23 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		}
 
 		@Override
+		public List<Location> getDefinitionsForPropertyKey() {
+			PropertyInfo prop = indexNav.getExactMatch();
+			if (prop != null) {
+				IJavaProject project = typeUtil.getJavaProject();
+				Collection<IMember> elements = PropertiesDefinitionCalculator.getPropertyJavaElement(project, prop);
+				return PropertiesDefinitionCalculator.getLocations(javaElementLocationProvider, project, elements);
+			}
+			return ImmutableList.of();
+		}
+
+		@Override
+		public List<Location> getDefinitionsForPropertyValue(DocumentRegion valueRegion) {
+			// Shouldn't be reaching this point. TypeContext should be supplying the value definition
+			return super.getDefinitionsForPropertyValue(valueRegion);
+		}
+
+		@Override
 		public Renderable getHoverInfo(YamlPathSegment lastSegment) {
 			// TODO Auto-generated method stub
 			return null;
@@ -521,11 +582,11 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		return null;
 	}
 
-	public static YamlAssistContext global(YamlDocument doc, final FuzzyMap<PropertyInfo> index, final PropertyCompletionFactory completionFactory, final TypeUtil typeUtil, final RelaxedNameConfig conf) {
+	public static YamlAssistContext global(YamlDocument doc, final FuzzyMap<PropertyInfo> index, final PropertyCompletionFactory completionFactory, final TypeUtil typeUtil, final RelaxedNameConfig conf, JavaElementLocationProvider javaElementLocationProvider) {
 		return new TopLevelAssistContext() {
 			@Override
 			protected YamlAssistContext getDocumentContext(int documentSelector) {
-				return subdocument(doc, documentSelector, index, completionFactory, typeUtil, conf);
+				return subdocument(doc, documentSelector, index, completionFactory, typeUtil, conf, javaElementLocationProvider);
 			}
 
 			@Override

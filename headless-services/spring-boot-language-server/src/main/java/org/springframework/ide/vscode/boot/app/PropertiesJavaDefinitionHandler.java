@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.lsp4j.Location;
@@ -18,23 +19,32 @@ import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesDefinitionCalculator;
+import org.springframework.ide.vscode.boot.properties.hover.PropertyFinder;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PropertiesJavaDefinitionHandler implements DefinitionHandler {
+public class PropertiesJavaDefinitionHandler implements DefinitionHandler, LanguageSpecific {
 
 	@Autowired
 	private SimpleTextDocumentService documents;
 
 	@Autowired
-	private JavaElementLocationProvider javaDocumentLocationProvider;
+	private JavaElementLocationProvider javaElementLocationProvider;
 
 	@Autowired
 	private BootLanguageServerParams params;
@@ -47,10 +57,33 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler {
 			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
 			int offset;
 			offset = doc.toOffset(position.getPosition());
-			return new PropertiesDefinitionCalculator(javaDocumentLocationProvider, index, typeUtil, doc, offset).calculate();
+			return getDefinitions(index, typeUtil, doc, offset);
 		} catch (BadLocationException e) {
 			return ImmutableList.of();
 		}
+	}
+
+	private List<Location> getDefinitions(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, TextDocument doc, int offset) {
+		IJavaProject project = typeUtil.getJavaProject();
+		PropertyFinder propertyFinder = new PropertyFinder(index, typeUtil, doc, offset);
+		Node node = propertyFinder.findNode();
+		if (node instanceof Key) {
+			Collection<IMember> propertyJavaElements = PropertiesDefinitionCalculator.getPropertyJavaElements(propertyFinder, project, ((Key) node).decode());
+			return PropertiesDefinitionCalculator.getLocations(javaElementLocationProvider, project, propertyJavaElements);
+		} else if (node instanceof Value) {
+			Value value = (Value) node;
+			Key key = value.getParent().getKey();
+			Type type = PropertiesDefinitionCalculator.getPropertyType(propertyFinder, key.decode());
+			if (type != null) {
+				return PropertiesDefinitionCalculator.getValueDefinitionLocations(javaElementLocationProvider, typeUtil, type, value.decode());
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	@Override
+	public Collection<LanguageId> supportedLanguages() {
+		return ImmutableList.of(LanguageId.BOOT_PROPERTIES);
 	}
 
 }

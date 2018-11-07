@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 
-class PropertyFinder {
+public class PropertyFinder {
 
 	final FuzzyMap<PropertyInfo> index;
 	final TypeUtil typeUtil;
@@ -29,7 +29,7 @@ class PropertyFinder {
 	final int offset;
 	final AntlrParser parser;
 
-	PropertyFinder(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, IDocument doc, int offset) {
+	public PropertyFinder(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, IDocument doc, int offset) {
 		this.index = index;
 		this.typeUtil = typeUtil;
 		this.doc = doc;
@@ -37,12 +37,12 @@ class PropertyFinder {
 		this.parser = new AntlrParser();
 	}
 
-	Node findNode() {
+	public Node findNode() {
 		ParseResults parseResults = parser.parse(doc.get());
 		return parseResults.ast.findNode(offset);
 	}
 
-	DocumentRegion createRegion(Node value) {
+	public DocumentRegion createRegion(Node value) {
 		// Trim trailing spaces (there is no leading white space already)
 		int length = value.getLength();
 		try {
@@ -56,7 +56,7 @@ class PropertyFinder {
 	/**
 	 * Search known properties for the best 'match' to show as hover data.
 	 */
-	PropertyInfo findBestHoverMatch(String propName) {
+	public PropertyInfo findBestHoverMatch(String propName) {
 		PropertyInfo propertyInfo = index.get(propName);
 		if (propertyInfo == null) {
 			propertyInfo = SpringPropertyIndex.findLongestValidProperty(index, propName);

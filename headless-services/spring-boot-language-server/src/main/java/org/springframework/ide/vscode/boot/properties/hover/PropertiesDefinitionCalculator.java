@@ -22,17 +22,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo.PropertySource;
+import org.springframework.ide.vscode.boot.metadata.types.Type;
+import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,117 +38,57 @@ public class PropertiesDefinitionCalculator {
 
 	private static final Logger log = LoggerFactory.getLogger(PropertiesDefinitionCalculator.class);
 
-	final private PropertyFinder propertyFinder;
-	final private IJavaProject project;
-	final private JavaElementLocationProvider javaElementLocationProvider;
-
-	public PropertiesDefinitionCalculator(JavaElementLocationProvider javaElementLocationProvider, FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, IDocument doc, int offset) {
-		this.javaElementLocationProvider = javaElementLocationProvider;
-		this.propertyFinder = new PropertyFinder(index, typeUtil, doc, offset);
-		this.project = typeUtil.getJavaProject();
+	public static List<Location> getLocations(JavaElementLocationProvider locationProvider, IJavaProject project,
+			Collection<IMember> propertyJavaElements) {
+		return propertyJavaElements.stream().map(member -> locationProvider.findLocation(project, member))
+				.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
-	public List<Location> calculate() {
-		Node node = propertyFinder.findNode();
-		if (node instanceof Key) {
-			Collection<IMember> propertyJavaElements = getPropertyJavaElements(((Key) node).decode());
-			return getPropertyDefintion(propertyJavaElements);
-		} else if (node instanceof Value) {
-			Value value = (Value) node;
-			Key key = value.getParent().getKey();
-
-			String javaTypeFqName = getPropertyJavaTypeFqName(key.decode());
-
-			if (javaTypeFqName != null) {
-
-				// Class reference value link
-				if ("java.lang.Class".equals(javaTypeFqName)) {
-					IType javaType = project.findType(value.decode());
-					if (javaType != null) {
-						Location location = findLocation(javaType);
-						if (location != null) {
-							return ImmutableList.of(location);
-						}
-					}
-				}
-
-				IType javaType = project.findType(javaTypeFqName);
-				if (javaType != null) {
-					// Enum value link
-					if (javaType.isEnum()) {
-						String enumValue = StringUtil.hyphensToUpperCase(StringUtil.camelCaseToHyphens(value.decode()));
-						ImmutableList.Builder<Location> list = ImmutableList.builder();
-						javaType.getFields().forEach(field -> {
-							if (field.getElementName().equals(enumValue)) {
-								Location location = findLocation(field);
-								if (location != null) {
-									list.add(location);
-								}
-							}
-						});
-						return list.build();
-					}
-				}
-
-			}
-
-
-		}
-		return ImmutableList.of();
-	}
-
-	private List<Location> getPropertyDefintion(Collection<IMember> propertyJavaElements) {
-		return propertyJavaElements.stream().map(this::findLocation).filter(Objects::nonNull).collect(Collectors.toList());
-	}
-
-	private Location findLocation(IMember element) {
-		return javaElementLocationProvider.findLocation(project, element);
-	}
-
-	private String getPropertyJavaTypeFqName(String propertyKey) {
+	public static Type getPropertyType(PropertyFinder propertyFinder, String propertyKey) {
 		PropertyInfo best = propertyFinder.findBestHoverMatch(propertyKey);
 		if (best != null) {
-			String type = best.getType();
-			// Trim down generic type if present
-			int idx = type == null ? -1 : type.indexOf('<');
-			return idx < 0 ? type : type.substring(0, idx);
+			return TypeParser.parse(best.getType());
 		}
 		return null;
 	}
 
-	private Collection<IMember> getPropertyJavaElements(String propertyKey) {
+	public static Collection<IMember> getPropertyJavaElements(PropertyFinder propertyFinder, IJavaProject project, String propertyKey) {
 		PropertyInfo best = propertyFinder.findBestHoverMatch(propertyKey);
 		if (best != null) {
-			List<PropertySource> sources = best.getSources();
-			if (sources != null) {
-				ImmutableList.Builder<IMember> elements = ImmutableList.builder();
-				for (PropertySource source : sources) {
-					String typeName = source.getSourceType();
-					if (typeName!=null) {
-						IType type = project.findType(typeName);
-						IMethod method = null;
-						if (type!=null) {
-							String methodSig = source.getSourceMethod();
-							if (methodSig!=null) {
-								method = getMethod(type, methodSig);
-							} else {
-								method = getSetter(type, best);
-							}
-						}
-						if (method!=null) {
-							elements.add(method);
-						} else if (type!=null) {
-							elements.add(type);
-						}
-					}
-				}
-				return elements.build();
-			}
+			return getPropertyJavaElement(project, best);
 		}
 		return ImmutableList.of();
 	}
 
-	private IMethod getMethod(IType type, String methodSig) {
+	public static Collection<IMember> getPropertyJavaElement(IJavaProject project, PropertyInfo property) {
+		List<PropertySource> sources = property.getSources();
+		ImmutableList.Builder<IMember> elements = ImmutableList.builder();
+		if (sources != null) {
+			for (PropertySource source : sources) {
+				String typeName = source.getSourceType();
+				if (typeName!=null) {
+					IType type = project.findType(typeName);
+					IMethod method = null;
+					if (type!=null) {
+						String methodSig = source.getSourceMethod();
+						if (methodSig!=null) {
+							method = getMethod(type, methodSig);
+						} else {
+							method = getPropertyMethod(type, property.getName());
+						}
+					}
+					if (method!=null) {
+						elements.add(method);
+					} else if (type!=null) {
+						elements.add(type);
+					}
+				}
+			}
+		}
+		return elements.build();
+	}
+
+	private static IMethod getMethod(IType type, String methodSig) {
 		String name = getMethodName(methodSig);
 		//TODO: This code assumes 0 arguments, which is the case currently for all
 		//  'real' data in spring jars.
@@ -184,10 +122,9 @@ public class PropertiesDefinitionCalculator {
 	 * Attempt to find corresponding setter method for a given property.
 	 * @return setter method, or null if not found.
 	 */
-	private IMethod getSetter(IType type, PropertyInfo propertyInfo) {
+	private static IMethod getAccessor(IType type, String getOrSet, String propName) {
 		try {
-			String propName = propertyInfo.getName();
-			String setterName = "set"
+			String setterName = getOrSet
 				+Character.toUpperCase(propName.charAt(0))
 				+toCamelCase(propName.substring(1));
 			String sloppySetterName = setterName.toLowerCase();
@@ -209,11 +146,22 @@ public class PropertiesDefinitionCalculator {
 		}
 	}
 
+	public static IMethod getPropertyMethod(IType type, String propName) {
+		String[] accessors = { "set", "get", "is" };
+		for (String a : accessors) {
+			IMethod propertyMethod = getAccessor(type, a, propName);
+			if (propertyMethod != null) {
+				return propertyMethod;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Convert hyphened name to camel case name. It is
 	 * safe to call this on an already camel-cased name.
 	 */
-	private String toCamelCase(String name) {
+	private static String toCamelCase(String name) {
 		if (name.isEmpty()) {
 			return name;
 		} else {
@@ -232,6 +180,60 @@ public class PropertiesDefinitionCalculator {
 			}
 			return camel.toString();
 		}
+	}
+
+	public static IField getEnumField(IType type, String value) {
+		String[] enumValues = {
+			value,
+			StringUtil.hyphensToUpperCase(value),
+			StringUtil.hyphensToUpperCase(StringUtil.camelCaseToHyphens(value))
+		};
+		for (String enumValue : enumValues) {
+			IField field = type.getField(enumValue);
+			if (field != null) {
+				return field;
+			}
+		}
+		return null;
+	}
+
+	private static List<Location> getEnumValueDefinitionLocation(JavaElementLocationProvider javaElementLocationProvider, IJavaProject project, Type type, String value) {
+		IType javaType = project.findType(type.getErasure());
+		if (javaType != null) {
+			IField field = getEnumField(javaType, value);
+			if (field != null) {
+				Location location = javaElementLocationProvider.findLocation(project, field);
+				if (location != null) {
+					return ImmutableList.of(location);
+				}
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	private static List<Location> getClassValueDefinitionLocation(JavaElementLocationProvider javaElementLocationProvider, IJavaProject project, String value) {
+		IType javaType = project.findType(value);
+		if (javaType != null) {
+			Location location = javaElementLocationProvider.findLocation(project, javaType);
+			if (location != null) {
+				return ImmutableList.of(location);
+			}
+		}
+		return ImmutableList.of();
+	}
+
+	public static List<Location> getValueDefinitionLocations(JavaElementLocationProvider javaElementLocationProvider, TypeUtil typeUtil, Type type, String value) {
+		IJavaProject project = typeUtil.getJavaProject();
+
+		if (TypeUtil.isClass(type)) {
+			return getClassValueDefinitionLocation(javaElementLocationProvider, project, value);
+		}
+
+		if (typeUtil.isEnum(type)) {
+			return getEnumValueDefinitionLocation(javaElementLocationProvider, project, type, value);
+		}
+
+		return ImmutableList.of();
 	}
 
 }

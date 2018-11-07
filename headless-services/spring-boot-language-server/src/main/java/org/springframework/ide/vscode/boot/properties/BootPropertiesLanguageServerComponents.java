@@ -14,15 +14,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
-import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
-import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
-import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
@@ -32,22 +29,16 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.LSFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
-import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -62,10 +53,10 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	private static final String YML = ".yml";
 	private static final String PROPERTIES = ".properties";
-	
+
 	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(
-			LanguageId.BOOT_PROPERTIES, 
-			LanguageId.BOOT_PROPERTIES_YAML 
+			LanguageId.BOOT_PROPERTIES,
+			LanguageId.BOOT_PROPERTIES_YAML
 	);
 
 	private static final YamlCompletionEngineOptions COMPLETION_OPTIONS = new YamlCompletionEngineOptions() {
@@ -77,35 +68,28 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	private final JavaProjectFinder javaProjectFinder;
 	private final SpringPropertyIndexProvider indexProvider;
 	private final TypeUtilProvider typeUtilProvider;
-	private final RelaxedNameConfig relaxedNameConfig = RelaxedNameConfig.COMPLETION_DEFAULTS;
-
-	private final PropertyCompletionFactory completionFactory;
 
 	// For yaml
-	private final Yaml yaml = new Yaml();
-	private final YamlASTProvider parser = new YamlParser(yaml);
-	private final YamlStructureProvider yamlStructureProvider= YamlStructureProvider.DEFAULT;
+	private final YamlStructureProvider yamlStructureProvider;
 	private YamlAssistContextProvider yamlAssistContextProvider;
 	private final SimpleLanguageServer server;
+	private YamlASTProvider parser;
 
-	public BootPropertiesLanguageServerComponents(SimpleLanguageServer server, LSFactory<BootLanguageServerParams> _params) {
+	public BootPropertiesLanguageServerComponents(
+			SimpleLanguageServer server,
+			BootLanguageServerParams serverParams,
+			JavaElementLocationProvider javaElementLocationProvider,
+			YamlASTProvider parser,
+			YamlStructureProvider yamlStructureProvider,
+			YamlAssistContextProvider yamlAssistContextProvider) {
 		this.server = server;
-		BootLanguageServerParams serverParams = _params.create(server);
-
+		this.parser = parser;
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;
 		this.javaProjectFinder = serverParams.projectFinder;
 		this.projectObserver = serverParams.projectObserver;
-
-		this.completionFactory = new PropertyCompletionFactory(javaProjectFinder);
-		this.yamlAssistContextProvider = new YamlAssistContextProvider() {
-			@Override
-			public YamlAssistContext getGlobalAssistContext(YamlDocument ydoc) {
-				IDocument doc = ydoc.getDocument();
-				FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
-				return ApplicationYamlAssistContext.global(ydoc, index, completionFactory, typeUtilProvider.getTypeUtil(doc), relaxedNameConfig);
-			}
-		};
+		this.yamlStructureProvider = yamlStructureProvider;
+		this.yamlAssistContextProvider = yamlAssistContextProvider;
 
 	}
 

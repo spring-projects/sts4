@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
@@ -26,6 +27,9 @@ import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -36,6 +40,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired BootLanguageServerParams params;
 	@Autowired SourceLinks sourceLinks;
 	@Autowired CompilationUnitCache cuCache;
+	@Autowired JavaElementLocationProvider javaElementLocationProvider;
+	@Autowired YamlASTProvider parser;
+	@Autowired YamlStructureProvider yamlStructureProvider;
+	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
 
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
@@ -58,7 +66,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		//TODO: ComposableLanguageServer object instance serves no purpose anymore. The constructor really just contains
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
-		builder.add(new BootPropertiesLanguageServerComponents(server, (ignore) -> params));
+		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider));
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));

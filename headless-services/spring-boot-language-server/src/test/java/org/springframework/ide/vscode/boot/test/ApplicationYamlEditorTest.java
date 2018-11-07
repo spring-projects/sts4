@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.field;
+import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.method;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
 import java.time.Duration;
@@ -20,10 +22,10 @@ import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -34,6 +36,7 @@ import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -51,6 +54,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @BootLanguageServerTest
 @Import(PropertyEditorTestConf.class)
 public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
+
+	@Autowired
+	private DefinitionLinkAsserts definitionLinkAsserts;
 
 	@Configuration static class TestConf {
 		@Bean LanguageId defaultLanguageId() {
@@ -384,7 +390,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 
-	@Ignore @Test public void testUserDefinedHoversandLinkTargets() throws Exception {
+	@Ignore @Test public void testUserDefinedHovers() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.link-tester", "demo.LinkTestSubject", null, "for testing different Pojo link cases");
 		Editor editor = newEditor(
@@ -407,12 +413,30 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverContains("name", "Set the name"); // javadoc from setter
 		editor.assertHoverContains("next", "Get the next"); // javadoc from getter
 
-		editor.assertLinkTargets("data", "demo.FooProperties.setdata(ColorData)");
-		editor.assertLinkTargets("wavelen", "demo.ColorData.setWavelen(double)");
-
 	}
 
-	@Ignore @Test public void testHyperlinkTargets() throws Exception {
+	@Test public void testUserDefinedLinkTargets() throws Exception {
+		MavenJavaProject project = createPredefinedMavenProject("enums-boot-1.3.2-app");
+		useProject(project);
+		data("foo.link-tester", "demo.LinkTestSubject", null, "for testing different Pojo link cases");
+		Editor editor = newEditor(
+				"#A comment at the start\n" +
+				"foo:\n" +
+				"  data:\n" +
+				"    wavelen: 666\n" +
+				"    name: foo\n" +
+				"    next: green\n" +
+				"  link-tester:\n" +
+				"    has-it-all: nice\n" +
+				"    strange: weird\n" +
+				"    getter-only: getme\n"
+		);
+
+		definitionLinkAsserts.assertLinkTargets(editor, "data", project, method("demo.FooProperties", "setData", "demo.ColorData"));
+		definitionLinkAsserts.assertLinkTargets(editor, "wavelen", project, method("demo.ColorData", "setWavelen", "double"));
+	}
+
+	@Test public void testHyperlinkTargets() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
@@ -426,16 +450,16 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  init-sqls: a,b,c\n"
 		);
 
-		editor.assertLinkTargets("port",
-				"org.springframework.boot.autoconfigure.web.ServerProperties.setPort(Integer)"
+		definitionLinkAsserts.assertLinkTargets(editor, "port", p,
+				method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer")
 		);
-		editor.assertLinkTargets("login-",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.hikariDataSource()",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.tomcatDataSource()",
-				"org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata.dbcpDataSource()"
+		definitionLinkAsserts.assertLinkTargets(editor, "login-", p,
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
+				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
 		);
-		editor.assertLinkTargets("init-sql",
-				"org.springframework.boot.autoconfigure.flyway.FlywayProperties.setInitSqls(List<String>)");
+		definitionLinkAsserts.assertLinkTargets(editor, "init-sql", p,
+				method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
 	}
 
 	@Test public void testReconcile() throws Exception {
@@ -3552,9 +3576,10 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testClassReferenceInValueLink() throws Exception {
+	 @Test public void testClassReferenceInValueLink() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("empty-boot-1.3.0-with-mongo"));
+		MavenJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-with-mongo");
+		useProject(project);
 
 		editor = newEditor(
 			"spring:\n" +
@@ -3562,7 +3587,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"    mongodb:\n" +
 			"      field-naming-strategy: org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n"
 		);
-		editor.assertLinkTargets("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		editor = newEditor(
 			"spring:\n" +
@@ -3571,7 +3596,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"      field-naming-strategy:\n" +
 			"        org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n"
 		);
-		editor.assertLinkTargets("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		//Linking should also work for types that aren't valid based on the constraints
 		editor = newEditor(
@@ -3581,7 +3606,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      field-naming-strategy: java.lang.String\n" +
 				"#more stuff"
 		);
-		editor.assertLinkTargets("java.lang.String", "java.lang.String");
+		definitionLinkAsserts.assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
 	}
 
 	@Test public void test_STS_3335_reconcile_list_nested_in_Map_of_String() throws Exception {
@@ -3716,27 +3741,29 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverContains("RED", "Hot and delicious");
 	}
 
-	@Ignore @Test public void testHyperLinkEnumValue() throws Exception {
+	 @Test public void testHyperLinkEnumValue() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		MavenJavaProject project = createPredefinedMavenProject("enums-boot-1.3.2-app");
+		useProject(project);
 		data("my.background", "demo.Color", null, "Color to use as default background.");
 
 		editor = newEditor(
 				"my:\n" +
 				"  background: RED"
 		);
-		editor.assertLinkTargets("RED", "demo.Color.RED");
+		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
 
 		editor = newEditor(
 				"my:\n" +
 				"  background: red"
 		);
-		editor.assertLinkTargets("red", "demo.Color.RED");
+		definitionLinkAsserts.assertLinkTargets(editor, "red", project, field("demo.Color", "RED"));
 	}
 
-	@Ignore @Test public void testHyperLinkEnumValueInMapKey() throws Exception {
+	 @Test public void testHyperLinkEnumValueInMapKey() throws Exception {
 		Editor editor;
-		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+		MavenJavaProject project = createPredefinedMavenProject("enums-boot-1.3.2-app");
+		useProject(project);
 		data("my.color.map", "java.util.Map<demo.Color,java.lang.String>", null, "Pretty names for the colors.");
 
 		editor = newEditor(
@@ -3746,8 +3773,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      RED: Rood\n" +
 				"      green: Groen\n"
 		);
-		editor.assertLinkTargets("RED", "demo.Color.RED");
-		editor.assertLinkTargets("green", "demo.Color.GREEN");
+		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "green", project, field("demo.Color", "GREEN"));
 
 		editor = newEditor(
 			"spring:\n" +
@@ -3755,8 +3782,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"    serialization:\n" +
 			"      INDENT_OUTPUT: true"
 		);
-		editor.assertLinkTargets("INDENT_OUTPUT",
-				"com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT"
+		definitionLinkAsserts.assertLinkTargets(editor, "INDENT_OUTPUT", project,
+				field("com.fasterxml.jackson.databind.SerializationFeature", "INDENT_OUTPUT")
 		);
 
 		editor = newEditor(
@@ -3765,8 +3792,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"    serialization:\n" +
 			"      indent-output: true"
 		);
-		editor.assertLinkTargets("indent-output",
-				"com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT"
+		definitionLinkAsserts.assertLinkTargets(editor, "indent-output", project,
+				field("com.fasterxml.jackson.databind.SerializationFeature", "INDENT_OUTPUT")
 		);
 	}
 

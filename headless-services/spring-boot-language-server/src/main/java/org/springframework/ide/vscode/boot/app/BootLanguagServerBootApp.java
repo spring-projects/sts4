@@ -14,6 +14,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
+import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.EclipseJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.EclipseJavaElementLocationProvider;
@@ -23,10 +25,21 @@ import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.yaml.snakeyaml.Yaml;
 
 @SpringBootApplication
 public class BootLanguagServerBootApp {
@@ -73,6 +86,29 @@ public class BootLanguagServerBootApp {
 		default:
 			return new DefaultJavaElementLocationProvider(cuCache, javaDocUriProvider);
 		}
+	}
+
+	@Bean Yaml yaml() {
+		return new Yaml();
+	}
+
+	@Bean YamlASTProvider yamlAstProvider(Yaml yaml) {
+		return new YamlParser(yaml);
+	}
+
+	@Bean YamlStructureProvider yamlStructureProvider() {
+		return YamlStructureProvider.DEFAULT;
+	}
+
+	@Bean YamlAssistContextProvider yamlAssistContextProvider(BootLanguageServerParams params, JavaElementLocationProvider javaElementLocationProvider) {
+		return new YamlAssistContextProvider() {
+			@Override
+			public YamlAssistContext getGlobalAssistContext(YamlDocument ydoc) {
+				IDocument doc = ydoc.getDocument();
+				FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
+				return ApplicationYamlAssistContext.global(ydoc, index, new PropertyCompletionFactory(), params.typeUtilProvider.getTypeUtil(doc), RelaxedNameConfig.COMPLETION_DEFAULTS, javaElementLocationProvider);
+			}
+		};
 	}
 
 }

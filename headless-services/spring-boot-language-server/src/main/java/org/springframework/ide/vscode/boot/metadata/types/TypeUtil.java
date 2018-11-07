@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -544,6 +544,10 @@ public class TypeUtil {
 			//assumed to be a map
 			return firstElement(mapOrArrayType.getParams());
 		}
+	}
+
+	public Type getMapKeyType(Type mapType) {
+		return isMap(mapType) ? getKeyType(mapType) : null;
 	}
 
 	public boolean isAssignableType(Type type) {

@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.commons.yaml.completion;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.eclipse.lsp4j.Location;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -19,6 +21,8 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlNavigable;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Kris De Volder
@@ -34,4 +38,12 @@ public interface YamlAssistContext extends YamlNavigable<YamlAssistContext> {
 	Renderable getValueHoverInfo(YamlDocument doc, DocumentRegion documentRegion);
 
 	YamlDocument getDocument();
+
+	default List<Location> getDefinitionsForPropertyKey() {
+		return ImmutableList.of();
+	}
+
+	default List<Location> getDefinitionsForPropertyValue(DocumentRegion valueRegion) {
+		return ImmutableList.of();
+	}
 }
