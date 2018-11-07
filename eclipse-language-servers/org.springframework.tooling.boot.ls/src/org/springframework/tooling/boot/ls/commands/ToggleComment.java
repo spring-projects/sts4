@@ -58,9 +58,9 @@ public class ToggleComment extends AbstractHandler {
 						undo.beginCompoundChange();
 						try {
 							if (hasComments) {
-								stripComments(doc, startLine, endLine);
+								stripComments(doc, textEditor, textSel);
 							} else {
-								addComments(doc, startLine, endLine);
+								addComments(doc, textEditor, textSel);
 							}
 						} finally {
 							undo.endCompoundChange();
@@ -74,17 +74,24 @@ public class ToggleComment extends AbstractHandler {
 		return null;
 	}
 
-	private void addComments(IDocument doc, int startLine, int endLine) throws MalformedTreeException, BadLocationException {
+	private void addComments(IDocument doc, TextEditor editor, TextSelection selection) throws MalformedTreeException, BadLocationException {
 		MultiTextEdit edits = new MultiTextEdit();
+		int startLine = selection.getStartLine();
+		int endLine = selection.getEndLine();
 		for (int line = startLine; line<=endLine; line++) {
 			int lineStart = doc.getLineOffset(line);
-			edits.addChild(new InsertEdit(lineStart, "#"));
+			edits.addChild(new InsertEdit(lineStart, commentPrefix));
 		}
 		edits.apply(doc);
+		int charsAdded = (endLine - startLine + 1)*commentPrefix.length();
+		editor.getSelectionProvider().setSelection(new TextSelection(selection.getOffset(), selection.getLength()+charsAdded));
 	}
 
-	private void stripComments(IDocument doc, int startLine, int endLine) throws MalformedTreeException, BadLocationException {
+	private void stripComments(IDocument doc, TextEditor editor, TextSelection selection) throws MalformedTreeException, BadLocationException {
 		MultiTextEdit edits = new MultiTextEdit();
+		int startLine = selection.getStartLine();
+		int endLine = selection.getEndLine();
+		int charsRemoved = 0;
 		for (int line = startLine; line<=endLine; line++) {
 			int lineStart = doc.getLineOffset(line);
 			String lineText = getLineText(doc, line);
@@ -93,9 +100,11 @@ public class ToggleComment extends AbstractHandler {
 				int end = lineStart + matcher.end();
 				int start = end - commentPrefix.length();
 				edits.addChild(new DeleteEdit(start, commentPrefix.length()));
+				charsRemoved += commentPrefix.length();
 			}
 		}
 		edits.apply(doc);
+		editor.getSelectionProvider().setSelection(new TextSelection(selection.getOffset(), selection.getLength()-charsRemoved));
 	}
 
 	private boolean hasComments(IDocument doc, int startLine, int endLine) throws BadLocationException {
