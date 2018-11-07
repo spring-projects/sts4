@@ -40,7 +40,8 @@ public class BootProjectUtil {
 	}
 
 	public static Path javaHomeFromLibJar(Path libJar) {
-		for (Path home = libJar; home.getParent() != null; home = home.getParent()) {
+		Path root = libJar.getRoot();
+		for (Path home = libJar; !root.equals(home.getParent()); home = home.getParent()) {
 			Path bin = home.resolve("bin");
 			Path lib = home.resolve("lib");
 			Path include = home.resolve("include");
@@ -53,9 +54,12 @@ public class BootProjectUtil {
 	}
 
 	public static Path jreSources(Path libJar) {
+		System.out.println("LIB JAR: " + libJar);
 		Path home = javaHomeFromLibJar(libJar);
 		if (home != null) {
+			System.out.println("Trying java-home " + home);
 			Path sources = home.resolve("src.zip");
+			System.out.println("Trying sources: " + sources);
 			if (Files.exists(sources)) {
 				System.out.println("Found " + sources);
 				return sources;
