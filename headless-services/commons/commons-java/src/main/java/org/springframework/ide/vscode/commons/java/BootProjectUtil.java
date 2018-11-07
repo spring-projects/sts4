@@ -49,14 +49,19 @@ public class BootProjectUtil {
 	}
 
 	public static Path jreSources(Path libJar) {
+		System.out.println("Lib JAR: " + libJar);
 		Path home = javaHomeFromLibJar(libJar);
 		if (home != null) {
 			Path sources = home.resolve("src.zip");
+			System.out.println("Trying " + sources);
 			if (Files.exists(sources)) {
+				System.out.println("Found " + sources);
 				return sources;
 			}
 			sources = home.resolve("lib/src.zip");
+			System.out.println("Trying " + sources);
 			if (Files.exists(sources)) {
+				System.out.println("Found " + sources);
 				return sources;
 			}
 		}
