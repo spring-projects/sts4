@@ -41,8 +41,7 @@ public class BootProjectUtil {
 
 	public static Path javaHomeFromLibJar(Path libJar) {
 		for (Path home = libJar; home.getParent() != null; home = home.getParent()) {
-			if (Files.exists(home.resolve("release")) || Files.exists(home.resolve("release.txt"))
-					|| Files.exists(home.resolve("RELEASE.html"))) {
+			if (Files.exists(home.resolve("bin")) && Files.exists(home.resolve("README.html"))) {
 				return home;
 			}
 		}
