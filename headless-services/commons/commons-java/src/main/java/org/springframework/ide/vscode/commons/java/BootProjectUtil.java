@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -41,6 +42,16 @@ public class BootProjectUtil {
 
 	public static Path javaHomeFromLibJar(Path libJar) {
 		for (Path home = libJar; home.getParent() != null; home = home.getParent()) {
+			System.out.println("Trying Java home folder: " + home);
+			if (Files.isDirectory(home)) {
+				System.out.println("Folder contents: ");
+				try {
+					Files.list(home).forEach(System.out::println);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			if (Files.exists(home.resolve("bin")) && Files.exists(home.resolve("README.html"))) {
 				return home;
 			}
