@@ -52,7 +52,12 @@ public class BootProjectUtil {
 					e.printStackTrace();
 				}
 			}
-			if (Files.exists(home.resolve("bin")) && Files.exists(home.resolve("README.html"))) {
+			Path bin = home.resolve("bin");
+			Path lib = home.resolve("lib");
+			Path include = home.resolve("include");
+			Path man = home.resolve("man");
+
+			if (Files.isDirectory(bin) && Files.isDirectory(lib) && Files.isDirectory(include) && Files.isDirectory(man)) {
 				return home;
 			}
 		}
@@ -60,19 +65,14 @@ public class BootProjectUtil {
 	}
 
 	public static Path jreSources(Path libJar) {
-		System.out.println("Lib JAR: " + libJar);
 		Path home = javaHomeFromLibJar(libJar);
 		if (home != null) {
 			Path sources = home.resolve("src.zip");
-			System.out.println("Trying " + sources);
 			if (Files.exists(sources)) {
-				System.out.println("Found " + sources);
 				return sources;
 			}
 			sources = home.resolve("lib/src.zip");
-			System.out.println("Trying " + sources);
 			if (Files.exists(sources)) {
-				System.out.println("Found " + sources);
 				return sources;
 			}
 		}
