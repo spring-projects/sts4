@@ -67,6 +67,9 @@ public class JavaIndexTest {
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
+		results.forEach(res -> {
+			System.out.println("Found type: " + res.getT1());
+		});
 		IType type = results.get(0).getT1();
 		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
 		assertEquals("java.util.Map", type.getFullyQualifiedName());
@@ -80,6 +83,9 @@ public class JavaIndexTest {
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
+		results.forEach(res -> {
+			System.out.println("Found type: " + res.getT1());
+		});
 		IType type = results.get(0).getT1();
 		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
 		assertEquals("java.util.EnumMap$KeySet", type.getFullyQualifiedName());
@@ -93,6 +99,9 @@ public class JavaIndexTest {
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
+		results.forEach(res -> {
+			System.out.println("Found result: " + res.getT1());
+		});
 		assertEquals("java.util", results.get(0).getT1());
 	}
 
