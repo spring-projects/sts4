@@ -1708,12 +1708,12 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		// java.lang.String commented out - CI build node open JDK comes with no src.zip in the JDK
 		// Well... src.zip in the open JDK in the CI is a symlink pointing non-existant file
-//		editor = newEditor(
-//				"#stuff\n" +
-//				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
-//				"#more stuff"
-//		);
-//		assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
+		editor = newEditor(
+				"#stuff\n" +
+				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
+				"#more stuff"
+		);
+		assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
 
 		// Instead of java.lang.String
 		editor = newEditor(
