@@ -93,10 +93,6 @@
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
 
-	<bundle id="org.springsource.ide.eclipse.commons.completions">
-		<category name="Core / Eclipse Integration Commons"/>
-	</bundle>
-
 	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
