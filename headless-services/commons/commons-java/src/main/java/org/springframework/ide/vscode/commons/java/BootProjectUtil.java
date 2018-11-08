@@ -59,23 +59,33 @@ public class BootProjectUtil {
 		Path home = javaHomeFromLibJar(libJar);
 		if (home != null) {
 			System.out.println("Trying java-home " + home);
-			Path sources = home.resolve("src.zip");
-			System.out.println("Trying sources: " + sources);
+//			Path sources = home.resolve("src.zip");
 			try {
-				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p) + " readable=" + Files.isReadable(p)));
+				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p) + " readable=" + Files.isReadable(p) + " symbolicLink=" + Files.isSymbolicLink(p)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if (Files.isReadable(sources)) {
-				System.out.println("Found " + sources);
-				return sources;
+			try {
+				return Files.list(home).filter(p -> p.endsWith("src.zip")).findFirst().orElseGet(() -> {
+					try {
+						return Files.list(home.resolve("lib")).filter(p -> p.endsWith("src.zip")).findFirst().orElse(null);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return null;
+					}
+				});
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			sources = home.resolve("lib/src.zip");
-			System.out.println("Trying sources: " + sources);
-			if (Files.isReadable(sources)) {
-				System.out.println("Found " + sources);
-				return sources;
-			}
+//			if (Files.isReadable(sources)) {
+//				return sources;
+//			}
+//			sources = home.resolve("lib/src.zip");
+//			if (Files.isReadable(sources)) {
+//				return sources;
+//			}
 		}
 		return null;
 	}
