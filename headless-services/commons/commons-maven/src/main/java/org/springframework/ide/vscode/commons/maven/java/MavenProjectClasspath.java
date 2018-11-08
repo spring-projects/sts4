@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -87,14 +88,14 @@ public class MavenProjectClasspath implements IClasspath {
 			if (javaVersion == null) {
 				javaVersion = "8";
 			}
-//			try {
-				cpe.setSourceContainerUrl(BootProjectUtil.jreSources(path).toUri().toURL());
-//			} catch (Throwable t) {
-//				t.printStackTrace();
-//			}
 			cpe.setJavadocContainerUrl(new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/"));
 			cpe.setSystem(true);
 			entries.add(cpe);
+			// Add at the end, not critical if throws exception, but the CPE needs to be around regardless if the below throws
+			Path sources = BootProjectUtil.jreSources(path);
+			if (sources != null) {
+				cpe.setSourceContainerUrl(sources.toUri().toURL());
+			}
 		})));
 		//Add jar dependencies...
 		for (Artifact a : projectDependencies(project)) {

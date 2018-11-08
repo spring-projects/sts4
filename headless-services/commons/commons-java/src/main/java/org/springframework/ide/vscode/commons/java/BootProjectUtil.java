@@ -55,39 +55,30 @@ public class BootProjectUtil {
 	}
 
 	public static Path jreSources(Path libJar) {
-		System.out.println("LIB JAR: " + libJar);
 		Path home = javaHomeFromLibJar(libJar);
 		if (home != null) {
-			System.out.println("Trying java-home " + home);
-//			Path sources = home.resolve("src.zip");
-			try {
-				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p) + " readable=" + Files.isReadable(p) + " symbolicLink=" + Files.isSymbolicLink(p)));
-			} catch (IOException e) {
-				e.printStackTrace();
+			Path sources = sourceZip(home);
+			if (sources == null) {
+				sources = sourceZip(home.resolve("lib"));
 			}
-			try {
-				return Files.list(home).filter(p -> p.endsWith("src.zip")).findFirst().orElseGet(() -> {
-					try {
-						return Files.list(home.resolve("lib")).filter(p -> p.endsWith("src.zip")).findFirst().orElse(null);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return null;
-					}
-				});
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-//			if (Files.isReadable(sources)) {
-//				return sources;
-//			}
-//			sources = home.resolve("lib/src.zip");
-//			if (Files.isReadable(sources)) {
-//				return sources;
-//			}
+			return sources;
 		}
 		return null;
 	}
 
+	private static Path sourceZip(Path containerFolder) {
+		Path sourcesZip = containerFolder.resolve("src.zip");
+		if (Files.isReadable(sourcesZip)) {
+			return sourcesZip;
+		} else if (Files.isSymbolicLink(sourcesZip)) {
+			try {
+				Path realPath = sourcesZip.toRealPath();
+				System.out.println("Symlink points to -> " + realPath);
+				return realPath;
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return null;
+	}
 }
