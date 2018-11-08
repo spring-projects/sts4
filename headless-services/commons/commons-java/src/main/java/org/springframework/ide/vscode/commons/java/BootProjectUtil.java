@@ -62,17 +62,17 @@ public class BootProjectUtil {
 			Path sources = home.resolve("src.zip");
 			System.out.println("Trying sources: " + sources);
 			try {
-				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p)));
+				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p) + " readable=" + Files.isReadable(p)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if (Files.exists(sources)) {
+			if (Files.isReadable(sources)) {
 				System.out.println("Found " + sources);
 				return sources;
 			}
 			sources = home.resolve("lib/src.zip");
 			System.out.println("Trying sources: " + sources);
-			if (Files.exists(sources)) {
+			if (Files.isReadable(sources)) {
 				System.out.println("Found " + sources);
 				return sources;
 			}
