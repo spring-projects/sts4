@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.boot.java.links.EclipseSourceLinks;
+import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.boot.java.value.test.MockProjects;
@@ -24,13 +24,11 @@ public class SpringResourceTest {
 	private MockProjects projects = new MockProjects();
 	private MockProject project = projects.create("test-project");
 
-	private SourceLinks sourceLinks = new EclipseSourceLinks();
+	private SourceLinks sourceLinks = SourceLinkFactory.NO_SOURCE_LINKS;
 
 	@Test public void vcapResourceToMarkdown() throws Exception {
 		assertEquals(
-				"[com/github/kdvolder/helloworldservice/Greeter.class]" +
-				"(http://org.eclipse.ui.intro/execute?command=org.springframework.tooling.boot.ls.OpenJavaType%28fqName%3Dcom.github.kdvolder.helloworldservice.Greeter%2CprojectName%3Dtest-project%29)"
-			,
+				"`com/github/kdvolder/helloworldservice/Greeter.class`",
 				toMarkdown("file [/home/vcap/app/com/github/kdvolder/helloworldservice/Greeter.class]")
 		);
 	}

@@ -42,7 +42,7 @@ public class JavadocUtils {
 
 	public static final String javadoc(Function<IJavaElement, Reader> readerProvider, URI projectUri, String bindingKey) throws Exception {
 		IJavaProject project = ResourceUtils.getJavaProject(projectUri);
-		IJavaElement element = project.findElement(bindingKey, null);
+		IJavaElement element = findElement(project, bindingKey);
 		return computeJavadoc(readerProvider, element);
 	}
 
@@ -71,5 +71,39 @@ public class JavadocUtils {
 		}
 		return getString(r);
 	}
+	
+	public static IJavaElement findElement(IJavaProject project, String bindingKey) {
+		IJavaElement element = null;
+		try {
+			element = project.findElement(bindingKey, null);
+		} catch (Throwable t) {
+			// ignore
+		}
+		if (element == null) {
+			// Try modifying the binding key to search for the alternate binding
+			try {
+				String alternateBinding = alternateBinding(bindingKey);
+				if (alternateBinding != null) {
+					element = project.findElement(alternateBinding, null);
+				}
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
+		return element;
+	}
+
+	private static String alternateBinding(String bindingKey) {
+		int idxStartParams = bindingKey.indexOf('(');
+		if (idxStartParams >= 0) {
+			int idxEndParams = bindingKey.indexOf(')', idxStartParams);
+			if (idxEndParams > idxStartParams) {
+				String params = bindingKey.substring(idxStartParams, idxEndParams);
+				return bindingKey.substring(0, idxStartParams) + params.replace('/', '.') + bindingKey.substring(idxEndParams);
+			}
+		}
+		return null;
+	}
+
 
 }

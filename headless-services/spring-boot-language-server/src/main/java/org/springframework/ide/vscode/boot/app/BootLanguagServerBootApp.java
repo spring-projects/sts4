@@ -15,12 +15,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
-import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
+import org.springframework.ide.vscode.boot.java.links.EclipseJavaDocumentUriProvider;
+import org.springframework.ide.vscode.boot.java.links.EclipseJavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
+import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
@@ -53,11 +56,23 @@ public class BootLanguagServerBootApp {
 	}
 
 	@Bean JavaDocumentUriProvider javaDocumentUriProvider() {
-		return new JdtJavaDocumentUriProvider();
+		switch (LspClient.currentClient()) {
+		case ECLIPSE:
+			// LSP4E doesn't support JDT java doc URIs. Only supports file, eclipse intro and http URIs for docs
+			return new EclipseJavaDocumentUriProvider();
+		default:
+			return new JdtJavaDocumentUriProvider();
+		}
 	}
 
 	@Bean JavaElementLocationProvider javaElementLocationProvider(CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocUriProvider) {
-		return new DefaultJavaElementLocationProvider(cuCache, javaDocUriProvider);
+		switch (LspClient.currentClient()) {
+		case ECLIPSE:
+			// LSP4E doesn't support JDT java doc URIs. Only supports file, eclipse intro and http URIs for docs
+			return new EclipseJavaElementLocationProvider();
+		default:
+			return new DefaultJavaElementLocationProvider(cuCache, javaDocUriProvider);
+		}
 	}
 
 }

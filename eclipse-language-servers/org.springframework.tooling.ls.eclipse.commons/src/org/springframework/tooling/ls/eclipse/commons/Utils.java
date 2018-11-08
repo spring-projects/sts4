@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -67,6 +69,40 @@ public class Utils {
 			}
 		}
 		return false;
+	}
+
+
+	public static IJavaElement findElement(IJavaProject project, String bindingKey) {
+		IJavaElement element = null;
+		try {
+			element = project.findElement(bindingKey, null);
+		} catch (Throwable t) {
+			// ignore
+		}
+		if (element == null) {
+			// Try modifying the binding key to search for the alternate binding
+			try {
+				String alternateBinding = alternateBinding(bindingKey);
+				if (alternateBinding != null) {
+					element = project.findElement(alternateBinding, null);
+				}
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
+		return element;
+	}
+
+	private static String alternateBinding(String bindingKey) {
+		int idxStartParams = bindingKey.indexOf('(');
+		if (idxStartParams >= 0) {
+			int idxEndParams = bindingKey.indexOf(')', idxStartParams);
+			if (idxEndParams > idxStartParams) {
+				String params = bindingKey.substring(idxStartParams, idxEndParams);
+				return bindingKey.substring(0, idxStartParams) + params.replace('/', '.') + bindingKey.substring(idxEndParams);
+			}
+		}
+		return null;
 	}
 
 }

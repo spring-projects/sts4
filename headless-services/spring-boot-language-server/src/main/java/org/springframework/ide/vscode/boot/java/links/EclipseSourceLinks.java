@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.links;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,57 +21,35 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import org.springframework.ide.vscode.commons.java.IMember;
+import org.springframework.ide.vscode.commons.java.IType;
 
 /**
  * Source links for Eclipse client. Eclipse IntroURLs.
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class EclipseSourceLinks implements SourceLinks {
-	
+
 	private static final String URL_PREFIX = "http://org.eclipse.ui.intro/execute?command=";
 	private static final String EQUALS = "=";
 	private static final String PARAMETERS_SEPARATOR = ",";
 	private static final String PARAMETERS_START = "(";
 	private static final String PARAMETERS_END = ")";
-	
-	private static final String JAVA_TYPE_COMMAND = "org.springframework.tooling.boot.ls.OpenJavaType";
-	private static final String FQ_NAME_PARAMETER_ID = "fqName";
+
+	private static final String JAVA_ELEMENT_COMMAND = "org.springframework.tooling.boot.ls.OpenJavaElement";
+	private static final String BINDING_KEY_PARAMETER_ID = "bindingKey";
 	private static final String PROJECT_NAME_PARAMETER_ID = "projectName";
 
 	private static final String RESOURCE_COMMAND = "org.springframework.tooling.boot.ls.OpenResourceInEditor";
 	private static final String PATH = "path";
 
-	
-	private static final Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(EclipseSourceLinks.class));
+	private static final Logger log = LoggerFactory.getLogger(EclipseSourceLinks.class);
 
 	@Override
 	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
-		try {
-			StringBuilder paramBuilder = new StringBuilder(JAVA_TYPE_COMMAND);
-			paramBuilder.append(PARAMETERS_START);
-			paramBuilder.append(FQ_NAME_PARAMETER_ID);
-			paramBuilder.append(EQUALS);
-			paramBuilder.append(fqName);
-			if (project != null && project.getElementName() != null) {
-				paramBuilder.append(PARAMETERS_SEPARATOR);
-				paramBuilder.append(PROJECT_NAME_PARAMETER_ID);
-				paramBuilder.append(EQUALS);
-				paramBuilder.append(project.getElementName());
-			}
-			paramBuilder.append(PARAMETERS_END);
-			
-			StringBuilder urlBuilder = new StringBuilder(URL_PREFIX);
-			urlBuilder.append(URLEncoder.encode(paramBuilder.toString(), "UTF8"));
-			return Optional.of(urlBuilder.toString());
-		} catch (UnsupportedEncodingException e) {
-			LOG.get().error("{}", e);
-		}
-		return Optional.empty();
+		return Optional.ofNullable(eclipseIntroUri(project, fqName)).map(uri -> uri.toString());
 	}
 
 	@Override
@@ -85,8 +64,12 @@ public class EclipseSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkForResourcePath(Path path) {
-		try {
-			if (path != null) {
+		return Optional.ofNullable(eclipseIntroUri(path)).map(uri -> uri.toString());
+	}
+
+	public static URI eclipseIntroUri(Path path) {
+		if (path != null) {
+			try {
 				StringBuilder paramBuilder = new StringBuilder(RESOURCE_COMMAND);
 				paramBuilder.append(PARAMETERS_START);
 				paramBuilder.append(PATH);
@@ -96,12 +79,41 @@ public class EclipseSourceLinks implements SourceLinks {
 
 				StringBuilder urlBuilder = new StringBuilder(URL_PREFIX);
 				urlBuilder.append(URLEncoder.encode(paramBuilder.toString(), "UTF8"));
-				return Optional.of(urlBuilder.toString());
+				return URI.create(urlBuilder.toString());
+			} catch (UnsupportedEncodingException e) {
+				log.error("{}", e);
 			}
-		} catch (UnsupportedEncodingException e) {
-			LOG.get().error("{}", e);
 		}
-		return Optional.empty();
+		return null;
+	}
+
+	public static URI eclipseIntroUri(IJavaProject project, String fqName) {
+		IType type = project.findType(fqName);
+		return type == null ? null : eclipseIntroUri(project, type);
+	}
+
+	public static URI eclipseIntroUri(IJavaProject project, IMember member) {
+		try {
+			StringBuilder paramBuilder = new StringBuilder(JAVA_ELEMENT_COMMAND);
+			paramBuilder.append(PARAMETERS_START);
+			paramBuilder.append(BINDING_KEY_PARAMETER_ID);
+			paramBuilder.append(EQUALS);
+			paramBuilder.append(member.getBindingKey());
+			if (project != null && project.getElementName() != null) {
+				paramBuilder.append(PARAMETERS_SEPARATOR);
+				paramBuilder.append(PROJECT_NAME_PARAMETER_ID);
+				paramBuilder.append(EQUALS);
+				paramBuilder.append(project.getElementName());
+			}
+			paramBuilder.append(PARAMETERS_END);
+
+			StringBuilder urlBuilder = new StringBuilder(URL_PREFIX);
+			urlBuilder.append(URLEncoder.encode(paramBuilder.toString(), "UTF8"));
+			return URI.create(urlBuilder.toString());
+		} catch (UnsupportedEncodingException e) {
+			log.error("{}", e);
+		}
+		return null;
 	}
 
 }
