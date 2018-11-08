@@ -62,7 +62,7 @@ public class BootProjectUtil {
 			Path sources = home.resolve("src.zip");
 			System.out.println("Trying sources: " + sources);
 			try {
-				Files.list(sources).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p)));
+				Files.list(home).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
