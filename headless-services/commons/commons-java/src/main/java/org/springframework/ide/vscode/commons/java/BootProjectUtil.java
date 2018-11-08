@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -68,16 +67,8 @@ public class BootProjectUtil {
 
 	private static Path sourceZip(Path containerFolder) {
 		Path sourcesZip = containerFolder.resolve("src.zip");
-		if (Files.isReadable(sourcesZip)) {
+		if (Files.exists(sourcesZip)) {
 			return sourcesZip;
-		} else if (Files.isSymbolicLink(sourcesZip)) {
-			try {
-				Path realPath = sourcesZip.toRealPath();
-				System.out.println("Symlink points to -> " + realPath);
-				return realPath;
-			} catch (IOException e) {
-				log.error("", e);
-			}
 		}
 		return null;
 	}

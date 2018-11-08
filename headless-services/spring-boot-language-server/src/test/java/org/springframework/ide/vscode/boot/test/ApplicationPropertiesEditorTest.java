@@ -1705,12 +1705,24 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		//Linking should also work for types that aren't valid based on the constraints
+
+		// java.lang.String commented out - CI build node open JDK comes with no src.zip in the JDK
+		// Well... src.zip in the open JDK in the CI is a symlink pointing non-existant file
+//		editor = newEditor(
+//				"#stuff\n" +
+//				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
+//				"#more stuff"
+//		);
+//		assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
+
+		// Instead of java.lang.String
 		editor = newEditor(
 				"#stuff\n" +
-				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
+				"spring.data.mongodb.field-naming-strategy=org.springframework.core.io.Resource\n" +
 				"#more stuff"
 		);
-		assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
+		assertLinkTargets(editor, "org.springframework.core.io.Resource", project, "org.springframework.core.io.Resource");
+
 	}
 
 	@Test public void testCommaListReconcile() throws Exception {
