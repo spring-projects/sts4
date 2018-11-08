@@ -87,11 +87,11 @@ public class MavenProjectClasspath implements IClasspath {
 			if (javaVersion == null) {
 				javaVersion = "8";
 			}
-			try {
+//			try {
 				cpe.setSourceContainerUrl(BootProjectUtil.jreSources(path).toUri().toURL());
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//			}
 			cpe.setJavadocContainerUrl(new URL("https://docs.oracle.com/javase/" + javaVersion + "/docs/api/"));
 			cpe.setSystem(true);
 			entries.add(cpe);

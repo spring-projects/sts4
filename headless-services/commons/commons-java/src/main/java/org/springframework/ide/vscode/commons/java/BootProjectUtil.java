@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -60,11 +61,17 @@ public class BootProjectUtil {
 			System.out.println("Trying java-home " + home);
 			Path sources = home.resolve("src.zip");
 			System.out.println("Trying sources: " + sources);
+			try {
+				Files.list(sources).forEach(p -> System.out.println("entry=" + p + " exists=" + Files.exists(p)));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			if (Files.exists(sources)) {
 				System.out.println("Found " + sources);
 				return sources;
 			}
 			sources = home.resolve("lib/src.zip");
+			System.out.println("Trying sources: " + sources);
 			if (Files.exists(sources)) {
 				System.out.println("Found " + sources);
 				return sources;
