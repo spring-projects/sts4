@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install -y \
   git \
   jq \
   openjdk-8-jdk \
-  openjdk-8-source \
   curl \
   xvfb \
   icewm
