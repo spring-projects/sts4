@@ -28,6 +28,7 @@ public interface SpringBootApp extends Disposable {
 	String getProcessID();
 	String getHost() throws Exception;
 	String getPort() throws Exception;
+	String getContextPath() throws Exception;
 	boolean isSpringBootApp();
 
 	String getEnvironment() throws Exception;

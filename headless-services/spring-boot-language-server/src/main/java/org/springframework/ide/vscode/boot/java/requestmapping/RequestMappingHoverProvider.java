@@ -179,6 +179,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		List<String> urls = new ArrayList<>();
 		for (int i = 0; i < mappingMethods.size(); i++) {
 			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
+			SpringBootApp app = mappingMethod.getT2();
+			String contextPath = app.getContextPath();
 
 			String port = mappingMethod.getT2().getPort();
 			String host = mappingMethod.getT2().getHost();
@@ -192,7 +194,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				paths = new String[] {""};
 			}
 			for (String path : paths) {
-				String url = UrlUtil.createUrl(host, port, path);
+				String url = UrlUtil.createUrl(host, port, path, contextPath);
 				urls.add(url);
 			}
 		}
@@ -215,8 +217,9 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				//So we'll pretend this is the same as path="" as that gives a working link.
 				paths = new String[] {""};
 			}
+			String contextPath = app.getContextPath();
 			List<Renderable> renderableUrls = Arrays.stream(paths).flatMap(path -> {
-				String url = UrlUtil.createUrl(host, port, path);
+				String url = UrlUtil.createUrl(host, port, path, contextPath);
 				return Stream.of(Renderables.link(url, url), Renderables.lineBreak());
 			})
 			.collect(Collectors.toList());

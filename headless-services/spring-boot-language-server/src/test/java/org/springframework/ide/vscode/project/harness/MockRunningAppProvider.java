@@ -92,6 +92,11 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
+		public MockAppBuilder contextPath(String contextPath) throws Exception {
+			when(app.getContextPath()).thenReturn(contextPath);
+			return this;
+		}
+
 		public MockAppBuilder port(String port) throws Exception {
 			when(app.getPort()).thenReturn(port);
 			return this;
