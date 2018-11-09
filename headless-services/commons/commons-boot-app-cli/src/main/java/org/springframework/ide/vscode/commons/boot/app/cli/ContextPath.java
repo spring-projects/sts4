@@ -22,29 +22,17 @@ public class ContextPath {
 
 	protected static Logger logger = LoggerFactory.getLogger(ContextPath.class);
 
-	public static final String[] BOOT_1X_CONTEXTPATH = { "server.context-path", "server.contextPath",
-			"SERVER_CONTEXT_PATH" };
-	public static final String[] BOOT_2X_CONTEXTPATH = { "server.servlet.context-path", "server.servlet.contextPath",
-			"SERVER_SERVLET_CONTEXT_PATH" };
+	public static final String[] CONTEXTPATH = { "server.context-path", "server.contextPath", "SERVER_CONTEXT_PATH",
+			"server.servlet.context-path", "server.servlet.contextPath", "SERVER_SERVLET_CONTEXT_PATH" };
 
-	public static String getContextPath(String bootVersion, String environment) {
+	public static String getContextPath(String environment) {
 
 		if (environment != null) {
 			JSONObject env = new JSONObject(environment);
-
-			String[] contextPathProperties = null;
-			if ("1.x".equals(bootVersion)) {
-				contextPathProperties = BOOT_1X_CONTEXTPATH;
-			} else if ("2.x".equals(bootVersion)) {
-				contextPathProperties = BOOT_2X_CONTEXTPATH;
-			}
-
-			if (contextPathProperties != null) {
-				for (String prop : contextPathProperties) {
-					String contextPath = findContextPath(env, prop);
-					if (StringUtil.hasText(contextPath)) {
-						return contextPath;
-					}
+			for (String prop : CONTEXTPATH) {
+				String contextPath = findContextPath(env, prop);
+				if (StringUtil.hasText(contextPath)) {
+					return contextPath;
 				}
 			}
 		}

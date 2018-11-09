@@ -397,19 +397,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public String getContextPath() throws Exception {
 		String environment = getEnvironment();
-		String bootVersion = null;
-		// Boot 1.x
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
-		if (result != null) {
-			bootVersion = "1.x";
-		}
-
-		// Boot 2.x
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
-		if (result != null) {
-			bootVersion = "2.x";
-		}
-		return bootVersion != null && environment != null ? ContextPath.getContextPath(bootVersion, environment) : null;
+		return environment != null ? ContextPath.getContextPath(environment) : null;
 	}
 
 	/**
