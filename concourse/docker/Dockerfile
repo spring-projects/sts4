@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
   gettext-base \
   git \
   jq \
-  openjdk-8-jdk \
+  openjdk-8-jdk=8u162-b12-1 openjdk-8-jre=8u162-b12-1 openjdk-8-jdk-headless=8u162-b12-1 openjdk-8-jre-headless=8u162-b12-1 openjdk-8-source=8u162-b12-1 \
   curl \
   xvfb \
   icewm
