@@ -75,6 +75,7 @@ public class HintProviders {
 			return forHere(valueHints);
 		}
 		return new HintProvider() {
+			@Override
 			public HintProvider traverse(YamlPathSegment s) throws Exception {
 				switch (s.getType()) {
 				case VAL_AT_INDEX:
@@ -85,6 +86,7 @@ public class HintProviders {
 				}
 			}
 
+			@Override
 			public List<StsValueHint> getValueHints(String query) {
 				return ImmutableList.of();
 			}
@@ -200,7 +202,7 @@ public class HintProviders {
 					for (StsValueHint keyHint : keyHints) {
 						Object key = keyHint.getValue();
 						if (key instanceof String) {
-							props.add(new TypedProperty((String)key, valueType, null));
+							props.add(new TypedProperty((String)key, valueType, keyHint.getDescription(), null));
 						}
 					}
 					return props;

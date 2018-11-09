@@ -1149,7 +1149,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Test public void testPropertyMapKeyCompletions() throws Exception {
-		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
+		useProject(createPredefinedMavenProject("empty-boot-2.1.0-app"));
 		assertCompletionWithLabel(
 				"logging.level.<*>"
 				, //==============
@@ -1157,7 +1157,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				//=>
 				"logging.level.root=<*>"
 		);
-		assertCompletionDetails("logging.level.<*>", "root", "String", null);
+		assertCompletionDetails("logging.level.<*>", "root", "String", "Root logger");
 
 		assertCompletionWithLabel(
 				"logging.level.r<*>"
@@ -1166,7 +1166,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				//=>
 				"logging.level.root=<*>"
 		);
-		assertCompletionDetails("logging.level.r<*>", "root", "String", null);
+		assertCompletionDetails("logging.level.r<*>", "root", "String", "Root logger");
 
 		assertCompletionWithLabel(
 				"logging.level.ot<*>"
@@ -1175,7 +1175,27 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				//=>
 				"logging.level.root=<*>"
 		);
-		assertCompletionDetails("logging.level.ot<*>", "root", "String", null);
+		assertCompletionDetails("logging.level.ot<*>", "root", "String", "Root logger");
+
+		// 'web' and 'sql' are built-in logger groups as of Spring Boot 2.1
+		// See: https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#_logger_name
+		assertCompletionWithLabel(
+				"logging.level.<*>"
+				, //==============
+				"web",
+				//=>
+				"logging.level.web=<*>"
+		);
+		assertCompletionDetails("logging.level.<*>", "web", "String", "Web logging group");
+
+		assertCompletionWithLabel(
+				"logging.level.<*>"
+				, //==============
+				"sql",
+				//=>
+				"logging.level.sql=<*>"
+		);
+		assertCompletionDetails("logging.level.<*>", "sql", "String", "SQL logging group");
 	}
 
 	@Test public void testHandleAsResourceContentAssist() throws Exception {
