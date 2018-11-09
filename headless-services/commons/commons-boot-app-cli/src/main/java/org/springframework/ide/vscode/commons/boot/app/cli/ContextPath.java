@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,9 +22,10 @@ public class ContextPath {
 
 	protected static Logger logger = LoggerFactory.getLogger(ContextPath.class);
 
-
-	public static final String[] BOOT_1X_CONTEXTPATH = { "server.context-path", "server.contextPath", "SERVER_CONTEXT_PATH" };
-	public static final String[] BOOT_2X_CONTEXTPATH = { "server.servlet.context-path", "server.servlet.contextPath", "SERVER_SERVLET_CONTEXT_PATH" };
+	public static final String[] BOOT_1X_CONTEXTPATH = { "server.context-path", "server.contextPath",
+			"SERVER_CONTEXT_PATH" };
+	public static final String[] BOOT_2X_CONTEXTPATH = { "server.servlet.context-path", "server.servlet.contextPath",
+			"SERVER_SERVLET_CONTEXT_PATH" };
 
 	public static String getContextPath(String bootVersion, String environment) {
 
@@ -61,9 +64,55 @@ public class ContextPath {
 	}
 
 	private static String findInApplicationConfig(JSONObject env, String contextPathProp) {
-		// TODO Auto-generated method stub
-		return null;
+		// boot 1.x
+		JSONObject commandLineArgs = null;
+		for (String key : env.keySet()) {
+			if (key.startsWith("applicationConfig")) {
+				commandLineArgs = env.getJSONObject(key);
+				if (commandLineArgs != null) {
+					String contextPathValue = commandLineArgs.optString(contextPathProp);
+					// Warning: fetching value above may return empty string, so null check on the
+					// value is not enough
+					if (StringUtil.hasText(contextPathValue)) {
+						return contextPathValue;
+					}
+				}
+			}
+		}
 
+		// boot 2.x
+		if (commandLineArgs == null) {
+			// Not found as direct property value... in Boot 2.0 we must look inside the
+			// 'propertySources'.
+			// Similar... but structure is more complex.
+			JSONArray propertySources = env.optJSONArray("propertySources");
+			if (propertySources != null) {
+				for (Object _source : propertySources) {
+					if (_source instanceof JSONObject) {
+						JSONObject source = (JSONObject) _source;
+						String sourceName = source.optString("name");
+						if (sourceName != null && sourceName.startsWith("applicationConfig")) {
+							JSONObject props = source.optJSONObject("properties");
+							Set<String> keySet = props.keySet();
+							// Check that the context is a key before retrieving the JSON object value.
+							// Note: attempting to fetch the JSON object value on a key that may not exist
+							// throws exception
+							// thus the reason why we are checking that the key exists first
+							if (keySet.contains(contextPathProp)) {
+								JSONObject jsonObject = props.getJSONObject(contextPathProp);
+								if (jsonObject != null) {
+									String contextPathValue = jsonObject.optString("value");
+									if (StringUtil.hasText(contextPathValue)) {
+										return contextPathValue;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	protected static String findInCommandLineArgs(JSONObject env, String contextPathProp) {
@@ -71,17 +120,19 @@ public class ContextPath {
 		JSONObject commandLineArgs = env.optJSONObject("commandLineArgs");
 		if (commandLineArgs != null) {
 			String contextPathValue = commandLineArgs.optString(contextPathProp);
-			// Warning: fetching value above may return empty string, so null check on the value is not enough
+			// Warning: fetching value above may return empty string, so null check on the
+			// value is not enough
 			if (StringUtil.hasText(contextPathValue)) {
 				return contextPathValue;
 			}
 		}
 		// boot 2.x
 		if (commandLineArgs == null) {
-			//Not found as direct property value... in Boot 2.0 we must look inside the 'propertySources'.
-			//Similar... but structure is more complex.
+			// Not found as direct property value... in Boot 2.0 we must look inside the
+			// 'propertySources'.
+			// Similar... but structure is more complex.
 			JSONArray propertySources = env.optJSONArray("propertySources");
-			if (propertySources!=null) {
+			if (propertySources != null) {
 				for (Object _source : propertySources) {
 					if (_source instanceof JSONObject) {
 						JSONObject source = (JSONObject) _source;
@@ -90,7 +141,7 @@ public class ContextPath {
 							JSONObject props = source.optJSONObject("properties");
 							// Find the contextPathProp in the command line args
 							JSONObject valueObject = props.optJSONObject(contextPathProp);
-							if (valueObject!=null) {
+							if (valueObject != null) {
 								String contextPathValue = valueObject.optString("value");
 								if (StringUtil.hasText(contextPathValue)) {
 									return contextPathValue;
