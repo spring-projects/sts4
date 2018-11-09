@@ -53,12 +53,12 @@ public class ContextPath {
 
 	private static String findInApplicationConfig(JSONObject env, String contextPathProp) {
 		// boot 1.x
-		JSONObject commandLineArgs = null;
+		JSONObject applicationConfig = null;
 		for (String key : env.keySet()) {
 			if (key.startsWith("applicationConfig")) {
-				commandLineArgs = env.getJSONObject(key);
-				if (commandLineArgs != null) {
-					String contextPathValue = commandLineArgs.optString(contextPathProp);
+				applicationConfig = env.getJSONObject(key);
+				if (applicationConfig != null) {
+					String contextPathValue = applicationConfig.optString(contextPathProp);
 					// Warning: fetching value above may return empty string, so null check on the
 					// value is not enough
 					if (StringUtil.hasText(contextPathValue)) {
@@ -69,7 +69,7 @@ public class ContextPath {
 		}
 
 		// boot 2.x
-		if (commandLineArgs == null) {
+		if (applicationConfig == null) {
 			// Not found as direct property value... in Boot 2.0 we must look inside the
 			// 'propertySources'.
 			// Similar... but structure is more complex.
