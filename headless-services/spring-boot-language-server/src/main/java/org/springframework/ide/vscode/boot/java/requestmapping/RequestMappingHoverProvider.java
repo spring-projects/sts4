@@ -182,8 +182,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			SpringBootApp app = mappingMethod.getT2();
 			String contextPath = app.getContextPath();
 
-			String port = mappingMethod.getT2().getPort();
-			String host = mappingMethod.getT2().getHost();
+			String port = app.getPort();
+			String host = app.getHost();
 
 			String[] paths = mappingMethod.getT1().getSplitPath();
 			if (paths==null || paths.length==0) {
