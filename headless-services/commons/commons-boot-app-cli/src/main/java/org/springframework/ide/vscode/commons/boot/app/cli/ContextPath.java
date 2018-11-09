@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -18,21 +19,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.collect.ImmutableList;
+
 public class ContextPath {
 
 	protected static Logger logger = LoggerFactory.getLogger(ContextPath.class);
 
-	public static final String[] CONTEXTPATH = { "server.context-path", "server.contextPath", "SERVER_CONTEXT_PATH",
-			"server.servlet.context-path", "server.servlet.contextPath", "SERVER_SERVLET_CONTEXT_PATH" };
+	public static final Collection<String> BOOT_1X_CONTEXTPATH = ImmutableList.of("server.context-path",
+			"server.contextPath");
 
-	public static String getContextPath(String environment) {
+	public static final Collection<String> BOOT_2X_CONTEXTPATH = ImmutableList.of("server.servlet.context-path",
+			"server.servlet.contextPath");
+
+	public static String getContextPath(String bootVersion, String environment) {
 
 		if (environment != null) {
 			JSONObject env = new JSONObject(environment);
-			for (String prop : CONTEXTPATH) {
-				String contextPath = findContextPath(env, prop);
-				if (StringUtil.hasText(contextPath)) {
-					return contextPath;
+
+			Collection<String> contextPathProperties = null;
+			if ("1.x".equals(bootVersion)) {
+				contextPathProperties = BOOT_1X_CONTEXTPATH;
+			} else if ("2.x".equals(bootVersion)) {
+				contextPathProperties = BOOT_2X_CONTEXTPATH;
+			}
+
+			if (contextPathProperties != null) {
+				for (String prop : contextPathProperties) {
+					String contextPath = findContextPath(env, prop);
+					if (StringUtil.hasText(contextPath)) {
+						return contextPath;
+					}
 				}
 			}
 		}
