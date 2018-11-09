@@ -32,7 +32,6 @@ public class ContextPath {
 			"server.servlet.contextPath");
 
 	public static String getContextPath(String bootVersion, String environment) {
-
 		if (environment != null) {
 			JSONObject env = new JSONObject(environment);
 

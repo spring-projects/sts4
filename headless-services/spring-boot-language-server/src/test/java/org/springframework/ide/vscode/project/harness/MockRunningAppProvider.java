@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +18,7 @@ import java.util.Collection;
 
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
@@ -66,11 +66,6 @@ public class MockRunningAppProvider {
 			this.runningAppProvider = runningAppProvider;
 		}
 
-		public MockAppBuilder enviroment(String env) throws Exception {
-			when(app.getEnvironment()).thenReturn(env);
-			return this;
-		}
-
 		public MockAppBuilder beans(String beans) throws Exception {
 			return beans(LiveBeansModel.parse(beans));
 		}
@@ -93,6 +88,12 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder contextPath(String contextPath) throws Exception {
+			when(app.getContextPath()).thenReturn(contextPath);
+			return this;
+		}
+
+		public MockAppBuilder contextPathEnvJson(String bootVersion, String envJson) throws Exception {
+			String contextPath = ContextPath.getContextPath(bootVersion, envJson);
 			when(app.getContextPath()).thenReturn(contextPath);
 			return this;
 		}
