@@ -43,6 +43,8 @@ public class ContextPath {
 	private static String findContextPath(JSONObject env, String contextPathProp) {
 		String contextPath = null;
 		if (env != null) {
+			// Properties defined in command line args have higher priority over
+			// those defined in application configuration files (properties/yaml files)
 			contextPath = findInCommandLineArgs(env, contextPathProp);
 			if (contextPath == null) {
 				contextPath = findInApplicationConfig(env, contextPathProp);
