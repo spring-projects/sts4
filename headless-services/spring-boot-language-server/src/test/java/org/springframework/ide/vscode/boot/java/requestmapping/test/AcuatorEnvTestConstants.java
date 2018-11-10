@@ -14,7 +14,7 @@ public class AcuatorEnvTestConstants {
 
 	// Kebab Case: `server.servlet.context-path`
 	// REAL `/env` from actuator data from a Boot 2.x JSON from an actual running app that contains 3 different definitions for server context path.
-	public static final String BOOT_2x_ENV_CONTEX_PATH_KEBAB_CASE = "{\"activeProfiles\":[],\"propertySources\":[{\"name\":\"server.ports\",\"properties\":{\"local.server.port\":{\"value\":8080}}},"
+	public static final String BOOT_2x_ENV_CONTEXT_PATH_KEBAB_CASE = "{\"activeProfiles\":[],\"propertySources\":[{\"name\":\"server.ports\",\"properties\":{\"local.server.port\":{\"value\":8080}}},"
 			// context-path defined in command line args
 			+ "{\"name\":\"commandLineArgs\",\"properties\":{\"spring.output.ansi.enabled\":{\"value\":\"always\"},\"server.servlet.context-path\":{\"value\":\"/pathfromcommandlineargs\"}}}"
 			// Ignore this line. Extra information not needed for context path tests
@@ -27,7 +27,7 @@ public class AcuatorEnvTestConstants {
 
 	// Camel Case: `server.servlet.contextPath`
 	// REAL `/env` from actuator data from a Boot 2.x JSON from an actual running app that contains 3 different definitions for server context path.
-	public static final String BOOT_2x_ENV_CONTEX_PATH_CAMEL_CASE = "{\"activeProfiles\":[],\"propertySources\":[{\"name\":\"server.ports\",\"properties\":{\"local.server.port\":{\"value\":8080}}},"
+	public static final String BOOT_2x_ENV_CONTEXT_PATH_CAMEL_CASE = "{\"activeProfiles\":[],\"propertySources\":[{\"name\":\"server.ports\",\"properties\":{\"local.server.port\":{\"value\":8080}}},"
 				// context-path defined in command line args
 				+ "{\"name\":\"commandLineArgs\",\"properties\":{\"spring.output.ansi.enabled\":{\"value\":\"always\"},\"server.servlet.contextPath\":{\"value\":\"/pathfromcommandlineargs\"}}}"
 				// Ignore this line. Extra information not needed for context path tests
