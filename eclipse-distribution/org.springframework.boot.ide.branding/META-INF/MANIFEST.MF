@@ -14,3 +14,4 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.osgi.service.datalocation,
  org.osgi.framework
+Eclipse-BundleShape: dir
