@@ -29,7 +29,7 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 @OverrideAutoConfiguration(enabled=false)
 @ImportAutoConfiguration(classes=LanguageServerAutoConf.class)
 @SpringBootTest(classes={
-		BootLanguagServerBootApp.class,
+		BootLanguagServerBootApp.class
 })
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public @interface BootLanguageServerTest {

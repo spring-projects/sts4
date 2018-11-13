@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
@@ -21,6 +22,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts;
@@ -32,10 +34,12 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 
-@Configuration public class PropertyEditorTestConf {
+@Configuration
+@Import(AdHocPropertyHarnessTestConf.class)
+public class PropertyEditorTestConf {
 
-	@Bean PropertyIndexHarness indexHarness() {
-		return new PropertyIndexHarness();
+	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
+		return new PropertyIndexHarness(valueProviders);
 	}
 
 	@Bean MockRunningAppProvider mockAppsHarness() {
@@ -53,15 +57,14 @@ import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 		return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, defaultLanguageId, defaultFileExtension);
 	}
 
-	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
-		JavaProjectFinder projectFinder = indexHarness().getProjectFinder();
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, PropertyIndexHarness indexHarness) {
+		JavaProjectFinder projectFinder = indexHarness.getProjectFinder();
 		TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(projectFinder.find(new TextDocumentIdentifier(doc.getUri())));
 
 		return new BootLanguageServerParams(
 				projectFinder,
 				ProjectObserver.NULL,
-				indexHarness().getIndexProvider(),
-				indexHarness().getAdHocIndexProvider(),
+				indexHarness.getIndexProvider(),
 				typeUtilProvider,
 				mockAppsHarness().provider,
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL

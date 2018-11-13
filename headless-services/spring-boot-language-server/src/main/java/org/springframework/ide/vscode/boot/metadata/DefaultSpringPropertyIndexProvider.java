@@ -22,17 +22,17 @@ import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
-	
+
 	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager;
-	
+
 	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
-	
-	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver) {
+
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, ValueProviderRegistry valueProviders) {
 		this.javaProjectFinder = javaProjectFinder;
-		this.indexManager = new SpringPropertiesIndexManager(ValueProviderRegistry.getDefault(), projectObserver);
+		this.indexManager = new SpringPropertiesIndexManager(valueProviders, projectObserver);
 	}
-	
+
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
 		Optional<IJavaProject> jp = javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()));

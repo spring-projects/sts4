@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 
 /**
  * Index Navigation tests.
- * 
+ *
  * @author Kris De Volder
  * @author Alex Boyko
  *
@@ -27,7 +27,7 @@ public class IndexNavigatorTest {
 
 	@Test
 	public void testSimple() throws Exception {
-		PropertyIndexHarness harness = new PropertyIndexHarness();
+		PropertyIndexHarness harness = indexHarness();
 		harness.defaultTestData();
 
 		start(harness);
@@ -43,9 +43,13 @@ public class IndexNavigatorTest {
 		assertEmpty();
 	}
 
+	private PropertyIndexHarness indexHarness() {
+		return new PropertyIndexHarness(new ValueProviderRegistry());
+	}
+
 	@Test
 	public void testPartialName() throws Exception {
-		PropertyIndexHarness harness = new PropertyIndexHarness();
+		PropertyIndexHarness harness = indexHarness();
 		harness.defaultTestData();
 
 		start(harness);
@@ -60,7 +64,7 @@ public class IndexNavigatorTest {
 
 	@Test
 	public void testAmbiguous() throws Exception {
-		PropertyIndexHarness harness = new PropertyIndexHarness();
+		PropertyIndexHarness harness = indexHarness();
 		harness.defaultTestData();
 
 		harness.data("foo.bar", "java.lang.String", null, "Foo dot bar");
@@ -130,7 +134,7 @@ public class IndexNavigatorTest {
 	public void navigate(String propName) {
 		navigator = navigator.selectSubProperty(propName);
 	}
-	
-	
+
+
 
 }

@@ -62,7 +62,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 			return UNTARGETTED_INSTANCE;
 		}
 	);
-	
+
 	private static <K,V> Function<K,V> applyOn(long duration, TimeUnit unit, Function<K,V> func) {
 		Cache<K,V> cache = CacheBuilder.newBuilder().expireAfterAccess(duration, unit).expireAfterWrite(duration, unit).build();
 		return (k) -> {

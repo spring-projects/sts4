@@ -30,9 +30,14 @@ import reactor.util.function.Tuples;
  * @author Alex Boyko
  */
 public class LoggerNameProvider extends CachingValueProvider {
-	
-	private  static final ValueProviderStrategy INSTANCE = new LoggerNameProvider();
-	public static final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> INSTANCE;
+
+	private final SpringPropertyIndexProvider adhocProperties;
+
+	public LoggerNameProvider(SpringPropertyIndexProvider adhocProperties) {
+		this.adhocProperties = adhocProperties;
+	}
+
+	public final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> this;
 
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
@@ -48,5 +53,4 @@ public class LoggerNameProvider extends CachingValueProvider {
 		.flatMapIterable(l -> l)
 		.map(t -> t.getT1());
 	}
-
 }

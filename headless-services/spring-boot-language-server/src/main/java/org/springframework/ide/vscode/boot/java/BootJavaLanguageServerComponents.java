@@ -63,6 +63,7 @@ import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
+import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
@@ -108,7 +109,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
 
-	public BootJavaLanguageServerComponents(SimpleLanguageServer server, BootLanguageServerParams serverParams, SourceLinks sourceLinks, CompilationUnitCache cuCache) {
+	public BootJavaLanguageServerComponents(
+			SimpleLanguageServer server,
+			BootLanguageServerParams serverParams,
+			SourceLinks sourceLinks,
+			CompilationUnitCache cuCache,
+			SpringPropertyIndexProvider adHocIndexProvider
+	) {
 		this.server = server;
 		this.serverParams = serverParams;
 
@@ -119,7 +126,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		this.cuCache = cuCache;
 
 		propertyIndexProvider = serverParams.indexProvider;
-		adHocPropertyIndexProvider = serverParams.adHocIndexProvider;
+		this.adHocPropertyIndexProvider = adHocIndexProvider;
 
 		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
 		SimpleTextDocumentService documents = server.getTextDocumentService();

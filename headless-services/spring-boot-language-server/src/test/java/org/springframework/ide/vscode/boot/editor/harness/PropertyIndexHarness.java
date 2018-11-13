@@ -34,15 +34,9 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class PropertyIndexHarness {
 
+	private final ValueProviderRegistry valueProviders;
 	private Map<String, ConfigurationMetadataProperty> datas = new LinkedHashMap<>();
-	private ValueProviderRegistry valueProviders = ValueProviderRegistry.getDefault();
 	private SpringPropertyIndex index = null;
-	private FuzzyMap<PropertyInfo> adHocProperties = new FuzzyMap<PropertyInfo>() {
-		@Override
-		protected String getKey(PropertyInfo entry) {
-			return entry.getId();
-		}
-	};
 	private IJavaProject testProject = null;
 
 	protected final SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
@@ -60,9 +54,11 @@ public class PropertyIndexHarness {
 			}
 		}
 	};
-	
-	protected final SpringPropertyIndexProvider adHocIndexProvider = doc -> adHocProperties;
-	
+
+		public PropertyIndexHarness(ValueProviderRegistry valueProviders) {
+		this.valueProviders = valueProviders;
+	}
+
 	public synchronized void useProject(IJavaProject p) throws Exception {
 		index = null;
 		this.testProject = p;
@@ -572,16 +568,8 @@ public class PropertyIndexHarness {
 		return indexProvider;
 	}
 
-	public SpringPropertyIndexProvider getAdHocIndexProvider() {
-		return adHocIndexProvider;
-	}
-
 	public JavaProjectFinder getProjectFinder() {
 		return (doc) -> Optional.ofNullable(testProject);
-	}
-
-	public void adHoc(String adHocPropertyId) {
-		adHocProperties.add(new PropertyInfo(adHocPropertyId, null, null, null, null, null, null, null, null, null, null));
 	}
 
 	public IJavaProject getTestProject() {

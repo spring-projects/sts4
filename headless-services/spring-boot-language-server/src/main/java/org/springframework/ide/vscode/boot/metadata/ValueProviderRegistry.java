@@ -32,26 +32,6 @@ import reactor.core.publisher.Flux;
  */
 public class ValueProviderRegistry {
 
-	private static ValueProviderRegistry DEFAULT;
-
-	/**
-	 * Creates a default {@link ValueProviderRegistry} which is initialized with all the known
-	 * providers. (This is the one production code should use, test code might make use
-	 * something else for mocking purposes).
-	 */
-	public synchronized static ValueProviderRegistry getDefault() {
-		if (DEFAULT==null) {
-			DEFAULT = new ValueProviderRegistry();
-			DEFAULT.initializeDefaults(DEFAULT);
-		}
-		return DEFAULT;
-	}
-
-	protected void initializeDefaults(ValueProviderRegistry r) {
-		def("logger-name", LoggerNameProvider.FACTORY);
-		def("class-reference", ClassReferenceProvider.FACTORY);
-	}
-
 	private Map<String, Function<Map<String, Object>, ValueProviderStrategy>> registry = new HashMap<>();
 
 	public interface ValueProviderStrategy {
