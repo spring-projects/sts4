@@ -36,8 +36,6 @@ import reactor.util.function.Tuples;
  * @author Martin Lippert
  */
 public class DataRepositorySymbolProvider implements SymbolProvider {
-	
-	private static final String REPOSITORY_TYPE = "org.springframework.data.repository.Repository";
 
 	@Override
 	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
@@ -96,10 +94,10 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 				simplifiedType = resolvedType.getQualifiedName();
 			}
 
-			if (REPOSITORY_TYPE.equals(simplifiedType)) {
+			if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
 				String beanName = getBeanName(typeDeclaration);
 				String beanType = resolvedInterface.getName();
-				
+
 				String domainType = null;
 				if (resolvedInterface.isParameterizedType()) {
 					ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();

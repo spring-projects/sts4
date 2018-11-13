@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.scope;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -30,10 +28,8 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class ScopeCompletionProcessor implements CompletionProvider {
 
 	@Override
-	public Collection<ICompletionProposal> provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
-			int offset, IDocument doc) {
-
-		List<ICompletionProposal> result = new ArrayList<>();
+	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
+			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
 			if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair) {
@@ -43,7 +39,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 				if ("value".equals(memberPair.getName().toString()) && memberPair.getValue().toString().equals("$missing$")) {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
-						result.add(proposal);
+						completions.add(proposal);
 					}
 				}
 			}
@@ -51,7 +47,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 			else if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 					ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
-					result.add(proposal);
+					completions.add(proposal);
 				}
 			}
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
@@ -61,7 +57,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
 							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
-							result.add(proposal);
+							completions.add(proposal);
 						}
 					}
 				}
@@ -75,7 +71,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
 							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
-							result.add(proposal);
+							completions.add(proposal);
 						}
 					}
 				}
@@ -84,8 +80,10 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
 
-		return result;
+	@Override
+	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 }

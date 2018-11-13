@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
+import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
@@ -257,45 +258,44 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	protected ICompletionEngine createCompletionEngine(
 			JavaProjectFinder javaProjectFinder,
 			SpringPropertyIndexProvider indexProvider,
-			SpringPropertyIndexProvider adHocIndexProvider
-	) {
+			SpringPropertyIndexProvider adHocIndexProvider)
+	{
 		Map<String, CompletionProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
-				new ScopeCompletionProcessor());
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
-				new ValueCompletionProcessor(indexProvider, adHocIndexProvider));
+		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
+		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(indexProvider, adHocIndexProvider));
+		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 
 		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
-		snippetManager.add(
-				new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-						ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
-								"org.springframework.web.bind.annotation.RequestMethod",
-								"org.springframework.web.bind.annotation.RequestParam"),
-						"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
-								+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
-								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-		snippetManager
-				.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-						ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
-								"org.springframework.web.bind.annotation.RequestParam"),
-						"@GetMapping(value=\"${path}\")\n"
-								+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
-								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-		snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
-						"org.springframework.web.bind.annotation.RequestBody"),
-				"@PostMapping(value=\"${path}\")\n"
-						+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
-						+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
-		snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
-						"org.springframework.web.bind.annotation.RequestBody",
-						"org.springframework.web.bind.annotation.PathVariable"),
-				"@PutMapping(value=\"${path}/{${id}}\")\n"
-						+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
-						+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
+//		snippetManager.add(
+//				new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+//						ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
+//								"org.springframework.web.bind.annotation.RequestMethod",
+//								"org.springframework.web.bind.annotation.RequestParam"),
+//						"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
+//								+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
+//								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+//		snippetManager
+//				.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+//						ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
+//								"org.springframework.web.bind.annotation.RequestParam"),
+//						"@GetMapping(value=\"${path}\")\n"
+//								+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
+//								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+//		snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
+//				CompletionItemKind.Method,
+//				ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
+//						"org.springframework.web.bind.annotation.RequestBody"),
+//				"@PostMapping(value=\"${path}\")\n"
+//						+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
+//						+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
+//		snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
+//				CompletionItemKind.Method,
+//				ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
+//						"org.springframework.web.bind.annotation.RequestBody",
+//						"org.springframework.web.bind.annotation.PathVariable"),
+//				"@PutMapping(value=\"${path}/{${id}}\")\n"
+//						+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
+//						+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
 		return new BootJavaCompletionEngine(this, providers, snippetManager);
 	}
 
