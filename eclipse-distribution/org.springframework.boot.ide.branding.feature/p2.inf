@@ -1,0 +1,7 @@
+# tell pde.build not to generate start levels
+org.eclipse.pde.build.append.startlevels=false
+
+# add requirement on org.eclipse.platform.ide
+requires.1.namespace=org.eclipse.equinox.p2.iu
+requires.1.name=org.eclipse.platform.ide
+requires.1.greedy=true

@@ -7,25 +7,28 @@
 
    <launcherArgs>
       <programArgs>-product org.springframework.boot.ide.branding.sts4
---launcher.defaultAction
-openFile</programArgs>
+--launcher.defaultAction openFile
+</programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=1.8
+-Xms256m
+-Xmx1024m
+-XX:+UseG1GC
+-XX:+UseStringDeduplication
 --add-modules=ALL-SYSTEM
--Xms40m</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
-         <argsX86_64>-Xmx1200m</argsX86_64>
+      </vmArgs>
+      <vmArgsLin>
+      </vmArgsLin>
+      <vmArgsMac>-XstartOnFirstThread
+-Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
       </vmArgsMac>
       <vmArgsWin>
-         <argsX86_64>-Xmx1200m</argsX86_64>
       </vmArgsWin>
-      <vmArgsLin>
-         <argsX86_64>-Xmx1200m</argsX86_64>
-      </vmArgsLin>
    </launcherArgs>
 
    <windowImages i16="/org.springframework.boot.ide.branding/sts4-16.png" i32="/org.springframework.boot.ide.branding/sts4-32.png" i48="/orgorg.springframework.boot.ide.branding/sts4-48.png" i64="/org.springframework.boot.ide.branding/sts4-64.png" i128="/org.springframework.boot.ide.branding/sts4-128.png"/>
 
    <splash
+      location="org.springframework.boot.ide.branding"
       startupProgressRect="0,225,455,15"
       startupMessageRect="7,220,441,20"
       startupForegroundColor="c1d72e" />
@@ -40,8 +43,8 @@ openFile</programArgs>
       <linux icon="../org.springframework.boot.ide.branding/sts4.xpm"/>
    </launcher>
 
-   <vm>
-   </vm>
+   <plugins>
+   </plugins>
 
    <features>
       <feature id="org.eclipse.platform" installMode="root"/>
@@ -95,20 +98,13 @@ openFile</programArgs>
 
       <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/>
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
-
    </features>
+
 
    <configurations>
    	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
    	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
-   	  <property name="osgi.splashPath" value="platform:/base/plugins/org.springframework.boot.ide.branding"/>
-   	  
-   	  <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
-   	  <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-   	  <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
-   	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
-   	  <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" />
-   	  <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="4" />
    </configurations>
+
 
 </product>
