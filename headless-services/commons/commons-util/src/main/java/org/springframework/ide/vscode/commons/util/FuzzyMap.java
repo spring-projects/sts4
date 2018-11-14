@@ -18,9 +18,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.StringUtil;
-
 /**
  * A collection of data that can be searched with a simple 'fuzzy' string
  * matching algorithm. Clients must override 'getKey' method to define how
@@ -165,6 +162,10 @@ public abstract class FuzzyMap<E> implements Iterable<E> {
 
 	public int size() {
 		return entries.size();
+	}
+
+	public TreeMap<String, E> getTreeMap() {
+		return entries;
 	}
 
 }

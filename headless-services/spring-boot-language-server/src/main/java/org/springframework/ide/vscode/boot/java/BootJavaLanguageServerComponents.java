@@ -64,6 +64,7 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
@@ -97,7 +98,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final BootLanguageServerParams serverParams;
 	private final SpringIndexer indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
-	private final SpringPropertyIndexProvider adHocPropertyIndexProvider;
+	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
@@ -114,7 +115,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			BootLanguageServerParams serverParams,
 			SourceLinks sourceLinks,
 			CompilationUnitCache cuCache,
-			SpringPropertyIndexProvider adHocIndexProvider
+			ProjectBasedPropertyIndexProvider adHocIndexProvider
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
@@ -264,13 +265,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	protected ICompletionEngine createCompletionEngine(
 			JavaProjectFinder javaProjectFinder,
 			SpringPropertyIndexProvider indexProvider,
-			SpringPropertyIndexProvider adHocIndexProvider
+			ProjectBasedPropertyIndexProvider adHocIndexProvider
 	) {
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
 				new ScopeCompletionProcessor());
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
-				new ValueCompletionProcessor(indexProvider, adHocIndexProvider));
+				new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocIndexProvider));
 
 		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
 		snippetManager.add(

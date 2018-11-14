@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -25,11 +26,15 @@ import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.InsertTextFormat;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
@@ -41,9 +46,11 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class ValueCompletionProcessor implements CompletionProvider {
 
 	private final SpringPropertyIndexProvider indexProvider;
-	private SpringPropertyIndexProvider adHocIndexProvider;
+	private final ProjectBasedPropertyIndexProvider adHocIndexProvider;
+	private final JavaProjectFinder projectFinder;
 
-	public ValueCompletionProcessor(SpringPropertyIndexProvider indexProvider, SpringPropertyIndexProvider adHocIndexProvider) {
+	public ValueCompletionProcessor(JavaProjectFinder projectFinder, SpringPropertyIndexProvider indexProvider, ProjectBasedPropertyIndexProvider adHocIndexProvider) {
+		this.projectFinder = projectFinder;
 		this.indexProvider = indexProvider;
 		this.adHocIndexProvider = adHocIndexProvider;
 	}
@@ -206,10 +213,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		}
 
 		//Then also add 'ad-hoc' properties (see https://www.pivotaltracker.com/story/show/153107266).
-		index = adHocIndexProvider.getIndex(doc);
-		for (Match<PropertyInfo> m : index.find(prefix)) {
-			if (suggestedKeys.add(m.data.getId())) {
-				matches.add(m);
+		Optional<IJavaProject> p = projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
+		if (p.isPresent()) {
+			index = adHocIndexProvider.getIndex(p.get());
+			for (Match<PropertyInfo> m : index.find(prefix)) {
+				if (suggestedKeys.add(m.data.getId())) {
+					matches.add(m);
+				}
 			}
 		}
 		return matches;

@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
+import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
@@ -59,8 +60,9 @@ import com.google.common.io.Files;
 @Import(PropertyEditorTestConf.class)
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
-	@Autowired
-	private DefinitionLinkAsserts definitionLinkAsserts;
+	@Autowired DefinitionLinkAsserts definitionLinkAsserts;
+	@Autowired AdHocPropertyHarness adHocProperties;
+
 
 	@Configuration static class TestConf {
 		@Bean LanguageId defaultLanguageId() {
@@ -1146,6 +1148,30 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"fatal",
 				"off"
 		);
+	}
+
+	@Test public void userDefinedLoggerGroups() throws Exception {
+		useProject(createPredefinedMavenProject("empty-boot-2.1.0-app"));
+
+		adHocProperties.add("logging.group.foobar");
+		adHocProperties.add("logging.group.user-defined");
+
+		assertCompletionWithLabel(
+				"logging.level.<*>"
+				, //==============
+				"user-defined",
+				//=>
+				"logging.level.user-defined=<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging.level.<*>"
+				, //==============
+				"foobar",
+				//=>
+				"logging.level.foobar=<*>"
+		);
+
 	}
 
 	@Test public void testPropertyMapKeyCompletions() throws Exception {

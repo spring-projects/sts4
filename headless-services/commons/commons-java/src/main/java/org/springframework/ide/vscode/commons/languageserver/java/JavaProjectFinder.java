@@ -25,9 +25,9 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
  * @author Kris De Volder
  */
 public interface JavaProjectFinder {
-	
+
 	Optional<IJavaProject> find(TextDocumentIdentifier doc);
-	
+
 	default JavaProjectFinder filter(Predicate<IJavaProject> acceptWhen) {
 		return doc -> this.find(doc).flatMap(jp -> {
 			if (acceptWhen.test(jp)) {

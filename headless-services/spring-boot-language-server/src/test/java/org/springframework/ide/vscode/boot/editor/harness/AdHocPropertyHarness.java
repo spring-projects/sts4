@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.editor.harness;
 
+import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
@@ -23,9 +24,9 @@ public class AdHocPropertyHarness {
 		}
 	};
 
-	protected final SpringPropertyIndexProvider adHocIndexProvider = doc -> adHocProperties;
+	protected final ProjectBasedPropertyIndexProvider adHocIndexProvider = project -> adHocProperties;
 
-	public SpringPropertyIndexProvider getIndexProvider() {
+	public ProjectBasedPropertyIndexProvider getIndexProvider() {
 		return adHocIndexProvider;
 	}
 

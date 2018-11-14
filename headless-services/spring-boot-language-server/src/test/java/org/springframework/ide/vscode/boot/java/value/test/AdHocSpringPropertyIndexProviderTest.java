@@ -33,8 +33,7 @@ public class AdHocSpringPropertyIndexProviderTest {
 		);
 		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
 
-		TextDocument doc = new TextDocument(project.uri("src/main/java/SomeClass.java"), LanguageId.JAVA);
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				//alphabetic order
 				"some-adhoc-bar",
 				"some-adhoc-foo"
@@ -52,8 +51,7 @@ public class AdHocSpringPropertyIndexProviderTest {
 		);
 		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
 
-		TextDocument doc = new TextDocument(project.uri("src/main/java/SomeClass.java"), LanguageId.JAVA);
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				//alphabetic order
 				"from-yaml.adhoc.bar",
 				"from-yaml.adhoc.foo"
@@ -68,19 +66,18 @@ public class AdHocSpringPropertyIndexProviderTest {
 		);
 
 		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
-		TextDocument doc = new TextDocument(project.uri("src/main/java/SomeClass.java"), LanguageId.JAVA);
 
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"initial-property"
 		);
 
 		project.ensureFile("new-sourcefolder/application.properties", "new-property=whatever");
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"initial-property"
 		);
 
 		project.createSourceFolder("new-sourcefolder");
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"initial-property",
 				"new-property"
 		);
@@ -94,19 +91,18 @@ public class AdHocSpringPropertyIndexProviderTest {
 		);
 
 		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, projects.fileObserver);
-		TextDocument doc = new TextDocument(project.uri("src/main/java/SomeClass.java"), LanguageId.JAVA);
 
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"initial-property"
 		);
 
 		project.ensureFile("src/main/resources/application.properties", "from-properties=whatever");
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"from-properties"
 		);
 
 		project.ensureFile("src/main/resources/application.yml", "from-yaml: whatever");
-		assertProperties(indexer.getIndex(doc),
+		assertProperties(indexer.getIndex(project),
 				"from-properties",
 				"from-yaml"
 		);

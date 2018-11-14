@@ -61,6 +61,7 @@ public class ValueCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private IJavaProject testProject;
+	@Autowired private JavaProjectFinder projectFinder;
 
 	private Editor editor;
 
@@ -121,7 +122,7 @@ public class ValueCompletionTest {
 
 	@Test
 	public void testPrefixIdentification() {
-		ValueCompletionProcessor processor = new ValueCompletionProcessor(null, null);
+		ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
 
 		assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
 		assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
