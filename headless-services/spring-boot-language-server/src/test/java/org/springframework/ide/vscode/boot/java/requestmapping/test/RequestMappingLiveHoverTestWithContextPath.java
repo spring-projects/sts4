@@ -40,13 +40,15 @@ public class RequestMappingLiveHoverTestWithContextPath {
 	}
 
 	@Test
-	public void testActuatorEnvOrderedPropertySourceCamelCase() throws Exception {
-		// Tests an actuator env json that contains camel case context path in command line arg and application config.
+	public void testBoot1xActualActuatorEnvProp() throws Exception {
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
 				.toString();
+
+		String bootVersion = "1.x";
+
 
 		// Build a mock running boot app
 		mockAppProvider.builder()
@@ -59,7 +61,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			// mock app to return realistic results if possible
 			.requestMappingsJson(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
-			.contextPathEnvJson("2.x", AcuatorEnvTestConstants.BOOT_2x_ENV_CONTEXT_PATH_CAMEL_CASE)
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_ENV)
 			.build();
 
 		harness.intialize(directory);
@@ -67,22 +69,22 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		// test that the command line arg context path appears
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/pathfromcommandlineargs/hello-world](http://cfapps.io:1111/pathfromcommandlineargs/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromEnv/hello-world](http://cfapps.io:1111/fromEnv/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
 	}
 
 	@Test
-	public void testActuatorEnvOrderedPropertySourceKebabCase() throws Exception {
+	public void testBoot1xActualActuatorCommandArgCamel() throws Exception {
 
-		// Tests an actuator env json that contains kebab case context path in command line arg and application config.
 
 		File directory = new File(
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
 				.toString();
+
+		String bootVersion = "1.x";
 
 		// Build a mock running boot app
 		mockAppProvider.builder()
@@ -95,7 +97,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			// mock app to return realistic results if possible
 			.requestMappingsJson(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
-			.contextPathEnvJson("2.x", AcuatorEnvTestConstants.BOOT_2x_ENV_CONTEXT_PATH_KEBAB_CASE)
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_COMMAND_LINE_ARG_CAMEL_CASE)
 			.build();
 
 		harness.intialize(directory);
@@ -103,12 +105,345 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		// test that the command line arg context path appears
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/pathfromcommandlineargs/hello-world](http://cfapps.io:1111/pathfromcommandlineargs/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
 	}
+
+	@Test
+	public void testBoot1xActualActuatorCommandArgKebab() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "1.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_COMMAND_LINE_ARG_KEBAB_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot1xActualActuatorAppConfigFileKebab() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "1.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_APP_CONFIG_FILE_KEBAB_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot1xActualActuatorAppConfigFileCamel() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "1.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_APP_CONFIG_FILE_CAMEL_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorEnvProp() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_ENV)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromenvironment/hello-world](http://cfapps.io:1111/fromenvironment/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorCommandArgCamel() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_COMMAND_LINE_ARG_CAMEL_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorCommandArgKebab() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_COMMAND_LINE_ARG_KEBAB_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorAppConfigFileKebab() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_APP_CONFIG_FILE_KEBAB_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorAppConfigFileCamel() throws Exception {
+
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_APP_CONFIG_FILE_CAMEL_CASE)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
+	@Test
+	public void testBoot2xActualActuatorPropertySourcePriority() throws Exception {
+
+		//  Test that for Boot 2.x, if context path property appears in three different sources:
+		//   env var, command line arg, and app config file, that the highest priority source is read, in this case command line arg
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri()
+				.toString();
+
+		String bootVersion = "2.x";
+
+
+		// Build a mock running boot app
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.port("1111")
+			.processId("22022")
+			.host("cfapps.io")
+			.processName("test-request-mapping-live-hover")
+			// Ugly, but this is real JSON copied from a real live running app. We want the
+			// mock app to return realistic results if possible
+			.requestMappingsJson(
+				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_PROPERTY_SOURCE_PRIORITY)
+			.build();
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
+
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+				"\n" +
+				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
+
+	}
+
 
 
 	@Test
@@ -125,7 +460,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
-			.contextPath("/adifferentpath")
+			.contextPath("/mockedpath")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -137,7 +472,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/adifferentpath/hello-world](http://cfapps.io:1111/adifferentpath/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/mockedpath/hello-world](http://cfapps.io:1111/mockedpath/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -158,7 +493,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("999")
 			.processId("76543")
 			.host("cfapps.io")
-			.contextPath("/differentPaath")
+			.contextPath("/mockedpath")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -185,8 +520,8 @@ public class RequestMappingLiveHoverTestWithContextPath {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/differentPaath/greetings](http://cfapps.io:999/differentPaath/greetings)  \n" +
-				"[http://cfapps.io:999/differentPaath/hello](http://cfapps.io:999/differentPaath/hello)  \n" +
+		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/mockedpath/greetings](http://cfapps.io:999/mockedpath/greetings)  \n" +
+				"[http://cfapps.io:999/mockedpath/hello](http://cfapps.io:999/mockedpath/hello)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
