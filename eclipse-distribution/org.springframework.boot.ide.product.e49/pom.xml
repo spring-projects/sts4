@@ -115,6 +115,7 @@
 
 								<exec executable="codesign" failonerror="true">
 									<arg value="--verbose"/>
+									<arg value="--force"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
@@ -162,6 +163,7 @@
 
 								<exec executable="codesign" failonerror="true">
 									<arg value="--verbose"/>
+									<arg value="--force"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
