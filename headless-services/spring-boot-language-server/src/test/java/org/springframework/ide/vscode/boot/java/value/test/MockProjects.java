@@ -153,15 +153,26 @@ public class MockProjects {
 			return root.isDirectory();
 		}
 
-		public void ensureFile(String projectRelativePath, String contents) throws Exception {
+		public File ensureFileNoEvents(String projectRelativePath, String contents) throws Exception {
+			return ensureFile(false, projectRelativePath, contents);
+		}
+
+		private File ensureFile(boolean fireEvents, String projectRelativePath, String contents) throws Exception {
 			File target = new File(root, projectRelativePath);
 			boolean existed = target.exists();
 			IOUtil.pipe(new ByteArrayInputStream(contents.getBytes("UTF8")), target);
-			if (existed) {
-				fileObserver.fileChanged(target);
-			} else {
-				fileObserver.fileCreated(target);
+			if (fireEvents) {
+				if (existed) {
+					fileObserver.fileChanged(target);
+				} else {
+					fileObserver.fileCreated(target);
+				}
 			}
+			return target;
+		}
+
+		public void ensureFile(String projectRelativePath, String contents) throws Exception {
+			ensureFile(true, projectRelativePath, contents);
 		}
 
 		public String uri(String projectRelativePath) {

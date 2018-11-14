@@ -12,10 +12,14 @@ package org.springframework.ide.vscode.boot.java.value.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.value.test.MockProjects.MockProject;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentSaveChange;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -23,6 +27,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class AdHocSpringPropertyIndexProviderTest {
 
 	private MockProjects projects = new MockProjects();
+	private MockDocumentEvents documents = new MockDocumentEvents();
 
 	@Test
 	public void parseProperties() throws Exception {
@@ -31,7 +36,7 @@ public class AdHocSpringPropertyIndexProviderTest {
 				"some-adhoc-foo=somefoo\n" +
 				"some-adhoc-bar=somebar\n"
 		);
-		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
 
 		assertProperties(indexer.getIndex(project),
 				//alphabetic order
@@ -41,15 +46,33 @@ public class AdHocSpringPropertyIndexProviderTest {
 	}
 
 	@Test
+	public void parseYamlWithList() throws Exception {
+		//Note: the LoggerNameProvider implementation relies on this behavior
+		MockProject project = projects.create("test-project");
+		project.ensureFile("src/main/resources/application.yml",
+			"from-yaml:\n" +
+			"  adhoc:\n" +
+			"    - one\n" +
+			"    - two\n"
+		);
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
+
+		assertProperties(indexer.getIndex(project),
+				"from-yaml.adhoc"
+		);
+
+	}
+
+	@Test
 	public void parseYaml() throws Exception {
 		MockProject project = projects.create("test-project");
 		project.ensureFile("src/main/resources/application.yml",
 			"from-yaml:\n" +
-					"  adhoc:\n" +
-					"    foo: somefoo\n" +
-					"    bar: somebar\n"
+			"  adhoc:\n" +
+			"    foo: somefoo\n" +
+			"    bar: somebar\n"
 		);
-		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
 
 		assertProperties(indexer.getIndex(project),
 				//alphabetic order
@@ -65,7 +88,7 @@ public class AdHocSpringPropertyIndexProviderTest {
 				"initial-property=somefoo\n"
 		);
 
-		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null);
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
 
 		assertProperties(indexer.getIndex(project),
 				"initial-property"
@@ -90,7 +113,7 @@ public class AdHocSpringPropertyIndexProviderTest {
 				"initial-property=somefoo\n"
 		);
 
-		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, projects.fileObserver);
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, projects.fileObserver, documents);
 
 		assertProperties(indexer.getIndex(project),
 				"initial-property"
@@ -102,6 +125,39 @@ public class AdHocSpringPropertyIndexProviderTest {
 		);
 
 		project.ensureFile("src/main/resources/application.yml", "from-yaml: whatever");
+		assertProperties(indexer.getIndex(project),
+				"from-properties",
+				"from-yaml"
+		);
+	}
+
+	@Test
+	public void respondsToDocumentSave() throws Exception {
+		MockProject project = projects.create("test-project");
+		project.ensureFile("src/main/resources/application.properties",
+				"initial-property=somefoo\n"
+		);
+
+		AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, projects.fileObserver, documents);
+
+		assertProperties(indexer.getIndex(project),
+				"initial-property"
+		);
+
+		File propsFile = project.ensureFileNoEvents("src/main/resources/application.properties", "from-properties=whatever");
+		assertProperties(indexer.getIndex(project),
+				"initial-property" //not changed yet because didn't fire change events.
+		);
+		documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toString(), LanguageId.BOOT_PROPERTIES)));
+		assertProperties(indexer.getIndex(project),
+				"from-properties"
+		);
+
+		project.ensureFileNoEvents("src/main/resources/application.yml", "from-yaml: whatever");
+		assertProperties(indexer.getIndex(project),
+				"from-properties"
+		);
+		documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toString(), LanguageId.BOOT_PROPERTIES_YAML)));
 		assertProperties(indexer.getIndex(project),
 				"from-properties",
 				"from-yaml"

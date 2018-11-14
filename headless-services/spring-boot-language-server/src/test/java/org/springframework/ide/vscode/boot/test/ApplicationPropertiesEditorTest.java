@@ -1155,6 +1155,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		adHocProperties.add("logging.group.foobar");
 		adHocProperties.add("logging.group.user-defined");
+		adHocProperties.add("logging.group.indexed[0]");
+		adHocProperties.add("logging.group.indexed[0]");
 
 		assertCompletionWithLabel(
 				"logging.level.<*>"
@@ -1170,6 +1172,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"foobar",
 				//=>
 				"logging.level.foobar=<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging.level.<*>"
+				, //==============
+				"indexed",
+				//=>
+				"logging.level.indexed=<*>"
 		);
 
 	}

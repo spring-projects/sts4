@@ -25,8 +25,10 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -51,7 +53,7 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 
 	private Cache<IJavaProject, SimplePropertyIndex> indexes;
 
-	public AdHocSpringPropertyIndexProvider(JavaProjectFinder projectFinder, ProjectObserver projectObserver, FileObserver fileObserver) {
+	public AdHocSpringPropertyIndexProvider(JavaProjectFinder projectFinder, ProjectObserver projectObserver, FileObserver fileObserver, DocumentEventListenerManager documents) {
 		this.indexes = CacheBuilder.newBuilder().build();
 		if (projectObserver != null) {
 			projectObserver.addListener(ProjectObserver.onAny(project -> indexes.invalidate(project)));
@@ -68,8 +70,15 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 				});
 			});
 		}
+		if (documents!=null) {
+			documents.onDidSave(saveEvent -> {
+				LanguageId language = saveEvent.getDocument().getLanguageId();
+				if (language.equals(LanguageId.BOOT_PROPERTIES) || language.equals(LanguageId.BOOT_PROPERTIES_YAML)) {
+					indexes.invalidateAll();
+				}
+			});
+		}
 	}
-
 
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IJavaProject jp) {
@@ -133,7 +142,6 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 		return null;
 	}
 
-
 	private void flattenProperties(String prefix, Node node, Properties props) {
 		switch (node.getNodeId()) {
 		case mapping:
@@ -153,6 +161,9 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 			props.put(prefix, NodeUtil.asScalar(node));
 			break;
 		default:
+			if (!prefix.isEmpty()) {
+				props.put(prefix, "<object>");
+			}
 			//Ignore other cases, might implement later if it makes sense.
 			break;
 		}

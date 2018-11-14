@@ -49,12 +49,18 @@ public class LoggerNameProvider extends CachingValueProvider {
 
 	Collection<String> loggerNames(IJavaProject jp) {
 		Builder<String> builder = ImmutableSet.builder();
-		SortedMap<String, PropertyInfo> index = adhocProperties.getIndex(jp).getTreeMap();
-		index = index.subMap(LOGGING_GROUPS_PREFIX, LOGGING_GROUPS_PREFIX+Character.MAX_VALUE);
-		for (String prop : index.keySet()) {
-			System.out.println(prop);
-			if (prop.startsWith(LOGGING_GROUPS_PREFIX)) {
-				builder.add(prop.substring(LOGGING_GROUPS_PREFIX.length()));
+		if (adhocProperties!=null) {
+			SortedMap<String, PropertyInfo> index = adhocProperties.getIndex(jp).getTreeMap();
+			index = index.subMap(LOGGING_GROUPS_PREFIX, LOGGING_GROUPS_PREFIX+Character.MAX_VALUE);
+			for (String prop : index.keySet()) {
+				if (prop.startsWith(LOGGING_GROUPS_PREFIX)) {
+					String groupName = prop.substring(LOGGING_GROUPS_PREFIX.length());
+					int bracket = groupName.indexOf('[');
+					if (bracket>=0) {
+						groupName = groupName.substring(0, bracket);
+					}
+					builder.add(groupName);
+				}
 			}
 		}
 		return builder.build();
