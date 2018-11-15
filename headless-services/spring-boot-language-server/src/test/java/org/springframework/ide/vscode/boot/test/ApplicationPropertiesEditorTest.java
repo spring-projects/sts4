@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType.PROP_DUPLICATE_KEY;
@@ -1150,7 +1151,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Test public void userDefinedLoggerGroups() throws Exception {
+	@Test public void userDefinedLoggingGroups() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-2.1.0-app"));
 
 		adHocProperties.add("logging.group.foobar");
@@ -1182,6 +1183,34 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"logging.level.indexed=<*>"
 		);
 
+	}
+
+	@Test public void userDefinedLoggingGroupsValueCompletions() throws Exception {
+		useProject(createPredefinedMavenProject("empty-boot-2.1.0-app"));
+
+		assertCompletionWithLabel(
+				"logging.group.whatever=demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging.group.whatever=com.example.demo<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging.group.whatever=stuff,demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging.group.whatever=stuff,com.example.demo<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging.group.whatever[0]=demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging.group.whatever[0]=com.example.demo<*>"
+		);
 	}
 
 	@Test public void testPropertyMapKeyCompletions() throws Exception {

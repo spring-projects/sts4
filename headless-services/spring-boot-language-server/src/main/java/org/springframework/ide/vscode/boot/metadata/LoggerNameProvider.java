@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
@@ -47,7 +48,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 
 	public final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> this;
 
-	Collection<String> loggerNames(IJavaProject jp) {
+	Collection<String> loggerGroupNames(IJavaProject jp) {
 		Builder<String> builder = ImmutableSet.builder();
 		if (adhocProperties!=null) {
 			SortedMap<String, PropertyInfo> index = adhocProperties.getIndex(jp).getTreeMap();
@@ -69,7 +70,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
 		return Flux.concat(
-			Flux.fromIterable(loggerNames(javaProject))
+			Flux.fromIterable(loggerGroupNames(javaProject))
 				.map(loggerName -> Tuples.of(StsValueHint.create(loggerName), FuzzyMatcher.matchScore(query, loggerName)))
 				.filter(t -> t.getT2()!=0.0),
 			javaProject.getIndex()
@@ -81,7 +82,8 @@ public class LoggerNameProvider extends CachingValueProvider {
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 		.flatMapIterable(l -> l)
-		.map(t -> t.getT1());
+		.map(t -> t.getT1())
+		.distinct(h -> h.getValue());
 	}
 
 }

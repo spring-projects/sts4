@@ -50,6 +50,11 @@ public class HintProviders {
 		public List<TypedProperty> getPropertyHints(String query) {
 			return ImmutableList.of();
 		}
+
+		@Override
+		public String toString() {
+			return "HintProvider.NULL";
+		}
 	};
 
 	/**
