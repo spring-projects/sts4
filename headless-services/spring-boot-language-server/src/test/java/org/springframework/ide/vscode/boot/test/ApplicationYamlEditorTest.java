@@ -256,6 +256,48 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test public void userDefinedLoggingGroupsValueCompletions() throws Exception {
+		useProject(createPredefinedMavenProject("empty-boot-2.1.0-app"));
+
+		assertCompletionWithLabel(
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever:\n" +
+				"    - demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever:\n" +
+				"    - com.example.demo<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever: demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever: com.example.demo<*>"
+		);
+
+		assertCompletionWithLabel(
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever: stuff,demo<*>"
+				, //==============
+				"com.example.demo",
+				//=>
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever: stuff,com.example.demo<*>"
+		);
+	}
+
 	///////////////////// ported tests from old STS code base ////////////////////////////////////////////////
 
 	@Test public void testHovers() throws Exception {

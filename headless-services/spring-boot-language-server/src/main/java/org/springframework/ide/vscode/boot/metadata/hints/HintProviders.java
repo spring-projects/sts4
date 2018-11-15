@@ -166,7 +166,7 @@ public class HintProviders {
 		return p == NULL || p==null;
 	}
 
-	public static HintProvider forMap(HintProvider _keyProvider, HintProvider _valueProvider, final Type valueType, final boolean dimensionAware) {
+	public static HintProvider forMap(HintProvider _keyProvider, HintProvider _valueProvider, final Type valueType) {
 		final HintProvider keyProvider = notNull(_keyProvider);
 		final HintProvider valueProvider = notNull(_valueProvider);
 		if (isNull(keyProvider) && isNull(valueProvider)) {
@@ -179,11 +179,7 @@ public class HintProviders {
 				switch (s.getType()) {
 				case VAL_AT_INDEX:
 				case VAL_AT_KEY:
-					if (dimensionAware) {
-						return forHere(valueProvider);
-					} else {
-						return forAllValueContexts(valueProvider);
-					}
+					return forAllValueContexts(valueProvider);
 				default:
 					return NULL;
 				}
@@ -191,12 +187,7 @@ public class HintProviders {
 
 			@Override
 			public List<StsValueHint> getValueHints(String query) {
-				if (dimensionAware) {
-					//pickier, completions only suggested in the domain of map, but not for map itself.
-					return ImmutableList.of();
-				} else {
-					return valueProvider.getValueHints(query);
-				}
+				return ImmutableList.of();
 			}
 
 			@Override

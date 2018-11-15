@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 
 public class CommonLanguageTools {
 
@@ -84,6 +85,15 @@ public class CommonLanguageTools {
 			PropertyInfo prop = index.findLongestCommonPrefixEntry(propertyName);
 			if (prop!=null) {
 				HintProvider hintProvider = prop.getHints(typeUtil, false);
+				if (prop.getId().length()<propertyName.length()) {
+					//true prefix
+					//TODO: properly process remaining portion of property name
+					try {
+						hintProvider = hintProvider.traverse(YamlPathSegment.valueAt(0));
+					} catch (Exception e) {
+						Log.log(e);
+					}
+				}
 				if (!HintProviders.isNull(hintProvider)) {
 					allHints.addAll(hintProvider.getValueHints(query));
 				}
