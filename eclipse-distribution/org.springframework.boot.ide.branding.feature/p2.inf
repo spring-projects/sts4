@@ -1,2 +1,0 @@
-# tell pde.build not to generate start levels
-org.eclipse.pde.build.append.startlevels=false
