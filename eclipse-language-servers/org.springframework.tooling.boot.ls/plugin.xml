@@ -36,7 +36,8 @@
       </content-type>
       <file-association
             content-type="org.springframework.boot.ide.properties.application.properties"
-            file-names="application.properties,application-dev.properties">
+            file-names="application.properties,application-dev.properties"
+            file-patterns="application-*.properties">
       </file-association>
    </extension>
    
@@ -50,7 +51,8 @@
       </content-type>
       <file-association
             content-type="org.springframework.boot.ide.properties.application.yml"
-            file-names="application.yml,bootstrap.yml,application-dev.yml">
+            file-names="application.yml,bootstrap.yml,application-dev.yml"
+            file-patterns="application-*.yml">
       </file-association>
    </extension>
 
