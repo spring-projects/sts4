@@ -501,7 +501,7 @@ public class ComponentInjectionsHoverProviderTest {
 				"	}\n" +
 				"}\n"
 		);
-		editor.assertHighlights("@Component", "AutowiredClass");
+		editor.assertHighlights("@Component", "AutowiredClass", "depA", "depB");
 		editor.assertTrimmedHover("@Component",
 				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +

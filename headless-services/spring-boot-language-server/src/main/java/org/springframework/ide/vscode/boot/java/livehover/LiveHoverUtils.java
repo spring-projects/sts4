@@ -17,21 +17,31 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
 public class LiveHoverUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(LiveHoverUtils.class);
 
 	public static final LiveBean CANT_MATCH_PROPER_BEAN = LiveBean.builder().id("UNKNOWN").build();
 
@@ -161,7 +171,7 @@ public class LiveHoverUtils {
 		try {
 			return niceAppName(app.getProcessID(), app.getProcessName());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return app.toString();
 		}
 	}
@@ -187,6 +197,27 @@ public class LiveHoverUtils {
 			return ImmutableList.of();
 		}
 
+	}
+
+	@SuppressWarnings("unchecked")
+	public static List<CodeLens> createCodeLensForMethodParameters(SpringBootApp app, IJavaProject project, MethodDeclaration method, TextDocument doc, List<LiveBean> wiredBeans) {
+		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
+		method.parameters().forEach(p -> {
+			if (p instanceof SingleVariableDeclaration) {
+				SingleVariableDeclaration parameter = (SingleVariableDeclaration) p;
+				List<LiveBean> parameterMatchingBean = AutowiredHoverProvider.findAutowiredBeans(project, parameter, wiredBeans);
+				if (parameterMatchingBean.size() == 0) {
+					log.warn("No Live Bean matching parameter `" + parameter.getName().getIdentifier() + " for method " + method);
+				} else {
+					try {
+						builder.add(new CodeLens(ASTUtils.nodeRegion(doc, parameter.getName()).asRange()));
+					} catch (BadLocationException e) {
+						// ignore
+					}
+				}
+			}
+		});
+		return builder.build();
 	}
 
 	public static StringBuilder createBeansTitlePlainText(Collection<LiveBean> beans, String prefix, int maxInlineBeansStringLength, String beansSeparator) {

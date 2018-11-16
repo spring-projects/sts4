@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
@@ -31,10 +32,16 @@ public interface HoverProvider {
 	default Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return null;
 	}
+
 	default Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return null;
 	}
+
 	default Hover provideHover(MethodDeclaration methodDeclaration, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+		return null;
+	}
+
+	default Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 		return null;
 	}
 

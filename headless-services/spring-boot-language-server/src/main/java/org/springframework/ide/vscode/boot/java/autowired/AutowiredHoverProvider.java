@@ -71,32 +71,30 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc,
+			SpringBootApp[] runningApps) {
+		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 		if (runningApps.length > 0) {
 			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
-			// Annotation is MarkerNode, parent is some field, method, variable declaration node.
+			// Annotation is MarkerNode, parent is some field, method, variable declaration
+			// node.
 			ASTNode declarationNode = annotation.getParent();
 			try {
 				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				return getLiveHoverHints(project, declarationNode, hoverRange, runningApps, definedBean);
+				for (SpringBootApp app : runningApps) {
+					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app,
+							definedBean);
+					if (!relevantBeans.isEmpty()) {
+						builder.addAll(LiveHoverUtils.createCodeLensesForBeans(hoverRange, relevantBeans,
+								BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH,
+								INLINE_BEANS_STRING_SEPARATOR));
+					}
+				}
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
 		}
-		return null;
-	}
-
-	private Collection<CodeLens> getLiveHoverHints(IJavaProject project, ASTNode declarationNode, Range range,
-			SpringBootApp[] runningApps, LiveBean definedBean) {
-		if (declarationNode != null && definedBean != null) {
-			for (SpringBootApp app : runningApps) {
-				List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
-				if (!relevantBeans.isEmpty()) {
-					return LiveHoverUtils.createCodeLensesForBeans(range, relevantBeans, BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
-				}
-			}
-		}
-		return null;
+		return builder.build();
 	}
 
 	@Override
@@ -125,16 +123,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 			StringBuilder hover = new StringBuilder();
 
-			boolean hasContent = false;
-
 			for (SpringBootApp app : runningApps) {
 
 				List<LiveBean> autowiredBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
 
 				if (!autowiredBeans.isEmpty()) {
-					if (!hasContent) {
-						hasContent = true;
-					} else {
+					if (hover.length() > 0) {
 						hover.append("  \n  \n");
 					}
 					createHoverContentForBeans(sourceLinks, project, hover, autowiredBeans);
@@ -145,7 +139,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 				}
 
 			}
-			if (hasContent) {
+			if (hover.length() > 0) {
 				return new Hover(ImmutableList.of(Either.forLeft(hover.toString())));
 			}
 		}
@@ -189,7 +183,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static List<LiveBean> findAutowiredBeans(IJavaProject project, ASTNode declarationNode, Collection<LiveBean> beans) {
+	public static List<LiveBean> findAutowiredBeans(IJavaProject project, ASTNode declarationNode, Collection<LiveBean> beans) {
 		if (declarationNode instanceof MethodDeclaration) {
 			MethodDeclaration methodDeclaration = (MethodDeclaration)declarationNode;
 			return ((List<Object>)methodDeclaration.parameters()).stream()
@@ -325,16 +319,54 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
-		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
-		try {
-			Range hoverRange = doc.toRange(methodDeclaration.getName().getStartPosition(), methodDeclaration.getName().getLength());
-			return getLiveHoverHints(project, methodDeclaration, hoverRange, runningApps, definedBean);
-		} catch (BadLocationException e) {
-			log.error("", e);
+	public Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc,
+			IJavaProject project, SpringBootApp[] runningApps) {
+		MethodDeclaration method = (MethodDeclaration) parameter.getParent();
+		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(method);
+		Hover hover = provideHover(definedBean, parameter, offset, doc, project, runningApps);
+		if (hover != null) {
+			SimpleName name = parameter.getName();
+			try {
+				hover.setRange(doc.toRange(name.getStartPosition(), name.getLength()));
+			} catch (BadLocationException e) {
+				log.error("", e);
+			}
 		}
-		return null;
+		return hover;
+	}
+
+	@Override
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration,
+			TextDocument doc, SpringBootApp[] runningApps) {
+		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
+		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
+		if (definedBean != null) {
+			try {
+				Range hoverRange = doc.toRange(methodDeclaration.getName().getStartPosition(),
+						methodDeclaration.getName().getLength());
+
+				for (SpringBootApp app : runningApps) {
+					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, methodDeclaration, app,
+							definedBean);
+					if (!relevantBeans.isEmpty()) {
+
+						// CodeLens for the method
+						builder.addAll(LiveHoverUtils.createCodeLensesForBeans(hoverRange, relevantBeans,
+								BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH,
+								INLINE_BEANS_STRING_SEPARATOR));
+
+						// CodeLenses for the method parameters. Only ranges just to provide a highlight
+						// for the hover
+						builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(app, project, methodDeclaration, doc, relevantBeans));
+
+					}
+				}
+			} catch (BadLocationException e) {
+				log.error("", e);
+			}
+
+		}
+		return builder.build();
 	}
 
 	private LiveBean getDefinedBeanForImplicitAutowiredConstructor(MethodDeclaration methodDeclaration) {

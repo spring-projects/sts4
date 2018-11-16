@@ -111,7 +111,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, nameRange.get(), typeDeclaration);
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, doc, nameRange.get(), typeDeclaration);
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 						}
 					}
@@ -145,8 +145,6 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		}
 		return null;
 	}
-
-
 
 	@Override
 	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans,
