@@ -53,8 +53,8 @@ public class DataRepositoryCompletionProcessorTest {
 	@Test
 	public void testStandardFindByCompletions() throws Exception {
 		prepareCase("{", "{<*>");
-		assertAnnotationCompletions(
-				"findByLastName<*>(String lastName);");
+		assertContainsAnnotationCompletions(
+				"List<Customer> findByLastName${1|(String lastName);,And,Or|}");
 	}
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
@@ -65,16 +65,20 @@ public class DataRepositoryCompletionProcessorTest {
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 
-	private void assertAnnotationCompletions(String... completedAnnotations) throws Exception {
+	private void assertContainsAnnotationCompletions(String... expectedResultsFromCompletion) throws Exception {
 		List<CompletionItem> completions = editor.getCompletions();
+
 		int i = 0;
-		for (String expectedCompleted : completedAnnotations) {
+		for (CompletionItem foundCompletion : completions) {
 			Editor clonedEditor = editor.clone();
-			clonedEditor.apply(completions.get(i++));
-			TestAsserts.assertContains(expectedCompleted, clonedEditor.getText());
+			clonedEditor.apply(foundCompletion);
+
+			if (clonedEditor.getText().contains(expectedResultsFromCompletion[i])) {
+				i++;
+			}
 		}
 
-		assertEquals(i, completions.size());
+		assertEquals(expectedResultsFromCompletion.length, i);
 	}
 
 
