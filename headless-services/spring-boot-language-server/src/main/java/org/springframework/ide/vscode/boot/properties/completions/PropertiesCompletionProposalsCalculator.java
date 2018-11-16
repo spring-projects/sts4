@@ -60,6 +60,7 @@ import com.google.common.collect.ImmutableList;
 public class PropertiesCompletionProposalsCalculator {
 
 	private static final PrefixFinder valuePrefixFinder = new PrefixFinder() {
+		@Override
 		protected boolean isPrefixChar(char c) {
 			return isValuePrefixChar(c);
 		}
@@ -67,12 +68,14 @@ public class PropertiesCompletionProposalsCalculator {
 	};
 
 	private static final PrefixFinder fuzzySearchPrefix = new PrefixFinder() {
+		@Override
 		protected boolean isPrefixChar(char c) {
 			return !Character.isWhitespace(c);
 		}
 	};
 
 	private static final PrefixFinder navigationPrefixFinder = new PrefixFinder() {
+		@Override
 		public String getPrefix(IDocument doc, int offset) {
 			String prefix = super.getPrefix(doc, offset);
 			//Check if character before looks like 'navigation'.. otherwise don't
@@ -96,11 +99,12 @@ public class PropertiesCompletionProposalsCalculator {
 			}
 			return 0;
 		}
+		@Override
 		protected boolean isPrefixChar(char c) {
 			return !Character.isWhitespace(c) && c!=']' && c!=']' && c!='.';
 		}
 	};
-	
+
 	private FuzzyMap<PropertyInfo> index;
 	private TypeUtil typeUtil;
 	private PropertyCompletionFactory completionFactory;
@@ -108,7 +112,7 @@ public class PropertiesCompletionProposalsCalculator {
 	private int offset;
 	private boolean preferLowerCaseEnums;
 	private AntlrParser parser;
-	
+
 	public PropertiesCompletionProposalsCalculator(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, PropertyCompletionFactory completionFactory, IDocument doc, int offset, boolean preferLowerCaseEnums) {
 		this.index = index;
 		this.typeUtil = typeUtil;
@@ -118,7 +122,7 @@ public class PropertiesCompletionProposalsCalculator {
 		this.preferLowerCaseEnums = preferLowerCaseEnums;
 		this.parser = new AntlrParser();
 	}
-	
+
 	/**
 	 * Create completions proposals in the context of a properties text editor.
 	 */
@@ -162,7 +166,7 @@ public class PropertiesCompletionProposalsCalculator {
 	}
 
 	private Collection<ICompletionProposal> getKeyHintProposals(PropertyInfo prop, int navOffset) {
-		HintProvider hintProvider = prop.getHints(typeUtil, false);
+		HintProvider hintProvider = prop.getHints(typeUtil);
 		if (!HintProviders.isNull(hintProvider)) {
 			String query = textBetween(doc, navOffset+1, offset);
 			List<TypedProperty> hintProperties = hintProvider.getPropertyHints(query);
@@ -271,9 +275,9 @@ public class PropertiesCompletionProposalsCalculator {
 		String query = valuePrefixFinder.getPrefix(doc, offset, valueRegion.getStart());
 		int startOfValue = offset - query.length();
 		EnumCaseMode caseMode = caseMode(query);
-		
+
 		// note: no need to skip whitespace backwards.
-		String propertyName = /*fuzzySearchPrefix.getPrefix(doc, pair.getOffset())*/value.getParent().getKey().decode(); 
+		String propertyName = /*fuzzySearchPrefix.getPrefix(doc, pair.getOffset())*/value.getParent().getKey().decode();
 		// because value partition includes whitespace around the assignment
 		if (propertyName != null) {
 			Collection<StsValueHint> valueCompletions = getValueHints(index, typeUtil, query, propertyName, caseMode);
@@ -307,7 +311,7 @@ public class PropertiesCompletionProposalsCalculator {
 			length = doc.get(value.getOffset(), value.getLength()).trim().length();
 		} catch (BadLocationException e) {
 			// ignore
-		} 
+		}
 		return new DocumentRegion(doc, value.getOffset(), value.getOffset() + length);
 	}
 

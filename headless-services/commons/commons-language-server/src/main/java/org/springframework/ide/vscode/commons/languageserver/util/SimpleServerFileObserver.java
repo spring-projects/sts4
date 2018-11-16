@@ -22,7 +22,6 @@ import org.eclipse.lsp4j.Unregistration;
 import org.eclipse.lsp4j.UnregistrationParams;
 import org.springframework.ide.vscode.commons.languageserver.json.DidChangeWatchedFilesRegistrationOptions;
 import org.springframework.ide.vscode.commons.languageserver.json.FileSystemWatcher;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 
 /**

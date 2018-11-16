@@ -47,7 +47,7 @@
    </plugins>
 
    <features>
-      <feature id="org.eclipse.platform" installMode="root"/>
+      <feature id="org.eclipse.platform"/>
       <feature id="org.eclipse.pde" installMode="root"/>
 
       <feature id="org.eclipse.buildship" installMode="root"/>
@@ -88,7 +88,7 @@
       <feature id="org.springsource.ide.eclipse.commons.quicksearch.feature" installMode="root"/>
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
 
-      <feature id="org.springframework.boot.ide.branding.feature" installMode="root"/>
+      <feature id="org.springframework.boot.ide.branding.feature"/>
       <feature id="org.springframework.boot.ide.main.feature" installMode="root"/>
 
       <feature id="org.springframework.tooling.boot.ls.feature" installMode="root"/>
@@ -100,11 +100,17 @@
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
    </features>
 
-
    <configurations>
    	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
    	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
-   </configurations>
 
+   	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   	  <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+   	  <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+   	  <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+   	  <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+   	  <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" />
+   	  <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="4" />
+   </configurations>
 
 </product>

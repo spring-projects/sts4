@@ -1,24 +1,40 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.boot.bootiful;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 
-@Configuration public class SymbolProviderTestConf {
+@Configuration
+@Import(AdHocPropertyHarnessTestConf.class)
+public class SymbolProviderTestConf {
 
-	@Bean PropertyIndexHarness indexHarness() {
-		return new PropertyIndexHarness();
+	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
+		return new PropertyIndexHarness(valueProviders);
 	}
 
 	@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
@@ -29,8 +45,8 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 		return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
 	}
 
-	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
-		return BootLanguageServerParams.createTestDefault(server);
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
+		return BootLanguageServerParams.createTestDefault(server, valueProviders);
 	}
 
 	@Bean SpringIndexer springIndexer(BootLanguageServerInitializer serverInit) {

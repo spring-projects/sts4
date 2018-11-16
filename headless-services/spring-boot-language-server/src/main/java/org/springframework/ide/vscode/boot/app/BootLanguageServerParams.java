@@ -21,10 +21,9 @@ import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsServiceWithFallback;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
-import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
@@ -59,7 +58,6 @@ public class BootLanguageServerParams {
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
 	public final SpringPropertyIndexProvider indexProvider;
-	public final SpringPropertyIndexProvider adHocIndexProvider;
 
 	//Boot Properies
 	public final TypeUtilProvider typeUtilProvider;
@@ -72,7 +70,6 @@ public class BootLanguageServerParams {
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
-			SpringPropertyIndexProvider adHocIndexProvider,
 			TypeUtilProvider typeUtilProvider,
 			RunningAppProvider runningAppProvider,
 			Duration watchDogInterval
@@ -82,28 +79,25 @@ public class BootLanguageServerParams {
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
-		this.adHocIndexProvider = adHocIndexProvider;
 		this.typeUtilProvider = typeUtilProvider;
 		this.runningAppProvider = runningAppProvider;
 		this.watchDogInterval = watchDogInterval;
 	}
 
-	public static BootLanguageServerParams createDefault(SimpleLanguageServer server) {
+	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
 		// Initialize project finders, project caches and project observers
 		JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
 				server,
 				new JdtLsProjectCache(server),
 				() -> createFallbackProjectCache(server)
 		);
-		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache);
-		SpringPropertyIndexProvider adHocProvider = new AdHocSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, server.getWorkspaceService().getFileObserver());
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
 				jdtProjectCache.filter(BootProjectUtil::isBootProject),
 				jdtProjectCache,
 				indexProvider,
-				adHocProvider,
 				(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.createDefault(server),
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
@@ -147,7 +141,7 @@ public class BootLanguageServerParams {
 		};
 	}
 
-	public static BootLanguageServerParams createTestDefault(SimpleLanguageServer server) {
+	public static BootLanguageServerParams createTestDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
 		// Initialize project finders, project caches and project observers
 		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
 		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
@@ -160,14 +154,13 @@ public class BootLanguageServerParams {
 
 		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 
-		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver);
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
 				javaProjectFinder.filter(BootProjectUtil::isBootProject),
 				projectObserver,
 				indexProvider,
-				(doc) -> SpringPropertyIndex.EMPTY_INDEX,
 				(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.NULL,
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL

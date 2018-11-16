@@ -19,20 +19,27 @@ import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.xtend.lib.annotations.Accessors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
+import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -54,12 +61,16 @@ public class ValueCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private IJavaProject testProject;
+	@Autowired private JavaProjectFinder projectFinder;
 
 	private Editor editor;
 
 	@Autowired private PropertyIndexHarness indexHarness;
+	@Autowired private AdHocPropertyHarness adHocProperties;
 
-	@Configuration static class TestConf {
+	@Configuration
+	@Import(AdHocPropertyHarnessTestConf.class)
+	static class TestConf {
 
 		//Somewhat strange test setup, test provides a specific test project.
 		//The project finder finds this test project,
@@ -70,8 +81,8 @@ public class ValueCompletionTest {
 			return ProjectsHarness.INSTANCE.mavenProject("test-annotations");
 		}
 
-		@Bean PropertyIndexHarness indexHarness() {
-			return new PropertyIndexHarness();
+		@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
+			return new PropertyIndexHarness(valueProviders);
 		}
 
 		@Bean JavaProjectFinder projectFinder(MavenJavaProject testProject) {
@@ -82,13 +93,12 @@ public class ValueCompletionTest {
 			return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
 		}
 
-		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
-			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server);
+		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, JavaProjectFinder projectFinder, ValueProviderRegistry valueProviders, PropertyIndexHarness indexHarness) {
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server, valueProviders);
 			return new BootLanguageServerParams(
 					projectFinder,
 					ProjectObserver.NULL,
-					indexHarness().getIndexProvider(),
-					indexHarness().getAdHocIndexProvider(),
+					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
 					RunningAppProvider.NULL,
 					null
@@ -112,7 +122,7 @@ public class ValueCompletionTest {
 
 	@Test
 	public void testPrefixIdentification() {
-		ValueCompletionProcessor processor = new ValueCompletionProcessor(null, null);
+		ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
 
 		assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
 		assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
@@ -336,9 +346,9 @@ public class ValueCompletionTest {
 				"${spring.prop1}<*>"
 		);
 
-		indexHarness.adHoc("spring.ad-hoc.thingy");
-		indexHarness.adHoc("spring.ad-hoc.other-thingy");
-		indexHarness.adHoc("spring.prop1"); //should not suggest this twice!
+		adHocProperties.add("spring.ad-hoc.thingy");
+		adHocProperties.add("spring.ad-hoc.other-thingy");
+		adHocProperties.add("spring.prop1"); //should not suggest this twice!
 		editor.assertContextualCompletions(
 				"<*>"
 				, //==>

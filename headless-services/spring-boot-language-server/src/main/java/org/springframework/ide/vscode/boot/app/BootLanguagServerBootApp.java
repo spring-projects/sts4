@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -25,11 +27,19 @@ import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
+import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
+import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -55,8 +65,32 @@ public class BootLanguagServerBootApp {
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server) {
-		return BootLanguageServerParams.createDefault(server);
+	@Bean AdHocSpringPropertyIndexProvider adHocProperties(BootLanguageServerParams params, FileObserver fileObserver, DocumentEventListenerManager documentEvents) {
+		return new AdHocSpringPropertyIndexProvider(params.projectFinder, params.projectObserver, fileObserver, documentEvents);
+	}
+
+	@Bean SimpleTextDocumentService documentEvents(SimpleLanguageServer server) {
+		return server.getTextDocumentService();
+	}
+
+	@Bean FileObserver fileObserver(SimpleLanguageServer server) {
+		return server.getWorkspaceService().getFileObserver();
+	}
+
+	@Bean ValueProviderRegistry valueProviders() {
+		return new ValueProviderRegistry();
+	}
+
+	@Bean InitializingBean initializeValueProviders(ValueProviderRegistry r, @Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties) {
+		return () -> {
+			r.def("logger-name", new LoggerNameProvider(adHocProperties).FACTORY);
+			r.def("class-reference", ClassReferenceProvider.FACTORY);
+		};
+	}
+
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
+		return BootLanguageServerParams.createDefault(server, valueProviders);
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

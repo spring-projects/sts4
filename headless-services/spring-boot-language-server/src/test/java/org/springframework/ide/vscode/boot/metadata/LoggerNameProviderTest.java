@@ -52,7 +52,7 @@ public class LoggerNameProviderTest {
 			"org.springframework.instrument.classloading.jboss.JBossMCTranslatorAdapter", //11
 			"org.springframework.instrument.classloading.jboss.JBossModulesAdapter" //12
 	};
-	
+
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
 
@@ -69,7 +69,7 @@ public class LoggerNameProviderTest {
 
 	@Test
 	public void directResults() throws Exception {
-		LoggerNameProvider p = new LoggerNameProvider();
+		LoggerNameProvider p = new LoggerNameProvider(null);
 		String query = "jboss";
 		List<String> directQueryResults = getResults(p, query);
 
@@ -84,7 +84,7 @@ public class LoggerNameProviderTest {
 
 	@Test
 	public void cachedResults() throws Exception {
-		LoggerNameProvider p = new LoggerNameProvider();
+		LoggerNameProvider p = new LoggerNameProvider(null);
 		for (int i = 0; i < 10; i++) {
 			long startTime = System.currentTimeMillis();
 			String query = "jboss";
@@ -105,7 +105,7 @@ public class LoggerNameProviderTest {
 	public void incrementalResults() throws Exception {
 		String fullQuery = "jboss";
 
-		CachingValueProvider p = new LoggerNameProvider();
+		CachingValueProvider p = new LoggerNameProvider(null);
 		for (int i = 0; i <= fullQuery.length(); i++) {
 			String query = fullQuery.substring(0, i);
 			List<String> results = getResults(p, query);

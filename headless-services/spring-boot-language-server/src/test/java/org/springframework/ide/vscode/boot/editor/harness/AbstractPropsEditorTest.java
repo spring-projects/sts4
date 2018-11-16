@@ -14,6 +14,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -149,15 +150,22 @@ public abstract class AbstractPropsEditorTest {
 
 	private CompletionItem assertCompletionWithLabel(String expectLabel, List<CompletionItem> completions) {
 		StringBuilder found = new StringBuilder();
+		List<CompletionItem> matching = new ArrayList<CompletionItem>();
 		for (CompletionItem c : completions) {
 			String actualLabel = c.getLabel();
 			found.append(actualLabel+"\n");
 			if (actualLabel.equals(expectLabel)) {
-				return c;
+				matching.add(c);
 			}
 		}
-		fail("No completion found with label '"+expectLabel+"' in:\n"+found);
-		return null; //unreachable, but compiler doesn't know that.
+		if (matching.isEmpty()) {
+			fail("No completion found with label '"+expectLabel+"' in:\n"+found);
+		} else if (matching.size() > 1) {
+			fail("Multiple completion found with identical label '"+expectLabel+"' in:\n"+found);
+		} else {
+			return matching.get(0);
+		}
+		return null;
 	}
 
 	public void assertCompletionCount(int expected, String editorText) throws Exception {

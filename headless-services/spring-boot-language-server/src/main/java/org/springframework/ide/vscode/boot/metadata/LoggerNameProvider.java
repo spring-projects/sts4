@@ -11,12 +11,19 @@
 
 package org.springframework.ide.vscode.boot.metadata;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuples;
@@ -30,13 +37,42 @@ import reactor.util.function.Tuples;
  * @author Alex Boyko
  */
 public class LoggerNameProvider extends CachingValueProvider {
-	
-	private  static final ValueProviderStrategy INSTANCE = new LoggerNameProvider();
-	public static final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> INSTANCE;
+
+	private static final String LOGGING_GROUPS_PREFIX = "logging.group.";
+
+	private final ProjectBasedPropertyIndexProvider adhocProperties;
+
+	public LoggerNameProvider(ProjectBasedPropertyIndexProvider adhocProperties) {
+		this.adhocProperties = adhocProperties;
+	}
+
+	public final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> this;
+
+	Collection<String> loggerGroupNames(IJavaProject jp) {
+		Builder<String> builder = ImmutableSet.builder();
+		if (adhocProperties!=null) {
+			SortedMap<String, PropertyInfo> index = adhocProperties.getIndex(jp).getTreeMap();
+			index = index.subMap(LOGGING_GROUPS_PREFIX, LOGGING_GROUPS_PREFIX+Character.MAX_VALUE);
+			for (String prop : index.keySet()) {
+				if (prop.startsWith(LOGGING_GROUPS_PREFIX)) {
+					String groupName = prop.substring(LOGGING_GROUPS_PREFIX.length());
+					int bracket = groupName.indexOf('[');
+					if (bracket>=0) {
+						groupName = groupName.substring(0, bracket);
+					}
+					builder.add(groupName);
+				}
+			}
+		}
+		return builder.build();
+	}
 
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
 		return Flux.concat(
+			Flux.fromIterable(loggerGroupNames(javaProject))
+				.map(loggerName -> Tuples.of(StsValueHint.create(loggerName), FuzzyMatcher.matchScore(query, loggerName)))
+				.filter(t -> t.getT2()!=0.0),
 			javaProject.getIndex()
 				.fuzzySearchPackages(query)
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
@@ -46,7 +82,8 @@ public class LoggerNameProvider extends CachingValueProvider {
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 		.flatMapIterable(l -> l)
-		.map(t -> t.getT1());
+		.map(t -> t.getT1())
+		.distinct(h -> h.getValue());
 	}
 
 }

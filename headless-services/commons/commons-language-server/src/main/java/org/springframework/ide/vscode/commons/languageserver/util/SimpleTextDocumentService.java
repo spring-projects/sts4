@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
-public class SimpleTextDocumentService implements TextDocumentService {
+public class SimpleTextDocumentService implements TextDocumentService, DocumentEventListenerManager {
 
 	final private SimpleLanguageServer server;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
@@ -85,7 +86,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private CodeLensHandler codeLensHandler;
 	private CodeLensResolveHandler codeLensResolveHandler;
 
-	private Consumer<TextDocumentSaveChange> documentSaveListener;
+	private List<Consumer<TextDocumentSaveChange>> documentSaveListeners = ImmutableList.of();
 	private AsyncRunner async;
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
@@ -240,8 +241,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		documentCloseListeners.add(l);
 	}
 
+	@Override
 	public void onDidSave(Consumer<TextDocumentSaveChange> l) {
-		documentSaveListener=l;
+		ImmutableList.Builder<Consumer<TextDocumentSaveChange>> builder = ImmutableList.builder();
+		builder.addAll(documentSaveListeners);
+		builder.add(l);
+		documentSaveListeners = builder.build();
 	}
 
 	public synchronized TextDocument getDocument(String url) {
@@ -407,13 +412,15 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		// When STS uses the LSP4E editor and no longer needs its own YEdit-based editor, the issue with error markers disappearing
 		// on save should not be a problem anymore, and the workaround below will no longer be needed.
 	  async.execute(() -> {
-		if (documentSaveListener != null) {
+		if (documentSaveListeners != null) {
 			TextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
 			Log.debug("didSave: "+url);
 			if (url!=null) {
 				TextDocument doc = getDocument(url);
-				documentSaveListener.accept(new TextDocumentSaveChange(doc));
+				for (Consumer<TextDocumentSaveChange> l : documentSaveListeners) {
+					l.accept(new TextDocumentSaveChange(doc));
+				}
 			}
 		}
 	  });

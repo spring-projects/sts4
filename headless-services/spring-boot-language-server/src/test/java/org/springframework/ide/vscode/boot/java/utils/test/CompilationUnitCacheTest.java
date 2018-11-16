@@ -27,8 +27,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -36,6 +38,7 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -67,10 +70,11 @@ public class CompilationUnitCacheTest {
 	@Autowired
 	private MockProjectObserver projectObserver;
 
+	@Import(AdHocPropertyHarnessTestConf.class)
 	@Configuration static class TestConf {
 
-		@Bean PropertyIndexHarness indexHarness() {
-			return new PropertyIndexHarness();
+		@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
+			return new PropertyIndexHarness(valueProviders);
 		}
 
 		@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
@@ -85,13 +89,12 @@ public class CompilationUnitCacheTest {
 			return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
 		}
 
-		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, MockProjectObserver projectObserver) {
-			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server);
+		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, MockProjectObserver projectObserver, ValueProviderRegistry valueProviders, PropertyIndexHarness indexHarness) {
+			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server, valueProviders);
 			return new BootLanguageServerParams(
-					indexHarness().getProjectFinder(),
+					indexHarness.getProjectFinder(),
 					projectObserver,
-					indexHarness().getIndexProvider(),
-					indexHarness().getAdHocIndexProvider(),
+					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
 					RunningAppProvider.NULL,
 					null

@@ -12,12 +12,9 @@ package org.springframework.ide.vscode.boot.metadata;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -28,9 +25,10 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -42,7 +40,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
-public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
+public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyIndexProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(AdHocSpringPropertyIndexProvider.class);
 
@@ -54,10 +52,8 @@ public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProv
 	}
 
 	private Cache<IJavaProject, SimplePropertyIndex> indexes;
-	final private JavaProjectFinder projectFinder;
 
-	public AdHocSpringPropertyIndexProvider(JavaProjectFinder projectFinder, ProjectObserver projectObserver, FileObserver fileObserver) {
-		this.projectFinder = projectFinder;
+	public AdHocSpringPropertyIndexProvider(JavaProjectFinder projectFinder, ProjectObserver projectObserver, FileObserver fileObserver, DocumentEventListenerManager documents) {
 		this.indexes = CacheBuilder.newBuilder().build();
 		if (projectObserver != null) {
 			projectObserver.addListener(ProjectObserver.onAny(project -> indexes.invalidate(project)));
@@ -74,33 +70,33 @@ public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProv
 				});
 			});
 		}
+		if (documents!=null) {
+			documents.onDidSave(saveEvent -> {
+				LanguageId language = saveEvent.getDocument().getLanguageId();
+				if (language.equals(LanguageId.BOOT_PROPERTIES) || language.equals(LanguageId.BOOT_PROPERTIES_YAML)) {
+					indexes.invalidateAll();
+				}
+			});
+		}
 	}
-
 
 	@Override
-	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
-		Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
-		if (jp.isPresent()) {
-			return getIndex(jp.get());
+	public FuzzyMap<PropertyInfo> getIndex(IJavaProject jp) {
+		if (jp!=null) {
+			try {
+				return indexes.get(jp, () -> {
+					SimplePropertyIndex index = new SimplePropertyIndex();
+					IClasspathUtil.getSourceFolders(jp.getClasspath()).forEach(sourceFolder -> {
+						processFile(this::parseProperties, new File(sourceFolder, "application.properties"), index);
+						processFile(this::parseYaml, new File(sourceFolder, "application.yml"), index);
+					});
+					return index;
+				});
+			} catch (ExecutionException e) {
+				log.error("", e);
+			}
 		}
 		return SpringPropertyIndex.EMPTY_INDEX;
-	}
-
-
-	private FuzzyMap<PropertyInfo> getIndex(IJavaProject jp) {
-		try {
-			return indexes.get(jp, () -> {
-				SimplePropertyIndex index = new SimplePropertyIndex();
-				IClasspathUtil.getSourceFolders(jp.getClasspath()).forEach(sourceFolder -> {
-					processFile(this::parseProperties, new File(sourceFolder, "application.properties"), index);
-					processFile(this::parseYaml, new File(sourceFolder, "application.yml"), index);
-				});
-				return index;
-			});
-		} catch (ExecutionException e) {
-			log.error("", e);
-		}
-		return null;
 	}
 
 	private void processFile(Function<File, Properties> parserFunction, File file, SimplePropertyIndex index) {
@@ -146,7 +142,6 @@ public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProv
 		return null;
 	}
 
-
 	private void flattenProperties(String prefix, Node node, Properties props) {
 		switch (node.getNodeId()) {
 		case mapping:
@@ -166,6 +161,9 @@ public class AdHocSpringPropertyIndexProvider implements SpringPropertyIndexProv
 			props.put(prefix, NodeUtil.asScalar(node));
 			break;
 		default:
+			if (!prefix.isEmpty()) {
+				props.put(prefix, "<object>");
+			}
 			//Ignore other cases, might implement later if it makes sense.
 			break;
 		}

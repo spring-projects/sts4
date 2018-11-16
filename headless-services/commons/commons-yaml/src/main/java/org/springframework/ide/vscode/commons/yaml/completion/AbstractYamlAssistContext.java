@@ -70,7 +70,7 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 	private static PrefixFinder prefixfinder = new PrefixFinder() {
 		@Override
 		protected boolean isPrefixChar(char c) {
-			return !Character.isWhitespace(c);
+			return !(Character.isWhitespace(c) || c==',');
 		}
 	};
 
@@ -87,7 +87,7 @@ public abstract class AbstractYamlAssistContext implements YamlAssistContext {
 					valueStart++;
 				}
 				if (offset>=valueStart) {
-					return doc.textBetween(valueStart, offset);
+					return prefixfinder.getPrefix(doc.getDocument(), offset, valueStart);
 				} else {
 					//only whitespace, or nothing found upto the cursor
 					return "";

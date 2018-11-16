@@ -142,20 +142,12 @@ public class PropertyInfo {
 		return description;
 	}
 
-	public HintProvider getHints(TypeUtil typeUtil, boolean dimensionAware) {
+	public HintProvider getHints(TypeUtil typeUtil) {
 		Type type = TypeParser.parse(this.type);
 		if (TypeUtil.isMap(type)) {
-			return HintProviders.forMap(keyHints(typeUtil), valueHints(typeUtil), TypeUtil.getDomainType(type), dimensionAware);
+			return HintProviders.forMap(keyHints(typeUtil), valueHints(typeUtil), TypeUtil.getDomainType(type));
 		} else if (TypeUtil.isSequencable(type)) {
-			if (dimensionAware) {
-				if (TypeUtil.isSequencable(type)) {
-					return HintProviders.forDomainAt(valueHints(typeUtil), TypeUtil.getDimensionality(type));
-				} else {
-					return HintProviders.forHere(valueHints(typeUtil));
-				}
-			} else {
-				return HintProviders.forAllValueContexts(valueHints(typeUtil));
-			}
+			return HintProviders.forAllValueContexts(valueHints(typeUtil));
 		} else {
 			return HintProviders.forHere(valueHints(typeUtil));
 		}
