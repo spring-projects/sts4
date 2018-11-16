@@ -515,7 +515,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				} else if (subIndex.getExactMatch()!=null) {
 					IndexContext asIndexContext = new IndexContext(getDocument(), documentSelector, contextPath.append(s), subIndex, completionFactory, typeUtil, conf, javaElementLocationProvider);
 					PropertyInfo prop = subIndex.getExactMatch();
-					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil, false), javaElementLocationProvider);
+					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil), javaElementLocationProvider);
 				}
 			}
 			//Unsuported navigation => no context for assist

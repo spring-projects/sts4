@@ -84,7 +84,7 @@ public class CommonLanguageTools {
 		{
 			PropertyInfo prop = index.findLongestCommonPrefixEntry(propertyName);
 			if (prop!=null) {
-				HintProvider hintProvider = prop.getHints(typeUtil, false);
+				HintProvider hintProvider = prop.getHints(typeUtil);
 				if (prop.getId().length()<propertyName.length()) {
 					//true prefix
 					//TODO: properly process remaining portion of property name
