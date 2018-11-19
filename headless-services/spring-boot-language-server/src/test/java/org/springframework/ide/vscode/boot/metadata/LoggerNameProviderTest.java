@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -69,7 +70,7 @@ public class LoggerNameProviderTest {
 
 	@Test
 	public void directResults() throws Exception {
-		LoggerNameProvider p = new LoggerNameProvider(null);
+		LoggerNameProvider p = create();
 		String query = "jboss";
 		List<String> directQueryResults = getResults(p, query);
 
@@ -84,7 +85,7 @@ public class LoggerNameProviderTest {
 
 	@Test
 	public void cachedResults() throws Exception {
-		LoggerNameProvider p = new LoggerNameProvider(null);
+		LoggerNameProvider p = create();
 		for (int i = 0; i < 10; i++) {
 			long startTime = System.currentTimeMillis();
 			String query = "jboss";
@@ -105,7 +106,7 @@ public class LoggerNameProviderTest {
 	public void incrementalResults() throws Exception {
 		String fullQuery = "jboss";
 
-		CachingValueProvider p = new LoggerNameProvider(null);
+		CachingValueProvider p = create();
 		for (int i = 0; i <= fullQuery.length(); i++) {
 			String query = fullQuery.substring(0, i);
 			List<String> results = getResults(p, query);
@@ -118,6 +119,10 @@ public class LoggerNameProviderTest {
 				assertElementsAtLeast(results, JBOSS_RESULTS);
 			}
 		}
+	}
+
+	private LoggerNameProvider create() {
+		return (LoggerNameProvider) LoggerNameProvider.factory(null).apply(ImmutableMap.of());
 	}
 
 	private void assertElementsAtLeast(List<String> results, String[] expecteds) {
