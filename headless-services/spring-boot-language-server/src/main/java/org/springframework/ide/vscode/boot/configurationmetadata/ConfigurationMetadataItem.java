@@ -56,5 +56,4 @@ class ConfigurationMetadataItem extends ConfigurationMetadataProperty {
 	public void setSourceMethod(String sourceMethod) {
 		this.sourceMethod = sourceMethod;
 	}
-
 }

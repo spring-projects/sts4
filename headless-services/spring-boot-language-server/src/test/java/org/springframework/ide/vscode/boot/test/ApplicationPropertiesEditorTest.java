@@ -1183,6 +1183,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"logging.level.indexed=<*>"
 		);
 
+		//Check whether the added parameter to disable group name hints is obeyed:
+		assertNoCompletionWithLabel("logging.group.whatever=<*>", "foobar");
+		assertNoCompletionWithLabel("logging.group.whatever=<*>", "user-defined");
+		assertNoCompletionWithLabel("logging.group.whatever=<*>", "indexed");
 	}
 
 	@Test public void userDefinedLoggingGroupsValueCompletions() throws Exception {

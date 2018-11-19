@@ -296,6 +296,16 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  group:\n"+
 				"    whatever: stuff,com.example.demo<*>"
 		);
+
+		//Check whether the added parameter to disable group name hints is obeyed:
+		assertNoCompletionWithLabel(
+				"logging:\n" +
+				"  group:\n"+
+				"    whatever: <*>"
+			,
+				"foobar"
+		);
+
 	}
 
 	///////////////////// ported tests from old STS code base ////////////////////////////////////////////////
