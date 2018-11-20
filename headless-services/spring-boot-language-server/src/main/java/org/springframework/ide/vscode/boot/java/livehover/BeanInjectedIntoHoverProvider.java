@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.lsp4j.CodeLens;
@@ -25,7 +24,6 @@ import org.eclipse.lsp4j.Range;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -125,7 +123,7 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 			if (runningApps.length > 0) {
 				Range range = ASTUtils.nodeRegion(doc, parameter.getName()).asRange();
 				MethodDeclaration method = (MethodDeclaration) parameter.getParent();
-				Annotation beanAnnotation = getBeanAnnotation(method);
+				Annotation beanAnnotation = ASTUtils.getBeanAnnotation(method);
 				if (beanAnnotation != null) {
 					LiveBean definedBean = getDefinedBean(beanAnnotation);
 					if (definedBean != null) {
@@ -140,23 +138,6 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 			}
 		} catch (Exception e) {
 			log.error("", e);
-		}
-		return null;
-	}
-
-	private static Annotation getBeanAnnotation(MethodDeclaration method) {
-		List<?> modifiers = method.modifiers();
-		for (Object modifier : modifiers) {
-			if (modifier instanceof Annotation) {
-				Annotation annotation = (Annotation) modifier;
-				ITypeBinding typeBinding = annotation.resolveTypeBinding();
-				if (typeBinding != null) {
-					String fqName = typeBinding.getQualifiedName();
-					if (Annotations.BEAN.equals(fqName)) {
-						return annotation;
-					}
-				}
-			}
 		}
 		return null;
 	}

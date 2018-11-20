@@ -34,12 +34,15 @@ public class Boot2xRequestMappingsTest {
 
 		ImmutableSet<String> expected = ImmutableSet.of(
 				"/error",
+				"/**/favicon.ico",
 				"/actuator",
 				"/actuator/health",
 				"/actuator/info",
 				"/hello",
 				"/qq",
-				"/pp"
+				"/pp",
+				"/webjars/**",
+				"/**"
 		);
 		assertEquals(expected,
 				rms.stream()
@@ -60,9 +63,11 @@ public class Boot2xRequestMappingsTest {
 				"/actuator",
 				"/actuator/health",
 				"/actuator/info",
+				"/webjars/**",
 				"/hello",
 				"/pp",
-				"/qq"
+				"/qq",
+				"/**"
 		);
 		assertEquals(expected,
 				rms.stream()
@@ -81,7 +86,10 @@ public class Boot2xRequestMappingsTest {
 		ImmutableSet<String> expected = ImmutableSet.of(
 				"/actuator",
 				"/actuator/health",
-				"/actuator/info"
+				"/actuator/info",
+				"/webjars/**",
+				"/hello",
+				"/**"
 		);
 		assertEquals(expected,
 				rms.stream()
@@ -98,10 +106,13 @@ public class Boot2xRequestMappingsTest {
 
 		ImmutableSet<String> expected = ImmutableSet.of(
 				"/error",
+				"/**/favicon.ico",
 				"/actuator",
+				"/welcome",
 				"/actuator/health",
 				"/actuator/info",
-				"/welcome"
+				"/webjars/**",
+				"/**"
 		);
 		assertEquals(expected,
 				rms.stream()
@@ -121,7 +132,9 @@ public class Boot2xRequestMappingsTest {
 				"/actuator",
 				"/actuator/health",
 				"/actuator/info",
-				"/welcome"
+				"/welcome",
+				"/webjars/**",
+				"/**"
 		);
 		assertEquals(expected,
 				rms.stream()

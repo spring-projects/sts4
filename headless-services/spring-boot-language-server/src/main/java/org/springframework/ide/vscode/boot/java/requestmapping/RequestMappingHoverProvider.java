@@ -50,6 +50,8 @@ import reactor.util.function.Tuples;
  */
 public class RequestMappingHoverProvider implements HoverProvider {
 
+//	private static final String $$_LAMBDA$ = "$$Lambda$";
+
 	private static final Logger log = LoggerFactory.getLogger(RequestMappingHoverProvider.class);
 
 	private static final int CODE_LENS_LIMIT = 3;
@@ -78,6 +80,58 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		return null;
 	}
+
+//	@Override
+//	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration,
+//			TextDocument doc, SpringBootApp[] runningApps) {
+//		try {
+//			ImmutableList.Builder<Tuple2<RequestMapping, SpringBootApp>> builder = ImmutableList.builder();
+//			if (runningApps.length > 0) {
+//				Annotation beanAnnotation = ASTUtils.getBeanAnnotation(methodDeclaration);
+//				if (beanAnnotation != null) {
+//					ITypeBinding returnTypeBinding = methodDeclaration.getReturnType2().resolveBinding();
+//					if ("org.springframework.web.reactive.function.server.RouterFunction".equals(returnTypeBinding.getErasure().getQualifiedName())) {
+//						for (SpringBootApp app : runningApps) {
+//							List<RequestMapping> matches = findFunctionalRequestMappings(app.getRequestMappings(), methodDeclaration);
+//							for (RequestMapping rm : matches) {
+//								builder.add(Tuples.of(rm, app));
+//							}
+//						}
+//					}
+//				}
+//			}
+//			List<Tuple2<RequestMapping, SpringBootApp>> data = builder.build();
+//			if (!data.isEmpty()) {
+//				SimpleName methodName = methodDeclaration.getName();
+//				Range hoverRange = doc.toRange(methodName.getStartPosition(), methodName.getLength());
+//				return assembleCodeLenses(hoverRange, getUrls(data));
+//			}
+//		} catch (Exception e) {
+//			log.error("", e);
+//		}
+//		return null;
+//	}
+//
+//	private List<RequestMapping> findFunctionalRequestMappings(Collection<RequestMapping> requestMappings,
+//			MethodDeclaration methodDeclaration) {
+//		ImmutableList.Builder<RequestMapping> builder = ImmutableList.builder();
+//		IMethodBinding binding = methodDeclaration.resolveBinding();
+//		if (requestMappings != null) {
+//			for (RequestMapping rm : requestMappings) {
+//				String fqName = rm.getFullyQualifiedClassName();
+//				if (fqName != null) {
+//					int lambdaIdx = fqName.indexOf($$_LAMBDA$);
+//					if (lambdaIdx > 0) {
+//						String containingTypeFqName = fqName.substring(0, lambdaIdx);
+//						if (binding.getDeclaringClass().getQualifiedName().equals(containingTypeFqName)) {
+//							builder.add(rm);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return builder.build();
+//	}
 
 	private Collection<CodeLens> assembleCodeLenses(Range range, List<String> urls) {
 

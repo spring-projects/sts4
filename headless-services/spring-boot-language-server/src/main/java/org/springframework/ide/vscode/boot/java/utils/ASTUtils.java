@@ -262,4 +262,21 @@ public class ASTUtils {
 				.map(o -> (String) o);
 	}
 
+	public static Annotation getBeanAnnotation(MethodDeclaration method) {
+		List<?> modifiers = method.modifiers();
+		for (Object modifier : modifiers) {
+			if (modifier instanceof Annotation) {
+				Annotation annotation = (Annotation) modifier;
+				ITypeBinding typeBinding = annotation.resolveTypeBinding();
+				if (typeBinding != null) {
+					String fqName = typeBinding.getQualifiedName();
+					if (Annotations.BEAN.equals(fqName)) {
+						return annotation;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 }

@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -60,6 +62,10 @@ Example entry:
 		return data.optJSONObject("details");
 	}
 
+	private String getPredicate() {
+		return data.optString("predicate");
+	}
+
 	private JSONObject getHandlerMethod() {
 		JSONObject details = getDetails();
 		if (details != null) {
@@ -67,6 +73,16 @@ Example entry:
 				return details.getJSONObject("handlerMethod");
 			} else if (details.has("handlerFunction")) {
 				//TODO: handler function for the Router bean
+			}
+		}
+		return null;
+	}
+
+	private JSONObject getHandlerFunction() {
+		JSONObject details = getDetails();
+		if (details != null) {
+			if (details.has("handlerFunction")) {
+				return details.getJSONObject("handlerFunction");
 			}
 		}
 		return null;
@@ -82,11 +98,17 @@ Example entry:
 		return data.optString("handler");
 	}
 
-
 	@Override
 	public String getFullyQualifiedClassName() {
 		JSONObject handlerMethod = getHandlerMethod();
-		return handlerMethod == null ? null : handlerMethod.getString("className");
+		if (handlerMethod != null) {
+			return handlerMethod.getString("className");
+		}
+		JSONObject handlerFunction = getHandlerFunction();
+		if (handlerFunction != null) {
+			return handlerFunction.getString("className");
+		}
+		return null;
 	}
 
 	@Override
@@ -114,7 +136,20 @@ Example entry:
 	public String[] getSplitPath() {
 		JSONObject rmConditions = getRequestMappingConditions();
 		if (rmConditions == null) {
-			return new String[0];
+			String predicate = getPredicate();
+			if (predicate != null) {
+				// Predicate is and/or string expression: ((GET && /hello) && Accept: [text/plain])
+				String[] tokens = predicate.split("\\w*(&&|\\|\\|)\\w*");
+				List<String> splitPaths = new ArrayList<>(tokens.length);
+				for (String t : tokens) {
+					// Remove leading `(`, trailing `)`
+					String token = removeLeadingAndTrailingParenthises(t);
+					if (!token.isEmpty() && token.charAt(0) == '/') {
+						splitPaths.add(token);
+					}
+				}
+				return splitPaths.toArray(new String[splitPaths.size()]);
+			}
 		} else {
 			JSONArray jsonArray = rmConditions.getJSONArray("patterns");
 			String[] paths = new String[jsonArray.length()];
@@ -123,6 +158,15 @@ Example entry:
 			}
 			return paths;
 		}
+		return new String[0];
+	}
+
+	private static String removeLeadingAndTrailingParenthises(String s) {
+		int start = 0;
+		int end = s.length();
+		for(; start < s.length() && (s.charAt(start) == '(' || Character.isWhitespace(s.charAt(start))); start++);
+		for(; end > start && (s.charAt(end - 1) == ')' || Character.isWhitespace(s.charAt(end - 1))); end--);
+		return start <= end ? s.substring(start, end) : "";
 	}
 
 	@Override
