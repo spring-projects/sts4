@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -134,6 +135,14 @@ public abstract class AbstractPropsEditorTest {
 
 	public void assertNoCompletions(String text) throws Exception {
 		assertCompletions(text /*NONE*/);
+	}
+
+	public void assertNoCompletionWithLabel(String textBefore, String expectLabel) throws Exception {
+		Editor editor = newEditor(textBefore);
+		List<CompletionItem> completions = editor.getCompletions().stream().filter(c -> c.getLabel().equals(expectLabel)).collect(Collectors.toList());
+		if (!completions.isEmpty()) {
+			fail("Expecting no completions with label '"+expectLabel+"', but found some");
+		}
 	}
 
 	/**

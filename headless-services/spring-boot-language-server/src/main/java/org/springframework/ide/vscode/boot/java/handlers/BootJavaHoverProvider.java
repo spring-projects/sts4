@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
@@ -101,7 +103,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		if (!project.isPresent()) return new CodeLens[0];
 		if (!hasActuatorDependency(project.get())) return new CodeLens[0];
 
-		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+		return server.getCompilationUnitCache().withCompilationUnit(project.get(), URI.create(document.getUri()), cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();
 			try {
 				if (cu != null) {
@@ -210,7 +212,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	private Hover provideHover(TextDocument document, int offset) throws Exception {
 		IJavaProject project = getProject(document).orElse(null);
 		if (project != null) {
-			return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+			return server.getCompilationUnitCache().withCompilationUnit(project, URI.create(document.getUri()), cu -> {
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 				if (node != null) {
 					return provideHover(node, offset, document, project);
@@ -239,6 +241,23 @@ public class BootJavaHoverProvider implements HoverHandler {
 				return provideHoverForTypeDeclaration(node, (TypeDeclaration) parent, offset, doc, project);
 			} else if (parent instanceof MethodDeclaration) {
 				return provideHoverForMethodDeclaration((MethodDeclaration) parent, offset, doc, project);
+			} else if (parent instanceof SingleVariableDeclaration && parent.getParent() instanceof MethodDeclaration) {
+				return provideHoverForMethodParameter((SingleVariableDeclaration) parent, offset, doc, project);
+			}
+		}
+		return null;
+	}
+
+	private Hover provideHoverForMethodParameter(SingleVariableDeclaration parameter, int offset, TextDocument doc,
+			IJavaProject project) {
+		SpringBootApp[] runningApps = getRunningSpringApps(project);
+
+		if (runningApps.length > 0) {
+			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				Hover hover = provider.provideMethodParameterHover(parameter, offset, doc, project, runningApps);
+				if (hover != null) {
+					return hover;
+				}
 			}
 		}
 		return null;

@@ -83,7 +83,7 @@ public class BootLanguagServerBootApp {
 
 	@Bean InitializingBean initializeValueProviders(ValueProviderRegistry r, @Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties) {
 		return () -> {
-			r.def("logger-name", new LoggerNameProvider(adHocProperties).FACTORY);
+			r.def("logger-name", LoggerNameProvider.factory(adHocProperties));
 			r.def("class-reference", ClassReferenceProvider.FACTORY);
 		};
 	}

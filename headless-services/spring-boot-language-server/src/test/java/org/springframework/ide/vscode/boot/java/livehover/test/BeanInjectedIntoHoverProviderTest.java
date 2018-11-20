@@ -549,12 +549,12 @@ public class BeanInjectedIntoHoverProviderTest {
 				"public class LocalConfig {\n" +
 				"	\n" +
 				"	@Bean(\"fooImplementation\")\n" +
-				"	Foo someFoo(DependencyA a) {\n" +
+				"	Foo someFoo(DependencyA depA) {\n" +
 				"		return new FooImplementation();\n" +
 				"	}\n" +
 				"}"
 		);
-		editor.assertHighlights("@Bean");
+		editor.assertHighlights("@Bean", "depA");
 		editor.assertTrimmedHover("@Bean",
 				"**&#8592; `DependencyA`**\n" +
 				"- Bean: `depA`  \n" +
@@ -563,6 +563,16 @@ public class BeanInjectedIntoHoverProviderTest {
 				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
+
+		editor.assertTrimmedHover("depA",
+				"**&#8592; `DependencyA`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+
 	}
 
 	@Test
@@ -603,12 +613,12 @@ public class BeanInjectedIntoHoverProviderTest {
 				"public class LocalConfig {\n" +
 				"	\n" +
 				"	@Bean(\"fooImplementation\")\n" +
-				"	Foo someFoo(DependencyA a, DependencyB b) {\n" +
+				"	Foo someFoo(DependencyA depA, DependencyB depB) {\n" +
 				"		return new FooImplementation();\n" +
 				"	}\n" +
 				"}"
 		);
-		editor.assertHighlights("@Bean");
+		editor.assertHighlights("@Bean", "depA", "depB");
 		editor.assertTrimmedHover("@Bean",
 				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `depA`  \n" +
@@ -619,6 +629,25 @@ public class BeanInjectedIntoHoverProviderTest {
 				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
+
+		editor.assertTrimmedHover("depA",
+				"**&#8592; `DependencyA`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+
+		editor.assertTrimmedHover("depB",
+				"**&#8592; `DependencyB`**\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+
 	}
 
 	@Test
@@ -664,7 +693,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"	}\n" +
 				"}"
 		);
-		editor.assertHighlights("@Bean");
+		editor.assertHighlights("@Bean", "deps");
 		editor.assertTrimmedHover("@Bean",
 				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `depA`  \n" +
@@ -675,7 +704,18 @@ public class BeanInjectedIntoHoverProviderTest {
 				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
-	}
+
+		editor.assertTrimmedHover("deps",
+				"**&#8592; `DependencyA` `DependencyB`**\n" +
+				"- Bean: `depA`  \n" +
+				"  Type: `hello.DependencyA`\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+}
 
 	@Test
 	public void beanWithQualifierWiring() throws Exception {
@@ -715,7 +755,7 @@ public class BeanInjectedIntoHoverProviderTest {
 				"	}\n" +
 				"}"
 		);
-		editor.assertHighlights("@Bean");
+		editor.assertHighlights("@Bean", "deps");
 		editor.assertTrimmedHover("@Bean",
 				"**&#8592; `DependencyB`**\n" +
 				"- Bean: `depB`  \n" +
@@ -724,5 +764,15 @@ public class BeanInjectedIntoHoverProviderTest {
 				"Bean id: `fooImplementation`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
+
+		editor.assertTrimmedHover("deps",
+				"**&#8592; `DependencyB`**\n" +
+				"- Bean: `depB`  \n" +
+				"  Type: `hello.DependencyB`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+
 	}
 }

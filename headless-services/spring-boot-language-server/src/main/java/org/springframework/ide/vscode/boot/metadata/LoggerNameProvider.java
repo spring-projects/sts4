@@ -39,18 +39,23 @@ import reactor.util.function.Tuples;
 public class LoggerNameProvider extends CachingValueProvider {
 
 	private static final String LOGGING_GROUPS_PREFIX = "logging.group.";
-
 	private final ProjectBasedPropertyIndexProvider adhocProperties;
+	private final boolean includeGroups;
 
-	public LoggerNameProvider(ProjectBasedPropertyIndexProvider adhocProperties) {
+	public LoggerNameProvider(ProjectBasedPropertyIndexProvider adhocProperties, boolean includeGroups) {
 		this.adhocProperties = adhocProperties;
+		this.includeGroups = includeGroups;
 	}
 
-	public final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = (params) -> this;
+	public static final Function<Map<String, Object>, ValueProviderStrategy> factory(ProjectBasedPropertyIndexProvider adhocProperties) {
+		return (params) -> {
+			return new LoggerNameProvider(adhocProperties, (boolean) params.getOrDefault("group", true));
+		};
+	}
 
 	Collection<String> loggerGroupNames(IJavaProject jp) {
 		Builder<String> builder = ImmutableSet.builder();
-		if (adhocProperties!=null) {
+		if (adhocProperties!=null && includeGroups) {
 			SortedMap<String, PropertyInfo> index = adhocProperties.getIndex(jp).getTreeMap();
 			index = index.subMap(LOGGING_GROUPS_PREFIX, LOGGING_GROUPS_PREFIX+Character.MAX_VALUE);
 			for (String prop : index.keySet()) {
