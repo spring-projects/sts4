@@ -54,7 +54,8 @@ public class DataRepositoryCompletionProcessorTest {
 	public void testStandardFindByCompletions() throws Exception {
 		prepareCase("{", "{<*>");
 		assertContainsAnnotationCompletions(
-				"List<Customer> findByLastName${1|(String lastName);,And,Or|}");
+				"List<Customer> findByFirstName(String firstName);",
+				"List<Customer> findByLastName(String lastName);");
 	}
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {

@@ -13,17 +13,22 @@ package org.springframework.ide.vscode.boot.java.data;
 /**
  * @author Martin Lippert
  */
-public class DataRepositoryDefinition {
+public class DomainProperty {
 
-	private final DomainType domainType;
+	private final String name;
+	private final DomainType type;
 
-	public DataRepositoryDefinition(DomainType domainType) {
-		super();
-		this.domainType = domainType;
+	public DomainProperty(String name, DomainType type) {
+		this.name = name;
+		this.type = type;
 	}
 
-	public DomainType getDomainType() {
-		return domainType;
+	public String getName() {
+		return name;
+	}
+
+	public DomainType getType() {
+		return type;
 	}
 
 }

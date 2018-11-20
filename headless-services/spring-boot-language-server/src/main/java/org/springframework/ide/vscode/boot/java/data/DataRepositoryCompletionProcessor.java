@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Martin Lippert
@@ -39,16 +40,43 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		TypeDeclaration type = ASTUtils.findDeclaringType(node);
 		DataRepositoryDefinition repo = getDataRepositoryDefinition(type);
 		if (repo != null) {
-			DocumentEdits edits = new DocumentEdits(null);
-			edits.insert(offset, "List<Customer> findByLastName${1|(String lastName);,And,Or|}");
-
-			DocumentEdits additionalEdits = new DocumentEdits(null);
-//			additionalEdits.insert(offset, "(String lastName);");
-
-			completions.add(new FindByCompletionProposal("findByLastName(String lastName);", CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits)));
-
-			System.out.println("data completion proposal calculation for: " + node.toString());
+			DomainType domainType = repo.getDomainType();
+			if (domainType != null) {
+				DomainProperty[] properties = domainType.getProperties();
+				for (DomainProperty property : properties) {
+					completions.add(generateCompletionProposal(offset, repo, property));
+				}
+			}
 		}
+	}
+
+	protected ICompletionProposal generateCompletionProposal(int offset, DataRepositoryDefinition repoDef, DomainProperty domainProperty) {
+		StringBuilder label = new StringBuilder();
+		label.append("findBy");
+		label.append(StringUtils.capitalize(domainProperty.getName()));
+		label.append("(");
+		label.append(domainProperty.getType().getSimpleName());
+		label.append(" ");
+		label.append(StringUtils.uncapitalize(domainProperty.getName()));
+		label.append(");");
+
+		DocumentEdits edits = new DocumentEdits(null);
+
+		StringBuilder completion = new StringBuilder();
+		completion.append("List<");
+		completion.append(repoDef.getDomainType().getSimpleName());
+		completion.append("> findBy");
+		completion.append(StringUtils.capitalize(domainProperty.getName()));
+		completion.append("(");
+		completion.append(domainProperty.getType().getSimpleName());
+		completion.append(" ");
+		completion.append(StringUtils.uncapitalize(domainProperty.getName()));
+		completion.append(");");
+		edits.insert(offset, completion.toString());
+
+		DocumentEdits additionalEdits = new DocumentEdits(null);
+
+		return new FindByCompletionProposal(label.toString(), CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits));
 	}
 
 	private DataRepositoryDefinition getDataRepositoryDefinition(TypeDeclaration type) {
@@ -75,7 +103,14 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 				}
 
 				if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
-					return new DataRepositoryDefinition();
+					DomainType domainType = null;
+					if (resolvedInterface.isParameterizedType()) {
+						ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
+						if (typeParameters != null && typeParameters.length > 0) {
+							domainType = new DomainType(typeParameters[0]);
+						}
+					}
+					return createDataRepositoryDefinitionFromType(domainType);
 				}
 				else {
 					DataRepositoryDefinition repo = getDataRepositoryDefinition(type, resolvedInterface);
@@ -92,5 +127,9 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 			}
 		}
 		return null;
+	}
+
+	private DataRepositoryDefinition createDataRepositoryDefinitionFromType(DomainType domainType) {
+		return new DataRepositoryDefinition(domainType);
 	}
 }
