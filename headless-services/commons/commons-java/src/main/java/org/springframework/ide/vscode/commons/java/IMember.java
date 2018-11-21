@@ -11,8 +11,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-import java.io.File;
-
 public interface IMember extends IJavaElement, IAnnotatable {
 
 	/**
@@ -45,7 +43,7 @@ public interface IMember extends IJavaElement, IAnnotatable {
 	 */
 	IType getDeclaringType();
 
-	File classpathContainer();
+	IJavaModuleData classpathContainer();
 
 	String signature();
 

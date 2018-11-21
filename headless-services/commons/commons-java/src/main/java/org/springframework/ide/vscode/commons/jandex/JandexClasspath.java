@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProvider
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
@@ -77,13 +77,7 @@ public final class JandexClasspath implements ClasspathIndex {
 	protected JandexIndex createIndex() {
 		log.info("Creating JandexIndex for "+classpath.getName());
 		attachFolderListeners();
-		Collection<File> classpathEntries = ImmutableList.of();
-		try {
-			classpathEntries = IClasspathUtil.getBinaryRoots(classpath, (cpe) -> !cpe.isSystem());
-		} catch (Exception e) {
-			log.error("Cannot obtain binary root from classpath entries for " + classpath.getName(), e);
-		}
-		return new JandexIndex(classpathEntries, jarFile -> findIndexFile(jarFile), javadocProviderFactory, getBaseIndices());
+		return new JandexIndex(classpath, jarFile -> findIndexFile(jarFile), javadocProviderFactory);
 	}
 
 	private Disposable.Composite subscriptions = Disposables.composite();
@@ -113,10 +107,6 @@ public final class JandexClasspath implements ClasspathIndex {
 	public Optional<URL> sourceContainer(File binaryClasspathRoot) {
 		CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, binaryClasspathRoot);
 		return cpe == null ? Optional.empty() : Optional.ofNullable(cpe.getSourceContainerUrl());
-	}
-
-	protected BasicJandexIndex[] getBaseIndices() {
-		return JandexSystemLibsIndex.getInstance().fromJars(IClasspathUtil.getBinaryRoots(classpath, CPE::isSystem));
 	}
 
 	@Override
@@ -152,7 +142,7 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Optional<File> findClasspathResourceContainer(String fqName) {
+	public IJavaModuleData findClasspathResourceContainer(String fqName) {
 		return javaIndex.get().findClasspathResourceForType(fqName);
 	}
 

@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.links;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
@@ -55,7 +55,7 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 	}
 
 	@Override
-	protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, File jarFile) {
+	protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, IJavaModuleData jarModuleData) {
 		return Optional.ofNullable(JdtJavaDocumentUriProvider.uri(project, fqName)).map(uri -> uri.toString());
 	}
 

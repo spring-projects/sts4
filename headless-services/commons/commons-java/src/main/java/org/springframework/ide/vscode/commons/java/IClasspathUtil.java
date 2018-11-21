@@ -68,7 +68,7 @@ public class IClasspathUtil {
 		return Objects.equals(canonicalFile, classpathEntryFile);
 	}
 
-	private static File binaryLocation(CPE cpe) {
+	public static File binaryLocation(CPE cpe) {
 		switch (cpe.getKind()) {
 		case Classpath.ENTRY_KIND_BINARY:
 			return canonicalFile(cpe.getPath());

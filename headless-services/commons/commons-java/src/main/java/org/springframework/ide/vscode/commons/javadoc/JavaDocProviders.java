@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.commons.javadoc;
 import java.net.URL;
 
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 
 public class JavaDocProviders {
@@ -26,7 +25,7 @@ public class JavaDocProviders {
 				? TypeUrlProviderFromContainerUrl.JAR_JAVADOC_URL_PROVIDER
 				: TypeUrlProviderFromContainerUrl.JAVADOC_FOLDER_URL_SUPPLIER;
 			return new HtmlJavadocProvider(
-					type -> urlProvider.url(classpathEntry.getJavadocContainerUrl(), type.getFullyQualifiedName())
+					type -> urlProvider.url(classpathEntry.getJavadocContainerUrl(), type.getFullyQualifiedName(), type.classpathContainer().getModule())
 			);
 		}
 		return null;

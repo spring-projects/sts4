@@ -17,20 +17,19 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.Flags;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
@@ -103,6 +102,15 @@ public class JavaIndexTest {
 		assertNotNull(type);
 	}
 
+//	@Test
+//	public void findStringStripMethodinJDK() throws Exception {
+//		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+//		IType type = project.findType("java.lang.String");
+//		assertNotNull(type);
+//		IMethod method = type.getMethod("strip", Stream.empty());
+//		assertNotNull(method);
+//	}
+
 	@Test
 	public void findClassInOutputFolder() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
@@ -154,18 +162,18 @@ public class JavaIndexTest {
 	@Test
 	public void testFindJarResource() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		Optional<File> jar = project.findClasspathResourceContainer("org.springframework.boot.autoconfigure.SpringBootApplication");
-		assertTrue(jar.isPresent());
-		assertEquals("spring-boot-autoconfigure-1.4.1.RELEASE.jar", jar.get().getName());
+		IJavaModuleData module = project.findClasspathResourceContainer("org.springframework.boot.autoconfigure.SpringBootApplication");
+		assertNotNull(module);
+		assertEquals("spring-boot-autoconfigure-1.4.1.RELEASE.jar", module.getContainer().getName());
 	}
 
 	@Test
 	public void testFindJavaResource() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		Optional<File> file = project.findClasspathResourceContainer("hello.GreetingController");
-		assertTrue(file.isPresent());
-		assertTrue(file.get().exists());
-		assertEquals(getOutputFolder(project).toString(), file.get().toString());
+		IJavaModuleData module = project.findClasspathResourceContainer("hello.GreetingController");
+		assertNotNull(module);
+		assertTrue(module.getContainer().exists());
+		assertEquals(getOutputFolder(project).toString(), module.getContainer().toString());
 	}
 
 	@Test

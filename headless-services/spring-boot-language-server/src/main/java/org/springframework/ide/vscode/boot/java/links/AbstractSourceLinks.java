@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.util.text.Region;
@@ -50,13 +51,13 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
-		Optional<File> classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
-		if (classpathResource.isPresent()) {
-			File file = classpathResource.get();
+		IJavaModuleData classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
+		if (classpathResource != null) {
+			File file = classpathResource.getContainer();
 			if (file.isDirectory()) {
-				return javaSourceLinkUrl(project, fqName, file);
+				return javaSourceLinkUrl(project, fqName, classpathResource);
 			} else {
-				return jarSourceLinkUrl(project, fqName, file);
+				return jarSourceLinkUrl(project, fqName, classpathResource);
 			}
 		}
 		return Optional.empty();
@@ -74,7 +75,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 
 
 
-	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, File containerFolder) {
+	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, IJavaModuleData folderModuleData) {
 		IClasspath classpath = project.getClasspath();
 		return SourceLinks.sourceFromSourceFolder(fqName, classpath)
 			.map(sourcePath -> javaSourceLinkUrl(project, sourcePath, fqName));
@@ -95,19 +96,19 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		return cuCache == null ? Optional.empty() : cuCache.withCompilationUnit(project, uri, compilationUnit -> Optional.ofNullable(compilationUnit));
 	}
 
-	abstract protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, File jarFile);
+	abstract protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, IJavaModuleData jarModuleData);
 
-	private Optional<String> jarSourceLinkUrl(IJavaProject project, String fqName, File jarFile) {
-		return jarLinkUrl(project, fqName, jarFile).map(sourceUrl -> {
-			Optional<String> positionLink = findCUForFQNameFromJar(project, jarFile, fqName).map(cu -> positionLink(cu, fqName));
+	private Optional<String> jarSourceLinkUrl(IJavaProject project, String fqName, IJavaModuleData jarModuleData) {
+		return jarLinkUrl(project, fqName, jarModuleData).map(sourceUrl -> {
+			Optional<String> positionLink = findCUForFQNameFromJar(project, jarModuleData, fqName).map(cu -> positionLink(cu, fqName));
 			return positionLink.isPresent() ? sourceUrl + positionLink.get() : sourceUrl;
 		});
 	}
 
-	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, File jarFile, String fqName) {
-		return project.sourceContainer(jarFile).map(url -> {
+	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, IJavaModuleData jarModuleData, String fqName) {
+		return project.sourceContainer(jarModuleData.getContainer()).map(url -> {
 			try {
-				return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName);
+				return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName, jarModuleData.getModule());
 			} catch (Exception e) {
 				log.warn("Failed to determine source URL from url={} fqName={}", url, fqName, e);
 				return null;

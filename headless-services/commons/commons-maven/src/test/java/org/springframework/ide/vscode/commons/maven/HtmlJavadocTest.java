@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
@@ -33,6 +34,8 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+@Ignore
+//@EnabledOnJre(JAVA_8)
 public class HtmlJavadocTest {
 
 	private static FileObserver fileObserver = new BasicFileObserver();

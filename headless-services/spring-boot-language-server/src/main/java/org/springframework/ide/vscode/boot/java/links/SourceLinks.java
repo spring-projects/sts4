@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.links;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 
@@ -54,7 +54,7 @@ public interface SourceLinks {
 			})
 			.map(url -> {
 				try {
-					return TypeUrlProviderFromContainerUrl.SOURCE_FOLDER_URL_SUPPLIER.url(url, fqName);
+					return TypeUrlProviderFromContainerUrl.SOURCE_FOLDER_URL_SUPPLIER.url(url, fqName, /* module */ null);
 				} catch (Exception e) {
 					log.warn("Failed to determine source URL from url={} fqName=", url, fqName, e);
 					return null;
@@ -73,31 +73,30 @@ public interface SourceLinks {
 	}
 
 	public static Optional<URL> source(IJavaProject project, String fqName) {
-		Optional<File> classpathResourceContainer = project.findClasspathResourceContainer(fqName);
 		// Try to find in a source JAR
-		Optional<URL> url = classpathResourceContainer
-				.flatMap(file -> project.sourceContainer(file))
-				.map(file -> {
+		IJavaModuleData classpathResourceContainer = project.findClasspathResourceContainer(fqName);
+		if (classpathResourceContainer != null) {
+			Optional<URL> url = project.sourceContainer(classpathResourceContainer.getContainer()).map(file -> {
+				try {
+					return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(file, fqName, classpathResourceContainer.getModule());
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			});
+
+			if (!url.isPresent()) {
+				// Try Source folder
+				url = sourceFromSourceFolder(fqName, project.getClasspath()).map(p -> {
 					try {
-						return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(file, fqName);
-					} catch (Exception e) {
+						return p.toUri().toURL();
+					} catch (MalformedURLException e) {
 						throw new IllegalStateException(e);
 					}
 				});
-
-
-		if (!url.isPresent()) {
-			// Try Source folder
-			url = classpathResourceContainer
-					.flatMap(file -> sourceFromSourceFolder(fqName, project.getClasspath()).map(p -> {
-						try {
-							return p.toUri().toURL();
-						} catch (MalformedURLException e) {
-							throw new IllegalStateException(e);
-						}
-					}));
+			}
+			return url;
 		}
-		return url;
+		return Optional.empty();
 	}
 
 

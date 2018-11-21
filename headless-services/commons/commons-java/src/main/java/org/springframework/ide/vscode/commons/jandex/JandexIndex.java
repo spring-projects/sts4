@@ -12,7 +12,6 @@
 package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
@@ -20,6 +19,8 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IType;
 
@@ -51,21 +52,22 @@ public class JandexIndex extends BasicJandexIndex {
 		return javadocProviderFactory;
 	}
 
-	public JandexIndex(Collection<File> classpathEntries, IndexFileFinder indexFileFinder,
-			JavadocProviderFactory javadocProviderFactory, BasicJandexIndex... baseIndex) {
-		super(classpathEntries, indexFileFinder, baseIndex);
+	public JandexIndex(IClasspath classpath, IndexFileFinder indexFileFinder,
+			JavadocProviderFactory javadocProviderFactory) {
+		super(classpath, indexFileFinder);
 		this.javadocProviderFactory = javadocProviderFactory;
 	}
 
 	public IType findType(String fqName) {
-		return createType(getClassByName(DotName.createSimple(fqName)));
+		Tuple2<IJavaModuleData, ClassInfo> result = getClassByName(DotName.createSimple(fqName));
+		return result == null ? null : createType(result);
 	}
 
-	private IType createType(Tuple2<File, ClassInfo> match) {
+	private IType createType(Tuple2<IJavaModuleData, ClassInfo> match) {
 		if (match == null) {
 			return null;
 		}
-		File classpathResource = match.getT1();
+		File classpathResource = match.getT1().getContainer();
 		IJavadocProvider javadocProvider = null;
 		try {
 			javadocProvider = javadocProvidersCache.get(classpathResource, () -> {

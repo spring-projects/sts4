@@ -13,11 +13,11 @@ package org.springframework.ide.vscode.boot.java.links;
 import java.io.File;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public class JdtJavaDocumentUriProvider implements JavaDocumentUriProvider {
@@ -30,9 +30,9 @@ public class JdtJavaDocumentUriProvider implements JavaDocumentUriProvider {
 	}
 
 	public static URI uri(IJavaProject project, String fqName) {
-		Optional<File> classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
-		if (classpathResource.isPresent()) {
-			File file = classpathResource.get();
+		IJavaModuleData classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
+		if (classpathResource != null) {
+			File file = classpathResource.getContainer();
 			if (file.isDirectory()) {
 				IClasspath classpath = project.getClasspath();
 				return SourceLinks.sourceFromSourceFolder(fqName, classpath).map(path -> path.toUri()).orElse(null);

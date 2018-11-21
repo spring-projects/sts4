@@ -39,19 +39,18 @@ import com.google.common.collect.ImmutableSet;
 public class LoggerNameProviderTest {
 
 	private static final String[] JBOSS_RESULTS = {
-			"com.fasterxml.jackson.databind.jsonFormatVisitors", //1
 			// org.jboss is not really a package...
-//			"org.jboss", //2
-			"org.jboss.logging", //3
-			"org.jboss.logging.JBossLogManagerLogger", //4
-			"org.jboss.logging.JBossLogManagerProvider", //5
-			"org.jboss.logging.JBossLogRecord", //6
-			"org.springframework.instrument.classloading.jboss", //7
-			"org.springframework.instrument.classloading.jboss.JBossClassLoaderAdapter", //8
-			"org.springframework.instrument.classloading.jboss.JBossLoadTimeWeaver", //9
-			"org.springframework.instrument.classloading.jboss.JBossMCAdapter", //10
-			"org.springframework.instrument.classloading.jboss.JBossMCTranslatorAdapter", //11
-			"org.springframework.instrument.classloading.jboss.JBossModulesAdapter" //12
+//			"org.jboss", //1
+			"org.jboss.logging", //2
+			"org.jboss.logging.JBossLogManagerLogger", //3
+			"org.jboss.logging.JBossLogManagerProvider", //4
+			"org.jboss.logging.JBossLogRecord", //5
+			"org.springframework.instrument.classloading.jboss", //6
+			"org.springframework.instrument.classloading.jboss.JBossClassLoaderAdapter", //7
+			"org.springframework.instrument.classloading.jboss.JBossLoadTimeWeaver", //8
+			"org.springframework.instrument.classloading.jboss.JBossMCAdapter", //9
+			"org.springframework.instrument.classloading.jboss.JBossMCTranslatorAdapter", //10
+			"org.springframework.instrument.classloading.jboss.JBossModulesAdapter" //11
 	};
 
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;

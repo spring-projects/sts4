@@ -11,29 +11,22 @@
 package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.channels.IllegalSelectorException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
 
 /**
@@ -44,67 +37,34 @@ import com.google.common.io.BaseEncoding;
  */
 public class JandexSystemLibsIndex {
 
-	private static final String DEFAULT_JAVA_VERSION = "1.8.0";
-
-	private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("^java version \"(.*)\"$");
+//	private static final String DEFAULT_JAVA_VERSION = "1.8.0";
+//
+//	private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("^java version \"(.*)\"$");
 
 	public static final Logger log = LoggerFactory.getLogger(JandexSystemLibsIndex.class);
 
 	private static final Supplier<JandexSystemLibsIndex> INSTANCE = Suppliers.memoize(() -> new JandexSystemLibsIndex());
 
-	private Cache<Path, BasicJandexIndex> cache;
+	private LoadingCache<Path, ImmutableList<ModuleJandexIndex>> indexCache;
 
 	private JandexSystemLibsIndex() {
-		this.cache = CacheBuilder.newBuilder().build(new CacheLoader<Path, BasicJandexIndex>() {
+		this.indexCache = CacheBuilder.newBuilder().build(new CacheLoader<Path, ImmutableList<ModuleJandexIndex>>() {
 
 			@Override
-			public BasicJandexIndex load(Path key) throws Exception {
-				return createIndex(key);
+			public ImmutableList<ModuleJandexIndex> load(Path path) throws Exception {
+				File file = path.toFile();
+				return IndexRoutines.fromClasspathBinaryEntry(file, findIndexFile(path));
 			}
 
 		});
-	}
-
-	/**
-	 * Retrieves or lazily creates Jandex Index for a folder containing system lib jars
-	 * @param path the path containing jars
-	 * @return Jandex Index of the jars contained in the folder
-	 */
-	public BasicJandexIndex index(Path path) {
-		try {
-			return cache.get(path, () -> createIndex(path));
-		} catch (ExecutionException e) {
-			log.error("Failed to detrmine Jandex index for " + path, e);
-			return null;
-		}
-	}
-
-	/**
-	 * Retrieves Jandex Indexes appropriate for systm lib jars. One Jandex Index may contain all sys lib jars.
-	 * @param jars system lib jars
-	 * @return Jandex Indexs for jars
-	 */
-	public BasicJandexIndex[] fromJars(Collection<File> jars) {
-		return jars.stream().map(jar -> jar.toPath().getParent()).distinct().map(folder -> index(folder)).filter(Objects::nonNull).toArray(BasicJandexIndex[]::new);
 	}
 
 	public static JandexSystemLibsIndex getInstance() {
 		return INSTANCE.get();
 	}
 
-	private BasicJandexIndex createIndex(Path path) {
-		List<File> jars = Collections.emptyList();
-		try {
-			jars = Files.list(path).filter(p -> p.getFileName().toString().endsWith(".jar") && Files.isRegularFile(p)).map(p -> p.toFile()).collect(Collectors.toList());
-		} catch (IOException e) {
-			// Shouldn't happen - there should at least be one jar file
-			log.error("Cannot list files in folder " + path, e);
-		}
-		return new BasicJandexIndex(jars, jarFile -> findIndexFile(jarFile));
-	}
-
-	private File findIndexFile(File jarFile) {
-		return Paths.get(System.getProperty("user.home"), ".sts4-jandex", folderNameforPath(jarFile.getParentFile().toString()), jarFile.getName() + ".jdx").toFile();
+	private File findIndexFile(Path path) {
+		return Paths.get(System.getProperty("user.home"), ".sts4-jandex", folderNameforPath(path.getParent().toString()), path.getFileName() + ".jdx").toFile();
 	}
 
 	private static String folderNameforPath(String path) {
@@ -117,6 +77,15 @@ public class JandexSystemLibsIndex {
 		} catch (NoSuchAlgorithmException e) {
 			// shouldn't happen!
 			throw new IllegalSelectorException();
+		}
+	}
+
+	public ImmutableList<ModuleJandexIndex> index(Path path) {
+		try {
+			return indexCache.get(path);
+		} catch (ExecutionException e) {
+			log.error("", e);
+			return null;
 		}
 	}
 
