@@ -30,10 +30,10 @@ public class RequestMappingsParser20 {
 					.getJSONObject(contextId)
 					.getJSONObject("mappings");
 			JSONArray rmArray = null;
-			if (mappings.has("dispatcherServlets")) {
+			if (mappings.has("dispatcherServlets") && mappings.getJSONObject("dispatcherServlets").has("dispatcherServlet")) {
 				// Regular Web starter endpoints RMs JMX beans format
 				rmArray = mappings.getJSONObject("dispatcherServlets").getJSONArray("dispatcherServlet");
-			} else if (mappings.has("dispatcherHandlers")) {
+			} else if (mappings.has("dispatcherHandlers") && mappings.getJSONObject("dispatcherHandlers").has("webHandler")) {
 				// WebFlux endpoints RMs JMX bean format
 				rmArray = mappings.getJSONObject("dispatcherHandlers").getJSONArray("webHandler");
 			}

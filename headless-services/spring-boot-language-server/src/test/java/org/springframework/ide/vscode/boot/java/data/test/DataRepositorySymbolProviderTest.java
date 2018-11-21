@@ -63,7 +63,7 @@ public class DataRepositorySymbolProviderTest {
 	}
 
 	@Test
-	public void testSimpleReppositorySymbol() throws Exception {
+	public void testSimpleRepositorySymbol() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());

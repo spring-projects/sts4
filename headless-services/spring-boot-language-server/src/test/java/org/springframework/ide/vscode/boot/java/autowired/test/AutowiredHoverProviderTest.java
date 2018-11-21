@@ -507,7 +507,7 @@ public class AutowiredHoverProviderTest {
 				"}\n"
 		);
 
-		editor.assertHighlights("@Component", "SomeComponent");
+		editor.assertHighlights("@Component", "SomeComponent", "depA", "depB");
 
 		editor.assertTrimmedHover("SomeComponent", 2,
 				"**&#8592; `DependencyA` `DependencyB`**\n" +
@@ -519,6 +519,25 @@ public class AutowiredHoverProviderTest {
 				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
+
+		editor.assertTrimmedHover("depA", 2,
+				"**&#8592; `DependencyA`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"  \n" +
+				"Bean id: `someComponent`  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+
+		editor.assertTrimmedHover("depB", 2,
+				"**&#8592; `DependencyB`**\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Bean id: `someComponent`  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+
 	}
 
 	@Test
@@ -718,7 +737,7 @@ public class AutowiredHoverProviderTest {
 				"   private IDependency a;\n" +
 				"   private IDependency b;\n" +
 				"\n" +
-				"	public SomeComponent(@Qualifier(\"dependencyA\") IDependency a, @Qualifier(\"dependencyB\") IDependency b) {\n" +
+				"	public SomeComponent(@Qualifier(\"dependencyA\") IDependency depA, @Qualifier(\"dependencyB\") IDependency depB) {\n" +
 				"       this.a = a;\n" +
 				"       this.b = b;\n" +
 				"	}\n" +
@@ -726,7 +745,7 @@ public class AutowiredHoverProviderTest {
 				"}\n"
 		);
 
-		editor.assertHighlights("@Component", "SomeComponent");
+		editor.assertHighlights("@Component", "SomeComponent", "depA", "depB");
 		editor.assertTrimmedHover("SomeComponent", 2,
 				"**&#8592; `DependencyA` `DependencyB`**\n" +
 				"- Bean: `dependencyA`  \n" +
@@ -737,6 +756,25 @@ public class AutowiredHoverProviderTest {
 				"Bean id: `someComponent`  \n" +
 				"Process [PID=111, name=`the-app`]\n"
 		);
+
+		editor.assertTrimmedHover("depA",
+				"**&#8592; `DependencyA`**\n" +
+				"- Bean: `dependencyA`  \n" +
+				"  Type: `com.example.DependencyA`\n" +
+				"  \n" +
+				"Bean id: `someComponent`  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+
+		editor.assertTrimmedHover("depB",
+				"**&#8592; `DependencyB`**\n" +
+				"- Bean: `dependencyB`  \n" +
+				"  Type: `com.example.DependencyB`\n" +
+				"  \n" +
+				"Bean id: `someComponent`  \n" +
+				"Process [PID=111, name=`the-app`]\n"
+		);
+
 	}
 
 	@Test

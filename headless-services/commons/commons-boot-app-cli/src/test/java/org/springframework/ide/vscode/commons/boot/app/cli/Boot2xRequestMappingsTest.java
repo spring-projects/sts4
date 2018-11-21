@@ -89,4 +89,45 @@ public class Boot2xRequestMappingsTest {
 				.collect(Collectors.toSet())
 		);
 	}
+
+	@Test
+	public void testWebEurekaRms() throws Exception {
+		String json = IOUtils.toString(Boot2xRequestMappingsTest.class.getResourceAsStream("/live-rm-beans/rms-boot2-web-eureka.json"));
+		Collection<RequestMapping> rms = RequestMappingsParser20.parse(new JSONObject(json));
+		assertEquals(9, rms.size());
+
+		ImmutableSet<String> expected = ImmutableSet.of(
+				"/error",
+				"/actuator",
+				"/actuator/health",
+				"/actuator/info",
+				"/welcome"
+		);
+		assertEquals(expected,
+				rms.stream()
+				.flatMap(rm -> Arrays.stream(rm.getSplitPath()))
+				.collect(Collectors.toSet())
+		);
+
+	}
+
+	@Test
+	public void testWebFluxEurekaRms() throws Exception {
+		String json = IOUtils.toString(Boot2xRequestMappingsTest.class.getResourceAsStream("/live-rm-beans/rms-boot2-webflux-eureka.json"));
+		Collection<RequestMapping> rms = RequestMappingsParser20.parse(new JSONObject(json));
+		assertEquals(6, rms.size());
+
+		ImmutableSet<String> expected = ImmutableSet.of(
+				"/actuator",
+				"/actuator/health",
+				"/actuator/info",
+				"/welcome"
+		);
+		assertEquals(expected,
+				rms.stream()
+				.flatMap(rm -> Arrays.stream(rm.getSplitPath()))
+				.collect(Collectors.toSet())
+		);
+
+	}
 }

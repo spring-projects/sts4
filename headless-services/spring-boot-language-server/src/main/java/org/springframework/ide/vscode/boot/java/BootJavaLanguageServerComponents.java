@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
+import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
@@ -63,7 +64,6 @@ import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
-import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -73,6 +73,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -265,46 +266,59 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	protected ICompletionEngine createCompletionEngine(
 			JavaProjectFinder javaProjectFinder,
 			SpringPropertyIndexProvider indexProvider,
-			ProjectBasedPropertyIndexProvider adHocIndexProvider
-	) {
+			ProjectBasedPropertyIndexProvider adHocIndexProvider) {
+
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
 				new ScopeCompletionProcessor());
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
 				new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocIndexProvider));
+		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 
-		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
-		snippetManager.add(
-				new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-						ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
-								"org.springframework.web.bind.annotation.RequestMethod",
-								"org.springframework.web.bind.annotation.RequestParam"),
-						"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
-								+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
-								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-		snippetManager
-				.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-						ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
-								"org.springframework.web.bind.annotation.RequestParam"),
-						"@GetMapping(value=\"${path}\")\n"
-								+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
-								+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-		snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
-						"org.springframework.web.bind.annotation.RequestBody"),
-				"@PostMapping(value=\"${path}\")\n"
-						+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
-						+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
-		snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
-				CompletionItemKind.Method,
-				ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
-						"org.springframework.web.bind.annotation.RequestBody",
-						"org.springframework.web.bind.annotation.PathVariable"),
-				"@PutMapping(value=\"${path}/{${id}}\")\n"
-						+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
-						+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
+		JavaSnippetManager snippetManager = getSnippets();
 		return new BootJavaCompletionEngine(this, providers, snippetManager);
+	}
+
+	protected JavaSnippetManager getSnippets() {
+		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
+
+		// PT 160529904: Eclipse templates are duplicated, due to templates in Eclipse also being contributed by
+		// STS3 bundle. Therefore do not include templates if client is Eclipse
+		// TODO: REMOVE this check once STS3 is no longer supported
+		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
+			snippetManager.add(
+					new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+							ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
+									"org.springframework.web.bind.annotation.RequestMethod",
+									"org.springframework.web.bind.annotation.RequestParam"),
+							"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
+									+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
+									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+			snippetManager
+					.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+							ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
+									"org.springframework.web.bind.annotation.RequestParam"),
+							"@GetMapping(value=\"${path}\")\n"
+									+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
+									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
+			snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
+					CompletionItemKind.Method,
+					ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
+							"org.springframework.web.bind.annotation.RequestBody"),
+					"@PostMapping(value=\"${path}\")\n"
+							+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
+							+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
+			snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
+					CompletionItemKind.Method,
+					ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
+							"org.springframework.web.bind.annotation.RequestBody",
+							"org.springframework.web.bind.annotation.PathVariable"),
+					"@PutMapping(value=\"${path}/{${id}}\")\n"
+							+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
+							+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
+		}
+
+		return snippetManager;
 	}
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
