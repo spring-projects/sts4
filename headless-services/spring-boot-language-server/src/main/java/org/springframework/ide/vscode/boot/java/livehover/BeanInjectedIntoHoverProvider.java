@@ -129,7 +129,7 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 				if (beanAnnotation != null) {
 					LiveBean definedBean = getDefinedBean(beanAnnotation);
 					if (definedBean != null) {
-						Hover hover = assembleHover(project, runningApps, definedBean, parameter);
+						Hover hover = assembleHover(project, runningApps, definedBean, parameter, false, true);
 						if (hover != null) {
 							hover.setRange(range);
 						}

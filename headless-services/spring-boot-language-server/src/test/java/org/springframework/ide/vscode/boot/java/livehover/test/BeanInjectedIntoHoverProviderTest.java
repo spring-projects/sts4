@@ -239,6 +239,80 @@ public class BeanInjectedIntoHoverProviderTest {
 	}
 
 	@Test
+	public void beanWithOneInjectionAndWiring() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("hello.FooImplementation")
+						.dependencies("message")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("myController")
+						.type("hello.MyController")
+						.dependencies("fooImplementation")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("message")
+						.type("java.lang.String")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package hello;\n" +
+				"\n" +
+				"import org.springframework.context.annotation.Bean;\n" +
+				"import org.springframework.context.annotation.Configuration;\n" +
+				"import org.springframework.context.annotation.Profile;\n" +
+				"\n" +
+				"@Configuration\n" +
+				"public class LocalConfig {\n" +
+				"	\n" +
+				"	@Bean(\"fooImplementation\")\n" +
+				"	Foo someFoo(String msg) {\n" +
+				"		return new FooImplementation();\n" +
+				"	}\n" +
+				"}"
+		);
+		// !!! 2 highlights over @Bean. 1 for injected beans CodeLens, 1 for wired beans CodeLens
+		editor.assertHighlights("@Bean", "@Bean", "msg");
+		editor.assertTrimmedHover("@Bean",
+				"**&#8594; `MyController`**\n" +
+				"- Bean: `myController`  \n" +
+				"  Type: `hello.MyController`\n" +
+				"  \n" +
+				"**&#8592; `String`**\n" +
+				"- Bean: `message`  \n" +
+				"  Type: `java.lang.String`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+		editor.assertTrimmedHover("msg",
+				"**&#8592; `String`**\n" +
+				"- Bean: `message`  \n" +
+				"  Type: `java.lang.String`\n" +
+				"  \n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
 	public void beanFromInnerClassWithOneInjection() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()

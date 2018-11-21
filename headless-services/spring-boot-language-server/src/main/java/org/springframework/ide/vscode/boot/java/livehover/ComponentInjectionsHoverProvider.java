@@ -131,7 +131,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean, typeDeclaration);
+				Hover hover = assembleHover(project, runningApps, definedBean, typeDeclaration, true, true);
 				if (hover != null) {
 					SimpleName name = typeDeclaration.getName();
 					try {
