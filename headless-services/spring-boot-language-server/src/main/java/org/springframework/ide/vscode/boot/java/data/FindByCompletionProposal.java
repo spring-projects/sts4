@@ -27,9 +27,10 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	private String details;
 	private Renderable doc;
 	private Optional<DocumentEdits> additionalEdits;
+	private String filter;
 
 	public FindByCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String details,
-			Renderable doc, Optional<DocumentEdits> additionalEdits) {
+			Renderable doc, Optional<DocumentEdits> additionalEdits, String filter) {
 		super();
 		this.label = label;
 		this.kind = kind;
@@ -37,6 +38,7 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		this.details = details;
 		this.doc = doc;
 		this.additionalEdits = additionalEdits;
+		this.filter = filter;
 	}
 
 	@Override
@@ -72,6 +74,11 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	@Override
 	public InsertTextFormat getInsertTextFormat() {
 		return InsertTextFormat.Snippet;
+	}
+
+	@Override
+	public String getFilterText() {
+		return filter;
 	}
 
 }

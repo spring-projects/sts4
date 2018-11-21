@@ -17,12 +17,15 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.core.util.ASTNodeFinder;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.util.StringUtils;
 
 /**
@@ -42,15 +45,24 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		if (repo != null) {
 			DomainType domainType = repo.getDomainType();
 			if (domainType != null) {
+
+				String prefix = "";
+				try {
+					IRegion line = doc.getLineInformationOfOffset(offset);
+					prefix = doc.get(line.getOffset(), offset - line.getOffset()).trim();
+				} catch (BadLocationException e) {
+					// ignore if there is a problem computing the prefix, continue without prefix
+				}
+
 				DomainProperty[] properties = domainType.getProperties();
 				for (DomainProperty property : properties) {
-					completions.add(generateCompletionProposal(offset, repo, property));
+					completions.add(generateCompletionProposal(offset, prefix, repo, property));
 				}
 			}
 		}
 	}
 
-	protected ICompletionProposal generateCompletionProposal(int offset, DataRepositoryDefinition repoDef, DomainProperty domainProperty) {
+	protected ICompletionProposal generateCompletionProposal(int offset, String prefix, DataRepositoryDefinition repoDef, DomainProperty domainProperty) {
 		StringBuilder label = new StringBuilder();
 		label.append("findBy");
 		label.append(StringUtils.capitalize(domainProperty.getName()));
@@ -72,11 +84,21 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		completion.append(" ");
 		completion.append(StringUtils.uncapitalize(domainProperty.getName()));
 		completion.append(");");
-		edits.insert(offset, completion.toString());
+
+		String filter = label.toString();
+		if (prefix != null && label.toString().startsWith(prefix)) {
+			edits.replace(offset - prefix.length(), offset, completion.toString());
+		}
+		else if (prefix != null && completion.toString().startsWith(prefix)) {
+			edits.replace(offset - prefix.length(), offset, completion.toString());
+			filter = completion.toString();
+		}
+		else {
+			edits.insert(offset, completion.toString());
+		}
 
 		DocumentEdits additionalEdits = new DocumentEdits(null);
-
-		return new FindByCompletionProposal(label.toString(), CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits));
+		return new FindByCompletionProposal(label.toString(), CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), filter);
 	}
 
 	private DataRepositoryDefinition getDataRepositoryDefinition(TypeDeclaration type) {
