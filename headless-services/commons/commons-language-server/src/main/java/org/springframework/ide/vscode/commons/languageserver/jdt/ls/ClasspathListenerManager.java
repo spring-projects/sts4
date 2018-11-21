@@ -30,6 +30,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 public class ClasspathListenerManager {
 
@@ -46,7 +47,7 @@ public class ClasspathListenerManager {
 		this.async = server.getAsync();
 	}
 
-	public Disposable addClasspathListener(ClasspathListener classpathListener) {
+	public Mono<Disposable> addClasspathListener(ClasspathListener classpathListener) {
 		String callbackCommandId = "sts4.classpath." + RandomStringUtils.randomAlphabetic(8);
 
 		// 1. register callback command handler in SimpleLanguageServer
@@ -78,29 +79,31 @@ public class ClasspathListenerManager {
 						ImmutableMap.of("commands", ImmutableList.of(callbackCommandId))
 				)
 		));
-		server.getClient().registerCapability(params).join();
-
 		// 3. call the client to ask it to call that callback
-		server.getClient().addClasspathListener(
-				new ClasspathListenerParams(callbackCommandId)
-		).join();
+		Mono<Void> registerCallbackCommand = Mono.defer(() -> Mono.fromFuture(
+				server.getClient().registerCapability(params)
+		));
+		Mono<Object> registerClasspathListener = Mono.defer(() -> Mono.fromFuture(
+				server.getClient().addClasspathListener(new ClasspathListenerParams(callbackCommandId))
+		));
 
-		// Cleanups:
-		return () -> {
-			try {
-				log.info("Unregistering classpath callback "+callbackCommandId +" ...");
-				this.server.getClient().removeClasspathListener(
-						new ClasspathListenerParams(callbackCommandId)
-				).join();
-				log.info("Unregistering classpath callback "+callbackCommandId +" OK");
+		Disposable cleanups = () -> {
+			log.info("Unregistering classpath callback "+callbackCommandId +" ...");
+			AsyncRunner.thenLog(log,
+					this.server.getClient().removeClasspathListener(new ClasspathListenerParams(callbackCommandId))
+			);
+			log.info("Unregistering classpath callback "+callbackCommandId +" OK");
+			AsyncRunner.thenLog(log,
 				this.server.getClient().unregisterCapability(new UnregistrationParams(ImmutableList.of(
 						new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)
-				))).join();
-				unregisterCommand.dispose();
-			} catch (Exception e) {
-				log.error("", e);
-			}
+			    )))
+			);
+			unregisterCommand.dispose();
 		};
+		return
+			registerCallbackCommand
+			.then(registerClasspathListener)
+			.thenReturn(cleanups);
 	}
 
 }

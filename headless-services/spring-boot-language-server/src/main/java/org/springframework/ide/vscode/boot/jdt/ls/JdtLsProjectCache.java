@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
@@ -163,45 +164,43 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	}
 
 	@Override
-	public Disposable initialize() throws Exception {
-		try {
-			return server.addClasspathListener(new ClasspathListener() {
-				@Override
-				public void changed(Event event) {
-					log.debug("claspath event received {}", event);
-					server.onInitialized(() -> {
-						//log.info("initialized.thenRun block entered");
-						try {
-							synchronized (table) {
-								String uri = UriUtil.normalize(event.projectUri);
-								log.debug("uri = {}", uri);
-								if (event.deleted) {
-									log.debug("event.deleted = true");
-									JavaProject deleted = table.remove(uri);
-									if (deleted!=null) {
-										log.debug("removed from table = true");
-										notifyDelete(deleted);
-									} else {
-										log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
-									}
+	public Mono<Disposable> initialize() {
+		return server.addClasspathListener(new ClasspathListener() {
+			@Override
+			public void changed(Event event) {
+				log.debug("claspath event received {}", event);
+				server.doOnInitialized(() -> {
+					//log.info("initialized.thenRun block entered");
+					try {
+						synchronized (table) {
+							String uri = UriUtil.normalize(event.projectUri);
+							log.debug("uri = {}", uri);
+							if (event.deleted) {
+								log.debug("event.deleted = true");
+								JavaProject deleted = table.remove(uri);
+								if (deleted!=null) {
+									log.debug("removed from table = true");
+									notifyDelete(deleted);
 								} else {
-									log.debug("deleted = false");
-									JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), JdtLsProjectCache.this);
-									JavaProject oldProject = table.put(uri, newProject);
-									if (oldProject != null) {
-										notifyChanged(newProject);
-									} else {
-										notifyCreated(newProject);
-									}
+									log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
+								}
+							} else {
+								log.debug("deleted = false");
+								JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), JdtLsProjectCache.this);
+								JavaProject oldProject = table.put(uri, newProject);
+								if (oldProject != null) {
+									notifyChanged(newProject);
+								} else {
+									notifyCreated(newProject);
 								}
 							}
-						} catch (Exception e) {
-							log.error("", e);
 						}
-					});
-				}
-			});
-		} catch (Throwable t) {
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				});
+			}
+		}).doOnError(t -> {
 			if (isNoJdtError(t)) {
 				log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
 			} else if (isOldJdt(t)) {
@@ -209,7 +208,6 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			} else {
 				log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
 			}
-			throw t;
-		}
+		});
 	}
 }

@@ -11,9 +11,10 @@
 package org.springframework.ide.vscode.boot.jdt.ls;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 public interface InitializableJavaProjectsService extends JavaProjectsService {
-	
-	Disposable initialize() throws Exception;
+
+	Mono<Disposable> initialize();
 
 }

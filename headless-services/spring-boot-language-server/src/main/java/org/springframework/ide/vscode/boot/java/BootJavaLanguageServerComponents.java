@@ -217,7 +217,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		});
 
 		server.onInitialize(this::initialize);
-		server.onInitialized(this::initialized);
+		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 	}
 

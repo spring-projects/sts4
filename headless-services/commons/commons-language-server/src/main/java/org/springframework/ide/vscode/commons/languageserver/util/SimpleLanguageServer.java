@@ -657,8 +657,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		this.initializeHandler = handler;
 	}
 
-	public synchronized void onInitialized(Runnable handler) {
-		thenLog(log, this.initialized.thenAccept((whocares) -> handler.run()));
+	public <T> Mono<T> onInitialized(Mono<T> handler) {
+		return Mono.fromFuture(this.initialized).then(handler)
+				.doOnError(error -> log.error("", error));
+	}
+
+
+	public void doOnInitialized(Runnable action) {
+		onInitialized(Mono.fromRunnable(action)).toFuture();
 	}
 
 	public synchronized void onShutdown(Runnable handler) {
@@ -677,7 +683,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		return this.async;
 	}
 
-	public synchronized Disposable addClasspathListener(ClasspathListener classpathListener) throws Exception {
+	public synchronized Mono<Disposable> addClasspathListener(ClasspathListener classpathListener) {
 		if (classpathListenerManager == null) {
 			classpathListenerManager = new ClasspathListenerManager(this);
 		}

@@ -28,10 +28,10 @@ import com.google.common.base.Suppliers;
 import reactor.core.Disposable;
 
 public class JavaProjectsServiceWithFallback implements JavaProjectsService {
-	
+
 	private Logger log = LoggerFactory.getLogger(JavaProjectsServiceWithFallback.class);
 
-	final private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
+	final private CompletableFuture<Disposable> mainServiceInitialized;
 
 	final private SimpleLanguageServer server;
 	private Supplier<JavaProjectsService> fallback;
@@ -42,30 +42,22 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 		this.main = main;
 		this.fallback = Suppliers.memoize(fallback);
 		this.server = server;
-		CompletableFuture<Disposable> disposable = new CompletableFuture<Disposable>();
-		this.server.onInitialized(() -> {
-			try {
-				disposable.complete(main.initialize());
-				initialized.complete(null);
-			} catch (Throwable e) {
-				log.info("Fallback classpath provider will be enabled");
-				disposable.complete(()-> {});
-				initialized.completeExceptionally(e);
-			}
-		});
-		this.server.onShutdown(() -> 
-			disposable.thenAccept(Disposable::dispose).join()
+		this.mainServiceInitialized = this.server
+				.onInitialized(main.initialize())
+				.toFuture();
+		this.server.onShutdown(() ->
+			mainServiceInitialized.thenAccept(Disposable::dispose).join()
 		);
 	}
 
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-		if (initialized.isDone()) {
-			if (initialized.isCompletedExceptionally()) {
+		if (mainServiceInitialized.isDone()) {
+			if (mainServiceInitialized.isCompletedExceptionally()) {
 				return fallback.get().find(doc);
 			} else {
 				return main.find(doc);
-			}	
+			}
 		} else {
 			log.debug("find => NOT INITIALIZED YET");
 		}
@@ -75,7 +67,7 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	@Override
 	public void addListener(Listener listener) {
-		initialized.handle((success, failed) -> {
+		mainServiceInitialized.handle((success, failed) -> {
 			if (failed!=null) {
 				fallback.get().addListener(listener);
 			} else {
@@ -87,7 +79,7 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	@Override
 	public void removeListener(Listener listener) {
-		initialized.handle((success, failed) -> {
+		mainServiceInitialized.handle((success, failed) -> {
 			if (failed!=null) {
 				fallback.get().removeListener(listener);
 			} else {
@@ -99,12 +91,12 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	@Override
 	public IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry) {
-		if (initialized.isDone()) {
-			if (initialized.isCompletedExceptionally()) {
+		if (mainServiceInitialized.isDone()) {
+			if (mainServiceInitialized.isCompletedExceptionally()) {
 				return fallback.get().javadocProvider(projectUri, classpathEntry);
 			} else {
 				return main.javadocProvider(projectUri, classpathEntry);
-			}	
+			}
 		} else {
 			log.debug("javadoc => NOT INITIALIZED YET");
 		}

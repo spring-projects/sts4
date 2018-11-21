@@ -62,7 +62,7 @@ public class SimpleServerFileObserver extends BasicFileObserver {
 	}
 
 	private void subscribe(String subscriptionId, List<String> globPattern, int kind) {
-		server.onInitialized(() -> {
+		server.doOnInitialized(() -> {
 			if (server.canRegisterFileWatchersDynamically()) {
 				List<FileSystemWatcher> watchers = globPattern.stream().map(pattern -> new FileSystemWatcher(pattern, kind)).collect(Collectors.toList());
 				Registration registration = new Registration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES, new DidChangeWatchedFilesRegistrationOptions(watchers));
@@ -73,7 +73,7 @@ public class SimpleServerFileObserver extends BasicFileObserver {
 
 	@Override
 	public boolean unsubscribe(String subscriptionId) {
-		server.onInitialized(() -> {
+		server.doOnInitialized(() -> {
 			if (server.canRegisterFileWatchersDynamically()) {
 				server.getClient().unregisterCapability(new UnregistrationParams(Arrays.asList(new Unregistration(subscriptionId, WORKSPACE_DID_CHANGE_WATCHED_FILES))));
 			}
