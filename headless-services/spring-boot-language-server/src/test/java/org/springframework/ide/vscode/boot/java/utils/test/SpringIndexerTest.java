@@ -349,6 +349,7 @@ public class SpringIndexerTest {
 		CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
 		deleteProject.get(5, TimeUnit.SECONDS);
 
+		allSymbols = indexer.getAllSymbols("");
 		assertEquals(0, allSymbols.size());
 	}
 
