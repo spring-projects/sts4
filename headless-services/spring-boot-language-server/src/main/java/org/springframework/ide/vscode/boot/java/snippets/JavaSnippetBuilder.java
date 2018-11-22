@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.IndentUtil;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -40,6 +41,11 @@ public class JavaSnippetBuilder{
 		IndentUtil indentUtil = new IndentUtil(doc);
 
 		DocumentEdits edit = new DocumentEdits(doc);
+
+		// PT 162103145 - Avoid creating a snippet with double `@` if the query is invoked after a `@` AND the template
+		// also starts with a `@`
+		template = removeDoubleAtSymbol(query, template);
+
 		String snippet = createSnippet(template);
 
 		String referenceIndent = indentUtil.getReferenceIndent(query.getStart(), doc);
@@ -53,7 +59,30 @@ public class JavaSnippetBuilder{
 		return edit;
 	}
 
+	private String removeDoubleAtSymbol(DocumentRegion query, String template) {
+		// PT 162103145 - Avoid creating a snippet with double `@` if the query is invoked after a `@` (so the case where "@<*>") and the template
+		// also starts with a `@`. Without this fix, a template starting with `@` will appear in the editor with `@@`.
+		if (StringUtil.hasText(template)) {
+			// IMPORTANT NOTE: this handles the case where completions is invoked AFTER
+			// typing `@` in the editor
+			// The query will NOT contain the `@`, because the `@` occurs before the query,
+			// so we should check the text
+			// before the query.
+			DocumentRegion possibleAtSymbol = query.textBefore(1);
+
+			if (possibleAtSymbol != null && possibleAtSymbol.getLength() > 0) {
+				char atSymbol = possibleAtSymbol.charAt(0);
+				if ('@' == atSymbol && template.startsWith("@")) {
+					return template.substring(1, template.length());
+				}
+			}
+		}
+
+		return template;
+	}
+
 	private String createSnippet(String template) {
+
 		Matcher matcher = PLACE_HOLDER.matcher(template);
 		int start = 0;
 		SnippetBuilder snippet = snippetBuilderFactory.get();
