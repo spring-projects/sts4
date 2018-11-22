@@ -278,7 +278,7 @@ public class SpringIndexer {
 		if (query != null && query.length() > 0) {
 			return searchMatchingSymbols(this.symbols, query);
 		} else {
-			return this.symbols;
+			return this.symbols.subList(0, Math.min(50, this.symbols.size()));
 		}
 	}
 
