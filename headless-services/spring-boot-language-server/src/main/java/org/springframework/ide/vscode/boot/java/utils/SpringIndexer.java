@@ -276,7 +276,8 @@ public class SpringIndexer {
 
 	public List<SymbolInformation> getAllSymbols(String query) {
 		if (query != null && query.length() > 0) {
-			return searchMatchingSymbols(this.symbols, query);
+			List<SymbolInformation> foundSymbols = searchMatchingSymbols(this.symbols, query);
+			return foundSymbols.subList(0,  Math.min(50, foundSymbols.size()));
 		} else {
 			return this.symbols.subList(0, Math.min(50, this.symbols.size()));
 		}
