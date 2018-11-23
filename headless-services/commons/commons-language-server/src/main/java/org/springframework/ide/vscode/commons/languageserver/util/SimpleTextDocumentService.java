@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +54,8 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
@@ -68,6 +69,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 public class SimpleTextDocumentService implements TextDocumentService, DocumentEventListenerManager {
+
+	private static Logger log = LoggerFactory.getLogger(SimpleTextDocumentService.class);
 
 	final private SimpleLanguageServer server;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
@@ -278,6 +281,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
+		log.info("completion request received");
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
 			return completionHandler.handle(position)
@@ -289,13 +293,19 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
-	  return async.invoke(() -> {
-		CompletionResolveHandler h = completionResolveHandler;
-		if (h!=null) {
-			return h.handle(unresolved);
-		}
-		return null;
-	  });
+		log.info("Completion item resolve request received: {}", unresolved.getLabel());
+		return async.invoke(() -> {
+			try {
+				CompletionResolveHandler h = completionResolveHandler;
+				if (h!=null) {
+					log.info("Completion item resolve request starting {}", unresolved.getLabel());
+					return h.handle(unresolved);
+				}
+			} finally {
+				log.info("Completion item resolve request terminated.");
+			}
+			return null;
+		});
 	}
 
 	@Override

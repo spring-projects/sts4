@@ -50,7 +50,7 @@ import reactor.core.scheduler.Schedulers;
  */
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
-	private static final Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class));
+	private static final Logger log = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
 	public static class LazyCompletionResolver {
 		private int nextId = 0; //Used to assign unique id to completion items.
@@ -70,7 +70,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				try {
 					resolveItem(doc, completion, unresolved);
 				} catch (Exception e) {
-					LOG.get().error("", e);
+					log.error("", e);
 				}
 			});
 			return id;
@@ -84,7 +84,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					resolver.accept(unresolved);
 					unresolved.setData(null); //No longer needed after item is resolved.
 				} else {
-					LOG.get().warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved.getLabel());
+					log.warn("Couldn't resolve completion item. Did it already get flushed from the resolver's cache? "+unresolved.getLabel());
 				}
 			}
 		}
@@ -96,7 +96,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private final static int DEFAULT_MAX_COMPLETIONS = 50;
 	private int maxCompletions = DEFAULT_MAX_COMPLETIONS; //TODO: move this to CompletionEngineOptions.
-	final static Logger logger = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
@@ -129,6 +128,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		if (documents.get(params) != null) {
 			TextDocument doc = documents.getDocumentSnapshot(params.getTextDocument());
 			return Mono.fromCallable(() -> {
+				log.info("Starting completion handling");
 				if (resolver!=null) {
 					//Assumes we don't have more than one completion request in flight from the client.
 					// So when a new request arrives we can forget about the old unresolved items:
@@ -155,12 +155,14 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					try {
 						items.add(adaptItem(doc, c, sortkeys));
 					} catch (Exception e) {
-						logger.error("error computing completion", e);
+						log.error("error computing completion", e);
 					}
 				}
 				list.setItems(items);
 				return list;
 			})
+			.doOnNext(x -> log.info("Got {} completions", x.getItems().size()))
+			.doAfterTerminate(() -> log.info("Completion handling terminated!"))
 			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.
 		}
 		return Mono.just(SimpleTextDocumentService.NO_COMPLETIONS);
@@ -246,7 +248,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				return Optional.of(vscodeEdit);
 			}
 		}  catch (Exception e) {
-			LOG.get().error("{}", e);
+			log.error("{}", e);
 			return Optional.empty();
 		}
 	}
@@ -269,7 +271,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				return  StringUtil.stripIndentation(refIndent, newText);
 			}
 		} catch (BadLocationException e) {
-			LOG.get().error("{}", e);
+			log.error("{}", e);
 		}
 		return newText;
 	}

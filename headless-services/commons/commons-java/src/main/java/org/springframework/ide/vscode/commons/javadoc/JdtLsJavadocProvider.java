@@ -58,11 +58,14 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 	}
 
 	private IJavadoc javadoc(IJavaElement element) {
+		long start = System.currentTimeMillis();
 		try {
+			log.info("Fetching javadoc {}", element.getBindingKey());
 			JavadocResponse response = client.javadoc(new JavadocParams(projectUri, element.getBindingKey())).get(10, TimeUnit.SECONDS);
+			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
 			return produceJavadocFromMd(response);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			log.error("", e);
+			log.error("Fetching javadoc {} failed", e);
 			return null;
 		}
 	}

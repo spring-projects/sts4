@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
-import static org.springframework.ide.vscode.commons.util.AsyncRunner.thenLog;
-
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -264,6 +262,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		if (ih!=null){
 			ih.accept(params);
 		}
+		log.info("Returning server capabilities to client: {}", result.getCapabilities());
 		return CompletableFuture.completedFuture(result);
 	}
 
