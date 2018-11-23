@@ -65,7 +65,7 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
 			return produceJavadocFromMd(response);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			log.error("Fetching javadoc {} failed", e);
+			log.error("Fetching javadoc {} failed", element.getBindingKey(), e);
 			return null;
 		}
 	}
