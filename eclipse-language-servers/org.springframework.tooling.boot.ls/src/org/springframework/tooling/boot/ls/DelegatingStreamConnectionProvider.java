@@ -115,7 +115,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
 						FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.gradle"),
-						FileSystems.getDefault().getPathMatcher("glob:**/*.java")
+						FileSystems.getDefault().getPathMatcher("glob:**/*.java"),
+						FileSystems.getDefault().getPathMatcher("glob:**/*.class")
 				)));
 				
 				//Add remote boot apps listener
