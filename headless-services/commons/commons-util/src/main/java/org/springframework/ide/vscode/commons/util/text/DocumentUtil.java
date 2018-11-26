@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,8 @@
 
 package org.springframework.ide.vscode.commons.util.text;
 
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 
@@ -44,6 +46,25 @@ public class DocumentUtil {
 			//unless the code above is wrong... this is supposed to be impossible!
 			throw new IllegalStateException("Bug!", e);
 		}
+	}
+	
+	/**
+	 * Compares two LSP4J positions
+	 * @param p1
+	 * @param p2
+	 * @return integer number which is 0 if equals, <0 if p1 comes before p2 and >0 otherwise
+	 */
+	public static int compare(Position p1, Position p2) {
+		int res = p1.getLine() - p2.getLine();
+		if (res == 0) {
+			res = p1.getCharacter() - p2.getCharacter();
+		}
+		return res;
+ 	}
+	
+	public static boolean containsRange(Range outer, Range inner) {
+		return compare(outer.getStart(), inner.getStart()) <= 0 
+				&& compare(outer.getEnd(), inner.getEnd()) >= 0;
 	}
 
 }

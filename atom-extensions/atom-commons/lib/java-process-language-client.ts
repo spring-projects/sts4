@@ -6,7 +6,6 @@ import {HighlightParams, ProgressParams, CursorMovementParams, StsAdapter} from 
 import {ActiveServer, LanguageServerProcess} from 'atom-languageclient';
 import {AutoLanguageClient} from 'atom-languageclient';
 import {findJdk, findJvm, JVM} from '@pivotal-tools/jvm-launch-utils';
-import {InitializeParams} from 'vscode-languageserver-protocol';
 import {Writable} from 'stream';
 
 export class JavaProcessLanguageClient extends AutoLanguageClient {
@@ -39,16 +38,17 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         return Promise.reject(new Error(detail));
     }
 
-    protected getInitializeParams(projectPath: string, process: LanguageServerProcess): InitializeParams {
-        const initParams = super.getInitializeParams(projectPath, process);
-        initParams.capabilities = {
-            workspace: {
-                executeCommand: {
-                }
-            }
-        };
-        return super.getInitializeParams(projectPath, process);
-    }
+    // TODO: Unclear why that was overriden
+    // protected getInitializeParams(projectPath: string, process: LanguageServerProcess): InitializeParams {
+    //     const initParams = super.getInitializeParams(projectPath, process);
+    //     initParams.capabilities = {
+    //         workspace: {
+    //             executeCommand: {
+    //             }
+    //         }
+    //     };
+    //     return initParams;
+    // }
 
     protected startServerProcess(projectPath: string): LanguageServerProcess | Promise<LanguageServerProcess> {
         // TODO: Remove when debugging is over
@@ -169,7 +169,6 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
 
     private doLaunchProcess(jvm: JVM, launcher: string, args: string[] =[]): LanguageServerProcess {
         let vmArgs = args.concat([
-            // Atom doesn't have lazy completion proposals support - completionItem/resolve message. Disable lazy completions
             '-Dsts.lsp.client=atom',
             // '-Dlsp.completions.indentation.enable=true', // Looks like Atom has magic indents same like VSCode - comment it out
             '-Dlsp.yaml.completions.errors.disable=true',
