@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/atom-languageclient-commons",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "Atom language client commons for STS4 language servers",
   "repository": "https://github.com/spring-projects/sts4",
   "license": "MIT",
@@ -22,11 +22,10 @@
   },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "atom-languageclient": "0.9.6",
+    "atom-languageclient": "0.9.8",
     "portfinder": "^1.0.13",
     "@types/atom": "^1.24.1",
-    "@types/node": "^8.0.41",
-    "vscode-languageserver-protocol": "3.6.0-next.5"
+    "@types/node": "^8.0.41"
   },
   "devDependencies": {
     "tslint": "^5.9.1",

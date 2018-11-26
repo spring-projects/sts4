@@ -47,8 +47,8 @@
     }
   },
   "dependencies": {
-    "atom-languageclient": "0.9.6",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.9",
+    "@pivotal-tools/atom-languageclient-commons": "0.0.11",
+    "vscode-languageserver-protocol": "3.12.0",
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5"
   },
