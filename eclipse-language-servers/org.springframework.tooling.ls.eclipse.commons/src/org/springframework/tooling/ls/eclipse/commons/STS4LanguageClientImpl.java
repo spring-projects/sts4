@@ -26,6 +26,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationPainter;
 import org.eclipse.jface.text.source.AnnotationPainter.IDrawingStrategy;
@@ -42,10 +43,12 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
@@ -284,6 +287,47 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
 		}
 		return CompletableFuture.completedFuture(response);
+	}
+
+	@Override
+	public CompletableFuture<Object> moveCursor(CursorMovement cursorMovement) {
+		System.err.println("moveCursor request received: "+cursorMovement);
+		Utils.getActiveEditors().forEach(_editor -> {
+			try {
+				if (_editor instanceof AbstractTextEditor) {
+					AbstractTextEditor editor = (AbstractTextEditor) _editor;
+					IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+					if (doc!=null) {
+						URI uri = Utils.findDocUri(doc);
+						if (cursorMovement.getUri().equals(uri.toString())) {
+							new UIJob("Move cursor") {
+								{
+									setSystem(true);
+								}
+								@Override
+								public IStatus runInUIThread(IProgressMonitor arg0) {
+									try {
+										org.eclipse.lsp4j.Position pos = cursorMovement.getPosition();
+										//Careful, it seems like the computation of offset only works correctly
+										// when called from UIJob. Otherwise it is likely to be using stale data
+										// not yet accounting for the most recent edits that may have been applied
+										// to the document.
+										int offset = LSPEclipseUtils.toOffset(pos, doc);
+										editor.getSelectionProvider().setSelection(new TextSelection(offset, 0));
+									} catch (Exception e) {
+										LanguageServerCommonsActivator.logError(e, "sts/moveCursor failed");
+									}
+									return Status.OK_STATUS;
+								}
+							}.schedule();
+						}
+					}
+				}
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "sts/moveCursor failed");
+			}
+		});
+		return CompletableFuture.completedFuture("ok");
 	}
 
 }
