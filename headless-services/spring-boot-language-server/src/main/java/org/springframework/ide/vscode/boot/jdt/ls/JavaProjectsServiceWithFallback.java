@@ -45,8 +45,18 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 		this.mainServiceInitialized = this.server
 				.onInitialized(main.initialize())
 				.toFuture();
-		this.server.onShutdown(() ->
-			mainServiceInitialized.thenAccept(Disposable::dispose).join()
+		this.server.onShutdown(() -> {
+			try {
+				if (!mainServiceInitialized.isCompletedExceptionally()) {
+					// If classpath listener has been added successfully, remove it
+					mainServiceInitialized.thenAccept(Disposable::dispose).join();
+				}
+			} catch (Exception e) {
+				// If completable future hasn't completed yet it might complete with exception to add classpath listener.
+				// Handle exception gracefully rather than failing LS process to terminate
+				log.error("", e);
+			}
+		}
 		);
 	}
 
