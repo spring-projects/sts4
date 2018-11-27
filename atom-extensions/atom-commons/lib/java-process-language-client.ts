@@ -38,18 +38,6 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         return Promise.reject(new Error(detail));
     }
 
-    // TODO: Unclear why that was overriden
-    // protected getInitializeParams(projectPath: string, process: LanguageServerProcess): InitializeParams {
-    //     const initParams = super.getInitializeParams(projectPath, process);
-    //     initParams.capabilities = {
-    //         workspace: {
-    //             executeCommand: {
-    //             }
-    //         }
-    //     };
-    //     return initParams;
-    // }
-
     protected startServerProcess(projectPath: string): LanguageServerProcess | Promise<LanguageServerProcess> {
         // TODO: Remove when debugging is over
         const atomEnv: AtomEnvironment = atom;
