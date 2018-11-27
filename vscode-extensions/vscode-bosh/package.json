@@ -12,10 +12,10 @@
   "license": "EPL-1.0",
   "engines": {
     "npm": "^3.0.0",
-    "vscode": "^1.19.0"
+    "vscode": "^1.26.0"
   },
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Linters"
   ],
   "keywords": [
@@ -120,6 +120,6 @@
     "vsce": "^1.36.1",
     "typescript": "2.6.1",
     "@types/node": "^7.0.43",
-    "vscode": "^1.1.10"
+    "vscode": "^1.1.22"
   }
 }
