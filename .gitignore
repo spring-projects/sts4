@@ -20,7 +20,6 @@ eclipse-language-servers/**/*.jar
 **/test-projects/**/*.project
 **/test-projects/**/*.settings
 **/test-projects/**/*.springBeans
-**/package-lock.json
 
 # Exceptions
 !**/.mvn/wrapper/maven-wrapper.jar
