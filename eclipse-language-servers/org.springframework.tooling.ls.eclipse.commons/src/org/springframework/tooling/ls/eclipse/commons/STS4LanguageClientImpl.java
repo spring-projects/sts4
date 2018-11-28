@@ -291,7 +291,6 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<Object> moveCursor(CursorMovement cursorMovement) {
-		System.err.println("moveCursor request received: "+cursorMovement);
 		Utils.getActiveEditors().forEach(_editor -> {
 			try {
 				if (_editor instanceof AbstractTextEditor) {
@@ -300,26 +299,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					if (doc!=null) {
 						URI uri = Utils.findDocUri(doc);
 						if (cursorMovement.getUri().equals(uri.toString())) {
-							new UIJob("Move cursor") {
-								{
-									setSystem(true);
-								}
-								@Override
-								public IStatus runInUIThread(IProgressMonitor arg0) {
-									try {
-										org.eclipse.lsp4j.Position pos = cursorMovement.getPosition();
-										//Careful, it seems like the computation of offset only works correctly
-										// when called from UIJob. Otherwise it is likely to be using stale data
-										// not yet accounting for the most recent edits that may have been applied
-										// to the document.
-										int offset = LSPEclipseUtils.toOffset(pos, doc);
-										editor.getSelectionProvider().setSelection(new TextSelection(offset, 0));
-									} catch (Exception e) {
-										LanguageServerCommonsActivator.logError(e, "sts/moveCursor failed");
-									}
-									return Status.OK_STATUS;
-								}
-							}.schedule();
+							org.eclipse.lsp4j.Position pos = cursorMovement.getPosition();
+							int offset = LSPEclipseUtils.toOffset(pos, doc);
+							Display.getDefault().asyncExec(() -> {
+								editor.getSelectionProvider().setSelection(new TextSelection(offset, 0));
+							});
 						}
 					}
 				}

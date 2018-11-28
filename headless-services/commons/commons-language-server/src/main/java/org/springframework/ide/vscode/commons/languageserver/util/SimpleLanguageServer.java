@@ -199,10 +199,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			return quickfixResolve(quickfixParams)
 			.flatMap((QuickfixEdit edit) -> {
 				Mono<ApplyWorkspaceEditResponse> applyEdit = Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit.workspaceEdit)));
-				Mono<Object> moveCursor = edit.cursorMovement==null
-						? Mono.just(new ApplyWorkspaceEditResponse(true))
-						: Mono.fromFuture(client.moveCursor(edit.cursorMovement));
-				return applyEdit.flatMap(r -> r.isApplied() ? moveCursor : Mono.just(new ApplyWorkspaceEditResponse(true)));
+				return applyEdit.flatMap(r -> {
+					if (r.isApplied()) {
+						if (edit.cursorMovement!=null) {
+							return Mono.fromFuture(client.moveCursor(edit.cursorMovement));
+						}
+					}
+					return Mono.just(r);
+				});
 			})
 			.toFuture();
 		}
