@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 import com.google.common.collect.ImmutableList;
@@ -52,7 +53,14 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 				copyLanguageServerJAR(languageServer);
 			}
 			catch (Exception e) {
-				e.printStackTrace();
+				if (bundle.getVersion().getQualifier().equals("qualifier")) {
+					dataFile = new File(System.getProperty("user.home")+"/git/sts4/headless-services/concourse-language-server/target/concourse-language-server-"+Constants.LANGUAGE_SERVER_VERSION+".jar");
+					if (!dataFile.exists()) {
+						LanguageServerCommonsActivator.logError(e, "Problem locating Concourse language server jar");
+					}
+				} else {
+					LanguageServerCommonsActivator.logError(e, "Problem locating Concourse language server jar");
+				}
 			}
 //		}
 		
