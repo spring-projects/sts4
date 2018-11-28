@@ -63,8 +63,6 @@ public abstract class AbstractPropsEditorTest {
 		}
 	}));
 
-
-
 	abstract public Editor newEditor(String contents) throws Exception;
 
 	private IJavaProject getTestProject() {

@@ -44,6 +44,7 @@ import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -91,7 +92,9 @@ public class BootLanguageServerParams {
 				new JdtLsProjectCache(server),
 				() -> createFallbackProjectCache(server)
 		);
-		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, valueProviders);
+
+		FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, fileObserver, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
@@ -154,7 +157,7 @@ public class BootLanguageServerParams {
 
 		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
 
-		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver, valueProviders);
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver, null, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(

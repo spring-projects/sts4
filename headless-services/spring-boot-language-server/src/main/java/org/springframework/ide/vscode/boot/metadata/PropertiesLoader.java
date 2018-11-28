@@ -29,7 +29,7 @@ import org.springframework.ide.vscode.commons.util.Log;
 
 public class PropertiesLoader {
 
-	private static final String MAIN_SPRING_CONFIGURATION_METADATA_JSON = "META-INF/spring-configuration-metadata.json";
+	public static final String MAIN_SPRING_CONFIGURATION_METADATA_JSON = "META-INF/spring-configuration-metadata.json";
 
 	public static final String ADDITIONAL_SPRING_CONFIGURATION_METADATA_JSON = "META-INF/additional-spring-configuration-metadata.json";
 

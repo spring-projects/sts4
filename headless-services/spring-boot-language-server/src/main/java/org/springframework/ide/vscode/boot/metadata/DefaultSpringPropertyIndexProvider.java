@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -28,9 +29,9 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 
 	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
 
-	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, ValueProviderRegistry valueProviders) {
+	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, FileObserver fileObserver, ValueProviderRegistry valueProviders) {
 		this.javaProjectFinder = javaProjectFinder;
-		this.indexManager = new SpringPropertiesIndexManager(valueProviders, projectObserver);
+		this.indexManager = new SpringPropertiesIndexManager(valueProviders, projectObserver, fileObserver);
 	}
 
 	@Override

@@ -116,7 +116,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 						FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.gradle"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.java"),
-						FileSystems.getDefault().getPathMatcher("glob:**/*.class")
+						FileSystems.getDefault().getPathMatcher("glob:**/*.json"),
+						FileSystems.getDefault().getPathMatcher("glob:**/*.yml"),
+						FileSystems.getDefault().getPathMatcher("glob:**/*.properties")
 				)));
 				
 				//Add remote boot apps listener
