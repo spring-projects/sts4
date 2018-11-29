@@ -13,14 +13,12 @@ package org.springframework.ide.vscode.concourse;
 import java.util.List;
 
 import org.eclipse.lsp4j.CompletionList;
-import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -35,27 +33,23 @@ import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
-import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Mono;
 
 @Component
-public class ConcourseLanguageServerInitializer implements LanguageServerInitializer {
+public class ConcourseLanguageServerInitializer implements InitializingBean {
 
 	private final YamlCompletionEngineOptions COMPLETION_OPTIONS = YamlCompletionEngineOptions.DEFAULT;
-	private final GithubInfoProvider github;
 	private final YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 
-	private SimpleLanguageServer server;
 	private ConcourseModel models;
 
 	private SchemaSpecificPieces forPipelines;
@@ -63,9 +57,8 @@ public class ConcourseLanguageServerInitializer implements LanguageServerInitial
 	private YamlQuickfixes yamlQuickfixes;
 	private YamlASTProvider currentAsts;
 
-	public ConcourseLanguageServerInitializer(GithubInfoProvider github) {
-		this.github = github;
-	}
+	@Autowired private SimpleLanguageServer server;
+	@Autowired private GithubInfoProvider github;
 
 	private class SchemaSpecificPieces {
 
@@ -77,7 +70,7 @@ public class ConcourseLanguageServerInitializer implements LanguageServerInitial
 		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes) {
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, COMPLETION_OPTIONS);
-			this.completionEngine = server.createCompletionEngineAdapter(server, yamlCompletionEngine);
+			this.completionEngine = server.createCompletionEngineAdapter(yamlCompletionEngine);
 
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 			this.hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
@@ -104,9 +97,7 @@ public class ConcourseLanguageServerInitializer implements LanguageServerInitial
 	}
 
 	@Override
-	public void initialize(SimpleLanguageServer server) throws Exception {
-		Assert.isNull(this.server, "This initializer should only be used once");
-		this.server = server;
+	public void afterPropertiesSet() throws Exception {
 		this.models = new ConcourseModel(server);
 		this.currentAsts = models.getAstCache().getAstProvider(false);
 		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models, github);

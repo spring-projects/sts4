@@ -31,10 +31,6 @@ public class ConcourseLanguageServerBootApp {
 		return SERVER_NAME;
 	}
 
-	@Bean ConcourseLanguageServerInitializer languageServer(GithubInfoProvider github) {
-		return new ConcourseLanguageServerInitializer(github);
-	}
-
 	@Bean GithubInfoProvider github() {
 		return new DefaultGithubInfoProvider();
 	}

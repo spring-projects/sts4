@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.manifest.yaml;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
+import org.springframework.ide.vscode.commons.util.Unicodes;
 
 @SpringBootApplication
 public class ManifestYamlLanguageServerBootApp {
@@ -27,5 +29,19 @@ public class ManifestYamlLanguageServerBootApp {
 
 	@Bean public String serverName() {
 		return SERVER_NAME;
+	}
+
+	@Bean
+	public CompletionFilter completionFilter() {
+		return (proposal) -> {
+			// Exclude proposals that start with an arrow due to this bug:
+			// PT 162292472
+			if (proposal != null &&
+					(proposal.getLabel().startsWith(Unicodes.RIGHT_ARROW+"") ||
+							proposal.getLabel().startsWith(Unicodes.LEFT_ARROW+""))) {
+				return false;
+			}
+			return true;
+		};
 	}
 }

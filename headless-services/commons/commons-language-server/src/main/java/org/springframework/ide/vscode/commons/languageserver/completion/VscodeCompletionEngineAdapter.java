@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +38,6 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonPrimitive;
 
@@ -100,6 +99,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
 	private final LazyCompletionResolver resolver;
+	private Optional<CompletionFilter> filter;
 
 	/**
 	 * By setting a non-null {@link LazyCompletionResolver} you can enable lazy completion resolution.
@@ -108,10 +108,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	 * The resolver is injected rather than created locally to allow sharing it between multiple
 	 * engines.
 	 */
-	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine, LazyCompletionResolver resolver) {
+	public VscodeCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine, LazyCompletionResolver resolver, Optional<CompletionFilter> filter) {
 		this.server = server;
 		this.engine = engine;
 		this.resolver = resolver;
+		this.filter = filter;
 	}
 
 	public void setMaxCompletions(int maxCompletions) {
@@ -139,8 +140,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				// using reactive style? If not then this is overkill could just as well use
 				// only standard Java API such as Executor and CompletableFuture directly.
 				int offset = doc.toOffset(params.getPosition());
-				List<ICompletionProposal> completions = new ArrayList<>(engine.getCompletions(doc, offset));
+				List<ICompletionProposal> completions = filter(engine.getCompletions(doc, offset));
+
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
+
 				CompletionList list = new CompletionList();
 				list.setIsIncomplete(false);
 				List<CompletionItem> items = new ArrayList<>(completions.size());
@@ -183,6 +186,22 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			resolveItem(doc, completion, item);
 		}
 		return item;
+	}
+
+	private List<ICompletionProposal> filter(Collection<ICompletionProposal> completions) {
+		if (filter.isPresent()) {
+			List<ICompletionProposal> filtered = new ArrayList<>(completions.size());
+			CompletionFilter filterVal = filter.get();
+			for (ICompletionProposal proposal : completions) {
+				if (filterVal.include(proposal)) {
+					filtered.add(proposal);
+				}
+			}
+			return filtered;
+		}
+		else {
+			return new ArrayList<>(completions);
+		}
 	}
 
 	private static void resolveItem(TextDocument doc, ICompletionProposal completion, CompletionItem item) throws Exception {
@@ -280,5 +299,18 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	public CompletionItem resolveCompletion(CompletionItem unresolved) {
 		resolver.resolveNow(unresolved);
 		return unresolved;
+	}
+
+	@FunctionalInterface
+	public interface CompletionFilter {
+
+		/**
+		 *
+		 * @param proposal
+		 * @return true if proposal should be included from completion list. False
+		 *         otherwise
+		 */
+		boolean include(ICompletionProposal proposal);
+
 	}
 }

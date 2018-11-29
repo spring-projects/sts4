@@ -19,9 +19,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
@@ -48,6 +46,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired YamlASTProvider parser;
 	@Autowired YamlStructureProvider yamlStructureProvider;
 	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
+
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
 	private CompositeLanguageServerComponents components;
@@ -87,7 +86,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 		ICompletionEngine completionEngine = components.getCompletionEngine();
 		if (completionEngine!=null) {
-			completionEngineAdapter = server.createCompletionEngineAdapter(server, completionEngine);
+			completionEngineAdapter = server.createCompletionEngineAdapter(completionEngine);
 			completionEngineAdapter.setMaxCompletions(100);
 			documents.onCompletion(completionEngineAdapter::getCompletions);
 			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);

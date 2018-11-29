@@ -75,6 +75,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	private final SimpleLanguageServer server;
 	private YamlASTProvider parser;
 
+
 	public BootPropertiesLanguageServerComponents(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams,
