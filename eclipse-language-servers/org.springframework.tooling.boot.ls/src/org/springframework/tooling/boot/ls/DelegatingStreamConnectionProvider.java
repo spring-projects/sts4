@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -29,6 +30,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
 import com.google.common.collect.ImmutableSet;
@@ -54,11 +56,15 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private final ValueListener<ImmutableSet<Pair<String,String>>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	public DelegatingStreamConnectionProvider() {
+		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
 		String port = System.getProperty("boot-java-ls-port");
 		if (port != null) {
 			this.provider = new SpringBootLanguageServerViaSocket(Integer.parseInt(port));
-		}
-		else {
+		} else {
+			LanguageServerCommonsActivator.logInfo("DelegatingStreamConnectionProvider classloader = "+this.getClass().getClassLoader());
+			Assert.isNotNull(SpringBootLanguageServer.class);
+			LanguageServerCommonsActivator.logInfo("SpringBootLanguageServer exists!");
+			Assert.isLegal(SpringBootLanguageServer.class.getClassLoader().equals(DelegatingStreamConnectionProvider.class.getClassLoader()), "OSGI bug messing up our classloaders?");
 			this.provider = new SpringBootLanguageServer();
 		}
 	}

@@ -145,4 +145,8 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 	public static void logError(Throwable t, String message) {
 		instance.getLog().log(new Status(IStatus.ERROR, instance.getBundle().getSymbolicName(), message, t));
 	}
+
+	public static void logInfo(String message) {
+		instance.getLog().log(new Status(IStatus.INFO, instance.getBundle().getSymbolicName(), message));
+	}
 }
