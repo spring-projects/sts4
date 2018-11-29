@@ -13,9 +13,11 @@ package org.springframework.ide.vscode.manifest.yaml;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
@@ -27,7 +29,7 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.Clien
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -51,14 +53,13 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReco
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 @Component
-public class ManifestYamlLanguageServerInitializer implements LanguageServerInitializer {
+public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 
 	private Yaml yaml = new Yaml();
 	private CfJson cfJson = new CfJson();
@@ -67,12 +68,11 @@ public class ManifestYamlLanguageServerInitializer implements LanguageServerInit
 
 	private CloudFoundryClientFactory cfClientFactory;
 	ClientParamsProvider defaultClientParamsProvider;
-	private SimpleLanguageServer server;
+
+	@Autowired private SimpleLanguageServer server;
 
 	@Override
-	public void initialize(SimpleLanguageServer server) throws Exception {
-		Assert.isNull(this.server, "This initializer should only be called once");
-		this.server = server;
+	public void afterPropertiesSet() throws Exception {
 		this.cfTargetCache = new CFTargetCache(ImmutableList.of(this.defaultClientParamsProvider), cfClientFactory, new ClientTimeouts());
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
@@ -85,7 +85,7 @@ public class ManifestYamlLanguageServerInitializer implements LanguageServerInit
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 		YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, YamlCompletionEngineOptions.DEFAULT);
-		VscodeCompletionEngineAdapter completionEngine = server.createCompletionEngineAdapter(server, yamlCompletionEngine);
+		VscodeCompletionEngineAdapter completionEngine = server.createCompletionEngineAdapter(yamlCompletionEngine);
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		HoverHandler hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(), structureProvider);

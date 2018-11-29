@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
@@ -42,13 +43,15 @@ public class LanguageServerAutoConf {
 	@ConditionalOnMissingBean
 	@Bean public SimpleLanguageServer languageServer(
 			LanguageServerProperties props, 
-			Optional<DiagnosticSeverityProvider> severities
+			Optional<DiagnosticSeverityProvider> severities,
+			Optional<CompletionFilter> completionFilter
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
+		server.setCompletionFilter(completionFilter);
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;
 	}
-
+	
 	@ConditionalOnBean({LanguageServerInitializer.class, SimpleLanguageServer.class})
 	@Bean
 	InitializingBean initializer(SimpleLanguageServer server, LanguageServerInitializer serverInit) {

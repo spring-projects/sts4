@@ -63,6 +63,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	protected final YamlStructureProvider structureProvider;
 	private YamlCompletionEngineOptions options;
 
+
 	public YamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider, YamlCompletionEngineOptions options) {
 		this.options = options;
 		Assert.isNotNull(structureProvider);
@@ -478,5 +479,4 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			throw new IllegalStateException("Missing case");
 		}
 	}
-
 }

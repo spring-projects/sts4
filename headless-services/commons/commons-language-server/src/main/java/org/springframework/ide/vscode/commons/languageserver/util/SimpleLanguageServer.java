@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -60,6 +61,7 @@ import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
+import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerManager;
@@ -149,13 +151,15 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	}));
 	private ClasspathListenerManager classpathListenerManager;
 
+	private Optional<CompletionFilter> completionFilter = Optional.empty();
+
 	@Override
 	public void connect(LanguageClient _client) {
 		this.client = (STS4LanguageClient) _client;
 	}
 
-	public VscodeCompletionEngineAdapter createCompletionEngineAdapter(SimpleLanguageServer server, ICompletionEngine engine) {
-		return new VscodeCompletionEngineAdapter(server, engine, completionResolver);
+	public VscodeCompletionEngineAdapter createCompletionEngineAdapter(ICompletionEngine engine) {
+		return new VscodeCompletionEngineAdapter(this, engine, completionResolver, completionFilter);
 	}
 
 	protected LazyCompletionResolver createCompletionResolver() {
@@ -695,5 +699,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	public void setDiagnosticSeverityProvider(DiagnosticSeverityProvider severities) {
 		this.severityProvider = severities;
+	}
+
+	public void setCompletionFilter(Optional<CompletionFilter> completionFilter) {
+		this.completionFilter = completionFilter;
 	}
 }
