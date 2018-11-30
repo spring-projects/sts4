@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.PlatformManagedObject;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
@@ -40,6 +42,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansMod
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuctionWithException;
 import org.springframework.ide.vscode.commons.util.FunctionWithException;
@@ -52,12 +55,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import reactor.core.scheduler.Schedulers;
+
 /**
  * A abstract base class which attempts to capture commonalities between
  * Local and Remote connections to SpringBootApp using JMX.
  */
 public abstract class AbstractSpringBootApp implements SpringBootApp {
 
+	protected static AsyncRunner async = new AsyncRunner(Schedulers.elastic());
+	private static final Duration TIMEOUT = Duration.ofMillis(1000);
+	protected static <T> T withTimeout(Callable<T> doit) throws Exception {
+		return async.invoke(TIMEOUT, doit).get();
+	}
 	private static final String SPRINGFRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
 	protected static Logger logger = LoggerFactory.getLogger(SpringBootApp.class);
 
@@ -112,12 +122,11 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		},
 		//disposing jmx connector:
 		(connector) -> {
-			try {
-				logger.info("Disposing JMX connector: "+connector);
+			logger.info("Disposing JMX connector: "+connector);
+			AsyncRunner.thenLog(logger, async.invoke(TIMEOUT, () -> {
 				connector.close();
-			} catch (IOException e) {
-				//ignore
-			}
+				return "done";
+			}));
 		}
 	);
 

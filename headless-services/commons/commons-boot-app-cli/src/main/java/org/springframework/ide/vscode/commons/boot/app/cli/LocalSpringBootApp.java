@@ -19,15 +19,12 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-
-import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Martin Lippert
@@ -36,17 +33,10 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalSpringBootApp.class);
 
-	private static AsyncRunner async = new AsyncRunner(Schedulers.elastic());
-	private static <T> T withTimeout(Callable<T> doit) throws Exception {
-		return async.invoke(TIMEOUT, doit).get();
-	}
-
 	private VirtualMachine vm;
 	private VirtualMachineDescriptor vmd;
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
-
-	private static final Duration TIMEOUT = Duration.ofMillis(1000);
 
 	private Boolean isSpringBootApp;
 
