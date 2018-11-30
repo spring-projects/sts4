@@ -19,11 +19,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
 import org.springframework.tooling.ls.eclipse.commons.Utils;
@@ -52,12 +50,9 @@ public class OpenJavaElementInEditor extends AbstractHandler {
 					IJavaElement element = Utils.findElement(javaProject, bindingKey);
 					if (element == null) {
 						BootLanguageServerPlugin.getDefault().getLog().log(new Status(IStatus.WARNING, BootLanguageServerPlugin.ID, "Cannot find element: " + bindingKey));
-					}
-					if (element instanceof IMember) {
-						IMember member = (IMember) element;
+					} else {
 						try {
-							IEditorPart editorPart = JavaUI.openInEditor(member.getDeclaringType());
-							JavaUI.revealInEditor(editorPart, (IJavaElement)member);
+							JavaUI.openInEditor(element);
 						} catch (PartInitException | JavaModelException e) {
 							throw new ExecutionException("Error opening java element in editor", e);
 						}
