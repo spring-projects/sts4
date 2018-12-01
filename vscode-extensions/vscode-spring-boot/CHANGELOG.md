@@ -1,3 +1,19 @@
+## 2018-11-30 (4.0.2 RELEASE)
+
+* (Spring Boot) Make CTRL-CLICK navigation from application.properties to Java work
+* (Spring Boot) Make CTRL-CLICK navigation from application.yml to Java work
+* (Spring Boot) Made content-assist for values in lists more consistent across .yml and .properties editors.
+* (Spring Boot) Bugfix: Adding eureka client starter to classpath breaks requestmapping live hovers.
+* (Spring Boot) More precise autowiring live hovers for @Bean method parameters.
+* (Spring Boot) server.servlet.context-path now supported for Request Mapping live hover links.
+* (Spring Boot) Improved 'Goto Symbol' support for functional style WebFlux requestmappings.
+* (Spring Boot) Improved 'Live Hover' support for functional style WebFlux requestmappings.
+* (Spring Boot) Bugfix: Insertion of mapping templates now takes into account leading @ in editor.
+* (Spring Boot) Added support for Spring Boot log groups in properties and yaml editor.
+* (General) Various bugfixes for bugs causing language servers to hang and become unresponsive.
+* (Spring Boot) (Concourse) Bugfix: Quickfix not working (anymore?) in LSP editors.
+* (Spring Boot) After adding Spring Boot configuration processor editor automatically becomes aware of new properties metadata.
+
 ## 2018-10-31 (4.0.1 RELEASE)
 
 * _(Spring Boot)_ fixed NPE from SpringIndexer ([#105](https://github.com/spring-projects/sts4/issues/105))

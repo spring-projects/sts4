@@ -1,3 +1,8 @@
+## 2018-11-30 (4.0.2 RELEASE)
+
+* (General) Various bugfixes for bugs causing language servers to hang and become unresponsive.
+* (Spring Boot) (Concourse) Bugfix: Quickfix not working (anymore?) in LSP editors.
+
 ## 2018-10-31 (4.0.1 RELEASE)
 
 * _(Concourse)_ added support for new attributes for S3 resource
