@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableListMultimap;
  */
 public class LiveBeansModel {
 
+	private static final String[] NO_STRINGS = new String[] {};
+
 	public static class Builder {
 		private final ImmutableListMultimap.Builder<String, LiveBean> beansViaName = ImmutableListMultimap.builder();
 		private final ImmutableListMultimap.Builder<String, LiveBean> beansViaType = ImmutableListMultimap.builder();
@@ -96,10 +98,15 @@ public class LiveBeansModel {
 			String scope = beansJSON.optString("scope");
 			String resource = beansJSON.optString("resource");
 
-			JSONArray aliasesJSON = beansJSON.getJSONArray("aliases");
-			String[] aliases = new String[aliasesJSON.length()];
-			for (int i = 0; i < aliasesJSON.length(); i++) {
-				aliases[i] = aliasesJSON.optString(i);
+			JSONArray aliasesJSON = beansJSON.optJSONArray("aliases");
+			String[] aliases;
+			if (aliasesJSON!=null) {
+				aliases = new String[aliasesJSON.length()];
+				for (int i = 0; i < aliasesJSON.length(); i++) {
+					aliases[i] = aliasesJSON.optString(i);
+				}
+			} else {
+				aliases = NO_STRINGS;
 			}
 
 			JSONArray dependenciesJSON = beansJSON.getJSONArray("dependencies");
@@ -114,7 +121,6 @@ public class LiveBeansModel {
 	}
 
 	private static class Boot20Parser implements Parser {
-		private static final String[] NO_STRINGS = new String[] {};
 
 		@Override
 		public LiveBeansModel parse(String json) throws Exception {
