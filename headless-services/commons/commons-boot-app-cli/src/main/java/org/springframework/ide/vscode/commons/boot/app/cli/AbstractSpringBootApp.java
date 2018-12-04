@@ -479,7 +479,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			ObjectName objectName = new ObjectName(DEFAULT_OBJECT_NAME);
 
 			Object o = connection.invoke(objectName,"getProperty", new String[] {"local.server.port"}, new String[] {String.class.getName()});
-			return o.toString();
+			return o==null ? null : o.toString();
 		}
 		catch (InstanceNotFoundException e) {
 			return null;
