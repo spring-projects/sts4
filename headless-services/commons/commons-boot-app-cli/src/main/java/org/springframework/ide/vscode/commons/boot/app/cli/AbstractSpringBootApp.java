@@ -124,7 +124,11 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		(connector) -> {
 			logger.info("Disposing JMX connector: "+connector);
 			AsyncRunner.thenLog(logger, async.invoke(TIMEOUT, () -> {
-				connector.close();
+				try {
+					connector.close();
+				} catch (java.rmi.ConnectException e) {
+					//Ignore.
+				}
 				return "done";
 			}));
 		}
