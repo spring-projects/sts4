@@ -325,7 +325,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 				try {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 					return connection.getAttribute(objectName, "Data");
-				} catch (InstanceNotFoundException e) {
+				} catch (InstanceNotFoundException|IOException e) {
 					return null;
 				}
 			});
@@ -339,7 +339,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 				try {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 					return connection.invoke(objectName, operation, null, null);
-				} catch (InstanceNotFoundException e) {
+				} catch (InstanceNotFoundException|IOException e) {
 					return null;
 				}
 			});
