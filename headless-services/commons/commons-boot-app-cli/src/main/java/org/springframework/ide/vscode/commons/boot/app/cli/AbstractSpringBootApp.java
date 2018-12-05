@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
@@ -238,6 +239,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 				} catch (IOException e) {
 					// PT 160096886 - Don't throw exception, as actuator info will not be available when app stopping, and
 					// this is not an error condition. Return empty model instead.
+				} catch (ExecutionException e) {
+					if (!(e.getCause() instanceof IOException)) {
+						throw e;
+					}
 				}
 				if (json != null) {
 					String md5 = DigestUtils.md5Hex(json.toString());
