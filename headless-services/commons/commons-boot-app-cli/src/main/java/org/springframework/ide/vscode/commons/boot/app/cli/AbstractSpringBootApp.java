@@ -228,8 +228,14 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	public LiveBeansModel getBeans() {
 		try {
 			return beansModelCache.get("liveBeans", () -> {
-				String domain = getDomainForActuator();
-				Object json = getBeansFromActuator(domain);
+				Object json = null;
+				try {
+					String domain = getDomainForActuator();
+					json = getBeansFromActuator(domain);
+				} catch (IOException e) {
+					// PT 160096886 - Don't throw exception, as actuator info will not be available when app stopping, and
+					// this is not an error condition. Return empty model instead.
+				}
 				if (json != null) {
 					String md5 = DigestUtils.md5Hex(json.toString());
 
