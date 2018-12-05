@@ -178,20 +178,23 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public Collection<RequestMapping> getRequestMappings() throws Exception {
-		//Boot 1.x
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
-		if (result != null) {
-			String mappings = gson.toJson(result);
-			return parseRequestMappingsJson(mappings, "1.x");
-		}
+		try {
+			//Boot 1.x
+			Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
+			if (result != null) {
+				String mappings = gson.toJson(result);
+				return parseRequestMappingsJson(mappings, "1.x");
+			}
 
-		//Boot 2.x
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
-		if (result != null) {
-			String mappings = gson.toJson(result);
-			return parseRequestMappingsJson(mappings, "2.x");
+			//Boot 2.x
+			result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
+			if (result != null) {
+				String mappings = gson.toJson(result);
+				return parseRequestMappingsJson(mappings, "2.x");
+			}
+		} catch (IOException e) {
+			//ignore.. app stopped
 		}
-
 		return null;
 	}
 
@@ -355,18 +358,21 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public String getEnvironment() throws Exception {
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=environmentEndpoint"), "Data");
-		if (result != null) {
-			String environment = gson.toJson(result);
-			return environment;
-		}
+		try {
+			Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=environmentEndpoint"), "Data");
+			if (result != null) {
+				String environment = gson.toJson(result);
+				return environment;
+			}
 
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Env"), "environment");
-		if (result != null) {
-			String environment = gson.toJson(result);
-			return environment;
+			result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Env"), "environment");
+			if (result != null) {
+				String environment = gson.toJson(result);
+				return environment;
+			}
+		} catch (IOException e) {
+			//ignore... probably just because app is stopped
 		}
-
 		return null;
 	}
 
@@ -415,20 +421,25 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public String getContextPath() throws Exception {
-		String environment = getEnvironment();
-		String bootVersion = null;
-		// Boot 1.x
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
-		if (result != null) {
-			bootVersion = "1.x";
-		}
+		try {
+			String environment = getEnvironment();
+			String bootVersion = null;
+			// Boot 1.x
+			Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=requestMappingEndpoint"), "Data");
+			if (result != null) {
+				bootVersion = "1.x";
+			}
 
-		// Boot 2.x
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
-		if (result != null) {
-			bootVersion = "2.x";
+			// Boot 2.x
+			result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Mappings"), "mappings");
+			if (result != null) {
+				bootVersion = "2.x";
+			}
+			return bootVersion != null && environment != null ? ContextPath.getContextPath(bootVersion, environment) : null;
+		} catch (IOException e) {
+			//Ignore... happens a low when app is stopped
+			return null;
 		}
-		return bootVersion != null && environment != null ? ContextPath.getContextPath(bootVersion, environment) : null;
 	}
 
 	/**
@@ -446,18 +457,22 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	}
 
 	private String getAutoConfigReport() throws Exception {
-		//Boot 1.x
-		Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=autoConfigurationReportEndpoint"), "Data");
-		if (result != null) {
-			String report = gson.toJson(result);
-			return report;
-		}
+		try {
+			//Boot 1.x
+			Object result = getActuatorDataFromAttribute(getObjectName("type=Endpoint,name=autoConfigurationReportEndpoint"), "Data");
+			if (result != null) {
+				String report = gson.toJson(result);
+				return report;
+			}
 
-		//Boot 2.x
-		result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Conditions"), "applicationConditionEvaluation");
-		if (result != null) {
-			String report = gson.toJson(result);
-			return report;
+			//Boot 2.x
+			result = getActuatorDataFromOperation(getObjectName("type=Endpoint,name=Conditions"), "applicationConditionEvaluation");
+			if (result != null) {
+				String report = gson.toJson(result);
+				return report;
+			}
+		} catch (IOException e) {
+			//ignore. Happens a lot when apps are stopped while we try to talk to them.
 		}
 
 		return null;
