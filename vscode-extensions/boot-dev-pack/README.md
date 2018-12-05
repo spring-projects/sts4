@@ -1,5 +1,6 @@
 # VS Code Spring Boot Application Development Extension Pack
 
+(also known as [Spring Tools 4](https://spring.io/tools) for Visual Studio Code)  
 Collection of extensions for developing and deploying Spring Boot Application
 
 ## Spring Boot
