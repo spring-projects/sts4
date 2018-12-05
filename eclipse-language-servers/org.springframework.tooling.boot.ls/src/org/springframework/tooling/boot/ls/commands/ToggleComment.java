@@ -40,16 +40,15 @@ public class ToggleComment extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
-			ISelection sel = HandlerUtil.getCurrentSelection(event);
-			if (sel instanceof TextSelection) {
-				TextSelection textSel = (TextSelection) sel;
-				int startLine = textSel.getStartLine();
-				int endLine = textSel.getEndLine();
-	
-				IEditorInput editorInput = HandlerUtil.getActiveEditorInput(event);
-				IEditorPart editor = HandlerUtil.getActiveEditor(event);
-				if (editor instanceof TextEditor) {
-					TextEditor textEditor = (TextEditor) editor;
+			IEditorInput editorInput = HandlerUtil.getActiveEditorInput(event);
+			IEditorPart editor = HandlerUtil.getActiveEditor(event);
+			if (editor instanceof TextEditor) {
+				TextEditor textEditor = (TextEditor) editor;
+				ISelection sel = textEditor.getSelectionProvider().getSelection();
+				if (sel instanceof TextSelection) {
+					TextSelection textSel = (TextSelection) sel;
+					int startLine = textSel.getStartLine();
+					int endLine = textSel.getEndLine();
 					IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
 					if (doc!=null) {
 						
