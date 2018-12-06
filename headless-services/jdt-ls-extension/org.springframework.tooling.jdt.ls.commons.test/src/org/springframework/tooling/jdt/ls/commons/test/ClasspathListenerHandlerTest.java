@@ -37,6 +37,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
 import org.junit.After;
 import org.junit.Ignore;
@@ -154,6 +156,9 @@ public class ClasspathListenerHandlerTest {
 	}
 
 	@Test public void sourceJar() throws Exception {
+		IEclipsePreferences m2eprefs = InstanceScope.INSTANCE.getNode("org.eclipse.m2e.core");
+		m2eprefs.putBoolean("eclipse.m2.downloadSources", true);
+		System.out.println("downloadSources = " + m2eprefs.get("eclipse.m2.downloadSources", null));
 		String projectName = "maven-with-jar-dependency";
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();

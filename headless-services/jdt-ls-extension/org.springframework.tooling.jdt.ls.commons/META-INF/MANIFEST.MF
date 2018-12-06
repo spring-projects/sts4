@@ -9,7 +9,9 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.core.resources,
- com.google.guava
+ com.google.guava,
+ org.eclipse.m2e.jdt,
+ org.eclipse.m2e.core
 Export-Package: org.springframework.tooling.jdt.ls.commons,
  org.springframework.tooling.jdt.ls.commons.classpath,
  org.springframework.tooling.jdt.ls.commons.javadoc,
