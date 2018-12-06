@@ -195,6 +195,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			}
 		} catch (IOException e) {
 			//ignore.. app stopped
+		} catch (ExecutionException e) {
+			if (!(e.getCause() instanceof IOException)) {
+				throw e;
+			}
 		}
 		return null;
 	}
@@ -377,6 +381,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			}
 		} catch (IOException e) {
 			//ignore... probably just because app is stopped
+		} catch (ExecutionException e) {
+			if (!(e.getCause() instanceof IOException)) {
+				throw e;
+			}
 		}
 		return null;
 	}
@@ -443,8 +451,12 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			return bootVersion != null && environment != null ? ContextPath.getContextPath(bootVersion, environment) : null;
 		} catch (IOException e) {
 			//Ignore... happens a low when app is stopped
-			return null;
+		} catch (ExecutionException e) {
+			if (!(e.getCause() instanceof IOException)) {
+				throw e;
+			}
 		}
+		return null;
 	}
 
 	/**
