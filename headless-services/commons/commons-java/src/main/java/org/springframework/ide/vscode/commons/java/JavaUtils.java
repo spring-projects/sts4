@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.java;
+package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -82,8 +82,45 @@ public class JavaUtils {
 				return null;
 			}
 		} else {
-			return tokenized[0];
+			String version = tokenized[0];
+			int idx = version.indexOf('+');
+			return idx >= 0 ? version.substring(0, idx) : version;
 		}
+	}
+
+	public static Path javaHomeFromLibJar(Path libJar) {
+		Path root = libJar.getRoot();
+		for (Path home = libJar; !root.equals(home.getParent()); home = home.getParent()) {
+			Path bin = home.resolve("bin");
+			Path lib = home.resolve("lib");
+			Path include = home.resolve("include");
+			Path man = home.resolve("man");
+			Path legal = home.resolve("legal");
+			if (Files.isDirectory(bin) && Files.isDirectory(lib) && Files.isDirectory(include) && (Files.isDirectory(man) || Files.isDirectory(legal))) {
+				return home;
+			}
+		}
+		return null;
+	}
+
+	public static Path jreSources(Path libJar) {
+		Path home = javaHomeFromLibJar(libJar);
+		if (home != null) {
+			Path sources = JavaUtils.sourceZip(home);
+			if (sources == null) {
+				sources = JavaUtils.sourceZip(home.resolve("lib"));
+			}
+			return sources;
+		}
+		return null;
+	}
+
+	private static Path sourceZip(Path containerFolder) {
+		Path sourcesZip = containerFolder.resolve("src.zip");
+		if (Files.exists(sourcesZip)) {
+			return sourcesZip;
+		}
+		return null;
 	}
 
 }

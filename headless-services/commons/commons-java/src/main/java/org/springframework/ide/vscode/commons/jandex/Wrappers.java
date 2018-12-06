@@ -13,8 +13,6 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import static org.springframework.ide.vscode.commons.util.Assert.isNotNull;
 
-import java.io.File;
-
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -26,6 +24,7 @@ import org.jboss.jandex.Type;
 import org.jboss.jandex.Type.Kind;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaType;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMemberValuePair;
@@ -36,11 +35,11 @@ import org.springframework.ide.vscode.commons.java.IVoidType;
 
 public class Wrappers {
 
-	public static IType wrap(JandexIndex index, File classpathContainer, ClassInfo info, IJavadocProvider javadocProvider) {
+	public static IType wrap(JandexIndex index, IJavaModuleData moduleContainer, ClassInfo info, IJavadocProvider javadocProvider) {
 		if (info == null) {
 			return null;
 		}
-		return new TypeImpl(index, classpathContainer, info, javadocProvider);
+		return new TypeImpl(index, moduleContainer, info, javadocProvider);
 	}
 
 	public static IField wrap(IType declaringType, FieldInfo field, IJavadocProvider javadocProvider) {

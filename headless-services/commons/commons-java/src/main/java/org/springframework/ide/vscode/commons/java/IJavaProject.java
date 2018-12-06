@@ -57,7 +57,7 @@ public interface IJavaProject {
 		return getIndex().getClasspathResources();
 	}
 
-	default Optional<File> findClasspathResourceContainer(String fqName) {
+	default IJavaModuleData findClasspathResourceContainer(String fqName) {
 		return getIndex().findClasspathResourceContainer(fqName);
 	}
 

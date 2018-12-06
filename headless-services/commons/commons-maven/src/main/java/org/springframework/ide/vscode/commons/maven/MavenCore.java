@@ -54,7 +54,7 @@ import org.eclipse.aether.util.graph.visitor.CloningDependencyVisitor;
 import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaUtils;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 
 /**
  * Maven Core functionality

@@ -12,7 +12,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-import java.io.File;
 import java.util.stream.Stream;
 
 public interface IMethod extends IMember {
@@ -68,7 +67,7 @@ public interface IMethod extends IMember {
 	boolean isConstructor();
 
 	@Override
-	default File classpathContainer() {
+	default IJavaModuleData classpathContainer() {
 		return getDeclaringType().classpathContainer();
 	}
 

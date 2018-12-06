@@ -11,32 +11,21 @@
 package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Indexer;
-import org.jboss.jandex.JarIndexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
+import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -71,212 +60,106 @@ public class BasicJandexIndex {
 		return folder;
 	}
 
-	private Map<File, Supplier<Optional<IndexView>>> index;
+	private ImmutableList<ModuleJandexIndex> modules;
 
-	private Map<File, Supplier<List<Tuple3<String, File, ClassInfo>>>> knownTypes;
-
-	private Map<File, Supplier<List<String>>> knownPackages;
-
-	private BasicJandexIndex[] baseIndex;
-
-	BasicJandexIndex(Collection<File> classpathEntries, IndexFileFinder indexFileFinder,
-			BasicJandexIndex... baseIndex) {
-		this.baseIndex = baseIndex;
-		this.index = new ConcurrentHashMap<>();
-		this.knownTypes = new HashMap<>();
-		this.knownPackages = new HashMap<>();
-		classpathEntries.forEach(file -> {
-			index.put(file, /*Suppliers.synchronizedSupplier(*/Suppliers.memoize(() -> createIndex(file, indexFileFinder))/*)*/);
-			knownTypes.put(file, Suppliers.memoize(() -> getKnownTypesStream(file).collect(Collectors.toList())));
-			knownPackages.put(file, Suppliers.memoize(() -> getKnownPackages(file).collect(Collectors.toList())));
-		});
-	}
-
-	private Optional<IndexView> createIndex(File file, IndexFileFinder indexFileFinder) {
-		if (file != null && file.isFile() && file.getName().endsWith(".jar")) {
-			return indexJar(file, indexFileFinder);
-		} else if (file != null && file.isDirectory()) {
-			return indexFolder(file);
-		} else {
-			return Optional.empty();
+	BasicJandexIndex(IClasspath classpath, IndexFileFinder indexFileFinder) {
+		ImmutableList.Builder<ModuleJandexIndex> builder = ImmutableList.builder();
+		try {
+			classpath.getClasspathEntries().forEach(cpe -> {
+				File binaryLocation = IClasspathUtil.binaryLocation(cpe);
+				builder.addAll(IndexRoutines.fromCPE(cpe, indexFileFinder.findIndexFile(binaryLocation)));
+			});
+		} catch (Exception e) {
+			log.error("", e);
 		}
+		this.modules = builder.build();
 	}
 
-	private static Optional<IndexView> indexFolder(File folder) {
-		Indexer indexer = new Indexer();
-		for (Iterator<File> itr = com.google.common.io.Files.fileTreeTraverser().breadthFirstTraversal(folder)
-				.iterator(); itr.hasNext();) {
-			File file = itr.next();
-			if (file.isFile() && file.getName().endsWith(".class")) {
-				try {
-					final InputStream stream = new FileInputStream(file);
-					try {
-						indexer.index(stream);
-					} finally {
-						try {
-							stream.close();
-						} catch (Exception ignore) {
-						}
-					}
-				} catch (Exception e) {
-					log.error("Failed to index file " + file, e);
+	Tuple2<IJavaModuleData, ClassInfo> getClassByName(DotName fqName) {
+		for (ModuleJandexIndex m : modules) {
+			IndexView indexView = m.getIndex().get();
+			if (indexView != null) {
+				ClassInfo info = indexView.getClassByName(fqName);
+				if (info != null) {
+					return Tuples.of(m, info);
 				}
 			}
 		}
-		return Optional.of(indexer.complete());
+		return null;
 	}
 
-	private static Optional<IndexView> indexJar(File file, IndexFileFinder indexFileFinder) {
-		File indexFile = indexFileFinder.findIndexFile(file);
-		if (indexFile != null) {
-			try {
-				if (!indexFile.getParentFile().exists()) {
-					indexFile.getParentFile().mkdirs();
+	public IJavaModuleData findClasspathResourceForType(String fqName) {
+		Tuple2<IJavaModuleData, ClassInfo> match = getClassByName(DotName.createSimple(fqName));
+		return match == null ? null : match.getT1();
+	}
+
+	private Collection<String> getKnownPackages(ModuleJandexIndex module) {
+		ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+		IndexView indexView = module.getIndex().get();
+		if (indexView != null) {
+			indexView.getKnownClasses();
+			Collection<ClassInfo> knownClasses = indexView.getKnownClasses();
+			if (knownClasses != null) {
+				for (ClassInfo info : knownClasses) {
+					String name = info.name().toString();
+					String pkg = name.substring(0, name.lastIndexOf('.'));
+					builder.add(pkg);
 				}
-				if (indexFile.createNewFile()) {
-					try {
-						return Optional.of(JarIndexer.createJarIndex(file, new Indexer(), indexFile, false, false,
-								false, System.out, System.err).getIndex());
-					} catch (IOException e) {
-						log.error("Failed to index '" + file + "'", e);
-					}
-				} else {
-					try {
-						return Optional.of(new IndexReader(new FileInputStream(indexFile)).read());
-					} catch (IOException e) {
-						log.error("Failed to read index file '" + indexFile + "'. Creating new index file.", e);
-						if (indexFile.delete()) {
-							return indexJar(file, indexFileFinder);
-						} else {
-							log.error("Failed to read index file '" + indexFile);
-						}
-					}
-				}
-			} catch (IOException e) {
-				log.error("Unable to create index file '" + indexFile + "'", e);
-			}
-		} else {
-			try {
-				return Optional.of(JarIndexer
-						.createJarIndex(file, new Indexer(), file.canWrite(), file.getParentFile().canWrite(), false)
-						.getIndex());
-			} catch (IOException e) {
-				log.error("Failed to index '" + file + "'", e);
 			}
 		}
-		return Optional.empty();
+		return builder.build();
 	}
 
-	Tuple2<File, ClassInfo> getClassByName(DotName fqName) {
-		// First look for type in the base index array
-		return (baseIndex == null ? Stream.<Tuple2<File, ClassInfo>>empty()
-				: Arrays.stream(
-						baseIndex)
-						.filter(
-								jandexIndex -> jandexIndex != null)
-						.map(jandexIndex -> jandexIndex.getClassByName(fqName))).filter(type -> type != null)
-								.findFirst()
-								// If not found look at indices owned by this
-								// JandexIndex instance
-								.orElseGet(() -> streamOfIndices()
-										.map(e -> Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName))))
-										.filter(t -> t.getT2().isPresent())
-										.map(e -> Tuples.of(e.getT1(), e.getT2().get())).findFirst()
-										.orElse(null));
-
-	}
-
-	private Optional<Tuple2<File, ClassInfo>> findMatch(DotName fqName) {
-		return (baseIndex == null ? Stream.<Optional<Tuple2<File, ClassInfo>>>empty()
-				: Arrays.stream(
-						baseIndex)
-						.filter(
-								jandexIndex -> jandexIndex != null)
-						.map(jandexIndex -> jandexIndex.findMatch(fqName))).filter(o -> o.isPresent())
-								.findFirst()
-								// If not found look at indices owned by this
-								// JandexIndex instance
-								.orElseGet(() -> streamOfIndices()
-										.map(e -> {
-											IndexView view = e.getT2();
-											ClassInfo info = view.getClassByName(fqName);
-											return Tuples.of(e.getT1(), Optional.ofNullable(info));
-//											return Tuples.of(e.getT1(), Optional.ofNullable(e.getT2().getClassByName(fqName)));
-										})
-										.filter(t -> t.getT2().isPresent())
-										.map(e -> Tuples.of(e.getT1(), e.getT2().get())).findFirst());
-	}
-
-	public Optional<File> findClasspathResourceForType(String fqName) {
-		Optional<Tuple2<File, ClassInfo>> match = findMatch(DotName.createSimple(fqName));
-		return Optional.ofNullable(match.isPresent() ? match.get().getT1() : null);
-	}
-
-	private Stream<Tuple2<File, IndexView>> streamOfIndices() {
-		return index.entrySet().parallelStream().map(e -> Tuples.of(e.getKey(), e.getValue().get()))
-				.filter(t -> t.getT2().isPresent()).map(t -> Tuples.of(t.getT1(), t.getT2().get()));
-	}
-
-	private Stream<Tuple3<String, File, ClassInfo>> getKnownTypesStream(File file) {
-		Optional<IndexView> indexView = index.get(file).get();
-		if (indexView.isPresent()) {
-			return indexView.get().getKnownClasses().parallelStream()
-					.map(info -> Tuples.of(info.name().toString(), file, info));
+	private List<Tuple2<IJavaModuleData, ClassInfo>> getKnownTypeTuples(ModuleJandexIndex module) {
+		ImmutableList.Builder<Tuple2<IJavaModuleData, ClassInfo>> builder = ImmutableList.builder();
+		IndexView indexView = module.getIndex().get();
+		if (indexView != null) {
+			Collection<ClassInfo> knownClasses = indexView.getKnownClasses();
+			if (knownClasses != null) {
+				for (ClassInfo info : knownClasses) {
+					builder.add(Tuples.of(module, info));
+				}
+			}
 		}
-		return Stream.empty();
+		return builder.build();
 	}
 
-	private final Stream<String> getKnownPackages(File file) {
-		Optional<IndexView> indexView = index.get(file).get();
-		if (indexView.isPresent()) {
-			return indexView.get().getKnownClasses().parallelStream().map(info -> {
-				String name = info.name().toString();
-				return name.substring(0, name.lastIndexOf('.'));
-			}).distinct();
+	private List<Tuple2<IJavaModuleData, ClassInfo>> getAllKnownSubclasses(ModuleJandexIndex module, DotName name, boolean isInterface) {
+		ImmutableList.Builder<Tuple2<IJavaModuleData, ClassInfo>> builder = ImmutableList.builder();
+		IndexView indexView = module.getIndex().get();
+		if (indexView != null) {
+			Collection<ClassInfo> subTypes = isInterface ? indexView.getAllKnownImplementors(name) : indexView.getAllKnownSubclasses(name);
+			if (subTypes != null) {
+				for (ClassInfo info : subTypes) {
+					builder.add(Tuples.of(module, info));
+				}
+			}
 		}
-		return Stream.empty();
+		return builder.build();
 	}
 
-	Flux<Tuple3<File, ClassInfo, Double>> fuzzySearchTypes(String searchTerm) {
-		Flux<Tuple3<File, ClassInfo, Double>> flux = Flux.fromIterable(knownTypes.values()).publishOn(Schedulers.parallel())
-				.flatMap(s -> Flux.fromIterable(s.get()))
-				.map(t -> Tuples.of(t.getT2(), t.getT3(), FuzzyMatcher.matchScore(searchTerm, t.getT1())))
-				.filter(t -> t.getT3() != 0.0);
-		if (baseIndex == null) {
-			return flux;
-		} else {
-			return Flux.merge(flux,
-					Flux.fromArray(baseIndex).flatMap(index -> index.fuzzySearchTypes(searchTerm)));
-		}
+	Flux<Tuple3<IJavaModuleData, ClassInfo, Double>> fuzzySearchTypes(String searchTerm) {
+		Flux<Tuple3<IJavaModuleData, ClassInfo, Double>> flux = Flux.fromIterable(modules).publishOn(Schedulers.parallel())
+			.flatMap(m -> Flux.fromIterable(getKnownTypeTuples(m)))
+			.map(t -> Tuples.of(t.getT1(), t.getT2(), FuzzyMatcher.matchScore(searchTerm, t.getT2().name().toString())))
+			.filter(t -> t.getT3() != 0.0);
+
+		return flux;
 	}
 
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
-		Flux<Tuple2<String, Double>> flux = Flux.fromIterable(knownPackages.values()).publishOn(Schedulers.parallel())
-				.flatMap(s -> Flux.fromIterable(s.get()))
-				.map(pkg -> Tuples.of(pkg, FuzzyMatcher.matchScore(searchTerm, pkg))).filter(t -> t.getT2() != 0.0);
-		if (baseIndex == null) {
-			return flux;
-		} else {
-			return Flux.merge(flux, Flux.fromArray(baseIndex).flatMap(index -> index.fuzzySearchPackages(searchTerm)));
-		}
+		Flux<Tuple2<String, Double>> flux = Flux.fromIterable(modules).publishOn(Schedulers.parallel())
+			.flatMap(m -> Flux.fromIterable(getKnownPackages(m)))
+			.map(pkg -> Tuples.of(pkg, FuzzyMatcher.matchScore(searchTerm, pkg)))
+			.filter(t -> t.getT2() != 0.0);
+
+		return flux;
 	}
 
-	Flux<Tuple2<File, ClassInfo>> allSubtypesOf(DotName name, boolean isInterface) {
-		Flux<Tuple2<File, ClassInfo>> flux = Flux.fromIterable(index.keySet()).publishOn(Schedulers.parallel()).flatMap(file -> {
-			Optional<IndexView> optional = index.get(file).get();
-			if (optional.isPresent()) {
-				return Flux
-						.fromIterable(isInterface ? optional.get().getAllKnownImplementors(name)
-								: optional.get().getAllKnownSubclasses(name))
-						.publishOn(Schedulers.parallel()).map(info -> Tuples.of(file, info));
-			} else {
-				return Flux.empty();
-			}
-		});
-		if (baseIndex == null) {
-			return flux;
-		} else {
-			return Flux.merge(flux, Flux.fromArray(baseIndex).flatMap(index -> index.allSubtypesOf(name, isInterface)));
-		}
+	Flux<Tuple2<IJavaModuleData, ClassInfo>> allSubtypesOf(DotName name, boolean isInterface) {
+		Flux<Tuple2<IJavaModuleData, ClassInfo>> flux = Flux.fromIterable(modules).publishOn(Schedulers.parallel())
+			.flatMap(module -> Flux.fromIterable(getAllKnownSubclasses(module, name, isInterface)));
+
+		return flux;
 	}
 }

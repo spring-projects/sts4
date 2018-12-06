@@ -22,9 +22,9 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
-import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.MavenException;
@@ -92,7 +92,7 @@ public class MavenProjectClasspath implements IClasspath {
 			cpe.setSystem(true);
 			entries.add(cpe);
 			// Add at the end, not critical if throws exception, but the CPE needs to be around regardless if the below throws
-			Path sources = BootProjectUtil.jreSources(path);
+			Path sources = JavaUtils.jreSources(path);
 			if (sources != null) {
 				cpe.setSourceContainerUrl(sources.toUri().toURL());
 			}
