@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,13 +11,11 @@
 package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.EXTRA_PROPERTY;
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
+import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.missingProperty;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -37,12 +35,11 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.Multiset;
 
 /**
  * Various static methods for constructing/composing {@link Constraint}s.
@@ -126,6 +123,16 @@ public class Constraints {
 						problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
 					}
 				}
+			}
+		};
+	}
+
+	public static Constraint deprecatedScalar(Function<String, String> messageFormatter) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			if (node instanceof ScalarNode) {
+				ScalarNode scalarNode = (ScalarNode) node;
+				String name = NodeUtil.asScalar(scalarNode);
+				problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), node));
 			}
 		};
 	}

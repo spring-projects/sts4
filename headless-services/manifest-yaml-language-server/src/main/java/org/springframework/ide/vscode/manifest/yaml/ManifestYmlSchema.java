@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2018 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPro
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
@@ -120,10 +121,18 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YAtomicType t_path = f.yatomic("Path");
 
-		YAtomicType t_buildpack = f.yatomic("Buildpack");
+		YAtomicType t_buildpack_entry = f.yatomic("Buildpack Entry");
 		if (buildpackProvider != null) {
+			t_buildpack_entry.setHintProvider(buildpackProvider);
+//			t_buildpack_entry.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack_entry.toString(), buildpackProvider));
+		}
+
+		// Deprecated. See: https://www.pivotaltracker.com/story/show/162499688
+		YAtomicType t_buildpack = f.yatomic("Buildpack");
+		if (t_buildpack != null) {
 			t_buildpack.setHintProvider(buildpackProvider);
-//			t_buildpack.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack.toString(), buildpackProvider));
+			t_buildpack.require(Constraints.deprecatedScalar((name) ->
+								"Deprecated: Use `buildpacks` instead."));
 		}
 
 		YAtomicType t_stack = f.yatomic("Stack");
@@ -189,6 +198,7 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YTypedPropertyImpl[] props = {
 			f.yprop("buildpack", t_buildpack),
+			f.yprop("buildpacks", f.yseq(t_buildpack_entry)),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
 			f.yprop("domain", t_domain),
