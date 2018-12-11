@@ -1133,7 +1133,8 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
-				"  buildpack: bad-buildpack\n" +
+				"  buildpacks: \n" +
+				"  - bad-buildpack\n" +
 				"  services:\n" +
 				"  - bad-service\n" +
 				"  bogus: bad" //a token error to make sure reconciler is actually running!
@@ -1143,7 +1144,8 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo-foo\n" +
-				"  buildpack: java_buildpack\n" +
+				"  buildpacks: \n" +
+				"  - bad-buildpack\n" +
 				"  routes:\n" +
 				"  - route: foo.blah/fooo\n"
 		);
@@ -1338,13 +1340,27 @@ public class ManifestYamlEditorTest {
 	}
 
 	@Test
-	public void buildpackContentAssist() throws Exception {
+	public void deprecatedBuildpackContentAssist() throws Exception {
 		ClientRequests cfClient = cloudfoundry.client;
 		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
 		when(buildPack.getName()).thenReturn("java_buildpack");
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
 
 		CompletionItem completion = assertCompletions("buildpack: <*>", "buildpack: java_buildpack<*>").get(0);
+		assertEquals("java_buildpack", completion.getLabel());
+		assertDocumentation("an-org : a-space [test.io]", completion);
+	}
+
+	@Test
+	public void buildpacksContentAssist() throws Exception {
+		// Test for newer `buildpacks` property
+		// See: PT 162499688
+		ClientRequests cfClient = cloudfoundry.client;
+		CFBuildpack buildPack = Mockito.mock(CFBuildpack.class);
+		when(buildPack.getName()).thenReturn("java_buildpack");
+		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
+
+		CompletionItem completion = assertCompletions("buildpacks: \n - <*>", "- java_buildpack<*>").get(0);
 		assertEquals("java_buildpack", completion.getLabel());
 		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
