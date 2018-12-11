@@ -39,6 +39,7 @@ public class ManifestYmlSchemaTest {
 	private static final String[] NESTED_PROP_NAMES = {
 //			"applications",
 			"buildpack",
+			"buildpacks",
 			"command",
 			"disk_quota",
 			"domain",
@@ -65,6 +66,7 @@ public class ManifestYmlSchemaTest {
 	private static final String[] TOPLEVEL_PROP_NAMES = {
 			"applications",
 			"buildpack",
+			"buildpacks",
 			"command",
 			"disk_quota",
 			"domain",
