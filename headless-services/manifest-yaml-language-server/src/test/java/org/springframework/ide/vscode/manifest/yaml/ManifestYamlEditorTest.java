@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -809,6 +808,25 @@ public class ManifestYamlEditorTest {
 				"  health-check-type: process"
 		);
 	}
+
+	@Test
+	public void reconcileDeprecatedBuildpackWarning() throws Exception {
+		Editor editor;
+		Diagnostic problem;
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  buildpack: java_buildpack");
+		// NOTE: should the warning appear over the value `java_buildpack` or the property `buildpack`?
+		// For now testing on the value, but if warning is instead switched to `buildpack`, this test should
+		// fail (expected) and updated to reflect this change
+		problem = editor.assertProblems(
+				"java_buildpack|Deprecated: Use `buildpacks` instead.")
+				.get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
 
 	@Test
 	public void hoverInfos() throws Exception {
