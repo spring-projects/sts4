@@ -261,7 +261,10 @@ public class ManifestYamlEditorTest {
 				"applications:\n"+
 				"- name: <*>",
 				// ---------------
-				"buildpack: <*>",
+				"buildpack: <*>", // Deprecated but still supported
+				// ---------------
+				"buildpacks:\n"+
+				"- <*>",
 				// ---------------
 				"command: <*>",
 				// ---------------
@@ -339,6 +342,11 @@ public class ManifestYamlEditorTest {
 				"applications:\n" +
 				"- name: foo\n" +
 				"  buildpack: <*>",
+				// ---------------
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpacks:\n"+
+				"  - <*>",
 				// ---------------
 				"applications:\n" +
 				"- name: foo\n" +
@@ -981,7 +989,8 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"#comment\n" +
 				"applications:\n" +
-				"- buildpack: zbuildpack\n" +
+				"- buildpacks:\n" +
+				"  - zbuildpack\n" +
 				"  name: foo\n" +
 				"  domains:\n" +
 				"  - pivotal.io\n" +
@@ -1107,7 +1116,8 @@ public class ManifestYamlEditorTest {
 		editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
-				"  buildpack: bad-buildpack\n" +
+				"  buildpacks:\n  " +
+				"  - bad-buildpack\n" +
 				"  stack: blah\n" +
 				"  domain: something-domain.com\n" +
 				"  services:\n" +
@@ -1161,7 +1171,8 @@ public class ManifestYamlEditorTest {
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: foo\n" +
-				"  buildpack: bad-buildpack\n" +
+				"  buildpacks:\n  " +
+				"  - bad-buildpack\n" +
 				"  stack: bad-stack\n" +
 				"  services:\n" +
 				"  - bad-service\n" +
@@ -1360,7 +1371,7 @@ public class ManifestYamlEditorTest {
 		when(buildPack.getName()).thenReturn("java_buildpack");
 		when(cfClient.getBuildpacks()).thenReturn(ImmutableList.of(buildPack));
 
-		CompletionItem completion = assertCompletions("buildpacks: \n - <*>", "- java_buildpack<*>").get(0);
+		CompletionItem completion = assertCompletions("buildpacks: \n - <*>", "   - java_buildpack<*>").get(0);
 		assertEquals("java_buildpack", completion.getLabel());
 		assertDocumentation("an-org : a-space [test.io]", completion);
 	}
