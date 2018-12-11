@@ -827,6 +827,16 @@ public class ManifestYamlEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
+	@Test
+	public void reconcileBuildpacks() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  buildpacks:\n" +
+				"  - java_buildpack");
+
+		editor.assertProblems(/* NONE */);
+	}
 
 	@Test
 	public void hoverInfos() throws Exception {
