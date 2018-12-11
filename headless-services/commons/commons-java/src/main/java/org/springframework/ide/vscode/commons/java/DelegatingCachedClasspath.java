@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.java;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.base.Objects;

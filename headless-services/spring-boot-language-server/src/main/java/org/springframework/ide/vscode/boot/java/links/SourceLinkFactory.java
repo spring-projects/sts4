@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 /**
  * Factory for creating {@link SourceLinks}
@@ -50,13 +51,14 @@ public final class SourceLinkFactory {
 	 * @param server the boot LS
 	 * @return appropriate source links object
 	 */
-	public static SourceLinks createSourceLinks(CompilationUnitCache cuCache) {
+	public static SourceLinks createSourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
+			return /*new VSCodeSourceLinks(cuCache);*/new JavaServerSourceLinks(server);
 		case THEIA:
 			return new VSCodeSourceLinks(cuCache);
 		case ECLIPSE:
-			return new EclipseSourceLinks();
+			return /*new EclipseSourceLinks();*/new JavaServerSourceLinks(server);
 		case ATOM:
 			return new AtomSourceLinks(cuCache);
 		default:
@@ -68,7 +70,7 @@ public final class SourceLinkFactory {
 	@Deprecated
 	public static SourceLinks createSourceLinks(BootJavaLanguageServerComponents server) {
 		return server == null
-				? createSourceLinks((CompilationUnitCache)null)
-				: createSourceLinks(server.getCompilationUnitCache());
+				? createSourceLinks(null, (CompilationUnitCache)null)
+				: createSourceLinks(server.getServer(), server.getCompilationUnitCache());
 	}
 }

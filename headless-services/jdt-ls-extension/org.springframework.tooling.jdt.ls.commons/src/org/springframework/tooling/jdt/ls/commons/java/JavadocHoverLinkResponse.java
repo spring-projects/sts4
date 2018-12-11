@@ -8,13 +8,22 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.java;
+package org.springframework.tooling.jdt.ls.commons.java;
 
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+public class JavadocHoverLinkResponse {
+	
+	private String link;
+	
+	public JavadocHoverLinkResponse(String link) {
+		this.link = link;
+	}
 
-public interface JavadocService {
+	public String getLink() {
+		return link;
+	}
 
-	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
+	public void setLink(String link) {
+		this.link = link;
+	}
 
 }

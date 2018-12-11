@@ -14,7 +14,7 @@ import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 
 /**
  * Classpath for a Java artifact

@@ -8,13 +8,30 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.java;
+package org.springframework.ide.vscode.commons.languageserver.java.ls;
 
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+public class JavaElementData {
+	
+	private String name;
+	private String handleIdentifier;
+	
+	public JavaElementData() {
+	}
 
-public interface JavadocService {
+	public String getName() {
+		return name;
+	}
 
-	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getHandleIdentifier() {
+		return handleIdentifier;
+	}
+
+	public void setHandleIdentifier(String handleIdentifier) {
+		this.handleIdentifier = handleIdentifier;
+	}
 
 }

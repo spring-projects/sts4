@@ -14,5 +14,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.m2e.core
 Export-Package: org.springframework.tooling.jdt.ls.commons,
  org.springframework.tooling.jdt.ls.commons.classpath,
+ org.springframework.tooling.jdt.ls.commons.java,
  org.springframework.tooling.jdt.ls.commons.javadoc,
  org.springframework.tooling.jdt.ls.commons.resources

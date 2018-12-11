@@ -16,7 +16,7 @@ import java.net.URI;
 import org.springframework.ide.vscode.commons.jandex.JandexClasspath;
 import org.springframework.ide.vscode.commons.jandex.JandexIndex.JavadocProviderFactory;
 import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import reactor.core.Disposable;

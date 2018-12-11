@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -52,6 +54,10 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
+import org.springframework.tooling.jdt.ls.commons.java.JavaData;
+import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
+import org.springframework.tooling.jdt.ls.commons.java.JavaTypeResponse;
+import org.springframework.tooling.jdt.ls.commons.java.JavadocHoverLinkResponse;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 import org.springframework.tooling.ls.eclipse.commons.javadoc.JavaDoc2MarkdownConverter;
@@ -68,6 +74,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			new LSP4ECommandExecutor(),
 			() -> new ProjectSorter()
 	);
+
+	private static JavaData JAVA_DATA = new JavaData(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
@@ -277,7 +285,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<JavadocResponse> javadoc(JavadocParams params) {
+	public CompletableFuture<JavadocResponse> javadoc(JavaDataParams params) {
 		JavadocResponse response = new JavadocResponse();
 		try {
 			String content = JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
@@ -312,6 +320,26 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			}
 		});
 		return CompletableFuture.completedFuture("ok");
+	}
+
+	@Override
+	public CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params) {
+		JavaTypeResponse response = new JavaTypeResponse(JAVA_DATA.typeData(params.getProjectUri(), params.getBindingKey()));
+		return CompletableFuture.completedFuture(response);
+	}
+
+	@Override
+	public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
+		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
+		try {
+			IJavaElement element = JavaData.findElement(URI.create(params.getProjectUri()), params.getBindingKey());
+			if (element != null) {
+				response.setLink(JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element));
+			}
+		} catch (Exception e) {
+			LanguageServerCommonsActivator.logError(e, "Failed to find java element for key " + params.getBindingKey());
+		}
+		return CompletableFuture.completedFuture(response);
 	}
 
 }

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.jdt.ls;
+package org.springframework.ide.vscode.commons.languageserver.java.ls;
 
 public class ClasspathListenerParams {
 

@@ -14,8 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 
 public class ClasspathTestUtil {
 

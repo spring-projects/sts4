@@ -16,11 +16,10 @@ import java.net.URI;
 import java.util.function.Function;
 
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.ITypeParameter;
-import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
+import org.springframework.tooling.jdt.ls.commons.java.JavaData;
 
 import com.google.common.io.CharStreams;
 
@@ -41,8 +40,7 @@ public class JavadocUtils {
 	}
 
 	public static final String javadoc(Function<IJavaElement, Reader> readerProvider, URI projectUri, String bindingKey) throws Exception {
-		IJavaProject project = ResourceUtils.getJavaProject(projectUri);
-		IJavaElement element = findElement(project, bindingKey);
+		IJavaElement element = JavaData.findElement(projectUri, bindingKey);
 		return computeJavadoc(readerProvider, element);
 	}
 
@@ -72,28 +70,7 @@ public class JavadocUtils {
 		return getString(r);
 	}
 	
-	public static IJavaElement findElement(IJavaProject project, String bindingKey) {
-		IJavaElement element = null;
-		try {
-			element = project.findElement(bindingKey, null);
-		} catch (Throwable t) {
-			// ignore
-		}
-		if (element == null) {
-			// Try modifying the binding key to search for the alternate binding
-			try {
-				String alternateBinding = alternateBinding(bindingKey);
-				if (alternateBinding != null) {
-					element = project.findElement(alternateBinding, null);
-				}
-			} catch (Throwable t) {
-				// ignore
-			}
-		}
-		return element;
-	}
-
-	private static String alternateBinding(String bindingKey) {
+	public static String alternateBinding(String bindingKey) {
 		int idxStartParams = bindingKey.indexOf('(');
 		if (idxStartParams >= 0) {
 			int idxEndParams = bindingKey.indexOf(')', idxStartParams);

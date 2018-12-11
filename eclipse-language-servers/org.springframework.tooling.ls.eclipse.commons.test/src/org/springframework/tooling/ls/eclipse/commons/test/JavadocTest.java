@@ -21,8 +21,8 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.junit.After;
 import org.junit.Test;
+import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
-import org.springframework.tooling.ls.eclipse.commons.JavadocParams;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl;
 
 public class JavadocTest {
@@ -44,7 +44,7 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;";
 		assertEquals(expectedBindingKey, type.getKey());
 		
-		JavadocParams params = new JavadocParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
 		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
 		assertEquals("**Sample class**", response.getContent());
 	}
@@ -61,7 +61,7 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;.number";
 		assertEquals(expectedBindingKey, field.getKey());
 		
-		JavadocParams params = new JavadocParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
 		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
 		assertEquals("**Sample field**", response.getContent());
 	}
@@ -78,7 +78,7 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;.getNumber()V";
 		assertEquals(expectedBindingKey, method.getKey());
 		
-		JavadocParams params = new JavadocParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
 		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
 		assertEquals("**Sample getter**", response.getContent());
 	}

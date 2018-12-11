@@ -22,9 +22,9 @@ import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.JavadocParams;
-import org.springframework.ide.vscode.commons.languageserver.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocResponse;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 
@@ -61,7 +61,7 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 		long start = System.currentTimeMillis();
 		try {
 			log.info("Fetching javadoc {}", element.getBindingKey());
-			JavadocResponse response = client.javadoc(new JavadocParams(projectUri, element.getBindingKey())).get(10, TimeUnit.SECONDS);
+			JavadocResponse response = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey())).get(10, TimeUnit.SECONDS);
 			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
 			return produceJavadocFromMd(response);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {

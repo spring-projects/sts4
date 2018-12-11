@@ -222,6 +222,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		server.onShutdown(this::shutdown);
 	}
 
+	public SimpleLanguageServer getServer() {
+		return server;
+	}
+
 	@Override
 	public ICompletionEngine getCompletionEngine() {
 		return createCompletionEngine(projectFinder, propertyIndexProvider, adHocPropertyIndexProvider);

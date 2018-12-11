@@ -63,8 +63,8 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListener;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerManager;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;

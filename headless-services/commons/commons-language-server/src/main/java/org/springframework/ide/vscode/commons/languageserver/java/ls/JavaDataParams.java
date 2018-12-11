@@ -8,34 +8,38 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.ls.eclipse.commons;
+package org.springframework.ide.vscode.commons.languageserver.java.ls;
 
-public class JavadocParams {
+public class JavaDataParams {
 
 	private String projectUri;
 	private String bindingKey;
 
-	public JavadocParams(String projectUri, String bindingKey) {
+	public JavaDataParams(String projectUri, String bindingKey) {
 		super();
 		this.projectUri = projectUri;
 		this.bindingKey = bindingKey;
 	}
-	public String getProjectUri() {
-		return projectUri;
-	}
-	public void setProjectUri(String projectUri) {
-		this.projectUri = projectUri;
-	}
+
 	public String getBindingKey() {
 		return bindingKey;
 	}
+
 	public void setBindingKey(String bindingKey) {
 		this.bindingKey = bindingKey;
 	}
 
+	public String getProjectUri() {
+		return projectUri;
+	}
+
+	public void setProjectUri(String project) {
+		this.projectUri = project;
+	}
+
 	@Override
 	public String toString() {
-		return "JavadocParams [projectUri=" + projectUri + ", bindingKey=" + bindingKey + "]";
+		return "JavaDataParams [projectUri=" + projectUri + ", bindingKey=" + bindingKey + "]";
 	}
 
 }

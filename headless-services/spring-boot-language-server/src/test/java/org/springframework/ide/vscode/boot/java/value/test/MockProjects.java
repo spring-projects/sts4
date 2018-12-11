@@ -34,8 +34,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 

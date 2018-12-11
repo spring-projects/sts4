@@ -16,8 +16,8 @@ import { log } from 'util';
 import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
 import { registerClasspathService } from './classpath';
-import { registerJavadocService } from './javadoc';
 import {HighlightCodeLensProvider} from "./code-lens-service";
+import {registerJavaDataService} from "./java-data";
 
 let p2c = P2C.createConverter();
 
@@ -260,7 +260,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
             return { applied: true};
         });
         registerClasspathService(client);
-        registerJavadocService(client);
+        registerJavaDataService(client);
         return client;
     });
 }

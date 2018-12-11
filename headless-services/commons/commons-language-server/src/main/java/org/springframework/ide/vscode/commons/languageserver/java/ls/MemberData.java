@@ -8,22 +8,27 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver;
+package org.springframework.ide.vscode.commons.languageserver.java.ls;
 
-public class JavadocResponse {
+public class MemberData extends JavaElementData {
+	
+	private String declaringType;	
+	private int flags;
 
-	private String content;
-
-	public JavadocResponse() {
-		super();
+	public String getDeclaringType() {
+		return declaringType;
 	}
 
-	public String getContent() {
-		return content;
+	public void setDeclaringType(String declaringType) {
+		this.declaringType = declaringType;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public int getFlags() {
+		return flags;
+	}
+
+	public void setFlags(int flags) {
+		this.flags = flags;
 	}
 
 }

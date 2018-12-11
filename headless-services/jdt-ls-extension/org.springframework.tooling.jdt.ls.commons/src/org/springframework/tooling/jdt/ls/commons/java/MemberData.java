@@ -8,13 +8,27 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.java;
+package org.springframework.tooling.jdt.ls.commons.java;
 
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+public class MemberData extends JavaElementData {
+	
+	private String declaringType;	
+	private int flags;
 
-public interface JavadocService {
+	public String getDeclaringType() {
+		return declaringType;
+	}
 
-	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
+	public void setDeclaringType(String declaringType) {
+		this.declaringType = declaringType;
+	}
+
+	public int getFlags() {
+		return flags;
+	}
+
+	public void setFlags(int flags) {
+		this.flags = flags;
+	}
 
 }

@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.resources;
 
-import static org.springframework.tooling.jdt.ls.commons.Logger.*;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Arrays;

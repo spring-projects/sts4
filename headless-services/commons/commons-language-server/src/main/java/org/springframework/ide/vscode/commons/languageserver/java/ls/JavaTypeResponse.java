@@ -8,13 +8,22 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.java;
+package org.springframework.ide.vscode.commons.languageserver.java.ls;
 
-import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+public class JavaTypeResponse {
 
-public interface JavadocService {
+	private TypeData data;
 
-	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
+	public JavaTypeResponse(TypeData data) {
+		this.data = data;
+	}
+
+	public TypeData getData() {
+		return data;
+	}
+
+	public void setData(TypeData data) {
+		this.data = data;
+	}
 
 }

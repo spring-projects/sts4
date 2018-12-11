@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -93,18 +92,18 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
-import org.springframework.ide.vscode.commons.languageserver.JavadocParams;
-import org.springframework.ide.vscode.commons.languageserver.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
 import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaTypeResponse;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocHoverLinkResponse;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServerWrapper;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -320,8 +319,18 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<JavadocResponse> javadoc(JavadocParams params) {
+				public CompletableFuture<JavadocResponse> javadoc(JavaDataParams params) {
 					return CompletableFuture.completedFuture(new JavadocResponse());
+				}
+
+				@Override
+				public CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params) {
+					return CompletableFuture.completedFuture(new JavaTypeResponse(null));
+				}
+
+				@Override
+				public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
+					return CompletableFuture.completedFuture(new JavadocHoverLinkResponse(null));
 				}
 
 			});

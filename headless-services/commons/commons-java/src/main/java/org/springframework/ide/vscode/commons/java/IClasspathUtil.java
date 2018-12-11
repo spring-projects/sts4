@@ -19,8 +19,8 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 
 import com.google.common.collect.ImmutableList;
 

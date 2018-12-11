@@ -16,7 +16,11 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaTypeResponse;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocHoverLinkResponse;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocResponse;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 
 /**
@@ -42,5 +46,12 @@ public interface STS4LanguageClient extends LanguageClient {
 	CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams classpathListenerParams);
 
 	@JsonRequest("sts/javadoc")
-	CompletableFuture<JavadocResponse> javadoc(JavadocParams params);
+	CompletableFuture<JavadocResponse> javadoc(JavaDataParams params);
+
+	@JsonRequest("sts/javaType")
+	CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params);
+
+	@JsonRequest("sts/javadocHoverLink")
+	CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params);
+
 }

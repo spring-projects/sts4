@@ -12,6 +12,18 @@
                id="sts.java.javadoc">
          </command>
       </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.JavaTypeHanlder">
+         <command
+               id="sts.java.type">
+         </command>
+      </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.JavadocHoverLinkHandler">
+         <command
+               id="sts.java.javadocHoverLink">
+         </command>
+      </delegateCommandHandler>
    </extension>
 </plugin>
  

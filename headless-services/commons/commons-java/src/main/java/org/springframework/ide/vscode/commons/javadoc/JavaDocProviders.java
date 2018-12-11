@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.javadoc;
 import java.net.URL;
 
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.jdt.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 
 public class JavaDocProviders {
 

@@ -32,7 +32,6 @@ import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
@@ -94,8 +93,8 @@ public class BootLanguagServerBootApp {
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean SourceLinks sourceLinks(CompilationUnitCache cuCache) {
-		return SourceLinkFactory.createSourceLinks(cuCache);
+	@Bean SourceLinks sourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache) {
+		return SourceLinkFactory.createSourceLinks(server, cuCache);
 	}
 
 	@Bean CompilationUnitCache cuCache(BootLanguageServerParams params, SimpleTextDocumentService documents) {
