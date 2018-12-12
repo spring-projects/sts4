@@ -159,12 +159,12 @@ public class ManifestYamlEditorTest {
 				"- name: foo\n" +
 				"memory:\n"+
 				"- bad sequence\n" +
-				"buildpack:\n" +
+				"instances:\n" +
 				"  bad: map\n"
 		);
 		editor.assertProblems(
 				"- bad sequence|Expecting a 'Memory' but found a 'Sequence'",
-				"bad: map|Expecting a 'Buildpack' but found a 'Map'"
+				"bad: map|Expecting a 'Strictly Positive Integer' but found a 'Map'"
 		);
 	}
 
@@ -822,7 +822,7 @@ public class ManifestYamlEditorTest {
 		// For now testing on the value, but if warning is instead switched to `buildpack`, this test should
 		// fail (expected) and updated to reflect this change
 		problem = editor.assertProblems(
-				"java_buildpack|Deprecated: Use `buildpacks` instead.")
+				"buildpack|Deprecated: Use `buildpacks` instead.")
 				.get(0);
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
