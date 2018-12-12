@@ -241,9 +241,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 			// Raw collections shouldn't match any beans
 			return type.getTypeArguments().length == 1 ? matchBeansByType(project, beans, type.getTypeArguments()[0].getQualifiedName(), false) : ImmutableList.of();
 		} else if (type.isArray() && type.getDimensions() == 1) {
-			return matchBeansByType(project, beans, type.getElementType().getQualifiedName(), false);
+			return matchBeansByType(project, beans, type.getElementType().getErasure().getQualifiedName(), false);
 		} else {
-			return matchBeansByType(project, beans, type.getQualifiedName(), true);
+			return matchBeansByType(project, beans, type.getErasure().getQualifiedName(), true);
 		}
 	}
 
@@ -263,7 +263,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	private static boolean isCompatibleBeanType(IJavaProject jp, LiveBean bean, String bindingQualifiedName) {
-		String liveBeanTypeFQName = bean.getType();
+		String rawLiveBeanFqName = bean.getType();
+		int idx = rawLiveBeanFqName.indexOf('<');
+		// Trim the generic parameters part if it's present
+		String liveBeanTypeFQName = idx < 0 ? rawLiveBeanFqName : rawLiveBeanFqName.substring(0, idx);
 		if (liveBeanTypeFQName != null) {
 			if (liveBeanTypeFQName.replace('$', '.').equals(bindingQualifiedName)) {
 				return true;
