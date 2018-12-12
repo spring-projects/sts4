@@ -166,6 +166,16 @@ public class ManifestYamlEditorTest {
 				"- bad sequence|Expecting a 'Memory' but found a 'Sequence'",
 				"bad: map|Expecting a 'Strictly Positive Integer' but found a 'Map'"
 		);
+
+		// Add a structural case for `buildpacks` (old `buildpack` was scalar, but `buildpacks` is sequence)
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: foo\n" +
+				"  buildpacks: bad scalar\n"
+		);
+		editor.assertProblems(
+				"bad scalar|Expecting a 'Sequence' but found a 'Scalar'"
+				);
 	}
 
 	@Test
