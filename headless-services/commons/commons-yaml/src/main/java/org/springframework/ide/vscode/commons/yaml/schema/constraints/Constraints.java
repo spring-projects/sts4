@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
-import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -47,7 +46,7 @@ import com.google.common.collect.Multimap;
  * @author Kris De Volder
  */
 public class Constraints {
-	
+
 	public static Constraint requireOneOf(String... properties) {
 		return new RequireOneOf(properties);
 	}
@@ -55,7 +54,7 @@ public class Constraints {
 	public static Constraint requireAtMostOneOf(String... properties) {
 		return new RequireOneOf(properties).allowFewer(true);
 	}
-	
+
 	public static Constraint requireAtLeastOneOf(String... properties) {
 		return new RequireOneOf(properties).allowMultiple(true);
 	}
@@ -127,12 +126,21 @@ public class Constraints {
 		};
 	}
 
-	public static Constraint deprecatedScalar(Function<String, String> messageFormatter) {
+	public static Constraint deprecateProperty(Function<String, String> messageFormatter, String deprecatedProperty) {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
-			if (node instanceof ScalarNode) {
-				ScalarNode scalarNode = (ScalarNode) node;
-				String name = NodeUtil.asScalar(scalarNode);
-				problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), node));
+			// the `node` is the VALUE off the property, not the property itself. We don't want to deprecate this.
+			// Instead we want to deprecate the associated keynode, which represents the property.
+			// Find the corresponding tuple in the parent, as we want to deprecate
+			// the keyNode (so the actual property)
+			if (parent instanceof MappingNode) {
+				MappingNode map = (MappingNode) parent;
+				for (NodeTuple prop : map.getValue()) {
+					Node keyNode = prop.getKeyNode();
+					String name = NodeUtil.asScalar(keyNode);
+					if (deprecatedProperty.equals(name)) {
+						problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
+					}
+				}
 			}
 		};
 	}
@@ -169,7 +177,7 @@ public class Constraints {
 					}
 				}
 			}
-		};	
+		};
 	}
 
 	/**

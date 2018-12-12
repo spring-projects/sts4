@@ -131,8 +131,8 @@ public final class ManifestYmlSchema implements YamlSchema {
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
 		if (t_buildpack != null) {
 			t_buildpack.setHintProvider(buildpackProvider);
-			t_buildpack.require(Constraints.deprecatedScalar((name) ->
-								"Deprecated: Use `buildpacks` instead."));
+			t_buildpack.require(Constraints.deprecateProperty((name) ->
+								"Deprecated: Use `buildpacks` instead.", "buildpack"));
 		}
 
 		YAtomicType t_stack = f.yatomic("Stack");
