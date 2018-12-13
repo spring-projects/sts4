@@ -54,11 +54,11 @@ public final class SourceLinkFactory {
 	public static SourceLinks createSourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
-			return /*new VSCodeSourceLinks(cuCache);*/new JavaServerSourceLinks(server);
+			return /*new VSCodeSourceLinks(cuCache);*/server == null ? new VSCodeSourceLinks(cuCache) :new  JavaServerSourceLinks(server);
 		case THEIA:
 			return new VSCodeSourceLinks(cuCache);
 		case ECLIPSE:
-			return /*new EclipseSourceLinks();*/new JavaServerSourceLinks(server);
+			return /*new EclipseSourceLinks();*/server == null ? new EclipseSourceLinks() : new JavaServerSourceLinks(server);
 		case ATOM:
 			return new AtomSourceLinks(cuCache);
 		default:
