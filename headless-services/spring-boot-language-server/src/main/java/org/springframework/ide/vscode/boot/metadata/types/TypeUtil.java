@@ -35,6 +35,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.convert.DurationStyle;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -57,7 +59,6 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -76,6 +77,8 @@ import reactor.core.publisher.Flux;
  * @author Kris De Volder
  */
 public class TypeUtil {
+
+	private static final Logger log = LoggerFactory.getLogger(TypeUtil.class);
 
 	private static abstract class RadixableParser implements ValueParser {
 		protected abstract Object parse(String str, int radix);
@@ -340,7 +343,7 @@ public class TypeUtil {
 					return enums.build();
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 		return null;
@@ -571,7 +574,7 @@ public class TypeUtil {
 				return eclipseType.isEnum();
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return false;
 	}
@@ -579,12 +582,42 @@ public class TypeUtil {
 	private IType findType(String typeName) {
 		try {
 			if (javaProject!=null && typeName!=null) {
-				return javaProject.findType(typeName);
+				/*
+				 * Java project expects inner type separator to be '$' while properties index
+				 * has '.' as the separator. Replace '.' with '$' to find inner type
+				 */
+				String fqName = switchInnerTypeSeparator(typeName);
+				return javaProject.findType(fqName);
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
+	}
+
+	private static String switchInnerTypeSeparator(String name) {
+		if (name.indexOf('$') < 0) {
+			boolean foundDeclaringType = false;
+			String[] tokens = name.split("\\.");
+			if (tokens.length > 0) {
+				StringBuilder result = new StringBuilder();
+				result.append(tokens[0]);
+				for (int i = 1; i < tokens.length; i++) {
+					if (!foundDeclaringType) {
+						result.append('.');
+						result.append(tokens[i]);
+						if (!tokens[i].isEmpty() && Character.isUpperCase(tokens[i].charAt(0))) {
+							foundDeclaringType = true;
+						}
+					} else {
+						result.append('$');
+						result.append(tokens[i]);
+					}
+				}
+				return result.toString();
+			}
+		}
+		return name;
 	}
 
 	private IType findType(Type beanType) {
@@ -671,7 +704,7 @@ public class TypeUtil {
 					try {
 						propType = Type.fromJavaType(m.getReturnType());
 					} catch (Exception e) {
-						Log.log(e);
+						log.error("", e);
 					}
 					if (beanMode.includesHyphenated()) {
 						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
@@ -782,7 +815,7 @@ public class TypeUtil {
 		} catch (Exception e) {
 			//Couldn't determine if it was public or not... let's assume it was NOT
 			// (will result in potentially more CA completions)
-			Log.log(e);
+			log.error("", e);
 			return false;
 		}
 	}
@@ -794,7 +827,7 @@ public class TypeUtil {
 		} catch (Exception e) {
 			//Couldn't determine if it was public or not... let's assume it WAS
 			// (will result in potentially more CA completions)
-			Log.log(e);
+			log.error("", e);
 			return true;
 		}
 	}
@@ -852,7 +885,7 @@ public class TypeUtil {
 			IType type = findType(beanType);
 			return type.getMethods().filter(m -> setterName.equals(m.getElementName())).findFirst().orElse(null);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}

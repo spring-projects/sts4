@@ -1878,7 +1878,22 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testEnumMapKeyCompletion() throws Exception {
+	@Test public void testInnerTypeEnumMapKeyCompletion() throws Exception {
+		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+
+		data("foo.notes", "java.util.Map<demo.FooProperties.Weekdays,java.lang.String>", null, "Map weekdays to notes");
+
+		assertCompletionsDisplayString(
+				"foo:\n" +
+				"  notes:\n" +
+				"    <*>",
+				true,
+				//=>
+				"monday : String", "tuesday : String", "wednesday : String", "thursday : String", "friday : String", "saturday : String", "sunday : String"
+		);
+	}
+
+	@Test public void testEnumMapKeyCompletion() throws Exception {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 
 		data("foo.color-names", "java.util.Map<demo.Color,java.lang.String>", null, "Map with colors in its keys");
@@ -1909,6 +1924,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"foo:\n" +
 				"  color-names:\n" +
 				"    <*>",
+				true,
 				//=>
 				"blue : String", "green : String", "red : String"
 		);
@@ -1981,12 +1997,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"foo:\n" +
 				"  color-data:\n" +
 				"    <*>",
+				true,
 				"red : demo.ColorData", "green : demo.ColorData", "blue : demo.ColorData"
 		);
 
 		assertCompletionsDisplayString(
 				"foo:\n" +
 				"  color-data: <*>\n",
+				true,
 				"red : demo.ColorData", "green : demo.ColorData", "blue : demo.ColorData"
 		);
 

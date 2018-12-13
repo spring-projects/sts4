@@ -181,11 +181,21 @@ public abstract class AbstractPropsEditorTest {
 	}
 
 	public void assertCompletionsDisplayString(String editorText, String... completionsLabels) throws Exception {
+		assertCompletionsDisplayString(editorText, false, completionsLabels);
+	}
+
+	public void assertCompletionsDisplayString(String editorText, boolean includeDetail, String... completionsLabels) throws Exception {
 		Editor editor = newEditor(editorText);
 		List<CompletionItem> completions = editor.getCompletions();
 		String[] actualLabels = new String[completions.size()];
 		for (int i = 0; i < actualLabels.length; i++) {
 			actualLabels[i] = completions.get(i).getLabel();
+			if (includeDetail) {
+				String detail = completions.get(i).getDetail();
+				if (detail != null && !detail.isEmpty()) {
+					actualLabels[i] += " : " + detail;
+				}
+			}
 		}
 		assertElements(actualLabels, completionsLabels);
 	}

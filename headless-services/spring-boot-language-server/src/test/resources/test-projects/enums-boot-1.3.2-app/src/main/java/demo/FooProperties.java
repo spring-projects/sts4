@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties("foo")
 public class FooProperties {
+	
+	public enum Weekdays {
+		MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY
+	}
 
 	/**
 	 * Pojo
@@ -29,6 +33,8 @@ public class FooProperties {
 
 	//Map Enum -> Pojo
 	private Map<Color, ColorData> colorData;
+	
+	private Map<Weekdays, String> notes;
 	
 	//List
 	private List<String> list;
@@ -69,5 +75,11 @@ public class FooProperties {
 	}
 	public void setList(List<String> list) {
 		this.list = list;
+	}
+	public Map<Weekdays, String> getNotes() {
+		return notes;
+	}
+	public void setNotes(Map<Weekdays, String> notes) {
+		this.notes = notes;
 	}
 }
