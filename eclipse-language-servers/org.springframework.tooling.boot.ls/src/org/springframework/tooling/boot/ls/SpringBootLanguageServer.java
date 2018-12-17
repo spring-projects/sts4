@@ -73,7 +73,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 				error = e;
 			}
 		}
-		if (!dataFile.exists()) {
+		if (bundleVersion.endsWith("qualifier")) {
 			File userHome = new File(System.getProperty("user.home"));
 			File locallyBuiltJar = new File(
 					userHome, 

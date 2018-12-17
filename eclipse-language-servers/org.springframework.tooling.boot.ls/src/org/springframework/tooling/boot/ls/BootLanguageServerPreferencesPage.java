@@ -10,9 +10,13 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls;
 
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -31,6 +35,44 @@ import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceCons
 public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	public BootLanguageServerPreferencesPage() {
+	}
+
+	/**
+	 * Starts a preference change listener that keeps code mining preferences in sync with
+	 * whether or not STS4 codelenses are enabled.
+	 */
+	public static void manageCodeMiningPreferences() {
+		IPreferenceStore ourPrefs = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
+		synchronizeCodeMiningPrefs(ourPrefs);
+		ourPrefs.addPropertyChangeListener(new IPropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getProperty().equals(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS)) {
+					synchronizeCodeMiningPrefs(ourPrefs);
+				}
+			}
+		});
+	}
+
+	private static void synchronizeCodeMiningPrefs(IPreferenceStore ourPrefs) {
+		boolean codeLensEnabled = ourPrefs.getBoolean(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS);
+		if (codeLensEnabled) {
+			//Make sure jdt code mining is enabled. Codelenses do not work without it.
+			IEclipsePreferences jdtPrefs = InstanceScope.INSTANCE.getNode("org.eclipse.jdt.ui");
+			boolean codeMiningIsEnabled = jdtPrefs.getBoolean("editor_codemining_enabled", false);
+			if (!codeMiningIsEnabled) {
+				jdtPrefs.putBoolean("editor_codemining_enabled", true);
+				//Disable all individual code minings. Since code mining wasn't enabled before...
+				//This merely serves to ensure they don't start showing up all of a sudden.
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references", false);
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onMethods", false);
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onFields", false);
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onTypes", false);
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.implementations", false);
+				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.atLeastOne", false);
+			}
+		}
 	}
 
 	@Override
