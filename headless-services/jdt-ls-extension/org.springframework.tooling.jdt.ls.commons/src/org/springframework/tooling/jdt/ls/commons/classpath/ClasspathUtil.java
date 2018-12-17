@@ -19,10 +19,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -68,6 +71,7 @@ public class ClasspathUtil {
 
 	public static Classpath resolve(IJavaProject javaProject, Logger logger) throws Exception {
 		//log("resolving classpath " + javaProject.getElementName() +" ...");
+		enableDownloadSources();
 
 		List<CPE> cpEntries = new ArrayList<>();
 		
@@ -91,10 +95,19 @@ public class ClasspathUtil {
 		return classpath;
 	}
 	
+	private static AtomicBoolean enabledDownloadSources = new AtomicBoolean(false);
+	
 	public static CPE createCpe(IJavaProject javaProject, IClasspathEntry entry) throws MalformedURLException, JavaModelException {
 		return createCpe(getSystemLibraryPaths(javaProject), javaProject, entry);
 	}
 	
+	private static void enableDownloadSources() {
+		if (!enabledDownloadSources.getAndSet(true)) {
+			IEclipsePreferences m2eprefs = InstanceScope.INSTANCE.getNode("org.eclipse.m2e.core");
+			m2eprefs.putBoolean("eclipse.m2.downloadSources", true);
+		}
+	}
+
 	private static CPE createCpe(Set<String> systemLibs, IJavaProject javaProject, IClasspathEntry entry)
 			throws MalformedURLException, JavaModelException {
 		String kind = toContentKind(entry);
