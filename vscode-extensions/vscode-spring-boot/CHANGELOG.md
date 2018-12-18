@@ -1,3 +1,9 @@
+## 2018-12-20 (4.1.0 RELEASE)
+
+* (Spring Boot) first initial version of content-assist for Spring Data repository definitions
+* (Spring Boot) live hover links to types now work for projects using JDK 9 and beyond, too
+* (Spring Boot) fixed an issue with stopped apps on CF causing boot language server to get stuck when connected to JMX via SSH tunnel
+
 ## 2018-11-30 (4.0.2 RELEASE)
 
 * (Spring Boot) Make CTRL-CLICK navigation from application.properties to Java work

@@ -1,3 +1,7 @@
+## 2018-12-20 (4.1.0 RELEASE)
+
+* no major changes
+
 ## 2018-11-30 (4.0.2 RELEASE)
 
 * (General) Various bugfixes for bugs causing language servers to hang and become unresponsive.
