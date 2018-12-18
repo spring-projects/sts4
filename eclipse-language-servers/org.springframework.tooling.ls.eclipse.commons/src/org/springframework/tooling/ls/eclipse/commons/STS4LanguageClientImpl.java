@@ -11,6 +11,8 @@
 package org.springframework.tooling.ls.eclipse.commons;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -172,7 +175,18 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			updateAnnotations(docUri, sourceViewer, (IAnnotationModelExtension) annotationModel);
 		}
 		if (sourceViewer instanceof ISourceViewerExtension5) {
-			((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
+			if (sourceViewer instanceof JavaSourceViewer) {
+				// JavaSourceViewer#updateCodeMinings() is overridden and doesn't do anything
+				try {
+					Method method = JavaSourceViewer.class.getDeclaredMethod("doUpdateCodeMinings");
+					method.setAccessible(true);
+					method.invoke(sourceViewer);
+				} catch (InvocationTargetException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
+					LanguageServerCommonsActivator.logError(e, "");
+				}
+			} else {
+				((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
+			}
 		}
 	}
 
