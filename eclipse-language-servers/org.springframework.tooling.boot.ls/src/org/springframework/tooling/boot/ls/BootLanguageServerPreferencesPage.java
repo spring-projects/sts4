@@ -65,12 +65,12 @@ public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage
 				jdtPrefs.putBoolean("editor_codemining_enabled", true);
 				//Disable all individual code minings. Since code mining wasn't enabled before...
 				//This merely serves to ensure they don't start showing up all of a sudden.
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references", false);
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onMethods", false);
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onFields", false);
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.references.onTypes", false);
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.implementations", false);
-				jdtPrefs.putBoolean("org.eclipse.jdt.ui/java.codemining.atLeastOne", false);
+				jdtPrefs.putBoolean("java.codemining.references", false);
+				jdtPrefs.putBoolean("java.codemining.references.onMethods", false);
+				jdtPrefs.putBoolean("java.codemining.references.onFields", false);
+				jdtPrefs.putBoolean("java.codemining.references.onTypes", false);
+				jdtPrefs.putBoolean("java.codemining.implementations", false);
+				jdtPrefs.putBoolean("java.codemining.atLeastOne", false);
 			}
 		}
 	}
