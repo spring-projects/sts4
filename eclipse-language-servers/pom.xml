@@ -129,16 +129,16 @@
 					<layout>p2</layout>
 					<url>http://dist.springframework.org/release/IDE/3.9.7.RELEASE</url>
 				</repository> -->
-				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>http://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
-				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>http://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
 				</repository> -->
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository>
 <!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -184,16 +184,16 @@
 					<layout>p2</layout>
 					<url>http://dist.springframework.org/release/IDE/3.9.7.RELEASE</url>
 				</repository> -->
-				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>http://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
-				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>http://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
 				</repository> -->
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository>
 <!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
