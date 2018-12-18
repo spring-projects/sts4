@@ -4,7 +4,8 @@ instructions.configure=\
  org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:http${#58}//download.springsource.com/release/TOOLS/sts4/update/latest,name:Spring Tool Suite 4);\
  org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//download.springsource.com/release/TOOLS/sts4/update/latest,name:Spring Tool Suite 4);\
  org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-server-integrations,name:Spring Tools 4 Language Servers for Eclipse);\
- org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-server-integrations,name:Spring Tools 4 Language Servers for Eclipse);
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:http${#58}//download.springsource.com/release/TOOLS/sts4-language-server-integrations,name:Spring Tools 4 Language Servers for Eclipse);\
+ org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/dropins);
 
 instructions.unconfigure=\
  org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:0,location:http${#58}//download.eclipse.org/releases/2018-12);\
