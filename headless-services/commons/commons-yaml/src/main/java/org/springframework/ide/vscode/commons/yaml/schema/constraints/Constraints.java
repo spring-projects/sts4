@@ -126,25 +126,6 @@ public class Constraints {
 		};
 	}
 
-	public static Constraint deprecateProperty(Function<String, String> messageFormatter, String deprecatedProperty) {
-		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
-			// the `node` is the VALUE off the property, not the property itself. We don't want to deprecate this.
-			// Instead we want to deprecate the associated keynode, which represents the property.
-			// Find the corresponding tuple in the parent, as we want to deprecate
-			// the keyNode (so the actual property)
-			if (parent instanceof MappingNode) {
-				MappingNode map = (MappingNode) parent;
-				for (NodeTuple prop : map.getValue()) {
-					Node keyNode = prop.getKeyNode();
-					String name = NodeUtil.asScalar(keyNode);
-					if (deprecatedProperty.equals(name)) {
-						problems.accept(YamlSchemaProblems.deprecatedProperty(messageFormatter.apply(name), keyNode));
-					}
-				}
-			}
-		};
-	}
-
 	/**
 	 * Deprecated because you shouldn't need to use this method to create a {@link SchemaContextAware} Constraint.
 	 * A Constraint itself is already implicitly aware of the {@link DynamicSchemaContext} (i.e. it already receives

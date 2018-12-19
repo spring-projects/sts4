@@ -888,9 +888,10 @@ public class YTypeFactory {
 		public void isDeprecated(boolean isDeprecated) {
 			this.isDeprecated = isDeprecated;
 		}
-		public void isDeprecated(String deprecationMessage) {
+		public YTypedPropertyImpl isDeprecated(String deprecationMessage) {
 			this.isDeprecated = deprecationMessage!=null;
 			this.deprecationMessage = deprecationMessage;
+			return this;
 		}
 
 		@Override

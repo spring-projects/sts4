@@ -121,18 +121,11 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YAtomicType t_path = f.yatomic("Path");
 
-		YAtomicType t_buildpack_entry = f.yatomic("Buildpack Entry");
-		if (buildpackProvider != null) {
-			t_buildpack_entry.setHintProvider(buildpackProvider);
-//			t_buildpack_entry.parseWith(ManifestYmlValueParsers.fromHints(t_buildpack_entry.toString(), buildpackProvider));
-		}
-
-		// Deprecated. See: https://www.pivotaltracker.com/story/show/162499688
 		YAtomicType t_buildpack = f.yatomic("Buildpack");
-		if (t_buildpack != null) {
+		//t_buildpack.require(Constraints.deprecateProperty((name) ->
+		//   "Deprecated: Use `buildpacks` instead.", "buildpack"));
+		if (buildpackProvider != null) {
 			t_buildpack.setHintProvider(buildpackProvider);
-			t_buildpack.require(Constraints.deprecateProperty((name) ->
-								"Deprecated: Use `buildpacks` instead.", "buildpack"));
 		}
 
 		YAtomicType t_stack = f.yatomic("Stack");
@@ -198,7 +191,10 @@ public final class ManifestYmlSchema implements YamlSchema {
 
 		YTypedPropertyImpl[] props = {
 			f.yprop("buildpack", t_buildpack),
-			f.yprop("buildpacks", f.yseq(t_buildpack_entry)),
+			//TODO: replace the above with the below to make 'buildpack' deprecated once we have proper support for `buildpacks` in cf push.
+			//f.yprop("buildpack", t_buildpack).isDeprecated("Deprecated: Use `buildpacks` instead."),
+			//Note: don't forget to also re-enable the test case called 'reconcileDeprecatedBuildpackWarning'.
+			f.yprop("buildpacks", f.yseq(t_buildpack)),
 			f.yprop("command", t_string),
 			f.yprop("disk_quota", t_memory),
 			f.yprop("domain", t_domain),
