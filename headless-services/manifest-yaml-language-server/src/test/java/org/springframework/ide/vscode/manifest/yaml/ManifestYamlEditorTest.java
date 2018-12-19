@@ -862,6 +862,7 @@ public class ManifestYamlEditorTest {
 			"inherit: base-manifest.yml\n"+
 			"applications:\n" +
 			"- buildpack: zbuildpack\n" +
+			"  buildpacks: []\n" +
 			"  domain: zdomain\n" +
 			"  name: foo\n" +
 			"  command: java main.java\n" +
@@ -919,6 +920,7 @@ public class ManifestYamlEditorTest {
 		editor.assertHoverContains("1G", "Use the `memory` attribute to specify the memory limit");
 		editor.assertHoverContains("inherit", "For example, every child of a parent manifest called `base-manifest.yml` begins like this");
 		editor.assertHoverContains("buildpack", "use the `buildpack` attribute to specify its URL or name");
+		editor.assertHoverContains("buildpacks", "custom buildpack, you can use the `buildpacks` attribute");
 	    editor.assertHoverContains("name", "The `name` attribute is the only required attribute for an application in a manifest file");
 	    editor.assertHoverContains("command", "On the command line, use the `-c` option to specify the custom start command as the following example shows");
 	    editor.assertHoverContains("disk_quota", "Use the `disk_quota` attribute to allocate the disk space for your app instance");
