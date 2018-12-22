@@ -1,6 +1,6 @@
 {
   "name": "cf-manifest-yaml",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Cloud Foundry Deployment Manifest YAML support for Atom",
   "repository": "https://github.com/spring-projects/atom-cf-manifest-yaml",
   "icon": "icon.png",
