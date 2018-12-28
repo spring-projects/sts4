@@ -322,7 +322,7 @@ public class SpringIndexer {
 
 	private void scanProject(IJavaProject project, String[] files) {
 		try {
-			ASTParser parser = ASTParser.newParser(AST.JLS10);
+			ASTParser parser = ASTParser.newParser(AST.JLS11);
 			String[] classpathEntries = getClasspathEntries(project);
 
 			scanFiles(project, parser, files, classpathEntries);
@@ -333,7 +333,7 @@ public class SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, String docURI, String content, String[] classpathEntries) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS10);
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
 		parser.setCompilerOptions(options);

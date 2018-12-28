@@ -165,7 +165,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS10);
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
 		parser.setCompilerOptions(options);
