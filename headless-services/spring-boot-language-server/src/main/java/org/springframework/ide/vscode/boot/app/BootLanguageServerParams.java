@@ -161,7 +161,7 @@ public class BootLanguageServerParams {
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
-				javaProjectFinder.filter(SpringProjectUtil::isBootProject),
+				javaProjectFinder.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				projectObserver,
 				indexProvider,
 				(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
