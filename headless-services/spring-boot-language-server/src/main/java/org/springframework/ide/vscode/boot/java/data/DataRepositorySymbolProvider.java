@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -128,10 +129,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 
 	private static String getBeanName(TypeDeclaration typeDeclaration) {
 		String beanName = typeDeclaration.getName().toString();
-		if (beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
-			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
-		}
-		return beanName;
+		return BeanUtils.getBeanName(beanName);
 	}
 
 	@Override

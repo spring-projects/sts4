@@ -95,10 +95,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 			TypeDeclaration type = (TypeDeclaration) parent;
 
 			String beanName = type.getName().toString();
-			if (beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
-				beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
-			}
-			return beanName;
+			return BeanUtils.getBeanName(beanName);
 		}
 		return null;
 	}

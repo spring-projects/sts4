@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
@@ -298,12 +299,16 @@ public class AutowiredHoverProvider implements HoverProvider {
 				String beanTypeName = beanType.getName();
 				if (StringUtil.hasText(beanTypeName)) {
 					return LiveBean.builder()
-							.id(Character.toLowerCase(beanTypeName.charAt(0)) + beanTypeName.substring(1))
+							.id(getId(beanTypeName))
 							.type(beanTypeName).build();
 				}
 			}
 		}
 		return null;
+	}
+
+	private String getId(String beanTypeName) {
+		return BeanUtils.getBeanName(beanTypeName);
 	}
 
 	@Override

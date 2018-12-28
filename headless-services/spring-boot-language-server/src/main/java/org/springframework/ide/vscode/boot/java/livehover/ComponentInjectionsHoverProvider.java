@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -82,10 +83,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 				return getBeanType(beanType).toString();
 			}
 
-			if (StringUtil.hasText(typeName)) {
-				return Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
-			}
-			return null;
+			return BeanUtils.getBeanName(typeName);
 		});
 	}
 

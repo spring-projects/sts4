@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -84,10 +85,7 @@ public class FunctionUtils {
 
 	protected static String getBeanName(TypeDeclaration typeDeclaration) {
 		String beanName = typeDeclaration.getName().toString();
-		if (beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
-			beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
-		}
-		return beanName;
+		return BeanUtils.getBeanName(beanName);
 	}
 
 	protected static boolean isAbstractClass(TypeDeclaration typeDeclaration, ITypeBinding resolvedType) {
