@@ -29,9 +29,9 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
-import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
@@ -98,7 +98,7 @@ public class BootLanguageServerParams {
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
-				jdtProjectCache.filter(BootProjectUtil::isBootProject),
+				jdtProjectCache.filter(SpringProjectUtil::isBootProject),
 				jdtProjectCache,
 				indexProvider,
 				(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
@@ -161,7 +161,7 @@ public class BootLanguageServerParams {
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(
-				javaProjectFinder.filter(BootProjectUtil::isBootProject),
+				javaProjectFinder.filter(SpringProjectUtil::isBootProject),
 				projectObserver,
 				indexProvider,
 				(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),

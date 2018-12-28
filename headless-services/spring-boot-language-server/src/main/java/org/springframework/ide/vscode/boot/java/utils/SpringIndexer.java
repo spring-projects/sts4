@@ -58,10 +58,10 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.commons.java.BootProjectUtil;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
@@ -179,7 +179,7 @@ public class SpringIndexer {
 
 	public CompletableFuture<Void> initializeProject(IJavaProject project) {
 		try {
-			if (BootProjectUtil.isBootProject(project)) {
+			if (SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)) {
 				if (project.getElementName() == null) {
 					// Projects indexed by name. No name  - no index for it
 					log.debug("Project with NULL name is being initialized");
