@@ -95,7 +95,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 			TypeDeclaration type = (TypeDeclaration) parent;
 
 			String beanName = type.getName().toString();
-			return BeanUtils.getBeanName(beanName);
+			return BeanUtils.getBeanNameFromType(beanName);
 		}
 		return null;
 	}

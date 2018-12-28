@@ -308,7 +308,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	private String getId(String beanTypeName) {
-		return BeanUtils.getBeanName(beanTypeName);
+		return BeanUtils.getBeanNameFromType(beanTypeName);
 	}
 
 	@Override

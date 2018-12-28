@@ -85,7 +85,7 @@ public class FunctionUtils {
 
 	protected static String getBeanName(TypeDeclaration typeDeclaration) {
 		String beanName = typeDeclaration.getName().toString();
-		return BeanUtils.getBeanName(beanName);
+		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
 	protected static boolean isAbstractClass(TypeDeclaration typeDeclaration, ITypeBinding resolvedType) {

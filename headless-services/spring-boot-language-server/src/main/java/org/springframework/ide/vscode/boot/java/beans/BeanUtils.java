@@ -14,16 +14,16 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class BeanUtils {
 
-	public static String getBeanName(String beanName) {
-		if (StringUtil.hasText(beanName) && beanName.length() > 0 && Character.isUpperCase(beanName.charAt(0))) {
+	public static String getBeanNameFromType(String typeName) {
+		if (StringUtil.hasText(typeName) && typeName.length() > 0 && Character.isUpperCase(typeName.charAt(0))) {
 			// PT 162740382 - Special case: If more than one character is upper case, do not
 			// convert bean name to starting lower case. only convert if name has one character
 			// or the second character in the name is not upper case
-			if (beanName.length() == 1 || !Character.isUpperCase(beanName.charAt(1))) {
-				beanName = Character.toLowerCase(beanName.charAt(0)) + beanName.substring(1);
+			if (typeName.length() == 1 || !Character.isUpperCase(typeName.charAt(1))) {
+				typeName = Character.toLowerCase(typeName.charAt(0)) + typeName.substring(1);
 			}
 		}
-		return beanName;
+		return typeName;
 	}
 
 }

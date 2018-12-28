@@ -129,7 +129,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 
 	private static String getBeanName(TypeDeclaration typeDeclaration) {
 		String beanName = typeDeclaration.getName().toString();
-		return BeanUtils.getBeanName(beanName);
+		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
 	@Override

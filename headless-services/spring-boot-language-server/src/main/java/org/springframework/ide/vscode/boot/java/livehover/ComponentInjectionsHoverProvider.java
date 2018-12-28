@@ -83,7 +83,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 				return getBeanType(beanType).toString();
 			}
 
-			return BeanUtils.getBeanName(typeName);
+			return BeanUtils.getBeanNameFromType(typeName);
 		});
 	}
 
