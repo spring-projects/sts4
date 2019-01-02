@@ -11,7 +11,7 @@ import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
 import { HighlightService} from './highlight-service';
 import {BootConfiguration, BootPreferences, CODELENS_PREF_NAME, HIGHLIGHTS_PREF_NAME} from './boot-preferences';
 import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
-import { ClasspathService } from '@pivotal-tools/theia-languageclient/lib/browser/classpath-service';
+import { ClasspathService } from './classpath-service';
 import { HighlightCodeLensService } from './codelens-service';
 import {Disposable} from '@theia/core';
 import {OpenerService} from '@theia/core/lib/browser';

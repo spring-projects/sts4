@@ -8,6 +8,7 @@ import { HighlightCodeLensService } from './codelens-service';
 import { LanguageGrammarDefinitionContribution } from '@theia/monaco/lib/browser/textmate';
 import { BootPropertiesGrammarContribution } from './boot-properties-grammar-contribution';
 import { BootYamlGrammarContribution } from './boot-yaml-grammar-contribution';
+import { ClasspathService } from './classpath-service';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here
@@ -17,4 +18,5 @@ export default new ContainerModule(bind => {
     bind(LanguageGrammarDefinitionContribution).to(BootYamlGrammarContribution).inSingletonScope();
     bind(HighlightService).toSelf().inSingletonScope();
     bind(HighlightCodeLensService).toSelf().inSingletonScope();
+    bind(ClasspathService).toSelf().inSingletonScope();
 });

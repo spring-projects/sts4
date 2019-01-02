@@ -12,7 +12,7 @@
   "dependencies": {
     "@theia/core": "latest",
     "@theia/languages": "latest",
-    "@pivotal-tools/theia-languageclient": "0.0.5"
+    "@pivotal-tools/theia-languageclient": "0.0.6"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",

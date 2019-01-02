@@ -18,18 +18,14 @@ export class ClasspathService {
     }
 
     private async addListener(params: ClasspathListenerParams) {
-        this.commands.executeCommand('sts.java.addClasspathListener', params.callbackCommandId);
+        this.commands.executeCommand(/*'java.execute.workspaceCommand',*/ 'sts.java.addClasspathListener', params.callbackCommandId);
     }
 
     private async removeListener(params: ClasspathListenerParams) {
-        this.commands.executeCommand('sts.java.removeClasspathListener', params.callbackCommandId);
+        this.commands.executeCommand(/*'java.execute.workspaceCommand',*/ 'sts.java.removeClasspathListener', params.callbackCommandId);
     }
 }
 
-
 export interface ClasspathListenerParams {
     callbackCommandId: string
-}
-
-export interface ClasspathListenerResponse {
 }
