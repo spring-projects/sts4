@@ -183,9 +183,9 @@ public class ConditionalsLiveHoverTest {
 
 		editor.assertHoverContains("@ConditionalOnMissingBean",
 				"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n" + "\n"
-						+ "Process [PID=70000, name=`test-conditionals-live-hover`]\n" + "\n" + "---\n" + "\n"
+						+ "Process [PID=70000, name=`test-conditionals-live-hover`]\n" + "\n"
 						+ "@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n"
-						+ "\n" + "Process [PID=80000, name=`test-conditionals-live-hover`]\n" + "\n" + "---\n" + "\n"
+						+ "\n" + "Process [PID=80000, name=`test-conditionals-live-hover`]\n" + "\n"
 						+ "@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\n"
 						+ "\n" + "Process [PID=90000, name=`test-conditionals-live-hover`]");
 
