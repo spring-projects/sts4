@@ -34,6 +34,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialog;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
 
 @SuppressWarnings("restriction")
@@ -64,7 +65,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 				final Shell shell = HandlerUtil.getActiveShell(event);
 				final ITextEditor textEditor = (ITextEditor) part;
 				
-				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InWorkspaceSymbolsProvider.createFor(event), InFileSymbolsProvider.createFor(textEditor))
+				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InWorkspaceSymbolsProvider.createFor(event), InProjectSymbolsProvider.createFor(event), InFileSymbolsProvider.createFor(textEditor))
 				.setOkHandler(symbolInformation -> {
 					if (symbolInformation!=null) {
 						Location location = symbolInformation.getLocation();
