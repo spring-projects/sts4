@@ -781,13 +781,9 @@ public class RequestMappingLiveHoverTest {
 				"\n" +
 				"Process [PID=70000, name=`test-request-mapping-live-hover`]\n" +
 				"\n" +
-				"---\n" +
-				"\n" +
 				"[http://cfapps.io:1001/hello](http://cfapps.io:1001/hello)  \n" +
               	"\n" +
               	"Process [PID=80000, name=`test-request-mapping-live-hover`]\n" +
-				"\n" +
-				"---\n" +
 				"\n" +
 				"[http://cfapps.io:1002/hello](http://cfapps.io:1002/hello)  \n" +
               	"\n" +
