@@ -47,7 +47,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringApp).collect(CollectorUtil.toImmutableList());
+		return getAllRunningJavaApps().stream().filter(app -> app.isSpringBootApp() || app.isSpringApp()).collect(CollectorUtil.toImmutableList());
 	}
 
 	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
