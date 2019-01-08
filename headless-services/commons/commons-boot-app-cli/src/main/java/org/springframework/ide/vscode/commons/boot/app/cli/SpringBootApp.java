@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,11 +29,16 @@ public interface SpringBootApp extends Disposable {
 	String getHost() throws Exception;
 	String getPort() throws Exception;
 	String getContextPath() throws Exception;
+
 	boolean isSpringBootApp();
+	boolean isSpringApp();
 
 	String getEnvironment() throws Exception;
 	Collection<RequestMapping> getRequestMappings() throws Exception;
+
 	LiveBeansModel getBeans();
+	boolean providesNonBootLiveBeans();
+
 	List<String> getActiveProfiles();
 	Optional<List<LiveConditional>> getLiveConditionals() throws Exception;
 	Properties getSystemProperties() throws Exception;

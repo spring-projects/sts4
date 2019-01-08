@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,11 +11,9 @@
 package org.springframework.ide.vscode.commons.boot.app.cli;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +27,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
+@SuppressWarnings("restriction")
 public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalSpringBootApp.class);
@@ -39,6 +38,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
 	private Boolean isSpringBootApp;
+	private Boolean isSpringApp;
 
 	private static LocalSpringBootAppCache cache = new LocalSpringBootAppCache();
 
@@ -47,7 +47,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringBootApp).collect(CollectorUtil.toImmutableList());
+		return getAllRunningJavaApps().stream().filter(SpringBootApp::isSpringApp).collect(CollectorUtil.toImmutableList());
 	}
 
 	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
@@ -93,8 +93,31 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	@Override
+	public boolean isSpringApp() {
+		if (isSpringApp == null) {
+			try {
+				isSpringApp = !containsSystemProperty("sts4.languageserver.name")
+					&& (
+							isSpringAppClasspath() ||
+							providesNonBootLiveBeans()
+					);
+			} catch (Exception e) {
+				//Couldn't determine if the VM is a spring boot app. Could be it already died. Or could be its not accessible (yet).
+				// We will ignore the exception, pretend its not a boot app (most likely isn't) but DO NOT CACHE this result
+				// so it will be retried again on the next polling loop.
+				return false;
+			}
+		}
+		return isSpringApp;
+	}
+
+	private boolean isSpringAppClasspath() throws Exception {
+		return contains(getClasspath(), "spring-core");
+	}
+
+	@Override
 	public boolean isSpringBootApp() {
-		if (isSpringBootApp==null) {
+		if (isSpringBootApp == null) {
 			try {
 				isSpringBootApp = !containsSystemProperty("sts4.languageserver.name")
 					&& (

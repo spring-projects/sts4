@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.lang.management.PlatformManagedObject;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.Query;
+import javax.management.QueryExp;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -74,6 +77,8 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	private String jmxMbeanActuatorDomain;
 
+	private Set<ObjectName> nonBootLiveMBeanNames;
+
 	private LiveBeansModel cachedBeansModel;
 	private String cachedBeansModelMD5;
 
@@ -102,6 +107,9 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public abstract boolean isSpringBootApp();
+
+	@Override
+	public abstract boolean isSpringApp();
 
 
 	private final MemoizingDisposableSupplier<JMXConnector> jmxConnector = new MemoizingDisposableSupplier<JMXConnector>(
@@ -219,6 +227,28 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		}
 	}
 
+	@Override
+	public boolean providesNonBootLiveBeans() {
+		return getNonBootSpringLiveMBeans().size() > 0;
+	}
+
+	protected Set<ObjectName> getNonBootSpringLiveMBeans() {
+		if (this.nonBootLiveMBeanNames == null) {
+			try {
+				this.nonBootLiveMBeanNames = withJmxConnector(jmxConnector -> {
+					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+					QueryExp queryExp = Query.isInstanceOf(Query.value("org.springframework.context.support.LiveBeansView"));
+					return connection.queryNames(null, queryExp);
+				});
+			} catch (Exception e) {
+				e.printStackTrace();
+				this.nonBootLiveMBeanNames = Collections.emptySet();
+			}
+		}
+
+		return this.nonBootLiveMBeanNames;
+	}
+
 	protected ObjectName getObjectName(String keyProperties) throws Exception {
 		String domain = getDomainForActuator();
 		return getObjectName(domain, keyProperties);
@@ -240,6 +270,10 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 				try {
 					String domain = getDomainForActuator();
 					json = getBeansFromActuator(domain);
+
+					if (json == null && this.providesNonBootLiveBeans()) {
+						json = getBeansFromNonBootMBean();
+					}
 				} catch (IOException e) {
 					// PT 160096886 - Don't throw exception, as actuator info will not be available when app stopping, and
 					// this is not an error condition. Return empty model instead.
@@ -253,7 +287,14 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 					synchronized(AbstractSpringBootApp.this) {
 						if (cachedBeansModel == null || !md5.equals(cachedBeansModelMD5)) {
-							cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
+
+							if (json instanceof String) {
+								cachedBeansModel = LiveBeansModel.parse((String)json);
+							}
+							else {
+								cachedBeansModel = LiveBeansModel.parse(gson.toJson(json));
+							}
+
 							cachedBeansModelMD5 = md5;
 							logger.debug("Got {} beans for {}", cachedBeansModel.getBeanNames().size(), this);
 						} else {
@@ -273,6 +314,16 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		} catch (Exception e) {
 			logger.error("Error parsing beans", e);
 			return LiveBeansModel.builder().build();
+		}
+	}
+
+	protected Object getBeansFromNonBootMBean() throws Exception {
+		Set<ObjectName> nonBootSpringLiveMBeans = getNonBootSpringLiveMBeans();
+		if (nonBootSpringLiveMBeans.size() > 0) {
+			return getActuatorDataFromAttribute(nonBootSpringLiveMBeans.iterator().next(), "SnapshotAsJson");
+		}
+		else {
+			return null;
 		}
 	}
 
@@ -342,7 +393,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			return withJmxConnector(jmxConnector -> {
 				try {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-					return connection.getAttribute(objectName, "Data");
+					return connection.getAttribute(objectName, attribute);
 				} catch (InstanceNotFoundException|IOException e) {
 					return null;
 				}

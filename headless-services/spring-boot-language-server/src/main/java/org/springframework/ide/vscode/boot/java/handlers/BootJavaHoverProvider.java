@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -101,7 +101,21 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 		Optional<IJavaProject> project = getProject(document);
 		if (!project.isPresent()) return new CodeLens[0];
-		if (!hasActuatorDependency(project.get())) return new CodeLens[0];
+
+		if (!hasActuatorDependency(project.get())) {
+			// double check the running apps in case there is a non-boot app running with live beans enabled
+			boolean nonBootLiveBeansAround = false;
+			for (SpringBootApp bootApp : runningBootApps) {
+				if (bootApp.providesNonBootLiveBeans()) {
+					nonBootLiveBeansAround = true;
+					break;
+				}
+			}
+
+			if (!nonBootLiveBeansAround) {
+				return new CodeLens[0];
+			}
+		}
 
 		return server.getCompilationUnitCache().withCompilationUnit(project.get(), URI.create(document.getUri()), cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();

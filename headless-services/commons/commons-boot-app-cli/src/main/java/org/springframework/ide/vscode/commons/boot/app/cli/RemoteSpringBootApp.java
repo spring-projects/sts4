@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -64,9 +64,19 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	@Override
 	public boolean isSpringBootApp() {
+		return isSpringApp();
+	}
+
+	@Override
+	public boolean isSpringApp() {
 		//For now, let's assume that, if its not a boot app, then we won't create a RemoteSpringBootApp instance for it.
 		//The check that is here really only determines whether there's a process reachable at the remote jmx url.
 		return getProcessID() != null;
+	}
+
+	@Override
+	public boolean providesNonBootLiveBeans() {
+		return false;
 	}
 
 	@Override
