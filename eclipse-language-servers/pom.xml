@@ -139,11 +139,11 @@
 					<layout>p2</layout>
 					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
 				</repository> -->
-<!--				<repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
-				</repository> -->
+				</repository>
 				<repository>
 					<id>tm4e</id>
 					<layout>p2</layout>
@@ -194,11 +194,11 @@
 					<layout>p2</layout>
 					<url>http://dist.springframework.org/snapshot/IDE/nightly</url>
 				</repository> -->
-<!--				<repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
-				</repository> -->
+				</repository>
 				<repository>
 					<id>tm4e</id>
 					<layout>p2</layout>

@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -35,6 +36,7 @@ import org.eclipse.lsp4j.DocumentFormattingParams;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
 import org.eclipse.lsp4j.DocumentRangeFormattingParams;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
@@ -62,7 +64,6 @@ import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -166,7 +167,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 				didChangeContent(doc, changes);
 			}
 		} catch (BadLocationException e) {
-			Log.log(e);
+			log.error("", e);
 		}
 	  });
 	}
@@ -182,7 +183,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		if (url!=null) {
 			String text = params.getTextDocument().getText();
 			TrackedDocument td = createDocument(url, languageId, version, text).open();
-			Log.debug("Opened "+td.getOpenCount()+" times: "+url);
+			log.debug("Opened "+td.getOpenCount()+" times: "+url);
 			TextDocument doc = td.getDocument();
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
@@ -215,7 +216,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			TrackedDocument doc = documents.get(url);
 			if (doc!=null) {
 				if (doc.close()) {
-					Log.info("Closed: "+url);
+					log.info("Closed: "+url);
 					//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
 					// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
 					// document go 'out of scope'.
@@ -223,10 +224,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 					documentCloseListeners.fire(doc.getDocument());
 					documents.remove(url);
 				} else {
-					Log.warn("Close event ignored! Assuming document still open because openCount = "+doc.getOpenCount());
+					log.warn("Close event ignored! Assuming document still open because openCount = "+doc.getOpenCount());
 				}
 			} else {
-				Log.warn("Document closed, but it didn't exist! Close event ignored");
+				log.warn("Document closed, but it didn't exist! Close event ignored");
 			}
 		}
 	  });
@@ -255,7 +256,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public synchronized TextDocument getDocument(String url) {
 		TrackedDocument doc = documents.get(url);
 		if (doc==null) {
-			Log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
+			log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
 			doc = createDocument(url, LanguageId.PLAINTEXT, 0, "");
 		}
 		return doc.getDocument();
@@ -264,7 +265,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private synchronized TrackedDocument createDocument(String url, LanguageId languageId, int version, String text) {
 		TrackedDocument existingDoc = documents.get(url);
 		if (existingDoc!=null) {
-			Log.warn("Creating document ["+url+"] but it already exists. Reusing existing!");
+			log.warn("Creating document ["+url+"] but it already exists. Reusing existing!");
 			return existingDoc;
 		}
 		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version, text));
@@ -347,7 +348,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 
 	@Override
-	public CompletableFuture<List<? extends SymbolInformation>> documentSymbol(DocumentSymbolParams params) {
+	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params) {
 	  return async.invoke(() -> {
 		DocumentSymbolHandler documentSymbolHandler = this.documentSymbolHandler;
 		if (documentSymbolHandler==null) {
@@ -356,19 +357,23 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		server.waitForReconcile();
 		List<? extends SymbolInformation> r = documentSymbolHandler.handle(params);
 		//handle it when symbolHandler is sloppy and returns null instead of empty list.
-		return r == null ? ImmutableList.of() : r;
-	  });
+			return r == null ? ImmutableList.of()
+					: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(symbolInfo))
+							.collect(Collectors.toList());
+		  });
 	}
 
 	@Override
-	public CompletableFuture<List<? extends Command>> codeAction(CodeActionParams params) {
+	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
 	  return async.invoke(() -> {
 		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
 		if (doc!=null) {
-			return doc.getQuickfixes().stream()
-					.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
-					.map(Quickfix::getCodeAction)
-					.collect(CollectorUtil.toImmutableList());
+			ImmutableList<Either<Command,CodeAction>> list = doc.getQuickfixes().stream()
+				.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
+				.map(Quickfix::getCodeAction)
+				.map(command -> Either.<Command, CodeAction>forLeft(command))
+				.collect(CollectorUtil.toImmutableList());
+			return list;
 		} else {
 			return ImmutableList.of();
 		}
@@ -425,7 +430,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		if (documentSaveListeners != null) {
 			TextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
-			Log.debug("didSave: "+url);
+			log.debug("didSave: "+url);
 			if (url!=null) {
 				TextDocument doc = getDocument(url);
 				for (Consumer<TextDocumentSaveChange> l : documentSaveListeners) {

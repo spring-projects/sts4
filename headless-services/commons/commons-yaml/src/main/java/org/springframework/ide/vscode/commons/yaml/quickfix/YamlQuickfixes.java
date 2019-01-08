@@ -43,7 +43,7 @@ public class YamlQuickfixes {
 	private static final Logger LOG = LoggerFactory.getLogger(YamlQuickfixes.class);
 
 	private static final QuickfixEdit NULL_FIX = new QuickfixEdit(
-			new WorkspaceEdit(ImmutableMap.of(), null),
+			new WorkspaceEdit(ImmutableMap.of()),
 			null
 	);
 	public final QuickfixType MISSING_PROP_FIX;
@@ -107,8 +107,7 @@ public class YamlQuickfixes {
 				if (_doc!=null) {
 					return new QuickfixEdit(
 						new WorkspaceEdit(
-							ImmutableMap.of(params.getUri(), ImmutableList.of(params.getEdit())),
-							null
+							ImmutableMap.of(params.getUri(), ImmutableList.of(params.getEdit()))
 						),
 						null //TODO: compute end of the range after applying the edit
 					);

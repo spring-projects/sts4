@@ -678,9 +678,10 @@ public class LanguageServerHarness {
 
 	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Diagnostic problem) throws Exception {
 		CodeActionContext context = new CodeActionContext(ImmutableList.of(problem));
-		List<? extends Command> actions =
+		List<Either<Command, org.eclipse.lsp4j.CodeAction>> actions =
 				getServer().getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), problem.getRange(), context)).get();
 		return actions.stream()
+				.map(e -> e.getLeft())
 				.map((command) -> new CodeAction(this, command))
 				.collect(Collectors.toList());
 	}
@@ -741,7 +742,7 @@ public class LanguageServerHarness {
 	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
 		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
-		return getServer().getTextDocumentService().documentSymbol(params).get();
+		return getServer().getTextDocumentService().documentSymbol(params).get().stream().map(e -> e.getLeft()).collect(Collectors.toList());
 	}
 
 	/**
