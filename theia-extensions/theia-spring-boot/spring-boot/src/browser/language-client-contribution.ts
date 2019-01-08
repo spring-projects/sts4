@@ -16,6 +16,7 @@ import { HighlightCodeLensService } from './codelens-service';
 import {Disposable} from '@theia/core';
 import {OpenerService} from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
+import {JavaClientContribution} from '@theia/java/lib/browser';
 
 const HIGHLIGHTS_NOTIFICATION_TYPE = 'sts/highlight';
 
@@ -35,7 +36,8 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
         @inject(HighlightCodeLensService) protected readonly highlightCodeLensService,
         @inject(ClasspathService) protected readonly classpathService: ClasspathService,
         @inject(BootPreferences) protected readonly preferences: BootPreferences,
-        @inject(OpenerService) private readonly openerService: OpenerService
+        @inject(OpenerService) private readonly openerService: OpenerService,
+        @inject(JavaClientContribution) private readonly javaClientContribution: JavaClientContribution
     ) {
         super(workspace, languages, languageClientFactory);
     }
@@ -49,7 +51,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
                     this.highlightCodeLensService.handle(params);
                 }
             });
-            // this.classpathService.attach(client);
+            this.classpathService.attach(client);
 
             this.preferences.onPreferenceChanged(event => {
                 if (event.preferenceName === CODELENS_PREF_NAME
@@ -88,28 +90,36 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
     }
 
     activate(): Disposable {
-        const disposable = super.activate();
+        // Wait for JDT server to start
+        const disposablePromise = this.javaClientContribution.languageClient.then(javaClient => javaClient.onReady()).then(() => {
+            const disposable = super.activate();
 
-        const commandRegistration = this.registry.registerCommand({
-            id: 'sts.open.url'
-        }, {
-            execute: (url: string) => {
-                if (url) {
-                    const uri = new URI(url);
-                    if (uri) {
-                        this.openerService.getOpener(uri).then(handler => handler.open(uri));
+            const commandRegistration = this.registry.registerCommand({
+                id: 'sts.open.url'
+            }, {
+                execute: (url: string) => {
+                    if (url) {
+                        const uri = new URI(url);
+                        if (uri) {
+                            this.openerService.getOpener(uri).then(handler => handler.open(uri));
+                        }
                     }
                 }
-            }
+            });
+            return {
+                dispose: () => {
+                    if (this.codeLensProviderRegistration) {
+                        this.codeLensProviderRegistration.dispose();
+                    }
+                    commandRegistration.dispose();
+                    disposable.dispose();
+                }
+            };
         });
-
+        // Waiting for JDT server to start forces to return "lazy" disposable
         return {
             dispose: () => {
-                if (this.codeLensProviderRegistration) {
-                    this.codeLensProviderRegistration.dispose();
-                }
-                commandRegistration.dispose();
-                disposable.dispose();
+                disposablePromise.then(d => d.dispose());
             }
         };
 
