@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,29 +40,29 @@ public class SpringBootJavaHoverProvider extends JavadocHover {
 		// Launch javadoc hover computation in async fashion
 		CompletableFuture<JavadocBrowserInformationControlInput> javadocHoverFuture = CompletableFuture.supplyAsync(
 				() -> (JavadocBrowserInformationControlInput) super.getHoverInfo2(textViewer, hoverRegion));
-		String content = this.lsBasedHover.getHoverInfo(textViewer, hoverRegion);
-		if (content != null && !content.isEmpty()) {
+		String bootContent = this.lsBasedHover.getHoverInfo(textViewer, hoverRegion);
+		if (bootContent != null && !bootContent.isEmpty()) {
 			IJavaElement javaElement = null;
 			JavadocBrowserInformationControlInput previous = null;
 			int leadingImageWidth = 0;
 			JavadocBrowserInformationControlInput input;
-			String html = "";
+			String htmlContentFromOtherLs = "";
 			try {
 				input = javadocHoverFuture.get(500, TimeUnit.MILLISECONDS);
 				if (input != null) {
 					previous = (JavadocBrowserInformationControlInput) input.getPrevious();
 					javaElement = input.getElement();
 					leadingImageWidth = input.getLeadingImageWidth();
-					html = input.getHtml();
+					htmlContentFromOtherLs = input.getHtml();
 				}
 			} catch (InterruptedException e) {
-				html = noJavadocMessage("Javadoc unavailable.");
+				htmlContentFromOtherLs = noJavadocMessage("Javadoc unavailable.");
 			} catch (ExecutionException e) {
-				html = noJavadocMessage("Javadoc unavailable. Failed to obtain it.");
+				htmlContentFromOtherLs = noJavadocMessage("Javadoc unavailable. Failed to obtain it.");
 			} catch (TimeoutException e) {
-				html = noJavadocMessage("Javadoc unavailable. Took too long to obtain it.");
+				htmlContentFromOtherLs = noJavadocMessage("Javadoc unavailable. Took too long to obtain it.");
 			}
-			content = content + html;
+			String content = formatContent(bootContent, htmlContentFromOtherLs);
 			return new JavadocBrowserInformationControlInput(previous, javaElement, content, leadingImageWidth);
 		} else {
 			javadocHoverFuture.cancel(true);
@@ -70,6 +70,17 @@ public class SpringBootJavaHoverProvider extends JavadocHover {
 		return null;
 	}
 	
+	private String formatContent(String content, String contentFromElsewhere) {
+		if (content != null && content.trim().length() > 0 && contentFromElsewhere != null
+				&& contentFromElsewhere.trim().length() > 0) {
+			// PT 162742296 - Introduce a separator between our content and content from
+			// elsewhere
+			return content + "<hr/>" + contentFromElsewhere;
+		} else {
+			return content + contentFromElsewhere;
+		}
+	}
+
 	private String noJavadocMessage(String message) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<h4>");
