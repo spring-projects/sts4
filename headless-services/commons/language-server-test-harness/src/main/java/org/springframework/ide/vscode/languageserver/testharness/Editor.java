@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -665,6 +665,18 @@ public class Editor {
 		if (expectDocSnippet!=null) {
 			assertContains(expectDocSnippet, getDocString(it));
 		}
+		return it;
+	}
+
+	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, Boolean deprecated) throws Exception {
+		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
+		if (expectDetail!=null) {
+			assertEquals(expectDetail, it.getDetail());
+		}
+		if (expectDocSnippet!=null) {
+			assertContains(expectDocSnippet, getDocString(it));
+		}
+		assertEquals(deprecated, it.getDeprecated());
 		return it;
 	}
 

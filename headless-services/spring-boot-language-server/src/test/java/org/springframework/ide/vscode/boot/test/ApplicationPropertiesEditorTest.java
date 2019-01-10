@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType.PROP_DUPLICATE_KEY;
@@ -37,7 +36,6 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
-import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertiesLoader;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -957,19 +955,24 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyCompletion() throws Exception {
+	@Test public void testDeprecatedPropertyCompletion() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
 		data("server.error.path", "java.lang.String", null, "Path of the error controller.");
 		deprecate("error.path", "server.error.path", "This is old.");
 		assertCompletionsDisplayString("error.pa<*>",
+				true,
 				"server.error.path : String", // should be first because it is not deprecated, even though it is not as good a pattern match
 				"error.path : String"
 		);
 		//TODO: could we check that 'deprecated' completions are formatted with 'strikethrough font?
-		assertStyledCompletions("error.pa<*>",
-				StyledStringMatcher.plainFont("server.error.path : String"),
-				StyledStringMatcher.strikeout("error.path")
-		);
+		assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, null);
+		assertCompletionDetailsWithDeprecation("error.pa<*>", "error.path", "String",
+				"~~error.path~~ \u2192 server.error.path  \n" +
+				"\n" +
+				"Path of the error controller.\n" +
+				"\n" +
+				"**Deprecated:** This is old",
+				Boolean.TRUE);
 	}
 
 	@Test public void testDeprecatedPropertyHoverInfo() throws Exception {
@@ -980,15 +983,15 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 
 		deprecate("error.path", "server.error.path", null);
-		editor.assertHoverText("path", "~~error.path~~ -> server.error.path");
+		editor.assertHoverText("path", "~~error.path~~ \u2192 server.error.path");
 		editor.assertHoverText("path", "**Deprecated!**");
 
 		deprecate("error.path", "server.error.path", "This is old.");
-		editor.assertHoverText("path", "~~error.path~~ -> server.error.path");
-		editor.assertHoverText("path", "**Deprecated: **This is old");
+		editor.assertHoverText("path", "~~error.path~~ \u2192 server.error.path");
+		editor.assertHoverText("path", "**Deprecated:** This is old");
 
 		deprecate("error.path", null, "This is old.");
-		editor.assertHoverText("path", "**Deprecated: **This is old");
+		editor.assertHoverText("path", "**Deprecated:** This is old");
 
 		deprecate("error.path", null, null);
 		editor.assertHoverText("path", "**Deprecated!**");
@@ -1029,16 +1032,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
+	@Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
-		assertStyledCompletions("foo.nam<*>",
-				StyledStringMatcher.plainFont("new-name : String"),
-				StyledStringMatcher.strikeout("name"),
-				StyledStringMatcher.strikeout("alt-name")
-		);
+		assertCompletionDetailsWithDeprecation("foo.nam<*>", "new-name", "String", null, null);
+		assertCompletionDetailsWithDeprecation("foo.nam<*>", "name", "String", null, Boolean.TRUE);
+		assertCompletionDetailsWithDeprecation("foo.nam<*>", "alt-name", "String", null, Boolean.TRUE);
 	}
 
 	@Test public void testCharsetCompletions() throws Exception {

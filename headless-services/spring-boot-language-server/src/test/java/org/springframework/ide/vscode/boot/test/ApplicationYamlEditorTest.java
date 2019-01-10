@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
-import org.springframework.ide.vscode.boot.editor.harness.StyledStringMatcher;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -2669,23 +2668,27 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyCompletion() throws Exception {
+	@Test public void testDeprecatedPropertyCompletion() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
 		data("server.error.path", "java.lang.String", null, "Path of the error controller.");
 		deprecate("error.path", "server.error.path", "This is old.");
 		assertCompletionsDisplayString(
-				"errorpa<*>"
-				, // =>
+				"errorpa<*>",
+				true, // =>
 				"server.error.path : String", // should be first because it is not deprecated, even though it is not as good a pattern match
 				"error.path : String"
 		);
-		assertStyledCompletions("error.pa<*>",
-				StyledStringMatcher.plainFont("server.error.path : String"),
-				StyledStringMatcher.strikeout("error.path")
-		);
+		assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, null);
+		assertCompletionDetailsWithDeprecation("error.pa<*>", "error.path", "String",
+				"~~error.path~~ \u2192 server.error.path  \n" +
+				"\n" +
+				"Path of the error controller.\n" +
+				"\n" +
+				"**Deprecated:** This is old",
+				Boolean.TRUE);
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyHoverInfo() throws Exception {
+	@Test public void testDeprecatedPropertyHoverInfo() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
 		Editor editor = newEditor(
 				"# a comment\n"+
@@ -2694,21 +2697,21 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		deprecate("error.path", "server.error.path", null);
-		editor.assertHoverContains("path", "<s>error.path</s> -&gt; server.error.path");
-		editor.assertHoverContains("path", "<b>Deprecated!</b>");
+		editor.assertHoverContains("path", "~~error.path~~ \u2192 server.error.path");
+		editor.assertHoverContains("path", "**Deprecated!**");
 
 		deprecate("error.path", "server.error.path", "This is old.");
-		editor.assertHoverContains("path", "<s>error.path</s> -&gt; server.error.path");
-		editor.assertHoverContains("path", "<b>Deprecated: </b>This is old");
+		editor.assertHoverContains("path", "~~error.path~~ \u2192 server.error.path");
+		editor.assertHoverContains("path", "**Deprecated:** This is old");
 
 		deprecate("error.path", null, "This is old.");
-		editor.assertHoverContains("path", "<b>Deprecated: </b>This is old");
+		editor.assertHoverContains("path", "**Deprecated:** This is old");
 
 		deprecate("error.path", null, null);
-		editor.assertHoverContains("path", "<b>Deprecated!</b>");
+		editor.assertHoverContains("path", "**Deprecated!**");
 	}
 
-	@Ignore @Test public void testDeprecatedBeanPropertyHoverInfo() throws Exception {
+	@Test public void testDeprecatedBeanPropertyHoverInfo() throws Exception {
 		IJavaProject jp = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A bean with deprecated property.");
@@ -2718,7 +2721,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  name: foo\n"
 		);
 
-		editor.assertHoverContains("name", "<b>Deprecated!</b>");
+		editor.assertHoverContains("name", "**Deprecated!**");
 	}
 
 	@Test public void testDeprecatedBeanPropertyReconcile() throws Exception {
@@ -2754,19 +2757,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	}
 
-	@Ignore @Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
+	@Test public void testDeprecatedBeanPropertyCompletions() throws Exception {
 		IJavaProject jp = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(jp);
 		data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
-		assertStyledCompletions(
-				"foo:\n" +
-				"  nam<*>"
-				, // =>
-				StyledStringMatcher.plainFont("new-name : String"),
-				StyledStringMatcher.strikeout("name"),
-				StyledStringMatcher.strikeout("alt-name")
-		);
+		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "new-name", "String", null, null);
+		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "name", "String", null, Boolean.TRUE);
+		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, Boolean.TRUE);
 	}
 
 	@Ignore @Test public void testDeprecatedPropertyQuickfixSimple() throws Exception {

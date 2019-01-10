@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -117,6 +117,11 @@ public abstract class AbstractPropsEditorTest {
 	public void assertCompletionDetails(String editorText, String expectLabel, String expectDetail, String expectDocumenation) throws Exception {
 		Editor editor = newEditor(editorText);
 		editor.assertCompletionDetails(expectLabel, expectDetail, expectDocumenation);
+	}
+
+	public void assertCompletionDetailsWithDeprecation(String editorText, String expectLabel, String expectDetail, String expectDocumenation, Boolean deprecated) throws Exception {
+		Editor editor = newEditor(editorText);
+		editor.assertCompletionDetailsWithDeprecation(expectLabel, expectDetail, expectDocumenation, deprecated);
 	}
 
 	public boolean isEmptyMetadata() {
@@ -246,19 +251,6 @@ public abstract class AbstractPropsEditorTest {
 			fail("Missing elements: \n"+missing);
 		}
 	}
-
-	public void assertStyledCompletions(String editorText, StyledStringMatcher... expectStyles) throws Exception {
-		Editor editor = newEditor(editorText);
-		List<CompletionItem> completions = editor.getCompletions();
-		assertEquals("Wrong number of elements", expectStyles.length, completions.size());
-		for (int i = 0; i < expectStyles.length; i++) {
-			CompletionItem completion = completions.get(i);
-			throw new UnsupportedOperationException("Suport for styled labels not implemented");
-//			StyledString actualLabel = getStyledDisplayString(completion);
-//			expectStyles[i].match(actualLabel);
-		}
-	}
-
 
 	public void deprecate(String key, String replacedBy, String reason) {
 		md.deprecate(key, replacedBy, reason);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -178,6 +178,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
 		item.setDetail(completion.getDetail());
+		if (completion.isDeprecated()) {
+			item.setDeprecated(completion.isDeprecated());
+		}
 		resolveEdits(doc, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
 											//lazy as we used to do in the past.
 		if (resolver!=null) {
