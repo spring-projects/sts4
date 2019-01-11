@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +41,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.ProjectCustomizer;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -997,7 +997,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertHoverText("path", "**Deprecated!**");
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyQuickfix() throws Exception {
+	@Test public void testDeprecatedPropertyQuickfix() throws Exception {
 		data("error.path", "java.lang.String", null, "Path of the error controller.");
 		deprecate("error.path", "server.error.path", null);
 
@@ -1007,8 +1007,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 
 		Diagnostic problem = editor.assertProblem("error.path");
-		CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'server.error.path'");
-		editor.apply(fix);
+		CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `server.error.path`");
+		fix.perform();
 		editor.assertText(
 				"# a comment\n"+
 				"server.error.path<*>=foo\n"

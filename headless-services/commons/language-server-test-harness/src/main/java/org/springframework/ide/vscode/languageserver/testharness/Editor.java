@@ -783,8 +783,10 @@ public class Editor {
 		return null; //unreachable but compiler doesn't know
 	}
 
-	public CompletionItem assertFirstQuickfix(Diagnostic problem, String expectLabel) {
-		throw new UnsupportedOperationException("Not implemented yet!");
+	public CodeAction assertFirstQuickfix(Diagnostic problem, String expectLabel) throws Exception {
+		CodeAction ca = assertCodeAction(problem);
+		assertEquals(expectLabel, ca.getLabel());
+		return ca;
 	}
 
 	public void assertText(String expected) {

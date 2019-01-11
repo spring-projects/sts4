@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,7 +19,9 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
+import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
+import org.springframework.ide.vscode.boot.yaml.quickfix.AppYamlQuickfixes;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
@@ -75,6 +77,9 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	private final SimpleLanguageServer server;
 	private YamlASTProvider parser;
 
+	private SpringPropertiesReconcileEngine propertiesReconciler;
+	private ApplicationYamlReconcileEngine ymlReconciler;
+
 
 	public BootPropertiesLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -91,7 +96,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 		this.projectObserver = serverParams.projectObserver;
 		this.yamlStructureProvider = yamlStructureProvider;
 		this.yamlAssistContextProvider = yamlAssistContextProvider;
-
+		this.propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider,
+				typeUtilProvider, new AppPropertiesQuickFixes(server.getQuickfixRegistry()));
+		this.ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider,
+				new AppYamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(),
+						yamlStructureProvider));
 	}
 
 	@Override
@@ -137,9 +146,6 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	@Override
 	public Optional<IReconcileEngine> getReconcileEngine() {
-		IReconcileEngine propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider, typeUtilProvider);
-		IReconcileEngine ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider);
-
 		return Optional.of((doc, problemCollector) -> {
 			String uri = doc.getUri();
 			if (uri!=null) {

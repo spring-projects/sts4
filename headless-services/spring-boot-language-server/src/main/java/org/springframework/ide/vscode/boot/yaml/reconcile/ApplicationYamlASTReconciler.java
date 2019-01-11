@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
@@ -30,6 +32,10 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
+import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
+import org.springframework.ide.vscode.boot.yaml.quickfix.AppYamlQuickfixes;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -58,11 +64,13 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	private final IProblemCollector problems;
 	private final TypeUtil typeUtil;
 	private final IndexNavigator nav;
+	private AppYamlQuickfixes quickFixes;
 
-	public ApplicationYamlASTReconciler(IProblemCollector problems, IndexNavigator nav, TypeUtil typeUtil) {
+	public ApplicationYamlASTReconciler(IProblemCollector problems, IndexNavigator nav, TypeUtil typeUtil, AppYamlQuickfixes quickFixes) {
 		this.problems = problems;
 		this.typeUtil = typeUtil;
 		this.nav = nav;
+		this.quickFixes = quickFixes;
 	}
 
 	@Override
@@ -155,7 +163,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 			} else if (match!=null) {
 				Type type = TypeParser.parse(match.getType());
 				if (match.isDeprecated()) {
-					deprecatedProperty(match, keyNode);
+					deprecatedProperty(root.getDocument().getUri(), match, keyNode, quickFixes.DEPRECATED_PROPERTY);
 				}
 				reconcile(root, entry.getValueNode(), type);
 			} else if (extension!=null) {
@@ -241,7 +249,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 							TypedProperty typedProperty = props.get(key);
 							if (typedProperty!=null) {
 								if (typedProperty.isDeprecated()) {
-									deprecatedProperty(type, typedProperty, keyNode);
+									deprecatedProperty(root.getDocument().getUri(), type, typedProperty, keyNode, quickFixes.DEPRECATED_PROPERTY);
 								}
 								reconcile(root, valNode, typedProperty.getType());
 							}
@@ -363,24 +371,28 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		problems.accept(problem(problemType, node, "Expecting a '"+typeUtil.niceTypeName(type)+"' but got "+describe(node)));
 	}
 
-	private void deprecatedProperty(PropertyInfo property, Node keyNode) {
-		SpringPropertyProblem problem = deprecatedPropertyProblem(property.getId(), null, keyNode,
-				property.getDeprecationReplacement(), property.getDeprecationReason());
+	private void deprecatedProperty(String docUri, PropertyInfo property, Node keyNode, QuickfixType fixType) {
+		SpringPropertyProblem problem = deprecatedPropertyProblem(docUri, property.getId(), null, keyNode,
+				property.getDeprecationReplacement(), property.getDeprecationReason(), fixType);
 		problem.setMetadata(property);
 		//problem.setProblemFixer(ReplaceDeprecatedYamlQuickfix.FIXER);
 		problems.accept(problem);
 	}
 
-	private void deprecatedProperty(Type contextType, TypedProperty property, Node keyNode) {
-		SpringPropertyProblem problem = deprecatedPropertyProblem(property.getName(), typeUtil.niceTypeName(contextType),
-				keyNode, property.getDeprecationReplacement(), property.getDeprecationReason());
+	private void deprecatedProperty(String docUri, Type contextType, TypedProperty property, Node keyNode, QuickfixType fixType) {
+		SpringPropertyProblem problem = deprecatedPropertyProblem(docUri, property.getName(), typeUtil.niceTypeName(contextType),
+				keyNode, property.getDeprecationReplacement(), property.getDeprecationReason(), fixType);
 		problems.accept(problem);
 	}
 
-	protected SpringPropertyProblem deprecatedPropertyProblem(String name, String contextType, Node keyNode,
-			String replace, String reason) {
+	protected SpringPropertyProblem deprecatedPropertyProblem(String docUri, String name, String contextType, Node keyNode,
+			String replace, String reason, QuickfixType fixType) {
 		SpringPropertyProblem problem = problem(YAML_DEPRECATED, keyNode, TypeUtil.deprecatedPropertyMessage(name, contextType, replace, reason));
 		problem.setPropertyName(name);
+		Range range = new Range(new Position(keyNode.getStartMark().getLine(), keyNode.getStartMark().getColumn()),
+				new Position(keyNode.getEndMark().getLine(), keyNode.getEndMark().getColumn()));
+
+		problem.addQuickfix(new QuickfixData<>(fixType, new DeprecatedPropertyData(docUri, range, replace), "Replace with `" + replace + "`"));
 		return problem;
 	}
 

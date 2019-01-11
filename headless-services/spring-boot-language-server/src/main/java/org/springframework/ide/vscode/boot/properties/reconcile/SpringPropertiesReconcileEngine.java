@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2016 Pivotal, Inc.
+ * Copyright (c) 2014, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,8 @@ import static org.springframework.ide.vscode.commons.util.StringUtil.commonPrefi
 
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -25,12 +27,15 @@ import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
+import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -53,6 +58,8 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscap
  */
 public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 
+	private static final Logger log = LoggerFactory.getLogger(SpringPropertiesReconcileEngine.class);
+
 	/**
 	 * Regexp that matches a ',' surrounded by whitespace, including escaped whitespace / newlines
 	 */
@@ -67,10 +74,12 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	private SpringPropertyIndexProvider fIndexProvider;
 	private TypeUtilProvider typeUtilProvider;
 	private Parser parser = new AntlrParser();
+	private AppPropertiesQuickFixes quickFixes;
 
-	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider) {
+	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider, AppPropertiesQuickFixes quickFixes) {
 		this.fIndexProvider = provider;
 		this.typeUtilProvider = typeUtilProvider;
+		this.quickFixes = quickFixes;
 	}
 
 	@Override
@@ -104,7 +113,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 						// it all with just passing around 'fullName' DocumentRegion. This may require changes
 						// in PropertyNavigator (probably these changes are also for the better making it simpler as well)
 						if (validProperty.isDeprecated()) {
-							problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty));
+							problemCollector.accept(problemDeprecated(doc, propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
 						}
 						int offset = validProperty.getId().length() + propertyNameRegion.getStart();
 						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(doc), propertyNameRegion);
@@ -119,17 +128,17 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 						problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix));
 					} //end: validProperty==null
 				} catch (Exception e) {
-					Log.log(e);
+					log.error("", e);
 				}
 			});
 		} catch (Throwable e2) {
-			Log.log(e2);
+			log.error("", e2);
 		} finally {
 			problemCollector.endCollecting();
 		}
 	}
 
-	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property) {
+	protected SpringPropertyProblem problemDeprecated(IDocument doc, DocumentRegion region, PropertyInfo property, QuickfixType fixType) {
 		SpringPropertyProblem p = problem(PROP_DEPRECATED,
 				TypeUtil.deprecatedPropertyMessage(
 						property.getId(), null,
@@ -140,7 +149,15 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		);
 		p.setPropertyName(property.getId());
 		p.setMetadata(property);
-//		p.setProblemFixer(ReplaceDeprecatedPropertyQuickfix.FIXER);
+
+		try {
+			p.addQuickfix(new QuickfixData<>(fixType,
+					new DeprecatedPropertyData(doc.getUri(), doc.toRange(region), property.getDeprecationReplacement()),
+					"Replace with `" + property.getDeprecationReplacement() + "`"));
+		} catch (BadLocationException e) {
+			log.error("", e);
+		}
+
 		return p;
 	}
 
@@ -186,7 +203,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 				problems.accept(problem(ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
 						ExceptionUtil.getMessage(e),
 						e.getHighlightRegion(escapedValue)));
-				
+
 			} catch (Exception e) {
 				problems.accept(problem(ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
 						"Expecting '"+typeUtil.niceTypeName(expectType)+"'",

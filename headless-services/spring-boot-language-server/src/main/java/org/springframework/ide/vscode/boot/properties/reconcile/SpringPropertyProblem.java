@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@
 package org.springframework.ide.vscode.boot.properties.reconcile;
 
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-//import org.springframework.ide.vscode.commons.languageserver.quickfix.ProblemFixer;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -22,7 +21,6 @@ import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 public class SpringPropertyProblem extends ReconcileProblemImpl {
 
 	private PropertyInfo property = null;
-//	private ProblemFixer fixer;
 	private String propertyName;
 
 	public SpringPropertyProblem(ProblemType type, String msg, int offset, int len) {
@@ -43,10 +41,6 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 	public void setMetadata(PropertyInfo property) {
 		this.property = property;
 	}
-
-//	public void setProblemFixer(ProblemFixer fixer) {
-//		this.fixer = fixer;
-//	}
 
 	public void setPropertyName(String name) {
 		propertyName = name;

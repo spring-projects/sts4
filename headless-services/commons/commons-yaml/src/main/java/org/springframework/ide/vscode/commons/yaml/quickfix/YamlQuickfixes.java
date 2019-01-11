@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlPathEdits;
@@ -80,16 +81,7 @@ public class YamlQuickfixes {
 								}
 								edits.insert(insertAt, indenter.applyIndentation(propSnippet.substring(cursorOffset), indentBy));
 							}
-							TextReplace replaceEdit = edits.asReplacement(_doc);
-							if (replaceEdit!=null) {
-								WorkspaceEdit wsEdits = new WorkspaceEdit();
-								wsEdits.setChanges(ImmutableMap.of(
-										params.getUri(),
-										ImmutableList.of(new TextEdit(_doc.toRange(replaceEdit.getRegion()), replaceEdit.newText))
-								));
-								Position newCursor = getCursorPostionAfter(_doc, edits);
-								return new QuickfixEdit(wsEdits, newCursor==null ? null : new CursorMovement(params.getUri(), newCursor));
-							}
+							return createReplacementQuickfic(_doc, edits);
 						}
 					}
 				}
@@ -120,7 +112,21 @@ public class YamlQuickfixes {
 		});
 	}
 
-	private Position getCursorPostionAfter(TextDocument _doc, YamlPathEdits edits) {
+	public static QuickfixEdit createReplacementQuickfic(TextDocument doc, YamlPathEdits edits) throws BadLocationException {
+		TextReplace replaceEdit = edits.asReplacement(doc);
+		if (replaceEdit!=null) {
+			WorkspaceEdit wsEdits = new WorkspaceEdit();
+			wsEdits.setChanges(ImmutableMap.of(
+					doc.getUri(),
+					ImmutableList.of(new TextEdit(doc.toRange(replaceEdit.getRegion()), replaceEdit.newText))
+			));
+			Position newCursor = getCursorPostionAfter(doc, edits);
+			return new QuickfixEdit(wsEdits, newCursor==null ? null : new CursorMovement(doc.getUri(), newCursor));
+		}
+		return NULL_FIX;
+	}
+
+	private static Position getCursorPostionAfter(TextDocument _doc, YamlPathEdits edits) {
 		try {
 			IRegion newSelection = edits.getSelection();
 			if (newSelection!=null) {

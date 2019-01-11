@@ -20,7 +20,6 @@ import static org.springframework.ide.vscode.languageserver.testharness.Editor.I
 import java.time.Duration;
 import java.util.Optional;
 
-import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,6 +38,7 @@ import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -2767,7 +2767,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, Boolean.TRUE);
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyQuickfixSimple() throws Exception {
+	@Test public void testDeprecatedPropertyQuickfixSimple() throws Exception {
 		//A simple case for starters. The path edits aren't too complicated since there's
 		//just the one property in the file and only the last part of the 'path' changes.
 		//So this is a simple 'in-place' edit.
@@ -2783,12 +2783,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n"+
-					"  new-name: foo\n"
+					"  new-name: foo<*>\n"
 			);
 		}
 
@@ -2801,12 +2801,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n"+
-					"  new-name: foo\n"+
+					"  new-name: foo<*>\n"+
 					"your: stuff"
 			);
 		}
@@ -2820,18 +2820,18 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n"+
-					"  new-name: foo\n" +
+					"  new-name: foo<*>\n" +
 					"  other: bar\n"
 			);
 		}
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyQuickfixMovingValue() throws Exception {
+	@Test public void testDeprecatedPropertyQuickfixMovingValue() throws Exception {
 		data("my.old-name", "java.lang.String", null, "Old and deprecated name");
 		deprecate("my.old-name", "your.new-name", null);
 
@@ -2853,15 +2853,15 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("pieces");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.path.with.many.pieces'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.path.with.many.pieces`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n" +
 					"  path:\n"+
 					"    with:\n"+
 					"      many:\n"+
-					"        pieces: foo"
+					"        pieces: foo<*>"
 			);
 		}
 
@@ -2878,8 +2878,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("pieces");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.path.with.many.pieces'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.path.with.many.pieces`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n" +
@@ -2891,7 +2891,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"  path:\n"+
 					"    with:\n"+
 					"      many:\n"+
-					"        pieces: foo"
+					"        pieces: foo<*>"
 			);
 		}
 
@@ -2903,13 +2903,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("stuff");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.for-sale.stuff'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.for-sale.stuff`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n" +
 					"  for-sale:\n"+
-					"    stuff: foo"
+					"    stuff: foo<*>"
 			);
 		}
 
@@ -2921,12 +2921,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'your.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `your.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"your:\n"+
-					"  new-name: foo"
+					"  new-name: foo<*>"
 			);
 		}
 
@@ -2940,13 +2940,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'your.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `your.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"your:\n"+
 					"  goodies: nice\n"+
-					"  new-name: foo"
+					"  new-name: foo<*>"
 			);
 		}
 
@@ -2961,20 +2961,20 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			);
 
 			Diagnostic problem = editor.assertProblem("old-name");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'your.new-name'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `your.new-name`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"your:\n"+
 					"  goodies: nice\n"+
-					"  new-name: foo\n" +
+					"  new-name: foo<*>\n" +
 					"my:\n" +
 					"  other: stuff"
 			);
 		}
 	}
 
-	@Ignore @Test public void testDeprecatedPropertyQuickfixMovingIndentedValue() throws Exception {
+	@Test public void testDeprecatedPropertyQuickfixMovingIndentedValue() throws Exception {
 		data("my.old-name", "java.lang.String", null, "Old and deprecated name");
 		deprecate("my.old-name", "your.new-name", null); //same indent level
 
@@ -3000,8 +3000,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"  stuff: goes here\n"
 			);
 			Diagnostic problem = editor.assertProblem("pieces");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'short.path'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `short.path`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"short:\n"+
@@ -3009,7 +3009,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"  path: >\n" +
 					"    foo spread over\n"+
 					"    several lines\n" +
-					"    of text\n"
+					"    of text<*>\n"
 			);
 		}
 
@@ -3025,8 +3025,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"     of text\n"
 			);
 			Diagnostic problem = editor.assertProblem("stuff");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'my.long.path.with.many.pieces'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `my.long.path.with.many.pieces`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"my:\n" +
@@ -3038,7 +3038,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"          pieces: >\n" +
 					"            foo spread over\n"+
 					"              several lines\n" +
-					"             of text"
+					"             of text<*>"
 			);
 		}
 		{
@@ -3060,8 +3060,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"  stuff: goes here\n"
 			);
 			Diagnostic problem = editor.assertProblem("pieces");
-			CompletionItem fix = editor.assertFirstQuickfix(problem, "Change to 'short.path'");
-			editor.apply(fix);
+			CodeAction fix = editor.assertFirstQuickfix(problem, "Replace with `short.path`");
+			fix.perform();
 			editor.assertText(
 					"# a comment\n"+
 					"short:\n"+
@@ -3072,7 +3072,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"      #confusing\n" +
 					"  - several lines\n" +
 					"    #comments\n" +
-					"  - of text\n"
+					"  - of text<*>\n"
 			);
 		}
 	}
