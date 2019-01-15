@@ -15,8 +15,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -120,7 +122,10 @@ public class SpringSymbolIndex {
 			}
 		};
 
-//		this.indexer = new SpringIndexer[] {new SpringIndexerJava(handler, specificProviders), new SpringIndexerXML(handler) };
+//		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
+//		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
+//		SpringIndexerXML springIndexerXML = new SpringIndexerXML(handler, namespaceHandler);
+//		this.indexer = new SpringIndexer[] {new SpringIndexerJava(handler, specificProviders), springIndexerXML };
 		this.indexer = new SpringIndexer[] {new SpringIndexerJava(handler, specificProviders)};
 
 		this.updateQueue = Executors.newSingleThreadExecutor();
