@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
+import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.boot.yaml.quickfix.AppYamlQuickfixes;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
@@ -96,11 +97,25 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 		this.projectObserver = serverParams.projectObserver;
 		this.yamlStructureProvider = yamlStructureProvider;
 		this.yamlAssistContextProvider = yamlAssistContextProvider;
-		this.propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider,
-				typeUtilProvider, new AppPropertiesQuickFixes(server.getQuickfixRegistry()));
-		this.ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider,
-				new AppYamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(),
-						yamlStructureProvider));
+
+		server.getClientCapabilities().thenAccept(clientCapabilities -> {
+			CommonQuickfixes commonQuickfixes = new CommonQuickfixes(server.getQuickfixRegistry(), javaProjectFinder,
+					clientCapabilities);
+			this.propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider,
+					typeUtilProvider, new AppPropertiesQuickFixes(server.getQuickfixRegistry(), commonQuickfixes));
+			this.ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider,
+					new AppYamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(),
+							yamlStructureProvider, commonQuickfixes));
+		});
+
+		indexProvider.onChange(() -> {
+			getReconcileEngine().ifPresent(reconciler -> {
+				server.getTextDocumentService().getAll().stream().filter(doc -> getInterestingLanguages().contains(doc.getLanguageId())).forEach(doc -> {
+					server.validateWith(doc.getId(), reconciler);
+				});
+			});
+		});
+
 	}
 
 	@Override

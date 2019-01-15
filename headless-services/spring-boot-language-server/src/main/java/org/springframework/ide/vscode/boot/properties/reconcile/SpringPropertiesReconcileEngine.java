@@ -18,6 +18,7 @@ import static org.springframework.ide.vscode.commons.util.StringUtil.commonPrefi
 
 import java.util.regex.Pattern;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -28,7 +29,9 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
+import org.springframework.ide.vscode.boot.properties.quickfix.MissingPropertyData;
 import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
+import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -113,7 +116,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 						// it all with just passing around 'fullName' DocumentRegion. This may require changes
 						// in PropertyNavigator (probably these changes are also for the better making it simpler as well)
 						if (validProperty.isDeprecated()) {
-							problemCollector.accept(problemDeprecated(doc, propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
+							problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
 						}
 						int offset = validProperty.getId().length() + propertyNameRegion.getStart();
 						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(doc), propertyNameRegion);
@@ -125,7 +128,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 						//The name is invalid, with no 'prefix' of the name being a valid property name.
 						PropertyInfo similarEntry = index.findLongestCommonPrefixEntry(propertyNameRegion.toString());
 						CharSequence validPrefix = commonPrefix(similarEntry.getId(), keyName);
-						problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix));
+						problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix, quickFixes.MISSING_PROPERTY));
 					} //end: validProperty==null
 				} catch (Exception e) {
 					log.error("", e);
@@ -138,7 +141,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		}
 	}
 
-	protected SpringPropertyProblem problemDeprecated(IDocument doc, DocumentRegion region, PropertyInfo property, QuickfixType fixType) {
+	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property, QuickfixType fixType) {
 		SpringPropertyProblem p = problem(PROP_DEPRECATED,
 				TypeUtil.deprecatedPropertyMessage(
 						property.getId(), null,
@@ -151,6 +154,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		p.setMetadata(property);
 
 		try {
+			IDocument doc = region.getDocument();
 			p.addQuickfix(new QuickfixData<>(fixType,
 					new DeprecatedPropertyData(doc.getUri(), doc.toRange(region), property.getDeprecationReplacement()),
 					"Replace with `" + property.getDeprecationReplacement() + "`"));
@@ -162,13 +166,26 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	}
 
 	protected SpringPropertyProblem problemUnkownProperty(DocumentRegion fullNameRegion,
-			PropertyInfo similarEntry, CharSequence validPrefix) {
+			PropertyInfo similarEntry, CharSequence validPrefix, QuickfixType... fixTypes) {
 		String fullName = fullNameRegion.toString();
 		SpringPropertyProblem p = problem(PROP_UNKNOWN_PROPERTY,
 				"'"+fullName+"' is an unknown property."+suggestSimilar(similarEntry, validPrefix, fullName),
 				fullNameRegion.subSequence(validPrefix.length())
 		);
 		p.setPropertyName(fullName);
+
+		IDocument doc = fullNameRegion.getDocument();
+		for (QuickfixType fixType : fixTypes) {
+			if (fixType != null) {
+				switch (fixType.getId()) {
+				case CommonQuickfixes.MISSING_PROPERTY_APP_QF_ID:
+					p.addQuickfix(new QuickfixData<>(fixType,
+							new MissingPropertyData(new TextDocumentIdentifier(doc.getUri()), fullName),
+							"Create metadata for `" + fullName +"`"));
+					break;
+				}
+			}
+		}
 		return p;
 	}
 

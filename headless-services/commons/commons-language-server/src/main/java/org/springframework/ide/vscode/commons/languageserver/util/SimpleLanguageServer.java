@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
@@ -78,7 +79,6 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -139,6 +139,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	private Consumer<InitializeParams> initializeHandler;
 	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
+	private CompletableFuture<ClientCapabilities> clientCapabilities = new CompletableFuture<>();
 
 	private Runnable shutdownHandler;
 
@@ -214,7 +215,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			})
 			.toFuture();
 		}
-		Log.warn("Unknown command ignored: "+params.getCommand());
+		log.warn("Unknown command ignored: "+params.getCommand());
 		return CompletableFuture.completedFuture(false);
 	}
 
@@ -226,6 +227,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		log.info("Initializing");
+		clientCapabilities.complete(params.getCapabilities());
 
 		// multi-root workspace handling
 		List<WorkspaceFolder> workspaceFolders = getWorkspaceFolders(params);
@@ -235,7 +237,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		else {
 			String rootUri = params.getRootUri();
 			if (rootUri==null) {
-				Log.debug("workspaceRoot NOT SET");
+				log.debug("workspaceRoot NOT SET");
 			} else {
 				List<WorkspaceFolder> singleRootFolder = new ArrayList<>();
 				String name;
@@ -255,9 +257,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
 		this.hasFileWatcherRegistrationSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
-		Log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
-		Log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
-		Log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
+		log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
+		log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
+		log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 
 		InitializeResult result = new InitializeResult();
 
@@ -348,7 +350,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			if (error instanceof ShowMessageException)
 				client.showMessage(((ShowMessageException) error).message);
 			else {
-				Log.log(message, error);
+				log.error(message, error);
 
 				MessageParams m = new MessageParams();
 
@@ -598,7 +600,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 							diagnostics.add(d);
 						}
 					} catch (BadLocationException e) {
-						Log.warn("Invalid reconcile problem ignored", e);
+						log.warn("Invalid reconcile problem ignored", e);
 					}
 				}
 			};
@@ -606,7 +608,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			engine.reconcile(doc, problems);
 		})
 		.onErrorResume(error -> {
-			Log.log(error);
+			log.error("", error);
 			return Mono.empty();
 		})
 		.doFinally(ignore -> {
@@ -657,6 +659,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	@Override
 	public SimpleLanguageServer getServer() {
 		return this;
+	}
+
+	public CompletableFuture<ClientCapabilities> getClientCapabilities() {
+		return clientCapabilities;
 	}
 
 	public synchronized void onInitialize(Consumer<InitializeParams> handler) {

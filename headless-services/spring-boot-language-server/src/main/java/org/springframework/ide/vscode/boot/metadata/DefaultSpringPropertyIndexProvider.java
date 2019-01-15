@@ -27,11 +27,18 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager;
 
+	private Runnable changeHandler = null;
+
 	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
 
 	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, FileObserver fileObserver, ValueProviderRegistry valueProviders) {
 		this.javaProjectFinder = javaProjectFinder;
 		this.indexManager = new SpringPropertiesIndexManager(valueProviders, projectObserver, fileObserver);
+		this.indexManager.addListener(info -> {
+			if (changeHandler != null) {
+				changeHandler.run();
+			}
+		});
 	}
 
 	@Override
@@ -45,6 +52,11 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 
 	public void setProgressService(ProgressService progressService) {
 		this.progressService = progressService;
+	}
+
+	@Override
+	public void onChange(Runnable changeHandler) {
+		this.changeHandler = changeHandler;
 	}
 
 }

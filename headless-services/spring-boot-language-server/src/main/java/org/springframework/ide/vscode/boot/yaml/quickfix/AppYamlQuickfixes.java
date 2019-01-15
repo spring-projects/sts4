@@ -14,6 +14,7 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
 import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
@@ -48,6 +49,7 @@ public class AppYamlQuickfixes {
 	private static final Logger log = LoggerFactory.getLogger(AppYamlQuickfixes.class);
 
 	public final QuickfixType DEPRECATED_PROPERTY;
+	public final QuickfixType MISSING_PROPERTY;
 
 	private static final QuickfixEdit NULL_FIX = new QuickfixEdit(
 			new WorkspaceEdit(ImmutableMap.of()),
@@ -56,7 +58,8 @@ public class AppYamlQuickfixes {
 
 	private final Gson gson = new Gson();
 
-	public AppYamlQuickfixes(QuickfixRegistry r, SimpleTextDocumentService textDocumentService, YamlStructureProvider structureProvider) {
+	public AppYamlQuickfixes(QuickfixRegistry r, SimpleTextDocumentService textDocumentService, YamlStructureProvider structureProvider, CommonQuickfixes commonQuickfixes) {
+		MISSING_PROPERTY = commonQuickfixes.MISSING_PROPERTY;
 		DEPRECATED_PROPERTY = r.register("DEPRECATED_YAML_PROPERTY", (Object _params) -> {
 			DeprecatedPropertyData params = gson.fromJson((JsonElement)_params, DeprecatedPropertyData.class);
 			try {

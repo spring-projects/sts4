@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
@@ -32,7 +33,9 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
+import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
 import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
+import org.springframework.ide.vscode.boot.properties.quickfix.MissingPropertyData;
 import org.springframework.ide.vscode.boot.yaml.quickfix.AppYamlQuickfixes;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
@@ -174,7 +177,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 			} else {
 				//both are null, this means there's no valid property with the current prefix
 				//whether exact or extending it with further navigation
-				unkownProperty(keyNode, subNav.getPrefix(), entry);
+				unkownProperty(root.getDocument().getUri(), keyNode, subNav.getPrefix(), entry, quickFixes.MISSING_PROPERTY);
 			}
 		}
 	}
@@ -320,9 +323,22 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		problems.accept(problem(ApplicationYamlProblemType.YAML_VALUE_TYPE_MISMATCH, e.getHighlightRegion(containingRegion), ExceptionUtil.getMessage(e)));
 	}
 
-	private void unkownProperty(Node node, String name, NodeTuple entry) {
+	private void unkownProperty(String docUri, Node node, String name, NodeTuple entry, QuickfixType... fixTypes) {
 		SpringPropertyProblem p = problem(ApplicationYamlProblemType.YAML_UNKNOWN_PROPERTY, node, "Unknown property '"+name+"'");
 		p.setPropertyName(extendForQuickfix(StringUtil.camelCaseToHyphens(name), entry.getValueNode()));
+
+		for (QuickfixType fixType : fixTypes) {
+			if (fixType != null) {
+				switch (fixType.getId()) {
+				case CommonQuickfixes.MISSING_PROPERTY_APP_QF_ID:
+					p.addQuickfix(new QuickfixData<>(fixType,
+							new MissingPropertyData(new TextDocumentIdentifier(docUri), name),
+							"Create metadata for `" + name +"`"));
+					break;
+				}
+			}
+		}
+
 		problems.accept(p);
 	}
 

@@ -41,10 +41,12 @@ public class AppPropertiesQuickFixes {
 	);
 
 	public final QuickfixType DEPRECATED_PROPERTY;
+	public final QuickfixType MISSING_PROPERTY;
 
 	private final Gson gson = new Gson();
 
-	public AppPropertiesQuickFixes(QuickfixRegistry r) {
+	public AppPropertiesQuickFixes(QuickfixRegistry r, CommonQuickfixes commonFixes) {
+		MISSING_PROPERTY = commonFixes.MISSING_PROPERTY;
 		DEPRECATED_PROPERTY = r.register("DEPRECATED_PROPERTY", (Object _params) -> {
 			DeprecatedPropertyData params = gson.fromJson((JsonElement)_params, DeprecatedPropertyData.class);
 			try {
