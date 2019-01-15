@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data.test;
+package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -40,34 +41,40 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
-public class DataRepositorySymbolProviderTest {
+public class SpringIndexerXMLProjectTest {
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private JavaProjectFinder projectFinder;
 
 	private File directory;
+	private String projectDir;
+	private IJavaProject project;
 
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
 
-		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-data-symbols/").toURI());
-		String projectDir = directory.toURI().toString();
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-xml-project/").toURI());
+		projectDir = directory.toURI().toString();
 
 		// trigger project creation
-		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
 	@Test
-	public void testSimpleRepositorySymbol() throws Exception {
-		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
-		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
+	public void testScanningSimpleSpringXMLConfig() throws Exception {
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+
+//		assertEquals(3, allSymbols.size());
+//
+//		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
+//		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 8, 7, 46));
+//		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 11, 1, 11, 28));
+//		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 11, 1, 11, 28));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

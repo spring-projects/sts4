@@ -32,7 +32,7 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -51,7 +51,7 @@ public class WebFluxMappingSymbolProviderTest {
 	private BootLanguageServerHarness harness;
 
 	@Autowired
-	private SpringIndexer indexer;
+	private SpringSymbolIndex indexer;
 
 	@Autowired
 	JavaProjectFinder projectFinder;

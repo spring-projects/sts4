@@ -10,18 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
  * @author Martin Lippert
  */
-public interface SpringIndexer {
+public interface SymbolHandler {
 
-	String[] getFileWatchPatterns();
-	boolean isInterestedIn(String docURI);
-
-	void initializeProject(IJavaProject project) throws Exception;
-	void updateFile(IJavaProject project, String docURI, String content) throws Exception;
-
+	void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol);
 
 }

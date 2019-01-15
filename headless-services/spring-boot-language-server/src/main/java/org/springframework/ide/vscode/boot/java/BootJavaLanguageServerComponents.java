@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,7 +58,7 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
@@ -97,7 +97,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
-	private final SpringIndexer indexer;
+	private final SpringSymbolIndex indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
@@ -373,7 +373,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
-	protected SpringIndexer createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params) {
+	protected SpringSymbolIndex createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
 		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
@@ -416,7 +416,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
 		providers.put("", webfluxRouterSymbolProvider);
 
-		return new SpringIndexer(server, params, providers);
+		return new SpringSymbolIndex(server, params, providers);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
@@ -449,7 +449,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return projectFinder;
 	}
 
-	public SpringIndexer getSpringIndexer() {
+	public SpringSymbolIndex getSpringSymbolIndex() {
 		return indexer;
 	}
 

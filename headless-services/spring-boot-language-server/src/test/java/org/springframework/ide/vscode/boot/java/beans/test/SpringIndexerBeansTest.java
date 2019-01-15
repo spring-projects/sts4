@@ -24,7 +24,7 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -43,7 +43,7 @@ public class SpringIndexerBeansTest {
 	@Autowired private JavaProjectFinder projectFinder;
 
 	private File directory;
-	@Autowired private SpringIndexer indexer;
+	@Autowired private SpringSymbolIndex indexer;
 
 	@Before
 	public void setup() throws Exception {

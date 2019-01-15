@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -101,7 +101,7 @@ public class SpringIndexerHarness {
 		return new TestSymbolInfo(coveredText, label);
 	}
 
-	public static void assertDocumentSymbols(SpringIndexer indexer, String documentUri, TestSymbolInfo... expectedSymbols) throws Exception {
+	public static void assertDocumentSymbols(SpringSymbolIndex indexer, String documentUri, TestSymbolInfo... expectedSymbols) throws Exception {
 		List<TestSymbolInfo> actualSymbols = getSymbolsInFile(indexer, documentUri);
 		assertEquals(symbolsString(Arrays.asList(expectedSymbols)), symbolsString(actualSymbols));
 	}
@@ -114,7 +114,7 @@ public class SpringIndexerHarness {
 		return buf.toString();
 	}
 
-	public static List<TestSymbolInfo> getSymbolsInFile(SpringIndexer indexer, String docURI) throws Exception {
+	public static List<TestSymbolInfo> getSymbolsInFile(SpringSymbolIndex indexer, String docURI) throws Exception {
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docURI);
 		if (symbols!=null) {
 			symbols = new ArrayList<>(symbols);

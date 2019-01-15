@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,7 @@ import org.eclipse.lsp4j.Command;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -30,10 +30,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
-	private final SpringIndexer springIndexer;
+	private final SpringSymbolIndex springIndexer;
 
 	public WebfluxHandlerCodeLensProvider(BootJavaLanguageServerComponents bootJavaLanguageServerComponents) {
-		this.springIndexer = bootJavaLanguageServerComponents.getSpringIndexer();
+		this.springIndexer = bootJavaLanguageServerComponents.getSpringSymbolIndex();
 	}
 
 	@Override
@@ -49,13 +49,13 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
 	protected void provideCodeLens(MethodDeclaration node, TextDocument document, List<CodeLens> resultAccumulator) {
 		IMethodBinding methodBinding = node.resolveBinding();
-		
+
 		if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null
 				&& methodBinding.getDeclaringClass().getBinaryName() != null && methodBinding.getMethodDeclaration().toString() != null) {
-		
+
 			final String handlerClass = methodBinding.getDeclaringClass().getBinaryName().trim();
 			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
-			
+
 			List<SymbolAddOnInformation> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
 				if (addon instanceof WebfluxHandlerInformation) {
 					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) addon;
@@ -64,15 +64,15 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 				}
 				return false;
 			});
-			
+
 			if (handlerInfos != null && handlerInfos.size() > 0) {
 				for (Object object : handlerInfos) {
 					try {
 						WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
-					
+
 						CodeLens codeLens = new CodeLens();
 						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
-						
+
 						String httpMethod = WebfluxUtils.getStringRep(handlerInfo.getHttpMethods(), string -> string);
 						String codeLensCommand = httpMethod != null ? httpMethod + " " : "";
 
@@ -80,12 +80,12 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
 						String acceptType = WebfluxUtils.getStringRep(handlerInfo.getAcceptTypes(), WebfluxUtils::getMediaType);
 						codeLensCommand += acceptType != null ? " - Accept: " + acceptType : "";
-						
+
 						String contentType = WebfluxUtils.getStringRep(handlerInfo.getContentTypes(), WebfluxUtils::getMediaType);
 						codeLensCommand += contentType != null ? " - Content-Type: " + contentType : "";
 
 						codeLens.setCommand(new Command(codeLensCommand, null));
-	
+
 						resultAccumulator.add(codeLens);
 					} catch (BadLocationException e) {
 						e.printStackTrace();
@@ -94,5 +94,5 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 			}
 		}
 	}
-	
+
 }
