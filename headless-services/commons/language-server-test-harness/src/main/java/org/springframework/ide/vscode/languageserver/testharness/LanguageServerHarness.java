@@ -53,6 +53,8 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.CreateFile;
+import org.eclipse.lsp4j.DeleteFile;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -76,10 +78,14 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.RegistrationParams;
+import org.eclipse.lsp4j.RenameFile;
+import org.eclipse.lsp4j.ResourceOperation;
+import org.eclipse.lsp4j.ResourceOperationKind;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -89,6 +95,7 @@ import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.WorkspaceEditCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
@@ -104,7 +111,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEd
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -238,6 +244,10 @@ public class LanguageServerHarness {
 		ExecuteCommandCapabilities exeCap = new ExecuteCommandCapabilities();
 		exeCap.setDynamicRegistration(true);
 		workspaceCap.setExecuteCommand(exeCap);
+		WorkspaceEditCapabilities workspaceEdit = new WorkspaceEditCapabilities();
+		workspaceEdit.setDocumentChanges(true);
+		workspaceEdit.setResourceOperations(Arrays.asList(ResourceOperationKind.Create, ResourceOperationKind.Delete, ResourceOperationKind.Rename));
+		workspaceCap.setWorkspaceEdit(workspaceEdit);
 		clientCap.setWorkspace(workspaceCap);
 		initParams.setCapabilities(clientCap);
 		initResult = getServer().initialize(initParams).get();
@@ -700,27 +710,92 @@ public class LanguageServerHarness {
 	}
 
 	private void perform(WorkspaceEdit workspaceEdit) throws Exception {
-		Assert.isNull("Versioned WorkspaceEdits not supported", workspaceEdit.getDocumentChanges());
-		for (Entry<String, List<TextEdit>> entry : workspaceEdit.getChanges().entrySet()) {
-			String uri = entry.getKey();
-			TextDocumentInfo document = documents.get(uri);
-			assertNotNull("Can't apply edits to non-existing document: "+uri, document);
+		if (workspaceEdit.getDocumentChanges() == null) {
+			for (Entry<String, List<TextEdit>> entry : workspaceEdit.getChanges().entrySet()) {
+				String uri = entry.getKey();
+				TextDocumentInfo document = documents.get(uri);
+				assertNotNull("Can't apply edits to non-existing document: "+uri, document);
 
-			TextDocument workingDocument = new TextDocument(uri, document.getLanguageId());
-			workingDocument.setText(document.getText());
-			DocumentEdits edits = new DocumentEdits(workingDocument);
-			for (TextEdit edit : entry.getValue()) {
-				Range range = edit.getRange();
-				edits.replace(document.toOffset(range.getStart()), document.toOffset(range.getEnd()), edit.getNewText());
+				TextDocument workingDocument = new TextDocument(uri, document.getLanguageId());
+				workingDocument.setText(document.getText());
+				DocumentEdits edits = new DocumentEdits(workingDocument);
+				for (TextEdit edit : entry.getValue()) {
+					Range range = edit.getRange();
+					edits.replace(document.toOffset(range.getStart()), document.toOffset(range.getEnd()), edit.getNewText());
+				}
+				edits.apply(workingDocument);
+				Editor editor = getOpenEditor(uri);
+				if (editor!=null) {
+					editor.setRawText(workingDocument.get());
+				} else {
+					changeDocument(uri, workingDocument.get());
+				}
 			}
-			edits.apply(workingDocument);
-			Editor editor = getOpenEditor(uri);
-			if (editor!=null) {
-				editor.setRawText(workingDocument.get());
-			} else {
-				changeDocument(uri, workingDocument.get());
+		} else {
+			for (Either<TextDocumentEdit, ResourceOperation> edit : workspaceEdit.getDocumentChanges()) {
+				if (edit.isLeft()) {
+					TextDocumentEdit docEdit = edit.getLeft();
+					String uri = docEdit.getTextDocument().getUri();
+					TextDocumentInfo docInfo = documents.get(uri);
+					// IMORTANT: Document version is ignored for now
+					Path path = Paths.get(URI.create(uri));
+					String content = docInfo == null ? IOUtil.toString(Files.newInputStream(path)) : docInfo.getText();
+					TextDocument workingDocument = new TextDocument(uri, docInfo == null ? (LanguageId) null : docInfo.getLanguageId(), 0, content);
+					DocumentEdits edits = new DocumentEdits(workingDocument);
+					for (TextEdit textEdit : docEdit.getEdits()) {
+						Range range = textEdit.getRange();
+						edits.replace(workingDocument.toOffset(range.getStart()), workingDocument.toOffset(range.getEnd()), textEdit.getNewText());
+						edits.apply(workingDocument);
+					}
+					Editor editor = getOpenEditor(uri);
+					if (editor!=null) {
+						editor.setRawText(workingDocument.get());
+					} else {
+						if (docInfo == null) {
+							Files.write(path, workingDocument.get().getBytes());
+						} else {
+							changeDocument(uri, workingDocument.get());
+						}
+					}
+				} else if (edit.isRight()) {
+					ResourceOperation resourceOperation = edit.getRight();
+					if (resourceOperation instanceof CreateFile) {
+						CreateFile createFileOp = (CreateFile) resourceOperation;
+
+						Path path = Paths.get(URI.create(createFileOp.getUri()));
+						if (Files.exists(path)) {
+							if (createFileOp.getOptions().getOverwrite() || !createFileOp.getOptions().getIgnoreIfExists()) {
+								String content = IOUtil.toString(Files.newInputStream(path));
+								Files.write(path, content.getBytes());
+							}
+						} else {
+							if (!Files.exists(path.getParent())) {
+								Files.createDirectories(path.getParent());
+							}
+							Files.createFile(path);
+						}
+					} else if (resourceOperation instanceof RenameFile) {
+						RenameFile rename = (RenameFile) resourceOperation;
+						Path oldPath = Paths.get(URI.create(rename.getOldUri()));
+						Path newPath = Paths.get(URI.create(rename.getNewUri()));
+						String content = IOUtil.toString(Files.newInputStream(oldPath));
+						Files.delete(oldPath);
+						if (!Files.exists(newPath.getParent())) {
+							Files.createDirectories(newPath.getParent());
+						}
+						Files.createFile(newPath);
+						Files.write(newPath, content.getBytes());
+					} else if (resourceOperation instanceof DeleteFile) {
+						DeleteFile delete = (DeleteFile) resourceOperation;
+						Files.delete(Paths.get(URI.create(delete.getUri())));
+					}
+				}
 			}
 		}
+	}
+
+	private static void createFile(Path path) {
+
 	}
 
 	private Editor getOpenEditor(String uri) {

@@ -1015,6 +1015,17 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test public void testUnknownPropertyCreateMetadataQuickfix() throws Exception {
+		// Need something to be in the index otherwise reconciler doesn't looks at the
+		// AST
+		data("error.title", "java.lang.String", null, "Error's title");
+
+		Editor editor = harness.newEditor("# a comment\n" + "error.something=foo\n");
+
+		Diagnostic problem = editor.assertProblem("something");
+		editor.assertFirstQuickfix(problem, "Create metadata for `error.something`");
+	}
+
 	@Test public void testDeprecatedBeanPropertyReconcile() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
