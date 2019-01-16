@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 export const SPRING_BOOT_SERVER_ID = 'spring-boot';
 export const SPRING_BOOT_SERVER_NAME = 'Spring-Boot';
 
