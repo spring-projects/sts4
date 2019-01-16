@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -159,14 +159,17 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> settings = new HashMap<>();
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		Map<String, Object> bootHint = new HashMap<>();
+		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 
 		bootHint.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_BOOT_HINTS));
+		supportXML.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
 		bootChangeDetection.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_CHANGE_DETECTION));
 
 		bootJavaObj.put("boot-hints", bootHint);
+		bootJavaObj.put("support-spring-xml-config", supportXML);
 		bootJavaObj.put("change-detection", bootChangeDetection);
-		ImmutableSet<Pair<String, String>> remoteApps = BootLanguageServerPlugin.getRemoteBootApps().getValues();
+
 		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues()
 				.stream()
 				.map(pair -> new RemoteBootAppData(pair.getLeft(), pair.getRight()))

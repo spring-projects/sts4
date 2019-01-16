@@ -4,6 +4,7 @@ import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceCo
 // tslint:disable:max-line-length
 
 export const HIGHLIGHTS_PREF_NAME = 'boot-java.boot-hints.on';
+export const XML_SUPPORT_PREF_NAME = 'boot-java.support-spring-xml-config.on';
 export const CODELENS_PREF_NAME = 'boot-java.highlight-codelens.on';
 
 export const BootConfigSchema: PreferenceSchema = {
@@ -14,6 +15,11 @@ export const BootConfigSchema: PreferenceSchema = {
             type: 'boolean',
             description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
             default: true
+        },
+        'boot-java.support-spring-xml-config.on': {
+            type: 'boolean',
+            description: 'Enable/Disable Support for Spring XML Config files',
+            default: false
         },
         'boot-java.change-detection.on': {
             type: 'boolean',
@@ -30,6 +36,7 @@ export const BootConfigSchema: PreferenceSchema = {
 
 export interface BootConfiguration {
     'boot-java.boot-hints.on': boolean;
+    'boot-java.support-spring-xml-config.on': boolean;
     'boot-java.change-detection.on': boolean;
     'boot-java.highlight-codelens.on': boolean;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -93,21 +93,18 @@ public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage
 		gd.grabExcessHorizontalSpace = false;
 		l.setLayoutData(gd);
 
-		BooleanFieldEditor liveHintsPrefEditor = new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", parent);
-		addField(liveHintsPrefEditor);
-		
 		final IPreferenceStore commonsLsPrefs = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
-		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens (Experimental)", parent) {
 
+		addField(new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", parent));
+		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens (experimental)", parent) {
 			@Override
 			public IPreferenceStore getPreferenceStore() {
 				return commonsLsPrefs;
 			}
-			
 		});
 		
-		BooleanFieldEditor liveChangeDetectionPrefEditor = new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", parent);
-		addField(liveChangeDetectionPrefEditor);
+		addField(new BooleanFieldEditor(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, "Support Spring XML Config files (experimental)", parent));
+		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", parent));
 		
 		l = new Label(parent, SWT.NONE);
 		gd = new GridData(GridData.FILL_HORIZONTAL);

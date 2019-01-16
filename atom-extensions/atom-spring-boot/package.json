@@ -25,6 +25,11 @@
       "default": true,
       "description": "Enable/Disable Spring running Boot application live hints decorators in the source code"
     },
+    "support-spring-xml-config.on": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable/Disable Support for Spring XML Config files"
+    },
     "change-detection.on": {
       "type": "boolean",
       "default": false,
