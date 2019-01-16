@@ -47,6 +47,7 @@ public class LanguageServerAutoConf {
 			Optional<CompletionFilter> completionFilter
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
+		server.setCompletionTriggerCharacters(props.getCompletionTriggerCharacters());
 		server.setCompletionFilter(completionFilter);
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;

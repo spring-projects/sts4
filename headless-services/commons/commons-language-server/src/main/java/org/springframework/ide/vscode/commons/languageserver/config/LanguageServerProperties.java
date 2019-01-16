@@ -25,6 +25,11 @@ public class LanguageServerProperties {
 	 */
 	private String extensionId;
 
+	/**
+	 * List of characters that trigger completions.
+	 */
+	private String completionTriggerCharacters;
+
 	public boolean isStandalone() {
 		return standalone;
 	}
@@ -47,6 +52,14 @@ public class LanguageServerProperties {
 
 	public void setExtensionId(String extensionId) {
 		this.extensionId = extensionId;
+	}
+
+	public String getCompletionTriggerCharacters() {
+		return completionTriggerCharacters;
+	}
+
+	public void setCompletionTriggerCharacters(String completionTriggerCharacters) {
+		this.completionTriggerCharacters = completionTriggerCharacters;
 	}
 
 }

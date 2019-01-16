@@ -14,6 +14,7 @@ import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -153,6 +154,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private ClasspathListenerManager classpathListenerManager;
 
 	private Optional<CompletionFilter> completionFilter = Optional.empty();
+
+	private String completionTriggerCharacters = null;
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -369,6 +372,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 		CompletionOptions completionProvider = new CompletionOptions();
 		completionProvider.setResolveProvider(hasLazyCompletionResolver());
+		if (this.completionTriggerCharacters!=null) {
+			String[] chars = new String[this.completionTriggerCharacters.length()];
+			for (int i = 0; i < chars.length; i++) {
+				chars[i] = this.completionTriggerCharacters.substring(i, i+1);
+			}
+			completionProvider.setTriggerCharacters(ImmutableList.copyOf(chars));
+		}
 		c.setCompletionProvider(completionProvider);
 
 		if (hasQuickFixes()) {
@@ -709,5 +719,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	public void setCompletionFilter(Optional<CompletionFilter> completionFilter) {
 		this.completionFilter = completionFilter;
+	}
+
+	public String getCompletionTriggerCharacters() {
+		return completionTriggerCharacters;
+	}
+
+	public void setCompletionTriggerCharacters(String completionTriggerCharacters) {
+		this.completionTriggerCharacters = completionTriggerCharacters;
 	}
 }
