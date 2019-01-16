@@ -105,7 +105,7 @@ public class CommonQuickfixes {
 						List<File> sourceFolders = IClasspathUtil.getSourceFolders(project.getClasspath()).collect(Collectors.toList());
 						if (!sourceFolders.isEmpty()) {
 							WorkspaceEdit we = new WorkspaceEdit(new ArrayList<Either<TextDocumentEdit, ResourceOperation>>());
-							Path metadataFilePath = sourceFolders.stream().map(f -> f.toPath()).filter(path -> Files.exists(path.resolve(METADATA_PATH))).findFirst().orElse(null);
+							Path metadataFilePath = sourceFolders.stream().map(f -> f.toPath()).map(path -> path.resolve(METADATA_PATH)).filter(path -> Files.exists(path)).findFirst().orElse(null);
 							if (metadataFilePath == null) {
 								metadataFilePath = sourceFolders.get(0).toPath().resolve(METADATA_PATH);
 								we.getDocumentChanges().add(Either.forRight(new CreateFile(metadataFilePath.toUri().toString())));
