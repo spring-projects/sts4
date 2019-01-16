@@ -54,6 +54,7 @@ public class SpringIndexerXMLProjectTest {
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
+		indexer.configureIndexer(true);
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-xml-project/").toURI());
 		projectDir = directory.toURI().toString();
@@ -69,12 +70,12 @@ public class SpringIndexerXMLProjectTest {
 	public void testScanningSimpleSpringXMLConfig() throws Exception {
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
-//		assertEquals(3, allSymbols.size());
-//
-//		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
-//		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 7, 143, 7, 144));
-//		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 9, 84, 9, 85));
-//		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 14, 91, 14, 92));
+		assertEquals(3, allSymbols.size());
+
+		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 7, 143, 7, 144));
+		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 9, 84, 9, 85));
+		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 14, 91, 14, 92));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

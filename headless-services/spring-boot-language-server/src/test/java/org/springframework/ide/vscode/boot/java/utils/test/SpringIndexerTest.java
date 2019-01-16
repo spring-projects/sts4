@@ -59,6 +59,7 @@ public class SpringIndexerTest {
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
+		indexer.configureIndexer(false);
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
