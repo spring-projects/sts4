@@ -91,7 +91,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class BootJavaLanguageServerComponents implements LanguageServerComponents {
 
-	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA);
+	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.XML);
 
 	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
 
@@ -207,6 +207,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			} else {
 				liveHoverWatchdog.disableHighlights();
 			}
+
+			indexer.configureIndexer(config.isSpringXMLSupportEnabled());
+
 
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {

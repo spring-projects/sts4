@@ -70,7 +70,7 @@ public class SpringSymbolIndex {
 	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByProject;
 
 	private final ExecutorService updateQueue;
-	private final SpringIndexer[] indexer;
+	private SpringIndexer[] indexer;
 
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
@@ -93,6 +93,8 @@ public class SpringSymbolIndex {
 			deleteProject(project);
 		}
 	};
+	private SpringIndexerXML springIndexerXML;
+	private SpringIndexerJava springIndexerJava;
 
 	private SimpleWorkspaceService getWorkspaceService() {
 		return server.getServer().getWorkspaceService();
@@ -122,11 +124,12 @@ public class SpringSymbolIndex {
 			}
 		};
 
-//		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
-//		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
-//		SpringIndexerXML springIndexerXML = new SpringIndexerXML(handler, namespaceHandler);
-//		this.indexer = new SpringIndexer[] {new SpringIndexerJava(handler, specificProviders), springIndexerXML };
-		this.indexer = new SpringIndexer[] {new SpringIndexerJava(handler, specificProviders)};
+		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
+		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
+		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler);
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders);
+
+//		this.indexer = new SpringIndexer[] {springIndexerJava};
 
 		this.updateQueue = Executors.newSingleThreadExecutor();
 
@@ -167,6 +170,15 @@ public class SpringSymbolIndex {
 		}
 	}
 
+	public void configureIndexer(boolean springXMLSupportEnabled) {
+		if (springXMLSupportEnabled) {
+			this.indexer = new SpringIndexer[] {springIndexerJava, springIndexerXML};
+		}
+		else {
+			this.indexer = new SpringIndexer[] {springIndexerJava};
+		}
+	}
+
 	public CompletableFuture<Void> initializeProject(IJavaProject project) {
 		try {
 			if (SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)) {
@@ -178,6 +190,7 @@ public class SpringSymbolIndex {
 
 					removeSymbolsByProject(project);
 
+					@SuppressWarnings("unchecked")
 					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexer.length];
 					for (int i = 0; i < this.indexer.length; i++) {
 						InitializeProject initializeItem = new InitializeProject(project, this.indexer[i]);

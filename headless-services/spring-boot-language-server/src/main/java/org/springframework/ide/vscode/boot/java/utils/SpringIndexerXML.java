@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -69,6 +70,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void updateFile(IJavaProject project, String docURI, String content) throws Exception {
+		scanFile(project, new ByteArrayInputStream(content.getBytes()), docURI);
 	}
 
 	private void scanProject(IJavaProject project, String[] files) {
@@ -78,50 +80,51 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, String file) {
-
 		System.out.println("XML parsing for: " + file);
 
 		try {
-	        InputStream xmlInputStream = new FileInputStream(file);
+			String docURI = UriUtil.toUri(new File(file)).toString();
 
-            XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            XMLEventReader eventReader = inputFactory.createXMLEventReader(xmlInputStream);
-
-			while (eventReader.hasNext()) {
-				XMLEvent event = eventReader.nextEvent();
-				switch (event.getEventType()) {
-
-				case XMLEvent.START_ELEMENT:
-					StartElement startElement = event.asStartElement();
-
-					String namespaceURI = startElement.getName().getNamespaceURI();
-					if (namespaceURI != null && this.namespaceHandler.containsKey(namespaceURI)) {
-						SpringIndexerXMLNamespaceHandler namespaceHandler = this.namespaceHandler.get(namespaceURI);
-
-						String docURI = UriUtil.toUri(new File(file)).toString();
-						namespaceHandler.processStartElement(project, docURI, startElement, this.handler);
-					}
-
-					break;
-
-				case XMLEvent.CHARACTERS:
-					Characters characters = event.asCharacters();
-					System.out.print(characters.getData());
-					break;
-				case XMLEvent.END_ELEMENT:
-					EndElement endElement = event.asEndElement();
-					System.out.println("</" + endElement.getName().toString() + ">");
-					break;
-				default:
-					// do nothing
-					break;
-				}
-			}
+			InputStream xmlInputStream = new FileInputStream(file);
+	        scanFile(project, xmlInputStream, docURI);
 		}
 		catch (Exception e) {
 			log.error("error parsing XML file: ", e);
 		}
+	}
 
+	private void scanFile(IJavaProject project, InputStream xmlInput, String docURI) throws Exception {
+		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+		XMLEventReader eventReader = inputFactory.createXMLEventReader(xmlInput);
+
+		while (eventReader.hasNext()) {
+			XMLEvent event = eventReader.nextEvent();
+			switch (event.getEventType()) {
+
+			case XMLEvent.START_ELEMENT:
+				StartElement startElement = event.asStartElement();
+
+				String namespaceURI = startElement.getName().getNamespaceURI();
+				if (namespaceURI != null && this.namespaceHandler.containsKey(namespaceURI)) {
+					SpringIndexerXMLNamespaceHandler namespaceHandler = this.namespaceHandler.get(namespaceURI);
+					namespaceHandler.processStartElement(project, docURI, startElement, this.handler);
+				}
+
+				break;
+
+			case XMLEvent.CHARACTERS:
+				Characters characters = event.asCharacters();
+				System.out.print(characters.getData());
+				break;
+			case XMLEvent.END_ELEMENT:
+				EndElement endElement = event.asEndElement();
+				System.out.println("</" + endElement.getName().toString() + ">");
+				break;
+			default:
+				// do nothing
+				break;
+			}
+		}
 	}
 
 }
