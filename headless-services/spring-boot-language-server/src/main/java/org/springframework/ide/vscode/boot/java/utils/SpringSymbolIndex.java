@@ -129,7 +129,7 @@ public class SpringSymbolIndex {
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler);
 		springIndexerJava = new SpringIndexerJava(handler, specificProviders);
 
-//		this.indexer = new SpringIndexer[] {springIndexerJava};
+		this.indexer = new SpringIndexer[] {springIndexerJava};
 
 		this.updateQueue = Executors.newSingleThreadExecutor();
 
