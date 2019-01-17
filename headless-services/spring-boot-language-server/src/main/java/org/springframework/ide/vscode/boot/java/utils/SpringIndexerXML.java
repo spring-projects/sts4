@@ -80,7 +80,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, String file) {
-		System.out.println("XML parsing for: " + file);
+		log.debug("starting to parse XML file for Spring symbol indexing: ", file);
 
 		try {
 			String docURI = UriUtil.toUri(new File(file)).toString();
@@ -114,11 +114,11 @@ public class SpringIndexerXML implements SpringIndexer {
 
 			case XMLEvent.CHARACTERS:
 				Characters characters = event.asCharacters();
-				System.out.print(characters.getData());
+				log.debug(characters.getData());
 				break;
 			case XMLEvent.END_ELEMENT:
 				EndElement endElement = event.asEndElement();
-				System.out.println("</" + endElement.getName().toString() + ">");
+				log.debug("</" + endElement.getName().toString() + ">");
 				break;
 			default:
 				// do nothing
