@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -70,7 +70,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		//TODO: ComposableLanguageServer object instance serves no purpose anymore. The constructor really just contains
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
-		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider));
+		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));

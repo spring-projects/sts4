@@ -13,10 +13,12 @@ package org.springframework.ide.vscode.boot.app;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsServiceWithFallback;
@@ -101,7 +103,7 @@ public class BootLanguageServerParams {
 				jdtProjectCache.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				jdtProjectCache,
 				indexProvider,
-				(IDocument doc) -> new TypeUtil(jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
+				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.createDefault(server),
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
@@ -141,6 +143,11 @@ public class BootLanguageServerParams {
 			public IJavadocProvider javadocProvider(String projectUri, CPE cpe) {
 				return javadocService.javadocProvider(projectUri, cpe);
 			}
+
+			@Override
+			public Collection<? extends IJavaProject> all() {
+				return javaProjectFinder.all();
+			}
 		};
 	}
 
@@ -164,7 +171,7 @@ public class BootLanguageServerParams {
 				javaProjectFinder.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				projectObserver,
 				indexProvider,
-				(IDocument doc) -> new TypeUtil(javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
+				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.NULL,
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);

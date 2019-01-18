@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.yaml.reconcile;
 
 import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblems.Type.YAML_SYNTAX_ERROR;
 
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -30,12 +31,14 @@ public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 	private SpringPropertyIndexProvider indexProvider;
 	private TypeUtilProvider typeUtilProvider;
 	private AppYamlQuickfixes quickFixes;
+	private SourceLinks sourceLinks;
 
-	public ApplicationYamlReconcileEngine(YamlASTProvider astProvider, SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, AppYamlQuickfixes quickFixes) {
+	public ApplicationYamlReconcileEngine(YamlASTProvider astProvider, SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, AppYamlQuickfixes quickFixes, SourceLinks sourceLinks) {
 		super(astProvider);
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
 		this.quickFixes = quickFixes;
+		this.sourceLinks = sourceLinks;
 	}
 
 	@Override
@@ -43,7 +46,7 @@ public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
 		if (index!=null && !index.isEmpty()) {
 			IndexNavigator nav = IndexNavigator.with(index);
-			return new ApplicationYamlASTReconciler(problemCollector, nav, typeUtilProvider.getTypeUtil(doc), quickFixes);
+			return new ApplicationYamlASTReconciler(problemCollector, nav, typeUtilProvider.getTypeUtil(sourceLinks, doc), quickFixes);
 		}
 		return null;
 	}

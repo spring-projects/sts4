@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -42,6 +44,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -105,14 +108,28 @@ public class BootJavaHoverProvider implements HoverHandler {
 		if (!hasActuatorDependency(project.get())) {
 			// double check the running apps in case there is a non-boot app running with live beans enabled
 			boolean nonBootLiveBeansAround = false;
+			boolean onAppsClasspath = false;
 			for (SpringBootApp bootApp : runningBootApps) {
 				if (bootApp.providesNonBootLiveBeans()) {
 					nonBootLiveBeansAround = true;
 					break;
+				} else {
+					try {
+						List<File> binaryRoots = IClasspathUtil.getBinaryRoots(project.get().getClasspath(), Classpath::isSource);
+						for (String path : bootApp.getClasspath()) {
+							File file = new File(path);
+							if (binaryRoots.contains(file)) {
+								onAppsClasspath = true;
+								break;
+							}
+						}
+					} catch (Exception e) {
+						logger.error("", e);
+					}
 				}
 			}
 
-			if (!nonBootLiveBeansAround) {
+			if (!nonBootLiveBeansAround && !onAppsClasspath) {
 				return new CodeLens[0];
 			}
 		}

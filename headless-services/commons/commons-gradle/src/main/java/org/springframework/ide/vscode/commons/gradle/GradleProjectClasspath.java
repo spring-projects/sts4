@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,18 +90,24 @@ public class GradleProjectClasspath implements IClasspath {
 			for (EclipseProjectDependency dep : project.getProjectDependencies()) {
 				EclipseProject peer = findPeer(root, dep.getTargetProject().getName());
 				if (peer!=null) {
-					entries.add(new CPE(Classpath.ENTRY_KIND_BINARY,
-						peer.getProjectDirectory().toPath().resolve(peer.getOutputLocation().getPath()).toString()
-					));
+					for (EclipseSourceDirectory sf : peer.getSourceDirectories()) {
+						entries.add(createSourceCPE(peer, sf));
+					}
 				}
 			}
 			for (EclipseSourceDirectory sf : project.getSourceDirectories()) {
-				File sourceFolder = sf.getDirectory();
-				String of = sf.getOutput();
-				entries.add(CPE.source(sourceFolder.getAbsoluteFile(), new File(project.getProjectDirectory(), of)));
+				CPE cpe = createSourceCPE(project, sf);
+				cpe.setOwn(true);
+				entries.add(cpe);
 			}
 			return entries.build();
 		}
+	}
+
+	private static CPE createSourceCPE(EclipseProject project, EclipseSourceDirectory sf) {
+		File sourceFolder = sf.getDirectory();
+		String of = sf.getOutput();
+		return CPE.source(sourceFolder.getAbsoluteFile(), new File(project.getProjectDirectory(), of));
 	}
 
 	private EclipseProject findPeer(EclipseProject root, String name) {

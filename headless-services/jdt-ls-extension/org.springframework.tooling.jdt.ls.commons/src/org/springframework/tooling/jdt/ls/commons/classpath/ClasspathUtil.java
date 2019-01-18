@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -81,10 +81,7 @@ public class ClasspathUtil {
 		if (entries != null) {
 			for (IClasspathEntry entry : entries) {
 				try {
-					CPE cpe = createCpe(systemLibs, javaProject, entry);
-					if (cpe != null) {
-						cpEntries.add(cpe);
-					}
+					cpEntries.addAll(createCpes(systemLibs, javaProject, entry));
 				} catch (Exception e) {
 					logger.log(e);
 				}
@@ -97,8 +94,8 @@ public class ClasspathUtil {
 	
 	private static AtomicBoolean enabledDownloadSources = new AtomicBoolean(false);
 	
-	public static CPE createCpe(IJavaProject javaProject, IClasspathEntry entry) throws MalformedURLException, JavaModelException {
-		return createCpe(getSystemLibraryPaths(javaProject), javaProject, entry);
+	public static List<CPE> createCpes(IJavaProject javaProject, IClasspathEntry entry) throws MalformedURLException, JavaModelException {
+		return createCpes(getSystemLibraryPaths(javaProject), javaProject, entry);
 	}
 	
 	private static void enableDownloadSources() {
@@ -108,7 +105,7 @@ public class ClasspathUtil {
 		}
 	}
 
-	private static CPE createCpe(Set<String> systemLibs, IJavaProject javaProject, IClasspathEntry entry)
+	private static List<CPE> createCpes(Set<String> systemLibs, IJavaProject javaProject, IClasspathEntry entry)
 			throws MalformedURLException, JavaModelException {
 		String kind = toContentKind(entry);
 		switch (kind) {
@@ -127,52 +124,64 @@ public class ClasspathUtil {
 //						
 //					}
 			}
-			return cpe;
+			return Collections.singletonList(cpe);
 		}
 		case Classpath.ENTRY_KIND_SOURCE: {
 			if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
 				IPath projectPath = entry.getPath();
-				return resolveProjectOutputFolder(projectPath);
-			} else {
-				IPath sourcePath = entry.getPath();
-				// log("source entry =" + sourcePath);
-				IPath absoluteSourcePath = resolveWorkspacePath(sourcePath);
-				// log("absoluteSourcePath =" + absoluteSourcePath);
-				if (absoluteSourcePath != null) {
-					IPath of = entry.getOutputLocation();
-					// log("outputFolder =" + of);
-					IPath absoluteOutFolder;
-					if (of != null) {
-						absoluteOutFolder = resolveWorkspacePath(of);
-					} else {
-						absoluteOutFolder = resolveWorkspacePath(javaProject.getOutputLocation());
-					}
-					return CPE.source(absoluteSourcePath.toFile(), absoluteOutFolder.toFile());
-				}
+				return resolveDependencyProjectCPEs(projectPath);
+			} else if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				CPE cpe = createSourceCPE(javaProject, entry);
+				cpe.setOwn(true);
+				return cpe == null ? null : Collections.singletonList(cpe);
 			}
-			break;
 		}
 		default:
 			break;
 		}
+		return Collections.emptyList();
+	}
+	
+	private static CPE createSourceCPE(IJavaProject javaProject, IClasspathEntry entry) throws JavaModelException {
+		IPath sourcePath = entry.getPath();
+		// log("source entry =" + sourcePath);
+		IPath absoluteSourcePath = resolveWorkspacePath(sourcePath);
+		// log("absoluteSourcePath =" + absoluteSourcePath);
+		if (absoluteSourcePath != null) {
+			IPath of = entry.getOutputLocation();
+			// log("outputFolder =" + of);
+			IPath absoluteOutFolder;
+			if (of != null) {
+				absoluteOutFolder = resolveWorkspacePath(of);
+			} else {
+				absoluteOutFolder = resolveWorkspacePath(javaProject.getOutputLocation());
+			}
+			return CPE.source(absoluteSourcePath.toFile(), absoluteOutFolder.toFile());
+		}
 		return null;
 	}
 	
-	private static CPE resolveProjectOutputFolder(IPath projectPath) throws JavaModelException {
+	private static List<CPE> resolveDependencyProjectCPEs(IPath projectPath) throws JavaModelException {
 		if (projectPath.segmentCount() == 1) {
 			IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(projectPath.segment(0));
 			if (p.isAccessible()) {
 				IJavaProject jp = JavaCore.create(p);
-				IPath outputFolder = jp.getOutputLocation();
-				if (outputFolder != null) {
-					outputFolder = resolveWorkspacePath(outputFolder);
-					return CPE.binary(outputFolder.toFile().getAbsolutePath());
+				IClasspathEntry[] rawClasspath = jp.getRawClasspath();
+				ArrayList<CPE> cpes = new ArrayList<>(rawClasspath.length);
+				for (IClasspathEntry entry : rawClasspath) {
+					if (toContentKind(entry) == Classpath.ENTRY_KIND_SOURCE && entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+						CPE cpe = createSourceCPE(jp, entry);
+						if (cpe != null) {
+							cpes.add(cpe);
+						}
+					}
 				}
+				return cpes;
 			}
 		}
-		return null;
+		return Collections.emptyList();
 	}
-
+	
 	private static IPath resolveWorkspacePath(IPath path) {
 		if (path.segmentCount()>0) {
 			String projectName = path.segment(0);

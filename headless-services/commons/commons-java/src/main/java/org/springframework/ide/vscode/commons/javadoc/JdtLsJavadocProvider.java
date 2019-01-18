@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,7 +61,7 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 		long start = System.currentTimeMillis();
 		try {
 			log.info("Fetching javadoc {}", element.getBindingKey());
-			JavadocResponse response = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey())).get(10, TimeUnit.SECONDS);
+			JavadocResponse response = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey(), false)).get(10, TimeUnit.SECONDS);
 			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
 			return produceJavadocFromMd(response);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {

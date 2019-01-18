@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,6 +25,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
 
@@ -111,6 +113,20 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 			log.debug("javadoc => NOT INITIALIZED YET");
 		}
 		return IJavadocProvider.NULL;
+	}
+
+	@Override
+	public Collection<? extends IJavaProject> all() {
+		if (mainServiceInitialized.isDone()) {
+			if (mainServiceInitialized.isCompletedExceptionally()) {
+				return fallback.get().all();
+			} else {
+				return main.all();
+			}
+		} else {
+			log.debug("find => NOT INITIALIZED YET");
+		}
+		return ImmutableList.of();
 	}
 
 }

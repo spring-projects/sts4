@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -41,15 +41,17 @@ public class LoggerNameProvider extends CachingValueProvider {
 	private static final String LOGGING_GROUPS_PREFIX = "logging.group.";
 	private final ProjectBasedPropertyIndexProvider adhocProperties;
 	private final boolean includeGroups;
+	private final SourceLinks sourceLinks;
 
-	public LoggerNameProvider(ProjectBasedPropertyIndexProvider adhocProperties, boolean includeGroups) {
+	public LoggerNameProvider(ProjectBasedPropertyIndexProvider adhocProperties, boolean includeGroups, SourceLinks sourceLinks) {
 		this.adhocProperties = adhocProperties;
 		this.includeGroups = includeGroups;
+		this.sourceLinks = sourceLinks;
 	}
 
-	public static final Function<Map<String, Object>, ValueProviderStrategy> factory(ProjectBasedPropertyIndexProvider adhocProperties) {
+	public static final Function<Map<String, Object>, ValueProviderStrategy> factory(ProjectBasedPropertyIndexProvider adhocProperties, SourceLinks sourceLinks) {
 		return (params) -> {
-			return new LoggerNameProvider(adhocProperties, (boolean) params.getOrDefault("group", true));
+			return new LoggerNameProvider(adhocProperties, (boolean) params.getOrDefault("group", true), sourceLinks);
 		};
 	}
 
@@ -83,7 +85,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
 			javaProject.getIndex()
 				.fuzzySearchTypes(query, null)
-				.map(t -> Tuples.of(StsValueHint.create(javaProject, t.getT1()), t.getT2()))
+				.map(t -> Tuples.of(StsValueHint.create(sourceLinks, javaProject, t.getT1()), t.getT2()))
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 		.flatMapIterable(l -> l)

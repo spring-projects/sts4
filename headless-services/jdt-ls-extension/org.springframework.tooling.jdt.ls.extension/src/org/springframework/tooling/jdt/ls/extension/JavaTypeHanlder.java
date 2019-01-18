@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
+import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
 import org.springframework.tooling.jdt.ls.commons.java.JavaTypeResponse;
 
 public class JavaTypeHanlder implements IDelegateCommandHandler {
@@ -30,7 +31,8 @@ public class JavaTypeHanlder implements IDelegateCommandHandler {
 		Map<String, Object> obj = (Map<String, Object>) arguments.get(0);
 		String uri = (String) obj.get("projectUri");
 		String bindingKey = (String) obj.get("bindingKey");
-		return new JavaTypeResponse(JAVA_DATA.typeData(uri, bindingKey));
+		Boolean lookInOtherProjects = (Boolean) obj.get("lookInOtherProjects");
+		return new JavaTypeResponse(JAVA_DATA.typeData(uri, bindingKey, JavaDataParams.isLookInOtherProjects(uri, lookInOtherProjects)));
 	}
 
 

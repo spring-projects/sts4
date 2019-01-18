@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.maven.java;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -20,14 +21,14 @@ import org.springframework.ide.vscode.commons.util.FileUtils;
 
 /**
  * Finds Maven projects. Looks for <code>pom.xml</code> file
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class MavenProjectFinder extends FileBasedJavaProjectFinder {
-	
+
 	private MavenProjectCache cache;
-	
+
 	public MavenProjectFinder(MavenProjectCache cache) {
 		this.cache = cache;
 	}
@@ -44,5 +45,10 @@ public class MavenProjectFinder extends FileBasedJavaProjectFinder {
 	@Override
 	protected Optional<IJavaProject> findProjectByName(String name) {
 		return cache.projectByName(name);
+	}
+
+	@Override
+	public Collection<? extends IJavaProject> all() {
+		return cache.all();
 	}
 }

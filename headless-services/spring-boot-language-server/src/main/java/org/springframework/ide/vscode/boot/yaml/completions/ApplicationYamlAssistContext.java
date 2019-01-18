@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 Pivotal, Inc.
+ * Copyright (c) 2015, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -613,7 +613,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			if (jes != null) {
 				for (IJavaElement je : jes) {
 					if (je instanceof IMember) {
-						SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
+						SourceLinks sourceLinks = typeUtil.getSourceLinks();
 						IJavaProject project = typeUtil.getJavaProject();
 						return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 					}

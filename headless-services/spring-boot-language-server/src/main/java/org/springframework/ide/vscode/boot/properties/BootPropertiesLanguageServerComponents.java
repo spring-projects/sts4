@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
@@ -80,7 +81,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	private SpringPropertiesReconcileEngine propertiesReconciler;
 	private ApplicationYamlReconcileEngine ymlReconciler;
-
+	private SourceLinks sourceLinks;
 
 	public BootPropertiesLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -88,7 +89,8 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			JavaElementLocationProvider javaElementLocationProvider,
 			YamlASTProvider parser,
 			YamlStructureProvider yamlStructureProvider,
-			YamlAssistContextProvider yamlAssistContextProvider) {
+			YamlAssistContextProvider yamlAssistContextProvider,
+			SourceLinks sourceLinks) {
 		this.server = server;
 		this.parser = parser;
 		this.indexProvider = serverParams.indexProvider;
@@ -97,15 +99,16 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 		this.projectObserver = serverParams.projectObserver;
 		this.yamlStructureProvider = yamlStructureProvider;
 		this.yamlAssistContextProvider = yamlAssistContextProvider;
+		this.sourceLinks = sourceLinks;
 
 		server.getClientCapabilities().thenAccept(clientCapabilities -> {
 			CommonQuickfixes commonQuickfixes = new CommonQuickfixes(server.getQuickfixRegistry(), javaProjectFinder,
 					clientCapabilities);
 			this.propertiesReconciler = new SpringPropertiesReconcileEngine(indexProvider,
-					typeUtilProvider, new AppPropertiesQuickFixes(server.getQuickfixRegistry(), commonQuickfixes));
+					typeUtilProvider, new AppPropertiesQuickFixes(server.getQuickfixRegistry(), commonQuickfixes), sourceLinks);
 			this.ymlReconciler = new ApplicationYamlReconcileEngine(parser, indexProvider, typeUtilProvider,
 					new AppYamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(),
-							yamlStructureProvider, commonQuickfixes));
+							yamlStructureProvider, commonQuickfixes), sourceLinks);
 		});
 
 		indexProvider.onChange(() -> {
@@ -125,7 +128,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	@Override
 	public ICompletionEngine getCompletionEngine() {
-		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder);
+		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder, sourceLinks);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
 		return (TextDocument document, int offset) -> {
 			String uri = document.getUri();
@@ -142,7 +145,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	@Override
 	public HoverHandler getHoverProvider() {
-		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder);
+		HoverInfoProvider propertiesHovers = new PropertiesHoverInfoProvider(indexProvider, typeUtilProvider, javaProjectFinder, sourceLinks);
 		HoverInfoProvider ymlHovers = new YamlHoverInfoProvider(parser, yamlStructureProvider, yamlAssistContextProvider);
 
 		HoverInfoProvider combined = (IDocument document, int offset) -> {

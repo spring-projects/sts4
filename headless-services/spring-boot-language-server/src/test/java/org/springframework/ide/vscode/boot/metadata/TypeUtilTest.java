@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,17 +29,17 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 /**
  * Tests for TypeUtil
- * 
+ *
  * @author Kris De Volder
- * @author Alex Boyko 
+ * @author Alex Boyko
  *
  */
 public class TypeUtilTest {
-	
+
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private IJavaProject project;
 	private TypeUtil typeUtil;
-	
+
 	private Type getPropertyType(Type type, String propName, EnumCaseMode enumMode, BeanPropertyNameMode beanMode) {
 		List<TypedProperty> props = getProperties(type, enumMode, beanMode);
 		assertNotNull(props);
@@ -139,7 +139,7 @@ public class TypeUtilTest {
 
 	private void useProject(String name) throws Exception {
 		project = projects.mavenProject(name);;
-		typeUtil = new TypeUtil(project);
+		typeUtil = new TypeUtil(null, project);
 	}
 
 }

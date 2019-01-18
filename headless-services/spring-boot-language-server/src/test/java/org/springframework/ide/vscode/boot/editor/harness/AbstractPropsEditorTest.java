@@ -39,6 +39,8 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
+import com.google.common.collect.ImmutableList;
+
 public abstract class AbstractPropsEditorTest {
 
 	public static final String INTEGER = Integer.class.getName();
@@ -60,6 +62,11 @@ public abstract class AbstractPropsEditorTest {
 		@Override
 		public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 			return Optional.ofNullable(getTestProject());
+		}
+
+		@Override
+		public Collection<? extends IJavaProject> all() {
+			return getTestProject() == null ? ImmutableList.of() : ImmutableList.of(getTestProject());
 		}
 	}));
 

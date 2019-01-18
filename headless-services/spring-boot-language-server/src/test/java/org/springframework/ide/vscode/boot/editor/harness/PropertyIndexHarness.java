@@ -10,11 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.editor.harness;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
@@ -574,7 +578,19 @@ public class PropertyIndexHarness {
 	}
 
 	public JavaProjectFinder getProjectFinder() {
-		return (doc) -> Optional.ofNullable(testProject);
+		return new JavaProjectFinder() {
+
+			@Override
+			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+				return Optional.ofNullable(testProject);
+			}
+
+			@Override
+			public Collection<? extends IJavaProject> all() {
+				// TODO Auto-generated method stub
+				return testProject == null ? Collections.emptyList() : ImmutableList.of(testProject);
+			}
+		};
 	}
 
 	public IJavaProject getTestProject() {

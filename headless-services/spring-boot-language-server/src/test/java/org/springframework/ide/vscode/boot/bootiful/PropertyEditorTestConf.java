@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,7 +59,7 @@ public class PropertyEditorTestConf {
 
 	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, PropertyIndexHarness indexHarness) {
 		JavaProjectFinder projectFinder = indexHarness.getProjectFinder();
-		TypeUtilProvider typeUtilProvider = (IDocument doc) -> new TypeUtil(projectFinder.find(new TextDocumentIdentifier(doc.getUri())));
+		TypeUtilProvider typeUtilProvider = (SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, projectFinder.find(new TextDocumentIdentifier(doc.getUri())));
 
 		return new BootLanguageServerParams(
 				projectFinder,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,9 +31,11 @@ public class JavadocHoverLinkHandler implements IDelegateCommandHandler {
 		Map<String, Object> obj = (Map<String, Object>) arguments.get(0);
 		String uri = (String) obj.get("projectUri");
 		String bindingKey = (String) obj.get("bindingKey");
+		Boolean lookInOtherProjectsObj = (Boolean) obj.get("lookInOtherProjects");
+		boolean lookInOtherProjects = uri == null ? true : lookInOtherProjectsObj == null ? false : lookInOtherProjectsObj.booleanValue();
 		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
 		try {
-			IJavaElement element = JavaData.findElement(URI.create(uri), bindingKey);
+			IJavaElement element = JavaData.findElement(uri == null ? null : URI.create(uri), bindingKey, lookInOtherProjects);
 			if (element != null) {
 				// Bug in JDT server one '(' not encoded while everything else in the query is
 				// encoded

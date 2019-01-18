@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,6 +57,7 @@ public class Classpath {
 		private URL sourceContainerUrl;
 		private URL javadocContainerUrl;
 		private boolean isSystem = false;
+		private boolean isOwn = false;
 
 		public String getOutputFolder() {
 			return outputFolder;
@@ -127,10 +128,19 @@ public class Classpath {
 			this.isSystem = isSystem;
 		}
 
+		public boolean isOwn() {
+			return isOwn;
+		}
+
+		public void setOwn(boolean isOwn) {
+			this.isOwn = isOwn;
+		}
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + (isOwn ? 1231 : 1237);
 			result = prime * result + (isSystem ? 1231 : 1237);
 			result = prime * result + ((javadocContainerUrl == null) ? 0 : javadocContainerUrl.hashCode());
 			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
@@ -149,6 +159,8 @@ public class Classpath {
 			if (getClass() != obj.getClass())
 				return false;
 			CPE other = (CPE) obj;
+			if (isOwn != other.isOwn)
+				return false;
 			if (isSystem != other.isSystem)
 				return false;
 			if (javadocContainerUrl == null) {
@@ -181,12 +193,19 @@ public class Classpath {
 
 		@Override
 		public String toString() {
-			return "CPE [kind=" + kind + ", path=" + path + ", isSystem=" + isSystem + "]";
+			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + ", sourceContainerUrl="
+					+ sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl + ", isSystem=" + isSystem
+					+ ", isOwn=" + isOwn + "]";
 		}
+
 	}
 
 	public static boolean isSource(CPE e) {
 		return e!=null && Classpath.ENTRY_KIND_SOURCE.equals(e.getKind());
+	}
+
+	public static boolean isProjectSource(CPE e) {
+		return isSource(e) && e.isOwn();
 	}
 
 }

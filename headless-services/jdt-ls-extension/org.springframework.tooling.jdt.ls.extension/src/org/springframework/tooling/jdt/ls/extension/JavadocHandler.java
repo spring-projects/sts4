@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2;
 import org.springframework.tooling.jdt.ls.commons.Logger;
+import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 
@@ -29,7 +30,9 @@ public class JavadocHandler implements IDelegateCommandHandler {
 		String uri = (String) obj.get("projectUri");
 		URI projectUri = URI.create(uri);
 		String bindingKey = (String) obj.get("bindingKey");
-		String content = JavadocUtils.javadoc(JavadocContentAccess2::getMarkdownContentReader, projectUri, bindingKey);
+		Boolean lookInOtherProjects = (Boolean) obj.get("lookInOtherProjects");
+		String content = JavadocUtils.javadoc(JavadocContentAccess2::getMarkdownContentReader, projectUri, bindingKey,
+				JavaDataParams.isLookInOtherProjects(uri, lookInOtherProjects));
 		JavadocResponse response = new JavadocResponse();
 		response.setContent(content);
 		return response;

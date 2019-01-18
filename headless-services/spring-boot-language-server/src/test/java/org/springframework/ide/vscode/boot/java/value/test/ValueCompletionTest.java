@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,12 +14,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.xtend.lib.annotations.Accessors;
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,7 +90,19 @@ public class ValueCompletionTest {
 		}
 
 		@Bean JavaProjectFinder projectFinder(MavenJavaProject testProject) {
-			return (doc) -> Optional.of(testProject);
+			return new JavaProjectFinder() {
+
+				@Override
+				public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+					return Optional.ofNullable(testProject);
+				}
+
+				@Override
+				public Collection<? extends IJavaProject> all() {
+					// TODO Auto-generated method stub
+					return testProject == null ? Collections.emptyList() : ImmutableList.of(testProject);
+				}
+			};
 		}
 
 		@Bean BootLanguageServerHarness harness(SimpleLanguageServer server, BootLanguageServerParams serverParams, PropertyIndexHarness indexHarness, JavaProjectFinder projectFinder) throws Exception {

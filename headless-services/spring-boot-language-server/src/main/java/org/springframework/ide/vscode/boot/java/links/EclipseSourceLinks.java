@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,12 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.links;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 
 /**
  * Source links for Eclipse client. Eclipse IntroURLs.
@@ -47,19 +46,35 @@ public class EclipseSourceLinks implements SourceLinks {
 
 	private static final Logger log = LoggerFactory.getLogger(EclipseSourceLinks.class);
 
-	@Override
-	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
-		return Optional.ofNullable(eclipseIntroUri(project, fqName)).map(uri -> uri.toString());
+	private JavaProjectFinder projectFinder;
+
+	public EclipseSourceLinks(JavaProjectFinder projectFinder) {
+		this.projectFinder = projectFinder;
 	}
 
 	@Override
-	public Optional<String> sourceLinkUrlForClasspathResource(IJavaProject project, String path) {
-		int idx = path.lastIndexOf(CLASS);
-		if (idx >= 0) {
-			Path p = Paths.get(path.substring(0, idx));
-			return sourceLinkUrlForFQName(project, p.toString().replace(File.separator, "."));
+	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
+		return findProjectForFQName(project, fqName).map(p -> eclipseIntroUri(p, fqName)).map(uri -> uri.toString());
+	}
+
+	private Optional<IJavaProject> findProjectForFQName(IJavaProject project, String fqName) {
+		if (project != null && project.findType(fqName) != null) {
+			return Optional.of(project);
+		} else {
+			for (IJavaProject jp : projectFinder.all()) {
+				if (jp != project) {
+					if (jp.findType(fqName) != null) {
+						return Optional.of(jp);
+					}
+				}
+			}
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public Optional<String> sourceLinkUrlForClasspathResource(String path) {
+		return SourceLinks.sourceLinkUrlForClasspathResource(this, projectFinder, path);
 	}
 
 	@Override

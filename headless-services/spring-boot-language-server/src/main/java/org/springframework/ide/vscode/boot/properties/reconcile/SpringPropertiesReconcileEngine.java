@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -78,11 +79,13 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	private TypeUtilProvider typeUtilProvider;
 	private Parser parser = new AntlrParser();
 	private AppPropertiesQuickFixes quickFixes;
+	private SourceLinks sourceLinks;
 
-	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider, AppPropertiesQuickFixes quickFixes) {
+	public SpringPropertiesReconcileEngine(SpringPropertyIndexProvider provider, TypeUtilProvider typeUtilProvider, AppPropertiesQuickFixes quickFixes, SourceLinks sourceLinks) {
 		this.fIndexProvider = provider;
 		this.typeUtilProvider = typeUtilProvider;
 		this.quickFixes = quickFixes;
+		this.sourceLinks = sourceLinks;
 	}
 
 	@Override
@@ -119,7 +122,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 							problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
 						}
 						int offset = validProperty.getId().length() + propertyNameRegion.getStart();
-						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(doc), propertyNameRegion);
+						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(sourceLinks, doc), propertyNameRegion);
 						Type valueType = navigator.navigate(offset, TypeParser.parse(validProperty.getType()));
 						if (valueType!=null) {
 							reconcileType(doc, valueType, pair.getValue(), problemCollector);
@@ -207,7 +210,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	}
 
 	private void reconcileType(DocumentRegion escapedValue, Type expectType, IProblemCollector problems) {
-		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(escapedValue.getDocument());
+		TypeUtil typeUtil = typeUtilProvider.getTypeUtil(sourceLinks, escapedValue.getDocument());
 		ValueParser parser = typeUtil.getValueParser(expectType);
 		if (parser!=null) {
 			try {

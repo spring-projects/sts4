@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -47,13 +48,16 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 	private JavaElementLocationProvider javaElementLocationProvider;
 
 	@Autowired
+	private SourceLinks sourceLinks;
+
+	@Autowired
 	private BootLanguageServerParams params;
 
 	@Override
 	public List<Location> handle(TextDocumentPositionParams position) {
 		try {
 			TextDocument doc = documents.get(position);
-			TypeUtil typeUtil = params.typeUtilProvider.getTypeUtil(doc);
+			TypeUtil typeUtil = params.typeUtilProvider.getTypeUtil(sourceLinks, doc);
 			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
 			int offset;
 			offset = doc.toOffset(position.getPosition());

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.util.DeprecationUtil;
@@ -63,8 +61,8 @@ public class StsValueHint {
 	/**
 	 * Creates a hint out of an IJavaElement.
 	 */
-	public static StsValueHint create(String value, IJavaProject project, IJavaElement javaElement) {
-		return new StsValueHint(value, javaDocSnippet(project, javaElement), DeprecationUtil.extract(javaElement)) {
+	public static StsValueHint create(SourceLinks sourceLinks, String value, IJavaProject project, IJavaElement javaElement) {
+		return new StsValueHint(value, javaDocSnippet(sourceLinks, project, javaElement), DeprecationUtil.extract(javaElement)) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return javaElement;
@@ -86,7 +84,7 @@ public class StsValueHint {
 			if (jp!=null) {
 				IType type = jp.findType(fqName);
 				if (type!=null) {
-					return create(jp, type);
+					return create(typeUtil.getSourceLinks(), jp, type);
 				}
 			}
 		} catch (Exception e) {
@@ -95,8 +93,8 @@ public class StsValueHint {
 		return null;
 	}
 
-	public static StsValueHint create(IJavaProject project, IType klass) {
-		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(project, klass), DeprecationUtil.extract(klass)) {
+	public static StsValueHint create(SourceLinks sourceLinks, IJavaProject project, IType klass) {
+		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(sourceLinks, project, klass), DeprecationUtil.extract(klass)) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return klass;
@@ -122,9 +120,8 @@ public class StsValueHint {
 		return description;
 	}
 
-	private static Renderable javaDocSnippet(IJavaProject project, IJavaElement je) {
+	private static Renderable javaDocSnippet(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
 		return Renderables.lazy(() -> {
-			SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
 			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
 		});
 	}

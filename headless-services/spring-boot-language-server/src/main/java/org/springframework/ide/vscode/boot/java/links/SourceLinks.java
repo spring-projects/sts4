@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.links;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -25,6 +27,9 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
+import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 
 /**
  * Instance is able to provide client specific URL links to navigate to a
@@ -99,6 +104,36 @@ public interface SourceLinks {
 		return Optional.empty();
 	}
 
+	public static Optional<String> sourceLinkUrlForClasspathResource(SourceLinks sourceLinks, JavaProjectFinder projectFinder, String path) {
+		if (projectFinder != null) {
+			int idx = path.lastIndexOf(CLASS);
+			if (idx >= 0) {
+				Path filePath = Paths.get(path.substring(0, idx));
+				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
+				if (project != null) {
+					try {
+						for (CPE cpe : project.getClasspath().getClasspathEntries()) {
+							if (Classpath.isSource(cpe)) {
+								Path cpeBinaryPath = IClasspathUtil.binaryLocation(cpe).toPath();
+								if (filePath.startsWith(cpeBinaryPath)) {
+									String fqName = cpeBinaryPath.relativize(filePath).toString().replace(File.separator, ".");
+									Optional<String> link = sourceLinks.sourceLinkUrlForFQName(project, fqName);
+									if (link.isPresent()) {
+										return link;
+									}
+								}
+							}
+						}
+					} catch (Exception e) {
+						log.error("", e);
+					}
+				}
+
+			}
+		}
+		return Optional.empty();
+	}
+
 
 	/**
 	 * Creates link to source file defining the type passed with it's fully qualified name
@@ -114,7 +149,7 @@ public interface SourceLinks {
 	 * @param path the path to the classpath resource
 	 * @return the link URL optional
 	 */
-	Optional<String> sourceLinkUrlForClasspathResource(IJavaProject project, String path);
+	Optional<String> sourceLinkUrlForClasspathResource(String path);
 
 	/**
 	 * Creates link to a file specified by it's path

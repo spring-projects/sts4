@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -31,6 +30,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
 /**
@@ -45,12 +45,30 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 
 	private CompilationUnitCache cuCache;
 
-	protected AbstractSourceLinks(CompilationUnitCache cuCache) {
+	private JavaProjectFinder projectFinder;
+
+	protected AbstractSourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		this.cuCache = cuCache;
+		this.projectFinder = projectFinder;
 	}
 
 	@Override
 	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
+		Optional<String> url = project == null ? Optional.empty() : getSourceLinkUrlForFQName(project, fqName);
+		if (!url.isPresent()) {
+			for (IJavaProject jp : projectFinder.all()) {
+				if (jp != project) {
+					url = getSourceLinkUrlForFQName(jp, fqName);
+					if (url.isPresent()) {
+						break;
+					}
+				}
+			}
+		}
+		return url;
+	}
+
+	private Optional<String> getSourceLinkUrlForFQName(IJavaProject project, String fqName) {
 		IJavaModuleData classpathResource = project.getIndex().findClasspathResourceContainer(fqName);
 		if (classpathResource != null) {
 			File file = classpathResource.getContainer();
@@ -64,16 +82,9 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	}
 
 	@Override
-	public Optional<String> sourceLinkUrlForClasspathResource(IJavaProject project, String path) {
-		int idx = path.lastIndexOf(CLASS);
-		if (idx >= 0) {
-			Path p = Paths.get(path.substring(0, idx));
-			return sourceLinkUrlForFQName(project, p.toString().replace(File.separator, "."));
-		}
-		return Optional.empty();
+	public Optional<String> sourceLinkUrlForClasspathResource(String path) {
+		return SourceLinks.sourceLinkUrlForClasspathResource(this, projectFinder, path);
 	}
-
-
 
 	private Optional<String> javaSourceLinkUrl(IJavaProject project, String fqName, IJavaModuleData folderModuleData) {
 		IClasspath classpath = project.getClasspath();

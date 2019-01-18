@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,7 @@ public class Classpath {
 		private URL sourceContainerUrl;
 		private URL javadocContainerUrl;
 		private boolean isSystem = false;
+		private boolean isOwn = false;
 
 		public String getOutputFolder() {
 			return outputFolder;
@@ -128,11 +129,19 @@ public class Classpath {
 			this.isSystem = isSystem;
 		}
 
+		public boolean isOwn() {
+			return isOwn;
+		}
+
+		public void setOwn(boolean isOwn) {
+			this.isOwn = isOwn;
+		}
+
 		@Override
 		public String toString() {
-			return "CPE [kind=" + kind + ", isSystem=" + isSystem + ", path=" + path + ", outputFolder=" + outputFolder
-					+ ", sourceContainerUrl=" + sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl
-					+ "]";
+			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + ", sourceContainerUrl="
+					+ sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl + ", isSystem=" + isSystem
+					+ ", isOwn=" + isOwn + "]";
 		}
 
 	}

@@ -122,6 +122,7 @@ public class MavenProjectClasspath implements IClasspath {
 			File sourceFolder = new File(project.getBuild().getSourceDirectory());
 			File outputFolder = new File(project.getBuild().getOutputDirectory());
 			CPE cpe = CPE.source(sourceFolder, outputFolder);
+			cpe.setOwn(true);
 			safe(() -> {
 				String reportingDir = project.getModel().getReporting().getOutputDirectory();
 				if (reportingDir!=null) {
@@ -138,7 +139,9 @@ public class MavenProjectClasspath implements IClasspath {
 				if (targetPath==null) {
 					targetPath = project.getBuild().getOutputDirectory();
 				}
-				entries.add(CPE.source(sourceFolder, new File(targetPath)));
+				CPE cpe = CPE.source(sourceFolder, new File(targetPath));
+				cpe.setOwn(true);
+				entries.add(cpe);
 			}
 		}
 		{	//test/resources
@@ -148,13 +151,16 @@ public class MavenProjectClasspath implements IClasspath {
 				if (targetPath==null) {
 					targetPath = project.getBuild().getTestOutputDirectory();
 				}
-				entries.add(CPE.source(sourceFolder, targetPath==null ? null : new File(targetPath)));
+				CPE cpe = CPE.source(sourceFolder, targetPath==null ? null : new File(targetPath));
+				cpe.setOwn(true);
+				entries.add(cpe);
 			}
 		}
 		{	//test/java
 			File sourceFolder = new File(project.getBuild().getTestSourceDirectory());
 			File outputFolder = new File(project.getBuild().getTestOutputDirectory());
 			CPE cpe = CPE.source(sourceFolder, outputFolder);
+			cpe.setOwn(true);
 			safe(() -> {
 				String reportingDir = project.getModel().getReporting().getOutputDirectory();
 				if (reportingDir!=null) {

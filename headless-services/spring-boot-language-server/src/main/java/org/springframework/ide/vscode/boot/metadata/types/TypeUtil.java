@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,8 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.convert.DurationStyle;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ResourceHintProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
@@ -134,16 +132,18 @@ public class TypeUtil {
 	}
 
 	private IJavaProject javaProject;
+	private SourceLinks sourceLinks;
 
-	public TypeUtil(IJavaProject jp) {
+	public TypeUtil(SourceLinks sourceLinks, IJavaProject jp) {
 		//Note javaProject is allowed to be null, but only in unit testing context
 		// (This is so some tests can be run without an explicit jp needing to be created)
 		this.javaProject = jp;
+		this.sourceLinks = sourceLinks;
 	}
 
 
-	public TypeUtil(Optional<IJavaProject> maybeProject) {
-		this(maybeProject.orElse(null));
+	public TypeUtil(SourceLinks sourceLinks, Optional<IJavaProject> maybeProject) {
+		this(sourceLinks, maybeProject.orElse(null));
 	}
 
 	private static final Map<String, String> PRIMITIVE_TYPE_NAMES = new HashMap<>();
@@ -334,10 +334,10 @@ public class TypeUtil {
 					type.getFields().filter(f -> f.isEnumConstant()).forEach(f -> {
 						String rawName = f.getElementName();
 						if (addOriginal) {
-							enums.add(StsValueHint.create(rawName, javaProject, f));
+							enums.add(StsValueHint.create(sourceLinks, rawName, javaProject, f));
 						}
 						if (addLowerCased) {
-							enums.add(StsValueHint.create(StringUtil.upperCaseToHyphens(rawName), javaProject, f));
+							enums.add(StsValueHint.create(sourceLinks, StringUtil.upperCaseToHyphens(rawName), javaProject, f));
 						}
 					});
 					return enums.build();
@@ -655,6 +655,10 @@ public class TypeUtil {
 		valueHints("org.springframework.core.io.Resource", new ResourceHintProvider());
 	}
 
+	public SourceLinks getSourceLinks() {
+		return sourceLinks;
+	}
+
 	/**
 	 * Determine properties that are setable on object of given type.
 	 * <p>
@@ -695,7 +699,6 @@ public class TypeUtil {
 
 			//TODO: handle type parameters.
 			if (typeFromIndex != null) {
-				SourceLinks sourceLinks = SourceLinkFactory.createSourceLinks((BootJavaLanguageServerComponents)null);
 				IJavaProject project = getJavaProject();
 				ArrayList<TypedProperty> properties = new ArrayList<>();
 				getGetterMethods(typeFromIndex).forEach(m -> {

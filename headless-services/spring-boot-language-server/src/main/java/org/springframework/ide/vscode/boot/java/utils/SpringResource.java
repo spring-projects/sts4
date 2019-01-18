@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -67,20 +67,22 @@ public class SpringResource {
 		if (type==null) {
 			return path; //path is just the raw text in this case
 		}
-		Optional<String> linkUrl;
+		Optional<String> linkUrl = Optional.empty();
 		switch (type) {
 		case FILE:
-			String relativePath = projectRelativePath(project, path);
-			if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
-				linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath);
-			} else {
+			linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(path);
+			if (!linkUrl.isPresent()) {
 				linkUrl = sourceLinks.sourceLinkForResourcePath(Paths.get(path));
 			}
 			// not a project relative path
-			return linkUrl.isPresent() ? Renderables.link(relativePath, linkUrl.get()).toMarkdown()
+			return linkUrl.isPresent() ? Renderables.link(projectRelativePath(project, path), linkUrl.get()).toMarkdown()
 					: "`" + projectRelativePath(project, path) + "`";
 		case CLASS_PATH_RESOURCE:
-			linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(project, path);
+			int idx = path.lastIndexOf(SourceLinks.CLASS);
+			if (idx >= 0) {
+				Path p = Paths.get(path.substring(0, idx));
+				linkUrl = sourceLinks.sourceLinkUrlForFQName(project, p.toString().replace(File.separator, "."));
+			}
 			return linkUrl.isPresent() ? Renderables.link(path, linkUrl.get()).toMarkdown() : "`"+path+"`";
 		default:
 			return path;

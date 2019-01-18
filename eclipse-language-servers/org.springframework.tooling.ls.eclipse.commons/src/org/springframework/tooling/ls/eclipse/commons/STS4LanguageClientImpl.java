@@ -182,7 +182,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					method.setAccessible(true);
 					method.invoke(sourceViewer);
 				} catch (InvocationTargetException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-					LanguageServerCommonsActivator.logError(e, "");
+					// don't log the exception
+					((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
 				}
 			} else {
 				((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
@@ -312,7 +313,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		JavadocResponse response = new JavadocResponse();
 		try {
 			String content = JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
-					URI.create(params.getProjectUri()), params.getBindingKey());
+					URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
 			response.setContent(content);
 		} catch (Exception e) {
 			LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
@@ -347,7 +348,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params) {
-		JavaTypeResponse response = new JavaTypeResponse(JAVA_DATA.typeData(params.getProjectUri(), params.getBindingKey()));
+		JavaTypeResponse response = new JavaTypeResponse(JAVA_DATA.typeData(params.getProjectUri(), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params)));
 		return CompletableFuture.completedFuture(response);
 	}
 
@@ -355,7 +356,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
 		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
 		try {
-			IJavaElement element = JavaData.findElement(URI.create(params.getProjectUri()), params.getBindingKey());
+			IJavaElement element = JavaData.findElement(URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
 			if (element != null) {
 				response.setLink(JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element));
 			}

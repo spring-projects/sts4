@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -80,10 +80,10 @@ public class BootLanguagServerBootApp {
 		return new ValueProviderRegistry();
 	}
 
-	@Bean InitializingBean initializeValueProviders(ValueProviderRegistry r, @Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties) {
+	@Bean InitializingBean initializeValueProviders(ValueProviderRegistry r, @Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties, SourceLinks sourceLinks) {
 		return () -> {
-			r.def("logger-name", LoggerNameProvider.factory(adHocProperties));
-			r.def("class-reference", ClassReferenceProvider.FACTORY);
+			r.def("logger-name", LoggerNameProvider.factory(adHocProperties, sourceLinks));
+			r.def("class-reference", ClassReferenceProvider.factory(sourceLinks));
 		};
 	}
 
@@ -93,8 +93,8 @@ public class BootLanguagServerBootApp {
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean SourceLinks sourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache) {
-		return SourceLinkFactory.createSourceLinks(server, cuCache);
+	@Bean SourceLinks sourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache, BootLanguageServerParams params) {
+		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
 	@Bean CompilationUnitCache cuCache(BootLanguageServerParams params, SimpleTextDocumentService documents) {
@@ -133,13 +133,13 @@ public class BootLanguagServerBootApp {
 		return YamlStructureProvider.DEFAULT;
 	}
 
-	@Bean YamlAssistContextProvider yamlAssistContextProvider(BootLanguageServerParams params, JavaElementLocationProvider javaElementLocationProvider) {
+	@Bean YamlAssistContextProvider yamlAssistContextProvider(BootLanguageServerParams params, JavaElementLocationProvider javaElementLocationProvider, SourceLinks sourceLinks) {
 		return new YamlAssistContextProvider() {
 			@Override
 			public YamlAssistContext getGlobalAssistContext(YamlDocument ydoc) {
 				IDocument doc = ydoc.getDocument();
 				FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
-				return ApplicationYamlAssistContext.global(ydoc, index, new PropertyCompletionFactory(), params.typeUtilProvider.getTypeUtil(doc), RelaxedNameConfig.COMPLETION_DEFAULTS, javaElementLocationProvider);
+				return ApplicationYamlAssistContext.global(ydoc, index, new PropertyCompletionFactory(), params.typeUtilProvider.getTypeUtil(sourceLinks, doc), RelaxedNameConfig.COMPLETION_DEFAULTS, javaElementLocationProvider);
 			}
 		};
 	}

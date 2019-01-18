@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.Region;
 
 import com.google.common.base.Supplier;
@@ -36,8 +37,8 @@ public class AtomSourceLinks extends AbstractSourceLinks {
 
 	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 
-	public AtomSourceLinks(CompilationUnitCache cuCache) {
-		super(cuCache);
+	public AtomSourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+		super(cuCache, projectFinder);
 	}
 
 	@Override

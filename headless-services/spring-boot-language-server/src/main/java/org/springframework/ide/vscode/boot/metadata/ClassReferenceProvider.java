@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,12 +18,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.cache.Cache;
@@ -40,36 +42,35 @@ import reactor.core.publisher.Flux;
  * @author Alex Boyko
  */
 public class ClassReferenceProvider extends CachingValueProvider {
-	
+
+	private static final Logger log = LoggerFactory.getLogger(ClassReferenceProvider.class);
+
 	/**
 	 * Default value for the 'concrete' parameter.
 	 */
 	private static final boolean DEFAULT_CONCRETE = true;
 
-	private static final ClassReferenceProvider UNTARGETTED_INSTANCE = new ClassReferenceProvider(null, DEFAULT_CONCRETE);
+	private static final ClassReferenceProvider UNTARGETTED_INSTANCE = new ClassReferenceProvider(null, DEFAULT_CONCRETE, null);
 
-	public static final Function<Map<String, Object>, ValueProviderStrategy> FACTORY = applyOn(
-		1, TimeUnit.MINUTES,
-		(params) -> {
-			String target = getTarget(params);
-			Boolean concrete = getConcrete(params);
-			if (target!=null || concrete!=null) {
-				if (concrete==null) {
-					concrete = DEFAULT_CONCRETE;
-				}
-				return new ClassReferenceProvider(target, concrete);
-			}
-			return UNTARGETTED_INSTANCE;
-		}
-	);
-
-	private static <K,V> Function<K,V> applyOn(long duration, TimeUnit unit, Function<K,V> func) {
-		Cache<K,V> cache = CacheBuilder.newBuilder().expireAfterAccess(duration, unit).expireAfterWrite(duration, unit).build();
-		return (k) -> {
+	public static final Function<Map<String, Object>, ValueProviderStrategy> factory(SourceLinks sourceLinks) {
+		long duration = 1;
+		TimeUnit unit = TimeUnit.MINUTES;
+		Cache<Map<String, Object>, ValueProviderStrategy> cache = CacheBuilder.newBuilder().expireAfterAccess(duration, unit).expireAfterWrite(duration, unit).build();
+		return (params) -> {
 			try {
-				return cache.get(k, () -> func.apply(k));
+				return cache.get(params, () -> {
+					String target = getTarget(params);
+					Boolean concrete = getConcrete(params);
+					if (target!=null || concrete!=null) {
+						if (concrete==null) {
+							concrete = DEFAULT_CONCRETE;
+						}
+						return new ClassReferenceProvider(target, concrete, sourceLinks);
+					}
+					return UNTARGETTED_INSTANCE;
+				});
 			} catch (ExecutionException e) {
-				Log.log(e);
+				log.error("", e);
 				return null;
 			}
 		};
@@ -92,7 +93,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 		try {
 			return type.isInterface() || Flags.isAbstract(type.getFlags());
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return false;
 		}
 	}
@@ -109,7 +110,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}
@@ -124,9 +125,12 @@ public class ClassReferenceProvider extends CachingValueProvider {
 	 */
 	private boolean concrete;
 
-	private ClassReferenceProvider(String target, boolean concrete) {
+	private SourceLinks sourceLinks;
+
+	private ClassReferenceProvider(String target, boolean concrete, SourceLinks sourceLinks) {
 		this.target = target;
 		this.concrete = concrete;
+		this.sourceLinks = sourceLinks;
 	}
 
 	@Override
@@ -147,7 +151,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 					.fuzzySearchTypes(query, type -> allSubclasses.contains(type))
 					.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 					.flatMapIterable(l -> l)
-					.map(t -> StsValueHint.create(javaProject, t.getT1()));
+					.map(t -> StsValueHint.create(sourceLinks, javaProject, t.getT1()));
 		}
 	}
 

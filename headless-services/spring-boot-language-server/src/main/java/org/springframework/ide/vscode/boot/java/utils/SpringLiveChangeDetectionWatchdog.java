@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -241,18 +243,18 @@ public class SpringLiveChangeDetectionWatchdog {
 
 				for (IJavaProject project : projects) {
 					if (SpringResource.FILE.equals(type)) {
-						String relativePath = SpringResource.projectRelativePath(project, path);
-
-						if (relativePath != path && path.endsWith(SourceLinks.CLASS)) {
-							result = sourceLinks.sourceLinkUrlForClasspathResource(project, relativePath).get();
-							break;
-						} else {
+						result = sourceLinks.sourceLinkUrlForClasspathResource(path).get();
+						if (result == null) {
 							result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();
-							break;
 						}
+						break;
 					}
 					else if (SpringResource.CLASS_PATH_RESOURCE.equals(type)) {
-						result = sourceLinks.sourceLinkUrlForClasspathResource(project, path).get();
+						int idx = path.lastIndexOf(SourceLinks.CLASS);
+						if (idx >= 0) {
+							Path p = Paths.get(path.substring(0, idx));
+							result = sourceLinks.sourceLinkUrlForFQName(project, p.toString().replace(File.separator, ".")).get();
+						}
 						break;
 					}
 				}

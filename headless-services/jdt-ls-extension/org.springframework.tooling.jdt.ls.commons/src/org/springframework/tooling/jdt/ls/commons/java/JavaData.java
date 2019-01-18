@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,10 @@ package org.springframework.tooling.jdt.ls.commons.java;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IField;
@@ -29,6 +31,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.springframework.tooling.jdt.ls.commons.Logger;
+import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 import org.springframework.tooling.jdt.ls.commons.java.TypeData.AnnotationData;
 import org.springframework.tooling.jdt.ls.commons.java.TypeData.ClasspathEntryData;
@@ -47,9 +50,9 @@ public class JavaData {
 		this.logger = logger;
 	}
 	
-	public TypeData typeData(String projectUri, String bindingKey) {
+	public TypeData typeData(String projectUri, String bindingKey, boolean lookInOtherProjects) {
 		try {
-			IJavaElement element = findElement(URI.create(projectUri), bindingKey);
+			IJavaElement element = findElement(projectUri == null ? null : URI.create(projectUri), bindingKey, lookInOtherProjects);
 			if (element instanceof IType) {
 				return createTypeData((IType) element);
 			}
@@ -59,12 +62,20 @@ public class JavaData {
 		return null;
 	}
 	
-	public static IJavaElement findElement(URI projectUri, String bindingKey) throws Exception {
-		IJavaProject javaProject = ResourceUtils.getJavaProject(projectUri);
-		if (javaProject != null) {
-			return findElement(javaProject, bindingKey);
+	public static IJavaElement findElement(URI projectUri, String bindingKey, boolean lookInOtherProjects) throws Exception {
+		IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
+		IJavaElement element = javaProject == null ? null : findElement(javaProject, bindingKey);
+		if (lookInOtherProjects && element == null) {
+			for (IJavaProject jp : ResourceUtils.allJavaProjects()) {
+				if (jp != javaProject) {
+					element = findElement(jp, bindingKey);
+					if (element != null) {
+						break;
+					}
+				}
+			}
 		}
-		return null;
+		return element;
 	}
 
 	private static IJavaElement findElement(IJavaProject project, String bindingKey) {
@@ -259,7 +270,11 @@ public class JavaData {
 			try {
 				IClasspathEntry entry = packageFragmentRoot.getRawClasspathEntry();
 				if (entry != null) {
-					data.setCpe(ClasspathUtil.createCpe(packageFragmentRoot.getJavaProject(), entry));
+					List<CPE> cpes = ClasspathUtil.createCpes(packageFragmentRoot.getJavaProject(), entry);
+					Assert.isTrue(cpes.size() < 2);
+					if (!cpes.isEmpty()) {
+						data.setCpe(cpes.get(0));
+					}
 				}
 			} catch (JavaModelException | MalformedURLException e) {
 				logger.log(e);
