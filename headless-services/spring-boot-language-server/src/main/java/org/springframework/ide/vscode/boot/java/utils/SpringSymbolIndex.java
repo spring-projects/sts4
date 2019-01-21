@@ -152,6 +152,9 @@ public class SpringSymbolIndex {
 		getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
 			createDocument(new TextDocumentIdentifier(file).getUri());
 		});
+		getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
+			updateDocument(new TextDocumentIdentifier(file).getUri(), null);
+		});
 	}
 
 	public void shutdown() {
@@ -259,6 +262,10 @@ public class SpringSymbolIndex {
 					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						try {
+							if (content == null) {
+								content = FileUtils.readFileToString(new File(new URI(docURI)));
+							}
+
 							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, indexer);
 							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
 						}

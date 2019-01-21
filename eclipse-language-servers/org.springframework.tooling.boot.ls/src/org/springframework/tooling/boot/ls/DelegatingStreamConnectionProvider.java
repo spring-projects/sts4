@@ -120,6 +120,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				// Add resource listener
 				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
 						FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
+						FileSystems.getDefault().getPathMatcher("glob:**/*.xml"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.gradle"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.java"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.json"),

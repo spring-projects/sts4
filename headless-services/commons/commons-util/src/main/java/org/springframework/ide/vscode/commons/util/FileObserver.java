@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
-import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 

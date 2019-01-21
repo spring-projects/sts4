@@ -15,6 +15,10 @@
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
       <contentTypeMapping
+            contentType="org.eclipse.core.runtime.xml"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
+      <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties">
