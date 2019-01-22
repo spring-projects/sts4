@@ -110,7 +110,7 @@ public class IClasspathUtil {
 	public static Stream<File> getOutputFolders(IClasspath classpath) {
 		try {
 			return classpath.getClasspathEntries().stream()
-					.filter(Classpath::isSource)
+					.filter(Classpath::isProjectSource)
 					.map(cpe -> new File(cpe.getOutputFolder()));
 		} catch (Exception e) {
 			log.error("", e);
