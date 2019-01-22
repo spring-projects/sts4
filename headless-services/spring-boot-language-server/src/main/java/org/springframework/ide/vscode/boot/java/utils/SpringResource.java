@@ -31,6 +31,7 @@ public class SpringResource {
 
 	public static final String FILE = "file";
 	public static final String CLASS_PATH_RESOURCE = "class path resource";
+	public static final String URL = "URL";
 	private static final String CF_CLASSPATH_PREFIX = "/home/vcap/app/";
 
 	private SourceLinks sourceLinks;
@@ -70,6 +71,7 @@ public class SpringResource {
 		Optional<String> linkUrl = Optional.empty();
 		switch (type) {
 		case FILE:
+		case URL:
 			linkUrl = sourceLinks.sourceLinkUrlForClasspathResource(path);
 			if (!linkUrl.isPresent()) {
 				linkUrl = sourceLinks.sourceLinkForResourcePath(Paths.get(path));

@@ -242,7 +242,7 @@ public class SpringLiveChangeDetectionWatchdog {
 				String path = resource.substring(matcher.start()+1, matcher.end()-1);
 
 				for (IJavaProject project : projects) {
-					if (SpringResource.FILE.equals(type)) {
+					if (SpringResource.FILE.equals(type) || SpringResource.URL.equals(type)) {
 						result = sourceLinks.sourceLinkUrlForClasspathResource(path).get();
 						if (result == null) {
 							result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();

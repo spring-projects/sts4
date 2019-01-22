@@ -11,9 +11,12 @@
 package org.springframework.ide.vscode.boot.java.links;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -110,7 +113,23 @@ public interface SourceLinks {
 			if (idx >= 0) {
 				Path filePath = Paths.get(path.substring(0, idx));
 				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
-				if (project != null) {
+				if (project == null) {
+					try {
+						URL url = new URL(path.substring(0, idx));
+						if (url.getProtocol().equals("jar")) {
+							URLConnection connection = url.openConnection();
+							if (connection instanceof JarURLConnection) {
+								JarURLConnection jarConnection = (JarURLConnection) connection;
+								String fqName = jarConnection.getEntryName().replace(File.separator, ".");
+								return sourceLinks.sourceLinkUrlForFQName(null, fqName);
+							}
+						}
+					} catch (MalformedURLException e) {
+						log.error("", e);
+					} catch (IOException e) {
+						log.error("", e);
+					}
+				} else {
 					try {
 						for (CPE cpe : project.getClasspath().getClasspathEntries()) {
 							if (Classpath.isSource(cpe)) {

@@ -356,7 +356,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
 		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
 		try {
-			IJavaElement element = JavaData.findElement(URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
+			URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
+			IJavaElement element = JavaData.findElement(projectUri, params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
 			if (element != null) {
 				response.setLink(JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element));
 			}
