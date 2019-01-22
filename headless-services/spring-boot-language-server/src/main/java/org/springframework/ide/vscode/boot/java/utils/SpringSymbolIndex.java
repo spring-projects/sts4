@@ -96,6 +96,10 @@ public class SpringSymbolIndex {
 	private SpringIndexerXML springIndexerXML;
 	private SpringIndexerJava springIndexerJava;
 
+	private String watchXMLDeleteRegistration;
+	private String watchXMLCreatedRegistration;
+	private String watchXMLChangedRegistration;
+
 	private SimpleWorkspaceService getWorkspaceService() {
 		return server.getServer().getWorkspaceService();
 	}
@@ -143,8 +147,7 @@ public class SpringSymbolIndex {
 	}
 
 	public void serverInitialized() {
-		List<String> globPattern = Arrays.stream(this.indexer).map(indexer ->
-				indexer.getFileWatchPatterns()).flatMap(Arrays::stream).collect(Collectors.toList());
+		List<String> globPattern = Arrays.asList(springIndexerJava.getFileWatchPatterns());
 
 		getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
 			deleteDocument(new TextDocumentIdentifier(file).getUri());
@@ -155,6 +158,38 @@ public class SpringSymbolIndex {
 		getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
 			updateDocument(new TextDocumentIdentifier(file).getUri(), null);
 		});
+	}
+
+	public void configureIndexer(boolean springXMLSupportEnabled) {
+		synchronized (this) {
+			if (springXMLSupportEnabled && !(Arrays.asList(this.indexer).contains(springIndexerXML))) {
+				this.indexer = new SpringIndexer[] {springIndexerJava, springIndexerXML};
+
+				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
+
+				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
+					deleteDocument(new TextDocumentIdentifier(file).getUri());
+				});
+				watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
+					createDocument(new TextDocumentIdentifier(file).getUri());
+				});
+				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
+					updateDocument(new TextDocumentIdentifier(file).getUri(), null);
+				});
+
+			}
+			else if (!springXMLSupportEnabled && Arrays.asList(this.indexer).contains(springIndexerXML)) {
+				this.indexer = new SpringIndexer[] {springIndexerJava};
+
+				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
+				getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
+				getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
+
+				watchXMLChangedRegistration = null;
+				watchXMLCreatedRegistration = null;
+				watchXMLDeleteRegistration = null;
+			}
+		}
 	}
 
 	public void shutdown() {
@@ -170,15 +205,6 @@ public class SpringSymbolIndex {
 			}
 		} catch (Exception e) {
 			log.error("{}", e);
-		}
-	}
-
-	public void configureIndexer(boolean springXMLSupportEnabled) {
-		if (springXMLSupportEnabled) {
-			this.indexer = new SpringIndexer[] {springIndexerJava, springIndexerXML};
-		}
-		else {
-			this.indexer = new SpringIndexer[] {springIndexerJava};
 		}
 	}
 
