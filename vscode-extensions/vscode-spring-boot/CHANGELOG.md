@@ -1,3 +1,13 @@
+## 2019-01-24 (4.1.1 RELEASE)
+
+* (Spring Boot) quick navigation via symbols now available for non-Boot Spring projects
+* (Spring Boot) live hover informations for bean wirings now available for non-Boot Spring projects - _for details how to enable this for your apps, take a look at the [user guide](https://github.com/spring-projects/sts4/wiki/Live-Application-Information) section for that_
+* (Spring Boot) added support for deprecated properties (including corresponding quick-fix) 
+* (Spring Boot) quick fix to generate default metadata for missing properties ([#101](https://github.com/spring-projects/sts4/issues/101))
+* (Spring Boot) first steps towards generating symbols for Spring XML config files ([#108](https://github.com/spring-projects/sts4/issues/108#issuecomment-455135918))
+* (Spring Boot) fixed: live hovers don't show up for classes with a name starting with multiple upper case charatecters
+* (Spring Boot) fixed: type and resource navigation in bean live hovers don't work for types and resources from dependencies
+
 ## 2018-12-20 (4.1.0 RELEASE)
 
 * (Spring Boot) first initial version of content-assist for Spring Data repository definitions

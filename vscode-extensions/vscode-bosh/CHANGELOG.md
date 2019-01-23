@@ -1,3 +1,7 @@
+## 2019-01-24 (4.1.1 RELEASE)
+
+* no major changes
+
 ## 2018-12-20 (4.1.0 RELEASE)
 
 * no major changes

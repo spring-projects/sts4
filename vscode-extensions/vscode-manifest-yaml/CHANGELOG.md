@@ -1,3 +1,7 @@
+## 2019-01-24 (4.1.1 RELEASE)
+
+* no major changes
+
 ## 2018-12-20 (4.1.0 RELEASE)
 
 * (CF Manifest) fixed Cloud Foundry Manifest buildpack deprecated in vs code extension ([#161](https://github.com/spring-projects/sts4/issues/161))
