@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,9 +14,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,23 +57,10 @@ public class SpringLiveHoverWatchdog {
 
 	private boolean highlightsEnabled = true;
 
-	private Timer timer;
+	private ScheduledThreadPoolExecutor timer;
 
 	private JavaProjectFinder projectFinder;
 
-
-	private void refreshEnablement() {
-		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.stream());
-		if (shouldEnable) {
-			start();
-		} else {
-			shutdown();
-		}
-	}
-
-	private boolean hasInterestingProject(Stream<String> uris) {
-		return uris.anyMatch(uri -> projectFinder.find(new TextDocumentIdentifier(uri)).isPresent());
-	}
 
 	public SpringLiveHoverWatchdog(
 			SimpleLanguageServer server,
@@ -108,26 +95,32 @@ public class SpringLiveHoverWatchdog {
 		});
 	}
 
+	public synchronized void enableHighlights() {
+		if (!highlightsEnabled) {
+			highlightsEnabled = true;
+			refreshEnablement();
+		}
+	}
+
+	public synchronized void disableHighlights() {
+		if (highlightsEnabled) {
+			highlightsEnabled = false;
+			refreshEnablement();
+		}
+	}
+
 	private synchronized void start() {
 		if (highlightsEnabled && timer == null) {
 			logger.debug("Starting SpringLiveHoverWatchdog");
-			this.timer = new Timer();
-
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					update();
-				}
-			};
-
-			timer.schedule(task, 0, POLLING_INTERVAL_MILLISECONDS);
+			this.timer = new ScheduledThreadPoolExecutor(1);
+			this.timer.scheduleWithFixedDelay(() -> this.update(), 0, POLLING_INTERVAL_MILLISECONDS, TimeUnit.MILLISECONDS);
 		}
 	}
 
 	public synchronized void shutdown() {
 		if (timer != null) {
 			logger.info("Shutting down SpringLiveHoverWatchdog");
-			timer.cancel();
+			timer.shutdown();
 			timer = null;
 			watchedDocs.forEach(uri -> cleanupLiveHints(uri));
 		}
@@ -149,6 +142,16 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	public void update(String docURI) {
+		ScheduledThreadPoolExecutor scheduler = this.timer;
+		if (scheduler != null) {
+			scheduler.execute(() -> {
+				updateDoc(docURI);
+			});
+		}
+	}
+
+	// internal method, need to run on the scheduled executor pool, do not call outside of that
+	protected void updateDoc(String docURI) {
 		try {
 			IJavaProject project = identifyProject(docURI);
 			SpringBootApp[] runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
@@ -160,6 +163,7 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
+	// internal method, need to run on the scheduled executor pool, do not call outside of that
 	protected void update() {
 		if (this.watchedDocs.size() > 0) {
 			try {
@@ -180,6 +184,7 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
+	// internal method, need to run on the scheduled executor pool, do not call outside of that
 	protected void update(String docURI, SpringBootApp[] runningBootApps) {
 		if (highlightsEnabled) {
 			try {
@@ -216,6 +221,19 @@ public class SpringLiveHoverWatchdog {
 		}).filter(app -> app != null).collect(Collectors.toList());
 	}
 
+	private void refreshEnablement() {
+		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.stream());
+		if (shouldEnable) {
+			start();
+		} else {
+			shutdown();
+		}
+	}
+
+	private boolean hasInterestingProject(Stream<String> uris) {
+		return uris.anyMatch(uri -> projectFinder.find(new TextDocumentIdentifier(uri)).isPresent());
+	}
+
 	private IJavaProject identifyProject(String docURI) {
 		TextDocument doc = this.server.getTextDocumentService().get(docURI);
 		if (doc != null) {
@@ -228,8 +246,7 @@ public class SpringLiveHoverWatchdog {
 
 	private void publishLiveHints(String docURI, CodeLens[] codeLenses) {
 		int version = server.getTextDocumentService().get(docURI).getVersion();
-		VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(version);
-		id.setUri(docURI);
+		VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(docURI, version);
 		server.getClient().highlight(new HighlightParams(id, Arrays.asList(codeLenses)));
 	}
 
@@ -239,20 +256,6 @@ public class SpringLiveHoverWatchdog {
 
 	private void cleanupResources() {
 		// TODO: close and cleanup open JMX connections and cached data
-	}
-
-	public synchronized void enableHighlights() {
-		if (!highlightsEnabled) {
-			highlightsEnabled = true;
-			refreshEnablement();
-		}
-	}
-
-	public synchronized void disableHighlights() {
-		if (highlightsEnabled) {
-			highlightsEnabled = false;
-			refreshEnablement();
-		}
 	}
 
 }

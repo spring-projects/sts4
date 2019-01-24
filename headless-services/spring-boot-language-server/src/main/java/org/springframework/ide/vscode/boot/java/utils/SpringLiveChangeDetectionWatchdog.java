@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,8 +64,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final Set<IJavaProject> observedProjects;
 
 	private boolean changeDetectionEnabled = false;
-
-	private Timer timer;
+	private ScheduledThreadPoolExecutor timer;
 
 	public SpringLiveChangeDetectionWatchdog(
 			BootJavaLanguageServerComponents bootJavaLanguageServerComponents,
@@ -110,23 +109,15 @@ public class SpringLiveChangeDetectionWatchdog {
 	public synchronized void start() {
 		if (changeDetectionEnabled && timer == null) {
 			logger.debug("Starting SpringLiveChangeDetectionWatchdog");
-			this.timer = new Timer();
-
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					update();
-				}
-			};
-
-			timer.schedule(task, 0, POLLING_INTERVAL_MILLISECONDS);
+			this.timer = new ScheduledThreadPoolExecutor(1);
+			this.timer.scheduleWithFixedDelay(() -> this.update(), 0, POLLING_INTERVAL_MILLISECONDS, TimeUnit.MILLISECONDS);
 		}
 	}
 
 	public synchronized void shutdown() {
 		if (timer != null) {
 			logger.info("Shutting down SpringLiveChangeDetectionWatchdog");
-			timer.cancel();
+			timer.shutdown();
 			timer = null;
 		}
 	}
