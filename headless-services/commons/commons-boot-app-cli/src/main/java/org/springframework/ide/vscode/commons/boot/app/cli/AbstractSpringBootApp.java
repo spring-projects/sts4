@@ -235,11 +235,11 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	protected Set<ObjectName> getNonBootSpringLiveMBeans() {
 		if (this.nonBootLiveMBeanNames == null) {
 			try {
-				this.nonBootLiveMBeanNames = withJmxConnector(jmxConnector -> {
+				this.nonBootLiveMBeanNames = withTimeout(() -> withJmxConnector(jmxConnector -> {
 					MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 					QueryExp queryExp = Query.isInstanceOf(Query.value("org.springframework.context.support.LiveBeansView"));
 					return connection.queryNames(null, queryExp);
-				});
+				}));
 			} catch (Exception e) {
 				e.printStackTrace();
 				this.nonBootLiveMBeanNames = Collections.emptySet();
