@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -68,11 +68,11 @@
           "default": true,
           "description": "Enable/Disable Spring running Boot application live hints decorators in Java source code"
         },
-	    "boot-java.support-spring-xml-config.on": {
-	      "type": "boolean",
-	      "default": false,
-	      "description": "Enable/Disable Support for Spring XML Config files"
-	    },
+        "boot-java.support-spring-xml-config.on": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/Disable Support for Spring XML Config files"
+        },
         "boot-java.highlight-codelens.on": {
           "type": "boolean",
           "default": true,
