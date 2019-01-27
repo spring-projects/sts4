@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -180,7 +181,8 @@ public class SpringIndexerTest {
 
 		// check for document to not be created yet
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(createdDocURI);
-		assertNull(symbols);
+		assertNotNull(symbols);
+		assertEquals(0, symbols.size());
 
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 		assertEquals(7, allSymbols.size());
