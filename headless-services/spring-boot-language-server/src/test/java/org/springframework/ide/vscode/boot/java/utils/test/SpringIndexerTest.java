@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.java.utils.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -312,6 +311,18 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
 	}
 
+	@Test
+	public void testDeleteProject() throws Exception {
+		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		assertEquals(7, allSymbols.size());
+
+		CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
+		deleteProject.get(5, TimeUnit.SECONDS);
+
+		allSymbols = indexer.getAllSymbols("");
+		assertEquals(0, allSymbols.size());
+	}
+
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri) {
 		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
 			SymbolInformation symbol = iterator.next();
@@ -342,18 +353,6 @@ public class SpringIndexerTest {
  		}
 
 		return false;
-	}
-
-	@Test
-	public void testDeleteProject() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
-		assertEquals(7, allSymbols.size());
-
-		CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
-		deleteProject.get(5, TimeUnit.SECONDS);
-
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(0, allSymbols.size());
 	}
 
 }

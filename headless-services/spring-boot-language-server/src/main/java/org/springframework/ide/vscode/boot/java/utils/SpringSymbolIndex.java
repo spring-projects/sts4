@@ -49,12 +49,12 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspac
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * @author Martin Lippert
  */
 public class SpringSymbolIndex {
+
+	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
 	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
 
@@ -95,6 +95,7 @@ public class SpringSymbolIndex {
 			deleteProject(project);
 		}
 	};
+
 	private SpringIndexerXML springIndexerXML;
 	private SpringIndexerJava springIndexerJava;
 
@@ -388,9 +389,34 @@ public class SpringSymbolIndex {
 	}
 
 	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
+		long limit = maxNumberOfSymbolsInResponse;
+		String locationPrefix = "";
+
+		if (query.startsWith(QUERY_PARAM_LOCATION_PREFIX)) {
+
+			int separatorIndex = query.indexOf("?");
+			if (separatorIndex > 0) {
+				locationPrefix = query.substring(QUERY_PARAM_LOCATION_PREFIX.length(), separatorIndex);
+				query = query.substring(separatorIndex + 1);
+			}
+			else {
+				locationPrefix = query.substring(QUERY_PARAM_LOCATION_PREFIX.length());
+				query = query.substring(QUERY_PARAM_LOCATION_PREFIX.length() + locationPrefix.length());
+			}
+		}
+
+		if (query.startsWith("*")) {
+			limit = Long.MAX_VALUE;
+			query = query.substring(1);
+		}
+
+		String finalQuery = query;
+		String finalLocationPrefix = locationPrefix;
+
 		return allsymbols.stream()
-				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), query))
-				.limit(maxNumberOfSymbolsInResponse)
+				.filter(symbol -> symbol.getLocation().getUri().startsWith(finalLocationPrefix))
+				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), finalQuery))
+				.limit(limit)
 				.collect(Collectors.toList());
 	}
 
