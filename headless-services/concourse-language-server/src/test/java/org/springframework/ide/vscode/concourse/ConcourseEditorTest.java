@@ -4752,6 +4752,31 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void githubUriReconciling_bug_194() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/194
+
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: git@github.computer.com:me/repo.git\n"
+		);
+		editor.assertProblems("my-repo|Unused");
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-repo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://github.computer.com/me/repo.git\n"
+		);
+		editor.assertProblems("my-repo|Unused");
+
+	}
+
 	@Test public void githubUriReconciling() throws Exception {
 		when(github.getReposForOwner("the-owner")).thenReturn(ImmutableList.of(
 				"nice-repo", "cool-project", "good-stuff"

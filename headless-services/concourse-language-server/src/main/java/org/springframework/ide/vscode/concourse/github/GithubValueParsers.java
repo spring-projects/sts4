@@ -89,10 +89,14 @@ public class GithubValueParsers {
 				for (String expectedPrefix : GithubRepoContentAssistant.URI_PREFIXES) {
 					int lastChar = expectedPrefix.length()-1;
 					if (str.startsWith(expectedPrefix.substring(0, lastChar))) {
-						if (str.charAt(lastChar)==expectedPrefix.charAt(lastChar)) {
+						char actualSeparator = str.charAt(lastChar);
+						char expectedSeparator = expectedPrefix.charAt(lastChar);
+						if (actualSeparator==expectedSeparator) {
 							return expectedPrefix;
 						}
-						throw new ValueParseException("Expecting a '"+expectedPrefix.charAt(lastChar)+"'", lastChar, lastChar+1);
+						if (actualSeparator==':' || actualSeparator == '/') {
+							throw new ValueParseException("Expecting a '"+expectedSeparator+"'", lastChar, lastChar+1);
+						}
 					}
 				}
 				return null;
