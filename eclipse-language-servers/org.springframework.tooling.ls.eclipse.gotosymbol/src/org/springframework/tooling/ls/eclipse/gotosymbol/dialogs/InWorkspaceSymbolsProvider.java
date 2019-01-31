@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -31,7 +30,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
@@ -40,15 +38,23 @@ import reactor.core.publisher.Mono;
 @SuppressWarnings("restriction")
 public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
+	public static InWorkspaceSymbolsProvider createFor(IProject project) {
+		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
+				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
+		if (!languageServers.isEmpty()) {
+			return new InWorkspaceSymbolsProvider(languageServers);
+		}
+		return null;
+	}
+
+
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
 	private static final int MAX_RESULTS = 200;
 	
 	private List<LanguageServer> languageServers;
-	private IProject project;
 
-	public InWorkspaceSymbolsProvider(List<LanguageServer> languageServers, IProject project) {
+	public InWorkspaceSymbolsProvider(List<LanguageServer> languageServers) {
 		this.languageServers = languageServers;
-		this.project = project;
 	}
 
 	@Override
@@ -78,16 +84,12 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 					.map(symbol -> Either.forLeft(symbol))
 		);
 		//Consider letting the Flux go out from here instead of blocking and collecting elements.
-		return symbols.filter(symbolFilter()).take(MAX_RESULTS).collect(Collectors.toList()).block();
-	}
-	
-	private static void log(Throwable e) {
-		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
+		return symbols.take(MAX_RESULTS).collect(Collectors.toList()).block();
 	}
 	
 	public static InWorkspaceSymbolsProvider createFor(ExecutionEvent event) {
 		final IProject project = projectFor(event);
-		if (project!=null) {
+		if (project != null) {
 			return createFor(project);
 		}
 		return null;
@@ -113,26 +115,13 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		
 	}
 	
-	public static InWorkspaceSymbolsProvider createFor(IProject project) {
-		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
-				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
-		if (!languageServers.isEmpty()) {
-			return new InWorkspaceSymbolsProvider(languageServers, project);
-		}
-		return null;
-	}
-
 	@Override
 	public boolean fromFile(SymbolInformation symbol) {
 		return false;
 	}
 	
-	protected Predicate<? super Either<SymbolInformation, DocumentSymbol>> symbolFilter() {
-		return Predicates.alwaysTrue();
-	}
-	
-	protected IProject getProject() {
-		return project;
+	private static void log(Throwable e) {
+		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 	}
 	
 }
