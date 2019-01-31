@@ -51,8 +51,8 @@
       </content-type>
       <file-association
             content-type="org.springframework.boot.ide.properties.application.yml"
-            file-names="application.yml,bootstrap.yml,application-dev.yml"
-            file-patterns="application-*.yml">
+            file-names="application.yml,bootstrap.yml,application-dev.yml,application.yaml,bootstrap.yaml,application-dev.yaml"
+            file-patterns="application-*.yml,application-*.yaml">
       </file-association>
    </extension>
 

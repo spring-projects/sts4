@@ -55,8 +55,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public class BootPropertiesLanguageServerComponents implements LanguageServerComponents {
 
-	private static final String YML = ".yml";
-	private static final String PROPERTIES = ".properties";
+	public static final String[] YML = {".yml", ".yaml" } ;
+	public static final String PROPERTIES = ".properties";
 
 	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(
 			LanguageId.BOOT_PROPERTIES,
@@ -135,8 +135,12 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
 					return propertiesCompletions.getCompletions(document, offset);
-				} else if (uri.endsWith(YML)) {
-					return yamlCompletions.getCompletions(document, offset);
+				} else {
+					for (String yml : YML) {
+						if (uri.endsWith(yml)) {
+							return yamlCompletions.getCompletions(document, offset);
+						}
+					}
 				}
 			}
 			return ImmutableList.of();
@@ -153,8 +157,12 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
 					return propertiesHovers.getHoverInfo(document, offset);
-				} else if (uri.endsWith(YML)) {
-					return ymlHovers.getHoverInfo(document, offset);
+				} else {
+					for (String yml : YML) {
+						if (uri.endsWith(yml)) {
+							return ymlHovers.getHoverInfo(document, offset);
+						}
+					}
 				}
 			}
 			return null;
@@ -170,9 +178,13 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 				if (uri.endsWith(PROPERTIES)) {
 					propertiesReconciler.reconcile(doc, problemCollector);
 					return;
-				} else if (uri.endsWith(YML)) {
-					ymlReconciler.reconcile(doc, problemCollector);
-					return;
+				} else {
+					for (String yml : YML) {
+						if (uri.endsWith(yml)) {
+							ymlReconciler.reconcile(doc, problemCollector);
+							return;
+						}
+					}
 				}
 			}
 			//No real reconciler is applicable. So tell the problemCollector there are no problems.
