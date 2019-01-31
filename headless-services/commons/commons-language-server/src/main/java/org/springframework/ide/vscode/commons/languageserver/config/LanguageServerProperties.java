@@ -19,14 +19,17 @@ public class LanguageServerProperties {
 
 	/**
 	 * Extension id is a unique identifier associated with a type of language server.
-	 * It is used to derive furether unique ids that should be 'scoped' to a particular
+	 * It is used to derive further unique ids that should be 'scoped' to a particular
 	 * language server. For example ids for vscode comands used to define code actions
 	 * are derived by appending command names with this id.
 	 */
 	private String extensionId;
 
 	/**
-	 * List of characters that trigger completions.
+	 * List of characters that trigger completions. Note: because of this bug:
+	 * https://github.com/spring-projects/sts4/issues/193 this setting is currently
+	 * being ignored when the client is vscode to avoid breaking Java completion
+	 * triggers.
 	 */
 	private String completionTriggerCharacters;
 

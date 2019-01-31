@@ -1,4 +1,3 @@
 languageserver:
   extension-id: vscode-spring-boot
-# Disabled trigger-characters for now. See https://github.com/spring-projects/sts4/issues/193
-#  completion-trigger-characters: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.
+  completion-trigger-characters: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.
