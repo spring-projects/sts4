@@ -27,8 +27,10 @@ import org.springframework.ide.vscode.commons.languageserver.config.LanguageServ
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.util.Assert;
@@ -47,7 +49,10 @@ public class LanguageServerAutoConf {
 			Optional<CompletionFilter> completionFilter
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
-		server.setCompletionTriggerCharacters(props.getCompletionTriggerCharacters());
+		if (LspClient.currentClient()!=Client.VSCODE) {
+			//Vscode excluded. See https://github.com/spring-projects/sts4/issues/193
+			server.setCompletionTriggerCharacters(props.getCompletionTriggerCharacters());
+		}
 		server.setCompletionFilter(completionFilter);
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;

@@ -60,12 +60,12 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/com/kotcrab/remark/remark/1.0.0/remark-1.0.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/io/projectreactor/reactor-core/3.1.9.RELEASE/reactor-core-3.1.9.RELEASE.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/reactivestreams/reactive-streams/1.0.2/reactive-streams-1.0.2.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j/0.4.0-SNAPSHOT/org.eclipse.lsp4j-0.4.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.4.0-SNAPSHOT/org.eclipse.lsp4j.generator-0.4.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j/0.6.0/org.eclipse.lsp4j-0.6.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.6.0/org.eclipse.lsp4j.generator-0.6.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib/2.17.0-SNAPSHOT/org.eclipse.xtend.lib-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.17.0-SNAPSHOT/org.eclipse.xtext.xbase.lib-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib.macro/2.17.0-SNAPSHOT/org.eclipse.xtend.lib.macro-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.4.0-SNAPSHOT/org.eclipse.lsp4j.jsonrpc-0.4.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.6.0/org.eclipse.lsp4j.jsonrpc-0.6.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
