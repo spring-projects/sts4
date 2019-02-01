@@ -585,6 +585,12 @@ public class LanguageServerHarness {
 		return newEditor(getDefaultLanguageId(), contents);
 	}
 
+	public synchronized Editor newEditorWithExt(LanguageId languageId, String extension, String contents) throws Exception {
+		Editor editor = new Editor(this, contents, languageId, extension);
+		activeEditors.add(editor);
+		return editor;
+	}
+
 	public synchronized Editor newEditor(LanguageId languageId, String contents) throws Exception {
 		Editor editor = new Editor(this, contents, languageId);
 		activeEditors.add(editor);
@@ -610,11 +616,11 @@ public class LanguageServerHarness {
 		return docinfo;
 	}
 
-	public synchronized TextDocumentInfo createWorkingCopy(String contents, LanguageId languageId) throws Exception {
+	public synchronized TextDocumentInfo createWorkingCopy(String contents, LanguageId languageId, String extension) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
 		doc.setLanguageId(languageId.getId());
 		doc.setText(contents);
-		doc.setUri(createTempUri());
+		doc.setUri(createTempUri(extension));
 		doc.setVersion(getFirstVersion());
 		TextDocumentInfo docinfo = new TextDocumentInfo(doc);
 		documents.put(docinfo.getUri(), docinfo);
@@ -625,8 +631,11 @@ public class LanguageServerHarness {
 		return 1;
 	}
 
-	public String createTempUri() throws Exception {
-		return File.createTempFile("workingcopy", getFileExtension()).toURI().toString();
+	public String createTempUri(String extension) throws Exception {
+		if (extension == null) {
+			extension = getFileExtension();
+		}
+		return File.createTempFile("workingcopy", extension).toURI().toString();
 	}
 
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {

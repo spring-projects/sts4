@@ -3253,6 +3253,36 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test public void testYamlExtensionAccepted() throws Exception {
+		data("server.port", "java.lang.Integer", null, "Port of server");
+		Editor editor;
+
+		// Hovers
+		editor = harness.newEditorWithExt(LanguageId.BOOT_PROPERTIES_YAML, ".yaml",
+				"server:\n" +
+				"  port: blah"
+		);
+		editor.assertHoverContains("port", "Port of server");
+
+		//Reconcile
+		editor = harness.newEditorWithExt(LanguageId.BOOT_PROPERTIES_YAML, ".yaml",
+				"server:\n" +
+				"  porter: blah"
+		);
+		editor.assertProblems("porter|Unknown");
+
+		//Completions
+		editor = harness.newEditorWithExt(LanguageId.BOOT_PROPERTIES_YAML, ".yaml",
+				"server:\n" +
+				"  p<*>"
+		);
+
+		editor.assertCompletionLabels("server.port");
+
+
+
+	}
+
 	@Test public void testPropertyMapKeyCompletions() throws Exception {
 		useProject(createPredefinedMavenProject("empty-boot-1.3.0-app"));
 		assertCompletionWithLabel(

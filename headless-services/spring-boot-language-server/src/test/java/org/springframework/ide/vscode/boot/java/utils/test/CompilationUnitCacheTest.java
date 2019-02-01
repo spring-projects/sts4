@@ -112,7 +112,7 @@ public class CompilationUnitCacheTest {
 		harness.useProject(ProjectsHarness.dummyProject());
 		harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
+		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
 				"\n" +
 				"public class SomeClass {\n" +
 				"\n" +
@@ -128,7 +128,7 @@ public class CompilationUnitCacheTest {
 	public void cu_not_generated_without_project() throws Exception {
 		harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
+		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
 				"\n" +
 				"public class SomeClass {\n" +
 				"\n" +
@@ -147,7 +147,7 @@ public class CompilationUnitCacheTest {
 		harness.useProject(ProjectsHarness.dummyProject());
 		harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
+		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
 				"\n" +
 				"public class SomeClass {\n" +
 				"\n" +
@@ -171,7 +171,7 @@ public class CompilationUnitCacheTest {
 		harness.useProject(ProjectsHarness.dummyProject());
 		harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(), LanguageId.JAVA, 0, "package my.package\n" +
+		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
 				"\n" +
 				"public class SomeClass {\n" +
 				"\n" +
