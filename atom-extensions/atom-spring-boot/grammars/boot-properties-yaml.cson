@@ -1,7 +1,8 @@
 'scopeName': 'source.boot-properties-yaml'
 'name': 'Spring-Boot-Properties-YAML'
 'fileTypes': [
-  'application.yml'
+  'application.yml',
+  'application.yaml'
 ]
 'patterns': [
   { 'include': 'source.yaml' }

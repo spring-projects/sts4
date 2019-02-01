@@ -115,7 +115,7 @@ public interface SourceLinks {
 				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
 				if (project == null) {
 					try {
-						URL url = new URL(path.substring(0, idx));
+						URL url = filePath.toUri().toURL();
 						if (url.getProtocol().equals("jar")) {
 							URLConnection connection = url.openConnection();
 							if (connection instanceof JarURLConnection) {
