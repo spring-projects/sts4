@@ -93,6 +93,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
         return [
             '**/*.java',
             '**/application*.yml',
+            '**/application*.yaml',
             '**/bootstrap*.yml',
             '**/application*.properties',
             '**/bootstrap*.properties'

@@ -5,26 +5,28 @@
   "dependencies": {
     "@pivotal-tools/theia-spring-boot": "^0.0.2",
     "@theia/core": "latest",
-    "@theia/editor": "latest",
     "@theia/filesystem": "latest",
-    "@theia/languages": "latest",
-    "@theia/markers": "latest",
-    "@theia/messages": "latest",
-    "@theia/monaco": "latest",
-    "@theia/navigator": "latest",
+    "@theia/workspace": "latest",
     "@theia/preferences": "latest",
+    "@theia/navigator": "latest",
     "@theia/process": "latest",
     "@theia/terminal": "latest",
+    "@theia/editor": "latest",
+    "@theia/languages": "latest",
+    "@theia/markers": "latest",
+    "@theia/monaco": "latest",
     "@theia/typescript": "latest",
-    "@theia/workspace": "latest"
+    "@theia/messages": "latest",
+    "@theia/java": "latest",
+    "@theia/textmate-grammars": "latest"
   },
   "devDependencies": {
     "@theia/cli": "latest"
   },
   "scripts": {
-    "prepare": "theia build",
+    "prepare": "theia build --mode development",
     "start": "theia start",
-    "watch": "theia build --watch"
+    "watch": "theia build --watch --mode development"
   },
   "theia": {
     "target": "electron"
