@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -96,14 +96,15 @@ public class GotoSymbolDialogModel {
 			try {
 				SymbolsProvider sp = currentSymbolsProvider.getValue();
 				if (sp!=null) {
-					debug("Fetching "+sp.getName());
+					String currentProviderName = sp.getName();
+					debug("Fetching "+currentProviderName);
 					String query = searchBox.getValue();
 					debug("Fetching symbols... from symbol provider, for '"+query+"'");
 					Collection<Either<SymbolInformation, DocumentSymbol>> fetched = sp.fetchFor(query);
 					if (keyBindings==null) {
-						status.setValue(sp.getName());
+						status.setValue(currentProviderName);
 					} else {
-						status.setValue("Press ["+keyBindings+"] for "+nextSymbolsProvider().getName());
+						status.setValue("Showing "+ currentProviderName + ". Press [" + keyBindings + "] for " + nextSymbolsProvider().getName());
 					}
 					return ImmutableSet.copyOf(fetched);
 				} else {
